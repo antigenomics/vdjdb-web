@@ -7,7 +7,7 @@ const ExtractTextPlugin = require("extract-text-webpack-plugin");
  * Base configuration object for Webpack
  */
 module.exports = {
-    devtool: 'source-map',
+    devtool: '#inline-source-map',
     entry: {
         'bundle.min.css': [
             './styles/global.css',
