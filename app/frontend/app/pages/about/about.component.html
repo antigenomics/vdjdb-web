@@ -1,0 +1,168 @@
+<div class="container-fluid route_content fade">
+    <div class="row">
+        <div class="col-lg-6 col-lg-offset-3">
+            <div class="panel panel-primary">
+                <div class="panel-heading text-center">
+                    <h2 class="panel-title">Database</h2>
+                </div>
+                <div class="panel-body">
+                    <div class="col-lg-10 col-lg-offset-1">
+                        <h4>Getting VDJdb in plain text format</h4>
+
+                        The latest version of the VDJdb database in tab-delimited format is available
+                        <a href="https://github.com/antigenomics/vdjdb-db/releases/latest" target="_blank">here</a>.
+
+                        <h4>Contributing</h4>
+
+                        Users interested in contributing TCR sequences of known antigen specificity to the database
+                        should read the instruction at the following <a
+                            href="https://github.com/antigenomics/vdjdb-db/blob/master/README.md#submission-guide"
+                            target="_blank">link</a>.
+                        To submit the contribution use the <a href="https://github.com/antigenomics/vdjdb-db/issues"
+                                                              target="_blank">issue system</a> of the VDJdb
+                        repository.
+                        If you are not familiar with GitHub you can file your submission by creating a new issue and
+                        attaching your files. Advanced users can use the pull-request system.
+
+                        <h4>Citing</h4>
+
+                        TBA.
+
+                        <br><br>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-6 col-lg-offset-3">
+            <div class="panel panel-primary">
+                <div class="panel-heading text-center">
+                    <h2 class="panel-title">Software</h2>
+                </div>
+                <div class="panel-body">
+                    <div class="col-lg-10 col-lg-offset-1">
+                        <h4>Standalone application</h4>
+
+                        A command line interface software (VDJdb-standalone) should be preferred in cases when huge
+                        amounts of immune repertoire sequencing data are being analyzed or when users are interested
+                        in
+                        obtaining unprocessed output for carrying out statistical analysis of the results on their
+                        own.
+                        The corresponding software package
+                        is available <a href="https://github.com/antigenomics/vdjdb-standalone"
+                                        target="_blank">here</a>.
+                        VDJdb-standalone is distributed as an executable JAR and requires Java v1.7+ to run,
+                        for additional details see the README file in the repository linked above.
+
+                        <h4>Web server (Advanced)</h4>
+
+                        VDJdb web browser application is an open-source software implemented using Play Framework
+                        and Bootstrap. A standalone browser version of the software can be installed locally,
+                        the following <a href="https://github.com/antigenomics/vdjdb-server"
+                                         target="_blank">link</a>
+                        contains the software package and installation instructions.
+
+                        <h4>Other</h4>
+
+                        You might be also interested in our lightweight immune repertoire browser
+                        <a href="https://github.com/antigenomics/vdjviz" target="_blank">VDJviz</a> and
+                        our immune repertoire sequencing data analysis software
+                        <a href="https://github.com/mikessh/vdjtools" target="_blank">VDJtools</a>.
+
+                        <br><br>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-6 col-lg-offset-3">
+            <div class="panel panel-primary">
+                <div class="panel-heading text-center">
+                    <h2 class="panel-title">Concept and design</h2>
+                </div>
+                <div class="panel-body">
+                    <div class="col-lg-10 col-lg-offset-1">
+                        <br>
+
+                        Initial concept: Dr. Shugay, Dr. Zvyagin and Prof. Chudakov.
+
+                        <br>
+
+                        VDJdb web browser application (VDJdb-server) is developed and maintained by
+                        Dmitry Bagaev (<a href="https://github.com/bvdmitri">@bvdmitri</a>).
+
+                        <br>
+
+                        Standalone API for VDJdb and database management system (VDJdb-standalone and VDJdb-db)
+                        is developed and maintained by Mikhail Shugay (<a href="https://github.com/mikessh">@mikessh</a>).
+
+                        <br><br>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-6 col-lg-offset-3">
+            <div class="panel panel-primary">
+                <div class="panel-heading text-center">
+                    <h2 class="panel-title">Contributors</h2>
+                </div>
+                <div class="panel-body">
+                    <div class="col-lg-10 col-lg-offset-1">
+                        <br>
+                        <p>We are extremely grateful to all VDJdb contributors who submitted the data and helped
+                            with database maintainance. Key contributors are listed below:</p>
+                        <div class="contributors_block" *ngFor="let contributor of contributors">
+                            <b>{{ contributor.title }}</b>
+                            <hr class="no_margin">
+                            <p *ngFor="let name of contributor.names">{{ name }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-6 col-lg-offset-3">
+            <div class="panel panel-primary">
+                <div class="panel-heading text-center">
+                    <h2 class="panel-title">Funding</h2>
+                </div>
+                <div class="panel-body">
+                    <div class="col-lg-10 col-lg-offset-1">
+                        <br>
+                        VDJdb database is a collaborative effort supported by Horizon2020 Advanced bioinformatics
+                        platform for PERsonalized cancer IMmunotherapy (<a href="http://aperim.eu">APERIM</a>)
+                        project and Pirogov Russian National Research Medical University (<a
+                            href="http://rsmu.ru/home_en.html">RNRMU</a>).
+                        <br>
+
+                        <div class="row">
+                            <div class="col-lg-8">
+                                <a href="https://www.ceitec.eu" target="_blank">
+                                    <img class="img-responsive" style="padding: 50px" src="assets/images/ceitec-banner.gif" alt="CEITEC">
+                                </a>
+                            </div>
+                            <div class="col-lg-4">
+                                <a href="http://rsmu.ru/home_en.html" target="_blank">
+                                    <img class="img-responsive" src="assets/images/rnimu.jpg" alt="RNIMU">
+                                </a>
+                            </div>
+                            <div class="col-lg-12">
+                                <a href="http://aperim.eu" target="_blank">
+                                    <img class="img-responsive" style="padding: 25px" src="assets/images/aperim-banner.png" alt="APERIM">
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

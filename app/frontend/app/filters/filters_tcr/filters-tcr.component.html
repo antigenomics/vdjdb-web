@@ -1,0 +1,88 @@
+<div class="panel-group">
+    <div class="panel panel-primary">
+        <div class="panel-heading" id="headingTCR">
+            <h3 class="panel-title">
+                <a data-toggle="collapse" data-target="#collapseTCR">TCR</a>
+            </h3>
+        </div>
+        <div class="panel-body">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h4 class="panel-title">
+                        General
+                        <tooltip-content #generalTooltip>
+                            <p>Search for specified parent species of a TCR and receptor chain (alpha or beta). You can also specify to show only records that have both TCR alpha and beta chain sequences (paired records).</p>
+                        </tooltip-content>
+                        <span [tooltip]="generalTooltip" tooltipPlacement="right" class="glyphicon glyphicon-question-sign"></span>
+                    </h4>
+                </div>
+                <div class="panel-body">
+                    <div class="row">
+                        <div class="col-xs-2">
+                            <p class="p_label">Species</p>
+                        </div>
+                        <div class="col-xs-4">
+                            <checkbox [(model)]="filters.general.species.human" title="Human"></checkbox>
+                            <checkbox [(model)]="filters.general.species.monkey" title="Monkey"></checkbox>
+                            <checkbox [(model)]="filters.general.species.mouse" title="Mouse"></checkbox>
+                        </div>
+                        <div class="col-xs-2">
+                            <p class="p_label">Gene (chain)</p>
+                        </div>
+                        <div class="col-xs-4">
+                            <checkbox [(model)]="filters.general.gene.tra" title="TRA"></checkbox>
+                            <checkbox [(model)]="filters.general.gene.trb" title="TRB"></checkbox>
+                            <checkbox [(model)]="filters.general.gene.pairedOnly" title="Only paired records"></checkbox>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h4 class="panel-title">
+                            Germline sequence
+                            <tooltip-content #germlineTooltip>
+                                <p>Specify Variable (V) and Joining (J) segment filters.</p>
+                                <p>Click on the text field to see the list of known V/J segment IDs, start typing to narrow the list. Multiple IDs can be selected by separating them with a comma.</p>
+                                <p>Incomplete queries will be treated as substrings. For example 'TRBV7' will match 'TRBV7-2*01, TRBV7-2*02, ... and TRBV7-9*01, TRBV7-9*02, ...', 'TRBV7-2' will match 'TRBV7-2*01, TRBV7-2*02, ...', etc.</p>
+                            </tooltip-content>
+                            <span [tooltip]="germlineTooltip" tooltipPlacement="right" class="glyphicon glyphicon-question-sign"></span>
+                        </h4>
+                    </div>
+                    <div class="panel-body">
+                        <div class="row">
+                            <div class="col-xs-3">
+                                <p class="p_label">Variable segment(s)</p>
+                            </div>
+                            <div class="col-xs-8">
+                                <div class="select_drop">
+                                    <input class="form-control" placeholder="Comma separated list of V segments, start typing to see suggestions..." ng-model="v_segment.value">
+                                    <div class="select_drop_container">
+                                        <ul>
+                                            <!--<li ng-repeat="value in v_segment.autocomplete | filterSubstringComma:v_segment.value" ng-click="appendVSegment(value)">{{ ::value }}</li>-->
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <br>
+                        <div class="row">
+                            <div class="col-xs-3">
+                                <p class="p_label">Joining segment(s)</p>
+                            </div>
+                            <div class="col-xs-8 vcenter">
+                                <div class="select_drop">
+                                    <input class="form-control" placeholder="Comma separated list of J segments, start typing to see suggestions..." ng-model="j_segment.value">
+                                    <div class="select_drop_container">
+                                        <ul>
+                                            <!--<li ng-repeat="value in j_segment.autocomplete | filterSubstringComma:j_segment.value" ng-click="appendJSegment(value)">{{ ::value }}</li>-->
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

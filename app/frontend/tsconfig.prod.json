@@ -1,0 +1,31 @@
+{
+  "compilerOptions": {
+    "outDir": "dist",
+    "target": "es5",
+    "module": "es2015",
+    "sourceMap": true,
+    "noEmit": true,
+    "inlineSource": true,
+    "lib": [ "es2015", "dom" ],
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "moduleResolution": "node",
+    "typeRoots": [ "node_modules/@types" ],
+    "types": [ "node" ],
+    "noImplicitAny": true,
+    "removeComments": true,
+    "alwaysStrict": true,
+    "pretty": true,
+    "allowUnreachableCode": false,
+    "allowUnusedLabels": false,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitReturns": true,
+    "noUnusedParameters": false
+  },
+  "exclude": [ "node_modules" ],
+  "compileOnSave": false,
+  "buildOnSave": false,
+  "angularCompilerOptions": {
+    "skipMetadataEmit": true
+  }
+}

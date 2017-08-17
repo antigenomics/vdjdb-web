@@ -1,0 +1,19 @@
+# Front end
+/app/frontend/node_modules
+
+# Front end build artifacts
+/public/bundles
+
+npm-debug.log
+
+/logs
+/target
+/project/target
+/project/project/target
+/.idea
+/.idea_modules
+/.classpath
+/.project
+/.settings
+*.DS_Store
+/RUNNING_PID
