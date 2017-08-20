@@ -55,7 +55,7 @@
                             </div>
                             <div class="col-xs-8">
                                 <div class="select_drop">
-                                    <input class="form-control" placeholder="Comma separated list of V segments, start typing to see suggestions..." ng-model="v_segment.value">
+                                    <input class="form-control" placeholder="Comma separated list of V segments, start typing to see suggestions..." [(ngModel)]="filters.segment.v">
                                     <div class="select_drop_container">
                                         <ul>
                                             <!--<li ng-repeat="value in v_segment.autocomplete | filterSubstringComma:v_segment.value" ng-click="appendVSegment(value)">{{ ::value }}</li>-->
@@ -71,7 +71,7 @@
                             </div>
                             <div class="col-xs-8 vcenter">
                                 <div class="select_drop">
-                                    <input class="form-control" placeholder="Comma separated list of J segments, start typing to see suggestions..." ng-model="j_segment.value">
+                                    <input class="form-control" placeholder="Comma separated list of J segments, start typing to see suggestions..." [(ngModel)]="filters.segment.j">
                                     <div class="select_drop_container">
                                         <ul>
                                             <!--<li ng-repeat="value in j_segment.autocomplete | filterSubstringComma:j_segment.value" ng-click="appendJSegment(value)">{{ ::value }}</li>-->

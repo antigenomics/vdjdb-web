@@ -6,6 +6,7 @@ export class Contributors {
 }
 
 @Component({
+    selector: 'about',
     templateUrl: './about.component.html',
     styleUrls:   [ './about.component.css' ],
     changeDetection: ChangeDetectionStrategy.OnPush

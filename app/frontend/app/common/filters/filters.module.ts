@@ -3,8 +3,8 @@ import { BrowserModule } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
 import { FiltersComponent } from './filters.component';
 import { FiltersTCRComponent } from './filters_tcr/filters-tcr.component';
-import { FormControlsModule } from '../common/form_controls/form-controls.module';
-import { ModalsModule } from '../common/modals/modals.module';
+import { FormControlsModule } from '../form_controls/form-controls.module';
+import { ModalsModule } from '../modals/modals.module';
 
 
 @NgModule({

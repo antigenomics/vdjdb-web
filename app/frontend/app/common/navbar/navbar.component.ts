@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
-import { documentScroll } from "../utils/scroll.util";
+import { documentScroll } from "../../utils/scroll.util";
 
 @Component({
     selector:    'navbar',

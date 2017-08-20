@@ -3,8 +3,7 @@ import { FiltersTCRService } from "./filters-tcr.service";
 
 @Component({
     selector:    'filters-tcr',
-    templateUrl: './filters-tcr.component.html',
-    providers: [ FiltersTCRService ]
+    templateUrl: './filters-tcr.component.html'
 })
 export class FiltersTCRComponent {
     constructor(public filters: FiltersTCRService) {}
