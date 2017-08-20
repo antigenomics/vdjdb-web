@@ -85,11 +85,13 @@ export class TCRGeneralFilter implements FilterInterface {
     }
 
     getErrors(): string[] {
-        return this.species.getErrors().concat(this.gene.getErrors());
+        return this.species.getErrors()
+                   .concat(this.gene.getErrors());
     }
 
     getFilters(): Filter[] {
-        return this.species.getFilters().concat(this.gene.getFilters());
+        return this.species.getFilters()
+                   .concat(this.gene.getFilters());
     }
 }
 
@@ -126,4 +128,72 @@ export class TCRSegmentFilter implements FilterInterface {
         return filters;
     }
 
+}
+
+/** ======================================================================== **/
+
+export class TCRPatternCDR3Filter implements FilterInterface {
+    pattern: string = '';
+    patternSubstring: boolean = false;
+
+    setDefault(): void {
+        this.pattern = '';
+    }
+
+    isValid(): boolean {
+        this.pattern = this.pattern.toUpperCase();
+        let pattern = this.pattern;
+
+        if (pattern.length > 100) {
+            return false;
+        }
+
+        let leftBracketStart = false;
+        let error = false;
+
+        let allowed_chars = 'ARNDCQEGHILKMFPSTWYV';
+
+        for (let i = 0; i < pattern.length; i++) {
+            let char = pattern[ i ];
+            if (char === '[') {
+                if (leftBracketStart === true) {
+                    error = true;
+                    break;
+                }
+                leftBracketStart = true;
+            } else if (char === ']') {
+                if (leftBracketStart === false) {
+                    error = true;
+                    break;
+                } else if (pattern[ i - 1 ] === '[') {
+                    error = true;
+                    break;
+                }
+                leftBracketStart = false;
+            } else {
+                if (char !== 'X' && allowed_chars.indexOf(char) === -1 || char === ' ') {
+                    error = true;
+                    break;
+                }
+            }
+        }
+
+        return !(leftBracketStart || error);
+    }
+
+    getErrors(): string[] {
+        return [];
+    }
+
+    getFilters(): Filter[] {
+        let filters: Filter[] = [];
+        if (this.pattern.length !== 0) {
+            let value = this.pattern;
+            if (this.patternSubstring === false) {
+                value = '^' + value + '$';
+            }
+            filters.push(new Filter('cdr3', FilterType.Pattern, false, value.replace(/X/g, ".")));
+        }
+        return filters;
+    }
 }

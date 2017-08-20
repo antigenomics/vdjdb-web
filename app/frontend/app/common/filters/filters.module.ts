@@ -3,12 +3,13 @@ import { BrowserModule } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
 import { FiltersComponent } from './filters.component';
 import { FiltersTCRComponent } from './filters_tcr/filters-tcr.component';
-import { FormControlsModule } from '../form_controls/form-controls.module';
+import { FiltersFormsModule } from "./forms/filters.forms.module";
 import { ModalsModule } from '../modals/modals.module';
 
 
+
 @NgModule({
-    imports:         [ BrowserModule, FormsModule, FormControlsModule, ModalsModule ],
+    imports:         [ BrowserModule, FormsModule, FiltersFormsModule, ModalsModule ],
     declarations:    [ FiltersComponent, FiltersTCRComponent ],
     exports:         [ FiltersComponent, FiltersTCRComponent ]
 })

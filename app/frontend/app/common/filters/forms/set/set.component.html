@@ -1,0 +1,8 @@
+<div class="select_drop">
+    <input class="form-control" [attr.placeholder]="placeholder" [ngModel]="model" (ngModelChange)="change($event)">
+    <div class="select_drop_container" *ngIf="isAutocompleteAllowed()">
+        <ul>
+            <li *ngFor="let value of autocomplete | autocomplete:model" (click)="append(value)">{{ value }}</li>
+        </ul>
+    </div>
+</div>
