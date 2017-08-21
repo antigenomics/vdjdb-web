@@ -1,9 +1,9 @@
-<tooltip-content #generalTooltip>
+<tooltip-content #TCRGeneralTooltip>
     <p>Search for specified parent species of a TCR and receptor chain (alpha or beta). You can also specify to show only records that have both TCR alpha and
        beta chain sequences (paired records).</p>
 </tooltip-content>
 
-<tooltip-content #germlineTooltip>
+<tooltip-content #TCRGermlineTooltip>
     <p>Specify Variable (V) and Joining (J) segment filters.</p>
     <p>Click on the text field to see the list of known V/J segment IDs, start typing to narrow the list. Multiple IDs can be selected by separating
        them with a comma.</p>
@@ -11,7 +11,7 @@
        'TRBV7-2' will match 'TRBV7-2*01, TRBV7-2*02, ...', etc.</p>
 </tooltip-content>
 
-<tooltip-content #cdr3Tooltip>
+<tooltip-content #TCR_CDR3Tooltip>
     <p>Narrow search to a specific CDR3 motif or sequence different by no more than the specified number of mismatches from the query.</p>
     <p>Sequence and pattern filter supports 20 amino acids, X for an unknown amino acid and amino acid groups specified with '[.]'. For example 'CASSL[ASR]PGATNEKLFF' will search
        for 'CASSLaPGATNEKLFF', 'CASSLsPGATNEKLFF' and 'CASSLrPGATNEKLFF'. By default the search expects full match, which can be disabled by checking the substring checkbox.</p>
@@ -31,7 +31,7 @@
                 <div class="panel-heading">
                     <h4 class="panel-title">
                         General
-                        <i [tooltip]="generalTooltip" tooltipPlacement="right" class="fa fa-question-circle" aria-hidden="true"></i>
+                        <i [tooltip]="TCRGeneralTooltip" tooltipPlacement="right" class="fa fa-question-circle" aria-hidden="true"></i>
                     </h4>
                 </div>
                 <div class="panel-body">
@@ -58,7 +58,7 @@
                     <div class="panel-heading">
                         <h4 class="panel-title">
                             Germline sequence
-                            <i [tooltip]="germlineTooltip" tooltipPlacement="right" class="fa fa-question-circle" aria-hidden="true"></i>
+                            <i [tooltip]="TCRGermlineTooltip" tooltipPlacement="right" class="fa fa-question-circle" aria-hidden="true"></i>
                         </h4>
                     </div>
                     <div class="panel-body">
@@ -91,7 +91,7 @@
                     <div class="panel-heading">
                         <h4 class="panel-title">
                             CDR3
-                            <i [tooltip]="cdr3Tooltip" tooltipPlacement="right" class="fa fa-question-circle" aria-hidden="true"></i>
+                            <i [tooltip]="TCR_CDR3Tooltip" tooltipPlacement="right" class="fa fa-question-circle" aria-hidden="true"></i>
                         </h4>
                     </div>
                     <div class="panel-body">

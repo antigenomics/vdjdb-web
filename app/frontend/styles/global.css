@@ -8,6 +8,10 @@ body {
     min-width: 800px;
 }
 
+.cursor_pointer {
+    cursor: pointer;
+}
+
 .content_wrapper {
     position: absolute;
     top: 70px;

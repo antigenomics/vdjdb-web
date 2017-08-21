@@ -5,4 +5,13 @@
             <li *ngFor="let value of autocomplete | autocomplete:model" (click)="append(value)">{{ value }}</li>
         </ul>
     </div>
+    <div *ngIf="isSuggestionsAllowed()">
+        <a *ngIf="!isSuggestionsVisible" class="cursor_pointer" (click)="showSuggestions = !showSuggestions">Show suggestions</a>
+        <a *ngIf="isSuggestionsVisible" class="cursor_pointer" (click)="showSuggestions = !showSuggestions">Hide suggestions</a>
+        <ul *ngIf="isSuggestionsAvailable()">
+            <li class="cursor_pointer" *ngFor="let suggestion of availableSuggestions">
+                <b>{{ suggestion.sequence }}</b> <br> Substitutions: {{ suggestion.substitutions }}, Indels {{ suggestion.indels }}, Length: {{ suggestion.length }}, Count: {{  suggestion.count }}
+            </li>
+        </ul>
+    </div>
 </div>

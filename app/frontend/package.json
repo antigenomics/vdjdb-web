@@ -8,7 +8,7 @@
   },
   "scripts": {
     "test": "test",
-    "build": "webpack -p --config ./webpack/webpack.prod.config.js",
+    "build": "webpack -p --config ./webpack/webpack.prod.config.js --display-modules",
     "start": "node ./webpack/webpack.dev.server"
   },
   "author": "Dmitry Bagaev",
