@@ -9,6 +9,7 @@ lazy val root = (project in file(".")).enablePlugins(PlayScala)
 scalaVersion := "2.12.2"
 
 libraryDependencies ++= Seq(
+      "com.antigenomics" % "vdjdb" % "1.1.6",
       guice,
       ws,
       filters

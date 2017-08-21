@@ -10,6 +10,8 @@ import { AboutPageComponent } from "./pages/about/about.component";
 
 import { Route, RouterModule } from '@angular/router';
 import { SearchPageComponent } from "./pages/search/search.component";
+import { DatabaseService } from "./database/database.service";
+
 
 const routes: Route[] = [
     { 'path': '', component: HomePageComponent },
@@ -20,6 +22,7 @@ const routes: Route[] = [
 @NgModule({
     imports:      [ CommonModule, BrowserModule, SearchPageModule, RouterModule.forRoot(routes) ],
     declarations: [ AppComponent, NavigationBarComponent, HomePageComponent, AboutPageComponent ],
-    bootstrap:    [ AppComponent ]
+    bootstrap:    [ AppComponent ],
+    providers:    [ DatabaseService ]
 })
 export class AppModule {}

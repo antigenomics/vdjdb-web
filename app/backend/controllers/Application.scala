@@ -9,10 +9,8 @@ import play.api.mvc._
 
 class Application @Inject()(ws: WSClient, assets: Assets, environment: Environment, cc: ControllerComponents)  extends AbstractController(cc) {
 
-  def index = if (environment.mode == Mode.Dev) Action {
-    Ok(frontend.views.html.main_dev())
-  } else Action {
-    Ok(frontend.views.html.main_prod())
+  def index: Action[AnyContent] = Action {
+    Ok(frontend.views.html.main(environment))
   }
 
   def bundle(file:String): Action[AnyContent] = if (environment.mode == Mode.Dev) Action.async {

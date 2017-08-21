@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { DatabaseService } from "./database/database.service";
 
 @Component({
     selector: 'application',
@@ -7,4 +8,10 @@ import { Component } from '@angular/core';
                     <router-outlet></router-outlet>
                </div>`
 })
-export class AppComponent {}
+export class AppComponent implements OnInit {
+    constructor(private database: DatabaseService) {}
+
+    ngOnInit(): void {
+        this.database.init();
+    }
+}

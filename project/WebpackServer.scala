@@ -19,7 +19,9 @@ object WebpackServer {
       }
 
       override def afterStopped(): Unit = {
-        process.foreach(p => { p.destroy() })
+        process.foreach(p => {
+          p.destroy()
+        })
         process = None
       }
     }
