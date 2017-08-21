@@ -1,3 +1,24 @@
+<tooltip-content #generalTooltip>
+    <p>Search for specified parent species of a TCR and receptor chain (alpha or beta). You can also specify to show only records that have both TCR alpha and
+       beta chain sequences (paired records).</p>
+</tooltip-content>
+
+<tooltip-content #germlineTooltip>
+    <p>Specify Variable (V) and Joining (J) segment filters.</p>
+    <p>Click on the text field to see the list of known V/J segment IDs, start typing to narrow the list. Multiple IDs can be selected by separating
+       them with a comma.</p>
+    <p>Incomplete queries will be treated as substrings. For example 'TRBV7' will match 'TRBV7-2*01, TRBV7-2*02, ... and TRBV7-9*01, TRBV7-9*02, ...',
+       'TRBV7-2' will match 'TRBV7-2*01, TRBV7-2*02, ...', etc.</p>
+</tooltip-content>
+
+<tooltip-content #cdr3Tooltip>
+    <p>Narrow search to a specific CDR3 motif or sequence different by no more than the specified number of mismatches from the query.</p>
+    <p>Sequence and pattern filter supports 20 amino acids, X for an unknown amino acid and amino acid groups specified with '[.]'. For example 'CASSL[ASR]PGATNEKLFF' will search
+       for 'CASSLaPGATNEKLFF', 'CASSLsPGATNEKLFF' and 'CASSLrPGATNEKLFF'. By default the search expects full match, which can be disabled by checking the substring checkbox.</p>
+    <p>Hamming distance filter expects complete sequence with no wildcards, and user can specify the number of substitutions, insertions and deletions allowed during the
+       search.</p>
+</tooltip-content>
+
 <div class="panel-group">
     <div class="panel panel-primary">
         <div class="panel-heading" id="headingTCR">
@@ -10,12 +31,8 @@
                 <div class="panel-heading">
                     <h4 class="panel-title">
                         General
+                        <i [tooltip]="generalTooltip" tooltipPlacement="right" class="fa fa-question-circle" aria-hidden="true"></i>
                     </h4>
-                    <span [tooltip]="generalTooltip" tooltipPlacement="right" class="glyphicon glyphicon-question-sign"></span>
-                    <tooltip-content #generalTooltip>
-                        <p>Search for specified parent species of a TCR and receptor chain (alpha or beta). You can also specify to show only records that have both TCR alpha and
-                           beta chain sequences (paired records).</p>
-                    </tooltip-content>
                 </div>
                 <div class="panel-body">
                     <div class="row">
@@ -41,14 +58,7 @@
                     <div class="panel-heading">
                         <h4 class="panel-title">
                             Germline sequence
-                            <tooltip-content #germlineTooltip>
-                                <p>Specify Variable (V) and Joining (J) segment filters.</p>
-                                <p>Click on the text field to see the list of known V/J segment IDs, start typing to narrow the list. Multiple IDs can be selected by separating
-                                   them with a comma.</p>
-                                <p>Incomplete queries will be treated as substrings. For example 'TRBV7' will match 'TRBV7-2*01, TRBV7-2*02, ... and TRBV7-9*01, TRBV7-9*02, ...',
-                                   'TRBV7-2' will match 'TRBV7-2*01, TRBV7-2*02, ...', etc.</p>
-                            </tooltip-content>
-                            <span [tooltip]="germlineTooltip" tooltipPlacement="right" class="glyphicon glyphicon-question-sign"></span>
+                            <i [tooltip]="germlineTooltip" tooltipPlacement="right" class="fa fa-question-circle" aria-hidden="true"></i>
                         </h4>
                     </div>
                     <div class="panel-body">
@@ -81,22 +91,17 @@
                     <div class="panel-heading">
                         <h4 class="panel-title">
                             CDR3
-                            <tooltip-content #cdr3Tooltip>
-                                <p>Narrow search to a specific CDR3 motif or sequence different by no more than the specified number of mismatches from the query.</p>
-                                <p>Sequence and pattern filter supports 20 amino acids, X for an unknown amino acid and amino acid groups specified with '[.]'. For example 'CASSL[ASR]PGATNEKLFF' will search for 'CASSLaPGATNEKLFF', 'CASSLsPGATNEKLFF' and 'CASSLrPGATNEKLFF'. By default the search expects full match, which can be disabled by checking the substring checkbox.</p>
-                                <p>Hamming distance filter expects complete sequence with no wildcards, and user can specify the number of substitutions, insertions and deletions allowed during the search.</p>
-                            </tooltip-content>
-                            <span [tooltip]="cdr3Tooltip" tooltipPlacement="right" class="glyphicon glyphicon-question-sign pull-right"></span>
+                            <i [tooltip]="cdr3Tooltip" tooltipPlacement="right" class="fa fa-question-circle" aria-hidden="true"></i>
                         </h4>
                     </div>
                     <div class="panel-body">
                         <!--<div class="row">-->
-                            <!--<div class="col-xs-3" style="margin-top: 15px">-->
-                                <!--<p class="p_label">CDR3 Length</p>-->
-                            <!--</div>-->
-                            <!--<div class="col-xs-7" style="margin-top: 15px">-->
-                                <!--slider here-->
-                            <!--</div>-->
+                        <!--<div class="col-xs-3" style="margin-top: 15px">-->
+                        <!--<p class="p_label">CDR3 Length</p>-->
+                        <!--</div>-->
+                        <!--<div class="col-xs-7" style="margin-top: 15px">-->
+                        <!--slider here-->
+                        <!--</div>-->
                         <!--</div>-->
                         <div class="row">
                             <div class="col-xs-3">
@@ -113,30 +118,30 @@
                             </div>
                         </div>
                         <!--<div class="row">-->
-                            <!--<div class="col-xs-3" style="margin-top: 15px">-->
-                                <!--<p class="p_label">By Levenstein distance</p>-->
-                            <!--</div>-->
-                            <!--<div class="col-xs-6" style="margin-top: 15px">-->
-                                <!--<div class="form-group" ng-class="{'has-error has-feedback':!isHammingPatternValid()}">-->
-                                    <!--<input class="form-control" type="text" placeholder="Complete amino acid sequence, e.g. CASSLAPGATNEKLFF." ng-model="cdr3_hamming.value"-->
-                                           <!--ng-change="checkHamming()">-->
-                                    <!--<span class="glyphicon glyphicon-remove form-control-feedback" ng-if="!isHammingPatternValid()"></span>-->
-                                <!--</div>-->
-                            <!--</div>-->
-                            <!--<div class="col-xs-3">-->
-                                <!--<div class="col-xs-12">-->
-                                    <!--Substitutions-->
-                                    <!--<input class="form-control" value="0" type="number" ng-model="cdr3_hamming.s" ng-change="checkHammingValue('s', 0, 5)">-->
-                                <!--</div>-->
-                                <!--<div class="col-xs-12">-->
-                                    <!--Insertions-->
-                                    <!--<input class="form-control" value="0" type="number" ng-model="cdr3_hamming.i" ng-change="checkHammingValue('i', 0, 3)">-->
-                                <!--</div>-->
-                                <!--<div class="col-xs-12">-->
-                                    <!--Deletions-->
-                                    <!--<input class="form-control" value="0" type="number" ng-model="cdr3_hamming.d" ng-change="checkHammingValue('d', 0, 3)">-->
-                                <!--</div>-->
-                            <!--</div>-->
+                        <!--<div class="col-xs-3" style="margin-top: 15px">-->
+                        <!--<p class="p_label">By Levenstein distance</p>-->
+                        <!--</div>-->
+                        <!--<div class="col-xs-6" style="margin-top: 15px">-->
+                        <!--<div class="form-group" ng-class="{'has-error has-feedback':!isHammingPatternValid()}">-->
+                        <!--<input class="form-control" type="text" placeholder="Complete amino acid sequence, e.g. CASSLAPGATNEKLFF." ng-model="cdr3_hamming.value"-->
+                        <!--ng-change="checkHamming()">-->
+                        <!--<span class="glyphicon glyphicon-remove form-control-feedback" ng-if="!isHammingPatternValid()"></span>-->
+                        <!--</div>-->
+                        <!--</div>-->
+                        <!--<div class="col-xs-3">-->
+                        <!--<div class="col-xs-12">-->
+                        <!--Substitutions-->
+                        <!--<input class="form-control" value="0" type="number" ng-model="cdr3_hamming.s" ng-change="checkHammingValue('s', 0, 5)">-->
+                        <!--</div>-->
+                        <!--<div class="col-xs-12">-->
+                        <!--Insertions-->
+                        <!--<input class="form-control" value="0" type="number" ng-model="cdr3_hamming.i" ng-change="checkHammingValue('i', 0, 3)">-->
+                        <!--</div>-->
+                        <!--<div class="col-xs-12">-->
+                        <!--Deletions-->
+                        <!--<input class="form-control" value="0" type="number" ng-model="cdr3_hamming.d" ng-change="checkHammingValue('d', 0, 3)">-->
+                        <!--</div>-->
+                        <!--</div>-->
                         <!--</div>-->
                     </div>
                 </div>

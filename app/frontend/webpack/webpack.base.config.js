@@ -10,10 +10,7 @@ module.exports = {
     devtool: '#inline-source-map',
     entry: {
         'bundle.min.css': [
-            './styles/global.css',
-            './styles/bootstrap/css/bootstrap.min.css',
-            './styles/bootstrap/css/theme.min.css',
-            './styles/font-awesome/css/font-awesome.min.css'
+            './styles/global.css'
         ]
     },
     output: {
@@ -40,7 +37,7 @@ module.exports = {
             },
             {
                 test: /\.(woff|woff2|eot|ttf|svg)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
-                loader: 'file-loader',
+                loader: 'url-loader?limit=100000',
                 options: {
                     name: 'fonts/[name].[ext]'
                 }
