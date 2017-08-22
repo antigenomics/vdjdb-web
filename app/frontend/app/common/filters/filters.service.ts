@@ -4,6 +4,8 @@ import { Filter, FilterInterface } from "./filters";
 import { FiltersMHCService } from "./filters_mhc/filters-mhc.service";
 import { FiltersAGService } from "./filters_ag/filters-ag.service";
 import { FiltersMetaService } from "./filters_meta/filters-meta.service";
+import { DatabaseService } from "../../database/database.service";
+import { DatabaseMetadata } from "../../database/database-metadata";
 
 
 @Injectable()
@@ -13,11 +15,15 @@ export class FiltersService implements FilterInterface {
     private ag: FiltersAGService;
     private meta: FiltersMetaService;
 
-    constructor(tcr: FiltersTCRService, mhc: FiltersMHCService, ag: FiltersAGService, meta: FiltersMetaService) {
+    constructor(tcr: FiltersTCRService, mhc: FiltersMHCService, ag: FiltersAGService, meta: FiltersMetaService, database: DatabaseService) {
         this.tcr = tcr;
         this.mhc = mhc;
         this.ag = ag;
         this.meta = meta;
+        let subscription = database.getMetadata().subscribe((metadata: DatabaseMetadata) => {
+            this.setMetadataOptions(metadata);
+            subscription.unsubscribe();
+        })
     }
 
     setDefault(): void {
@@ -25,6 +31,13 @@ export class FiltersService implements FilterInterface {
         this.mhc.setDefault();
         this.ag.setDefault();
         this.meta.setDefault();
+    }
+
+    setMetadataOptions(metadata: DatabaseMetadata) : void {
+        this.tcr.setMetadataOptions(metadata);
+        this.mhc.setMetadataOptions(metadata);
+        this.ag.setMetadataOptions(metadata);
+        this.meta.setMetadataOptions(metadata);
     }
 
     isValid(): boolean {

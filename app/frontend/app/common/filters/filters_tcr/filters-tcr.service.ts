@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { TCRGeneralFilter, TCRSegmentFilter, TCRPatternCDR3Filter } from './filters-tcr';
 import { Filter, FilterInterface } from "../filters";
+import { DatabaseMetadata } from "../../../database/database-metadata";
 
 
 @Injectable()
@@ -13,6 +14,12 @@ export class FiltersTCRService implements FilterInterface {
         this.general.setDefault();
         this.segment.setDefault();
         this.cdr3pattern.setDefault();
+    }
+
+    setMetadataOptions(metadata: DatabaseMetadata): void {
+        this.general.setMetadataOptions(metadata);
+        this.segment.setMetadataOptions(metadata);
+        this.cdr3pattern.setMetadataOptions(metadata);
     }
 
     isValid(): boolean {

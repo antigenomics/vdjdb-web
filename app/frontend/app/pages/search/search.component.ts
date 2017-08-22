@@ -1,5 +1,7 @@
 import { Component } from '@angular/core';
 import { FiltersService } from "../../common/filters/filters.service";
+import { DatabaseService } from "../../database/database.service";
+import { DatabaseMetadata } from "../../database/database-metadata";
 
 @Component({
     selector: 'search',
@@ -8,7 +10,7 @@ import { FiltersService } from "../../common/filters/filters.service";
 export class SearchPageComponent {
     title: string;
 
-    constructor(private filters: FiltersService) {
+    constructor(private filters: FiltersService, private database: DatabaseService) {
 
     }
 

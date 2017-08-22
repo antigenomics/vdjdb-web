@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Filter, FilterInterface } from "../filters";
 import { MHCGeneralClassFilter, MHCHaplotypeFilter } from "./filters-mhc";
+import { DatabaseMetadata } from "../../../database/database-metadata";
 
 
 @Injectable()
@@ -11,6 +12,11 @@ export class FiltersMHCService implements FilterInterface {
     setDefault(): void {
         this.general.setDefault();
         this.haplotype.setDefault();
+    }
+
+    setMetadataOptions(metadata: DatabaseMetadata) {
+        this.general.setMetadataOptions(metadata);
+        this.haplotype.setMetadataOptions(metadata);
     }
 
     isValid(): boolean {

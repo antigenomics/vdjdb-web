@@ -1,5 +1,6 @@
 import { FilterInterface, Filter, FilterType } from "../filters";
 import { isSequencePatternValid } from "../../../utils/pattern.util";
+import { DatabaseMetadata } from "../../../database/database-metadata";
 
 
 /** ======================================================================== **/
@@ -13,6 +14,9 @@ export class TCRGeneralSpeciesFilter implements FilterInterface {
         this.human = true;
         this.monkey = true;
         this.mouse = true;
+    }
+
+    setMetadataOptions(_: DatabaseMetadata): void {
     }
 
     isValid(): boolean {
@@ -49,6 +53,9 @@ export class TCRGeneralGeneFilter implements FilterInterface {
         this.pairedOnly = false;
     }
 
+    setMetadataOptions(_: DatabaseMetadata): void {
+    }
+
     isValid(): boolean {
         return true;
     }
@@ -81,6 +88,11 @@ export class TCRGeneralFilter implements FilterInterface {
         this.gene.setDefault();
     }
 
+    setMetadataOptions(metadata: DatabaseMetadata): void {
+        this.species.setMetadataOptions(metadata);
+        this.gene.setMetadataOptions(metadata);
+    }
+
     isValid(): boolean {
         return this.species.isValid() && this.gene.isValid();
     }
@@ -108,6 +120,11 @@ export class TCRSegmentFilter implements FilterInterface {
     setDefault(): void {
         this.v = '';
         this.j = '';
+    }
+
+    setMetadataOptions(metadata: DatabaseMetadata): void {
+        this.vAutocomplete = metadata.getColumnInfo("v.segm").autocomplete;
+        this.jAutocomplete = metadata.getColumnInfo("j.segm").autocomplete;
     }
 
     isValid(): boolean {
@@ -139,6 +156,10 @@ export class TCRPatternCDR3Filter implements FilterInterface {
 
     setDefault(): void {
         this.pattern = '';
+    }
+
+    setMetadataOptions(_: DatabaseMetadata) {
+
     }
 
     isValid(): boolean {

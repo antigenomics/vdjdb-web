@@ -11,4 +11,20 @@ declare let buildMode: string;
 if (buildMode == 'production') {
     enableProdMode();
 }
+
+export class Configuration {
+    static buildMode: string = buildMode;
+    static websocketProtocol: string = 'ws://';
+    static websocketLocation: string = location.host;
+    static websocketPrefix: string = Configuration.websocketProtocol + Configuration.websocketLocation;
+
+    static isDevMode() : boolean {
+        return Configuration.buildMode === 'development';
+    }
+
+    static isProdMode() : boolean {
+        return Configuration.buildMode === 'production';
+    }
+}
+
 platformBrowserDynamic().bootstrapModule(AppModule).then(() => console.log('Application loaded (' + buildMode + ')'));

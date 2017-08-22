@@ -1,4 +1,5 @@
 import { FilterInterface, Filter, FilterType } from "../filters";
+import { DatabaseMetadata } from "../../../database/database-metadata";
 
 
 /** ======================================================================== **/
@@ -10,6 +11,10 @@ export class MHCGeneralClassFilter implements FilterInterface {
     setDefault(): void {
         this.mhci = true;
         this.mhcii = true;
+    }
+
+    setMetadataOptions(_: DatabaseMetadata) {
+
     }
 
     isValid(): boolean {
@@ -44,6 +49,11 @@ export class MHCHaplotypeFilter implements FilterInterface {
     setDefault(): void {
         this.firstChain = '';
         this.secondChain = '';
+    }
+
+    setMetadataOptions(metadata: DatabaseMetadata) {
+        this.firstChainAutocomplete = metadata.getColumnInfo("mhc.a").autocomplete;
+        this.secondChainAutocomplete = metadata.getColumnInfo("mhc.b").autocomplete;
     }
 
     isValid(): boolean {

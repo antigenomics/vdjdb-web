@@ -1,4 +1,5 @@
 import { FilterInterface, Filter, FilterType } from "../filters";
+import { DatabaseMetadata } from "../../../database/database-metadata";
 
 
 /** ======================================================================== **/
@@ -12,6 +13,10 @@ export class MetaGeneralAssayTypeFilter implements FilterInterface {
         this.methodSort = true;
         this.methodCulture = true;
         this.methodOther = true;
+    }
+
+    setMetadataOptions(_: DatabaseMetadata) {
+
     }
 
     isValid(): boolean {
@@ -46,6 +51,10 @@ export class MetaGeneralSequencingFilter implements FilterInterface {
         this.seqSanger = true;
         this.seqAmplicon = true;
         this.seqSingleCell = true;
+    }
+
+    setMetadataOptions(_: DatabaseMetadata) {
+
     }
 
     isValid(): boolean {
@@ -84,6 +93,12 @@ export class MetaGeneralFilter implements FilterInterface {
         this.sequencing.setDefault();
     }
 
+    setMetadataOptions(metadata: DatabaseMetadata) {
+        this.referencesAutocomplete = metadata.getColumnInfo("reference.id").autocomplete;
+        this.assayType.setMetadataOptions(metadata);
+        this.sequencing.setMetadataOptions(metadata);
+    }
+
     isValid(): boolean {
         return this.assayType.isValid() && this.sequencing.isValid();
     }
@@ -115,6 +130,10 @@ export class MetaReliabilityFilter implements FilterInterface {
         this.minimalConfidenceScore = 0;
         this.nonCanonical = false;
         this.unmapped = false;
+    }
+
+    setMetadataOptions(_: DatabaseMetadata) {
+
     }
 
     isValid(): boolean {

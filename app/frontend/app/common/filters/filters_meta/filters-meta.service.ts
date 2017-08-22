@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Filter, FilterInterface } from "../filters";
 import { MetaGeneralFilter, MetaReliabilityFilter } from "./filters-meta";
+import { DatabaseMetadata } from "../../../database/database-metadata";
 
 
 @Injectable()
@@ -11,6 +12,11 @@ export class FiltersMetaService implements FilterInterface {
     setDefault(): void {
         this.general.setDefault();
         this.reliability.setDefault();
+    }
+
+    setMetadataOptions(metadata: DatabaseMetadata) {
+        this.general.setMetadataOptions(metadata);
+        this.reliability.setMetadataOptions(metadata);
     }
 
     isValid(): boolean {

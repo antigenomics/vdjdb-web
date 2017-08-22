@@ -1,75 +1,33 @@
 package backend.server.database
 
 import java.io.FileInputStream
-
-import com.antigenomics.vdjdb.VdjdbInstance
 import javax.inject.{Inject, Singleton}
-
-import backend.server.wrappers.database.ColumnWrapper
-import com.typesafe.config.Config
-import play.api.{ConfigLoader, Configuration}
+import com.antigenomics.vdjdb.VdjdbInstance
+import play.api.Configuration
 
 @Singleton
-case class Database(database: VdjdbInstance) {
-    private var meta: DatabaseMetadata = _
+case class Database(private final val instance: VdjdbInstance) {
+    private final val metadata: DatabaseMetadata = DatabaseMetadata.createFromInstance(instance)
 
     @Inject
-    def this(config: Configuration) {
-        this(Database.create(config))
-        this.meta = DatabaseMetadata.generate(this.database)
+    def this(configuration: Configuration) {
+        this(Database.createInstanceFromConfiguration(configuration))
     }
 
-    def getColumns : List[ColumnWrapper] = meta.columns
-
-
-    //  def initDatabase(config: Configuration): Unit =
-    //    synchronizeRead { implicit lock =>
-    //      if (database.isEmpty) {
-    //
-    //      }
-    //    }
-    //
-    //  def getNumberOfRecords: Int =
-    //    synchronizeRead { implicit lock =>
-    //      database.get().getDbInstance.getRows.size()
-    //    }
-    //
-    //  def getColumns: List[ColumnWrapper] =
-    //    synchronizeRead { implicit lock =>
-    //      var buffer = ListBuffer[ColumnWrapper]()
-    //      database().getDbInstance.getColumns.toList.foreach(column => {
-    //        buffer += ColumnWrapper.wrap(column)
-    //      })
-    //      buffer.toList
-    //    }
-    //
-    //  def update() =
-    //    synchronizeReadWrite { implicit lock =>
-    //
-    //    }
+    def getMetadata: DatabaseMetadata = metadata
 }
 
 object Database {
-    def create(config: Configuration): VdjdbInstance = {
-        val databaseConfig = config.get[DatabaseConfiguration]("application.database")
-        if (databaseConfig.useLocal) {
-            val meta = new FileInputStream(databaseConfig.path + "vdjdb.meta.txt")
-            val data = new FileInputStream(databaseConfig.path + "vdjdb.txt")
-            new VdjdbInstance(meta, data)
+
+    private def createInstanceFromConfiguration(configuration: Configuration) : VdjdbInstance = {
+        val databaseConfiguration = configuration.get[DatabaseConfiguration]("application.database")
+        if (databaseConfiguration.useLocal) {
+            val metaFile = new FileInputStream(databaseConfiguration.path + "vdjdb.meta.txt")
+            val dataFile = new FileInputStream(databaseConfiguration.path + "vdjdb.txt")
+            new VdjdbInstance(metaFile, dataFile)
         } else {
             new VdjdbInstance()
         }
     }
-}
 
-case class DatabaseConfiguration(useLocal: Boolean, path: String)
-
-object DatabaseConfiguration {
-    implicit val configLoader: ConfigLoader[DatabaseConfiguration] = (rootConfig: Config, path: String) => {
-        val config = rootConfig.getConfig(path)
-        DatabaseConfiguration(
-            useLocal = config.getBoolean("useLocal"),
-            path = config.getString("path")
-        )
-    }
 }

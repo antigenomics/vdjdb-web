@@ -1,3 +1,5 @@
+import { DatabaseMetadata } from "../../database/database-metadata";
+
 export const enum FilterType {
     Exact        = 'exact',
     ExactSet     = 'exact:set',
@@ -24,6 +26,8 @@ export class Filter {
 
 export interface FilterInterface {
     setDefault(): void;
+
+    setMetadataOptions(metadata: DatabaseMetadata): void;
 
     isValid(): boolean;
 

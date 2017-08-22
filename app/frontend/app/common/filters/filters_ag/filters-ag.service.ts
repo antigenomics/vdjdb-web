@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Filter, FilterInterface } from "../filters";
 import { AGEpitopeFilter, AGOriginFilter } from "./filters-ag";
+import { DatabaseMetadata } from "../../../database/database-metadata";
 
 
 @Injectable()
@@ -11,6 +12,11 @@ export class FiltersAGService implements FilterInterface {
     setDefault(): void {
         this.origin.setDefault();
         this.epitope.setDefault();
+    }
+
+    setMetadataOptions(metadata: DatabaseMetadata) {
+        this.origin.setMetadataOptions(metadata);
+        this.epitope.setMetadataOptions(metadata);
     }
 
     isValid(): boolean {

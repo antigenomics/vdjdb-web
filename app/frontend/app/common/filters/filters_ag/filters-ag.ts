@@ -1,5 +1,6 @@
 import { FilterInterface, Filter, FilterType } from "../filters";
 import { isSequencePatternValid } from "../../../utils/pattern.util";
+import { DatabaseMetadata } from "../../../database/database-metadata";
 
 
 /** ======================================================================== **/
@@ -14,6 +15,11 @@ export class AGOriginFilter implements FilterInterface {
     setDefault(): void {
         this.species = '';
         this.genes = '';
+    }
+
+    setMetadataOptions(metadata: DatabaseMetadata) {
+        this.speciesAutocomplete = metadata.getColumnInfo("antigen.species").autocomplete;
+        this.genesAutocomplete = metadata.getColumnInfo("antigen.gene").autocomplete;
     }
 
     isValid(): boolean {
@@ -51,6 +57,10 @@ export class AGEpitopeFilter implements FilterInterface {
         this.sequence = '';
         this.pattern = '';
         this.patternSubstring = false;
+    }
+
+    setMetadataOptions(metadata: DatabaseMetadata) {
+        this.sequenceAutocomplete = metadata.getColumnInfo("antigen.epitope").autocomplete;
     }
 
     isValid(): boolean {

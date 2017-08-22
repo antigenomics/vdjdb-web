@@ -8,10 +8,6 @@ import { DatabaseService } from "./database/database.service";
                     <router-outlet></router-outlet>
                </div>`
 })
-export class AppComponent implements OnInit {
+export class AppComponent {
     constructor(private database: DatabaseService) {}
-
-    ngOnInit(): void {
-        this.database.init();
-    }
 }
