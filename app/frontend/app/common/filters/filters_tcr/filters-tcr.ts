@@ -5,6 +5,26 @@ import { DatabaseMetadata } from "../../../database/database-metadata";
 
 /** ======================================================================== **/
 
+export class TCRGeneralSpecies {
+    human: boolean;
+    monkey: boolean;
+    mouse: boolean;
+
+    constructor() {
+        this.setDefault();
+    }
+
+    setDefault(): void {
+        this.human = true;
+        this.monkey = true;
+        this.mouse = true;
+    }
+}
+
+export class TCRFilter {
+
+}
+
 export class TCRGeneralSpeciesFilter implements FilterInterface {
     human: boolean = true;
     monkey: boolean = true;

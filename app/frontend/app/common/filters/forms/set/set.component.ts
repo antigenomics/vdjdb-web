@@ -65,7 +65,8 @@ export class SetComponent {
     append(value: string) {
         let values = this.model.split(',');
         values[values.length - 1] = value;
-        this.model = values.join(',');
+        let newValue = values.join(',');
+        this.change(newValue);
     }
 
 }

@@ -22,7 +22,6 @@ export class FiltersService implements FilterInterface {
         this.meta = meta;
         let subscription = database.getMetadata().subscribe((metadata: DatabaseMetadata) => {
             this.setMetadataOptions(metadata);
-            //subscription.unsubscribe(); TODO
         })
     }
 

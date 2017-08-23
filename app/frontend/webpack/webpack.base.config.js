@@ -9,7 +9,7 @@ const ExtractTextPlugin = require("extract-text-webpack-plugin");
 module.exports = {
     devtool: '#inline-source-map',
     entry: {
-        'bundle.min.css': [
+        'bundle.css': [
             './styles/global.css',
             './styles/bootstrap/css/bootstrap.min.css',
             './styles/bootstrap/css/theme.min.css',
@@ -57,7 +57,7 @@ module.exports = {
         extensions: [ '.ts', '.tsx', '.js', '.json', '.css', '.html' ]
     },
     plugins: [
-        new ExtractTextPlugin('bundle.min.css'),
+        new ExtractTextPlugin('bundle.css'),
         new webpack.ContextReplacementPlugin(
             /angular(\\|\/)core(\\|\/)@angular/,
             path.resolve(__dirname, './app')

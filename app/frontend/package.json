@@ -8,7 +8,9 @@
   },
   "scripts": {
     "test": "test",
-    "build": "webpack -p --config ./webpack/webpack.prod.config.js",
+    "clean_bundle": "/usr/local/bin/rmtrash ../../public/bundles/*",
+    "build": "webpack -p --config ./webpack/webpack.prod.config.js && npm run purify",
+    "purify": "purifycss ../../public/bundles/bundle.css ../../public/bundles/bundle.min.js ./views/main.scala.html --min --info --out ../../public/bundles/bundle.min.css",
     "start": "node ./webpack/webpack.dev.server"
   },
   "author": "Dmitry Bagaev",

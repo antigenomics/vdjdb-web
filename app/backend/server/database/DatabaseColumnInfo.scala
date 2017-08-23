@@ -19,6 +19,6 @@ object DatabaseColumnInfo {
         val title: String = meta.get("title")
         val comment: String = meta.get("comment")
         val autocomplete: List[String] = if (meta.get("autocomplete") == "1")column.getValues.asScala.toList else List[String]()
-        new DatabaseColumnInfo(name, columnType, visible, dataType, title, comment, autocomplete)
+        DatabaseColumnInfo(name, columnType, visible, dataType, title, comment, autocomplete)
     }
 }

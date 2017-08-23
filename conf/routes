@@ -8,7 +8,7 @@ GET        /search                                   backend.controllers.Applica
 GET        /about                                    backend.controllers.Application.index
 
 # Database API
-GET        /api/database/meta                        backend.controllers.SearchAPI.meta
+GET        /api/database/meta                        backend.controllers.DatabaseAPI.meta
 GET        /api/database/meta/columns/:column        backend.controllers.SearchAPI.columnInfo(column: String)
 GET        /api/database/connect                     backend.controllers.SearchAPI.connect
 
