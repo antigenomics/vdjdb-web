@@ -8,7 +8,7 @@
   },
   "scripts": {
     "test": "test",
-    "build": "webpack -p --config ./webpack/webpack.prod.config.js --display-modules",
+    "build": "webpack -p --config ./webpack/webpack.prod.config.js",
     "start": "node ./webpack/webpack.dev.server"
   },
   "author": "Dmitry Bagaev",
@@ -24,10 +24,7 @@
     "core-js": "2.5.0",
     "reflect-metadata": "^0.1.10",
     "rxjs": "5.4.2",
-    "zone.js": "0.8.16",
-    "jquery": "3.2.1",
-    "bootstrap": "3.3.7",
-    "font-awesome": "4.7.0"
+    "zone.js": "0.8.16"
   },
   "devDependencies": {
     "@types/angular": "1.6.28",

@@ -10,14 +10,17 @@ module.exports = {
     devtool: '#inline-source-map',
     entry: {
         'bundle.min.css': [
-            './styles/global.css'
+            './styles/global.css',
+            './styles/bootstrap/css/bootstrap.min.css',
+            './styles/bootstrap/css/theme.min.css',
+            './styles/font-awesome/css/font-awesome.min.css'
         ]
     },
     output: {
         path: buildPath,
         filename: '[name]',
         sourceMapFilename: 'bundle.map',
-        publicPath: '/bundles/'
+        publicPath: 'bundles/'
     },
     externals: {},
     module: {
@@ -37,9 +40,10 @@ module.exports = {
             },
             {
                 test: /\.(woff|woff2|eot|ttf|svg)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
-                loader: 'url-loader?limit=100000',
+                loader: 'file-loader',
                 options: {
-                    name: 'fonts/[name].[ext]'
+                    name: 'fonts/[name].[ext]',
+                    publicPath: 'http://localhost:9000/assets/bundles/'
                 }
             },
             {
