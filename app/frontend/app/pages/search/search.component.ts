@@ -2,9 +2,11 @@ import { Component } from '@angular/core';
 import { FiltersService } from "../../common/filters/filters.service";
 import { DatabaseService } from "../../database/database.service";
 import { DatabaseMetadata } from "../../database/database-metadata";
+import { Filter } from "../../common/filters/filters";
+
 
 @Component({
-    selector: 'search',
+    selector:    'search',
     templateUrl: './search.component.html'
 })
 export class SearchPageComponent {
@@ -14,11 +16,13 @@ export class SearchPageComponent {
 
     }
 
-    search() : void {
-        //console.log(this.filters.getFilters());
+    search(): void {
+        this.filters.getFilters((filters: Filter[]) => {
+            console.log(filters);
+        })
     }
 
-    reset() : void {
+    reset(): void {
         this.filters.setDefault();
     }
 }

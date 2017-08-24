@@ -1,7 +1,7 @@
-import { DatabaseMetadata } from "../../database/database-metadata";
 import { FilterCommand, FiltersService } from "./filters.service";
 import { OnDestroy } from "@angular/core";
 import { Subscription } from "rxjs/Subscription";
+import "rxjs/add/operator/filter";
 
 
 export const enum FilterType {
@@ -29,23 +29,34 @@ export class Filter {
 }
 
 export abstract class FilterInterface implements OnDestroy {
-    private setDefaultsSubsciption: Subscription;
+    private commandPoolSubscription: Subscription;
+    private _filters: FiltersService;
 
     constructor(filters: FiltersService) {
-        this.setDefaults();
+        this._filters = filters;
+        this._filters.registerFilter();
+        this.setDefault();
 
-        this.setDefaultsSubsciption = filters.getCommandPool()
-                                             .filter((command: FilterCommand) => {
-                                                 return command == FilterCommand.SetDefault;
-                                             })
-                                             .subscribe((_: FilterCommand) => {
-                                                 this.setDefaults();
-                                             });
+        this.commandPoolSubscription =
+            filters.getCommandPool()
+                   .subscribe((command: FilterCommand) => {
+                       switch (command) {
+                           case FilterCommand.SetDefault:
+                               this.setDefault();
+                               break;
+                           case FilterCommand.CollectFilters:
+                               this._filters.getFiltersPool().next(this.getFilters());
+                               break;
+                       }
+                   });
     }
 
-    abstract setDefaults(): void;
+    abstract setDefault(): void;
+
+    abstract getFilters(): Filter[];
 
     ngOnDestroy(): void {
-        this.setDefaultsSubsciption.unsubscribe();
+        this.commandPoolSubscription.unsubscribe();
+        this._filters.releaseFilter();
     }
 }

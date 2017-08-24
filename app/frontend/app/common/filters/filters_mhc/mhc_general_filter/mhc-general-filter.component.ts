@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
-import { FiltersService, FilterCommand } from "../../filters.service";
-import { FilterInterface } from "../../filters";
+import { FiltersService } from "../../filters.service";
+import { Filter, FilterInterface, FilterType } from "../../filters";
 
 
 @Component({
@@ -15,8 +15,19 @@ export class MHCGeneralFilterComponent extends FilterInterface {
         super(filters);
     }
 
-    setDefaults(): void {
+    setDefault(): void {
         this.mhci = true;
         this.mhcii = true;
+    }
+
+    getFilters(): Filter[] {
+        let filters: Filter[] = [];
+        if (this.mhci === false) {
+            filters.push(new Filter('mhc.class', FilterType.Exact, true, 'MHCI'));
+        }
+        if (this.mhcii === false) {
+            filters.push(new Filter('mhc.class', FilterType.Exact, true, 'MHCII'));
+        }
+        return filters;
     }
 }

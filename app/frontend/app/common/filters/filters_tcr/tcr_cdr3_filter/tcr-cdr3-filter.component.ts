@@ -1,7 +1,8 @@
 import { Component } from '@angular/core';
-import { FiltersService, FilterCommand } from "../../filters.service";
+import { FiltersService } from "../../filters.service";
 import { isSequencePatternValid } from "../../../../utils/pattern.util";
-import { FilterInterface } from '../../filters';
+import { Filter, FilterInterface, FilterType } from '../../filters';
+
 
 @Component({
     selector:    'tcr-cdr3-filter',
@@ -16,18 +17,30 @@ export class TCR_CDR3FilterComponent extends FilterInterface {
         super(filters);
     }
 
-    setDefaults(): void {
+    setDefault(): void {
         this.pattern = '';
         this.patternSubstring = false;
         this.patternValid = true;
     }
 
-    checkPattern(newValue: string) : void {
+    getFilters(): Filter[] {
+        let filters: Filter[] = [];
+        if (this.pattern.length !== 0) {
+            let value = this.pattern;
+            if (this.patternSubstring === false) {
+                value = '^' + value + '$';
+            }
+            filters.push(new Filter('cdr3', FilterType.Pattern, false, value.replace(/X/g, ".")));
+        }
+        return filters;
+    }
+
+    checkPattern(newValue: string): void {
         this.pattern = newValue.toUpperCase();
         this.patternValid = isSequencePatternValid(this.pattern);
     }
 
-    isPatternValid() : boolean {
+    isPatternValid(): boolean {
         return this.patternValid;
     }
 }

@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
-import { FiltersService, FilterCommand } from "../../filters.service";
-import { FilterInterface } from "../../filters";
+import { FiltersService } from "../../filters.service";
+import { Filter, FilterInterface, FilterType } from "../../filters";
 
 
 @Component({
@@ -16,9 +16,23 @@ export class MetaReliabilityFilterComponent extends FilterInterface {
         super(filters);
     }
 
-    setDefaults(): void {
+    setDefault(): void {
         this.minimalConfidenceScore = 0;
         this.nonCanonical = false;
         this.unmapped = false;
+    }
+
+    getFilters(): Filter[] {
+        let filters: Filter[] = [];
+        if (this.minimalConfidenceScore > 0) {
+            filters.push(new Filter('vdjdb.score', FilterType.Level, false, this.minimalConfidenceScore.toString()));
+        }
+        if (this.nonCanonical === false) {
+            filters.push(new Filter('web.cdr3fix.nc', FilterType.Exact, true, 'yes'));
+        }
+        if (this.unmapped === false) {
+            filters.push(new Filter('web.cdr3fix.unmp', FilterType.Exact, true, 'yes'));
+        }
+        return filters;
     }
 }

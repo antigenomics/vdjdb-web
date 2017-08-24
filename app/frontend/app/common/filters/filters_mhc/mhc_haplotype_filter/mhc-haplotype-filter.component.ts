@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
-import { FiltersService, FilterCommand } from "../../filters.service";
-import { FilterInterface } from "../../filters";
+import { FiltersService } from "../../filters.service";
+import { Filter, FilterInterface, FilterType } from "../../filters";
 
 
 @Component({
@@ -18,8 +18,19 @@ export class MHCHaplotypeFilterComponent extends FilterInterface {
         super(filters);
     }
 
-    setDefaults(): void {
+    setDefault(): void {
         this.firstChain = '';
         this.secondChain = '';
+    }
+
+    getFilters(): Filter[] {
+        let filters: Filter[] = [];
+        if (this.firstChain.length > 0) {
+            filters.push(new Filter('mhc.a', FilterType.SubstringSet, false, this.firstChain));
+        }
+        if (this.secondChain.length > 0) {
+            filters.push(new Filter('mhc.b', FilterType.SubstringSet, false, this.secondChain));
+        }
+        return filters;
     }
 }

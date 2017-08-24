@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
-import { FiltersService, FilterCommand } from "../../filters.service";
-import { FilterInterface } from "../../filters";
+import { FiltersService } from "../../filters.service";
+import { Filter, FilterInterface, FilterType } from "../../filters";
 
 
 @Component({
@@ -23,7 +23,7 @@ export class MetaGeneralFilterComponent extends FilterInterface {
         super(filters);
     }
 
-    setDefaults(): void {
+    setDefault(): void {
         this.references = '';
         this.methodSort = true;
         this.methodCulture = true;
@@ -31,6 +31,31 @@ export class MetaGeneralFilterComponent extends FilterInterface {
         this.seqSanger = true;
         this.seqAmplicon = true;
         this.seqSingleCell = true;
+    }
 
+    getFilters(): Filter[] {
+        let filters: Filter[] = [];
+        if (this.references.length > 0) {
+            filters.push(new Filter('reference.id', FilterType.ExactSet, false, this.references));
+        }
+        if (this.methodSort === false) {
+            filters.push(new Filter('web.method', FilterType.Exact, true, 'sort'));
+        }
+        if (this.methodCulture === false) {
+            filters.push(new Filter('web.method', FilterType.Exact, true, 'culture'));
+        }
+        if (this.methodOther === false) {
+            filters.push(new Filter('web.method', FilterType.Exact, true, 'other'));
+        }
+        if (this.seqSanger === false) {
+            filters.push(new Filter('web.method.seq', FilterType.Exact, true, 'sanger'));
+        }
+        if (this.seqAmplicon === false) {
+            filters.push(new Filter('web.method.seq', FilterType.Exact, true, 'amplicon'));
+        }
+        if (this.seqSingleCell === false) {
+            filters.push(new Filter('web.method.seq', FilterType.Exact, true, 'singlecell'));
+        }
+        return filters;
     }
 }

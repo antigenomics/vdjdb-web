@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { FiltersService } from "../../filters.service";
-import { FilterInterface } from "../../filters";
+import { Filter, FilterInterface, FilterType } from "../../filters";
 import { isSequencePatternValid } from "../../../../utils/pattern.util";
 
 
@@ -20,11 +20,26 @@ export class AGEpitopeFilterComponent extends FilterInterface {
         super(filters);
     }
 
-    setDefaults(): void {
+    setDefault(): void {
         this.epitopeSequence = '';
         this.epitopePattern = '';
         this.epitopePatternSubstring = false;
         this.epitopePatternValid = true;
+    }
+
+    getFilters(): Filter[] {
+        let filters: Filter[] = [];
+        if (this.epitopeSequence.length > 0) {
+            filters.push(new Filter('antigen.epitope', FilterType.ExactSet, false, this.epitopeSequence));
+        }
+        if (this.epitopePattern.length !== 0) {
+            let value = this.epitopePattern;
+            if (this.epitopePatternSubstring === false) {
+                value = '^' + value + '$';
+            }
+            filters.push(new Filter('antigen.epitope', FilterType.Pattern, false, value.replace(/X/g, ".")));
+        }
+        return filters;
     }
 
     checkPattern(newValue: string) : void {

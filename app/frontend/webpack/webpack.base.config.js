@@ -11,6 +11,7 @@ module.exports = {
     entry: {
         'bundle.css': [
             './styles/global.css',
+            './styles/loader.css',
             './styles/bootstrap/css/bootstrap.min.css',
             './styles/bootstrap/css/theme.min.css',
             './styles/font-awesome/css/font-awesome.min.css'

@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
-import { FiltersService, FilterCommand } from "../../filters.service";
-import { FilterInterface } from "../../filters";
+import { FiltersService } from "../../filters.service";
+import { Filter, FilterInterface, FilterType } from "../../filters";
 
 
 @Component({
@@ -18,8 +18,19 @@ export class TCRSegmentsFilterComponent extends FilterInterface {
         super(filters);
     }
 
-    setDefaults(): void {
+    setDefault(): void {
         this.vSegment = '';
         this.jSegment = '';
+    }
+
+    getFilters(): Filter[] {
+        let filters: Filter[] = [];
+        if (this.vSegment.length !== 0) {
+            filters.push(new Filter('v.segm', FilterType.SubstringSet, false, this.vSegment));
+        }
+        if (this.jSegment.length !== 0) {
+            filters.push(new Filter('j.segm', FilterType.SubstringSet, false, this.jSegment));
+        }
+        return filters;
     }
 }

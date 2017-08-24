@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
-import { FiltersService, FilterCommand } from "../../filters.service";
-import { FilterInterface } from "../../filters";
+import { FiltersService } from "../../filters.service";
+import { Filter, FilterInterface, FilterType } from "../../filters";
 
 
 @Component({
@@ -18,8 +18,19 @@ export class AGOriginFilterComponent extends FilterInterface {
         super(filters);
     }
 
-    setDefaults(): void {
+    setDefault(): void {
         this.species = '';
         this.genes = '';
+    }
+
+    getFilters(): Filter[] {
+        let filters: Filter[] = [];
+        if (this.species.length > 0) {
+            filters.push(new Filter('antigen.species', FilterType.ExactSet, false, this.species));
+        }
+        if (this.genes.length > 0) {
+            filters.push(new Filter('antigen.gene', FilterType.ExactSet, false, this.genes));
+        }
+        return filters;
     }
 }
