@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { FiltersService } from "../../filters.service";
-import { Filter, FilterInterface, FilterType } from "../../filters";
+import { Filter, FilterInterface, FilterSavedState, FilterType } from "../../filters";
 
 
 @Component({
@@ -32,5 +32,21 @@ export class TCRSegmentsFilterComponent extends FilterInterface {
             filters.push(new Filter('j.segm', FilterType.SubstringSet, false, this.jSegment));
         }
         return filters;
+    }
+
+    getFilterId(): string {
+        return 'tcr.segments';
+    }
+
+    getSavedState(): FilterSavedState {
+        return {
+            vSegment: this.vSegment,
+            jSegment: this.jSegment
+        }
+    }
+
+    setSavedState(state: FilterSavedState): void {
+        this.vSegment = state.vSegment;
+        this.jSegment = state.jSegment;
     }
 }

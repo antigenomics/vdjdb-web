@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { FiltersService } from "../../filters.service";
-import { Filter, FilterInterface, FilterType } from "../../filters";
+import { Filter, FilterInterface, FilterSavedState, FilterType } from "../../filters";
 
 
 @Component({
@@ -29,5 +29,21 @@ export class MHCGeneralFilterComponent extends FilterInterface {
             filters.push(new Filter('mhc.class', FilterType.Exact, true, 'MHCII'));
         }
         return filters;
+    }
+
+    getFilterId(): string {
+        return 'mhc.general';
+    }
+
+    getSavedState(): FilterSavedState {
+        return {
+            mhci:  this.mhci,
+            mhcii: this.mhcii
+        };
+    }
+
+    setSavedState(state: FilterSavedState): void {
+        this.mhci = state.mhci;
+        this.mhcii = state.mhcii;
     }
 }

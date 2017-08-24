@@ -1,15 +1,17 @@
 import { Injectable } from '@angular/core';
-import { Filter } from "./filters";
+import { Filter, FilterSavedState } from "./filters";
 import { DatabaseService } from "../../database/database.service";
 import { Subject } from "rxjs/Subject";
 import { ReplaySubject } from "rxjs/ReplaySubject";
 import { Observable } from "rxjs/Observable";
 import "rxjs/add/operator/take"
 import "rxjs/add/operator/reduce"
+import { isUndefined } from "util";
 
 export const enum FilterCommand {
     SetDefault,
-    CollectFilters
+    CollectFilters,
+    CheckErrors
 }
 
 @Injectable()
@@ -17,6 +19,7 @@ export class FiltersService {
     private filtersCount: number = 0;
     private commandPool: Subject<FilterCommand> = new Subject();
     private filtersPool: Subject<Filter[]> = new ReplaySubject(1);
+    private savedStates: Map<string, FilterSavedState> = new Map();
 
     constructor(_: DatabaseService) {
         // let subscription = database.getMetadata().subscribe((metadata: DatabaseMetadata) => {
@@ -24,12 +27,19 @@ export class FiltersService {
         // })
     }
 
-    registerFilter() : void {
+    registerFilter(id?: string) : any {
         this.filtersCount += 1;
+        if (!isUndefined(id) && this.savedStates.has(id)) {
+            return this.savedStates.get(id);
+        }
+        return undefined;
     }
 
-    releaseFilter() : void {
+    releaseFilter(id?: string, state?: any) : void {
         this.filtersCount -= 1;
+        if (!isUndefined(id)) {
+            this.savedStates.set(id, state);
+        }
     }
 
     getCommandPool() : Observable<FilterCommand> {

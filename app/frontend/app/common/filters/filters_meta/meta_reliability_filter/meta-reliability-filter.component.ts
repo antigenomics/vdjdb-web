@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { FiltersService } from "../../filters.service";
-import { Filter, FilterInterface, FilterType } from "../../filters";
+import { Filter, FilterInterface, FilterSavedState, FilterType } from "../../filters";
 
 
 @Component({
@@ -34,5 +34,23 @@ export class MetaReliabilityFilterComponent extends FilterInterface {
             filters.push(new Filter('web.cdr3fix.unmp', FilterType.Exact, true, 'yes'));
         }
         return filters;
+    }
+
+    getFilterId(): string {
+        return 'meta.reliability';
+    }
+
+    getSavedState(): FilterSavedState {
+        return {
+            minimalConfidenceScore: this.minimalConfidenceScore,
+            nonCanonical:           this.nonCanonical,
+            unmapped:               this.unmapped
+        };
+    }
+
+    setSavedState(state: FilterSavedState): void {
+        this.minimalConfidenceScore = state.minimalConfidenceScore;
+        this.nonCanonical = state.nonCanonical;
+        this.unmapped = state.unmapped;
     }
 }

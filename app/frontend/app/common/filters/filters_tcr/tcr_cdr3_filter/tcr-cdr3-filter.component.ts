@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { FiltersService } from "../../filters.service";
 import { isSequencePatternValid } from "../../../../utils/pattern.util";
-import { Filter, FilterInterface, FilterType } from '../../filters';
+import { Filter, FilterInterface, FilterSavedState, FilterType } from '../../filters';
 
 
 @Component({
@@ -35,6 +35,24 @@ export class TCR_CDR3FilterComponent extends FilterInterface {
         return filters;
     }
 
+    getFilterId(): string {
+        return 'tcr.cdr3';
+    }
+
+    getSavedState(): FilterSavedState {
+        return {
+            pattern:          this.pattern,
+            patternSubstring: this.patternSubstring,
+            patternValid:     this.patternValid
+        };
+    }
+
+    setSavedState(state: FilterSavedState): void {
+        this.pattern = state.pattern;
+        this.patternSubstring = state.patternSubstring;
+        this.patternValid = state.patternValid;
+    }
+
     checkPattern(newValue: string): void {
         this.pattern = newValue.toUpperCase();
         this.patternValid = isSequencePatternValid(this.pattern);
@@ -43,4 +61,5 @@ export class TCR_CDR3FilterComponent extends FilterInterface {
     isPatternValid(): boolean {
         return this.patternValid;
     }
+
 }

@@ -2,6 +2,7 @@ import { FilterCommand, FiltersService } from "./filters.service";
 import { OnDestroy } from "@angular/core";
 import { Subscription } from "rxjs/Subscription";
 import "rxjs/add/operator/filter";
+import { isUndefined } from "util";
 
 
 export const enum FilterType {
@@ -28,14 +29,20 @@ export class Filter {
     }
 }
 
+export type FilterSavedState = { [index: string]: any };
+
 export abstract class FilterInterface implements OnDestroy {
     private commandPoolSubscription: Subscription;
     private _filters: FiltersService;
 
     constructor(filters: FiltersService) {
         this._filters = filters;
-        this._filters.registerFilter();
-        this.setDefault();
+        let savedState = this._filters.registerFilter(this.getFilterId());
+        if (!isUndefined(savedState)) {
+            this.setSavedState(savedState);
+        } else {
+            this.setDefault();
+        }
 
         this.commandPoolSubscription =
             filters.getCommandPool()
@@ -55,8 +62,14 @@ export abstract class FilterInterface implements OnDestroy {
 
     abstract getFilters(): Filter[];
 
+    abstract getFilterId(): string;
+
+    abstract getSavedState(): FilterSavedState;
+
+    abstract setSavedState(state: FilterSavedState): void;
+
     ngOnDestroy(): void {
         this.commandPoolSubscription.unsubscribe();
-        this._filters.releaseFilter();
+        this._filters.releaseFilter(this.getFilterId(), this.getSavedState());
     }
 }

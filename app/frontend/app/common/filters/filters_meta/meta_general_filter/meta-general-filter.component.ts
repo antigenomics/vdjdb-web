@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { FiltersService } from "../../filters.service";
-import { Filter, FilterInterface, FilterType } from "../../filters";
+import { Filter, FilterInterface, FilterSavedState, FilterType } from "../../filters";
 
 
 @Component({
@@ -57,5 +57,31 @@ export class MetaGeneralFilterComponent extends FilterInterface {
             filters.push(new Filter('web.method.seq', FilterType.Exact, true, 'singlecell'));
         }
         return filters;
+    }
+
+    getFilterId(): string {
+        return 'meta.general';
+    }
+
+    getSavedState(): FilterSavedState {
+        return {
+            references:    this.references,
+            methodSort:    this.methodSort,
+            methodCulture: this.methodCulture,
+            methodOther:   this.methodOther,
+            seqSanger:     this.seqSanger,
+            seqAmplicon:   this.seqAmplicon,
+            seqSingleCell: this.seqSingleCell
+        };
+    }
+
+    setSavedState(state: FilterSavedState): void {
+        this.references = state.references;
+        this.methodSort = state.methodSort;
+        this.methodCulture = state.methodCulture;
+        this.methodOther = state.methodOther;
+        this.seqSanger = state.seqSanger;
+        this.seqAmplicon = state.seqAmplicon;
+        this.seqSingleCell = state.seqSingleCell;
     }
 }

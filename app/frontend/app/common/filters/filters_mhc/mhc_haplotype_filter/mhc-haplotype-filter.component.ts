@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { FiltersService } from "../../filters.service";
-import { Filter, FilterInterface, FilterType } from "../../filters";
+import { Filter, FilterInterface, FilterType, FilterSavedState } from "../../filters";
 
 
 @Component({
@@ -32,5 +32,21 @@ export class MHCHaplotypeFilterComponent extends FilterInterface {
             filters.push(new Filter('mhc.b', FilterType.SubstringSet, false, this.secondChain));
         }
         return filters;
+    }
+
+    getFilterId(): string {
+        return 'mhc.haplotype';
+    }
+
+    getSavedState(): FilterSavedState {
+        return {
+            firstChain:  this.firstChain,
+            secondChain: this.secondChain
+        };
+    }
+
+    setSavedState(state: FilterSavedState): void {
+        this.firstChain = state.firstChain;
+        this.secondChain = state.secondChain;
     }
 }

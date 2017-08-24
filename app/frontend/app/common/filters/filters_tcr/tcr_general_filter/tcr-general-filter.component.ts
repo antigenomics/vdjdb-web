@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { FiltersService } from "../../filters.service";
-import { Filter, FilterInterface, FilterType } from "../../filters";
+import { Filter, FilterInterface, FilterSavedState, FilterType } from "../../filters";
 
 
 @Component({
@@ -51,5 +51,29 @@ export class TCRGeneralFilterComponent extends FilterInterface {
             filters.push(new Filter('complex.id', FilterType.Exact, true, '0'));
         }
         return filters;
+    }
+
+    getFilterId(): string {
+        return 'tcr.general';
+    }
+
+    getSavedState(): FilterSavedState {
+        return {
+            human:      this.human,
+            monkey:     this.monkey,
+            mouse:      this.mouse,
+            tra:        this.tra,
+            trb:        this.trb,
+            pairedOnly: this.pairedOnly
+        };
+    }
+
+    setSavedState(state: FilterSavedState): void {
+        this.human = state.human;
+        this.monkey = state.monkey;
+        this.mouse = state.mouse;
+        this.tra = state.tra;
+        this.trb = state.trb;
+        this.pairedOnly = state.pairedOnly;
     }
 }

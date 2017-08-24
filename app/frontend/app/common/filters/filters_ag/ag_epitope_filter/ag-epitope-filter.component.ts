@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { FiltersService } from "../../filters.service";
-import { Filter, FilterInterface, FilterType } from "../../filters";
+import { Filter, FilterInterface, FilterType, FilterSavedState } from "../../filters";
 import { isSequencePatternValid } from "../../../../utils/pattern.util";
 
 
@@ -42,12 +42,32 @@ export class AGEpitopeFilterComponent extends FilterInterface {
         return filters;
     }
 
-    checkPattern(newValue: string) : void {
+    getFilterId(): string {
+        return 'ag.epitope';
+    }
+
+    getSavedState(): FilterSavedState {
+        return {
+            epitopeSequence:         this.epitopeSequence,
+            epitopePattern:          this.epitopePattern,
+            epitopePatternSubstring: this.epitopePatternSubstring,
+            epitopePatternValid:     this.epitopePatternValid
+        };
+    }
+
+    setSavedState(state: FilterSavedState): void {
+        this.epitopeSequence = state.epitopeSequence;
+        this.epitopePattern = state.epitopePattern;
+        this.epitopePatternSubstring = state.epitopePatternSubstring;
+        this.epitopePatternValid = state.epitopePatternValid;
+    }
+
+    checkPattern(newValue: string): void {
         this.epitopePattern = newValue.toUpperCase();
         this.epitopePatternValid = isSequencePatternValid(this.epitopePattern);
     }
 
-    isPatternValid() : boolean {
+    isPatternValid(): boolean {
         return this.epitopePatternValid;
     }
 }

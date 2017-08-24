@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { FiltersService } from "../../filters.service";
-import { Filter, FilterInterface, FilterType } from "../../filters";
+import { Filter, FilterInterface, FilterSavedState, FilterType } from "../../filters";
 
 
 @Component({
@@ -32,5 +32,21 @@ export class AGOriginFilterComponent extends FilterInterface {
             filters.push(new Filter('antigen.gene', FilterType.ExactSet, false, this.genes));
         }
         return filters;
+    }
+
+    getFilterId(): string {
+        return 'ag.origin';
+    }
+
+    getSavedState(): FilterSavedState {
+        return {
+            species: this.species,
+            genes:   this.genes
+        };
+    }
+
+    setSavedState(state: FilterSavedState): void {
+        this.species = state.species;
+        this.genes = state.genes;
     }
 }
