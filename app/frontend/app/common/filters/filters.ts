@@ -1,4 +1,8 @@
 import { DatabaseMetadata } from "../../database/database-metadata";
+import { FilterCommand, FiltersService } from "./filters.service";
+import { OnDestroy } from "@angular/core";
+import { Subscription } from "rxjs/Subscription";
+
 
 export const enum FilterType {
     Exact        = 'exact',
@@ -24,14 +28,24 @@ export class Filter {
     }
 }
 
-export interface FilterInterface {
-    setDefault(): void;
+export abstract class FilterInterface implements OnDestroy {
+    private setDefaultsSubsciption: Subscription;
 
-    setMetadataOptions(metadata: DatabaseMetadata): void;
+    constructor(filters: FiltersService) {
+        this.setDefaults();
 
-    isValid(): boolean;
+        this.setDefaultsSubsciption = filters.getCommandPool()
+                                             .filter((command: FilterCommand) => {
+                                                 return command == FilterCommand.SetDefault;
+                                             })
+                                             .subscribe((_: FilterCommand) => {
+                                                 this.setDefaults();
+                                             });
+    }
 
-    getErrors(): string[];
+    abstract setDefaults(): void;
 
-    getFilters(): Filter[];
+    ngOnDestroy(): void {
+        this.setDefaultsSubsciption.unsubscribe();
+    }
 }

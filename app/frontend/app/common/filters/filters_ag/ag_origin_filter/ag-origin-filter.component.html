@@ -1,0 +1,39 @@
+<tooltip-content #AGOriginTooltip>
+    <p>List the representative parent species and genes of the antigen.</p>
+    <p>Click on the text field to see the list of known species/genes, start typing to narrow the list.
+       Multiple species/genes can be selected by separating them with a comma.</p>
+</tooltip-content>
+
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <h4 class="panel-title">
+            Origin
+            <i [tooltip]="AGOriginTooltip" tooltipPlacement="right" class="fa fa-question-circle" aria-hidden="true"></i>
+        </h4>
+    </div>
+    <div class="panel-body">
+        <div class="row">
+            <div class="col-xs-3">
+                <p class="p_label">Source species</p>
+            </div>
+            <div class="col-xs-8">
+                <set [(model)]="species"
+                     placeholder="Comma separated list of antigen species, start typing to see suggestions..."
+                     allowAutocomplete="true"
+                     [autocomplete]="speciesAutocomplete"></set>
+            </div>
+        </div>
+        <br>
+        <div class="row">
+            <div class="col-xs-3">
+                <p class="p_label">Parent gene</p>
+            </div>
+            <div class="col-xs-8">
+                <set [(model)]="genes"
+                     placeholder="Comma separated list of antigen genes, start typing to see suggestions..."
+                     allowAutocomplete="true"
+                     [autocomplete]="genesAutocomplete"></set>
+            </div>
+        </div>
+    </div>
+</div>

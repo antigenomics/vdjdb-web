@@ -1,0 +1,47 @@
+<tooltip-content #MetaGeneralTooltip>
+    <p>Publication ID and assay type filtering.</p>
+    <p>Specify the list of Pubmed IDs to search for: click on the text field to see the list of known IDs, start typing to narrow the list. Multiple IDs can be selected by
+       separating them with a comma.</p>
+    <p>Assay types and sequencing methods can be selected by using corresponding checkboxes, for more information see VDJdb specification.</p>
+</tooltip-content>
+
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <h4 class="panel-title">
+            General
+            <i [tooltip]="MetaGeneralTooltip" tooltipPlacement="right" class="fa fa-question-circle" aria-hidden="true"></i>
+        </h4>
+    </div>
+    <div class="panel-body">
+        <div class="row">
+            <div class="col-xs-3">
+                <p class="p_label">Reference(s)</p>
+            </div>
+            <div class="col-xs-8">
+                <set [(model)]="references"
+                     placeholder="Comma separated list of Pubmed IDs, start typing to see suggestions..."
+                     allowAutocomplete="true"
+                     [autocomplete]="referencesAutocomplete"></set>
+            </div>
+        </div>
+        <br>
+        <div class="row">
+            <div class="col-xs-2">
+                <p class="p_label">Assay type</p>
+            </div>
+            <div class="col-xs-4">
+                <checkbox [(model)]="methodSort" title="Multimer sorting"></checkbox>
+                <checkbox [(model)]="methodCulture" title="Culture-based"></checkbox>
+                <checkbox [(model)]="methodOther" title="Other"></checkbox>
+            </div>
+            <div class="col-xs-2">
+                <p class="p_label">Sequencing</p>
+            </div>
+            <div class="col-xs-4">
+                <checkbox [(model)]="seqSanger" title="Sanger"></checkbox>
+                <checkbox [(model)]="seqAmplicon" title="High-throughput"></checkbox>
+                <checkbox [(model)]="seqSingleCell" title="Single-cell"></checkbox>
+            </div>
+        </div>
+    </div>
+</div>

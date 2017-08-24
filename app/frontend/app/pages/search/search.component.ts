@@ -15,7 +15,7 @@ export class SearchPageComponent {
     }
 
     search() : void {
-        console.log(this.filters.getFilters());
+        //console.log(this.filters.getFilters());
     }
 
     reset() : void {

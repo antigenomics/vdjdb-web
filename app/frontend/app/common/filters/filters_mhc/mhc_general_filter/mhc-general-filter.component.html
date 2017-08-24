@@ -1,0 +1,23 @@
+<tooltip-content #MHCGeneralTooltip>
+    Specify MHC class restriction.
+</tooltip-content>
+
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <h4 class="panel-title">
+            General
+            <i [tooltip]="MHCGeneralTooltip" tooltipPlacement="right" class="fa fa-question-circle" aria-hidden="true"></i>
+        </h4>
+    </div>
+    <div class="panel-body">
+        <div class="row">
+            <div class="col-xs-3">
+                <p class="p_label">Class</p>
+            </div>
+            <div class="col-xs-8">
+                <checkbox [(model)]="mhci" title="MHCI"></checkbox>
+                <checkbox [(model)]="mhcii" title="MHCII"></checkbox>
+            </div>
+        </div>
+    </div>
+</div>

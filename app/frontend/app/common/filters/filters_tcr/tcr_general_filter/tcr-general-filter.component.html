@@ -1,0 +1,33 @@
+<tooltip-content #TCRGeneralTooltip>
+    <p>Search for specified parent species of a TCR and receptor chain (alpha or beta). You can also specify to show only records that have both TCR alpha and
+       beta chain sequences (paired records).</p>
+</tooltip-content>
+
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <h4 class="panel-title">
+            General
+            <i [tooltip]="TCRGeneralTooltip" tooltipPlacement="right" class="fa fa-question-circle" aria-hidden="true"></i>
+        </h4>
+    </div>
+    <div class="panel-body">
+        <div class="row">
+            <div class="col-xs-2">
+                <p class="p_label">Species</p>
+            </div>
+            <div class="col-xs-4">
+                <checkbox [(model)]="human" title="Human"></checkbox>
+                <checkbox [(model)]="monkey" title="Monkey"></checkbox>
+                <checkbox [(model)]="mouse" title="Mouse"></checkbox>
+            </div>
+            <div class="col-xs-2">
+                <p class="p_label">Gene (chain)</p>
+            </div>
+            <div class="col-xs-4">
+                <checkbox [(model)]="tra" title="TRA"></checkbox>
+                <checkbox [(model)]="trb" title="TRB"></checkbox>
+                <checkbox [(model)]="pairedOnly" title="Only paired records"></checkbox>
+            </div>
+        </div>
+    </div>
+</div>

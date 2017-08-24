@@ -1,0 +1,14 @@
+<div class="panel-group">
+    <div class="panel panel-primary group_collapsible">
+        <div class="panel-heading" (click)="toggle()">
+            <h3 class="panel-title">
+                <a>{{ title }}</a>
+            </h3>
+        </div>
+        <div class="panel-collapse collapsible_content" [ngClass]="{'content_in':!isCollapsed}">
+            <div class="panel-body">
+                <ng-content></ng-content>
+            </div>
+        </div>
+    </div>
+</div>

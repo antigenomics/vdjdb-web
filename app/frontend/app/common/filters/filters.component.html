@@ -1,8 +1,21 @@
 <div class="col-md-6">
-    <filters-tcr></filters-tcr>
-    <filters-mhc></filters-mhc>
+    <filters-group title="CDR3">
+        <tcr-general-filter></tcr-general-filter>
+        <tcr-segments-filter></tcr-segments-filter>
+        <tcr-cdr3-filter></tcr-cdr3-filter>
+    </filters-group>
+    <filters-group title="MHC">
+        <mhc-general-filter></mhc-general-filter>
+        <mhc-haplotype-filter></mhc-haplotype-filter>
+    </filters-group>
 </div>
 <div class="col-md-6">
-    <filters-ag></filters-ag>
-    <filters-meta></filters-meta>
+    <filters-group title="Antigen">
+        <ag-origin-filter></ag-origin-filter>
+        <ag-epitope-filter></ag-epitope-filter>
+    </filters-group>
+    <filters-group title="Metadata">
+        <meta-general-filter></meta-general-filter>
+        <meta-reliability-filter></meta-reliability-filter>
+    </filters-group>
 </div>

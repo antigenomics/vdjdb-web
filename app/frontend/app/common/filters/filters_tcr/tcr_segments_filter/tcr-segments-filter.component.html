@@ -1,0 +1,41 @@
+<tooltip-content #TCRGermlineTooltip>
+    <p>Specify Variable (V) and Joining (J) segment filters.</p>
+    <p>Click on the text field to see the list of known V/J segment IDs, start typing to narrow the list. Multiple IDs can be selected by separating
+       them with a comma.</p>
+    <p>Incomplete queries will be treated as substrings. For example 'TRBV7' will match 'TRBV7-2*01, TRBV7-2*02, ... and TRBV7-9*01, TRBV7-9*02, ...',
+       'TRBV7-2' will match 'TRBV7-2*01, TRBV7-2*02, ...', etc.</p>
+</tooltip-content>
+
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <h4 class="panel-title">
+            Germline sequence
+            <i [tooltip]="TCRGermlineTooltip" tooltipPlacement="right" class="fa fa-question-circle" aria-hidden="true"></i>
+        </h4>
+    </div>
+    <div class="panel-body">
+        <div class="row">
+            <div class="col-xs-3">
+                <p class="p_label">Variable segment(s)</p>
+            </div>
+            <div class="col-xs-8">
+                <set [(model)]="vSegment"
+                     placeholder="Comma separated list of V segments, start typing to see suggestions..."
+                     allowAutocomplete="true"
+                     [autocomplete]="vSegmentValues"></set>
+            </div>
+        </div>
+        <br>
+        <div class="row">
+            <div class="col-xs-3">
+                <p class="p_label">Joining segment(s)</p>
+            </div>
+            <div class="col-xs-8 vcenter">
+                <set [(model)]="jSegment"
+                     placeholder="Comma separated list of V segments, start typing to see suggestions..."
+                     allowAutocomplete="true"
+                     [autocomplete]="jSegmentValues"></set>
+            </div>
+        </div>
+    </div>
+</div>
