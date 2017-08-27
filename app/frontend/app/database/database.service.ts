@@ -1,10 +1,10 @@
 import { Injectable } from '@angular/core';
-import { DatabaseMetadata } from "./database-metadata";
-import { Configuration } from "../main";
-import { Observable } from "rxjs/Observable";
-import { ReplaySubject } from "rxjs/ReplaySubject";
-import { LoggerService } from "../utils/logger/logger.service";
-import { LoggerInfoDebugMessage, LoggerInfoMessage } from "../utils/logger/logger-messages";
+import { DatabaseMetadata } from './database-metadata';
+import { Configuration } from '../main';
+import { Observable } from 'rxjs/Observable';
+import { ReplaySubject } from 'rxjs/ReplaySubject';
+import { LoggerService } from '../utils/logger/logger.service';
+import { LoggerInfoDebugMessage } from '../utils/logger/logger-messages';
 
 
 @Injectable()

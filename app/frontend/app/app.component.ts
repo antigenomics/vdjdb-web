@@ -1,5 +1,6 @@
-import { Component, OnInit } from '@angular/core';
-import { DatabaseService } from "./database/database.service";
+import { Component } from '@angular/core';
+import { DatabaseService } from './database/database.service';
+
 
 @Component({
     selector: 'application',

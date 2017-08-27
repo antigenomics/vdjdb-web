@@ -15,7 +15,7 @@ body {
 
 .panel-title > a:before {
     float: right !important;
-    font-family: FontAwesome;
+    font-family: FontAwesome, sans-serif;
     content: "\f055";
     padding-right: 5px;
 }

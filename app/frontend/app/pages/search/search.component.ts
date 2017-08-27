@@ -1,10 +1,9 @@
 import { Component } from '@angular/core';
-import { FiltersService } from "../../common/filters/filters.service";
-import { DatabaseService } from "../../database/database.service";
-import { DatabaseMetadata } from "../../database/database-metadata";
-import { Filter } from "../../common/filters/filters";
-import { LoggerService } from "../../utils/logger/logger.service";
-import { LoggerErrorNotificationMessage, LoggerInfoDebugMessage } from "../../utils/logger/logger-messages";
+import { FiltersService } from '../../common/filters/filters.service';
+import { DatabaseService } from '../../database/database.service';
+import { Filter } from '../../common/filters/filters';
+import { LoggerService } from '../../utils/logger/logger.service';
+import { LoggerErrorNotificationMessage, LoggerInfoDebugMessage } from '../../utils/logger/logger-messages';
 
 
 @Component({

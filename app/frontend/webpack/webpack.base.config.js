@@ -60,7 +60,7 @@ module.exports = {
     plugins: [
         new ExtractTextPlugin('bundle.css'),
         new webpack.ContextReplacementPlugin(
-            /angular(\\|\/)core(\\|\/)@angular/,
+            /angular([\\\/])core([\\\/])@angular/,
             path.resolve(__dirname, './app')
         ),
         new webpack.ProvidePlugin({

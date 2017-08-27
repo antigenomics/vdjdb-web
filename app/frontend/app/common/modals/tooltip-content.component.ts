@@ -1,4 +1,5 @@
-import { Component, Input, AfterViewInit, ElementRef, ChangeDetectorRef } from "@angular/core";
+import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, Input } from '@angular/core';
+
 
 @Component({
     selector: "tooltip-content",
@@ -89,7 +90,7 @@ export class TooltipContentComponent implements AfterViewInit {
         let positionStrParts = positionStr.split("-");
         let pos0 = positionStrParts[ 0 ];
         let pos1 = positionStrParts[ 1 ] || "center";
-        let hostElPos = appendToBody ? this.offset(hostEl) : this.position(hostEl);
+        let hostElPos = appendToBody ? TooltipContentComponent.offset(hostEl) : TooltipContentComponent.position(hostEl);
         let targetElWidth = targetEl.offsetWidth;
         let targetElHeight = targetEl.offsetHeight;
         let shiftWidth: any = {
@@ -150,12 +151,12 @@ export class TooltipContentComponent implements AfterViewInit {
         return targetElPos;
     }
 
-    private position(nativeEl: HTMLElement): { width: number, height: number, top: number, left: number } {
+    private static position(nativeEl: HTMLElement): { width: number, height: number, top: number, left: number } {
         let offsetParentBCR = { top: 0, left: 0 };
-        const elBCR = this.offset(nativeEl);
-        const offsetParentEl = this.parentOffsetEl(nativeEl);
+        const elBCR = TooltipContentComponent.offset(nativeEl);
+        const offsetParentEl = TooltipContentComponent.parentOffsetEl(nativeEl);
         if (offsetParentEl !== window.document) {
-            offsetParentBCR = this.offset(offsetParentEl);
+            offsetParentBCR = TooltipContentComponent.offset(offsetParentEl);
             offsetParentBCR.top += offsetParentEl.clientTop - offsetParentEl.scrollTop;
             offsetParentBCR.left += offsetParentEl.clientLeft - offsetParentEl.scrollLeft;
         }
@@ -169,7 +170,7 @@ export class TooltipContentComponent implements AfterViewInit {
         };
     }
 
-    private offset(nativeEl: any): { width: number, height: number, top: number, left: number } {
+    private static offset(nativeEl: any): { width: number, height: number, top: number, left: number } {
         const boundingClientRect = nativeEl.getBoundingClientRect();
         return {
             width:  boundingClientRect.width || nativeEl.offsetWidth,
@@ -179,7 +180,7 @@ export class TooltipContentComponent implements AfterViewInit {
         };
     }
 
-    private getStyle(nativeEl: HTMLElement, cssProp: string): string {
+    private static getStyle(nativeEl: HTMLElement, cssProp: string): string {
         if ((nativeEl as any).currentStyle) // IE
         {
             return (nativeEl as any).currentStyle[ cssProp ];
@@ -193,13 +194,13 @@ export class TooltipContentComponent implements AfterViewInit {
         return (nativeEl.style as any)[ cssProp ];
     }
 
-    private isStaticPositioned(nativeEl: HTMLElement): boolean {
-        return (this.getStyle(nativeEl, "position") || "static" ) === "static";
+    private static isStaticPositioned(nativeEl: HTMLElement): boolean {
+        return (TooltipContentComponent.getStyle(nativeEl, 'position') || 'static' ) === 'static';
     }
 
-    private parentOffsetEl(nativeEl: HTMLElement): any {
+    private static parentOffsetEl(nativeEl: HTMLElement): any {
         let offsetParent: any = nativeEl.offsetParent || window.document;
-        while (offsetParent && offsetParent !== window.document && this.isStaticPositioned(offsetParent)) {
+        while (offsetParent && offsetParent !== window.document && TooltipContentComponent.isStaticPositioned(offsetParent)) {
             offsetParent = offsetParent.offsetParent;
         }
         return offsetParent || window.document;
