@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { FiltersService } from "../../filters.service";
 import { Filter, FilterInterface, FilterSavedState, FilterType } from "../../filters";
+import { Subject } from "rxjs/Subject";
 
 
 @Component({
@@ -23,7 +24,7 @@ export class TCRSegmentsFilterComponent extends FilterInterface {
         this.jSegment = '';
     }
 
-    getFilters(): Filter[] {
+    collectFilters(filtersPool: Subject<Filter[]>): void {
         let filters: Filter[] = [];
         if (this.vSegment.length !== 0) {
             filters.push(new Filter('v.segm', FilterType.SubstringSet, false, this.vSegment));
@@ -31,7 +32,7 @@ export class TCRSegmentsFilterComponent extends FilterInterface {
         if (this.jSegment.length !== 0) {
             filters.push(new Filter('j.segm', FilterType.SubstringSet, false, this.jSegment));
         }
-        return filters;
+        filtersPool.next(filters);
     }
 
     getFilterId(): string {

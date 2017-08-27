@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { FiltersService } from "../../filters.service";
 import { Filter, FilterInterface, FilterType, FilterSavedState } from "../../filters";
+import { Subject } from "rxjs/Subject";
 
 
 @Component({
@@ -23,7 +24,7 @@ export class MHCHaplotypeFilterComponent extends FilterInterface {
         this.secondChain = '';
     }
 
-    getFilters(): Filter[] {
+    collectFilters(filtersPool: Subject<Filter[]>): void {
         let filters: Filter[] = [];
         if (this.firstChain.length > 0) {
             filters.push(new Filter('mhc.a', FilterType.SubstringSet, false, this.firstChain));
@@ -31,7 +32,7 @@ export class MHCHaplotypeFilterComponent extends FilterInterface {
         if (this.secondChain.length > 0) {
             filters.push(new Filter('mhc.b', FilterType.SubstringSet, false, this.secondChain));
         }
-        return filters;
+        filtersPool.next(filters);
     }
 
     getFilterId(): string {

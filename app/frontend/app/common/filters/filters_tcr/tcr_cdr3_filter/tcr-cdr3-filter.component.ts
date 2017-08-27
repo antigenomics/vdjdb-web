@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { FiltersService } from "../../filters.service";
 import { isSequencePatternValid } from "../../../../utils/pattern.util";
 import { Filter, FilterInterface, FilterSavedState, FilterType } from '../../filters';
+import { Subject } from "rxjs/Subject";
 
 
 @Component({
@@ -23,7 +24,11 @@ export class TCR_CDR3FilterComponent extends FilterInterface {
         this.patternValid = true;
     }
 
-    getFilters(): Filter[] {
+    collectFilters(filtersPool: Subject<Filter[]>): void {
+        if (!this.isPatternValid()) {
+            filtersPool.error("CDR3 pattern is not valid");
+            return;
+        }
         let filters: Filter[] = [];
         if (this.pattern.length !== 0) {
             let value = this.pattern;
@@ -32,7 +37,7 @@ export class TCR_CDR3FilterComponent extends FilterInterface {
             }
             filters.push(new Filter('cdr3', FilterType.Pattern, false, value.replace(/X/g, ".")));
         }
-        return filters;
+        filtersPool.next(filters);
     }
 
     getFilterId(): string {

@@ -3,6 +3,7 @@ import { OnDestroy } from "@angular/core";
 import { Subscription } from "rxjs/Subscription";
 import "rxjs/add/operator/filter";
 import { isUndefined } from "util";
+import { Subject } from "rxjs/Subject";
 
 
 export const enum FilterType {
@@ -52,7 +53,7 @@ export abstract class FilterInterface implements OnDestroy {
                                this.setDefault();
                                break;
                            case FilterCommand.CollectFilters:
-                               this._filters.getFiltersPool().next(this.getFilters());
+                               this.collectFilters(this._filters.getFiltersPool());
                                break;
                        }
                    });
@@ -60,7 +61,7 @@ export abstract class FilterInterface implements OnDestroy {
 
     abstract setDefault(): void;
 
-    abstract getFilters(): Filter[];
+    abstract collectFilters(filtersPool: Subject<Filter[]>): void;
 
     abstract getFilterId(): string;
 

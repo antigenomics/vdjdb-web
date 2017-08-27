@@ -54,11 +54,11 @@ export class FiltersService {
         this.commandPool.next(FilterCommand.SetDefault);
     }
 
-    getFilters(callback: (filters: Filter[]) => void) : void {
+    getFilters(callback: (filters: Filter[]) => void, errorCallback?: (message: string) => void) : void {
         let observable = this.filtersPool.take(this.filtersCount).reduce((accumulated: Filter[], current: Filter[]) => {
             return accumulated.concat(current);
         });
-        let subscription = observable.subscribe(callback, () => {}, () => {
+        let subscription = observable.subscribe(callback, errorCallback, () => {
             subscription.unsubscribe();
         });
         this.commandPool.next(FilterCommand.CollectFilters);
@@ -81,9 +81,9 @@ export class FiltersService {
     //                .concat(this.meta.getErrors());
     // }
     //
-    // getFilters(): Filter[] {
-    //     return this.mhc.getFilters()
-    //                .concat(this.ag.getFilters())
-    //                .concat(this.meta.getFilters());
+    // collectFilters(): Filter[] {
+    //     return this.mhc.collectFilters()
+    //                .concat(this.ag.collectFilters())
+    //                .concat(this.meta.collectFilters());
     // }
 }

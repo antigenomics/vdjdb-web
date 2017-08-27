@@ -2,6 +2,8 @@ import { Component } from '@angular/core';
 import { FiltersService } from "../../filters.service";
 import { Filter, FilterInterface, FilterType, FilterSavedState } from "../../filters";
 import { isSequencePatternValid } from "../../../../utils/pattern.util";
+import { Subject } from "rxjs/Subject";
+import { filter } from "rxjs/operator/filter";
 
 
 @Component({
@@ -27,7 +29,11 @@ export class AGEpitopeFilterComponent extends FilterInterface {
         this.epitopePatternValid = true;
     }
 
-    getFilters(): Filter[] {
+    collectFilters(filtersPool: Subject<Filter[]>): void {
+        if (!this.isPatternValid()) {
+            filtersPool.error("Epitope pattern is not valid");
+            return;
+        }
         let filters: Filter[] = [];
         if (this.epitopeSequence.length > 0) {
             filters.push(new Filter('antigen.epitope', FilterType.ExactSet, false, this.epitopeSequence));
@@ -39,7 +45,7 @@ export class AGEpitopeFilterComponent extends FilterInterface {
             }
             filters.push(new Filter('antigen.epitope', FilterType.Pattern, false, value.replace(/X/g, ".")));
         }
-        return filters;
+        filtersPool.next(filters);
     }
 
     getFilterId(): string {

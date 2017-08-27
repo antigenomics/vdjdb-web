@@ -3,6 +3,8 @@ import { FiltersService } from "../../common/filters/filters.service";
 import { DatabaseService } from "../../database/database.service";
 import { DatabaseMetadata } from "../../database/database-metadata";
 import { Filter } from "../../common/filters/filters";
+import { LoggerService } from "../../utils/logger/logger.service";
+import { LoggerErrorNotificationMessage, LoggerInfoDebugMessage } from "../../utils/logger/logger-messages";
 
 
 @Component({
@@ -12,13 +14,15 @@ import { Filter } from "../../common/filters/filters";
 export class SearchPageComponent {
     title: string;
 
-    constructor(private filters: FiltersService, private database: DatabaseService) {
+    constructor(private filters: FiltersService, private database: DatabaseService, private logger: LoggerService) {
 
     }
 
     search(): void {
         this.filters.getFilters((filters: Filter[]) => {
-            console.log(filters);
+            this.logger.log(new LoggerInfoDebugMessage(filters, 'Collected filters'));
+        }, (message: string) => {
+            this.logger.log(new LoggerErrorNotificationMessage(message, 'Filters error'));
         })
     }
 

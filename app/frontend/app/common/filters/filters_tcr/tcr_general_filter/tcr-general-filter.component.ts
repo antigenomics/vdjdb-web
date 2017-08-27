@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { FiltersService } from "../../filters.service";
 import { Filter, FilterInterface, FilterSavedState, FilterType } from "../../filters";
+import { Subject } from "rxjs/Subject";
 
 
 @Component({
@@ -30,7 +31,7 @@ export class TCRGeneralFilterComponent extends FilterInterface {
         this.pairedOnly = false;
     }
 
-    getFilters(): Filter[] {
+    collectFilters(filtersPool: Subject<Filter[]>): void {
         let filters: Filter[] = [];
         if (this.human === false) {
             filters.push(new Filter('species', FilterType.Exact, true, 'HomoSapiens'));
@@ -50,7 +51,7 @@ export class TCRGeneralFilterComponent extends FilterInterface {
         if (this.pairedOnly === true) {
             filters.push(new Filter('complex.id', FilterType.Exact, true, '0'));
         }
-        return filters;
+        filtersPool.next(filters);
     }
 
     getFilterId(): string {

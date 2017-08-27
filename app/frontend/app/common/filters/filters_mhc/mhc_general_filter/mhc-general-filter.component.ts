@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { FiltersService } from "../../filters.service";
 import { Filter, FilterInterface, FilterSavedState, FilterType } from "../../filters";
+import { Subject } from "rxjs/Subject";
 
 
 @Component({
@@ -20,7 +21,7 @@ export class MHCGeneralFilterComponent extends FilterInterface {
         this.mhcii = true;
     }
 
-    getFilters(): Filter[] {
+    collectFilters(filtersPool: Subject<Filter[]>): void {
         let filters: Filter[] = [];
         if (this.mhci === false) {
             filters.push(new Filter('mhc.class', FilterType.Exact, true, 'MHCI'));
@@ -28,7 +29,7 @@ export class MHCGeneralFilterComponent extends FilterInterface {
         if (this.mhcii === false) {
             filters.push(new Filter('mhc.class', FilterType.Exact, true, 'MHCII'));
         }
-        return filters;
+        filtersPool.next(filters);
     }
 
     getFilterId(): string {

@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { FiltersService } from "../../filters.service";
 import { Filter, FilterInterface, FilterSavedState, FilterType } from "../../filters";
+import { Subject } from "rxjs/Subject";
 
 
 @Component({
@@ -22,7 +23,7 @@ export class MetaReliabilityFilterComponent extends FilterInterface {
         this.unmapped = false;
     }
 
-    getFilters(): Filter[] {
+    collectFilters(filtersPool: Subject<Filter[]>): void {
         let filters: Filter[] = [];
         if (this.minimalConfidenceScore > 0) {
             filters.push(new Filter('vdjdb.score', FilterType.Level, false, this.minimalConfidenceScore.toString()));
@@ -33,7 +34,7 @@ export class MetaReliabilityFilterComponent extends FilterInterface {
         if (this.unmapped === false) {
             filters.push(new Filter('web.cdr3fix.unmp', FilterType.Exact, true, 'yes'));
         }
-        return filters;
+        filtersPool.next(filters);
     }
 
     getFilterId(): string {

@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { FiltersService } from "../../filters.service";
 import { Filter, FilterInterface, FilterSavedState, FilterType } from "../../filters";
+import { Subject } from "rxjs/Subject";
 
 
 @Component({
@@ -33,7 +34,7 @@ export class MetaGeneralFilterComponent extends FilterInterface {
         this.seqSingleCell = true;
     }
 
-    getFilters(): Filter[] {
+    collectFilters(filtersPool: Subject<Filter[]>): void {
         let filters: Filter[] = [];
         if (this.references.length > 0) {
             filters.push(new Filter('reference.id', FilterType.ExactSet, false, this.references));
@@ -56,7 +57,7 @@ export class MetaGeneralFilterComponent extends FilterInterface {
         if (this.seqSingleCell === false) {
             filters.push(new Filter('web.method.seq', FilterType.Exact, true, 'singlecell'));
         }
-        return filters;
+        filtersPool.next(filters);
     }
 
     getFilterId(): string {

@@ -3,7 +3,8 @@ import { DatabaseMetadata } from "./database-metadata";
 import { Configuration } from "../main";
 import { Observable } from "rxjs/Observable";
 import { ReplaySubject } from "rxjs/ReplaySubject";
-import { LoggerService } from "../utils/log.service";
+import { LoggerService } from "../utils/logger/logger.service";
+import { LoggerInfoDebugMessage, LoggerInfoMessage } from "../utils/logger/logger-messages";
 
 
 @Injectable()
@@ -14,8 +15,7 @@ export class DatabaseService {
     constructor(private logger: LoggerService) {
         this.metadata = new ReplaySubject(1);
         this.metadata.subscribe((value: DatabaseMetadata) => {
-            logger.log('DatabaseMetadata received from WebSocket connection');
-            logger.devLog(value);
+            logger.log(new LoggerInfoDebugMessage(value, 'DatabaseMetadata'));
         });
 
         this.connection = new WebSocket(Configuration.websocketPrefix + '/api/database/connect');

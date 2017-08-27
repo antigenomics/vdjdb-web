@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { FiltersService } from "../../filters.service";
 import { Filter, FilterInterface, FilterSavedState, FilterType } from "../../filters";
+import { Subject } from "rxjs/Subject";
 
 
 @Component({
@@ -23,7 +24,7 @@ export class AGOriginFilterComponent extends FilterInterface {
         this.genes = '';
     }
 
-    getFilters(): Filter[] {
+    collectFilters(filtersPool: Subject<Filter[]>): void {
         let filters: Filter[] = [];
         if (this.species.length > 0) {
             filters.push(new Filter('antigen.species', FilterType.ExactSet, false, this.species));
@@ -31,7 +32,7 @@ export class AGOriginFilterComponent extends FilterInterface {
         if (this.genes.length > 0) {
             filters.push(new Filter('antigen.gene', FilterType.ExactSet, false, this.genes));
         }
-        return filters;
+        filtersPool.next(filters);
     }
 
     getFilterId(): string {

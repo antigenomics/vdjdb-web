@@ -11,7 +11,8 @@ import { AboutPageComponent } from "./pages/about/about.component";
 import { Route, RouterModule } from '@angular/router';
 import { SearchPageComponent } from "./pages/search/search.component";
 import { DatabaseService } from "./database/database.service";
-import { LoggerService } from "./utils/log.service";
+import { LoggerService } from "./utils/logger/logger.service";
+import { NotificationService } from "./utils/notification/notification.service";
 
 
 const routes: Route[] = [
@@ -24,6 +25,6 @@ const routes: Route[] = [
     imports:      [ CommonModule, BrowserModule, SearchPageModule, RouterModule.forRoot(routes) ],
     declarations: [ AppComponent, NavigationBarComponent, HomePageComponent, AboutPageComponent ],
     bootstrap:    [ AppComponent ],
-    providers:    [ DatabaseService, LoggerService ]
+    providers:    [ DatabaseService, LoggerService, NotificationService ]
 })
 export class AppModule {}
