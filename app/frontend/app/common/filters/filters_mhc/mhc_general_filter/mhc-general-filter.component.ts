@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
-import { FiltersService } from "../../filters.service";
-import { Filter, FilterInterface, FilterSavedState, FilterType } from "../../filters";
-import { Subject } from "rxjs/Subject";
+import { FiltersService } from '../../filters.service';
+import { Filter, FilterInterface, FilterSavedState, FilterType } from '../../filters';
+import { Subject } from 'rxjs/Subject';
 
 
 @Component({
@@ -9,10 +9,10 @@ import { Subject } from "rxjs/Subject";
     templateUrl: './mhc-general-filter.component.html'
 })
 export class MHCGeneralFilterComponent extends FilterInterface {
-    mhci: boolean = true;
-    mhcii: boolean = true;
+    mhci: boolean;
+    mhcii: boolean;
 
-    constructor(public filters: FiltersService) {
+    constructor(filters: FiltersService) {
         super(filters);
     }
 

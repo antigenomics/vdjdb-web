@@ -1,4 +1,6 @@
-import { Component, EventEmitter, Input, Output, ChangeDetectionStrategy } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
+import { isUndefined } from 'util';
+
 
 @Component({
     selector: 'set',
@@ -23,11 +25,11 @@ export class SetComponent {
     availableSuggestions: any[] = [];
 
     isAutocompleteAllowed() : boolean {
-        return this.allowAutocomplete && this.autocomplete.length !== 0;
+        return this.allowAutocomplete && !isUndefined(this.autocomplete) && this.autocomplete.length !== 0;
     }
 
     isSuggestionsAllowed() : boolean {
-        return this.allowSuggestions && this.suggestions.length !== 0;
+        return this.allowSuggestions && !isUndefined(this.suggestions) && this.suggestions.length !== 0;
     }
 
     isSuggestionsAvailable() : boolean {

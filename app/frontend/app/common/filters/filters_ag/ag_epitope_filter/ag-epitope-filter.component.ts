@@ -1,9 +1,8 @@
 import { Component } from '@angular/core';
-import { FiltersService } from "../../filters.service";
-import { Filter, FilterInterface, FilterType, FilterSavedState } from "../../filters";
-import { isSequencePatternValid } from "../../../../utils/pattern.util";
-import { Subject } from "rxjs/Subject";
-import { filter } from "rxjs/operator/filter";
+import { FiltersService } from '../../filters.service';
+import { Filter, FilterInterface, FilterSavedState, FilterType } from '../../filters';
+import { isSequencePatternValid } from '../../../../utils/pattern.util';
+import { Subject } from 'rxjs/Subject';
 
 
 @Component({
@@ -11,14 +10,14 @@ import { filter } from "rxjs/operator/filter";
     templateUrl: './ag-epitope-filter.component.html'
 })
 export class AGEpitopeFilterComponent extends FilterInterface {
-    epitopeSequence: string = '';
-    epitopeAutocomplete: string[] = [];
+    epitopeSequence: string;
+    epitopeAutocomplete: string[];
 
-    epitopePattern: string = '';
-    epitopePatternSubstring: boolean = false;
-    epitopePatternValid: boolean = true;
+    epitopePattern: string;
+    epitopePatternSubstring: boolean;
+    epitopePatternValid: boolean;
 
-    constructor(public filters: FiltersService) {
+    constructor(filters: FiltersService) {
         super(filters);
     }
 

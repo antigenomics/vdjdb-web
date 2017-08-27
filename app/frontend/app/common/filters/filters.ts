@@ -1,9 +1,9 @@
-import { FilterCommand, FiltersService } from "./filters.service";
-import { OnDestroy } from "@angular/core";
-import { Subscription } from "rxjs/Subscription";
-import "rxjs/add/operator/filter";
-import { isUndefined } from "util";
-import { Subject } from "rxjs/Subject";
+import { FilterCommand, FiltersService } from './filters.service';
+import { OnDestroy } from '@angular/core';
+import { Subscription } from 'rxjs/Subscription';
+import 'rxjs/add/operator/filter';
+import { isUndefined } from 'util';
+import { Subject } from 'rxjs/Subject';
 
 
 export const enum FilterType {
@@ -34,11 +34,11 @@ export type FilterSavedState = { [index: string]: any };
 
 export abstract class FilterInterface implements OnDestroy {
     private commandPoolSubscription: Subscription;
-    private _filters: FiltersService;
+    private filters: FiltersService;
 
     constructor(filters: FiltersService) {
-        this._filters = filters;
-        let savedState = this._filters.registerFilter(this.getFilterId());
+        this.filters = filters;
+        let savedState = this.filters.registerFilter(this.getFilterId());
         if (!isUndefined(savedState)) {
             this.setSavedState(savedState);
         } else {
@@ -53,7 +53,7 @@ export abstract class FilterInterface implements OnDestroy {
                                this.setDefault();
                                break;
                            case FilterCommand.CollectFilters:
-                               this.collectFilters(this._filters.getFiltersPool());
+                               this.collectFilters(this.filters.getFiltersPool());
                                break;
                        }
                    });
@@ -71,6 +71,6 @@ export abstract class FilterInterface implements OnDestroy {
 
     ngOnDestroy(): void {
         this.commandPoolSubscription.unsubscribe();
-        this._filters.releaseFilter(this.getFilterId(), this.getSavedState());
+        this.filters.releaseFilter(this.getFilterId(), this.getSavedState());
     }
 }

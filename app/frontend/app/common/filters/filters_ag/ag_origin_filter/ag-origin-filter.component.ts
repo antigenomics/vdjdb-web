@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
-import { FiltersService } from "../../filters.service";
-import { Filter, FilterInterface, FilterSavedState, FilterType } from "../../filters";
-import { Subject } from "rxjs/Subject";
+import { FiltersService } from '../../filters.service';
+import { Filter, FilterInterface, FilterSavedState, FilterType } from '../../filters';
+import { Subject } from 'rxjs/Subject';
 
 
 @Component({
@@ -9,13 +9,13 @@ import { Subject } from "rxjs/Subject";
     templateUrl: './ag-origin-filter.component.html'
 })
 export class AGOriginFilterComponent extends FilterInterface {
-    species: string = '';
-    speciesAutocomplete: string[] = [];
+    species: string;
+    speciesAutocomplete: string[];
 
-    genes: string = '';
-    genesAutocomplete: string[] = [];
+    genes: string;
+    genesAutocomplete: string[];
 
-    constructor(public filters: FiltersService) {
+    constructor(filters: FiltersService) {
         super(filters);
     }
 

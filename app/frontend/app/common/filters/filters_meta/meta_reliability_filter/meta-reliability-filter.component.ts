@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
-import { FiltersService } from "../../filters.service";
-import { Filter, FilterInterface, FilterSavedState, FilterType } from "../../filters";
-import { Subject } from "rxjs/Subject";
+import { FiltersService } from '../../filters.service';
+import { Filter, FilterInterface, FilterSavedState, FilterType } from '../../filters';
+import { Subject } from 'rxjs/Subject';
 
 
 @Component({
@@ -9,11 +9,11 @@ import { Subject } from "rxjs/Subject";
     templateUrl: './meta-reliability-filter.component.html'
 })
 export class MetaReliabilityFilterComponent extends FilterInterface {
-    minimalConfidenceScore: number = 0;
-    nonCanonical: boolean = false;
-    unmapped: boolean = false;
+    minimalConfidenceScore: number;
+    nonCanonical: boolean;
+    unmapped: boolean;
 
-    constructor(public filters: FiltersService) {
+    constructor(filters: FiltersService) {
         super(filters);
     }
 

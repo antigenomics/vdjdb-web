@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
-import { FiltersService } from "../../filters.service";
-import { Filter, FilterInterface, FilterType, FilterSavedState } from "../../filters";
-import { Subject } from "rxjs/Subject";
+import { FiltersService } from '../../filters.service';
+import { Filter, FilterInterface, FilterSavedState, FilterType } from '../../filters';
+import { Subject } from 'rxjs/Subject';
 
 
 @Component({
@@ -9,13 +9,13 @@ import { Subject } from "rxjs/Subject";
     templateUrl: './mhc-haplotype-filter.component.html'
 })
 export class MHCHaplotypeFilterComponent extends FilterInterface {
-    firstChain: string = '';
-    firstChainAutocomplete: string[] = [];
+    firstChain: string;
+    firstChainAutocomplete: string[];
 
-    secondChain: string = '';
-    secondChainAutocomplete: string[] = [];
+    secondChain: string;
+    secondChainAutocomplete: string[];
 
-    constructor(public filters: FiltersService) {
+    constructor(filters: FiltersService) {
         super(filters);
     }
 

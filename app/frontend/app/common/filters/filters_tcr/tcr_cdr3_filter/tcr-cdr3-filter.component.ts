@@ -1,8 +1,8 @@
 import { Component } from '@angular/core';
-import { FiltersService } from "../../filters.service";
-import { isSequencePatternValid } from "../../../../utils/pattern.util";
+import { FiltersService } from '../../filters.service';
+import { isSequencePatternValid } from '../../../../utils/pattern.util';
 import { Filter, FilterInterface, FilterSavedState, FilterType } from '../../filters';
-import { Subject } from "rxjs/Subject";
+import { Subject } from 'rxjs/Subject';
 
 
 @Component({
@@ -14,7 +14,7 @@ export class TCR_CDR3FilterComponent extends FilterInterface {
     patternSubstring: boolean;
     patternValid: boolean;
 
-    constructor(private filters: FiltersService) {
+    constructor(filters: FiltersService) {
         super(filters);
     }
 

@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
-import { FiltersService } from "../../filters.service";
-import { Filter, FilterInterface, FilterSavedState, FilterType } from "../../filters";
-import { Subject } from "rxjs/Subject";
+import { FiltersService } from '../../filters.service';
+import { Filter, FilterInterface, FilterSavedState, FilterType } from '../../filters';
+import { Subject } from 'rxjs/Subject';
 
 
 @Component({
@@ -9,18 +9,18 @@ import { Subject } from "rxjs/Subject";
     templateUrl: './meta-general-filter.component.html'
 })
 export class MetaGeneralFilterComponent extends FilterInterface {
-    references: string = '';
-    referencesAutocomplete: string[] = [];
+    references: string;
+    referencesAutocomplete: string[];
 
-    methodSort: boolean = true;
-    methodCulture: boolean = true;
-    methodOther: boolean = true;
+    methodSort: boolean;
+    methodCulture: boolean;
+    methodOther: boolean;
 
-    seqSanger: boolean = true;
-    seqAmplicon: boolean = true;
-    seqSingleCell: boolean = true;
+    seqSanger: boolean;
+    seqAmplicon: boolean;
+    seqSingleCell: boolean;
 
-    constructor(public filters: FiltersService) {
+    constructor(filters: FiltersService) {
         super(filters);
     }
 

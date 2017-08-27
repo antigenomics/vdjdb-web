@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
-import { FiltersService } from "../../filters.service";
-import { Filter, FilterInterface, FilterSavedState, FilterType } from "../../filters";
-import { Subject } from "rxjs/Subject";
+import { FiltersService } from '../../filters.service';
+import { Filter, FilterInterface, FilterSavedState, FilterType } from '../../filters';
+import { Subject } from 'rxjs/Subject';
 
 
 @Component({
@@ -10,12 +10,12 @@ import { Subject } from "rxjs/Subject";
 })
 export class TCRSegmentsFilterComponent extends FilterInterface {
     vSegment: string;
-    vSegmentValues: string[] = [];
+    vSegmentAutocomplete: string[];
 
     jSegment: string;
-    jSegmentValues: string[] = [];
+    jSegmentAutocomplete: string[];
 
-    constructor(public filters: FiltersService) {
+    constructor(filters: FiltersService) {
         super(filters);
     }
 
