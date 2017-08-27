@@ -4,9 +4,11 @@ name := """VDJdb"""
 
 version := "1.1.0"
 
-lazy val root = (project in file(".")).enablePlugins(PlayScala)
+lazy val root = (project in file(".")).enablePlugins(PlayScala, LauncherJarPlugin)
 
 scalaVersion := "2.12.2"
+
+resolvers += "Local Maven Repository" at Path.userHome.asFile.toURI.toURL + ".m2/repository"
 
 libraryDependencies ++= Seq(
       "com.antigenomics" % "vdjdb" % "1.1.6",
@@ -37,7 +39,7 @@ publishArtifact in (Compile, packageDoc) := false
 
 lazy val isWindows = System.getProperty("os.name").toUpperCase().contains("WIN")
 lazy val buildFrontend = taskKey[Unit]("Build frontend Angular")
-val frontendApplicationPath = if (isWindows) "\\app\\frontend" else "./app/frontend"
+val frontendApplicationPath = if (isWindows) "app\\frontend" else "./app/frontend"
 
 buildFrontend := {
       //val install: Seq[String] = shell :+ "npm --prefix " + frontendApplicationPath + " install "
