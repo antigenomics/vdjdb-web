@@ -1,5 +1,5 @@
-@import play.api.Environment
-@import play.api.Mode
+@
+import play.api.{Environment, Mode}
 @(environment: Environment)
 <!DOCTYPE html>
 
@@ -14,8 +14,8 @@
         <title>VDJdb</title>
 
         @if(environment.mode == Mode.Dev) {
-            <script type="text/javascript" src="assets/bundles/polyfills.dll.js" charset="utf-8"></script>
-            <script type="text/javascript" src="assets/bundles/vendor.dll.js" charset="utf-8"></script>
+            <script type="application/javascript" src="assets/bundles/polyfills.dll.js" charset="utf-8"></script>
+            <script type="application/javascript" src="assets/bundles/vendor.dll.js" charset="utf-8"></script>
             <link type="text/css" href="bundles/bundle.css" rel="stylesheet">
         } else {
             <link type="text/css" href="bundles/bundle.min.css" rel="stylesheet">
@@ -30,5 +30,5 @@
             </div>
         </application>
     </body>
-    <script type="text/javascript" src="bundles/bundle.min.js" charset="utf-8"></script>
+    <script type="application/javascript" src="bundles/bundle.min.js" charset="utf-8"></script>
 </html>

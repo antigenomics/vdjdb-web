@@ -2,7 +2,6 @@ import { FilterCommand, FiltersService } from './filters.service';
 import { OnDestroy } from '@angular/core';
 import { Subscription } from 'rxjs/Subscription';
 import 'rxjs/add/operator/filter';
-import { isUndefined } from 'util';
 import { Subject } from 'rxjs/Subject';
 
 
@@ -39,7 +38,7 @@ export abstract class FilterInterface implements OnDestroy {
     constructor(filters: FiltersService) {
         this.filters = filters;
         let savedState = this.filters.registerFilter(this.getFilterId());
-        if (!isUndefined(savedState)) {
+        if (savedState) {
             this.setSavedState(savedState);
         } else {
             this.setDefault();
