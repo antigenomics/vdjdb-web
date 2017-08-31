@@ -2,6 +2,8 @@ import { Component } from '@angular/core';
 import { FiltersService } from '../../filters.service';
 import { Filter, FilterInterface, FilterSavedState, FilterType } from '../../filters';
 import { Subject } from 'rxjs/Subject';
+import { DatabaseService } from '../../../../database/database.service';
+import { DatabaseMetadata } from '../../../../database/database-metadata';
 
 
 @Component({
@@ -15,8 +17,14 @@ export class AGOriginFilterComponent extends FilterInterface {
     genes: string;
     genesAutocomplete: string[];
 
-    constructor(filters: FiltersService) {
+    constructor(filters: FiltersService, database: DatabaseService) {
         super(filters);
+        database.getMetadata().take(1).subscribe({
+            next: (metadata: DatabaseMetadata) => {
+                this.speciesAutocomplete = metadata.getColumnInfo('antigen.species').values;
+                this.genesAutocomplete = metadata.getColumnInfo('antigen.gene').values;
+            }
+        })
     }
 
     setDefault(): void {

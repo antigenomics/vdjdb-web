@@ -2,6 +2,10 @@ import { Component } from '@angular/core';
 import { FiltersService } from '../../filters.service';
 import { Filter, FilterInterface, FilterSavedState, FilterType } from '../../filters';
 import { Subject } from 'rxjs/Subject';
+import { DatabaseService } from '../../../../database/database.service';
+import { DatabaseMetadata } from '../../../../database/database-metadata';
+import { Subscription } from 'rxjs/Subscription';
+import 'rxjs/add/operator/take';
 
 
 @Component({
@@ -15,8 +19,16 @@ export class TCRSegmentsFilterComponent extends FilterInterface {
     jSegment: string;
     jSegmentAutocomplete: string[];
 
-    constructor(filters: FiltersService) {
+    subscription: Subscription;
+
+    constructor(filters: FiltersService, database: DatabaseService) {
         super(filters);
+        database.getMetadata().take(1).subscribe({
+            next: (metadata: DatabaseMetadata) => {
+                this.vSegmentAutocomplete = metadata.getColumnInfo('v.segm').values;
+                this.jSegmentAutocomplete = metadata.getColumnInfo('j.segm').values;
+            }
+        });
     }
 
     setDefault(): void {
@@ -43,7 +55,7 @@ export class TCRSegmentsFilterComponent extends FilterInterface {
         return {
             vSegment: this.vSegment,
             jSegment: this.jSegment
-        }
+        };
     }
 
     setSavedState(state: FilterSavedState): void {

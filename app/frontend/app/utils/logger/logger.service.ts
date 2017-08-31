@@ -16,13 +16,13 @@ export class LoggerService {
         }
         switch (message.type) {
             case LoggerMessageType.Info:
-                console.log(message.content);
+                console.log(message.title, message.content);
                 break;
             case LoggerMessageType.Warning:
-                console.warn(message.content);
+                console.warn(message.title, message.content);
                 break;
             case LoggerMessageType.Error:
-                console.error(message.content);
+                console.error(message.title, message.content);
                 break;
         }
         if (message.notification) {

@@ -8,3 +8,7 @@
     max-height: 500px;
     transition: max-height 0.25s ease-in;
 }
+
+.group_collapsible .collapsible_content.content_in:hover {
+    overflow: visible;
+}

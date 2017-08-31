@@ -3,6 +3,8 @@ import { FiltersService } from '../../filters.service';
 import { Filter, FilterInterface, FilterSavedState, FilterType } from '../../filters';
 import { isSequencePatternValid } from '../../../../utils/pattern.util';
 import { Subject } from 'rxjs/Subject';
+import { DatabaseService } from '../../../../database/database.service';
+import { DatabaseMetadata } from '../../../../database/database-metadata';
 
 
 @Component({
@@ -17,8 +19,13 @@ export class AGEpitopeFilterComponent extends FilterInterface {
     epitopePatternSubstring: boolean;
     epitopePatternValid: boolean;
 
-    constructor(filters: FiltersService) {
+    constructor(filters: FiltersService, database: DatabaseService) {
         super(filters);
+        database.getMetadata().take(1).subscribe({
+            next: (metadata: DatabaseMetadata) => {
+                this.epitopeAutocomplete = metadata.getColumnInfo('antigen.epitope').values;
+            }
+        })
     }
 
     setDefault(): void {

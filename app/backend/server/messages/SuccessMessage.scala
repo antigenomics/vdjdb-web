@@ -1,12 +1,15 @@
 package backend.server.messages
 
-import play.api.libs.json.{JsObject, Json, Writes}
+import play.api.libs.json.{JsValue, Json, Writes}
 
-class SuccessMessage(val action: String)
+case class SuccessMessage(action: String, data: JsValue)
 
 object SuccessMessage {
-    def writes[T](writer: Writes[T]): Writes[T] = (t: T) => Json.obj(
-        "status" -> "success",
-        "action" -> t.asInstanceOf[SuccessMessage].action
-    ) ++ writer.writes(t).as[JsObject]
+    implicit val successMessageWrites = new Writes[SuccessMessage] {
+        def writes(message: SuccessMessage) = Json.obj(
+            "status" -> "success",
+            "action" -> message.action,
+            "data" -> message.data
+        )
+    }
 }

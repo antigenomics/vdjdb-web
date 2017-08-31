@@ -2,6 +2,9 @@ import { Component } from '@angular/core';
 import { FiltersService } from '../../filters.service';
 import { Filter, FilterInterface, FilterSavedState, FilterType } from '../../filters';
 import { Subject } from 'rxjs/Subject';
+import { DatabaseService } from '../../../../database/database.service';
+import { DatabaseMetadata } from '../../../../database/database-metadata';
+import { Subscription } from 'rxjs/Subscription';
 
 
 @Component({
@@ -15,8 +18,14 @@ export class MHCHaplotypeFilterComponent extends FilterInterface {
     secondChain: string;
     secondChainAutocomplete: string[];
 
-    constructor(filters: FiltersService) {
+    constructor(filters: FiltersService, database: DatabaseService) {
         super(filters);
+        database.getMetadata().take(1).subscribe({
+            next: (metadata: DatabaseMetadata) => {
+                this.firstChainAutocomplete = metadata.getColumnInfo('mhc.a').values;
+                this.secondChainAutocomplete = metadata.getColumnInfo('mhc.b').values;
+            }
+        });
     }
 
     setDefault(): void {

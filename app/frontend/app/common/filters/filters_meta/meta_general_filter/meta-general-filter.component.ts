@@ -2,6 +2,8 @@ import { Component } from '@angular/core';
 import { FiltersService } from '../../filters.service';
 import { Filter, FilterInterface, FilterSavedState, FilterType } from '../../filters';
 import { Subject } from 'rxjs/Subject';
+import { DatabaseService } from '../../../../database/database.service';
+import { DatabaseMetadata } from '../../../../database/database-metadata';
 
 
 @Component({
@@ -20,8 +22,14 @@ export class MetaGeneralFilterComponent extends FilterInterface {
     seqAmplicon: boolean;
     seqSingleCell: boolean;
 
-    constructor(filters: FiltersService) {
+    constructor(filters: FiltersService, database: DatabaseService) {
         super(filters);
+        database.getMetadata().take(1).subscribe({
+            next: (metadata: DatabaseMetadata) => {
+                this.referencesAutocomplete = metadata.getColumnInfo('reference.id').values;
+            }
+        })
+
     }
 
     setDefault(): void {

@@ -8,8 +8,8 @@ export class AutocompletePipe implements PipeTransform {
     transform(values: string[], set: string): string[] {
         if (isUndefined(set)) return values;
         if (set === '') return values;
-        let setValues = set.split(',');
-        let lastSetValue = setValues[setValues.length - 1];
+        let setValues: string[] = set.split(',');
+        let lastSetValue: string = setValues[setValues.length - 1].trim();
         return values.filter((value: string) => value.indexOf(lastSetValue) !== -1);
     }
 }

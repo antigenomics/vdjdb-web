@@ -5,16 +5,16 @@ export class DatabaseColumnInfo {
     private _dataType: string;
     private _title: string;
     private _comment: string;
-    private _autocomplete: string[];
+    private _values: string[];
 
-    constructor(name: string, columnType: string, visible: boolean, dataType: string, title: string, comment: string, autocomplete: string[]) {
+    constructor(name: string, columnType: string, visible: boolean, dataType: string, title: string, comment: string, values: string[]) {
         this._name = name;
         this._columnType = columnType;
         this._visible = visible;
         this._dataType = dataType;
         this._title = title;
         this._comment = comment;
-        this._autocomplete = autocomplete;
+        this._values = values;
     }
 
     get name(): string {
@@ -41,12 +41,12 @@ export class DatabaseColumnInfo {
         return this._comment;
     }
 
-    get autocomplete(): string[] {
-        return this._autocomplete;
+    get values(): string[] {
+        return this._values;
     }
 
     static deserialize(input: any): DatabaseColumnInfo {
-        return new DatabaseColumnInfo(input.name, input.columnType, input.visible, input.dataType, input.title, input.comment, input.autocomplete);
+        return new DatabaseColumnInfo(input.name, input.columnType, input.visible, input.dataType, input.title, input.comment, input.values);
     }
 
 }
