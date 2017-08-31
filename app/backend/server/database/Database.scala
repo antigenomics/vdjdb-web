@@ -19,6 +19,8 @@ case class Database(private final val instance: VdjdbInstance) {
     }
 
     def getMetadata: DatabaseMetadata = metadata
+
+    def getInstance: VdjdbInstance = instance
 }
 
 object Database {

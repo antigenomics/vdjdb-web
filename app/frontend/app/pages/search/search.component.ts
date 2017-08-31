@@ -19,6 +19,7 @@ export class SearchPageComponent {
 
     search(): void {
         this.filters.getFilters((filters: Filter[]) => {
+            this.database.search(filters);
             this.logger.log(new LoggerInfoDebugMessage(filters, 'Collected filters'));
         }, (message: string) => {
             this.logger.log(new LoggerErrorNotificationMessage(message, 'Filters error'));

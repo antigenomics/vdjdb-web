@@ -13,9 +13,9 @@ object DatabaseColumnInfo {
     def createInfoFromColumn(column: Column): DatabaseColumnInfo = {
         val name: String = column.getName
         val meta = column.getMetadata
-        val columnType: String = meta.get("type")
+        val columnType: String = meta.get("filterType")
         val visible: Boolean = meta.get("visible") == "1"
-        val dataType: String = meta.get("data.type")
+        val dataType: String = meta.get("data.filterType")
         val title: String = meta.get("title")
         val comment: String = meta.get("comment")
         val values: List[String] = if (meta.get("autocomplete") == "1") column.getValues.asScala.toList else List[String]()

@@ -17,13 +17,13 @@ export const enum FilterType {
 
 export class Filter {
     column: string;
-    type: FilterType;
+    filterType: FilterType;
     negative: boolean;
-    value: true;
+    value: string;
 
-    constructor(column: string, type: FilterType, negative: boolean, value: any) {
+    constructor(column: string, filterType: FilterType, negative: boolean, value: string) {
         this.column = column;
-        this.type = type;
+        this.filterType = filterType;
         this.negative = negative;
         this.value = value;
     }

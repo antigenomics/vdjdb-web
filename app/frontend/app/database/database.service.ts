@@ -4,10 +4,10 @@ import { Configuration } from '../main';
 import { Observable } from 'rxjs/Observable';
 import { ReplaySubject } from 'rxjs/ReplaySubject';
 import { LoggerService } from '../utils/logger/logger.service';
-import { LoggerErrorMessage, LoggerInfoDebugMessage } from '../utils/logger/logger-messages';
 import { Subscription } from 'rxjs/Subscription';
 import { WebSocketSubject } from 'rxjs/observable/dom/WebSocketSubject';
 import { Subject } from 'rxjs/Subject';
+import { Filter } from '../common/filters/filters';
 
 
 export const enum DatabaseServiceResponseStatusType {
@@ -47,6 +47,9 @@ export class DatabaseService {
                             this.metadata.next(DatabaseMetadata.deserialize(data))
                         }
                         break;
+                    case 'search':
+                        console.log('Search', data);
+                        break;
                 }
             }
         });
@@ -54,6 +57,10 @@ export class DatabaseService {
         setInterval(() => {
             this.sendMessage({ action: 'ping', data: {} });
         }, 10000);
+    }
+
+    search(filters: Filter[]) {
+        this.sendMessage({ action: 'search', data: filters });
     }
 
     sendMessage(message: DatabaseServiceRequestMessage) {
