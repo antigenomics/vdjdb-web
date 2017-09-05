@@ -4,20 +4,20 @@ import akka.actor.{Actor, ActorRef, Props}
 import backend.server.api.ClientRequest
 import backend.server.api.common.{ErrorMessageResponse, SuccessMessageResponse}
 import backend.server.api.database.DatabaseMetadataResponse
-import backend.server.api.search.{SearchTableResultsDataRequest, SearchTableResultsResponse}
+import backend.server.api.search.{SearchDataRequest, SearchResponse}
 import backend.server.database.Database
 import backend.server.filters.DatabaseFilters
-import backend.server.table.search_table.SearchTableResults
+import backend.server.table.search.SearchTable
 import play.api.libs.json._
 import play.api.libs.json.Json.toJson
 
 
 class DatabaseWebsocketActor(out: ActorRef, val database: Database) extends Actor {
-    var searchResults: SearchTableResults = _
+    var table: SearchTable = _
 
     override def preStart(): Unit = {
         super.preStart()
-        searchResults = new SearchTableResults()
+        table = new SearchTable()
     }
 
     override def receive: Receive = {
@@ -38,16 +38,16 @@ class DatabaseWebsocketActor(out: ActorRef, val database: Database) extends Acto
                 action match {
                     case DatabaseMetadataResponse.action =>
                         out ! toJson(DatabaseMetadataResponse(database.getMetadata))
-                    case SearchTableResultsResponse.action =>
-                        validateData(out, request.data, (searchRequest: SearchTableResultsDataRequest) => {
+                    case SearchResponse.action =>
+                        validateData(out, request.data, (searchRequest: SearchDataRequest) => {
                             if (searchRequest.filters.nonEmpty) {
-                                searchResults.update(DatabaseFilters.createFromRequest(searchRequest.filters.get, database), database)
-                                out ! toJson(SearchTableResultsResponse(0, searchResults.getPageSize, searchResults.getCount, searchResults.getPage(0)))
+                                table.update(DatabaseFilters.createFromRequest(searchRequest.filters.get, database), database)
+                                out ! toJson(SearchResponse(0, table.getPageSize, table.getCount, table.getPage(0)))
                             } else if (searchRequest.page.nonEmpty) {
                                 val page = searchRequest.page.get
-                                out ! toJson(SearchTableResultsResponse(page, searchResults.getPageSize, searchResults.getCount, searchResults.getPage(page)))
+                                out ! toJson(SearchResponse(page, table.getPageSize, table.getCount, table.getPage(page)))
                             } else {
-                                out ! SearchTableResultsResponse.errorMessage
+                                out ! SearchResponse.errorMessage
                             }
                         })
                     case "ping" =>

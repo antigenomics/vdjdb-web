@@ -6,10 +6,10 @@ import akka.actor.ActorSystem
 import akka.stream.Materializer
 import backend.actors.database.DatabaseWebsocketActor
 import backend.server.api.database.{DatabaseColumnInfoResponse, DatabaseMetadataResponse}
-import backend.server.api.search.{SearchTableResultsDataRequest, SearchTableResultsResponse}
+import backend.server.api.search.{SearchDataRequest, SearchResponse}
 import backend.server.database.{Database, DatabaseColumnInfo}
 import backend.server.filters.DatabaseFilters
-import backend.server.table.search_table.SearchTableResults
+import backend.server.table.search.SearchTable
 import play.api.libs.json.Json.toJson
 import play.api.libs.json._
 import play.api.libs.streams.ActorFlow
@@ -31,25 +31,25 @@ class DatabaseAPI @Inject()(cc: ControllerComponents, database: Database)(implic
     }
 
     def search: Action[JsValue] = Action(parse.json) { implicit request =>
-        request.body.validate[SearchTableResultsDataRequest] match {
-            case data: JsSuccess[SearchTableResultsDataRequest] =>
+        request.body.validate[SearchDataRequest] match {
+            case data: JsSuccess[SearchDataRequest] =>
                 if (data.get.filters.nonEmpty) {
-                    val searchResults = new SearchTableResults()
+                    val table = new SearchTable()
                     val filters = DatabaseFilters.createFromRequest(data.get.filters.get, database)
-                    searchResults.update(filters, database)
+                    table.update(filters, database)
                     if (data.get.page.nonEmpty) {
                         val pageSize: Int = data.get.pageSize.getOrElse(100)
                         val page = data.get.page.get
-                        searchResults.setPageSize(pageSize)
-                        Ok(toJson(SearchTableResultsResponse(page, pageSize, searchResults.getCount, searchResults.getPage(page))))
+                        table.setPageSize(pageSize)
+                        Ok(toJson(SearchResponse(page, pageSize, table.getCount, table.getPage(page))))
                     } else {
-                        Ok(toJson(SearchTableResultsResponse(-1, -1, searchResults.getCount, searchResults.getRows)))
+                        Ok(toJson(SearchResponse(-1, -1, table.getCount, table.getRows)))
                     }
                 } else {
-                    BadRequest(SearchTableResultsResponse.errorMessage)
+                    BadRequest(SearchResponse.errorMessage)
                 }
             case _: JsError =>
-                BadRequest(SearchTableResultsResponse.errorMessage)
+                BadRequest(SearchResponse.errorMessage)
         }
     }
 

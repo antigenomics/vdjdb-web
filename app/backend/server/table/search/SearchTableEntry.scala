@@ -1,4 +1,4 @@
-package backend.server.table.search_table
+package backend.server.table.search
 
 import play.api.libs.json.{Json, OWrites}
 

@@ -1,12 +1,11 @@
-package backend.server.table.search_table
+package backend.server.table.search
 
 import backend.server.database.Database
 import backend.server.filters.DatabaseFilters
 
 import scala.collection.JavaConverters._
 
-case class SearchTableResults(private var pageSize: Int = SearchTableResults.DEFAULT_PAGE_SIZE,
-                              private var rows: List[SearchTableRow] = List()) {
+case class SearchTable(private var pageSize: Int = SearchTable.DEFAULT_PAGE_SIZE, private var rows: List[SearchTableRow] = List()) {
 
     def setPageSize(pageSize: Int): Unit = {
         this.pageSize = pageSize
@@ -44,13 +43,13 @@ case class SearchTableResults(private var pageSize: Int = SearchTableResults.DEF
         })
     }
 
-    def update(filters: DatabaseFilters, database: Database): SearchTableResults = {
+    def update(filters: DatabaseFilters, database: Database): SearchTable = {
         val results = database.getInstance.getDbInstance.search(filters.text, filters.sequence)
         this.rows = results.asScala.map(r => SearchTableRow.createFromRow(r.getRow)).toList
         this
     }
 }
 
-object SearchTableResults {
+object SearchTable {
     val DEFAULT_PAGE_SIZE: Int = 100
 }
