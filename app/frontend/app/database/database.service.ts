@@ -8,7 +8,13 @@ import { Subscription } from 'rxjs/Subscription';
 import { WebSocketSubject } from 'rxjs/observable/dom/WebSocketSubject';
 import { Subject } from 'rxjs/Subject';
 import { Filter } from '../common/filters/filters';
+import { LoggerErrorMessage } from "../utils/logger/logger-messages";
 
+export const enum DatabaseServiceActions {
+    DatabaseMetadataAction = 'api.database.meta',
+    DatabaseColumnInfoAction = 'api.database.meta.columnInfo',
+    DatabaseSearchAction = 'api.database.search',
+}
 
 export const enum DatabaseServiceResponseStatusType {
     ResponseSuccess = 'success',
@@ -17,50 +23,50 @@ export const enum DatabaseServiceResponseStatusType {
 }
 
 export class DatabaseServiceRequestMessage {
-    action: string;
-    data: any;
-}
-
-export class DatabaseServiceResponseMessage {
-    status: DatabaseServiceResponseStatusType;
-    action: string;
-    data: any;
+    action?: string;
+    data?: any;
 }
 
 @Injectable()
 export class DatabaseService {
     private connection: WebSocketSubject<Object>;
     private subscription: Subscription;
-    private messages: Subject<DatabaseServiceResponseMessage> = new Subject();
+    private messages: Subject<any> = new Subject();
     private metadata: ReplaySubject<DatabaseMetadata> = new ReplaySubject(1);
 
     constructor(private logger: LoggerService) {
         this.connection = WebSocketSubject.create(Configuration.websocketPrefix + '/api/database/connect');
         this.subscription = this.connection.subscribe({
-            next: (message: DatabaseServiceResponseMessage) => {
+            next: (message: any) => {
                 let status = message.status;
                 let action = message.action;
-                let data = message.data;
                 switch (action) {
-                    case 'meta':
+                    case DatabaseServiceActions.DatabaseMetadataAction:
                         if (status === DatabaseServiceResponseStatusType.ResponseSuccess) {
-                            this.metadata.next(DatabaseMetadata.deserialize(data))
+                            this.metadata.next(DatabaseMetadata.deserialize(message.metadata))
                         }
                         break;
-                    case 'search':
-                        console.log('Search', data);
+                    case DatabaseServiceActions.DatabaseSearchAction:
+                        console.log('Search', message);
                         break;
+                    default:
+                        logger.log(new LoggerErrorMessage('Unknown action in websocket: ' + action))
                 }
             }
         });
-        this.sendMessage({ action: 'meta', data: {} });
+        this.sendMessage({ action: DatabaseServiceActions.DatabaseMetadataAction });
         setInterval(() => {
-            this.sendMessage({ action: 'ping', data: {} });
+            this.sendMessage({ action: 'ping' });
         }, 10000);
     }
 
-    search(filters: Filter[]) {
-        this.sendMessage({ action: 'search', data: filters });
+    filter(filters: Filter[]) {
+        this.sendMessage({
+            action: DatabaseServiceActions.DatabaseSearchAction,
+            data: {
+                filters: filters
+            }
+        });
     }
 
     sendMessage(message: DatabaseServiceRequestMessage) {
