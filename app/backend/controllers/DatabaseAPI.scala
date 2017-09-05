@@ -4,7 +4,7 @@ import javax.inject._
 
 import akka.actor.ActorSystem
 import akka.stream.Materializer
-import backend.actors.database.DatabaseWebsocketActor
+import backend.actors.DatabaseSearchWebsocketActor
 import backend.server.api.database.{DatabaseColumnInfoResponse, DatabaseMetadataResponse}
 import backend.server.api.search.{SearchDataRequest, SearchResponse}
 import backend.server.database.{Database, DatabaseColumnInfo}
@@ -55,7 +55,7 @@ class DatabaseAPI @Inject()(cc: ControllerComponents, database: Database)(implic
 
     def connect: WebSocket = WebSocket.accept[JsValue, JsValue] { _ =>
         ActorFlow.actorRef { out =>
-            DatabaseWebsocketActor.props(out, database)
+            DatabaseSearchWebsocketActor.props(out, database)
         }
     }
 

@@ -3,12 +3,12 @@ import { SearchPageComponent } from "./search.component";
 import { BrowserModule } from '@angular/platform-browser';
 import { FiltersModule } from "../../common/filters/filters.module";
 import { FiltersService } from "../../common/filters/filters.service";
-import { SearchTableComponent } from "../../common/table/search/search-table.component";
+import { SearchTableModule } from "../../common/table/search/search-table.module";
 
 @NgModule({
-    imports:      [ BrowserModule, FiltersModule ],
-    declarations: [ SearchPageComponent, SearchTableComponent ],
-    exports:      [ SearchPageComponent, SearchTableComponent ],
+    imports:      [ BrowserModule, FiltersModule, SearchTableModule ],
+    declarations: [ SearchPageComponent ],
+    exports:      [ SearchPageComponent ],
     providers:    [ FiltersService ]
 })
 export class SearchPageModule {}

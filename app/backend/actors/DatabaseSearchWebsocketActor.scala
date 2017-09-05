@@ -1,18 +1,18 @@
-package backend.actors.database
+package backend.actors
 
 import akka.actor.{Actor, ActorRef, Props}
 import backend.server.api.ClientRequest
-import backend.server.api.common.{ErrorMessageResponse, SuccessMessageResponse}
+import backend.server.api.common.{ErrorMessageResponse, SuccessMessageResponse, WarningMessageResponse}
 import backend.server.api.database.DatabaseMetadataResponse
 import backend.server.api.search.{SearchDataRequest, SearchResponse}
 import backend.server.database.Database
 import backend.server.filters.DatabaseFilters
 import backend.server.table.search.SearchTable
-import play.api.libs.json._
 import play.api.libs.json.Json.toJson
+import play.api.libs.json._
 
 
-class DatabaseWebsocketActor(out: ActorRef, val database: Database) extends Actor {
+class DatabaseSearchWebsocketActor(out: ActorRef, val database: Database) extends Actor {
     var table: SearchTable = _
 
     override def preStart(): Unit = {
@@ -41,7 +41,11 @@ class DatabaseWebsocketActor(out: ActorRef, val database: Database) extends Acto
                     case SearchResponse.action =>
                         validateData(out, request.data, (searchRequest: SearchDataRequest) => {
                             if (searchRequest.filters.nonEmpty) {
-                                table.update(DatabaseFilters.createFromRequest(searchRequest.filters.get, database), database)
+                                val filters: DatabaseFilters = DatabaseFilters.createFromRequest(searchRequest.filters.get, database)
+                                filters.warnings.foreach((warningMessage: String) => {
+                                    out ! toJson(WarningMessageResponse(warningMessage))
+                                })
+                                table.update(filters, database)
                                 out ! toJson(SearchResponse(0, table.getPageSize, table.getCount, table.getPage(0)))
                             } else if (searchRequest.page.nonEmpty) {
                                 val page = searchRequest.page.get
@@ -74,7 +78,7 @@ class DatabaseWebsocketActor(out: ActorRef, val database: Database) extends Acto
     }
 }
 
-object DatabaseWebsocketActor {
-    def props(out: ActorRef, database: Database): Props = Props(new DatabaseWebsocketActor(out, database))
+object DatabaseSearchWebsocketActor {
+    def props(out: ActorRef, database: Database): Props = Props(new DatabaseSearchWebsocketActor(out, database))
 }
 

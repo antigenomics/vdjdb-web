@@ -19,6 +19,12 @@ libraryDependencies ++= Seq(
     filters
 )
 
+scalacOptions ++= Seq(
+    "–unchecked",
+    "-feature",
+    "–optimise"
+)
+
 // Starts: Prevent documentation of API for production bundles
 sources in(Compile, doc) := Seq.empty
 publishArtifact in(Compile, packageDoc) := false
