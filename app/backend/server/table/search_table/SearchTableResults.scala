@@ -16,6 +16,8 @@ case class SearchTableResults(private var pageSize: Int = SearchTableResults.DEF
 
     def getRows: List[SearchTableRow] = rows
 
+    def getCount: Int = rows.length
+
     def getPage(page: Int): List[SearchTableRow] = {
         if (page >= 0) {
             var fromIndex: Int = pageSize * page

@@ -41,9 +41,9 @@ class DatabaseAPI @Inject()(cc: ControllerComponents, database: Database)(implic
                         val pageSize: Int = data.get.pageSize.getOrElse(100)
                         val page = data.get.page.get
                         searchResults.setPageSize(pageSize)
-                        Ok(toJson(SearchTableResultsResponse(page, pageSize, searchResults.getPage(page))))
+                        Ok(toJson(SearchTableResultsResponse(page, pageSize, searchResults.getCount, searchResults.getPage(page))))
                     } else {
-                        Ok(toJson(SearchTableResultsResponse(-1, -1, searchResults.getRows)))
+                        Ok(toJson(SearchTableResultsResponse(-1, -1, searchResults.getCount, searchResults.getRows)))
                     }
                 } else {
                     BadRequest(SearchTableResultsResponse.errorMessage)

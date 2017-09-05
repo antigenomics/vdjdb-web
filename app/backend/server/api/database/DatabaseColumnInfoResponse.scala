@@ -9,7 +9,7 @@ import play.api.libs.json.{JsValue, Json, Writes}
 case class DatabaseColumnInfoResponse(column: DatabaseColumnInfo) extends SuccessResponse(DatabaseColumnInfoResponse.action)
 
 object DatabaseColumnInfoResponse {
-    final val action: String = "api.database.meta.columnInfo"
+    final val action: String = "columnInfo"
 
     implicit val databaseMetadataColumnInfoResponseWrites: Writes[DatabaseColumnInfoResponse] = SuccessResponse.writesSubclass(Json.writes[DatabaseColumnInfoResponse])
 

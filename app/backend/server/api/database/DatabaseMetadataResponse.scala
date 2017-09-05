@@ -7,7 +7,7 @@ import play.api.libs.json.{Json, Writes}
 case class DatabaseMetadataResponse(metadata: DatabaseMetadata) extends SuccessResponse(DatabaseMetadataResponse.action)
 
 object DatabaseMetadataResponse {
-    final val action: String = "api.database.meta"
+    final val action: String = "meta"
 
     implicit val databaseMetadataResponseFormat: Writes[DatabaseMetadataResponse] = SuccessResponse.writesSubclass(Json.writes[DatabaseMetadataResponse])
 }

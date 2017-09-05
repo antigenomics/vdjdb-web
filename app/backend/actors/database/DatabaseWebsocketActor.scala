@@ -42,10 +42,10 @@ class DatabaseWebsocketActor(out: ActorRef, val database: Database) extends Acto
                         validateData(out, request.data, (searchRequest: SearchTableResultsDataRequest) => {
                             if (searchRequest.filters.nonEmpty) {
                                 searchResults.update(DatabaseFilters.createFromRequest(searchRequest.filters.get, database), database)
-                                out ! toJson(SearchTableResultsResponse(0, searchResults.getPageSize, searchResults.getPage(0)))
+                                out ! toJson(SearchTableResultsResponse(0, searchResults.getPageSize, searchResults.getCount, searchResults.getPage(0)))
                             } else if (searchRequest.page.nonEmpty) {
                                 val page = searchRequest.page.get
-                                out ! toJson(SearchTableResultsResponse(page, searchResults.getPageSize, searchResults.getPage(page)))
+                                out ! toJson(SearchTableResultsResponse(page, searchResults.getPageSize, searchResults.getCount, searchResults.getPage(page)))
                             } else {
                                 out ! SearchTableResultsResponse.errorMessage
                             }
