@@ -1,0 +1,28 @@
+@import "semantic/semantic";
+
+body {
+  background-color: #e1e6ed !important;
+}
+
+.main.menu {
+  height: 4em;
+}
+
+.main.container {
+  margin-top: 7em;
+  opacity: 0;
+}
+
+.main.container.fade {
+  -webkit-animation: fade 1s;
+  animation: fade 1s;
+  opacity: 1;
+}
+/* -fail- */
+@-webkit-keyframes fade {
+  from {opacity: 0}
+  to {opacity: 1}
+}@keyframes fade {
+   from {opacity: 0}
+   to {opacity: 1}
+ }

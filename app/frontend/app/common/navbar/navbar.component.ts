@@ -4,8 +4,7 @@ import { documentScroll } from "../../utils/scroll.util";
 
 @Component({
     selector:    'navbar',
-    templateUrl: './navbar.component.html',
-    styleUrls:   [ './navbar.component.css' ]
+    templateUrl: './navbar.component.html'
 })
 export class NavigationBarComponent {
     constructor(private router: Router) {

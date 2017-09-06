@@ -1,15 +1,11 @@
-<div class="navigation_bar_background"></div>
-<div class="navigation_bar">
-    <div class="brand_cell" (click)="route('/')">
-        <img width="100%" src="assets/images/logo_large.png" alt="VDJdb">
-    </div>
-    <div class="cell cell_left" (click)="route('/')">
-        <a>Home</a>
-    </div>
-    <div class="cell cell_left" (click)="route('/search')">
-        <a>Browse</a>
-    </div>
-    <div class="cell cell_right" (click)="route('/about')">
-        <a>About</a>
+<div class="ui fixed inverted main menu">
+    <div class="ui container">
+        <a (click)="route('/')" class="header item">
+            <!--<img class="logo" src="assets/images/logo_large.png">-->
+            <h1>VDJdb</h1>
+        </a>
+        <a (click)="route('/')" class="item">Home</a>
+        <a (click)="route('/search')" class="item">Browse</a>
+        <a (click)="route('/about')" class="item right">About</a>
     </div>
 </div>

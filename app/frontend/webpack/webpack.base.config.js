@@ -10,11 +10,7 @@ module.exports = {
     devtool: '#inline-source-map',
     entry: {
         'bundle.css': [
-            './styles/global.css',
-            './styles/loader.css',
-            './styles/bootstrap/css/bootstrap.min.css',
-            './styles/bootstrap/css/theme.min.css',
-            './styles/font-awesome/css/font-awesome.min.css'
+            './styles/main.less'
         ]
     },
     output: {
@@ -32,11 +28,11 @@ module.exports = {
                 loaders: [ 'raw-loader' ]
             },
             {
-                test: /\.css$/,
+                test: /\.less$/,
                 exclude: /\.component\.css$/,
                 use: ExtractTextPlugin.extract({
                     fallback: "style-loader",
-                    use: "css-loader"
+                    use: [ "css-loader", "less-loader" ]
                 })
             },
             {
@@ -51,11 +47,22 @@ module.exports = {
                 test: /\.html$/,
                 exclude: /node_modules/,
                 loaders: [ 'raw-loader' ]
+            },
+            {
+                test: /\.(png|gif)$/,
+                loader: 'url-loader?limit=1024&name=images/[name].[ext]!image-webpack-loader'
+            },
+            {
+                test: /\.jpg$/,
+                loader: 'file-loader',
+                options: {
+                    name: 'images/[name].[ext]'
+                }
             }
         ]
     },
     resolve: {
-        extensions: [ '.ts', '.tsx', '.js', '.json', '.css', '.html' ]
+        extensions: [ '.ts', '.tsx', '.js', '.json', '.css', '.less', '.html' ]
     },
     plugins: [
         new ExtractTextPlugin('bundle.css'),

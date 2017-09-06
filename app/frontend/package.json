@@ -11,17 +11,15 @@
     "clean_bundle": "/usr/local/bin/rmtrash ../../public/bundles/*",
     "build": "webpack -p --config ./webpack/webpack.prod.config.js && npm run purify",
     "purify": "purifycss ../../public/bundles/bundle.css ../../public/bundles/bundle.min.js ./views/main.scala.html --min --info --out ../../public/bundles/bundle.min.css",
-    "start": "node ./webpack/webpack.dev.server"
+    "start": "node ./webpack/webpack.dev.server",
+    "postinstall": "node ./styles/semantic-fix.js"
   },
   "author": "Dmitry Bagaev",
   "dependencies": {
     "@angular/common": "4.3.4",
-    "@angular/compiler": "4.3.4",
     "@angular/core": "4.3.4",
-    "@angular/http": "4.3.4",
     "@angular/forms": "4.3.4",
     "@angular/platform-browser": "4.3.4",
-    "@angular/platform-browser-dynamic": "4.3.4",
     "@angular/router": "4.3.4",
     "core-js": "2.5.0",
     "reflect-metadata": "^0.1.10",
@@ -29,6 +27,8 @@
     "zone.js": "0.8.16"
   },
   "devDependencies": {
+    "@angular/compiler": "4.3.4",
+    "@angular/platform-browser-dynamic": "4.3.4",
     "@types/angular": "1.6.28",
     "@types/node": "8.0.20",
     "@ngtools/webpack": "1.6.0",
@@ -39,8 +39,11 @@
     "css-loader": "0.28.4",
     "style-loader": "0.18.2",
     "postcss-loader": "2.0.6",
+    "less": "2.7.2",
+    "less-loader": "4.0.5",
     "file-loader": "0.11.2",
     "url-loader": "0.5.9",
+    "image-webpack-loader": "3.4.2",
     "extract-text-webpack-plugin": "3.0.0",
     "to-string-loader": "1.1.5",
     "typescript": "2.4.2",
@@ -48,7 +51,8 @@
     "webpack-dev-server": "2.7.1",
     "webpack-dll-bundles-plugin": "1.0.0-beta.5",
     "webpack-merge": "4.1.0",
-    "purifycss": "1.2.6"
+    "purifycss": "1.2.6",
+    "semantic-ui-less": "2.2.12"
   },
   "engines": {
     "node": ">= 5",
