@@ -45,14 +45,14 @@ buildFrontend := {
     logger.log.info("Installing frontend dependencies")
     val install = Process(npm + "install", file(frontendApplicationPath)).run
     if (install.exitValue != 0) {
-        throw new IllegalStateException("Installing fronted dependecies failed!")
+        throw new IllegalStateException("Installing fronted dependencies failed!")
     }
     logger.log.info("Frontend dependencies installed successfully")
 
     logger.log.info("Building frontend bundle")
     val build = Process(npm + "run build", file(frontendApplicationPath)).run
     if (build.exitValue != 0) {
-        throw new IllegalStateException("Bulding frontend bundle failed!")
+        throw new IllegalStateException("Building frontend bundle failed!")
     }
     logger.log.info("Frontend bundle built successfully")
 }
