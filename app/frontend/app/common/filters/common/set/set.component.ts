@@ -13,6 +13,7 @@ export class SetComponent {
 
     @Input() placeholder: string;
 
+    autocompleteFocusCount: number = 0;
     @Input() allowAutocomplete: boolean = false;
     @Input() autocomplete: string[] = [];
 
@@ -29,24 +30,16 @@ export class SetComponent {
         return this.allowAutocomplete && !isUndefined(this.autocomplete) && this.autocomplete.length !== 0;
     }
 
-    isSuggestionsAllowed() : boolean {
-        return this.allowSuggestions && !isUndefined(this.suggestions) && this.suggestions.length !== 0;
-    }
-
-    isSuggestionsAvailable() : boolean {
-        return this.haveSuggestions;
-    }
-
-    isSuggestionsVisible() : boolean {
-        return this.showSuggestions;
+    isAutocompleteVisible(): boolean {
+        return this.isAutocompleteAllowed() && this.autocompleteFocusCount > 0;
     }
 
     hideAutocomplete(): void {
-        this.resultsAutocomplete.nativeElement.classList.remove('show');
+        this.autocompleteFocusCount -= 1;
     }
 
     showAutocomplete(): void {
-        this.resultsAutocomplete.nativeElement.classList.add('show');
+        this.autocompleteFocusCount += 1;
     }
 
     change(newValue: string) {
@@ -78,6 +71,7 @@ export class SetComponent {
         values[values.length - 1] = value;
         let newValue = values.join(',');
         this.change(newValue);
+        this.autocompleteFocusCount = 0;
     }
 
 }

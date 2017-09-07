@@ -2,7 +2,8 @@
     <div class="ui fluid input">
         <input [attr.placeholder]="placeholder" type="text" [ngModel]="model" (ngModelChange)="change($event)" (focus)="showAutocomplete()" (blur)="hideAutocomplete()">
     </div>
-    <div class="results transition fade element fast" *ngIf="isAutocompleteAllowed()" #resultsAutocomplete>
+    <div class="results transition show fade element fast" *ngIf="isAutocompleteVisible()" #resultsAutocomplete
+         (mouseenter)="showAutocomplete()" (mouseleave)="hideAutocomplete()">
         <a class="result" *ngFor="let value of autocomplete | autocomplete:model" (click)="append(value)">
             <div class="content">
                 <div class="title">{{ value }}</div>
