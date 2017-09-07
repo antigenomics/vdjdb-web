@@ -1,5 +1,8 @@
 @import "semantic/semantic";
 
+//Overriding some stuff
+@import "semantic/site/modules/search.override";
+
 body {
   background-color: #e1e6ed !important;
 }
@@ -8,12 +11,12 @@ body {
   height: 4em;
 }
 
-.main.container {
+.main.content {
   margin-top: 7em;
   opacity: 0;
 }
 
-.main.container.fade {
+.main.content.fade {
   -webkit-animation: fade 1s;
   animation: fade 1s;
   opacity: 1;
@@ -26,3 +29,7 @@ body {
    from {opacity: 0}
    to {opacity: 1}
  }
+
+.soft-margin {
+  margin: 1em 1%;
+}

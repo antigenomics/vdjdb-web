@@ -10,6 +10,8 @@ export class AutocompletePipe implements PipeTransform {
         if (set === '') return values;
         let setValues: string[] = set.split(',');
         let lastSetValue: string = setValues[setValues.length - 1].trim();
-        return values.filter((value: string) => value.indexOf(lastSetValue) !== -1);
+        let filtered = values.filter((value: string) => value.indexOf(lastSetValue) !== -1);
+        if (filtered.length !== 0) return filtered;
+        return ['No matches']
     }
 }

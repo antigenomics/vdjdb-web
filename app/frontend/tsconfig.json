@@ -14,7 +14,8 @@
     "alwaysStrict": true,
     "noFallthroughCasesInSwitch": true,
     "noImplicitReturns": true,
-    "noUnusedParameters": true
+    "noUnusedParameters": true,
+    "allowJs": true
   },
   "exclude": [ "node_modules" ],
   "compileOnSave": false,

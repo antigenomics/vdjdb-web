@@ -1,17 +1,12 @@
-<div class="select_drop">
-    <input class="form-control" [attr.placeholder]="placeholder" [ngModel]="model" (ngModelChange)="change($event)">
-    <div class="select_drop_container" *ngIf="isAutocompleteAllowed()">
-        <ul>
-            <li *ngFor="let value of autocomplete | autocomplete:model" (click)="append(value)">{{ value }}</li>
-        </ul>
+<div class="ui left aligned search autocomplete">
+    <div class="ui fluid input">
+        <input [attr.placeholder]="placeholder" type="text" [ngModel]="model" (ngModelChange)="change($event)">
     </div>
-    <div *ngIf="isSuggestionsAllowed()">
-        <a *ngIf="!isSuggestionsVisible" class="cursor_pointer" (click)="showSuggestions = !showSuggestions">Show suggestions</a>
-        <a *ngIf="isSuggestionsVisible" class="cursor_pointer" (click)="showSuggestions = !showSuggestions">Hide suggestions</a>
-        <ul *ngIf="isSuggestionsAvailable()">
-            <li class="cursor_pointer" *ngFor="let suggestion of availableSuggestions">
-                <b>{{ suggestion.sequence }}</b> <br> Substitutions: {{ suggestion.substitutions }}, Indels {{ suggestion.indels }}, Length: {{ suggestion.length }}, Count: {{  suggestion.count }}
-            </li>
-        </ul>
+    <div class="results transition" *ngIf="isAutocompleteAllowed()" #resultsAutocomplete>
+        <a class="result" *ngFor="let value of autocomplete | autocomplete:model" (click)="append(value)">
+            <div class="content">
+                <div class="title">{{ value }}</div>
+            </div>
+        </a>
     </div>
 </div>

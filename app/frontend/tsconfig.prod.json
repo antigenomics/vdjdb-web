@@ -20,7 +20,8 @@
     "allowUnusedLabels": false,
     "noFallthroughCasesInSwitch": true,
     "noImplicitReturns": true,
-    "noUnusedParameters": false
+    "noUnusedParameters": false,
+    "allowJs": true
   },
   "exclude": [ "node_modules" ],
   "compileOnSave": false,

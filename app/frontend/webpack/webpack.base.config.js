@@ -3,6 +3,7 @@ const path = require('path');
 const buildPath = path.resolve(__dirname, '../../../public/bundles/');
 const ExtractTextPlugin = require("extract-text-webpack-plugin");
 
+// noinspection JSUnresolvedFunction
 /**
  * Base configuration object for Webpack
  */
@@ -62,6 +63,10 @@ module.exports = {
         ]
     },
     resolve: {
+        alias: {
+            'semantic-ui': path.join(__dirname, "..", "styles", "semantic", "semantic.js"),
+            'semantic-ui-types': path.join(__dirname, "..", "styles", "semantic", "semantic.types.ts")
+        },
         extensions: [ '.ts', '.tsx', '.js', '.json', '.css', '.less', '.html' ]
     },
     plugins: [
@@ -72,6 +77,10 @@ module.exports = {
         ),
         new webpack.ProvidePlugin({
             'fetch': 'imports?this=>global!exports?global.fetch!whatwg-fetch'
+        }),
+        new webpack.ProvidePlugin({
+            $: "jquery",
+            jQuery: "jquery"
         })
     ]
 };

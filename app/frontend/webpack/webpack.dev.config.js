@@ -35,14 +35,13 @@ defaultConfiguration.plugins.push(new DllBundlesPlugin({
         ],
         vendor: [
             '@angular/compiler',
-            '@angular/platform-browser',
             '@angular/platform-browser-dynamic',
             '@angular/core',
             '@angular/common',
             '@angular/forms',
-            '@angular/http',
             '@angular/router',
-            'rxjs'
+            'rxjs',
+            'jquery'
         ]
     },
     dllDir: buildPath,

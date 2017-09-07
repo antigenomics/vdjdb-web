@@ -8,7 +8,6 @@ export class Contributors {
 @Component({
     selector: 'about',
     templateUrl: './about.component.html',
-    styleUrls:   [ './about.component.css' ],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AboutPageComponent {
@@ -46,4 +45,8 @@ export class AboutPageComponent {
             names: [ 'Jeremy C. Crawford', 'Pradyot Dash', 'Paul G. Thomas' ]
         }
     ];
+
+    joinNames(names: string[]): string {
+        return names.join(', ');
+    }
 }

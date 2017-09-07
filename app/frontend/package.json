@@ -24,13 +24,15 @@
     "core-js": "2.5.0",
     "reflect-metadata": "^0.1.10",
     "rxjs": "5.4.2",
-    "zone.js": "0.8.16"
+    "zone.js": "0.8.16",
+    "jquery": "3.2.1"
   },
   "devDependencies": {
     "@angular/compiler": "4.3.4",
     "@angular/platform-browser-dynamic": "4.3.4",
     "@types/angular": "1.6.28",
     "@types/node": "8.0.20",
+    "@types/jquery": "3.2.12",
     "@ngtools/webpack": "1.6.0",
     "@angular/compiler-cli": "4.3.4",
     "awesome-typescript-loader": "3.2.2",
@@ -52,7 +54,8 @@
     "webpack-dll-bundles-plugin": "1.0.0-beta.5",
     "webpack-merge": "4.1.0",
     "purifycss": "1.2.6",
-    "semantic-ui-less": "2.2.12"
+    "semantic-ui-less": "2.2.12",
+    "uglifyjs-webpack-plugin": "0.4.6"
   },
   "engines": {
     "node": ">= 5",

@@ -1,9 +1,12 @@
 console.log('Configuring frontend in production mode');
 
 const path = require('path');
+const buildPath = path.resolve(__dirname, '../../../public/bundles/');
+const webpackMerge = require('webpack-merge'); // used to merge webpack configs
 const webpack = require('webpack');
 const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
 const AotPlugin = require('@ngtools/webpack').AotPlugin;
+const DllBundlesPlugin = require('webpack-dll-bundles-plugin').DllBundlesPlugin;
 
 const defaultConfiguration = require('./webpack.base.config');
 

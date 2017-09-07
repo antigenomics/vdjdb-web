@@ -1,7 +1,6 @@
 import { Component } from '@angular/core';
 import { DatabaseService } from './database/database.service';
 
-
 @Component({
     selector: 'application',
     template: `<navbar></navbar>
@@ -10,5 +9,5 @@ import { DatabaseService } from './database/database.service';
                </div>`
 })
 export class AppComponent {
-    constructor(private database: DatabaseService) {}
+  constructor (private database: DatabaseService) {}
 }

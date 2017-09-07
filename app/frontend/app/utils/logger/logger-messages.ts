@@ -16,16 +16,18 @@ export class LoggerMessage {
 
     constructor(content: any, type?: LoggerMessageType, title?: string, notification?: boolean, debug?: boolean) {
         this._content = content;
-        if (!isUndefined(type)) {
+        if (type) {
             this._type = type;
         }
-        if (!isUndefined(title)) {
+        if (title) {
             this._title = title;
+        } else {
+            this._title = '';
         }
-        if (!isUndefined(notification)) {
+        if (notification) {
             this._notification = notification;
         }
-        if (!isUndefined(debug)) {
+        if (debug) {
             this._debug = debug;
         }
     }
@@ -60,7 +62,7 @@ export class LoggerInfoMessage extends LoggerMessage {
 
 export class LoggerInfoDebugMessage extends LoggerInfoMessage {
     constructor(content: any, title?: string, notification?: boolean) {
-        super(content, 'Debug: ' + title, notification, true);
+        super(content, 'Debug: ' + title ? title : '', notification, true);
     }
 }
 
@@ -79,7 +81,7 @@ export class LoggerWarningMessage extends LoggerMessage {
 
 export class LoggerWarningDebugMessage extends LoggerWarningMessage {
     constructor(content: any, title?: string, notification?: boolean) {
-        super(content, 'Debug: ' + title, notification, true);
+        super(content, 'Debug: ' + title ? title : '', notification, true);
     }
 }
 
@@ -98,7 +100,7 @@ export class LoggerErrorMessage extends LoggerMessage {
 
 export class LoggerErrorDebugMessage extends LoggerErrorMessage {
     constructor(content: any, title?: string, notification?: boolean) {
-        super(content, 'Debug: ' + title, notification, true);
+        super(content, 'Debug: ' + title ? title : '', notification, true);
     }
 }
 

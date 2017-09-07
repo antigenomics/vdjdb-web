@@ -1,11 +1,10 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, EventEmitter, Input, Output, Renderer2, ViewChild } from '@angular/core';
 import { isUndefined } from 'util';
 
 
 @Component({
     selector: 'set',
     templateUrl: './set.component.html',
-    styleUrls: [ './set.component.css' ],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SetComponent {
@@ -19,6 +18,8 @@ export class SetComponent {
 
     @Input() allowSuggestions: boolean = false;
     @Input() suggestions: any = {}; //TODO
+
+    @ViewChild('resultsAutocomplete') resultsAutocomplete: ElementRef;
 
     haveSuggestions: boolean = false;
     showSuggestions: boolean = false;
@@ -43,6 +44,11 @@ export class SetComponent {
     change(newValue: string) {
         this.model = newValue;
         this.modelChange.emit(newValue);
+
+        this.resultsAutocomplete.nativeElement.classList.add('show');
+        setTimeout(() => {
+            this.resultsAutocomplete.nativeElement.classList.remove('show');
+        }, 1500);
 
         if (this.allowSuggestions) {
             this.availableSuggestions.splice(0, this.availableSuggestions.length);

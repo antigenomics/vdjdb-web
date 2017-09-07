@@ -4,7 +4,6 @@ import { Filter, FilterInterface, FilterSavedState, FilterType } from '../../fil
 import { Subject } from 'rxjs/Subject';
 import { DatabaseService } from '../../../../database/database.service';
 import { DatabaseMetadata } from '../../../../database/database-metadata';
-import { Subscription } from 'rxjs/Subscription';
 
 
 @Component({
