@@ -1,14 +1,11 @@
-<div class="ui horizontal divider">
-    General
-</div>
-<!--<p>Search for specified parent species of a TCR and receptor chain (alpha or beta). You can also specify to show only records that have both TCR alpha and-->
-   <!--beta chain sequences (paired records).</p>-->
+<filters-header title="General" help="Search for specified parent species of a TCR and receptor chain (alpha or beta). You can also specify to show only records that have both TCR alpha and beta chain sequences (paired records)">
+</filters-header>
 <div class="ui grid">
-    <div class="six column row">
-        <div class="column">
-            Species
+    <div class="row">
+        <div class="three wide column">
+            <b>Species</b>
         </div>
-        <div class="column">
+        <div class="three wide column">
             <div class="ui checkbox">
                 <input [(ngModel)]="human" type="checkbox">
                 <label>Human</label>
@@ -22,16 +19,15 @@
                 <label>Mouse</label>
             </div>
         </div>
-        <div class="column"></div>
-        <div class="column">
-            Gene (chain)
+        <div class="two wide column"></div>
+        <div class="three wide column">
+            <b>Gene (chain)</b>
         </div>
-        <div class="column">
+        <div class="two wide column">
             <div class="ui checkbox">
                 <input [(ngModel)]="tra" type="checkbox">
                 <label>TRA</label>
             </div>
-            <br>
             <div class="ui checkbox">
                 <input [(ngModel)]="trb" type="checkbox">
                 <label>TRB</label>

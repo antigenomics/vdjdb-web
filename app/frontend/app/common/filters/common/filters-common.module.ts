@@ -1,14 +1,14 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
-import { CheckboxComponent } from "./checkbox/checkbox.component";
 import { SetComponent } from "./set/set.component";
 import { AutocompletePipe } from "./set/autocomplete.pipe";
+import { FiltersHeaderComponent } from "./header/filters-header.component";
 
 
 @NgModule({
     imports:         [ BrowserModule, FormsModule ],
-    declarations:    [ CheckboxComponent, SetComponent, AutocompletePipe ],
-    exports:         [ CheckboxComponent, SetComponent, AutocompletePipe ]
+    declarations:    [ SetComponent, AutocompletePipe, FiltersHeaderComponent ],
+    exports:         [ SetComponent, AutocompletePipe, FiltersHeaderComponent ]
 })
-export class FiltersFormsModule {}
+export class FiltersCommonModule {}

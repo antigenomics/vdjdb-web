@@ -1,26 +1,15 @@
-<div class="ui horizontal divider">
-    CDR3
-</div>
-<!--<p>Narrow search to a specific CDR3 motif or sequence different by no more than the specified number of mismatches from the query.</p>-->
-<!--<p>Sequence and pattern filter supports 20 amino acids, X for an unknown amino acid and amino acid groups specified with '[.]'. For example 'CASSL[ASR]PGATNEKLFF' will search-->
-<!--for 'CASSLaPGATNEKLFF', 'CASSLsPGATNEKLFF' and 'CASSLrPGATNEKLFF'. By default the search expects full match, which can be disabled by checking the substring checkbox.</p>-->
-<!--<p>Hamming distance filter expects complete sequence with no wildcards, and user can specify the number of substitutions, insertions and deletions allowed during the-->
-<!--search.</p>-->
-
-<div class="ui grid stackable">
-    <!--<div class="row">-->
-        <!--<div class="four wide column">-->
-            <!--CDR3 Length-->
-        <!--</div>-->
-        <!--<div class="twelve wide column">-->
-            <!--Slider here-->
-        <!--</div>-->
-    <!--</div>-->
+<filters-header title="CDR3" help="<p>Narrow search to a specific CDR3 motif or sequence different by no more than the specified number of mismatches from the query.</p>
+<p>Sequence and pattern filter supports 20 amino acids, X for an unknown amino acid and amino acid groups specified with '[.]'. For example 'CASSL[ASR]PGATNEKLFF' will search
+for 'CASSLaPGATNEKLFF', 'CASSLsPGATNEKLFF' and 'CASSLrPGATNEKLFF'. By default the search expects full match, which can be disabled by checking the substring checkbox.</p>
+<p>Hamming distance filter expects complete sequence with no wildcards, and user can specify the number of substitutions, insertions and deletions allowed during the
+search.</p>">
+</filters-header>
+<div class="ui grid">
     <div class="row middle aligned">
         <div class="three wide column">
-            <b>Variable segment(s)</b>
+            <b>Sequence or pattern</b>
         </div>
-        <div class="thirteen wide column">
+        <div class="twelve wide column">
             <div class="ui right labeled fluid input" [ngClass]="{'error':!isPatternValid()}">
                 <input placeholder="Amino acid pattern, e.g. CSAR[DE]GTGNGYTF or CSARDXTGNGYTF." type="text" [ngModel]="pattern" (ngModelChange)="checkPattern($event)">
                 <div class="ui basic label">

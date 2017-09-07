@@ -1,29 +1,26 @@
-<div class="ui horizontal divider">
-    Germline sequence
-</div>
-<!--<p>Specify Variable (V) and Joining (J) segment filters.</p>-->
-<!--<p>Click on the text field to see the list of known V/J segment IDs, start typing to narrow the list. Multiple IDs can be selected by separating-->
-   <!--them with a comma.</p>-->
-<!--<p>Incomplete queries will be treated as substrings. For example 'TRBV7' will match 'TRBV7-2*01, TRBV7-2*02, ... and TRBV7-9*01, TRBV7-9*02, ...',-->
-   <!--'TRBV7-2' will match 'TRBV7-2*01, TRBV7-2*02, ...', etc.</p>-->
-
-<div class="ui grid stackable">
+<filters-header title="General" help="<p>Specify Variable (V) and Joining (J) segment filters.</p>
+    <p>Click on the text field to see the list of known V/J segment IDs, start typing to narrow the list. Multiple IDs can be selected by separating
+       them with a comma.</p>
+    <p>Incomplete queries will be treated as substrings. For example 'TRBV7' will match 'TRBV7-2*01, TRBV7-2*02, ... and TRBV7-9*01, TRBV7-9*02, ...',
+       'TRBV7-2' will match 'TRBV7-2*01, TRBV7-2*02, ...', etc.</p>">
+</filters-header>
+<div class="ui grid">
     <div class="row middle aligned">
         <div class="three wide column">
             <b>Variable segment(s)</b>
         </div>
-        <div class="thirteen wide column">
+        <div class="twelve wide column">
             <set [(model)]="vSegment"
-            placeholder="Comma separated list of V segments, start typing to see suggestions..."
-            allowAutocomplete="true"
-            [autocomplete]="vSegmentAutocomplete"></set>
+                 placeholder="Comma separated list of V segments, start typing to see suggestions..."
+                 allowAutocomplete="true"
+                 [autocomplete]="vSegmentAutocomplete"></set>
         </div>
     </div>
     <div class="row middle aligned">
         <div class="three wide column">
             <b>Joining segment(s)</b>
         </div>
-        <div class="thirteen wide column">
+        <div class="twelve wide column">
             <set [(model)]="jSegment"
                  placeholder="Comma separated list of J segments, start typing to see suggestions..."
                  allowAutocomplete="true"

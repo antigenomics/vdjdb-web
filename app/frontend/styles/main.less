@@ -16,11 +16,17 @@ body {
   opacity: 0;
 }
 
-.main.content.fade {
+.fade.element {
   -webkit-animation: fade 1s;
   animation: fade 1s;
   opacity: 1;
 }
+
+.fade.element.fast {
+  -webkit-animation: fade 0.2s !important;
+  animation: fade 0.2s !important;
+}
+
 /* -fail- */
 @-webkit-keyframes fade {
   from {opacity: 0}
@@ -32,4 +38,8 @@ body {
 
 .soft-margin {
   margin: 1em 1%;
+}
+
+.cursor.pointer {
+  cursor: pointer;
 }

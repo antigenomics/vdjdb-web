@@ -41,14 +41,17 @@ export class SetComponent {
         return this.showSuggestions;
     }
 
+    hideAutocomplete(): void {
+        this.resultsAutocomplete.nativeElement.classList.remove('show');
+    }
+
+    showAutocomplete(): void {
+        this.resultsAutocomplete.nativeElement.classList.add('show');
+    }
+
     change(newValue: string) {
         this.model = newValue;
         this.modelChange.emit(newValue);
-
-        this.resultsAutocomplete.nativeElement.classList.add('show');
-        setTimeout(() => {
-            this.resultsAutocomplete.nativeElement.classList.remove('show');
-        }, 1500);
 
         if (this.allowSuggestions) {
             this.availableSuggestions.splice(0, this.availableSuggestions.length);

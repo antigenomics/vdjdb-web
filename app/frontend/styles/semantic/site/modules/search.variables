@@ -1,5 +1,5 @@
 @resultsDistance: 0px;
 @resultPadding: 5px 1em;
 
-@resultsMaxHeight: 200px;
+@resultsMaxHeight: 210px;
 @resultsMaxHeightOverflow: scroll;
