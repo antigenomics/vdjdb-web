@@ -1,0 +1,8 @@
+{
+  "name": "VDJdb",
+  "short_name": "VDJdb",
+  "background_color": "white",
+  "description": "VDJdb web browser application",
+  "display": "standalone",
+  "lang": "en-US"
+}

@@ -1,32 +1,30 @@
-<tooltip-content #MetaReliabilityTooltip>
-    <p>Filter records based on VDJdb confidence score: the higher the better, defined according to assay metadata, more details can be found in VDJdb specification.
+<filters-header title="Record reliability" help="<p>Filter records based on VDJdb confidence score: the higher the better, defined according to assay metadata, more details can be found in VDJdb specification.
     <p>Check the corresponding box to include non-canonical CDR3 sequences, i.e. those that do not start with a conserved Cys and end with a conserved Phe/Trp, or CDR3
-       sequences for which our dedicated algorithm was not unable to fix missing V/J segments or map them.</p>
-</tooltip-content>
+       sequences for which our dedicated algorithm was not unable to fix missing V/J segments or map them.</p>">
+</filters-header>
 
-<div class="panel panel-default" ng-if="meta_options.reliability">
-    <div class="panel-heading">
-        <h4 class="panel-title">
-            Record reliability
-            <i [tooltip]="MetaReliabilityTooltip" tooltipPlacement="right" class="fa fa-question-circle"></i>
-        </h4>
-    </div>
-    <div class="panel-body">
-        <div class="row">
-            <div class="col-xs-3">
-                <p class="p_label">Minimal confidence score</p>
+<div class="ui grid">
+    <div class="row">
+        <div class="three wide column">
+            <b>Minimal confidence score</b>
+        </div>
+        <div class="four wide column">
+            <div class="ui input">
+                <input class="form-control" value="0" type="number" min="0" max="3" [(ngModel)]="minimalConfidenceScore" />
             </div>
-            <div class="col-xs-2">
-                <input class="form-control" value="0" type="number" min="0" max="3" [(ngModel)]="minimalConfidenceScore"/>
+        </div>
+        <div class="two wide column"></div>
+        <div class="two wide column">
+            <b>Spurious CDR3</b>
+        </div>
+        <div class="five wide column">
+            <div class="ui checkbox">
+                <input [(ngModel)]="nonCanonical" type="checkbox">
+                <label>Include non-canonical</label>
             </div>
-            <div class="col-xs-1">
-            </div>
-            <div class="col-xs-2">
-                <p class="p_label">Spurious CDR3</p>
-            </div>
-            <div class="col-xs-3">
-                <!--<checkbox [(model)]="nonCanonical" title="Include non-canonical"></checkbox>-->
-                <!--<checkbox [(model)]="unmapped" title="Incl. unmapped V/J"></checkbox>-->
+            <div class="ui checkbox">
+                <input [(ngModel)]="unmapped" type="checkbox">
+                <label>Include unmapped V/J</label>
             </div>
         </div>
     </div>

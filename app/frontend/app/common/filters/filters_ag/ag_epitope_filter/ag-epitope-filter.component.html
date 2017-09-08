@@ -1,43 +1,35 @@
-<tooltip-content #AGEpitopeTooltip>
-    <p>Specify the epitope sequences or sequence pattern.</p>
+<filters-header title="Epitope" help="<p>Specify the epitope sequences or sequence pattern.</p>
     <p>In case of searching for a set of sequences click on the text field to the right of 'Sequence(s)', start typing to narrow the list. Multiple sequences can be selected by
        separating them with a comma.</p>
     <p>Sequence and pattern filter supports 20 amino acids, X for an unknown amino acid and amino acid groups specified with '[.]'. For example 'GILG[FG]VFTL' will search for
        'GILGgVFTL' and 'GILGfVFTL'. By default the search expects full match, which can be disabled by checking the substring checkbox.</p>
-    <p>After selecting an epitope from the database in the 'Sequence(s)' field, you can click the suggestions button below to view the list of similar epitopes.</p>
-</tooltip-content>
+    <p>After selecting an epitope from the database in the 'Sequence(s)' field, you can click the suggestions button below to view the list of similar epitopes.</p>">
+</filters-header>
 
-<div class="panel panel-default">
-    <div class="panel-heading">
-        <h4 class="panel-title">
-            Epitope
-            <i [tooltip]="AGEpitopeTooltip" tooltipPlacement="right" class="fa fa-question-circle"></i>
-        </h4>
-    </div>
-    <div class="panel-body">
-        <div class="row">
-            <div class="col-xs-3">
-                <p class="p_label">Sequence(s)</p>
-            </div>
-            <div class="col-xs-8">
-                <set [(model)]="epitopeSequence"
-                     placeholder="Comma separated list of epitope sequences, start typing to see suggestions..."
-                     [search]="epitopeValues"></set>
-            </div>
+<div class="ui grid">
+    <div class="row middle aligned">
+        <div class="three wide column">
+            <b>Sequence(s)</b>
         </div>
-        <br>
-        <div class="row">
-            <div class="col-xs-3">
-                <p class="p_label">Sequence or pattern</p>
-            </div>
-            <div class="col-xs-7">
-                <div class="form-group" [ngClass]="{'has-error has-feedback':!isPatternValid()}">
-                    <input class="form-control" placeholder="Amino acid pattern, e.g. CSAR[DE]GTGNGYTF or CSARDXTGNGYTF." [ngModel]="epitopePattern" (ngModelChange)="checkPattern($event)">
-                    <span class="glyphicon glyphicon-remove form-control-feedback" *ngIf="!isPatternValid()"></span>
+        <div class="twelve wide column">
+            <set [(model)]="epitopeSequence"
+                 placeholder="Comma separated list of epitope sequences, start typing to see suggestions..."
+                 [search]="epitopeValues"></set>
+        </div>
+    </div>
+    <div class="row middle aligned">
+        <div class="three wide column">
+            <b>Sequence or pattern</b>
+        </div>
+        <div class="twelve wide column">
+            <div class="ui right labeled fluid input" [ngClass]="{'error':!isPatternValid()}">
+                <input placeholder="Amino acid pattern, e.g. CSAR[DE]GTGNGYTF or CSARDXTGNGYTF." type="text" [ngModel]="epitopePattern" (ngModelChange)="checkPattern($event)">
+                <div class="ui basic label">
+                    <div class="ui checkbox">
+                        <input [(ngModel)]="epitopePatternSubstring" type="checkbox">
+                        <label>Substring</label>
+                    </div>
                 </div>
-            </div>
-            <div class="col-xs-2">
-                <!--<checkbox [(model)]="epitopePatternSubstring" title="Substring"></checkbox>-->
             </div>
         </div>
     </div>

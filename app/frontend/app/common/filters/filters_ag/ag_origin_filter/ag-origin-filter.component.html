@@ -1,37 +1,26 @@
-<tooltip-content #AGOriginTooltip>
-    <p>List the representative parent species and genes of the antigen.</p>
+<filters-header title="Origin" help="<p>List the representative parent species and genes of the antigen.</p>
     <p>Click on the text field to see the list of known species/genes, start typing to narrow the list.
-       Multiple species/genes can be selected by separating them with a comma.</p>
-</tooltip-content>
-
-<div class="panel panel-default">
-    <div class="panel-heading">
-        <h4 class="panel-title">
-            Origin
-            <i [tooltip]="AGOriginTooltip" tooltipPlacement="right" class="fa fa-question-circle"></i>
-        </h4>
-    </div>
-    <div class="panel-body">
-        <div class="row">
-            <div class="col-xs-3">
-                <p class="p_label">Source species</p>
-            </div>
-            <div class="col-xs-8">
-                <set [(model)]="species"
-                     placeholder="Comma separated list of antigen species, start typing to see suggestions..."
-                     [search]="speciesValues"></set>
-            </div>
+       Multiple species/genes can be selected by separating them with a comma.</p>">
+</filters-header>
+<div class="ui grid">
+    <div class="row middle aligned">
+        <div class="three wide column">
+            <b>Source species</b>
         </div>
-        <br>
-        <div class="row">
-            <div class="col-xs-3">
-                <p class="p_label">Parent gene</p>
-            </div>
-            <div class="col-xs-8">
-                <set [(model)]="genes"
-                     placeholder="Comma separated list of antigen genes, start typing to see suggestions..."
-                     [search]="genesValues"></set>
-            </div>
+        <div class="twelve wide column">
+            <set [(model)]="species"
+                 placeholder="Comma separated list of antigen species, start typing to see suggestions..."
+                 [search]="speciesValues"></set>
+        </div>
+    </div>
+    <div class="row middle aligned">
+        <div class="three wide column">
+            <b>Parent gene</b>
+        </div>
+        <div class="twelve wide column">
+            <set [(model)]="genes"
+                 placeholder="Comma separated list of antigen genes, start typing to see suggestions..."
+                 [search]="genesValues"></set>
         </div>
     </div>
 </div>
