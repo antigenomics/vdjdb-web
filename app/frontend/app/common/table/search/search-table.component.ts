@@ -7,9 +7,5 @@ import { SearchTableService } from "./search-table.service";
     templateUrl: './search-table.component.html'
 })
 export class SearchTableComponent {
-
-    constructor(private table: SearchTableService) {
-
-    }
-
+    constructor(public table: SearchTableService) {}
 }

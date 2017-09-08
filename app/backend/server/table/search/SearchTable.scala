@@ -51,5 +51,5 @@ case class SearchTable(private var pageSize: Int = SearchTable.DEFAULT_PAGE_SIZE
 }
 
 object SearchTable {
-    val DEFAULT_PAGE_SIZE: Int = 100
+    val DEFAULT_PAGE_SIZE: Int = 25
 }

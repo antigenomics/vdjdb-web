@@ -36,7 +36,7 @@ export class SearchPageComponent {
         }
     }
 
-    search(scroll: boolean = true): void {
+    search(scrollToTable: boolean = true): void {
         if (!this.loading) {
             this.loading = true;
 
@@ -53,7 +53,7 @@ export class SearchPageComponent {
                 next: (table: any) => {
                     this.table.update(table);
                     this.loading = false;
-                    if (scroll) Utils.scroll(this.tableRow.nativeElement);
+                    if (scrollToTable) Utils.scroll(this.tableRow.nativeElement);
                 }
             })
         } else {

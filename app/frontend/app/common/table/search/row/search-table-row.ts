@@ -12,8 +12,8 @@ export class SearchTableRow {
     entries: SearchTableEntry[];
     metadata: SearchTableRowMetadata;
 
-    constructor(row: any, ) {
-        this.entries = row.entries.map((entry: any) => new SearchTableEntry(entry.column, entry.value))
+    constructor(row: any) {
+        this.entries = row.entries.map((entry: any) => new SearchTableEntry(entry.column, entry.value));
         this.metadata = new SearchTableRowMetadata(row.metadata)
     }
 }

@@ -6,7 +6,7 @@
     </thead>
     <tbody>
     <tr *ngFor="let row of table.rows">
-        <td *ngFor="let entry of row.entries" [innerHTML]="entry.value"></td>
+        <td *ngFor="let entry of row.entries" [innerHTML]="entry.value | entryPipe:entry.column"></td>
     </tr>
     </tbody>
     <tfoot>

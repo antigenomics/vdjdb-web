@@ -1,5 +1,6 @@
 import { Injectable } from "@angular/core";
 import { SearchTableRow } from "./row/search-table-row";
+import { DomSanitizer } from "@angular/platform-browser";
 
 @Injectable()
 export class SearchTableService {
