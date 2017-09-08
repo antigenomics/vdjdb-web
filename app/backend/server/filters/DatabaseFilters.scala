@@ -5,6 +5,7 @@ import java.util
 import backend.server.database.Database
 import com.antigenomics.vdjdb.sequence.SequenceFilter
 import com.antigenomics.vdjdb.text._
+import scala.collection.JavaConverters._
 
 import scala.collection.mutable.ListBuffer
 
@@ -18,7 +19,7 @@ object DatabaseFilters {
         val sequence = new util.ArrayList[SequenceFilter]()
 
         request.foreach((filter: RequestFilter) => {
-            if (metadata.columns.exists(_.name == filter.column)) {
+            if (database.getInstance.getDbInstance.getColumns.asScala.exists(_.getName == filter.column)) {
                 filter.filterType match {
                     case FilterType.Exact => text.add(new ExactTextFilter(filter.column, filter.value, filter.negative))
                     case FilterType.SubstringSet => text.add(new SubstringSetTextFilter(filter.column, filter.value, filter.negative))

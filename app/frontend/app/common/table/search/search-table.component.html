@@ -1,27 +1,15 @@
-<div class="panel panel-primary">
-    <div class="panel-heading text-center">
-        <h3 class="panel-title">
-            Results
-        </h3>
-    </div>
-    <div class="panel-body">
-        <div class="table_wrapper">
-            <div class="table_scroll_wrapper">
-                <table class="table table-hover table-bordered table-condensed compact">
-                    <thead search-table-columns *ngIf="!loading"></thead>
-                    <tbody>
-                        <tr *ngIf="loading">
-                            <td align="center" colspan="16">
-                                <div class="spinner">
-                                    <div class="cube1"></div>
-                                    <div class="cube2"></div>
-                                </div>
-                            </td>
-                        </tr>
-                    </tbody>
-                    <tfoot search-table-columns *ngIf="!loading"></tfoot>
-                </table>
-            </div>
-        </div>
-    </div>
-</div>
+<table class="ui stackable celled selectable stripped very basic compact small table">
+    <thead>
+    <tr>
+        <th *ngFor="let column of table.columns">{{ column }}</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr *ngFor="let row of table.rows">
+        <td *ngFor="let entry of row.entries" [innerHTML]="entry.value"></td>
+    </tr>
+    </tbody>
+    <tfoot>
+        <th *ngFor="let column of table.columns">{{ column }}</th>
+    </tfoot>
+</table>

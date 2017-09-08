@@ -60,11 +60,14 @@
                 </filters-group>
             </div>
         </div>
-        <div class="row">
+        <div class="row" #tableRow>
             <div class="column">
                 <div class="ui raised segments">
                     <h3 class="ui top attached header">Results</h3>
-                    <div class="ui attached teal padded segment">
+                    <div class="ui attached teal padded blurring segment">
+                        <div class="ui inverted dimmer" [ngClass]="{'active':loading}">
+                            <div class="ui large text loader top element">Updating</div>
+                        </div>
                         <search-table></search-table>
                     </div>
                 </div>

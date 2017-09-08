@@ -78,6 +78,11 @@ export class DatabaseService {
         });
     }
 
+    getMessages(action: DatabaseServiceActions): any {
+        return this.messages
+                   .filter((message: any) => message.action === action && message.status === DatabaseServiceResponseStatusType.Success);
+    }
+
     sendMessage(message: DatabaseServiceRequestMessage) {
         this.connection.next(JSON.stringify(message));
     }

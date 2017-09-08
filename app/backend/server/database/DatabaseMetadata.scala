@@ -18,7 +18,11 @@ object DatabaseMetadata {
         val dbInstance = instance.getDbInstance
         val numberOfRecords = dbInstance.getRows.size()
         val numberOfColumns = dbInstance.getColumns.size()
-        val columns = dbInstance.getColumns.asScala.map((c: Column) => DatabaseColumnInfo.createInfoFromColumn(c)).toList
+        val columns = dbInstance.getColumns
+            .asScala
+            .map((c: Column) => DatabaseColumnInfo.createInfoFromColumn(c))
+            .filter((info: DatabaseColumnInfo) => info.visible)
+            .toList
         DatabaseMetadata(numberOfRecords, numberOfColumns, columns)
     }
 }

@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
-import { documentScroll } from "../../utils/scroll.util";
+import { Utils } from "../../utils/scroll.util";
 
 @Component({
     selector:    'navbar',
@@ -12,6 +12,6 @@ export class NavigationBarComponent {
 
     route(url: string): void {
         // noinspection JSIgnoredPromiseFromCall
-        this.router.navigate([ url ]).then(() =>  documentScroll(document.body, 0, 250));
+        this.router.navigate([ url ]).then(() =>  Utils.scroll(document.body));
     }
 }
