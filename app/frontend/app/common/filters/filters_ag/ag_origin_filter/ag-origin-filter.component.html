@@ -19,8 +19,7 @@
             <div class="col-xs-8">
                 <set [(model)]="species"
                      placeholder="Comma separated list of antigen species, start typing to see suggestions..."
-                     allowAutocomplete="true"
-                     [autocomplete]="speciesAutocomplete"></set>
+                     [search]="speciesValues"></set>
             </div>
         </div>
         <br>
@@ -31,8 +30,7 @@
             <div class="col-xs-8">
                 <set [(model)]="genes"
                      placeholder="Comma separated list of antigen genes, start typing to see suggestions..."
-                     allowAutocomplete="true"
-                     [autocomplete]="genesAutocomplete"></set>
+                     [search]="genesValues"></set>
             </div>
         </div>
     </div>

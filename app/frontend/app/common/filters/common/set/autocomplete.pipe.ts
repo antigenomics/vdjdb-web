@@ -1,5 +1,6 @@
 import { Pipe, PipeTransform } from '@angular/core';
 import { isUndefined } from "util";
+import { SetComponent } from "./set.component";
 
 @Pipe({
     name: 'autocomplete'
@@ -21,7 +22,7 @@ export class AutocompletePipe implements PipeTransform {
 
     private static addTriplePoints(values: string[]): string[] {
         if (values.length > AutocompletePipe.maxElements) {
-            return values.slice(0, AutocompletePipe.maxElements).concat([ '....' ])
+            return values.slice(0, AutocompletePipe.maxElements).concat([ SetComponent.dots ])
         } else return values;
     }
 }

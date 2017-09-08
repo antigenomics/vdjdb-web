@@ -1,10 +1,9 @@
-<div class="ui left aligned search autocomplete">
+<div class="ui left aligned search">
     <div class="ui fluid input">
-        <input [attr.placeholder]="placeholder" type="text" [ngModel]="model" (ngModelChange)="change($event)" (focus)="showAutocomplete()" (blur)="hideAutocomplete()">
+        <input [attr.placeholder]="placeholder" type="text" [ngModel]="model" (ngModelChange)="change($event)" (focus)="onFocusIn()" (blur)="onFocusOut()">
     </div>
-    <div class="results transition show fade element fast" *ngIf="isAutocompleteVisible()" #resultsAutocomplete
-         (mouseenter)="showAutocomplete()" (mouseleave)="hideAutocomplete()">
-        <a class="result" *ngFor="let value of autocomplete | autocomplete:model" (click)="append(value)">
+    <div class="results fade element fast" style="display: block !important;" *ngIf="searchVisible">
+        <a class="result" *ngFor="let value of search | autocomplete:model" (mousedown)="append(value)">
             <div class="content">
                 <div class="title">{{ value }}</div>
             </div>

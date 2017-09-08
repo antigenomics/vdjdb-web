@@ -13,7 +13,7 @@ import { DatabaseMetadata } from '../../../../database/database-metadata';
 })
 export class AGEpitopeFilterComponent extends FilterInterface {
     epitopeSequence: string;
-    epitopeAutocomplete: string[];
+    epitopeValues: string[];
 
     epitopePattern: string;
     epitopePatternSubstring: boolean;
@@ -23,7 +23,7 @@ export class AGEpitopeFilterComponent extends FilterInterface {
         super(filters);
         database.getMetadata().take(1).subscribe({
             next: (metadata: DatabaseMetadata) => {
-                this.epitopeAutocomplete = metadata.getColumnInfo('antigen.epitope').values;
+                this.epitopeValues = metadata.getColumnInfo('antigen.epitope').values;
             }
         })
     }

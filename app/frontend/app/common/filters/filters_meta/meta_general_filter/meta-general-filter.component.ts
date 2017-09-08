@@ -12,7 +12,7 @@ import { DatabaseMetadata } from '../../../../database/database-metadata';
 })
 export class MetaGeneralFilterComponent extends FilterInterface {
     references: string;
-    referencesAutocomplete: string[];
+    referencesValues: string[];
 
     methodSort: boolean;
     methodCulture: boolean;
@@ -26,7 +26,7 @@ export class MetaGeneralFilterComponent extends FilterInterface {
         super(filters);
         database.getMetadata().take(1).subscribe({
             next: (metadata: DatabaseMetadata) => {
-                this.referencesAutocomplete = metadata.getColumnInfo('reference.id').values;
+                this.referencesValues = metadata.getColumnInfo('reference.id').values;
             }
         })
 

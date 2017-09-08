@@ -12,8 +12,7 @@
         <div class="twelve wide column">
             <set [(model)]="firstChain"
                  placeholder="Comma separated list of MHC alleles, start typing to see suggestions..."
-                 allowAutocomplete="true"
-                 [autocomplete]="firstChainAutocomplete"></set>
+                 [search]="firstChainValues"></set>
         </div>
     </div>
     <div class="row middle aligned">
@@ -23,8 +22,7 @@
         <div class="twelve wide column">
             <set [(model)]="secondChain"
                  placeholder="Comma separated list of MHC alleles, start typing to see suggestions..."
-                 allowAutocomplete="true"
-                 [autocomplete]="secondChainAutocomplete"></set>
+                 [search]="secondChainValues"></set>
         </div>
     </div>
 </div>

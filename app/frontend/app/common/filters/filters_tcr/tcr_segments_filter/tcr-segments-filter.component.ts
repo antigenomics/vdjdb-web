@@ -4,7 +4,6 @@ import { Filter, FilterInterface, FilterSavedState, FilterType } from '../../fil
 import { Subject } from 'rxjs/Subject';
 import { DatabaseService } from '../../../../database/database.service';
 import { DatabaseMetadata } from '../../../../database/database-metadata';
-import { Subscription } from 'rxjs/Subscription';
 import 'rxjs/add/operator/take';
 
 
@@ -14,19 +13,17 @@ import 'rxjs/add/operator/take';
 })
 export class TCRSegmentsFilterComponent extends FilterInterface {
     vSegment: string;
-    vSegmentAutocomplete: string[];
+    vSegmentValues: string[];
 
     jSegment: string;
-    jSegmentAutocomplete: string[];
-
-    subscription: Subscription;
+    jSegmentValues: string[];
 
     constructor(filters: FiltersService, database: DatabaseService) {
         super(filters);
         database.getMetadata().take(1).subscribe({
             next: (metadata: DatabaseMetadata) => {
-                this.vSegmentAutocomplete = metadata.getColumnInfo('v.segm').values;
-                this.jSegmentAutocomplete = metadata.getColumnInfo('j.segm').values;
+                this.vSegmentValues = metadata.getColumnInfo('v.segm').values;
+                this.jSegmentValues = metadata.getColumnInfo('j.segm').values;
             }
         });
     }

@@ -24,7 +24,6 @@ export class FiltersGroupComponent implements OnDestroy, OnInit {
     }
 
     ngOnDestroy(): void {
-        console.log({ collapsed: this.accordionContent.nativeElement.classList.contains('active') });
         this.group.saveState(this.title, { collapsed: !this.accordionContent.nativeElement.classList.contains('active') });
     }
 }

@@ -12,17 +12,17 @@ import { DatabaseMetadata } from '../../../../database/database-metadata';
 })
 export class AGOriginFilterComponent extends FilterInterface {
     species: string;
-    speciesAutocomplete: string[];
+    speciesValues: string[];
 
     genes: string;
-    genesAutocomplete: string[];
+    genesValues: string[];
 
     constructor(filters: FiltersService, database: DatabaseService) {
         super(filters);
         database.getMetadata().take(1).subscribe({
             next: (metadata: DatabaseMetadata) => {
-                this.speciesAutocomplete = metadata.getColumnInfo('antigen.species').values;
-                this.genesAutocomplete = metadata.getColumnInfo('antigen.gene').values;
+                this.speciesValues = metadata.getColumnInfo('antigen.species').values;
+                this.genesValues = metadata.getColumnInfo('antigen.gene').values;
             }
         })
     }

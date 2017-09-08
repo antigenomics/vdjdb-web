@@ -12,17 +12,17 @@ import { DatabaseMetadata } from '../../../../database/database-metadata';
 })
 export class MHCHaplotypeFilterComponent extends FilterInterface {
     firstChain: string;
-    firstChainAutocomplete: string[];
+    firstChainValues: string[];
 
     secondChain: string;
-    secondChainAutocomplete: string[];
+    secondChainValues: string[];
 
     constructor(filters: FiltersService, database: DatabaseService) {
         super(filters);
         database.getMetadata().take(1).subscribe({
             next: (metadata: DatabaseMetadata) => {
-                this.firstChainAutocomplete = metadata.getColumnInfo('mhc.a').values;
-                this.secondChainAutocomplete = metadata.getColumnInfo('mhc.b').values;
+                this.firstChainValues = metadata.getColumnInfo('mhc.a').values;
+                this.secondChainValues = metadata.getColumnInfo('mhc.b').values;
             }
         });
     }

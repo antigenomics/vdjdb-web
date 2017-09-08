@@ -12,8 +12,7 @@
         <div class="twelve wide column">
             <set [(model)]="vSegment"
                  placeholder="Comma separated list of V segments, start typing to see suggestions..."
-                 allowAutocomplete="true"
-                 [autocomplete]="vSegmentAutocomplete"></set>
+                 [search]="vSegmentValues"></set>
         </div>
     </div>
     <div class="row middle aligned">
@@ -23,8 +22,7 @@
         <div class="twelve wide column">
             <set [(model)]="jSegment"
                  placeholder="Comma separated list of J segments, start typing to see suggestions..."
-                 allowAutocomplete="true"
-                 [autocomplete]="jSegmentAutocomplete"></set>
+                 [search]="jSegmentValues"></set>
         </div>
     </div>
 </div>
