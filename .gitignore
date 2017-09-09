@@ -1,6 +1,5 @@
 # Front end
 /app/frontend/node_modules
-/app/frontend/package-lock.json
 
 # Front end build artifacts
 /public/bundles
