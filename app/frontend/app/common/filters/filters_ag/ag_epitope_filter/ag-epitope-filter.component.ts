@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { FiltersService } from '../../filters.service';
 import { Filter, FilterInterface, FilterSavedState, FilterType } from '../../filters';
 import { isSequencePatternValid } from '../../../../utils/pattern.util';
@@ -9,7 +9,8 @@ import { DatabaseMetadata } from '../../../../database/database-metadata';
 
 @Component({
     selector:    'ag-epitope-filter',
-    templateUrl: './ag-epitope-filter.component.html'
+    templateUrl: './ag-epitope-filter.component.html',
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AGEpitopeFilterComponent extends FilterInterface {
     epitopeSequence: string;

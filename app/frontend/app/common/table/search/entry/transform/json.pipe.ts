@@ -30,8 +30,8 @@ export class EntryJsonPipe {
             //     }
             // }
 
-            //return '<i class="info circle icon" data-html="' + text + '" data-title="title" data-variation="wide" data-position="top right"></i>';
-            return '';
+            return '<i class="info circle icon" data-html="' + text + '" data-title="title" data-variation="wide" data-position="top right"></i>';
+            //return '';
         } catch (e) {
             return '';
         }

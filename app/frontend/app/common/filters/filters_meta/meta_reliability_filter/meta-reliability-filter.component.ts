@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { FiltersService } from '../../filters.service';
 import { Filter, FilterInterface, FilterSavedState, FilterType } from '../../filters';
 import { Subject } from 'rxjs/Subject';
@@ -6,7 +6,8 @@ import { Subject } from 'rxjs/Subject';
 
 @Component({
     selector:    'meta-reliability-filter',
-    templateUrl: './meta-reliability-filter.component.html'
+    templateUrl: './meta-reliability-filter.component.html',
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MetaReliabilityFilterComponent extends FilterInterface {
     minimalConfidenceScore: number;

@@ -20,7 +20,11 @@ export class FiltersGroupComponent implements OnDestroy, OnInit {
             this.accordionTitle.nativeElement.classList.add('active');
             this.accordionContent.nativeElement.classList.add('active');
         }
-        $(this.element.nativeElement).accordion();
+        $(this.element.nativeElement).accordion({
+            exclusive: false,
+            animateChildren: false,
+            silent: true
+        });
     }
 
     ngOnDestroy(): void {

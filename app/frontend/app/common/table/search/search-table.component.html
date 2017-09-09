@@ -1,15 +1,9 @@
 <table class="ui stackable celled selectable stripped very basic compact small table">
-    <thead>
-    <tr>
-        <th *ngFor="let column of table.columns">{{ column }}</th>
-    </tr>
-    </thead>
+    <thead [search-table-columns]="table.columns"></thead>
     <tbody>
-    <tr *ngFor="let row of table.rows">
+    <tr *ngFor="let row of table.rows | async">
         <td *ngFor="let entry of row.entries" [innerHTML]="entry.value | entryPipe:entry.column"></td>
     </tr>
     </tbody>
-    <tfoot>
-        <th *ngFor="let column of table.columns">{{ column }}</th>
-    </tfoot>
+    <tfoot [search-table-columns]="table.columns"></tfoot>
 </table>

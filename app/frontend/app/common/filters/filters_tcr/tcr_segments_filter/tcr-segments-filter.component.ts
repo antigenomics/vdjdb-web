@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { FiltersService } from '../../filters.service';
 import { Filter, FilterInterface, FilterSavedState, FilterType } from '../../filters';
 import { Subject } from 'rxjs/Subject';
@@ -9,7 +9,8 @@ import 'rxjs/add/operator/take';
 
 @Component({
     selector:    'tcr-segments-filter',
-    templateUrl: './tcr-segments-filter.component.html'
+    templateUrl: './tcr-segments-filter.component.html',
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TCRSegmentsFilterComponent extends FilterInterface {
     vSegment: string;

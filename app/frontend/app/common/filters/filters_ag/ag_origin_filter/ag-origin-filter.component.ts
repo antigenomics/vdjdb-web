@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { FiltersService } from '../../filters.service';
 import { Filter, FilterInterface, FilterSavedState, FilterType } from '../../filters';
 import { Subject } from 'rxjs/Subject';
@@ -8,7 +8,8 @@ import { DatabaseMetadata } from '../../../../database/database-metadata';
 
 @Component({
     selector:    'ag-origin-filter',
-    templateUrl: './ag-origin-filter.component.html'
+    templateUrl: './ag-origin-filter.component.html',
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AGOriginFilterComponent extends FilterInterface {
     species: string;

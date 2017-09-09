@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { FiltersService } from '../../filters.service';
 import { isSequencePatternValid } from '../../../../utils/pattern.util';
 import { Filter, FilterInterface, FilterSavedState, FilterType } from '../../filters';
@@ -7,7 +7,8 @@ import { Subject } from 'rxjs/Subject';
 
 @Component({
     selector:    'tcr-cdr3-filter',
-    templateUrl: './tcr-cdr3-filter.component.html'
+    templateUrl: './tcr-cdr3-filter.component.html',
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TCR_CDR3FilterComponent extends FilterInterface {
     pattern: string;

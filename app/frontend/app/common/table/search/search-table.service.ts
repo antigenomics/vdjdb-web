@@ -1,19 +1,19 @@
 import { Injectable } from "@angular/core";
 import { SearchTableRow } from "./row/search-table-row";
-import { DomSanitizer } from "@angular/platform-browser";
+import { Subject } from "rxjs/Subject";
 
 @Injectable()
 export class SearchTableService {
     private _dirty: boolean = false;
     private _page: number = 0;
     private _pageSize: number = 0;
-    private _rows: SearchTableRow[] = [];
+    private _rows: Subject<SearchTableRow[]> = new Subject();
     private _columns: string[] = [];
 
     update(table: any): void {
         this._page = table.page;
         this._pageSize = table.pageSize;
-        this._rows = table.rows.map((row: any) => new SearchTableRow(row));
+        this._rows.next(table.rows.map((row: any) => new SearchTableRow(row)));
         this._dirty = true;
     }
 

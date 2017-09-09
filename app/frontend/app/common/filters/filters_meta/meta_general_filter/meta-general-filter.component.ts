@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { FiltersService } from '../../filters.service';
 import { Filter, FilterInterface, FilterSavedState, FilterType } from '../../filters';
 import { Subject } from 'rxjs/Subject';
@@ -8,7 +8,8 @@ import { DatabaseMetadata } from '../../../../database/database-metadata';
 
 @Component({
     selector:    'meta-general-filter',
-    templateUrl: './meta-general-filter.component.html'
+    templateUrl: './meta-general-filter.component.html',
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MetaGeneralFilterComponent extends FilterInterface {
     references: string;
