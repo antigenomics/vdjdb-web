@@ -36,7 +36,7 @@ export class FiltersGroupComponent implements OnDestroy, OnInit {
         } else {
             this.accordionContent.nativeElement.style['overflow'] = 'hidden';
             this.accordionContent.nativeElement.style['max-height'] = '0';
-            this.timeout = setTimeout(() => {
+            this.timeout = window.setTimeout(() => {
                 this.accordionTitle.nativeElement.classList.remove('active');
                 this.accordionContent.nativeElement.classList.remove('active');
                 this.accordionContent.nativeElement.style['overflow'] = 'visible';
