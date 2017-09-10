@@ -12,21 +12,25 @@ import { SearchTableEntryUrlComponent } from "./entry/url/search-table-entry-url
 import { ModalsModule } from "../../modals/modals.module";
 import { SearchTableEntryCdrComponent } from "./entry/cdr/search-table-entry-cdr.component";
 
-
-let entryComponents: any[] = [
-    SearchTableEntryOriginalComponent,
-    SearchTableEntryJsonComponent,
-    SearchTableEntryUrlComponent,
-    SearchTableEntryCdrComponent
-];
-
-let declarations: any[] = [ SearchTableComponent, SearchTableColumnsComponent, SearchTableRowComponent, SearchTableEntryDirective ].concat(entryComponents);
-
 @NgModule({
     imports:         [ BrowserModule, FormsModule, ModalsModule ],
-    declarations:    declarations,
-    exports:         declarations,
-    entryComponents: entryComponents,
+    declarations:    [  SearchTableComponent,
+                        SearchTableColumnsComponent,
+                        SearchTableRowComponent,
+                        SearchTableEntryDirective,
+                        SearchTableEntryOriginalComponent,
+                        SearchTableEntryJsonComponent,
+                        SearchTableEntryUrlComponent,
+                        SearchTableEntryCdrComponent ],
+    exports:         [  SearchTableComponent,
+                        SearchTableColumnsComponent,
+                        SearchTableRowComponent,
+                        SearchTableEntryDirective,
+                        SearchTableEntryOriginalComponent,
+                        SearchTableEntryJsonComponent,
+                        SearchTableEntryUrlComponent,
+                        SearchTableEntryCdrComponent ],
+    entryComponents: [ SearchTableEntryOriginalComponent, SearchTableEntryJsonComponent, SearchTableEntryUrlComponent, SearchTableEntryCdrComponent ],
     providers:       [ SearchTableService ]
 })
 export class SearchTableModule {}
