@@ -1,13 +1,13 @@
-import 'semantic-ui-less/definitions/globals/site';
-
-import 'semantic-ui-less/definitions/behaviors/api';
+// import 'semantic-ui-less/definitions/globals/site';
+//
+// import 'semantic-ui-less/definitions/behaviors/api';
 // import 'semantic-ui-less/definitions/behaviors/colorize';
 // import 'semantic-ui-less/definitions/behaviors/form';
 // import 'semantic-ui-less/definitions/behaviors/state';
 // import 'semantic-ui-less/definitions/behaviors/visibility';
 // import 'semantic-ui-less/definitions/behaviors/visit';
 
-import 'semantic-ui-less/definitions/modules/accordion';
+// import 'semantic-ui-less/definitions/modules/accordion';
 // import 'semantic-ui-less/definitions/modules/checkbox';
 // import 'semantic-ui-less/definitions/modules/dimmer';
 // import 'semantic-ui-less/definitions/modules/dropdown';

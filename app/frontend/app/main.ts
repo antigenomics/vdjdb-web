@@ -1,9 +1,9 @@
 import 'reflect-metadata';
 import 'core-js';
 import 'zone.js';
-import 'jquery';
-import 'semantic-ui';
-import 'semantic-ui-types';
+// import 'jquery';
+// import 'semantic-ui';
+// import 'semantic-ui-types';
 
 import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
 import { enableProdMode } from '@angular/core';

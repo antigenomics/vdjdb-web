@@ -1,6 +1,6 @@
 <div class="ui raised segment padded">
     <div class="ui fluid accordion">
-        <div class="title" #accordionTitle>
+        <div class="title" #accordionTitle (click)="toggle()">
             <i class="dropdown icon"></i>
             {{ title }}
         </div>
