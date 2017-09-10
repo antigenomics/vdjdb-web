@@ -25,7 +25,7 @@ export class SearchPageComponent {
 
         this.database.getMetadata().take(1).subscribe({
             next: (metadata: DatabaseMetadata) => {
-                this.table.updateColumns(metadata.columns.map((c: DatabaseColumnInfo) => c.title));
+                this.table.updateColumns(metadata.columns);
             }
         });
 

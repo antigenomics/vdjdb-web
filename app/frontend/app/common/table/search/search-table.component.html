@@ -1,9 +1,9 @@
-<table class="ui stackable celled selectable stripped very basic compact small table">
+<div style="width: 100%; height: 500px; overflow: auto">
+<table class="ui unstackable single line celled stripped very basic compact small table">
     <thead [search-table-columns]="table.columns"></thead>
     <tbody>
-    <tr *ngFor="let row of table.rows | async">
-        <td *ngFor="let entry of row.entries" [innerHTML]="entry.value | entryPipe:entry.column"></td>
-    </tr>
+        <tr *ngFor="let row of table.rows | async" [search-table-row]="row"></tr>
     </tbody>
     <tfoot [search-table-columns]="table.columns"></tfoot>
 </table>
+</div>

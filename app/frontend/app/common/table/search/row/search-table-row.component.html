@@ -1,0 +1,3 @@
+<td *ngFor="let entry of row.entries; let i = index">
+    <div [search-table-entry]="entry" [column-meta]="table.columns[i]" [parent-row]="row"></div>
+</td>

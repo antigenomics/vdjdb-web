@@ -2,9 +2,13 @@ import { SearchTableEntry } from "../entry/search-table-entry";
 
 export class SearchTableRowMetadata {
     complex: string;
+    cdr3vEnd: number;
+    cdr3jStart: number;
 
-    constructor(complex: string) {
-        this.complex = complex;
+    constructor(meta: any) {
+        this.complex = meta.complex;
+        this.cdr3vEnd = meta.cdr3vEnd;
+        this.cdr3jStart = meta.cdr3jStart;
     }
 }
 

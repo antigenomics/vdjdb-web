@@ -5,9 +5,7 @@
                 {{ title }}
             </div>
         </div>
-        <div class="one wide column cursor pointer" #popupElement
-             [attr.data-html]="popupContent"
-             [attr.data-title]="title" data-variation="very wide" data-position="top right">
+        <div class="one wide column cursor pointer" [popup]="help" popupWidth="very wide" [popupHeader]="title">
             <i class="help icon"></i>
         </div>
     </div>
