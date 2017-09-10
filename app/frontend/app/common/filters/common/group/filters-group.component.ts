@@ -8,6 +8,7 @@ import { FiltersGroupService } from "./filters-group.service";
 })
 export class FiltersGroupComponent implements OnDestroy, OnInit {
     private hidden: boolean = true;
+    private timeout: number = -1;
 
     @Input() title: string = '';
 
@@ -17,8 +18,6 @@ export class FiltersGroupComponent implements OnDestroy, OnInit {
     constructor(private group: FiltersGroupService) {}
 
     ngOnInit(): void {
-        this.accordionContent.nativeElement.style['display']    = 'block';
-        this.accordionContent.nativeElement.style['overflow']   = 'hidden';
         this.accordionContent.nativeElement.style['transition'] = 'max-height 0.45s ease-in-out';
         this.accordionContent.nativeElement.style['max-height'] = '0';
 
@@ -30,12 +29,20 @@ export class FiltersGroupComponent implements OnDestroy, OnInit {
 
     toggle() : void {
         if (this.hidden) {
+            if (this.timeout !== -1) window.clearTimeout(this.timeout);
+            this.accordionTitle.nativeElement.classList.add('active');
+            this.accordionContent.nativeElement.classList.add('active');
             this.accordionContent.nativeElement.style['max-height'] = this.accordionContent.nativeElement.scrollHeight + 50 + 'px';
         } else {
+            this.accordionContent.nativeElement.style['overflow'] = 'hidden';
             this.accordionContent.nativeElement.style['max-height'] = '0';
+            this.timeout = setTimeout(() => {
+                this.accordionTitle.nativeElement.classList.remove('active');
+                this.accordionContent.nativeElement.classList.remove('active');
+                this.accordionContent.nativeElement.style['overflow'] = 'visible';
+                this.timeout = -1;
+            }, 450)
         }
-        this.accordionTitle.nativeElement.classList.toggle('active');
-        this.accordionContent.nativeElement.classList.toggle('active');
         this.hidden = !this.hidden;
     }
 
