@@ -25,7 +25,7 @@ export class MetaGeneralFilter implements FilterInterface {
 
     collectFilters(filters: Filter[], _: string[]): void {
         if (this.references.length > 0) {
-            filters.push(new Filter('reference.id', FilterType.ExactSet, false, this.references));
+            filters.push(new Filter('reference.id', FilterType.SubstringSet, false, this.references));
         }
         if (this.methodSort === false) {
             filters.push(new Filter('web.method', FilterType.Exact, true, 'sort'));

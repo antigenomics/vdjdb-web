@@ -16,10 +16,10 @@ export class AGOriginFilter implements FilterInterface {
 
     collectFilters(filters: Filter[], _: string[]): void {
         if (this.species.length > 0) {
-            filters.push(new Filter('antigen.species', FilterType.ExactSet, false, this.species));
+            filters.push(new Filter('antigen.species', FilterType.SubstringSet, false, this.species));
         }
         if (this.genes.length > 0) {
-            filters.push(new Filter('antigen.gene', FilterType.ExactSet, false, this.genes));
+            filters.push(new Filter('antigen.gene', FilterType.SubstringSet, false, this.genes));
         }
     }
 
@@ -49,7 +49,7 @@ export class AGEpitopeFilter implements FilterInterface {
             return;
         }
         if (this.epitopeSequence.length > 0) {
-            filters.push(new Filter('antigen.epitope', FilterType.ExactSet, false, this.epitopeSequence));
+            filters.push(new Filter('antigen.epitope', FilterType.SubstringSet, false, this.epitopeSequence));
         }
         if (this.epitopePattern.length !== 0) {
             let value = this.epitopePattern;

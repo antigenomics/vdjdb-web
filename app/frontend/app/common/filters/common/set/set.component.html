@@ -1,28 +1,24 @@
-<!--<div class="ui left aligned search">-->
-    <!--<div class="ui fluid input">-->
-        <!--<input [attr.placeholder]="placeholder" type="text" [ngModel]="model" (ngModelChange)="change($event)">-->
-    <!--</div>-->
-    <!--&lt;!&ndash;<div class="results fade element fast" style="display: block !important;" *ngIf="searchVisible">&ndash;&gt;-->
-        <!--&lt;!&ndash;<a class="result" *ngFor="let value of search | autocomplete:model" (mousedown)="append(value)">&ndash;&gt;-->
-            <!--&lt;!&ndash;<div class="content">&ndash;&gt;-->
-                <!--&lt;!&ndash;<div class="title">{{ value }}</div>&ndash;&gt;-->
-            <!--&lt;!&ndash;</div>&ndash;&gt;-->
-        <!--&lt;!&ndash;</a>&ndash;&gt;-->
-    <!--&lt;!&ndash;</div>&ndash;&gt;-->
-<!--</div>-->
-<div class="ui fluid search dropdown selection multiple" [ngClass]="{'active visible':searchVisible}" (click)="focus()">
+<!--suppress HtmlFormInputWithoutLabel -->
+<div class="ui fluid search dropdown selection multiple" [ngClass]="{ 'active visible' : searchVisible }" (click)="focus()">
     <i class="dropdown icon"></i>
-    <a class="ui label transition visible" data-value="AL" style="display: inline-block !important;" *ngFor="let el of selected">{{ el }}<i class="delete icon"></i></a>
+    <a class="ui label visible" style="display: inline-block !important;" *ngFor="let entry of selected">
+        {{ entry.display }}
+        <i class="delete icon" (mousedown)="remove(entry)"></i>
+    </a>
     <input class="search" autocomplete="off" tabindex="0" style="width: 25%"
            (focus)="onFocusIn()" (blur)="onFocusOut()" [ngModel]="fakeModel" (ngModelChange)="change($event)" #input>
-    <span class="sizer">{{ model }}</span>
+
+    <span class="sizer">{{ fakeModel }}</span>
+
     <div class="default text" [innerHTML]="placeholder" *ngIf="model.length === 0"></div>
+
     <select multiple="" *ngIf="searchVisible">
         <option value="" *ngFor="let value of search">
             {{ value }}
         </option>
     </select>
-    <div class="menu visible" tabindex="-1" style="display: block !important;" *ngIf="searchVisible">
-        <div class="item" *ngFor="let value of search | autocomplete:fakeModel" (mousedown)="append(value)">{{ value }}</div>
+
+    <div class="menu visible fade element average" tabindex="-1" style="display: block !important;" *ngIf="searchVisible">
+        <div class="item" *ngFor="let entry of search | autocomplete:fakeModel:selected" (mousedown)="append(entry)">{{ entry.display }}</div>
     </div>
 </div>

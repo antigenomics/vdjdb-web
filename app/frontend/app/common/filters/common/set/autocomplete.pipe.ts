@@ -1,20 +1,43 @@
 import { Pipe, PipeTransform } from '@angular/core';
 import { isUndefined } from "util";
 
+export class AutocompleteEntry {
+    value: string = '';
+    display: string = '';
+    disabled: boolean = false;
+}
+
 @Pipe({
     name: 'autocomplete'
 })
 export class AutocompletePipe implements PipeTransform {
 
-    transform(values: string[], set: string): string[] {
-        if (isUndefined(set)) return values;
-        if (set === '') return values;
-        let setValues: string[] = set.split(',');
-        let lastSetValue: string = setValues[setValues.length - 1].trim();
-        let filtered = values.filter((value: string) => value.indexOf(lastSetValue) !== -1);
-        if (filtered.length !== 0) {
-            return filtered;
+    transform(values: string[], model: string, alreadySelected: AutocompleteEntry[]): AutocompleteEntry[] {
+        let result: AutocompleteEntry[] = [{
+            value: model,
+            display: 'Search substring: ' + model,
+            disabled: false
+        }];
+        if (isUndefined(model) || model === '') {
+            result = values.map((value: string) => { return { value: value, display: value, disabled: false } });
+        } else {
+            let filtered = values
+                .filter((value: string) => value.indexOf(model) !== -1)
+                .map((value: string) => { return { value: value, display: value, disabled: false } });
+            if (filtered.length !== 0) {
+                result = result.concat(filtered);
+            } else {
+                result = [{
+                    value: '',
+                    display: 'No matches',
+                    disabled: true
+                }]
+            }
         }
-        return ['No matches']
+
+        let alreadySelectedValues = alreadySelected.map((entry: AutocompleteEntry) => entry.value);
+        return result.filter((entry: AutocompleteEntry) => {
+            return alreadySelectedValues.indexOf(entry.value) === -1;
+        });
     }
 }
