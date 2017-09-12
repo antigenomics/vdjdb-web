@@ -1,62 +1,12 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { FiltersService } from '../../filters.service';
-import { Filter, FilterInterface, FilterSavedState, FilterType } from '../../filters';
-import { Subject } from 'rxjs/Subject';
-import { DatabaseService } from '../../../../database/database.service';
-import { DatabaseMetadata } from '../../../../database/database-metadata';
+import { AGFiltersService } from "../ag-filters.service";
 
 
 @Component({
-    selector:    'ag-origin-filter',
-    templateUrl: './ag-origin-filter.component.html',
+    selector:        'ag-origin-filter',
+    templateUrl:     './ag-origin-filter.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class AGOriginFilterComponent extends FilterInterface {
-    species: string;
-    speciesValues: string[];
-
-    genes: string;
-    genesValues: string[];
-
-    constructor(filters: FiltersService, database: DatabaseService) {
-        super(filters);
-        database.getMetadata().take(1).subscribe({
-            next: (metadata: DatabaseMetadata) => {
-                this.speciesValues = metadata.getColumnInfo('antigen.species').values;
-                this.genesValues = metadata.getColumnInfo('antigen.gene').values;
-            }
-        })
-    }
-
-    setDefault(): void {
-        this.species = '';
-        this.genes = '';
-    }
-
-    collectFilters(filtersPool: Subject<Filter[]>): void {
-        let filters: Filter[] = [];
-        if (this.species.length > 0) {
-            filters.push(new Filter('antigen.species', FilterType.ExactSet, false, this.species));
-        }
-        if (this.genes.length > 0) {
-            filters.push(new Filter('antigen.gene', FilterType.ExactSet, false, this.genes));
-        }
-        filtersPool.next(filters);
-    }
-
-    getFilterId(): string {
-        return 'ag.origin';
-    }
-
-    getSavedState(): FilterSavedState {
-        return {
-            species: this.species,
-            genes:   this.genes
-        };
-    }
-
-    setSavedState(state: FilterSavedState): void {
-        this.species = state.species;
-        this.genes = state.genes;
-    }
+export class AGOriginFilterComponent {
+    constructor(public ag: AGFiltersService) {}
 }

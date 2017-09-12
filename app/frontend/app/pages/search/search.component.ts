@@ -5,8 +5,9 @@ import { Filter } from '../../common/filters/filters';
 import { LoggerService } from '../../utils/logger/logger.service';
 import { LoggerErrorNotificationMessage, LoggerInfoDebugMessage, LoggerWarningNotificationMessage } from '../../utils/logger/logger-messages';
 import { SearchTableService } from "../../common/table/search/search-table.service";
-import { DatabaseColumnInfo, DatabaseMetadata } from "../../database/database-metadata";
+import { DatabaseMetadata } from "../../database/database-metadata";
 import { Utils } from "../../utils/scroll.util";
+import 'rxjs/add/operator/take'
 
 @Component({
     selector:    'search',
@@ -17,10 +18,8 @@ export class SearchPageComponent {
 
     @ViewChild('tableRow') tableRow: ElementRef;
 
-    constructor(private filters: FiltersService,
-                private database: DatabaseService,
-                private table: SearchTableService,
-                private logger: LoggerService) {
+    constructor(private filters: FiltersService, private database: DatabaseService,
+                private table: SearchTableService, private logger: LoggerService) {
         this.loading = false;
 
         this.database.getMetadata().take(1).subscribe({
@@ -31,29 +30,35 @@ export class SearchPageComponent {
 
         if (!table.dirty) {
             setTimeout(() => {
+                this.filters.setDefault();
                 this.search(false);
             }, 1000)
         }
     }
 
-    search(scrollToTable: boolean = true): void {
+    //TODO scroll to table
+    search(_: boolean = true): void {
         if (!this.loading) {
             this.loading = true;
 
-            this.filters.getFilters((filters: Filter[]) => {
-                this.database.filter(filters);
+            let filters: Filter[] = [];
+            let errors: string[] = [];
+
+            this.filters.getFilters(filters, errors);
+            if (errors.length === 0) {
                 this.logger.log(new LoggerInfoDebugMessage(filters, 'Collected filters'));
-            }, (message: string) => {
-                this.logger.log(new LoggerErrorNotificationMessage(message, 'Filters error'));
-            }, () => {
-                this.logger.log(new LoggerInfoDebugMessage('Search complete'))
-            });
+                this.database.filter(filters);
+            } else {
+                errors.forEach((error: string) => {
+                    this.logger.log(new LoggerErrorNotificationMessage(error, 'Filters error'));
+                });
+            }
 
             this.database.getMessages(DatabaseServiceActions.SearchAction).take(1).subscribe({
                 next: (table: any) => {
                     this.table.update(table);
                     this.loading = false;
-                    if (scrollToTable) Utils.scroll(this.tableRow.nativeElement);
+                    // if (scrollToTable) Utils.scroll(this.tableRow.nativeElement);
                 }
             })
         } else {

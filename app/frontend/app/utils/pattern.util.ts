@@ -1,4 +1,5 @@
 export function isSequencePatternValid(pattern: string): boolean {
+    if (pattern.length === 0) return true;
     if (pattern.length > 100) {
         return false;
     }

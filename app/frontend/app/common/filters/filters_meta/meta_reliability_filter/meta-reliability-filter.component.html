@@ -10,7 +10,7 @@
         </div>
         <div class="four wide column">
             <div class="ui input">
-                <input class="form-control" value="0" type="number" min="0" max="3" [(ngModel)]="minimalConfidenceScore" />
+                <input class="form-control" value="0" type="number" min="0" max="3" [(ngModel)]="meta.reliability.minimalConfidenceScore"/>
             </div>
         </div>
         <div class="two wide column"></div>
@@ -19,11 +19,11 @@
         </div>
         <div class="five wide column">
             <div class="ui checkbox">
-                <input [(ngModel)]="nonCanonical" type="checkbox">
+                <input [(ngModel)]="meta.reliability.nonCanonical" type="checkbox">
                 <label>Include non-canonical</label>
             </div>
             <div class="ui checkbox">
-                <input [(ngModel)]="unmapped" type="checkbox">
+                <input [(ngModel)]="meta.reliability.unmapped" type="checkbox">
                 <label>Include unmapped V/J</label>
             </div>
         </div>

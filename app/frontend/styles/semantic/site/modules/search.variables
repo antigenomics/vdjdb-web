@@ -1,2 +1,2 @@
-@resultsDistance: 0px;
-@resultPadding: 5px 1em;
+@resultsDistance: 5px;
+@resultPadding: 10px 1em;

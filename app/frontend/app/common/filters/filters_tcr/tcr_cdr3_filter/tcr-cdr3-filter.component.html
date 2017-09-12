@@ -10,11 +10,12 @@ search.</p>">
             <b>Sequence or pattern</b>
         </div>
         <div class="twelve wide column">
-            <div class="ui right labeled fluid input" [ngClass]="{'error':!isPatternValid()}">
-                <input placeholder="Amino acid pattern, e.g. CSAR[DE]GTGNGYTF or CSARDXTGNGYTF." type="text" [ngModel]="pattern" (ngModelChange)="checkPattern($event)">
+            <div class="ui right labeled fluid input" [ngClass]="{'error':!tcr.cdr3.isPatternValid()}">
+                <input placeholder="Amino acid pattern, e.g. CSAR[DE]GTGNGYTF or CSARDXTGNGYTF."
+                       type="text" [ngModel]="tcr.cdr3.pattern" (ngModelChange)="tcr.cdr3.checkPattern($event)">
                 <div class="ui basic label">
                     <div class="ui checkbox">
-                        <input [(ngModel)]="patternSubstring" type="checkbox">
+                        <input [(ngModel)]="tcr.cdr3.patternSubstring" type="checkbox">
                         <label>Substring</label>
                     </div>
                 </div>

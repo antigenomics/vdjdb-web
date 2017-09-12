@@ -7,6 +7,7 @@ import { LoggerService } from '../utils/logger/logger.service';
 import { Subscription } from 'rxjs/Subscription';
 import { WebSocketSubject } from 'rxjs/observable/dom/WebSocketSubject';
 import { Subject } from 'rxjs/Subject';
+import 'rxjs/add/operator/filter'
 import { Filter } from '../common/filters/filters';
 import { LoggerErrorMessage, LoggerErrorNotificationMessage, LoggerInfoDebugMessage } from "../utils/logger/logger-messages";
 

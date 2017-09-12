@@ -15,14 +15,19 @@ export class SetComponent {
     @Input() placeholder: string;
 
     @Input() search: string[] = [];
-    searchVisible: boolean = false;
+
+    private _searchVisible: boolean = false;
+
+    get searchVisible() {
+        return this._searchVisible && this.search.length !== 0;
+    }
 
     onFocusIn(): void {
-        this.searchVisible = true;
+        this._searchVisible = true;
     }
 
     onFocusOut(): void {
-        this.searchVisible = false;
+        this._searchVisible = false;
     }
 
     change(newValue: string): void {

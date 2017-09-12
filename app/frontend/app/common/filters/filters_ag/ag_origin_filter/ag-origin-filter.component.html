@@ -8,9 +8,9 @@
             <b>Source species</b>
         </div>
         <div class="twelve wide column">
-            <set [(model)]="species"
+            <set [(model)]="ag.origin.species"
                  placeholder="Comma separated list of antigen species, start typing to see suggestions..."
-                 [search]="speciesValues"></set>
+                 [search]="ag.origin.speciesValues"></set>
         </div>
     </div>
     <div class="row middle aligned">
@@ -18,9 +18,9 @@
             <b>Parent gene</b>
         </div>
         <div class="twelve wide column">
-            <set [(model)]="genes"
+            <set [(model)]="ag.origin.genes"
                  placeholder="Comma separated list of antigen genes, start typing to see suggestions..."
-                 [search]="genesValues"></set>
+                 [search]="ag.origin.genesValues"></set>
         </div>
     </div>
 </div>

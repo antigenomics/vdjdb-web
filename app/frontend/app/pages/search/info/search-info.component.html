@@ -1,0 +1,74 @@
+<div class="ui grid stackable">
+    <div class="row">
+        <div class="sixteen wide column">
+            <div class="ui breadcrumb">
+                <a class="section" (click)="setCurrentState('info')">Info</a>
+                <div class="divider"> /</div>
+                <a class="section" (click)="setCurrentState('filter.cdr3')">CDR3</a>
+                <div class="divider"> /</div>
+                <a class="section" (click)="setCurrentState('filter.ag')">Antigen</a>
+                <div class="divider"> /</div>
+                <a class="section" (click)="setCurrentState('filter.mhc')">MHC</a>
+                <div class="divider"> /</div>
+                <a class="section" (click)="setCurrentState('filter.meta')">Meta</a>
+            </div>
+        </div>
+    </div>
+    <div class="row fade element average" *ngIf="isCurrentState('info')">
+        <div class="sixteen wide column">
+            <p>The table below shows VDJdb records, more information for each column contents is displayed when hovering over the column
+               name.</p>
+            <p>Multiple records with the same TCR and antigen can be present if they come from different donors screened in the same study or
+               different studies. The number of occurrences in samples and studies is listed in Meta column and reflected in confidence
+               score.</p>
+            <p>In case a paired TCR chain (alpha or beta) is available for a given record, it can be fetched by clicking the plus sign to the
+               left of the record.</p>
+            <p>The database can be searched using T-cell receptor (TCR), antigen, major histocompatibility complex (MHC) and record metadata
+               field filters:</p>
+            <ul>
+                <li>Click on the corresponding panels below to expand the filters.</li>
+                <li>Detailed information for each filter can be found by hovering over the question marks.</li>
+                <li>Use the buttons below to refresh the table or reset the filters.</li>
+                <li>Filtered table can be exported as an XLS or a plain-text CSV file.</li>
+            </ul>
+            <p>A comprehensive description of VDJdb record fields/columns can be found <a
+                    href='https://github.com/antigenomics/vdjdb-db/blob/master/README.md'>
+                here</a>.</p>
+        </div>
+    </div>
+    <div class="row fade element average" *ngIf="isCurrentState('filter.cdr3')">
+        <div class="eight wide column">
+            <tcr-general-filter></tcr-general-filter>
+        </div>
+        <div class="eight wide column">
+            <tcr-segments-filter></tcr-segments-filter>
+        </div>
+        <div class="eight wide column">
+            <tcr-cdr3-filter></tcr-cdr3-filter>
+        </div>
+    </div>
+    <div class="row fade element average" *ngIf="isCurrentState('filter.ag')">
+        <div class="eight wide column">
+            <ag-origin-filter></ag-origin-filter>
+        </div>
+        <div class="eight wide column">
+            <ag-epitope-filter></ag-epitope-filter>
+        </div>
+    </div>
+    <div class="row fade element average" *ngIf="isCurrentState('filter.mhc')">
+        <div class="eight wide column">
+            <mhc-general-filter></mhc-general-filter>
+        </div>
+        <div class="eight wide column">
+            <mhc-haplotype-filter></mhc-haplotype-filter>
+        </div>
+    </div>
+    <div class="row fade element average" *ngIf="isCurrentState('filter.meta')">
+        <div class="eight wide column">
+            <meta-general-filter></meta-general-filter>
+        </div>
+        <div class="eight wide column">
+            <meta-reliability-filter></meta-reliability-filter>
+        </div>
+    </div>
+</div>

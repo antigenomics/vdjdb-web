@@ -10,9 +10,9 @@
             <b>Reference(s)</b>
         </div>
         <div class="twelve wide column">
-            <set [(model)]="references"
+            <set [(model)]="meta.general.references"
                  placeholder="Comma separated list of Pubmed IDs, start typing to see suggestions..."
-                 [search]="referencesValues"></set>
+                 [search]="meta.general.referencesValues"></set>
         </div>
     </div>
     <div class="row">
@@ -21,15 +21,15 @@
         </div>
         <div class="four wide column">
             <div class="ui checkbox">
-                <input [(ngModel)]="methodSort" type="checkbox">
+                <input [(ngModel)]="meta.general.methodSort" type="checkbox">
                 <label>Multimer sorting</label>
             </div>
             <div class="ui checkbox">
-                <input [(ngModel)]="methodCulture" type="checkbox">
+                <input [(ngModel)]="meta.general.methodCulture" type="checkbox">
                 <label>Culture-based</label>
             </div>
             <div class="ui checkbox">
-                <input [(ngModel)]="methodOther" type="checkbox">
+                <input [(ngModel)]="meta.general.methodOther" type="checkbox">
                 <label>Other</label>
             </div>
         </div>
@@ -39,15 +39,15 @@
         </div>
         <div class="four wide column">
             <div class="ui checkbox">
-                <input [(ngModel)]="seqSanger" type="checkbox">
+                <input [(ngModel)]="meta.general.seqSanger" type="checkbox">
                 <label>Sanger</label>
             </div>
             <div class="ui checkbox">
-                <input [(ngModel)]="seqAmplicon" type="checkbox">
+                <input [(ngModel)]="meta.general.seqAmplicon" type="checkbox">
                 <label>High-throughput</label>
             </div>
             <div class="ui checkbox">
-                <input [(ngModel)]="seqSingleCell" type="checkbox">
+                <input [(ngModel)]="meta.general.seqSingleCell" type="checkbox">
                 <label>Single-cell</label>
             </div>
         </div>

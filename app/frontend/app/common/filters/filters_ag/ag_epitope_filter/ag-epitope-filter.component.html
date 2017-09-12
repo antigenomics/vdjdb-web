@@ -12,9 +12,9 @@
             <b>Sequence(s)</b>
         </div>
         <div class="twelve wide column">
-            <set [(model)]="epitopeSequence"
+            <set [(model)]="ag.epitope.epitopeSequence"
                  placeholder="Comma separated list of epitope sequences, start typing to see suggestions..."
-                 [search]="epitopeValues"></set>
+                 [search]="ag.epitope.epitopeValues"></set>
         </div>
     </div>
     <div class="row middle aligned">
@@ -22,11 +22,12 @@
             <b>Sequence or pattern</b>
         </div>
         <div class="twelve wide column">
-            <div class="ui right labeled fluid input" [ngClass]="{'error':!isPatternValid()}">
-                <input placeholder="Amino acid pattern, e.g. CSAR[DE]GTGNGYTF or CSARDXTGNGYTF." type="text" [ngModel]="epitopePattern" (ngModelChange)="checkPattern($event)">
+            <div class="ui right labeled fluid input" [ngClass]="{'error':!ag.epitope.isPatternValid()}">
+                <input placeholder="Amino acid pattern, e.g. CSAR[DE]GTGNGYTF or CSARDXTGNGYTF."
+                       type="text" [ngModel]="ag.epitope.epitopePattern" (ngModelChange)="ag.epitope.checkPattern($event)">
                 <div class="ui basic label">
                     <div class="ui checkbox">
-                        <input [(ngModel)]="epitopePatternSubstring" type="checkbox">
+                        <input [(ngModel)]="ag.epitope.epitopePatternSubstring" type="checkbox">
                         <label>Substring</label>
                     </div>
                 </div>

@@ -1,55 +1,47 @@
 import { Injectable } from '@angular/core';
-import { Filter, FilterSavedState } from './filters';
-import { Subject } from 'rxjs/Subject';
-import { Observable } from 'rxjs/Observable';
+import { Filter } from './filters';
+import { TCRFiltersService } from "./filters_tcr/tcr-filters.service";
+import { AGFiltersService } from "./filters_ag/ag-filters.service";
+import { MHCFiltersService } from "./filters_mhc/mhc-filters.service";
+import { MetaFiltersService } from "./filters_meta/meta-filters.service";
+import { DatabaseService } from "../../database/database.service";
 import 'rxjs/add/operator/take';
-import 'rxjs/add/operator/reduce';
+import { DatabaseMetadata } from "../../database/database-metadata";
 
-export const enum FilterCommand {
-    SetDefault,
-    CollectFilters
-}
 
 @Injectable()
 export class FiltersService {
-    private filtersCount: number = 0;
-    private commandPool: Subject<FilterCommand> = new Subject();
-    private filtersPool: Subject<Filter[]> = new Subject();
-    private savedStates: Map<string, FilterSavedState> = new Map();
+    constructor(private tcr: TCRFiltersService, private ag: AGFiltersService,
+                private mhc: MHCFiltersService, private meta: MetaFiltersService,
+                private database: DatabaseService) {
+        this.database.getMetadata().take(1).subscribe({
+            next: (metadata: DatabaseMetadata) => {
+                this.tcr.segments.vSegmentValues = metadata.getColumnInfo('v.segm').values;
+                this.tcr.segments.jSegmentValues = metadata.getColumnInfo('j.segm').values;
 
-    registerFilter(id?: string) : any {
-        this.filtersCount += 1;
-        if (id && this.savedStates.has(id)) {
-            return this.savedStates.get(id);
-        }
-        return undefined;
-    }
+                this.ag.origin.speciesValues = metadata.getColumnInfo('antigen.species').values;
+                this.ag.origin.genesValues = metadata.getColumnInfo('antigen.gene').values;
+                this.ag.epitope.epitopeValues = metadata.getColumnInfo('antigen.epitope').values;
 
-    releaseFilter(id?: string, state?: any) : void {
-        this.filtersCount -= 1;
-        if (id) {
-            this.savedStates.set(id, state);
-        }
-    }
+                this.mhc.haplotype.firstChainValues = metadata.getColumnInfo('mhc.a').values;
+                this.mhc.haplotype.secondChainValues = metadata.getColumnInfo('mhc.b').values;
 
-    getCommandPool() : Observable<FilterCommand> {
-        return this.commandPool;
-    }
-
-    getFiltersPool() : Subject<Filter[]> {
-        return this.filtersPool;
+                this.meta.general.referencesValues = metadata.getColumnInfo('reference.id').values;
+            }
+        });
     }
 
     setDefault(): void {
-        this.commandPool.next(FilterCommand.SetDefault);
+        this.tcr.setDefault();
+        this.ag.setDefault();
+        this.mhc.setDefault();
+        this.meta.setDefault();
     }
 
-    getFilters(callback: (filters: Filter[]) => void, errorCallback?: (message: string) => void, completeCallback?: () => void) : void {
-        let observable = this.filtersPool.take(this.filtersCount).reduce((accumulated: Filter[], current: Filter[]) => {
-            return accumulated.concat(current);
-        });
-        observable.subscribe(callback, errorCallback);
-        this.commandPool.next(FilterCommand.CollectFilters);
-        completeCallback();
+    getFilters(filters: Filter[], errors: string[]) {
+        this.tcr.collectFilters(filters, errors);
+        this.ag.collectFilters(filters, errors);
+        this.mhc.collectFilters(filters, errors);
+        this.meta.collectFilters(filters, errors);
     }
 }
