@@ -1,11 +1,10 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { Component } from '@angular/core';
 import { TCRFiltersService } from "../tcr-filters.service";
 
 
 @Component({
     selector:        'tcr-cdr3-filter',
-    templateUrl:     './tcr-cdr3-filter.component.html',
-    changeDetection: ChangeDetectionStrategy.OnPush
+    templateUrl:     './tcr-cdr3-filter.component.html'
 })
 export class TCR_CDR3FilterComponent {
     constructor(public tcr: TCRFiltersService) {

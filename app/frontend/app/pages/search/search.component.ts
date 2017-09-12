@@ -1,4 +1,4 @@
-import { Component, ElementRef, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, ViewChild } from '@angular/core';
 import { FiltersService } from '../../common/filters/filters.service';
 import { DatabaseService, DatabaseServiceActions } from '../../database/database.service';
 import { Filter } from '../../common/filters/filters';
@@ -6,12 +6,12 @@ import { LoggerService } from '../../utils/logger/logger.service';
 import { LoggerErrorNotificationMessage, LoggerInfoDebugMessage, LoggerWarningNotificationMessage } from '../../utils/logger/logger-messages';
 import { SearchTableService } from "../../common/table/search/search-table.service";
 import { DatabaseMetadata } from "../../database/database-metadata";
-import { Utils } from "../../utils/scroll.util";
 import 'rxjs/add/operator/take'
 
 @Component({
     selector:    'search',
-    templateUrl: './search.component.html'
+    templateUrl: './search.component.html',
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SearchPageComponent {
     loading: boolean;
@@ -19,7 +19,8 @@ export class SearchPageComponent {
     @ViewChild('tableRow') tableRow: ElementRef;
 
     constructor(private filters: FiltersService, private database: DatabaseService,
-                private table: SearchTableService, private logger: LoggerService) {
+                private table: SearchTableService, private logger: LoggerService,
+                private changeDetector: ChangeDetectorRef) {
         this.loading = false;
 
         this.database.getMetadata().take(1).subscribe({
@@ -68,5 +69,6 @@ export class SearchPageComponent {
 
     reset(): void {
         this.filters.setDefault();
+        //this.changeDetector.detectChanges();
     }
 }

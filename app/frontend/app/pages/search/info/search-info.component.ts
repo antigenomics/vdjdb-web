@@ -1,10 +1,9 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { Component } from '@angular/core';
 
 
 @Component({
     selector:        'search-info',
-    templateUrl:     './search-info.component.html',
-    changeDetection: ChangeDetectionStrategy.OnPush
+    templateUrl:     './search-info.component.html'
 })
 export class SearchInfoComponent {
     private _currentState: string = 'info';

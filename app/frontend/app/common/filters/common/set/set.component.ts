@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, Output, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
 import { AutocompleteEntry } from "./autocomplete.pipe";
 
 
@@ -7,13 +7,23 @@ import { AutocompleteEntry } from "./autocomplete.pipe";
     templateUrl:     './set.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class SetComponent {
+export class SetComponent implements OnInit {
     private _searchVisible: boolean = false;
+    private _model: string = '';
 
     @ViewChild('input') input: ElementRef;
 
     @Input()
-    model: string;
+    set model(value: string) {
+        if (value === '') {
+            this.selected.splice(0, this.selected.length);
+        }
+        this._model = value;
+    }
+
+    get model() {
+        return this._model;
+    }
 
     @Output()
     modelChange = new EventEmitter();
@@ -26,6 +36,19 @@ export class SetComponent {
 
     fakeModel: string = '';
     selected: AutocompleteEntry[] = [];
+
+    ngOnInit() {
+        if (this._model !== '') {
+            let values = this._model.split(',');
+            this.selected = values.map((entry: string) => {
+                let display = entry;
+                if (this.search.indexOf(entry) === -1) {
+                    display = 'Search substring: ' + display;
+                }
+                return { value: entry, display: display, disabled: false }
+            });
+        }
+    }
 
     focus() {
         this.input.nativeElement.focus();
