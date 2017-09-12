@@ -7,6 +7,7 @@ import { LoggerErrorNotificationMessage, LoggerInfoDebugMessage, LoggerWarningNo
 import { SearchTableService } from "../../common/table/search/search-table.service";
 import { DatabaseMetadata } from "../../database/database-metadata";
 import 'rxjs/add/operator/take'
+import { Utils } from "../../utils/scroll.util";
 
 @Component({
     selector:    'search',
@@ -32,13 +33,12 @@ export class SearchPageComponent {
         if (!table.dirty) {
             setTimeout(() => {
                 this.filters.setDefault();
-                this.search(false);
+                this.search();
             }, 1000)
         }
     }
 
-    //TODO scroll to table
-    search(_: boolean = true): void {
+    search(): void {
         if (!this.loading) {
             this.loading = true;
 
@@ -59,7 +59,6 @@ export class SearchPageComponent {
                 next: (table: any) => {
                     this.table.update(table);
                     this.loading = false;
-                    // if (scrollToTable) Utils.scroll(this.tableRow.nativeElement);
                 }
             })
         } else {

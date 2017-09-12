@@ -1,4 +1,4 @@
-import { ComponentFactoryResolver, Directive, Input, OnInit, ViewContainerRef, ComponentRef, OnDestroy } from "@angular/core";
+import { ComponentFactoryResolver, Directive, Input, OnInit, ViewContainerRef, ComponentRef, OnDestroy, ViewRef } from "@angular/core";
 import { SearchTableEntryOriginalComponent } from "./original/search-table-entry-original.component";
 import { SearchTableEntry } from "./search-table-entry";
 import { SearchTableEntryJsonComponent } from "./json/search-table-entry-json.component";
@@ -27,6 +27,7 @@ export class SearchTableEntryDirective implements OnInit, OnDestroy {
 
     ngOnInit() {
         if (this.entry.column === this.column.name) {
+            this.viewContainerRef.clear();
             switch (this.column.name) {
                 case "cdr3":
                     const cdr = this.resolver.resolveComponentFactory<SearchTableEntryCdrComponent>(SearchTableEntryCdrComponent);
