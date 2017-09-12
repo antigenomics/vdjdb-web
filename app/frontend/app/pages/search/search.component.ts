@@ -7,7 +7,6 @@ import { LoggerErrorNotificationMessage, LoggerInfoDebugMessage, LoggerWarningNo
 import { SearchTableService } from "../../common/table/search/search-table.service";
 import { DatabaseMetadata } from "../../database/database-metadata";
 import 'rxjs/add/operator/take'
-import { Utils } from "../../utils/scroll.util";
 
 @Component({
     selector:    'search',
