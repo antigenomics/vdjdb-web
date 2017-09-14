@@ -1,8 +1,10 @@
 import { Filter, FilterInterface, FilterType } from "../filters";
+import { SetEntry } from "../common/set/set-entry";
+import { Utils } from "../../../utils/utils";
 
 
 export class MetaGeneralFilter implements FilterInterface {
-    references: string;
+    referencesSelected: SetEntry[] = [];
     referencesValues: string[];
 
     methodSort: boolean;
@@ -14,7 +16,7 @@ export class MetaGeneralFilter implements FilterInterface {
     seqSingleCell: boolean;
 
     setDefault(): void {
-        this.references = '';
+        Utils.Array.clear(this.referencesSelected);
         this.methodSort = true;
         this.methodCulture = true;
         this.methodOther = true;
@@ -24,8 +26,8 @@ export class MetaGeneralFilter implements FilterInterface {
     }
 
     collectFilters(filters: Filter[], _: string[]): void {
-        if (this.references.length > 0) {
-            filters.push(new Filter('reference.id', FilterType.SubstringSet, false, this.references));
+        if (this.referencesSelected.length > 0) {
+            filters.push(new Filter('reference.id', FilterType.SubstringSet, false, SetEntry.toString(this.referencesSelected)));
         }
         if (this.methodSort === false) {
             filters.push(new Filter('web.method', FilterType.Exact, true, 'sort'));

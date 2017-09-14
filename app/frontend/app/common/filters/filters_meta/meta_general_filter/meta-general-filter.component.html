@@ -10,9 +10,9 @@
             <b>Reference(s)</b>
         </div>
         <div class="twelve wide column">
-            <set [(model)]="meta.general.references"
-                 placeholder="Comma separated list of Pubmed IDs, start typing to see suggestions..."
-                 [search]="meta.general.referencesValues"></set>
+            <set [(selected)]="meta.general.referencesSelected"
+                 [values]="meta.general.referencesValues"
+                 placeholder="Comma separated list of Pubmed IDs, start typing to see suggestions..."></set>
         </div>
     </div>
     <div class="row">

@@ -1,19 +1,14 @@
 import { Pipe, PipeTransform } from '@angular/core';
 import { isUndefined } from "util";
-
-export class AutocompleteEntry {
-    value: string = '';
-    display: string = '';
-    disabled: boolean = false;
-}
+import { SetEntry } from "./set-entry";
 
 @Pipe({
     name: 'autocomplete'
 })
 export class AutocompletePipe implements PipeTransform {
 
-    transform(values: string[], model: string, alreadySelected: AutocompleteEntry[]): AutocompleteEntry[] {
-        let result: AutocompleteEntry[] = [{
+    transform(values: string[], model: string, alreadySelected: SetEntry[]): SetEntry[] {
+        let result: SetEntry[] = [{
             value: model,
             display: 'Search substring: ' + model,
             disabled: false
@@ -35,8 +30,8 @@ export class AutocompletePipe implements PipeTransform {
             }
         }
 
-        let alreadySelectedValues = alreadySelected.map((entry: AutocompleteEntry) => entry.value);
-        return result.filter((entry: AutocompleteEntry) => {
+        let alreadySelectedValues = alreadySelected.map((entry: SetEntry) => entry.value);
+        return result.filter((entry: SetEntry) => {
             return alreadySelectedValues.indexOf(entry.value) === -1;
         });
     }

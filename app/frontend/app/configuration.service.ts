@@ -1,0 +1,41 @@
+import { Injectable } from "@angular/core";
+import { buildMode } from "./main"
+
+@Injectable()
+export class ConfigurationService {
+    private _buildMode: string;
+    private _websocketProtocol: string;
+    private _websocketLocation: string;
+    private _websocketPrefix: string;
+
+    constructor() {
+        this._buildMode = buildMode;
+        this._websocketProtocol = 'ws://';
+        this._websocketLocation = location.host;
+        this._websocketPrefix = this._websocketProtocol + this._websocketLocation;
+    }
+
+    isDevelopmentMode() : boolean {
+        return this._buildMode === 'development';
+    }
+
+    isProductionMode() : boolean {
+        return this._buildMode === 'production';
+    }
+
+    get buildMode(): string {
+        return this._buildMode;
+    }
+
+    get websocketProtocol(): string {
+        return this._websocketProtocol;
+    }
+
+    get websocketLocation(): string {
+        return this._websocketLocation;
+    }
+
+    get websocketPrefix(): string {
+        return this._websocketPrefix;
+    }
+}

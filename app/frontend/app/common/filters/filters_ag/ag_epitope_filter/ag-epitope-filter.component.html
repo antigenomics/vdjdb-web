@@ -12,9 +12,9 @@
             <b>Sequence(s)</b>
         </div>
         <div class="twelve wide column">
-            <set [(model)]="ag.epitope.epitopeSequence"
-                 placeholder="Comma separated list of epitope sequences, start typing to see suggestions..."
-                 [search]="ag.epitope.epitopeValues"></set>
+            <set [(selected)]="ag.epitope.epitopeSelected"
+                 [values]="ag.epitope.epitopeValues"
+                 placeholder="Comma separated list of epitope sequences, start typing to see suggestions..."></set>
         </div>
     </div>
     <div class="row middle aligned">

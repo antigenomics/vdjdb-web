@@ -19,8 +19,7 @@ export class SearchPageComponent {
     @ViewChild('tableRow') tableRow: ElementRef;
 
     constructor(private filters: FiltersService, private database: DatabaseService,
-                private table: SearchTableService, private logger: LoggerService,
-                private changeDetector: ChangeDetectorRef) {
+                private table: SearchTableService, private logger: LoggerService) {
         this.loading = false;
 
         this.database.getMetadata().take(1).subscribe({
@@ -47,19 +46,19 @@ export class SearchPageComponent {
             this.filters.getFilters(filters, errors);
             if (errors.length === 0) {
                 this.logger.log(new LoggerInfoDebugMessage(filters, 'Collected filters'));
+                this.database.getMessages(DatabaseServiceActions.SearchAction).take(1).subscribe({
+                    next: (table: any) => {
+                        this.table.update(table);
+                        this.loading = false;
+                    }
+                });
                 this.database.filter(filters);
             } else {
                 errors.forEach((error: string) => {
                     this.logger.log(new LoggerErrorNotificationMessage(error, 'Filters error'));
                 });
+                this.loading = false;
             }
-
-            this.database.getMessages(DatabaseServiceActions.SearchAction).take(1).subscribe({
-                next: (table: any) => {
-                    this.table.update(table);
-                    this.loading = false;
-                }
-            })
         } else {
             this.logger.log(new LoggerWarningNotificationMessage('Loading', 'Search'))
         }
@@ -67,6 +66,5 @@ export class SearchPageComponent {
 
     reset(): void {
         this.filters.setDefault();
-        //this.changeDetector.detectChanges();
     }
 }

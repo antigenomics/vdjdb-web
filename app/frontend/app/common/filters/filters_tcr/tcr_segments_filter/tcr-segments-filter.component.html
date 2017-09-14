@@ -10,9 +10,9 @@
             <b>Variable segment(s)</b>
         </div>
         <div class="eleven wide column">
-            <set [(model)]="tcr.segments.vSegment"
-                 placeholder="Comma separated list of V segments, start typing to see suggestions..."
-                 [search]="tcr.segments.vSegmentValues"></set>
+            <set [(selected)]="tcr.segments.vSegmentSelected"
+                 [values]="tcr.segments.vSegmentValues"
+                 placeholder="Comma separated list of V segments, start typing to see suggestions..."></set>
         </div>
     </div>
     <div class="row middle aligned">
@@ -20,9 +20,9 @@
             <b>Joining segment(s)</b>
         </div>
         <div class="eleven wide column">
-            <set [(model)]="tcr.segments.jSegment"
-                 placeholder="Comma separated list of J segments, start typing to see suggestions..."
-                 [search]="tcr.segments.jSegmentValues"></set>
+            <set [(selected)]="tcr.segments.jSegmentSelected"
+                 [values]="tcr.segments.jSegmentValues"
+                 placeholder="Comma separated list of J segments, start typing to see suggestions..."></set>
         </div>
     </div>
 </div>

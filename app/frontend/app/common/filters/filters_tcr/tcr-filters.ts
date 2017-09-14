@@ -1,25 +1,26 @@
 import { Filter, FilterInterface, FilterType } from "../filters";
-import { isSequencePatternValid } from "../../../utils/pattern.util";
+import { SetEntry } from "../common/set/set-entry";
+import { Utils } from "../../../utils/utils";
 
 
 export class TCRSegmentsFilter implements FilterInterface {
-    vSegment: string;
+    vSegmentSelected: SetEntry[] = [];
     vSegmentValues: string[] = [];
 
-    jSegment: string;
+    jSegmentSelected: SetEntry[] = [];
     jSegmentValues: string[] = [];
 
     setDefault(): void {
-        this.vSegment = '';
-        this.jSegment = '';
+        Utils.Array.clear(this.vSegmentSelected);
+        Utils.Array.clear(this.jSegmentSelected);
     }
 
     collectFilters(filters: Filter[], _: string[]): void {
-        if (this.vSegment.length !== 0) {
-            filters.push(new Filter('v.segm', FilterType.SubstringSet, false, this.vSegment));
+        if (this.vSegmentSelected.length !== 0) {
+            filters.push(new Filter('v.segm', FilterType.SubstringSet, false, SetEntry.toString(this.vSegmentSelected)));
         }
-        if (this.jSegment.length !== 0) {
-            filters.push(new Filter('j.segm', FilterType.SubstringSet, false, this.jSegment));
+        if (this.jSegmentSelected.length !== 0) {
+            filters.push(new Filter('j.segm', FilterType.SubstringSet, false, SetEntry.toString(this.jSegmentSelected)));
         }
     }
 
@@ -104,7 +105,7 @@ export class TCR_CDR3Filter implements FilterInterface {
 
     checkPattern(newValue: string): void {
         this.pattern = newValue.toUpperCase();
-        this.patternValid = isSequencePatternValid(this.pattern);
+        this.patternValid = Utils.SequencePattern.isPatternValid(this.pattern);
     }
 
     isPatternValid(): boolean {

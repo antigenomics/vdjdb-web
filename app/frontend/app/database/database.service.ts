@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 import { DatabaseMetadata } from './database-metadata';
-import { Configuration } from '../main';
 import { Observable } from 'rxjs/Observable';
 import { ReplaySubject } from 'rxjs/ReplaySubject';
 import { LoggerService } from '../utils/logger/logger.service';
@@ -9,7 +8,8 @@ import { WebSocketSubject } from 'rxjs/observable/dom/WebSocketSubject';
 import { Subject } from 'rxjs/Subject';
 import 'rxjs/add/operator/filter'
 import { Filter } from '../common/filters/filters';
-import { LoggerErrorMessage, LoggerErrorNotificationMessage, LoggerInfoDebugMessage } from "../utils/logger/logger-messages";
+import { LoggerErrorMessage, LoggerInfoMessage } from "../utils/logger/logger-messages";
+import { ConfigurationService } from "../configuration.service";
 
 export const enum DatabaseServiceActions {
     MetadataAction   = 'meta',
@@ -36,8 +36,8 @@ export class DatabaseService {
     private messages: Subject<any> = new Subject();
     private metadata: ReplaySubject<DatabaseMetadata> = new ReplaySubject(1);
 
-    constructor(private logger: LoggerService) {
-        this.connection = WebSocketSubject.create(Configuration.websocketPrefix + '/api/database/connect');
+    constructor(private logger: LoggerService, private configuration: ConfigurationService) {
+        this.connection = WebSocketSubject.create(configuration.websocketPrefix + '/api/database/connect');
         this.subscription = this.connection.subscribe({
             next: (message: any) => {
                 let status = message.status;
@@ -52,7 +52,7 @@ export class DatabaseService {
                         break;
                     case DatabaseServiceActions.SearchAction:
                         this.messages.next(message);
-                        logger.log(new LoggerInfoDebugMessage(message, 'Search'));
+                        logger.debug(new LoggerInfoMessage(message, 'Search'));
                         break;
                     case DatabaseServiceActions.MessageAction:
                         if (message.message !== 'pong') {
@@ -79,9 +79,8 @@ export class DatabaseService {
         });
     }
 
-    getMessages(action: DatabaseServiceActions): any {
-        return this.messages
-                   .filter((message: any) => message.action === action && message.status === DatabaseServiceResponseStatusType.Success);
+    getMessages(action: DatabaseServiceActions): Observable<any> {
+        return this.messages.filter((message: any) => message.action === action && message.status === DatabaseServiceResponseStatusType.Success);
     }
 
     sendMessage(message: DatabaseServiceRequestMessage) {

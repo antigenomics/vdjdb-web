@@ -1,4 +1,6 @@
 import { Filter, FilterInterface, FilterType } from "../filters";
+import { SetEntry } from "../common/set/set-entry";
+import { Utils } from "../../../utils/utils";
 
 
 export class MHCGeneralFilter implements FilterInterface {
@@ -25,23 +27,23 @@ export class MHCGeneralFilter implements FilterInterface {
 }
 
 export class MHCHaplotypeFilter implements FilterInterface {
-    firstChain: string;
+    firstChainSelected: SetEntry[] = [];
     firstChainValues: string[] = [];
 
-    secondChain: string;
+    secondChainSelected: SetEntry[] = [];
     secondChainValues: string[] = [];
 
     setDefault(): void {
-        this.firstChain = '';
-        this.secondChain = '';
+        Utils.Array.clear(this.firstChainSelected);
+        Utils.Array.clear(this.secondChainSelected);
     }
 
     collectFilters(filters: Filter[], _: string[]): void {
-        if (this.firstChain.length > 0) {
-            filters.push(new Filter('mhc.a', FilterType.SubstringSet, false, this.firstChain));
+        if (this.firstChainSelected.length > 0) {
+            filters.push(new Filter('mhc.a', FilterType.SubstringSet, false, SetEntry.toString(this.firstChainSelected)));
         }
-        if (this.secondChain.length > 0) {
-            filters.push(new Filter('mhc.b', FilterType.SubstringSet, false, this.secondChain));
+        if (this.secondChainSelected.length > 0) {
+            filters.push(new Filter('mhc.b', FilterType.SubstringSet, false, SetEntry.toString(this.secondChainSelected)));
         }
     }
 

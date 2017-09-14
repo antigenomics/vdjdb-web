@@ -1,25 +1,26 @@
 import { Filter, FilterInterface, FilterType } from "../filters";
-import { isSequencePatternValid } from "../../../utils/pattern.util";
+import { SetEntry } from "../common/set/set-entry";
+import { Utils } from "../../../utils/utils";
 
 
 export class AGOriginFilter implements FilterInterface {
-    species: string;
+    speciesSelected: SetEntry[] = [];
     speciesValues: string[] = [];
 
-    genes: string;
+    genesSelected: SetEntry[] = [];
     genesValues: string[] = [];
 
     setDefault(): void {
-        this.species = '';
-        this.genes = '';
+        Utils.Array.clear(this.speciesSelected);
+        Utils.Array.clear(this.genesSelected);
     }
 
     collectFilters(filters: Filter[], _: string[]): void {
-        if (this.species.length > 0) {
-            filters.push(new Filter('antigen.species', FilterType.SubstringSet, false, this.species));
+        if (this.speciesSelected.length > 0) {
+            filters.push(new Filter('antigen.species', FilterType.SubstringSet, false, SetEntry.toString(this.speciesSelected)));
         }
-        if (this.genes.length > 0) {
-            filters.push(new Filter('antigen.gene', FilterType.SubstringSet, false, this.genes));
+        if (this.genesSelected.length > 0) {
+            filters.push(new Filter('antigen.gene', FilterType.SubstringSet, false, SetEntry.toString(this.genesSelected)));
         }
     }
 
@@ -29,7 +30,7 @@ export class AGOriginFilter implements FilterInterface {
 }
 
 export class AGEpitopeFilter implements FilterInterface {
-    epitopeSequence: string;
+    epitopeSelected: SetEntry[] = [];
     epitopeValues: string[] = [];
 
     epitopePattern: string;
@@ -37,7 +38,7 @@ export class AGEpitopeFilter implements FilterInterface {
     epitopePatternValid: boolean;
 
     setDefault(): void {
-        this.epitopeSequence = '';
+        Utils.Array.clear(this.epitopeSelected);
         this.epitopePattern = '';
         this.epitopePatternSubstring = false;
         this.epitopePatternValid = true;
@@ -48,8 +49,8 @@ export class AGEpitopeFilter implements FilterInterface {
             errors.push("Epitope pattern is not valid");
             return;
         }
-        if (this.epitopeSequence.length > 0) {
-            filters.push(new Filter('antigen.epitope', FilterType.SubstringSet, false, this.epitopeSequence));
+        if (this.epitopeSelected.length > 0) {
+            filters.push(new Filter('antigen.epitope', FilterType.SubstringSet, false, SetEntry.toString(this.epitopeSelected)));
         }
         if (this.epitopePattern.length !== 0) {
             let value = this.epitopePattern;
@@ -66,7 +67,7 @@ export class AGEpitopeFilter implements FilterInterface {
 
     checkPattern(newValue: string): void {
         this.epitopePattern = newValue.toUpperCase();
-        this.epitopePatternValid = isSequencePatternValid(this.epitopePattern);
+        this.epitopePatternValid = Utils.SequencePattern.isPatternValid(this.epitopePattern);
     }
 
     isPatternValid(): boolean {

@@ -1,54 +1,29 @@
-import { ChangeDetectionStrategy, Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
-import { AutocompleteEntry } from "./autocomplete.pipe";
-
+import { Component, ElementRef, EventEmitter, Input, Output, ViewChild } from '@angular/core';
+import { SetEntry } from "./set-entry";
+import { Utils } from "../../../../utils/utils";
 
 @Component({
     selector:        'set',
-    templateUrl:     './set.component.html',
-    changeDetection: ChangeDetectionStrategy.OnPush
+    templateUrl:     './set.component.html'
 })
-export class SetComponent implements OnInit {
+export class SetComponent {
     private _searchVisible: boolean = false;
-    private _model: string = '';
 
     @ViewChild('input') input: ElementRef;
 
     @Input()
-    set model(value: string) {
-        if (value === '') {
-            this.selected.splice(0, this.selected.length);
-        }
-        this._model = value;
-    }
-
-    get model() {
-        return this._model;
-    }
+    selected: SetEntry[] = [];
 
     @Output()
-    modelChange = new EventEmitter();
+    selectedChange = new EventEmitter();
 
     @Input()
     placeholder: string;
 
     @Input()
-    search: string[] = [];
+    values: string[] = [];
 
-    fakeModel: string = '';
-    selected: AutocompleteEntry[] = [];
-
-    ngOnInit() {
-        if (this._model !== '') {
-            let values = this._model.split(',');
-            this.selected = values.map((entry: string) => {
-                let display = entry;
-                if (this.search.indexOf(entry) === -1) {
-                    display = 'Search substring: ' + display;
-                }
-                return { value: entry, display: display, disabled: false }
-            });
-        }
-    }
+    inputText: string = '';
 
     focus() {
         this.input.nativeElement.focus();
@@ -59,15 +34,15 @@ export class SetComponent implements OnInit {
     }
 
     onFocusOut(): void {
-        if (this.fakeModel !== '') {
-            if (this.search.indexOf(this.fakeModel) !== -1) {
-                this.append({ value: this.fakeModel, display: this.fakeModel, disabled: false })
+        if (this.inputText !== '') {
+            if (this.values.indexOf(this.inputText) !== -1) {
+                this.append({ value: this.inputText, display: this.inputText, disabled: false })
             } else {
-                let filtered = this.search.filter((entry: string) => {
-                    return entry.indexOf(this.fakeModel) !== -1;
+                let filtered = this.values.filter((entry: string) => {
+                    return entry.indexOf(this.inputText) !== -1;
                 });
                 if (filtered.length !== 0) {
-                    this.append({ value: this.fakeModel, display: 'Search substring: ' + this.fakeModel, disabled: false });
+                    this.append({ value: this.inputText, display: 'Search substring: ' + this.inputText, disabled: false });
                 } else {
                     this.change('');
                 }
@@ -77,32 +52,26 @@ export class SetComponent implements OnInit {
     }
 
     change(newValue: string): void {
-        this.fakeModel = newValue.toUpperCase();
-        this.model = this.selected.map((entry: AutocompleteEntry) => entry.value).join(',');
-        if (this.fakeModel !== '') {
-            if (this.model === '') {
-                this.model = this.fakeModel;
-            } else {
-                this.model += ',';
-                this.model += this.fakeModel;
-            }
-        }
-        this.modelChange.emit(this.model);
+        this.inputText = newValue.toUpperCase();
     }
 
-    append(entry: AutocompleteEntry): void {
+    append(entry: SetEntry): void {
         if (!entry.disabled) {
             this.selected.push(entry);
+            this.selectedChange.emit(this.selected);
             this.change('');
         }
     }
 
-    remove(entry: AutocompleteEntry): void {
-        this.selected.splice(this.selected.indexOf(entry), 1);
-        this.change(this.fakeModel);
+    remove(entry: SetEntry): void {
+        Utils.Array.deleteElement(this.selected, entry);
     }
 
-    get searchVisible() {
-        return this._searchVisible && this.search.length !== 0;
+    isPlaceholderVisible() : boolean {
+        return this.inputText.length === 0 && this.selected.length === 0;
+    }
+
+    isSearchVisible() {
+        return this._searchVisible && this.values.length !== 0;
     }
 }

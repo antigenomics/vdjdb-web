@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { DatabaseService } from './database/database.service';
+
 
 @Component({
     selector: 'application',
@@ -8,6 +8,4 @@ import { DatabaseService } from './database/database.service';
                     <router-outlet></router-outlet>
                </div>`
 })
-export class AppComponent {
-  constructor (private database: DatabaseService) {}
-}
+export class ApplicationComponent {}

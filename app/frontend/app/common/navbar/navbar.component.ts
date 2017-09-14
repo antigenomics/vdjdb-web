@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { Router } from '@angular/router';
-import { Utils } from "../../utils/scroll.util";
+import { Utils } from "../../utils/utils";
 
 @Component({
     selector:    'navbar',
@@ -13,6 +13,6 @@ export class NavigationBarComponent {
 
     route(url: string): void {
         // noinspection JSIgnoredPromiseFromCall
-        this.router.navigate([ url ]).then(() =>  Utils.scroll(document.body));
+        this.router.navigate([ url ]).then(() =>  Utils.Window.scroll(document.body));
     }
 }
