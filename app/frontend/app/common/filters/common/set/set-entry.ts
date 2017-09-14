@@ -1,7 +1,7 @@
 export class SetEntry {
-    value: string = '';
-    display: string = '';
-    disabled: boolean = false;
+    public value: string = '';
+    public display: string = '';
+    public disabled: boolean = false;
 
     constructor(value: string, display: string, disabled: boolean) {
         this.value = value;
@@ -9,10 +9,10 @@ export class SetEntry {
         this.disabled = disabled;
     }
 
-    static toString(entries: SetEntry[]): string {
+    public static toString(entries: SetEntry[]): string {
         return entries
-            .filter((entry: SetEntry) => { return !entry.disabled; })
-            .map((entry: SetEntry) => { return entry.value; })
+            .filter((entry: SetEntry) => !entry.disabled)
+            .map((entry: SetEntry) => entry.value)
             .join(',');
     }
 }

@@ -11,7 +11,12 @@
     "experimentalDecorators": true,
     "moduleResolution": "node",
     "typeRoots": [ "node_modules/@types" ],
-    "types": [ "node" ],
+    "types": [ 
+      "node",
+      "source-map",
+      "uglify-js",
+      "webpack"
+    ],
     "noImplicitAny": true,
     "removeComments": true,
     "alwaysStrict": true,

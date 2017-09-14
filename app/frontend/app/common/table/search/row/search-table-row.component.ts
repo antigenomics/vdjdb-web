@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { SearchTableRow } from "./search-table-row";
-import { SearchTableService } from "../search-table.service";
-
+import { SearchTableService } from '../search-table.service';
+import { SearchTableRow } from './search-table-row';
 
 @Component({
     selector:    '[search-table-row]',
@@ -10,7 +9,7 @@ import { SearchTableService } from "../search-table.service";
 })
 export class SearchTableRowComponent {
     @Input('search-table-row')
-    row: SearchTableRow;
+    public row: SearchTableRow;
 
-    constructor (public table: SearchTableService) {}
+    constructor(public table: SearchTableService) {}
 }

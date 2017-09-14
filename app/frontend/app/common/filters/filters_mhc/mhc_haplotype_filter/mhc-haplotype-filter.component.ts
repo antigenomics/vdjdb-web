@@ -1,6 +1,5 @@
 import { Component } from '@angular/core';
-import { MHCFiltersService } from "../mhc-filters.service";
-
+import { MHCFiltersService } from '../mhc-filters.service';
 
 @Component({
     selector:        'mhc-haplotype-filter',

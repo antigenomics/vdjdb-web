@@ -2,7 +2,7 @@ import play.sbt.PlayImport.PlayKeys.playRunHooks
 
 name := """VDJdb"""
 
-version := "1.1.0"
+version := "1.1.1"
 
 lazy val root = (project in file(".")).enablePlugins(PlayScala, LauncherJarPlugin)
 

@@ -1,14 +1,14 @@
 import { Injectable } from '@angular/core';
-import { DatabaseMetadata } from './database-metadata';
+import 'rxjs/add/operator/filter';
 import { Observable } from 'rxjs/Observable';
-import { ReplaySubject } from 'rxjs/ReplaySubject';
-import { LoggerService } from '../utils/logger/logger.service';
-import { Subscription } from 'rxjs/Subscription';
 import { WebSocketSubject } from 'rxjs/observable/dom/WebSocketSubject';
+import { ReplaySubject } from 'rxjs/ReplaySubject';
 import { Subject } from 'rxjs/Subject';
+import { Subscription } from 'rxjs/Subscription';
 import { Filter } from '../common/filters/filters';
-import { ConfigurationService } from "../configuration.service";
-import 'rxjs/add/operator/filter'
+import { ConfigurationService } from '../configuration.service';
+import { LoggerService } from '../utils/logger/logger.service';
+import { DatabaseMetadata } from './database-metadata';
 
 export const enum DatabaseServiceActions {
     MetadataAction   = 'meta',
@@ -24,13 +24,15 @@ export const enum DatabaseServiceResponseStatusType {
 }
 
 export class DatabaseServiceRequestMessage {
-    action?: string;
-    data?: any;
+    public action?: string;
+    public data?: any;
 }
 
 @Injectable()
 export class DatabaseService {
-    private connection: WebSocketSubject<Object>;
+    private static databasePingConnectionTimeout: number = 10000;
+
+    private connection: WebSocketSubject<any>;
     private subscription: Subscription;
     private messages: Subject<any> = new Subject();
     private metadata: ReplaySubject<DatabaseMetadata> = new ReplaySubject(1);
@@ -39,12 +41,12 @@ export class DatabaseService {
         this.connection = WebSocketSubject.create(configuration.websocketPrefix + '/api/database/connect');
         this.subscription = this.connection.subscribe({
             next: (message: any) => {
-                let status = message.status;
-                let action = message.action;
+                const status = message.status;
+                const action = message.action;
                 switch (action) {
                     case DatabaseServiceActions.MetadataAction:
                         if (status === DatabaseServiceResponseStatusType.Success) {
-                            this.metadata.next(DatabaseMetadata.deserialize(message.metadata))
+                            this.metadata.next(DatabaseMetadata.deserialize(message.metadata));
                         } else {
                             this.logger.error('Database service', 'Bad metadata response', true);
                         }
@@ -59,34 +61,34 @@ export class DatabaseService {
                         }
                         break;
                     default:
-                        logger.error('Unknown action in websocket', action)
+                        logger.error('Unknown action in websocket', action);
                 }
             }
         });
         this.sendMessage({ action: DatabaseServiceActions.MetadataAction });
         setInterval(() => {
             this.sendMessage({ action: 'ping' });
-        }, 10000);
+        }, DatabaseService.databasePingConnectionTimeout);
     }
 
-    filter(filters: Filter[]) {
+    public filter(filters: Filter[]) {
         this.sendMessage({
             action: DatabaseServiceActions.SearchAction,
             data: {
-                filters: filters
+                filters
             }
         });
     }
 
-    getMessages(action: DatabaseServiceActions): Observable<any> {
+    public getMessages(action: DatabaseServiceActions): Observable<any> {
         return this.messages.filter((message: any) => message.action === action && message.status === DatabaseServiceResponseStatusType.Success);
     }
 
-    sendMessage(message: DatabaseServiceRequestMessage) {
+    public sendMessage(message: DatabaseServiceRequestMessage) {
         this.connection.next(JSON.stringify(message));
     }
 
-    getMetadata(): Observable<DatabaseMetadata> {
+    public getMetadata(): Observable<DatabaseMetadata> {
         return this.metadata;
     }
 }

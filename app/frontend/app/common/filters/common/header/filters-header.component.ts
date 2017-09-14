@@ -6,6 +6,9 @@ import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class FiltersHeaderComponent {
-    @Input() title: string;
-    @Input() help: string;
+    @Input()
+    public title: string;
+
+    @Input()
+    public help: string;
 }

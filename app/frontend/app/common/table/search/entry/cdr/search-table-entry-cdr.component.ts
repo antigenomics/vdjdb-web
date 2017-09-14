@@ -1,9 +1,11 @@
-import { ChangeDetectionStrategy, Component } from "@angular/core";
-import { SearchTableRow } from "../../row/search-table-row";
+import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { SearchTableRow } from '../../row/search-table-row';
 
 @Component({
-    selector: "search-table-entry-cdr",
-    template: `<span style="color:#4daf4a;">{{ vRegion }}</span><span [style.color]="otherRegionColor">{{ otherRegion }}</span><span style="color: #377eb8">{{ jRegion }}</span>`,
+    selector: 'search-table-entry-cdr',
+    template: `<span style="color:#4daf4a;">{{ vRegion }}</span>
+               <span [style.color]="otherRegionColor">{{ otherRegion }}</span>
+               <span style="color: #377eb8">{{ jRegion }}</span>`,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SearchTableEntryCdrComponent {
@@ -12,9 +14,9 @@ export class SearchTableEntryCdrComponent {
     private _otherRegionColor: string;
     private _jRegion: string;
 
-    generate(input: string, row: SearchTableRow): void {
-        let vEnd = row.metadata.cdr3vEnd;
-        let jStart = row.metadata.cdr3jStart;
+    public generate(input: string, row: SearchTableRow): void {
+        const vEnd = row.metadata.cdr3vEnd;
+        const jStart = row.metadata.cdr3jStart;
 
         this._otherRegionColor = 'black';
         if (vEnd > 0 && jStart <= 0) {

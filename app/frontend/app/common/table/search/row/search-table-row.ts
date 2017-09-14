@@ -1,9 +1,9 @@
-import { SearchTableEntry } from "../entry/search-table-entry";
+import { SearchTableEntry } from '../entry/search-table-entry';
 
 export class SearchTableRowMetadata {
-    complex: string;
-    cdr3vEnd: number;
-    cdr3jStart: number;
+    public complex: string;
+    public cdr3vEnd: number;
+    public cdr3jStart: number;
 
     constructor(meta: any) {
         this.complex = meta.complex;
@@ -13,11 +13,11 @@ export class SearchTableRowMetadata {
 }
 
 export class SearchTableRow {
-    entries: SearchTableEntry[];
-    metadata: SearchTableRowMetadata;
+    public entries: SearchTableEntry[];
+    public metadata: SearchTableRowMetadata;
 
     constructor(row: any) {
         this.entries = row.entries.map((entry: any) => new SearchTableEntry(entry.column, entry.value));
-        this.metadata = new SearchTableRowMetadata(row.metadata)
+        this.metadata = new SearchTableRowMetadata(row.metadata);
     }
 }

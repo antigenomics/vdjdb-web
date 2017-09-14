@@ -1,4 +1,4 @@
-import { Injectable } from "@angular/core";
+import { Injectable } from '@angular/core';
 
 declare let buildMode: string;
 
@@ -16,11 +16,11 @@ export class ConfigurationService {
         this._websocketPrefix = this._websocketProtocol + this._websocketLocation;
     }
 
-    isDevelopmentMode() : boolean {
+    public isDevelopmentMode(): boolean {
         return this._buildMode === 'development';
     }
 
-    isProductionMode() : boolean {
+    public isProductionMode(): boolean {
         return this._buildMode === 'production';
     }
 

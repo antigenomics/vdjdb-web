@@ -1,6 +1,5 @@
 import { Component } from '@angular/core';
-import { AGFiltersService } from "../ag-filters.service";
-
+import { AGFiltersService } from '../ag-filters.service';
 
 @Component({
     selector:        'ag-epitope-filter',

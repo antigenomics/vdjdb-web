@@ -1,8 +1,8 @@
-import { Injectable } from "@angular/core";
-import { SearchTableRow } from "./row/search-table-row";
-import { Subject } from "rxjs/Subject";
-import { ReplaySubject } from "rxjs/ReplaySubject";
-import { DatabaseColumnInfo } from "../../../database/database-metadata";
+import { Injectable } from '@angular/core';
+import { ReplaySubject } from 'rxjs/ReplaySubject';
+import { Subject } from 'rxjs/Subject';
+import { DatabaseColumnInfo } from '../../../database/database-metadata';
+import { SearchTableRow } from './row/search-table-row';
 
 @Injectable()
 export class SearchTableService {
@@ -12,14 +12,14 @@ export class SearchTableService {
     private _rows: Subject<SearchTableRow[]> = new ReplaySubject(1);
     private _columns: DatabaseColumnInfo[] = [];
 
-    update(table: any): void {
+    public update(table: any): void {
         this._page = table.page;
         this._pageSize = table.pageSize;
         this._rows.next(table.rows.map((row: any) => new SearchTableRow(row)));
         this._dirty = true;
     }
 
-    updateColumns(columns: DatabaseColumnInfo[]) : void {
+    public updateColumns(columns: DatabaseColumnInfo[]): void {
         this._columns = columns;
     }
 

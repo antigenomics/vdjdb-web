@@ -1,21 +1,20 @@
-import { Filter, FilterInterface, FilterType } from "../filters";
-import { SetEntry } from "../common/set/set-entry";
-import { Utils } from "../../../utils/utils";
-
+import { Utils } from '../../../utils/utils';
+import { SetEntry } from '../common/set/set-entry';
+import { Filter, FilterInterface, FilterType } from '../filters';
 
 export class TCRSegmentsFilter implements FilterInterface {
-    vSegmentSelected: SetEntry[] = [];
-    vSegmentValues: string[] = [];
+    public vSegmentSelected: SetEntry[] = [];
+    public vSegmentValues: string[] = [];
 
-    jSegmentSelected: SetEntry[] = [];
-    jSegmentValues: string[] = [];
+    public jSegmentSelected: SetEntry[] = [];
+    public jSegmentValues: string[] = [];
 
-    setDefault(): void {
+    public setDefault(): void {
         Utils.Array.clear(this.vSegmentSelected);
         Utils.Array.clear(this.jSegmentSelected);
     }
 
-    collectFilters(filters: Filter[], _: string[]): void {
+    public collectFilters(filters: Filter[], _: string[]): void {
         if (this.vSegmentSelected.length !== 0) {
             filters.push(new Filter('v.segm', FilterType.SubstringSet, false, SetEntry.toString(this.vSegmentSelected)));
         }
@@ -24,21 +23,21 @@ export class TCRSegmentsFilter implements FilterInterface {
         }
     }
 
-    getFilterId(): string {
+    public getFilterId(): string {
         return 'tcr.segments';
     }
 }
 
 export class TCRGeneralFilter implements FilterInterface {
-    human: boolean;
-    monkey: boolean;
-    mouse: boolean;
+    public human: boolean;
+    public monkey: boolean;
+    public mouse: boolean;
 
-    tra: boolean;
-    trb: boolean;
-    pairedOnly: boolean;
+    public tra: boolean;
+    public trb: boolean;
+    public pairedOnly: boolean;
 
-    setDefault(): void {
+    public setDefault(): void {
         this.human = true;
         this.monkey = true;
         this.mouse = true;
@@ -48,7 +47,7 @@ export class TCRGeneralFilter implements FilterInterface {
         this.pairedOnly = false;
     }
 
-    collectFilters(filters: Filter[], _: string[]): void {
+    public collectFilters(filters: Filter[], _: string[]): void {
         if (this.human === false) {
             filters.push(new Filter('species', FilterType.Exact, true, 'HomoSapiens'));
         }
@@ -69,46 +68,46 @@ export class TCRGeneralFilter implements FilterInterface {
         }
     }
 
-    getFilterId(): string {
+    public getFilterId(): string {
         return 'tcr.general';
     }
 }
 
-export class TCR_CDR3Filter implements FilterInterface {
-    pattern: string;
-    patternSubstring: boolean;
-    patternValid: boolean;
+export class TCRcdr3Filter implements FilterInterface {
+    public pattern: string;
+    public patternSubstring: boolean;
+    public patternValid: boolean;
 
-    setDefault(): void {
+    public setDefault(): void {
         this.pattern = '';
         this.patternSubstring = false;
         this.patternValid = true;
     }
 
-    collectFilters(filters: Filter[], errors: string[]): void {
+    public collectFilters(filters: Filter[], errors: string[]): void {
         if (!this.isPatternValid()) {
-            errors.push("CDR3 pattern is not valid");
+            errors.push('CDR3 pattern is not valid');
             return;
         }
         if (this.pattern.length !== 0) {
             let value = this.pattern;
             if (this.patternSubstring === false) {
-                value = '^' + value + '$';
+                value = `^${value}$`;
             }
-            filters.push(new Filter('cdr3', FilterType.Pattern, false, value.replace(/X/g, ".")));
+            filters.push(new Filter('cdr3', FilterType.Pattern, false, value.replace(/X/g, '.')));
         }
     }
 
-    getFilterId(): string {
+    public getFilterId(): string {
         return 'tcr.cdr3';
     }
 
-    checkPattern(newValue: string): void {
+    public checkPattern(newValue: string): void {
         this.pattern = newValue.toUpperCase();
         this.patternValid = Utils.SequencePattern.isPatternValid(this.pattern);
     }
 
-    isPatternValid(): boolean {
+    public isPatternValid(): boolean {
         return this.patternValid;
     }
 }

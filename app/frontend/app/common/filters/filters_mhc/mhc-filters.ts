@@ -1,18 +1,17 @@
-import { Filter, FilterInterface, FilterType } from "../filters";
-import { SetEntry } from "../common/set/set-entry";
-import { Utils } from "../../../utils/utils";
-
+import { Utils } from '../../../utils/utils';
+import { SetEntry } from '../common/set/set-entry';
+import { Filter, FilterInterface, FilterType } from '../filters';
 
 export class MHCGeneralFilter implements FilterInterface {
-    mhci: boolean;
-    mhcii: boolean;
+    public mhci: boolean;
+    public mhcii: boolean;
 
-    setDefault(): void {
+    public setDefault(): void {
         this.mhci = true;
         this.mhcii = true;
     }
 
-    collectFilters(filters: Filter[], _: string[]): void {
+    public collectFilters(filters: Filter[], _: string[]): void {
         if (this.mhci === false) {
             filters.push(new Filter('mhc.class', FilterType.Exact, true, 'MHCI'));
         }
@@ -21,24 +20,24 @@ export class MHCGeneralFilter implements FilterInterface {
         }
     }
 
-    getFilterId(): string {
+    public getFilterId(): string {
         return 'mhc.general';
     }
 }
 
 export class MHCHaplotypeFilter implements FilterInterface {
-    firstChainSelected: SetEntry[] = [];
-    firstChainValues: string[] = [];
+    public firstChainSelected: SetEntry[] = [];
+    public firstChainValues: string[] = [];
 
-    secondChainSelected: SetEntry[] = [];
-    secondChainValues: string[] = [];
+    public secondChainSelected: SetEntry[] = [];
+    public secondChainValues: string[] = [];
 
-    setDefault(): void {
+    public setDefault(): void {
         Utils.Array.clear(this.firstChainSelected);
         Utils.Array.clear(this.secondChainSelected);
     }
 
-    collectFilters(filters: Filter[], _: string[]): void {
+    public collectFilters(filters: Filter[], _: string[]): void {
         if (this.firstChainSelected.length > 0) {
             filters.push(new Filter('mhc.a', FilterType.SubstringSet, false, SetEntry.toString(this.firstChainSelected)));
         }
@@ -47,7 +46,7 @@ export class MHCHaplotypeFilter implements FilterInterface {
         }
     }
 
-    getFilterId(): string {
+    public getFilterId(): string {
         return 'mhc.haplotype';
     }
 }

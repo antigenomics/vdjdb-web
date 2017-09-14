@@ -1,8 +1,8 @@
 import { NgModule } from '@angular/core';
-import { BrowserModule } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
-import { PopupDirective } from "./popup/popup.directive";
-import { PopupContentComponent } from "./popup/popup-content.component";
+import { BrowserModule } from '@angular/platform-browser';
+import { PopupContentComponent } from './popup/popup-content.component';
+import { PopupDirective } from './popup/popup.directive';
 
 @NgModule({
     imports:         [ BrowserModule, FormsModule ],

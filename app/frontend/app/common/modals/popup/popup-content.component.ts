@@ -1,105 +1,110 @@
-import { ChangeDetectorRef, Component, ElementRef, Input } from "@angular/core";
-import { SafeHtml } from "@angular/platform-browser";
-
+import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, Input } from '@angular/core';
+import { SafeHtml } from '@angular/platform-browser';
 
 @Component({
-    selector: "popup-content",
+    selector:    'popup-content',
     templateUrl: './popup-content.component.html'
 })
-export class PopupContentComponent {
-    @Input()
-    hostElement: HTMLElement;
+export class PopupContentComponent implements AfterViewInit {
+    private static popupContentHideValue: number = -100000;
 
     @Input()
-    content: SafeHtml;
+    public hostElement: HTMLElement;
 
     @Input()
-    header: string;
+    public content: SafeHtml;
 
     @Input()
-    popupWidth: "" | "wide" | "very wide" = "";
+    public header: string;
 
     @Input()
-    placement: "top" | "bottom" | "left" | "right" = "top";
+    public popupWidth: '' | 'wide' | 'very wide' = '';
 
-    top: number = -100000;
-    left: number = -100000;
+    @Input()
+    public placement: 'top' | 'bottom' | 'left' | 'right' = 'top';
 
-    constructor(private element: ElementRef, private cdr: ChangeDetectorRef) {
-    }
+    public top: number = -100000;
+    public left: number = -100000;
 
-    ngAfterViewInit(): void {
+    constructor(private element: ElementRef, private cdr: ChangeDetectorRef) {}
+
+    public ngAfterViewInit(): void {
         this.show();
         this.cdr.detectChanges();
     }
 
-    show(): void {
+    public show(): void {
         if (!this.hostElement) {
             return;
         }
 
-        const p = this.positionElements(this.hostElement, this.element.nativeElement.children[ 0 ], this.placement);
+        const p = PopupContentComponent.positionElements(this.hostElement, this.element.nativeElement.children[ 0 ], this.placement);
         this.top = p.top;
         this.left = p.left;
     }
 
-    hide(): void {
-        this.top = -100000;
-        this.left = -100000;
+    public hide(): void {
+        this.top = PopupContentComponent.popupContentHideValue;
+        this.left = PopupContentComponent.popupContentHideValue;
     }
 
-    // -------------------------------------------------------------------------
-    // Private Methods
-    // -------------------------------------------------------------------------
+    private static parentOffsetEl(nativeEl: HTMLElement): any {
+        let offsetParent: any = nativeEl.offsetParent || window.document;
+        while (offsetParent && offsetParent !== window.document && PopupContentComponent.isStaticPositioned(offsetParent)) {
+            offsetParent = offsetParent.offsetParent;
+        }
+        return offsetParent || window.document;
+    }
 
-    private positionElements(hostEl: HTMLElement, targetEl: HTMLElement, positionStr: string, appendToBody: boolean = false): { top: number, left: number } {
-        let positionStrParts = positionStr.split("-");
-        let pos0 = positionStrParts[ 0 ];
-        let pos1 = positionStrParts[ 1 ] || "center";
-        let hostElPos = appendToBody ? PopupContentComponent.offset(hostEl) : PopupContentComponent.position(hostEl);
-        let targetElWidth = targetEl.offsetWidth;
-        let targetElHeight = targetEl.offsetHeight;
-        let shiftWidth: any = {
-            center: function (): number {
+    private static positionElements(hostEl: HTMLElement, targetEl: HTMLElement,
+                                    positionStr: string, appendToBody: boolean = false): { top: number, left: number } {
+        const positionStrParts = positionStr.split('-');
+        const pos0 = positionStrParts[ 0 ];
+        const pos1 = positionStrParts[ 1 ] || 'center';
+        const hostElPos = appendToBody ? PopupContentComponent.offset(hostEl) : PopupContentComponent.position(hostEl);
+        const targetElWidth = targetEl.offsetWidth;
+        const targetElHeight = targetEl.offsetHeight;
+        const shiftWidth: any = {
+            center(): number {
                 return hostElPos.left + hostElPos.width / 2 - targetElWidth / 2;
             },
-            left:   function (): number {
+            left(): number {
                 return hostElPos.left;
             },
-            right:  function (): number {
+            right(): number {
                 return hostElPos.left + hostElPos.width;
             }
         };
 
-        let shiftHeight: any = {
-            center: function (): number {
+        const shiftHeight: any = {
+            center(): number {
                 return hostElPos.top + hostElPos.height / 2 - targetElHeight / 2;
             },
-            top:    function (): number {
+            top(): number {
                 return hostElPos.top;
             },
-            bottom: function (): number {
+            bottom(): number {
                 return hostElPos.top + hostElPos.height;
             }
         };
 
         let targetElPos: { top: number, left: number };
         switch (pos0) {
-            case "right":
+            case 'right':
                 targetElPos = {
                     top:  shiftHeight[ pos1 ](),
                     left: shiftWidth[ pos0 ]()
                 };
                 break;
 
-            case "left":
+            case 'left':
                 targetElPos = {
                     top:  shiftHeight[ pos1 ](),
                     left: hostElPos.left - targetElWidth
                 };
                 break;
 
-            case "bottom":
+            case 'bottom':
                 targetElPos = {
                     top:  shiftHeight[ pos0 ](),
                     left: shiftWidth[ pos1 ]()
@@ -147,8 +152,7 @@ export class PopupContentComponent {
     }
 
     private static getStyle(nativeEl: HTMLElement, cssProp: string): string {
-        if ((nativeEl as any).currentStyle) // IE
-        {
+        if ((nativeEl as any).currentStyle) {
             return (nativeEl as any).currentStyle[ cssProp ];
         }
 
@@ -162,13 +166,5 @@ export class PopupContentComponent {
 
     private static isStaticPositioned(nativeEl: HTMLElement): boolean {
         return (PopupContentComponent.getStyle(nativeEl, 'position') || 'static' ) === 'static';
-    }
-
-    private static parentOffsetEl(nativeEl: HTMLElement): any {
-        let offsetParent: any = nativeEl.offsetParent || window.document;
-        while (offsetParent && offsetParent !== window.document && PopupContentComponent.isStaticPositioned(offsetParent)) {
-            offsetParent = offsetParent.offsetParent;
-        }
-        return offsetParent || window.document;
     }
 }

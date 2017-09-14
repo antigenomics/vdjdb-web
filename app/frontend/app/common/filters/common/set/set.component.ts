@@ -1,6 +1,6 @@
 import { Component, ElementRef, EventEmitter, Input, Output, ViewChild } from '@angular/core';
-import { SetEntry } from "./set-entry";
-import { Utils } from "../../../../utils/utils";
+import { Utils } from '../../../../utils/utils';
+import { SetEntry } from './set-entry';
 
 @Component({
     selector:        'set',
@@ -9,39 +9,39 @@ import { Utils } from "../../../../utils/utils";
 export class SetComponent {
     private _searchVisible: boolean = false;
 
-    @ViewChild('input') input: ElementRef;
+    @ViewChild('input') public input: ElementRef;
 
     @Input()
-    selected: SetEntry[] = [];
+    public selected: SetEntry[] = [];
 
     @Output()
-    selectedChange = new EventEmitter();
+    public selectedChange = new EventEmitter();
 
     @Input()
-    placeholder: string;
+    public placeholder: string;
 
     @Input()
-    values: string[] = [];
+    public values: string[] = [];
 
     @Input()
-    inputUpperOnly: boolean = false;
+    public inputUpperOnly: boolean = false;
 
-    inputText: string = '';
+    public inputText: string = '';
 
-    focus() {
+    public focus() {
         this.input.nativeElement.focus();
     }
 
-    onFocusIn(): void {
+    public onFocusIn(): void {
         this._searchVisible = true;
     }
 
-    onFocusOut(): void {
+    public onFocusOut(): void {
         if (this.inputText !== '') {
             if (this.values.indexOf(this.inputText) !== -1) {
-                this.append({ value: this.inputText, display: this.inputText, disabled: false })
+                this.append({ value: this.inputText, display: this.inputText, disabled: false });
             } else {
-                let filtered = this.values.filter((entry: string) => {
+                const filtered = this.values.filter((entry: string) => {
                     return entry.indexOf(this.inputText) !== -1;
                 });
                 if (filtered.length !== 0) {
@@ -54,7 +54,7 @@ export class SetComponent {
         this._searchVisible = false;
     }
 
-    change(newValue: string): void {
+    public change(newValue: string): void {
         if (this.inputUpperOnly) {
             this.inputText = newValue.toUpperCase();
         } else {
@@ -62,7 +62,7 @@ export class SetComponent {
         }
     }
 
-    append(entry: SetEntry): void {
+    public append(entry: SetEntry): void {
         if (!entry.disabled) {
             this.selected.push(entry);
             this.selectedChange.emit(this.selected);
@@ -70,15 +70,15 @@ export class SetComponent {
         }
     }
 
-    remove(entry: SetEntry): void {
+    public remove(entry: SetEntry): void {
         Utils.Array.deleteElement(this.selected, entry);
     }
 
-    isPlaceholderVisible() : boolean {
+    public isPlaceholderVisible(): boolean {
         return this.inputText.length === 0 && this.selected.length === 0;
     }
 
-    isSearchVisible() {
+    public isSearchVisible() {
         return this._searchVisible && this.values.length !== 0;
     }
 }

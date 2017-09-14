@@ -1,4 +1,5 @@
 export class DatabaseColumnInfo {
+
     private _name: string;
     private _columnType: string;
     private _visible: boolean;
@@ -45,13 +46,13 @@ export class DatabaseColumnInfo {
         return this._values;
     }
 
-    static deserialize(input: any): DatabaseColumnInfo {
+    public static deserialize(input: any): DatabaseColumnInfo {
         return new DatabaseColumnInfo(input.name, input.columnType, input.visible, input.dataType, input.title, input.comment, input.values);
     }
-
 }
 
 export class DatabaseMetadata {
+
     private _numberOfRecords: number;
     private _numberOfColumns: number;
     private _columns: DatabaseColumnInfo[];
@@ -74,11 +75,12 @@ export class DatabaseMetadata {
         return this._columns;
     }
 
-    getColumnInfo(columnName: string): DatabaseColumnInfo {
-        return this._columns.find((i: DatabaseColumnInfo) => i.name == columnName);
+    public getColumnInfo(columnName: string): DatabaseColumnInfo {
+        return this._columns.find((i: DatabaseColumnInfo) => i.name === columnName);
     }
 
-    static deserialize(input: any): DatabaseMetadata {
+    public static deserialize(input: any): DatabaseMetadata {
         return new DatabaseMetadata(input.numberOfRecords, input.numberOfColumns, input.columns.map((c: any) => DatabaseColumnInfo.deserialize(c)));
     }
+
 }

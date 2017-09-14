@@ -1,7 +1,6 @@
-import { Injectable } from "@angular/core";
-import { Filter, FilterInterface } from "../filters";
-import { MetaGeneralFilter, MetaReliabilityFilter } from "./meta-filters";
-
+import { Injectable } from '@angular/core';
+import { Filter, FilterInterface } from '../filters';
+import { MetaGeneralFilter, MetaReliabilityFilter } from './meta-filters';
 
 @Injectable()
 export class MetaFiltersService implements FilterInterface {
@@ -13,17 +12,17 @@ export class MetaFiltersService implements FilterInterface {
         this.reliability = new MetaReliabilityFilter();
     }
 
-    setDefault(): void {
+    public setDefault(): void {
         this.general.setDefault();
         this.reliability.setDefault();
     }
 
-    collectFilters(filters: Filter[], errors: string[]): void {
+    public collectFilters(filters: Filter[], errors: string[]): void {
         this.general.collectFilters(filters, errors);
         this.reliability.collectFilters(filters, errors);
     }
 
-    getFilterId(): string {
+    public getFilterId(): string {
         return 'meta';
     }
 }

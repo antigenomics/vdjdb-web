@@ -1,21 +1,24 @@
 import { ChangeDetectionStrategy, Component, ElementRef, ViewChild } from '@angular/core';
-import { FiltersService } from '../../common/filters/filters.service';
-import { DatabaseService, DatabaseServiceActions } from '../../database/database.service';
+import 'rxjs/add/operator/take';
 import { Filter } from '../../common/filters/filters';
+import { FiltersService } from '../../common/filters/filters.service';
+import { SearchTableService } from '../../common/table/search/search-table.service';
+import { DatabaseMetadata } from '../../database/database-metadata';
+import { DatabaseService, DatabaseServiceActions } from '../../database/database.service';
 import { LoggerService } from '../../utils/logger/logger.service';
-import { SearchTableService } from "../../common/table/search/search-table.service";
-import { DatabaseMetadata } from "../../database/database-metadata";
-import 'rxjs/add/operator/take'
 
 @Component({
-    selector:    'search',
-    templateUrl: './search.component.html',
+    selector:        'search',
+    templateUrl:     './search.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SearchPageComponent {
-    loading: boolean;
+    public static initialSearchTimeout = 1000;
 
-    @ViewChild('tableRow') tableRow: ElementRef;
+    @ViewChild('tableRow')
+    private tableRow: ElementRef;
+
+    public loading: boolean;
 
     constructor(private filters: FiltersService, private database: DatabaseService,
                 private table: SearchTableService, private logger: LoggerService) {
@@ -31,16 +34,16 @@ export class SearchPageComponent {
             setTimeout(() => {
                 this.filters.setDefault();
                 this.search();
-            }, 1000)
+            },         SearchPageComponent.initialSearchTimeout);
         }
     }
 
-    search(): void {
+    public search(): void {
         if (!this.loading) {
             this.loading = true;
 
-            let filters: Filter[] = [];
-            let errors: string[] = [];
+            const filters: Filter[] = [];
+            const errors: string[] = [];
 
             this.filters.getFilters(filters, errors);
             if (errors.length === 0) {
@@ -59,11 +62,11 @@ export class SearchPageComponent {
                 this.loading = false;
             }
         } else {
-            this.logger.warn('Search', 'Loading', true)
+            this.logger.warn('Search', 'Loading', true);
         }
     }
 
-    reset(): void {
+    public reset(): void {
         this.filters.setDefault();
     }
 }

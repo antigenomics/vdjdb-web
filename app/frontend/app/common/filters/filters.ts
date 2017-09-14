@@ -9,10 +9,10 @@ export const enum FilterType {
 }
 
 export class Filter {
-    column: string;
-    filterType: FilterType;
-    negative: boolean;
-    value: string;
+    public column: string;
+    public filterType: FilterType;
+    public negative: boolean;
+    public value: string;
 
     constructor(column: string, filterType: FilterType, negative: boolean, value: string) {
         this.column = column;
@@ -23,9 +23,9 @@ export class Filter {
 }
 
 export abstract class FilterInterface {
-    abstract setDefault(): void;
+    public abstract setDefault(): void;
 
-    abstract collectFilters(filters: Filter[], errors: string[]): void;
+    public abstract collectFilters(filters: Filter[], errors: string[]): void;
 
-    abstract getFilterId(): string;
+    public abstract getFilterId(): string;
 }

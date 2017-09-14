@@ -6,7 +6,7 @@ export namespace Utils {
         }
 
         export function deleteElement<T>(array: T[], element: T): boolean {
-            let index = array.indexOf(element);
+            const index = array.indexOf(element);
             if (index !== -1) {
                 array.splice(index, 1);
                 return true;
@@ -19,20 +19,22 @@ export namespace Utils {
 
     export namespace SequencePattern {
         export function isPatternValid(pattern: string): boolean {
+            const maxPatternLength: number = 100;
+
             if (pattern.length === 0) {
                 return true;
             }
-            if (pattern.length > 100) {
+            if (pattern.length > maxPatternLength) {
                 return false;
             }
 
             let leftBracketStart = false;
             let error = false;
 
-            let allowed_chars = 'ARNDCQEGHILKMFPSTWYV';
+            const allowedCharacters = 'ARNDCQEGHILKMFPSTWYV';
 
             for (let i = 0; i < pattern.length; i++) {
-                let char = pattern[ i ];
+                const char = pattern[ i ];
                 if (char === '[') {
                     if (leftBracketStart === true) {
                         error = true;
@@ -49,7 +51,7 @@ export namespace Utils {
                     }
                     leftBracketStart = false;
                 } else {
-                    if (char !== 'X' && allowed_chars.indexOf(char) === -1 || char === ' ') {
+                    if (char !== 'X' && allowedCharacters.indexOf(char) === -1 || char === ' ') {
                         error = true;
                         break;
                     }
@@ -62,9 +64,9 @@ export namespace Utils {
     export namespace Window {
         export function scroll(element: HTMLElement): void {
             window.scroll({
-                top:      element.offsetTop,
-                behavior: 'smooth'
-            })
+                behavior: 'smooth',
+                top:      element.offsetTop
+            });
         }
     }
 

@@ -1,6 +1,5 @@
 import { Component } from '@angular/core';
 
-
 @Component({
     selector:        'search-info',
     templateUrl:     './search-info.component.html'
@@ -8,11 +7,11 @@ import { Component } from '@angular/core';
 export class SearchInfoComponent {
     private _currentState: string = 'info';
 
-    isCurrentState(state: string): boolean {
+    public isCurrentState(state: string): boolean {
         return this._currentState === state;
     }
 
-    setCurrentState(state: string): void {
+    public setCurrentState(state: string): void {
         this._currentState = state;
     }
 }

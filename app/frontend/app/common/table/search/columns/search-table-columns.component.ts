@@ -1,6 +1,5 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 
-
 @Component({
     selector:    '[search-table-columns]',
     templateUrl: './search-table-columns.component.html',
@@ -8,5 +7,5 @@ import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 })
 export class SearchTableColumnsComponent {
     @Input('search-table-columns')
-    columns: string[];
+    public columns: string[];
 }

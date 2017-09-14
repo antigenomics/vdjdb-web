@@ -1,6 +1,6 @@
 export class SearchTableEntry {
-    column: string;
-    value: string;
+    public column: string;
+    public value: string;
 
     constructor(column: string, value: string) {
         this.column = column;

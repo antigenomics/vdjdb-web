@@ -1,24 +1,25 @@
-import { Component, ChangeDetectionStrategy } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 
 export class Contributors {
-    title: string;
-    names: string[];
+    public title: string;
+    public names: string[];
 }
 
 @Component({
-    selector: 'about',
-    templateUrl: './about.component.html',
+    selector:        'about',
+    templateUrl:     './about.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AboutPageComponent {
-    contributors: Contributors[] = [
+    public contributors: Contributors[] = [
         {
             title: 'Utrecht Universty',
             names: [ 'Renske Vroomans', 'Ewald Van Dyk', 'Can Kesmir' ]
         },
         {
             title: 'Cardiff University',
-            names: [ 'Garry Dolton', 'Meriem Attaf', 'Cristina Rius', 'Kristin Ladell', 'James E. McLaren', 'Katherine K. Matthews', 'Andrew K. Sewell', 'David A. Price' ]
+            names: [ 'Garry Dolton', 'Meriem Attaf', 'Cristina Rius', 'Kristin Ladell', 'James E. McLaren', 'Katherine K. Matthews',
+                'Andrew K. Sewell', 'David A. Price' ]
         },
         {
             title: 'NIAID & NIH',
@@ -46,7 +47,7 @@ export class AboutPageComponent {
         }
     ];
 
-    joinNames(names: string[]): string {
+    public static joinNames(names: string[]): string {
         return names.join(', ');
     }
 }

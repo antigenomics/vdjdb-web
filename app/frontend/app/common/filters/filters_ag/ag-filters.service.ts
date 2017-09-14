@@ -1,7 +1,6 @@
-import { Injectable } from "@angular/core";
-import { Filter, FilterInterface } from "../filters";
-import { AGEpitopeFilter, AGOriginFilter } from "./ag-filters";
-
+import { Injectable } from '@angular/core';
+import { Filter, FilterInterface } from '../filters';
+import { AGEpitopeFilter, AGOriginFilter } from './ag-filters';
 
 @Injectable()
 export class AGFiltersService implements FilterInterface {
@@ -13,17 +12,17 @@ export class AGFiltersService implements FilterInterface {
         this.origin = new AGOriginFilter();
     }
 
-    setDefault(): void {
+    public setDefault(): void {
         this.epitope.setDefault();
         this.origin.setDefault();
     }
 
-    collectFilters(filters: Filter[], errors: string[]): void {
+    public collectFilters(filters: Filter[], errors: string[]): void {
         this.epitope.collectFilters(filters, errors);
         this.origin.collectFilters(filters, errors);
     }
 
-    getFilterId(): string {
+    public getFilterId(): string {
         return 'ag';
     }
 }

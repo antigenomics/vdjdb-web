@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { Router } from '@angular/router';
-import { Utils } from "../../utils/utils";
+import { Utils } from '../../utils/utils';
 
 @Component({
     selector:    'navbar',
@@ -8,10 +8,9 @@ import { Utils } from "../../utils/utils";
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class NavigationBarComponent {
-    constructor(private router: Router) {
-    }
+    constructor(private router: Router) {}
 
-    route(url: string): void {
+    public route(url: string): void {
         // noinspection JSIgnoredPromiseFromCall
         this.router.navigate([ url ]).then(() =>  Utils.Window.scroll(document.body));
     }

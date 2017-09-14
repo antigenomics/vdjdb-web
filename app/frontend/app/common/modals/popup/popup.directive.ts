@@ -1,39 +1,39 @@
-import { ComponentFactoryResolver, ComponentRef, Directive, HostListener, Input, ViewContainerRef } from "@angular/core";
-import { PopupContentComponent } from "./popup-content.component";
-import { DomSanitizer } from "@angular/platform-browser";
+import { ComponentFactoryResolver, ComponentRef, Directive, HostListener, Input, ViewContainerRef } from '@angular/core';
+import { DomSanitizer } from '@angular/platform-browser';
+import { PopupContentComponent } from './popup-content.component';
 
 @Directive({
-    selector: "[popup]"
+    selector: '[popup]'
 })
 export class PopupDirective {
     private tooltip: ComponentRef<PopupContentComponent>;
     private visible: boolean;
 
-    @Input("popup")
-    content: string | PopupContentComponent;
+    @Input('popup')
+    public content: string | PopupContentComponent;
 
-    @Input("popupHeader")
-    header: string;
+    @Input('popupHeader')
+    public header: string;
 
-    @Input("popupWidth")
-    popupWidth: "" | "wide" | "very wide" = "";
+    @Input('popupWidth')
+    public popupWidth: '' | 'wide' | 'very wide' = '';
 
     @Input()
-    tooltipPlacement: "top" | "bottom" | "left" | "right" = "left";
+    public tooltipPlacement: 'top' | 'bottom' | 'left' | 'right' = 'left';
 
     constructor(private viewContainerRef: ViewContainerRef,
                 private resolver: ComponentFactoryResolver,
                 private sanitizer: DomSanitizer) {}
 
-    @HostListener("focusin")
-    @HostListener("mouseenter")
-    show(): void {
+    @HostListener('focusin')
+    @HostListener('mouseenter')
+    public show(): void {
         if (this.visible) {
             return;
         }
 
         this.visible = true;
-        if (typeof this.content === "string") {
+        if (typeof this.content === 'string') {
             const factory = this.resolver.resolveComponentFactory<PopupContentComponent>(PopupContentComponent);
             if (!this.visible) {
                 return;
@@ -53,9 +53,9 @@ export class PopupDirective {
         }
     }
 
-    @HostListener("focusout")
-    @HostListener("mouseleave")
-    hide(): void {
+    @HostListener('focusout')
+    @HostListener('mouseleave')
+    public hide(): void {
         if (!this.visible) {
             return;
         }

@@ -1,21 +1,20 @@
-import { Filter, FilterInterface, FilterType } from "../filters";
-import { SetEntry } from "../common/set/set-entry";
-import { Utils } from "../../../utils/utils";
-
+import { Utils } from '../../../utils/utils';
+import { SetEntry } from '../common/set/set-entry';
+import { Filter, FilterInterface, FilterType } from '../filters';
 
 export class MetaGeneralFilter implements FilterInterface {
-    referencesSelected: SetEntry[] = [];
-    referencesValues: string[];
+    public referencesSelected: SetEntry[] = [];
+    public referencesValues: string[];
 
-    methodSort: boolean;
-    methodCulture: boolean;
-    methodOther: boolean;
+    public methodSort: boolean;
+    public methodCulture: boolean;
+    public methodOther: boolean;
 
-    seqSanger: boolean;
-    seqAmplicon: boolean;
-    seqSingleCell: boolean;
+    public seqSanger: boolean;
+    public seqAmplicon: boolean;
+    public seqSingleCell: boolean;
 
-    setDefault(): void {
+    public setDefault(): void {
         Utils.Array.clear(this.referencesSelected);
         this.methodSort = true;
         this.methodCulture = true;
@@ -25,7 +24,7 @@ export class MetaGeneralFilter implements FilterInterface {
         this.seqSingleCell = true;
     }
 
-    collectFilters(filters: Filter[], _: string[]): void {
+    public collectFilters(filters: Filter[], _: string[]): void {
         if (this.referencesSelected.length > 0) {
             filters.push(new Filter('reference.id', FilterType.SubstringSet, false, SetEntry.toString(this.referencesSelected)));
         }
@@ -49,23 +48,23 @@ export class MetaGeneralFilter implements FilterInterface {
         }
     }
 
-    getFilterId(): string {
+    public getFilterId(): string {
         return 'meta.general';
     }
 }
 
 export class MetaReliabilityFilter implements FilterInterface {
-    minimalConfidenceScore: number;
-    nonCanonical: boolean;
-    unmapped: boolean;
+    public minimalConfidenceScore: number;
+    public nonCanonical: boolean;
+    public unmapped: boolean;
 
-    setDefault(): void {
+    public setDefault(): void {
         this.minimalConfidenceScore = 0;
         this.nonCanonical = false;
         this.unmapped = false;
     }
 
-    collectFilters(filters: Filter[], _: string[]): void {
+    public collectFilters(filters: Filter[], _: string[]): void {
         if (this.minimalConfidenceScore > 0) {
             filters.push(new Filter('vdjdb.score', FilterType.Level, false, this.minimalConfidenceScore.toString()));
         }
@@ -77,7 +76,7 @@ export class MetaReliabilityFilter implements FilterInterface {
         }
     }
 
-    getFilterId(): string {
+    public getFilterId(): string {
         return 'meta.reliability';
     }
 }
