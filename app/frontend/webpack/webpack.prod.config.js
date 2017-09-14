@@ -10,7 +10,7 @@ const defaultConfiguration = require('./webpack.base.config');
 defaultConfiguration.entry[ 'bundle.min.js' ] = [
     './app/main.ts'
 ];
-
+defaultConfiguration.stats = 'errors-only';
 defaultConfiguration.devtool = false;
 defaultConfiguration.module.rules.push({
     test: /\.ts(x?)$/,
@@ -21,7 +21,7 @@ defaultConfiguration.module.rules.push({
 defaultConfiguration.plugins.push(
     new AotPlugin({
         tsConfigPath: './tsconfig.prod.json',
-        entryModule: path.resolve(__dirname, '../app/app.module#AppModule')
+        entryModule: path.resolve(__dirname, '../app/application.module#ApplicationModule')
     }),
     new webpack.DefinePlugin({
         buildMode: JSON.stringify('production')

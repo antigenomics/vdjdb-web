@@ -6,10 +6,11 @@ import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
 import { enableProdMode } from '@angular/core';
 
 import { ApplicationModule } from "./application.module";
+import { ConfigurationService } from "./configuration.service";
 
-export declare let buildMode: string;
-if (buildMode == 'production') {
+let configuration = new ConfigurationService();
+if (configuration.isProductionMode()) {
     enableProdMode();
 }
 
-platformBrowserDynamic().bootstrapModule(ApplicationModule).then(() => console.log('Application loaded (' + buildMode + ')'));
+platformBrowserDynamic().bootstrapModule(ApplicationModule).then(() => console.log('Application loaded (' + configuration.buildMode + ')'));

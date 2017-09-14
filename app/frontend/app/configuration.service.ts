@@ -1,5 +1,6 @@
 import { Injectable } from "@angular/core";
-import { buildMode } from "./main"
+
+declare let buildMode: string;
 
 @Injectable()
 export class ConfigurationService {

@@ -8,8 +8,9 @@
   },
   "scripts": {
     "test": "test",
-    "clean_bundle": "/usr/local/bin/rmtrash ../../public/bundles/*",
-    "build": "webpack -p --config ./webpack/webpack.prod.config.js && npm run purify",
+    "clean_bundle": "rimraf ../../public/bundles/*",
+    "build_bundle": "webpack -p --config ./webpack/webpack.prod.config.js && npm run purify",
+    "build": "npm run clean_bundle && npm run build_bundle",
     "purify": "purifycss ../../public/bundles/bundle.css ../../public/bundles/bundle.min.js ./views/main.scala.html --min --info --out ../../public/bundles/bundle.min.css",
     "start": "node ./webpack/webpack.dev.server",
     "postinstall": "node ./styles/semantic-fix.js"
@@ -24,8 +25,7 @@
     "core-js": "2.5.1",
     "reflect-metadata": "0.1.10",
     "rxjs": "5.4.3",
-    "zone.js": "0.8.17",
-    "jquery": "3.2.1"
+    "zone.js": "0.8.17"
   },
   "devDependencies": {
     "@angular/compiler": "4.3.6",
@@ -55,7 +55,8 @@
     "webpack-merge": "4.1.0",
     "purifycss": "1.2.6",
     "semantic-ui-less": "2.2.12",
-    "uglifyjs-webpack-plugin": "0.4.6"
+    "uglifyjs-webpack-plugin": "0.4.6",
+    "rimraf": "2.6.2"
   },
   "engines": {
     "node": ">= 5",

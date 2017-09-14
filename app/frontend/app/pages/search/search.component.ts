@@ -44,7 +44,7 @@ export class SearchPageComponent {
 
             this.filters.getFilters(filters, errors);
             if (errors.length === 0) {
-                this.logger.info('Collected filters', filters);
+                this.logger.debug('Collected filters', filters);
                 this.database.getMessages(DatabaseServiceActions.SearchAction).take(1).subscribe({
                     next: (table: any) => {
                         this.table.update(table);

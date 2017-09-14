@@ -63,10 +63,6 @@ module.exports = {
         ]
     },
     resolve: {
-        alias: {
-            'semantic-ui': path.join(__dirname, "..", "styles", "semantic", "semantic.js"),
-            'semantic-ui-types': path.join(__dirname, "..", "styles", "semantic", "semantic.types.ts")
-        },
         extensions: [ '.ts', '.tsx', '.js', '.json', '.css', '.less', '.html' ]
     },
     plugins: [
