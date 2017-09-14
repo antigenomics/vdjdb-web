@@ -15,17 +15,17 @@ import { MHCFiltersService } from './filters_mhc/mhc-filters.service';
 import { MHCGeneralFilterComponent } from './filters_mhc/mhc_general_filter/mhc-general-filter.component';
 import { MHCHaplotypeFilterComponent } from './filters_mhc/mhc_haplotype_filter/mhc-haplotype-filter.component';
 import { TCRFiltersService } from './filters_tcr/tcr-filters.service';
-import { TcrCdr3FilterComponent } from './filters_tcr/tcr_cdr3_filter/tcr-cdr3-filter.component';
+import { TCRcdr3FilterComponent } from './filters_tcr/tcr_cdr3_filter/tcr-cdr3-filter.component';
 import { TCRGeneralFilterComponent } from './filters_tcr/tcr_general_filter/tcr-general-filter.component';
 import { TCRSegmentsFilterComponent } from './filters_tcr/tcr_segments_filter/tcr-segments-filter.component';
 
 @NgModule({
     imports:      [ BrowserModule, FormsModule, FiltersCommonModule, ModalsModule ],
-    declarations: [ TCRGeneralFilterComponent, TCRSegmentsFilterComponent, TcrCdr3FilterComponent,
+    declarations: [ TCRGeneralFilterComponent, TCRSegmentsFilterComponent, TCRcdr3FilterComponent,
         AGOriginFilterComponent, AGEpitopeFilterComponent,
         MHCGeneralFilterComponent, MHCHaplotypeFilterComponent,
         MetaGeneralFilterComponent, MetaReliabilityFilterComponent ],
-    exports:      [ TCRGeneralFilterComponent, TCRSegmentsFilterComponent, TcrCdr3FilterComponent,
+    exports:      [ TCRGeneralFilterComponent, TCRSegmentsFilterComponent, TCRcdr3FilterComponent,
         AGOriginFilterComponent, AGEpitopeFilterComponent,
         MHCGeneralFilterComponent, MHCHaplotypeFilterComponent,
         MetaGeneralFilterComponent, MetaReliabilityFilterComponent ],

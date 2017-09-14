@@ -5,6 +5,6 @@ import { TCRFiltersService } from '../tcr-filters.service';
     selector:        'tcr-cdr3-filter',
     templateUrl:     './tcr-cdr3-filter.component.html'
 })
-export class TcrCdr3FilterComponent {
+export class TCRcdr3FilterComponent {
     constructor(public tcr: TCRFiltersService) {}
 }
