@@ -1,6 +1,5 @@
 <filters-header title="Epitope" help="<p>Specify the epitope sequences or sequence pattern.</p>
-    <p>In case of searching for a set of sequences click on the text field to the right of 'Sequence(s)', start typing to narrow the list. Multiple sequences can be selected by
-       separating them with a comma.</p>
+    <p>In case of searching for a set of sequences click on the text field to the right of 'Sequence(s)', start typing to narrow the list. It is possible to select multiple sequences.</p>
     <p>Sequence and pattern filter supports 20 amino acids, X for an unknown amino acid and amino acid groups specified with '[.]'. For example 'GILG[FG]VFTL' will search for
        'GILGgVFTL' and 'GILGfVFTL'. By default the search expects full match, which can be disabled by checking the substring checkbox.</p>
     <p>After selecting an epitope from the database in the 'Sequence(s)' field, you can click the suggestions button below to view the list of similar epitopes.</p>">
@@ -14,7 +13,8 @@
         <div class="twelve wide column">
             <set [(selected)]="ag.epitope.epitopeSelected"
                  [values]="ag.epitope.epitopeValues"
-                 placeholder="Comma separated list of epitope sequences, start typing to see suggestions..."></set>
+                 [inputUpperOnly]="true"
+                 placeholder="List of epitope sequences, start typing to see suggestions..."></set>
         </div>
     </div>
     <div class="row middle aligned">

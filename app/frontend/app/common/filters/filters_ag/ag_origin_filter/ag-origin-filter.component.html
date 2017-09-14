@@ -1,6 +1,6 @@
 <filters-header title="Origin" help="<p>List the representative parent species and genes of the antigen.</p>
     <p>Click on the text field to see the list of known species/genes, start typing to narrow the list.
-       Multiple species/genes can be selected by separating them with a comma.</p>">
+       It is possible select multiple species/genes</p>">
 </filters-header>
 <div class="ui grid">
     <div class="row middle aligned">
@@ -10,7 +10,7 @@
         <div class="twelve wide column">
             <set [(selected)]="ag.origin.speciesSelected"
                  [values]="ag.origin.speciesValues"
-                 placeholder="Comma separated list of antigen species, start typing to see suggestions..."></set>
+                 placeholder="List of antigen species, start typing to see suggestions..."></set>
         </div>
     </div>
     <div class="row middle aligned">
@@ -20,7 +20,7 @@
         <div class="twelve wide column">
             <set [(selected)]="ag.origin.genesSelected"
                  [values]="ag.origin.genesValues"
-                 placeholder="Comma separated list of antigen genes, start typing to see suggestions..."></set>
+                 placeholder="List of antigen genes, start typing to see suggestions..."></set>
         </div>
     </div>
 </div>

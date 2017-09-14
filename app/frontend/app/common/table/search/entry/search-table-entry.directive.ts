@@ -4,7 +4,6 @@ import { SearchTableEntry } from "./search-table-entry";
 import { SearchTableEntryJsonComponent } from "./json/search-table-entry-json.component";
 import { DatabaseColumnInfo } from "../../../../database/database-metadata";
 import { LoggerService } from "../../../../utils/logger/logger.service";
-import { LoggerErrorMessage } from "../../../../utils/logger/logger-messages";
 import { SearchTableRow } from "../row/search-table-row";
 import { SearchTableEntryUrlComponent } from "./url/search-table-entry-url.component";
 import { SearchTableEntryCdrComponent } from "./cdr/search-table-entry-cdr.component";
@@ -51,13 +50,11 @@ export class SearchTableEntryDirective implements OnInit, OnDestroy {
                     this.component.instance.generate(this.entry.value);
             }
         } else {
-            this.logger.log(new LoggerErrorMessage('Assert ' + this.entry.column + ' === ' + this.column.name + ' failed.', 'Data corrupted'));
+            this.logger.debug('Assert ' + this.entry.column + ' === ' + this.column.name + ' failed.', 'Data corrupted');
         }
     }
 
-    constructor(private viewContainerRef: ViewContainerRef, private resolver: ComponentFactoryResolver, private logger: LoggerService) {
-
-    }
+    constructor(private viewContainerRef: ViewContainerRef, private resolver: ComponentFactoryResolver, private logger: LoggerService) {}
 
     ngOnDestroy() {
         if (this.component) {

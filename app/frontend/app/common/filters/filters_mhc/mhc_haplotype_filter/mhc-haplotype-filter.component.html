@@ -1,6 +1,5 @@
 <filters-header title="Haplotype" help="<p>Specify first and second MHC allele filters.</p>
-    <p>Click on the text field to see the list of known MHC allele IDs, start typing to narrow the list. Multiple IDs can be
-       selected by separating them with a comma.</p>
+    <p>Click on the text field to see the list of known MHC allele IDs, start typing to narrow the list. It is possible to select multiple IDs.</p>
     <p>Incomplete queries will be treated as substrings. For example 'HLA-A*02' will match 'HLA-A*02, HLA-A*02, HLA-A*02:01 etc'.</p>
     <p>The second MHC allele is only meaningful for MHC class II and is set to B2M (beta 2 microglobulin) for MHC class I records.</p>">
 </filters-header>
@@ -12,7 +11,7 @@
         <div class="twelve wide column">
             <set [(selected)]="mhc.haplotype.firstChainSelected"
                  [values]="mhc.haplotype.firstChainValues"
-                 placeholder="Comma separated list of MHC alleles, start typing to see suggestions..."></set>
+                 placeholder="List of MHC alleles, start typing to see suggestions..."></set>
         </div>
     </div>
     <div class="row middle aligned">
@@ -22,7 +21,7 @@
         <div class="twelve wide column">
             <set [(selected)]="mhc.haplotype.secondChainSelected"
                  [values]="mhc.haplotype.secondChainValues"
-                 placeholder="Comma separated list of MHC alleles, start typing to see suggestions..."></set>
+                 placeholder="List of MHC alleles, start typing to see suggestions..."></set>
         </div>
     </div>
 </div>

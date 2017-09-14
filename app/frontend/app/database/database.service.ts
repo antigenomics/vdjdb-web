@@ -6,10 +6,9 @@ import { LoggerService } from '../utils/logger/logger.service';
 import { Subscription } from 'rxjs/Subscription';
 import { WebSocketSubject } from 'rxjs/observable/dom/WebSocketSubject';
 import { Subject } from 'rxjs/Subject';
-import 'rxjs/add/operator/filter'
 import { Filter } from '../common/filters/filters';
-import { LoggerErrorMessage, LoggerInfoMessage } from "../utils/logger/logger-messages";
 import { ConfigurationService } from "../configuration.service";
+import 'rxjs/add/operator/filter'
 
 export const enum DatabaseServiceActions {
     MetadataAction   = 'meta',
@@ -47,20 +46,20 @@ export class DatabaseService {
                         if (status === DatabaseServiceResponseStatusType.Success) {
                             this.metadata.next(DatabaseMetadata.deserialize(message.metadata))
                         } else {
-                            this.logger.log(new LoggerErrorNotificationMessage('Bad metadata response', 'Database service'))
+                            this.logger.error('Database service', 'Bad metadata response', true);
                         }
                         break;
                     case DatabaseServiceActions.SearchAction:
                         this.messages.next(message);
-                        logger.debug(new LoggerInfoMessage(message, 'Search'));
+                        logger.debug('Search', message);
                         break;
                     case DatabaseServiceActions.MessageAction:
                         if (message.message !== 'pong') {
-                            logger.log(new LoggerInfoDebugMessage(message, 'Message'));
+                            logger.debug('Message', message);
                         }
                         break;
                     default:
-                        logger.log(new LoggerErrorMessage('Unknown action in websocket: ' + action))
+                        logger.error('Unknown action in websocket', action)
                 }
             }
         });

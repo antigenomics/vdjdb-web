@@ -10,7 +10,7 @@
 
     <span class="sizer">{{ fakeModel }}</span>
 
-    <div class="default text" [innerHTML]="placeholder" *ngIf="isPlaceholderVisible"></div>
+    <div class="default text" style="width: 90%; white-space: nowrap; overflow: hidden" [innerHTML]="placeholder" *ngIf="isPlaceholderVisible()"></div>
 
     <select multiple="" *ngIf="isSearchVisible()">
         <option value="" *ngFor="let value of values">

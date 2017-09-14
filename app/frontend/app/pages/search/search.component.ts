@@ -1,9 +1,8 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, ViewChild } from '@angular/core';
 import { FiltersService } from '../../common/filters/filters.service';
 import { DatabaseService, DatabaseServiceActions } from '../../database/database.service';
 import { Filter } from '../../common/filters/filters';
 import { LoggerService } from '../../utils/logger/logger.service';
-import { LoggerErrorNotificationMessage, LoggerInfoDebugMessage, LoggerWarningNotificationMessage } from '../../utils/logger/logger-messages';
 import { SearchTableService } from "../../common/table/search/search-table.service";
 import { DatabaseMetadata } from "../../database/database-metadata";
 import 'rxjs/add/operator/take'
@@ -45,7 +44,7 @@ export class SearchPageComponent {
 
             this.filters.getFilters(filters, errors);
             if (errors.length === 0) {
-                this.logger.log(new LoggerInfoDebugMessage(filters, 'Collected filters'));
+                this.logger.info('Collected filters', filters);
                 this.database.getMessages(DatabaseServiceActions.SearchAction).take(1).subscribe({
                     next: (table: any) => {
                         this.table.update(table);
@@ -55,12 +54,12 @@ export class SearchPageComponent {
                 this.database.filter(filters);
             } else {
                 errors.forEach((error: string) => {
-                    this.logger.log(new LoggerErrorNotificationMessage(error, 'Filters error'));
+                    this.logger.error('Filters error', error, true);
                 });
                 this.loading = false;
             }
         } else {
-            this.logger.log(new LoggerWarningNotificationMessage('Loading', 'Search'))
+            this.logger.warn('Search', 'Loading', true)
         }
     }
 

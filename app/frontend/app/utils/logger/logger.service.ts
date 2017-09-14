@@ -1,32 +1,34 @@
 import { Injectable } from '@angular/core';
-import { LoggerMessage, LoggerMessageType } from "./logger-messages";
 import { ConfigurationService } from "../../configuration.service";
+import { NotificationService } from "../notification/notification.service";
 
 
 @Injectable()
 export class LoggerService {
 
-    constructor(private configuration: ConfigurationService) {}
+    constructor(private configuration: ConfigurationService, private notifications: NotificationService) {}
 
     // noinspection JSMethodCanBeStatic
-    log(message: LoggerMessage) {
-        switch (message.type) {
-            case LoggerMessageType.Info:
-                console.log(message.title, message.content);
-                break;
-            case LoggerMessageType.Warning:
-                console.warn(message.title, message.content);
-                break;
-            case LoggerMessageType.Error:
-                console.error(message.title, message.content);
-                break;
-        }
+    info(title: any, content?: any, notify?: boolean) {
+        console.log(title, content);
+        if (notify) this.notifications.info(title, content);
     }
 
-    debug(message: LoggerMessage) {
+    // noinspection JSMethodCanBeStatic
+    warn(title: any, content?: any, notify?: boolean) {
+        console.warn(title, content);
+        if (notify) this.notifications.warn(title, content);
+    }
+
+    // noinspection JSMethodCanBeStatic
+    error(title: any, content?: any, notify?: boolean) {
+        console.error(title, content);
+        if (notify) this.notifications.error(title, content);
+    }
+
+    debug(title: any, content?: any) {
         if (this.configuration.isDevelopmentMode()) {
-            message.title = 'Debug: ' + message.title;
-            this.log(message);
+            this.info('Debug: ' + title, content)
         }
     }
 

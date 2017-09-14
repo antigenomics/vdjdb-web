@@ -1,6 +1,5 @@
 <filters-header title="Germline sequence" help="<p>Specify Variable (V) and Joining (J) segment filters.</p>
-    <p>Click on the text field to see the list of known V/J segment IDs, start typing to narrow the list. Multiple IDs can be selected by separating
-       them with a comma.</p>
+    <p>Click on the text field to see the list of known V/J segment IDs, start typing to narrow the list. It is possible to select multiple IDs.</p>
     <p>Incomplete queries will be treated as substrings. For example 'TRBV7' will match 'TRBV7-2*01, TRBV7-2*02, ... and TRBV7-9*01, TRBV7-9*02, ...',
        'TRBV7-2' will match 'TRBV7-2*01, TRBV7-2*02, ...', etc.</p>">
 </filters-header>
@@ -12,7 +11,8 @@
         <div class="eleven wide column">
             <set [(selected)]="tcr.segments.vSegmentSelected"
                  [values]="tcr.segments.vSegmentValues"
-                 placeholder="Comma separated list of V segments, start typing to see suggestions..."></set>
+                 [inputUpperOnly]="true"
+                 placeholder="List of V segments, start typing to see suggestions..."></set>
         </div>
     </div>
     <div class="row middle aligned">
@@ -22,7 +22,8 @@
         <div class="eleven wide column">
             <set [(selected)]="tcr.segments.jSegmentSelected"
                  [values]="tcr.segments.jSegmentValues"
-                 placeholder="Comma separated list of J segments, start typing to see suggestions..."></set>
+                 [inputUpperOnly]="true"
+                 placeholder="List of J segments, start typing to see suggestions..."></set>
         </div>
     </div>
 </div>

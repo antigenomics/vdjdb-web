@@ -23,6 +23,9 @@ export class SetComponent {
     @Input()
     values: string[] = [];
 
+    @Input()
+    inputUpperOnly: boolean = false;
+
     inputText: string = '';
 
     focus() {
@@ -52,7 +55,11 @@ export class SetComponent {
     }
 
     change(newValue: string): void {
-        this.inputText = newValue.toUpperCase();
+        if (this.inputUpperOnly) {
+            this.inputText = newValue.toUpperCase();
+        } else {
+            this.inputText = newValue;
+        }
     }
 
     append(entry: SetEntry): void {
