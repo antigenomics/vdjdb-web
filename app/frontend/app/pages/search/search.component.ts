@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ElementRef, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import 'rxjs/add/operator/take';
 import { Filter } from '../../common/filters/filters';
 import { FiltersService } from '../../common/filters/filters.service';
@@ -14,9 +14,6 @@ import { LoggerService } from '../../utils/logger/logger.service';
 })
 export class SearchPageComponent {
     public static initialSearchTimeout = 1000;
-
-    @ViewChild('tableRow')
-    private tableRow: ElementRef;
 
     public loading: boolean;
 
@@ -34,7 +31,7 @@ export class SearchPageComponent {
             setTimeout(() => {
                 this.filters.setDefault();
                 this.search();
-            },         SearchPageComponent.initialSearchTimeout);
+            }, SearchPageComponent.initialSearchTimeout);
         }
     }
 

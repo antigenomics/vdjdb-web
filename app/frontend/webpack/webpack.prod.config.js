@@ -4,6 +4,7 @@ const path = require('path');
 const webpack = require('webpack');
 const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
 const AotPlugin = require('@ngtools/webpack').AotPlugin;
+const TSLintPlugin = require('tslint-webpack-plugin');
 
 const defaultConfiguration = require('./webpack.base.config');
 
@@ -19,6 +20,13 @@ defaultConfiguration.module.rules.push({
 });
 
 defaultConfiguration.plugins.push(
+    new TSLintPlugin({
+        config: path.resolve(__dirname, '../tslint.json'),
+        files: [ './app/**/*.ts' ],
+        fix: false,
+        project: path.resolve(__dirname, '../tsconfig.prod.json'),
+        typeCheck: true
+    }),
     new AotPlugin({
         tsConfigPath: './tsconfig.prod.json',
         entryModule: path.resolve(__dirname, '../app/application.module#ApplicationModule')

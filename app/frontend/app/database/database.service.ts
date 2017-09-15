@@ -37,7 +37,7 @@ export class DatabaseService {
     private messages: Subject<any> = new Subject();
     private metadata: ReplaySubject<DatabaseMetadata> = new ReplaySubject(1);
 
-    constructor(private logger: LoggerService, private configuration: ConfigurationService) {
+    constructor(private logger: LoggerService, configuration: ConfigurationService) {
         this.connection = WebSocketSubject.create(configuration.websocketPrefix + '/api/database/connect');
         this.subscription = this.connection.subscribe({
             next: (message: any) => {

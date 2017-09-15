@@ -12,7 +12,7 @@
       "node",
       "source-map",
       "uglify-js",
-      "webpack" 
+      "webpack"
     ],
     "noImplicitAny": true,
     "removeComments": true,
