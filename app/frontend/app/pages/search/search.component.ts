@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
+import 'rxjs/add/operator/filter';
 import 'rxjs/add/operator/take';
 import { Filter } from '../../common/filters/filters';
 import { FiltersService } from '../../common/filters/filters.service';
@@ -65,5 +66,9 @@ export class SearchPageComponent {
 
     public reset(): void {
         this.filters.setDefault();
+    }
+
+    public testNotify(): void {
+        this.logger.info('Test title', 'Test content', true);
     }
 }

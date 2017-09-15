@@ -18,6 +18,7 @@
     "trailing-comma": [ true, { "multiline": "never", "singleline": "never" } ],
     "variable-name": [ true, "allow-leading-underscore" ],
     "forin": true,
+    "no-trailing-whitespace": false,
     "no-conditional-assignment": true,
     "no-null-keyword": true,
     "no-string-literal": true,

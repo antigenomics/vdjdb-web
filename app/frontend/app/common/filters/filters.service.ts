@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { EventEmitter, Injectable } from '@angular/core';
 import 'rxjs/add/operator/take';
 import { DatabaseMetadata } from '../../database/database-metadata';
 import { DatabaseService } from '../../database/database.service';
@@ -8,8 +8,15 @@ import { MetaFiltersService } from './filters_meta/meta-filters.service';
 import { MHCFiltersService } from './filters_mhc/mhc-filters.service';
 import { TCRFiltersService } from './filters_tcr/tcr-filters.service';
 
+export const enum FiltersServiceEventType {
+    Reset,
+    Get
+}
+
 @Injectable()
 export class FiltersService {
+    private _filtersEvents: EventEmitter<FiltersServiceEventType> = new EventEmitter();
+
     constructor(private tcr: TCRFiltersService, private ag: AGFiltersService,
                 private mhc: MHCFiltersService, private meta: MetaFiltersService,
                 private database: DatabaseService) {
@@ -30,11 +37,16 @@ export class FiltersService {
         });
     }
 
+    public getEvents(): EventEmitter<FiltersServiceEventType> {
+        return this._filtersEvents;
+    }
+
     public setDefault(): void {
         this.tcr.setDefault();
         this.ag.setDefault();
         this.mhc.setDefault();
         this.meta.setDefault();
+        this._filtersEvents.emit(FiltersServiceEventType.Reset);
     }
 
     public getFilters(filters: Filter[], errors: string[]) {
@@ -42,5 +54,6 @@ export class FiltersService {
         this.ag.collectFilters(filters, errors);
         this.mhc.collectFilters(filters, errors);
         this.meta.collectFilters(filters, errors);
+        this._filtersEvents.emit(FiltersServiceEventType.Get);
     }
 }

@@ -1,9 +1,10 @@
-import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, Input } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Input } from '@angular/core';
 import { SafeHtml } from '@angular/platform-browser';
 
 @Component({
-    selector:    'popup-content',
-    templateUrl: './popup-content.component.html'
+    selector:        'popup-content',
+    templateUrl:     './popup-content.component.html',
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class PopupContentComponent implements AfterViewInit {
     private static popupContentHideValue: number = -100000;
@@ -26,7 +27,8 @@ export class PopupContentComponent implements AfterViewInit {
     public top: number = -100000;
     public left: number = -100000;
 
-    constructor(private element: ElementRef, private cdr: ChangeDetectorRef) {}
+    constructor(private element: ElementRef, private cdr: ChangeDetectorRef) {
+    }
 
     public ngAfterViewInit(): void {
         this.show();

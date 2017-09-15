@@ -1,3 +1,4 @@
+<notification></notification>
 <div class="ui main content fade element soft-margin">
     <div class="ui raised segments">
         <h3 class="ui top attached header">Database browser</h3>
@@ -7,6 +8,7 @@
         <div class="ui attached secondary clearing segment">
             <button class="ui orange button right floated" (click)="reset()">Reset filters</button>
             <button class="ui teal button left floated" [ngClass]="{'loading':loading}" (click)="search()">Refresh table</button>
+            <button class="ui teal button left floated" [ngClass]="{'loading':loading}" (click)="testNotify()">add notification</button>
         </div>
     </div>
     <div class="ui raised segments" #tableRow>
