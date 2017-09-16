@@ -48,7 +48,7 @@ export class DatabaseService {
                         if (status === DatabaseServiceResponseStatusType.Success) {
                             this.metadata.next(DatabaseMetadata.deserialize(message.metadata));
                         } else {
-                            this.logger.error('Database service', 'Bad metadata response', true);
+                            this.logger.error('Database service', 'Bad metadata response');
                         }
                         break;
                     case DatabaseServiceActions.SearchAction:

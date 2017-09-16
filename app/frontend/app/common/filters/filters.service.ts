@@ -35,6 +35,7 @@ export class FiltersService {
                 this.meta.general.referencesValues = metadata.getColumnInfo('reference.id').values;
             }
         });
+        this.setDefault();
     }
 
     public getEvents(): EventEmitter<FiltersServiceEventType> {

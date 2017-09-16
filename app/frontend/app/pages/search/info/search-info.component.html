@@ -14,7 +14,7 @@
             </div>
         </div>
     </div>
-    <div class="row fade element average" *ngIf="isCurrentState('info')">
+    <div class="row fade element" *ngIf="isCurrentState('info')">
         <div class="sixteen wide column">
             <p>The table below shows VDJdb records, more information for each column contents is displayed when hovering over the column
                name.</p>
@@ -36,7 +36,7 @@
                 here</a>.</p>
         </div>
     </div>
-    <div class="row fade element average" *ngIf="isCurrentState('filter.cdr3')">
+    <div class="row fade element" *ngIf="isCurrentState('filter.cdr3')">
         <div class="eight wide column">
             <tcr-general-filter></tcr-general-filter>
         </div>
@@ -47,7 +47,7 @@
             <tcr-cdr3-filter></tcr-cdr3-filter>
         </div>
     </div>
-    <div class="row fade element average" *ngIf="isCurrentState('filter.ag')">
+    <div class="row fade element" *ngIf="isCurrentState('filter.ag')">
         <div class="eight wide column">
             <ag-origin-filter></ag-origin-filter>
         </div>
@@ -55,7 +55,7 @@
             <ag-epitope-filter></ag-epitope-filter>
         </div>
     </div>
-    <div class="row fade element average" *ngIf="isCurrentState('filter.mhc')">
+    <div class="row fade element" *ngIf="isCurrentState('filter.mhc')">
         <div class="eight wide column">
             <mhc-general-filter></mhc-general-filter>
         </div>
@@ -63,7 +63,7 @@
             <mhc-haplotype-filter></mhc-haplotype-filter>
         </div>
     </div>
-    <div class="row fade element average" *ngIf="isCurrentState('filter.meta')">
+    <div class="row fade element" *ngIf="isCurrentState('filter.meta')">
         <div class="eight wide column">
             <meta-general-filter></meta-general-filter>
         </div>

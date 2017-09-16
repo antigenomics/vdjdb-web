@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy } from '@angular/core';
-import { FiltersService, FiltersServiceEventType } from '../../../common/filters/filters.service';
 import { Subscription } from 'rxjs/Subscription';
+import { FiltersService, FiltersServiceEventType } from '../../../common/filters/filters.service';
 
 @Component({
     selector:        'search-info',

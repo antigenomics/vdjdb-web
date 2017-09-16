@@ -1,15 +1,17 @@
 import { EventEmitter, Injectable } from '@angular/core';
 import { Utils } from '../utils';
-import { NotificationItem, NotificationItemType } from './item/notification-item';
+import { NotificationItem, NotificationItemType } from './notification-item';
 
 export const enum NotificationServiceEventType {
     Add,
+    DeleteFadeOut,
     Delete
 }
 
 @Injectable()
 export class NotificationService {
     private static _notificationDeleteTimeout: number = 5000;
+    private static _notificationFadeOutTimeout: number = 1500;
     private _notifications: NotificationItem[] = [];
     private _notificationEvents: EventEmitter<NotificationServiceEventType> = new EventEmitter(true);
 
@@ -41,8 +43,12 @@ export class NotificationService {
         this._notifications.push(item);
         this._notificationEvents.emit(NotificationServiceEventType.Add);
         window.setTimeout(() => {
-            Utils.Array.deleteElement(this._notifications, item);
-            this._notificationEvents.emit(NotificationServiceEventType.Delete);
+            item.visible = 0;
+            this._notificationEvents.emit(NotificationServiceEventType.DeleteFadeOut);
+            window.setTimeout(() => {
+                Utils.Array.deleteElement(this._notifications, item);
+                this._notificationEvents.emit(NotificationServiceEventType.Delete);
+            }, NotificationService._notificationFadeOutTimeout);
         }, NotificationService._notificationDeleteTimeout);
     }
 }

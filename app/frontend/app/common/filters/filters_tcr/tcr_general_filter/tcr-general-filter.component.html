@@ -1,42 +1,40 @@
 <filters-header title="General"
                 help="Search for specified parent species of a TCR and receptor chain (alpha or beta). You can also specify to show only records that have both TCR alpha and beta chain sequences (paired records)">
 </filters-header>
-<div class="ui grid">
-    <div class="row">
-        <div class="three wide column">
-            <b>Species</b>
+<div class="ui grid middle aligned">
+    <div class="three wide column">
+        <b>Species</b>
+    </div>
+    <div class="three wide column">
+        <div class="ui checkbox">
+            <input [(ngModel)]="tcr.general.human" type="checkbox">
+            <label>Human</label>
         </div>
-        <div class="three wide column">
-            <div class="ui checkbox">
-                <input [(ngModel)]="tcr.general.human" type="checkbox">
-                <label>Human</label>
-            </div>
-            <div class="ui checkbox">
-                <input [(ngModel)]="tcr.general.monkey" type="checkbox">
-                <label>Monkey</label>
-            </div>
-            <div class="ui checkbox">
-                <input [(ngModel)]="tcr.general.mouse" type="checkbox">
-                <label>Mouse</label>
-            </div>
+        <div class="ui checkbox">
+            <input [(ngModel)]="tcr.general.monkey" type="checkbox">
+            <label>Monkey</label>
         </div>
-        <div class="two wide column"></div>
-        <div class="three wide column">
-            <b>Gene (chain)</b>
+        <div class="ui checkbox">
+            <input [(ngModel)]="tcr.general.mouse" type="checkbox">
+            <label>Mouse</label>
         </div>
-        <div class="two wide column">
-            <div class="ui checkbox">
-                <input [(ngModel)]="tcr.general.tra" type="checkbox">
-                <label>TRA</label>
-            </div>
-            <div class="ui checkbox">
-                <input [(ngModel)]="tcr.general.trb" type="checkbox">
-                <label>TRB</label>
-            </div>
-            <div class="ui checkbox">
-                <input [(ngModel)]="tcr.general.pairedOnly" type="checkbox">
-                <label>Only paired records</label>
-            </div>
+    </div>
+    <div class="two wide column"></div>
+    <div class="three wide column">
+        <b>Gene (chain)</b>
+    </div>
+    <div class="two wide column">
+        <div class="ui checkbox">
+            <input [(ngModel)]="tcr.general.tra" type="checkbox">
+            <label>TRA</label>
+        </div>
+        <div class="ui checkbox">
+            <input [(ngModel)]="tcr.general.trb" type="checkbox">
+            <label>TRB</label>
+        </div>
+        <div class="ui checkbox">
+            <input [(ngModel)]="tcr.general.pairedOnly" type="checkbox">
+            <label>Only paired records</label>
         </div>
     </div>
 </div>

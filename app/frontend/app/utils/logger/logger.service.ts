@@ -1,34 +1,25 @@
+/* tslint:disable:no-console */
 import { Injectable } from '@angular/core';
 import { ConfigurationService } from '../../configuration.service';
-import { NotificationService } from '../notification/notification.service';
 
 @Injectable()
 export class LoggerService {
 
-    constructor(private configuration: ConfigurationService, private notifications: NotificationService) {}
+    constructor(private configuration: ConfigurationService) {}
 
     // noinspection JSMethodCanBeStatic
-    public info(title: any, content?: any, notify?: boolean) {
+    public info(title: any, content?: any) {
         console.log(title, content);
-        if (notify) {
-            this.notifications.info(title, content);
-        }
     }
 
     // noinspection JSMethodCanBeStatic
-    public warn(title: any, content?: any, notify?: boolean) {
+    public warn(title: any, content?: any) {
         console.warn(title, content);
-        if (notify) {
-            this.notifications.warn(title, content);
-        }
     }
 
     // noinspection JSMethodCanBeStatic
-    public error(title: any, content?: any, notify?: boolean) {
+    public error(title: any, content?: any) {
         console.error(title, content);
-        if (notify) {
-            this.notifications.error(title, content);
-        }
     }
 
     public debug(title: any, content?: any) {
@@ -36,5 +27,5 @@ export class LoggerService {
             this.info('Debug: ' + title, content);
         }
     }
-
 }
+/* tslint:enable:no-console */

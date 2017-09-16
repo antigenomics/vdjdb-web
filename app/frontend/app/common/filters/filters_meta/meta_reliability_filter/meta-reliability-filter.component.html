@@ -4,28 +4,27 @@
 </filters-header>
 
 <div class="ui grid">
-    <div class="row">
-        <div class="three wide column">
-            <b>Minimal confidence score</b>
+    <div class="three wide column">
+        <b>Minimal confidence score</b>
+    </div>
+    <div class="four wide column">
+        <div class="ui input fluid">
+            <input class="form-control" value="0" type="number" [attr.min]="meta.reliability.confidenceScoreMin"
+                   [attr.max]="meta.reliability.confidenceScoreMax" [(ngModel)]="meta.reliability.minimalConfidenceScore"/>
         </div>
-        <div class="four wide column">
-            <div class="ui input">
-                <input class="form-control" value="0" type="number" min="0" max="3" [(ngModel)]="meta.reliability.minimalConfidenceScore"/>
-            </div>
+    </div>
+    <div class="two wide column"></div>
+    <div class="two wide column">
+        <b>Spurious CDR3</b>
+    </div>
+    <div class="five wide column">
+        <div class="ui checkbox">
+            <input [(ngModel)]="meta.reliability.nonCanonical" type="checkbox">
+            <label>Include non-canonical</label>
         </div>
-        <div class="two wide column"></div>
-        <div class="two wide column">
-            <b>Spurious CDR3</b>
-        </div>
-        <div class="five wide column">
-            <div class="ui checkbox">
-                <input [(ngModel)]="meta.reliability.nonCanonical" type="checkbox">
-                <label>Include non-canonical</label>
-            </div>
-            <div class="ui checkbox">
-                <input [(ngModel)]="meta.reliability.unmapped" type="checkbox">
-                <label>Include unmapped V/J</label>
-            </div>
+        <div class="ui checkbox">
+            <input [(ngModel)]="meta.reliability.unmapped" type="checkbox">
+            <label>Include unmapped V/J</label>
         </div>
     </div>
 </div>

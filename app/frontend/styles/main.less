@@ -14,13 +14,18 @@ body {
   opacity: 0;
 }
 
-.fade.element {
+.fade.element.slow {
   -webkit-animation: fade 1s;
   animation: fade 1s;
   opacity: 1;
 }
 
-.fade.element.average {
+.fade.element.very.slow {
+  -webkit-animation: fade 2s !important;
+  animation: fade 2s !important;
+}
+
+.fade.element {
   -webkit-animation: fade 0.5s !important;
   animation: fade 0.5s !important;
 }

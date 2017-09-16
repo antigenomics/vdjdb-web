@@ -1,12 +1,10 @@
-<div class="ui grid">
-    <div class="row middle aligned">
-        <div class="fifteen wide column">
-            <div class="ui horizontal divider">
-                {{ title }}
-            </div>
+<div class="ui grid middle aligned">
+    <div class="fourteen wide column">
+        <div class="ui horizontal divider">
+            {{ title }}
         </div>
-        <div class="one wide column cursor pointer" [popup]="help" popupWidth="very wide" [popupHeader]="title">
-            <i class="help icon"></i>
-        </div>
+    </div>
+    <div class="one wide column cursor pointer" [popup]="help" popupWidth="wide" [popupHeader]="title">
+        <i class="help icon"></i>
     </div>
 </div>

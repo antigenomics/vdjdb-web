@@ -11,7 +11,7 @@
     "strict-boolean-expressions": [ true, "allow-undefined-union", "allow-number", "allow-string" ],
     "no-unused-variable": true,
     "ordered-imports": true,
-    "no-console": [ false ],
+    "no-console": [ true ],
     "no-namespace": false,
     "max-classes-per-file": [ true, 10 ],
     "object-literal-sort-keys": false,

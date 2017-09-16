@@ -35,10 +35,6 @@ lazy val buildFrontend = taskKey[Unit]("Build frontend Angular")
 val frontendApplicationPath = if (isWindows) "app\\frontend" else "./app/frontend"
 
 buildFrontend := {
-    //val install: Seq[String] = shell :+ "npm --prefix " + frontendApplicationPath + " install "
-    //val npmTest: Seq[String] = shell :+    "npm run test"
-    //val npmLint: Seq[String] = shell :+    "npm run lint"
-
     val logger: TaskStreams = streams.value
     val npm: String = if (isWindows) "cmd /c npm " else "npm "
 
@@ -50,7 +46,7 @@ buildFrontend := {
     logger.log.info("Frontend dependencies installed successfully")
 
     logger.log.info("Building frontend bundle")
-    val build = Process(npm + "run build", file(frontendApplicationPath)).run
+    val build = Process(npm + "run bundle", file(frontendApplicationPath)).run
     if (build.exitValue != 0) {
         throw new IllegalStateException("Building frontend bundle failed!")
     }

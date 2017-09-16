@@ -8,7 +8,7 @@ const defaultConfiguration = Object.create(require('./webpack.base.config'));
 const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
 const DllBundlesPlugin = require('webpack-dll-bundles-plugin').DllBundlesPlugin;
 
-defaultConfiguration.entry[ 'bundle.min.js' ] = [
+defaultConfiguration.entry[ 'bundle.js' ] = [
     'webpack/hot/dev-server',
     'webpack-dev-server/client?http://localhost:8080',
     './app/main.ts'

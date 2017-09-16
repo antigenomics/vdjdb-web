@@ -18,7 +18,7 @@
         </option>
     </select>
 
-    <div class="menu visible fade element average" tabindex="-1" style="display: block !important;" *ngIf="isSearchVisible()">
+    <div class="menu visible fade element" tabindex="-1" style="display: block !important;" *ngIf="isSearchVisible()">
         <div class="item" *ngFor="let entry of values | autocomplete:inputText:selected" (mousedown)="append(entry)">{{ entry.display }}</div>
     </div>
 </div>

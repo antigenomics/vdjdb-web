@@ -54,6 +54,9 @@ export class MetaGeneralFilter implements FilterInterface {
 }
 
 export class MetaReliabilityFilter implements FilterInterface {
+    public confidenceScoreMin: number = 0;
+    public confidenceScoreMax: number = 3;
+
     public minimalConfidenceScore: number;
     public nonCanonical: boolean;
     public unmapped: boolean;
@@ -64,7 +67,10 @@ export class MetaReliabilityFilter implements FilterInterface {
         this.unmapped = false;
     }
 
-    public collectFilters(filters: Filter[], _: string[]): void {
+    public collectFilters(filters: Filter[], errors: string[]): void {
+        if (this.minimalConfidenceScore < this.confidenceScoreMin || this.minimalConfidenceScore > this.confidenceScoreMax) {
+            errors.push(`Invalid minimal confidence score value, should be between ${this.confidenceScoreMin} and ${this.confidenceScoreMax}`);
+        }
         if (this.minimalConfidenceScore > 0) {
             filters.push(new Filter('vdjdb.score', FilterType.Level, false, this.minimalConfidenceScore.toString()));
         }

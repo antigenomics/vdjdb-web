@@ -53,8 +53,8 @@ const bundleStats = bundleFiles
         {
             '#': '',
             'File name': '',
-            'Size': total.size + ' KB',
-            'gzip': total.gzip + ' KB'
+            'Size': total.size.toFixed(2) + ' KB',
+            'gzip': total.gzip.toFixed(2) + ' KB'
         }
     ]);
 console.table('Fronted bundle statistics', bundleStats);

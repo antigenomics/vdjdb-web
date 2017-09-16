@@ -1,11 +1,10 @@
+/* tslint:disable:max-line-length */
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { SearchTableRow } from '../../row/search-table-row';
 
 @Component({
     selector: 'search-table-entry-cdr',
-    template: `<span style="color:#4daf4a;">{{ vRegion }}</span>
-               <span [style.color]="otherRegionColor">{{ otherRegion }}</span>
-               <span style="color: #377eb8">{{ jRegion }}</span>`,
+    template: `<span style="color:#4daf4a;">{{ vRegion }}</span><span [style.color]="otherRegionColor">{{ otherRegion }}</span><span style="color: #377eb8">{{ jRegion }}</span>`,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SearchTableEntryCdrComponent {
@@ -53,3 +52,4 @@ export class SearchTableEntryCdrComponent {
         return this._jRegion;
     }
 }
+/* tslint:enable:max-line-length */

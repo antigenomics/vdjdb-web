@@ -8,11 +8,13 @@ export class NotificationItem {
     public type: NotificationItemType;
     public title: string;
     public content: string;
+    public visible: number;
 
     constructor(type: NotificationItemType, title: string, content: string) {
         this.type = type;
         this.title = title;
         this.content = content;
+        this.visible = 1;
     }
 
     public isInfo(): boolean {

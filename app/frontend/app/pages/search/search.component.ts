@@ -7,6 +7,7 @@ import { SearchTableService } from '../../common/table/search/search-table.servi
 import { DatabaseMetadata } from '../../database/database-metadata';
 import { DatabaseService, DatabaseServiceActions } from '../../database/database.service';
 import { LoggerService } from '../../utils/logger/logger.service';
+import { NotificationService } from "../../utils/notification/notification.service";
 
 @Component({
     selector:        'search',
@@ -19,7 +20,8 @@ export class SearchPageComponent {
     public loading: boolean;
 
     constructor(private filters: FiltersService, private database: DatabaseService,
-                private table: SearchTableService, private logger: LoggerService) {
+                private table: SearchTableService, private logger: LoggerService,
+                private notifications: NotificationService) {
         this.loading = false;
 
         this.database.getMetadata().take(1).subscribe({
@@ -30,7 +32,6 @@ export class SearchPageComponent {
 
         if (!table.dirty) {
             setTimeout(() => {
-                this.filters.setDefault();
                 this.search();
             }, SearchPageComponent.initialSearchTimeout);
         }
@@ -55,20 +56,16 @@ export class SearchPageComponent {
                 this.database.filter(filters);
             } else {
                 errors.forEach((error: string) => {
-                    this.logger.error('Filters error', error, true);
+                    this.notifications.error('Filters error', error);
                 });
                 this.loading = false;
             }
         } else {
-            this.logger.warn('Search', 'Loading', true);
+            this.notifications.warn('Search', 'Loading');
         }
     }
 
     public reset(): void {
         this.filters.setDefault();
-    }
-
-    public testNotify(): void {
-        this.logger.info('Test title', 'Test content', true);
     }
 }

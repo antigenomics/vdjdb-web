@@ -1,6 +1,7 @@
 import { Utils } from '../../../utils/utils';
 import { SetEntry } from '../common/set/set-entry';
 import { Filter, FilterInterface, FilterType } from '../filters';
+import { SliderRangeModel } from '../common/slider/slider.component';
 
 export class TCRSegmentsFilter implements FilterInterface {
     public vSegmentSelected: SetEntry[] = [];
@@ -78,23 +79,34 @@ export class TCRcdr3Filter implements FilterInterface {
     public patternSubstring: boolean;
     public patternValid: boolean;
 
+    public lengthMin: number = 5;
+    public lengthMax: number = 30;
+    public length: SliderRangeModel;
+
     public setDefault(): void {
         this.pattern = '';
         this.patternSubstring = false;
         this.patternValid = true;
+
+        this.length = new SliderRangeModel(this.lengthMin, this.lengthMax);
     }
 
     public collectFilters(filters: Filter[], errors: string[]): void {
         if (!this.isPatternValid()) {
             errors.push('CDR3 pattern is not valid');
             return;
-        }
-        if (this.pattern.length !== 0) {
+        } else if (this.pattern.length !== 0) {
             let value = this.pattern;
             if (this.patternSubstring === false) {
                 value = `^${value}$`;
             }
             filters.push(new Filter('cdr3', FilterType.Pattern, false, value.replace(/X/g, '.')));
+        }
+
+        if (this.length.min < this.lengthMin || this.length.max > this.lengthMax) {
+            errors.push('Incorrect cdr3 length');
+        } else if (this.length.min !== this.lengthMin || this.length.max !== this.lengthMax) {
+            filters.push(new Filter('cdr3', FilterType.Range, false, this.length.toString()));
         }
     }
 
