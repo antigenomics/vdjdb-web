@@ -7,7 +7,7 @@ import { SearchTableService } from '../../common/table/search/search-table.servi
 import { DatabaseMetadata } from '../../database/database-metadata';
 import { DatabaseService, DatabaseServiceActions } from '../../database/database.service';
 import { LoggerService } from '../../utils/logger/logger.service';
-import { NotificationService } from "../../utils/notification/notification.service";
+import { NotificationService } from '../../utils/notification/notification.service';
 
 @Component({
     selector:        'search',

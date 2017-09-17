@@ -7,10 +7,11 @@ import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
 
 import { ApplicationModule } from './application.module';
 import { ConfigurationService } from './configuration.service';
+import { LoggerService } from './utils/logger/logger.service';
 
 const configuration = new ConfigurationService();
 if (configuration.isProductionMode()) {
     enableProdMode();
 }
-
-platformBrowserDynamic().bootstrapModule(ApplicationModule).then(() => console.log(`Application loaded (${configuration.buildMode})`));
+const logger = new LoggerService(configuration);
+platformBrowserDynamic().bootstrapModule(ApplicationModule).then(() => logger.info(`Application loaded (${configuration.buildMode})`));

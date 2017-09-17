@@ -61,7 +61,8 @@
     "uglifyjs-webpack-plugin": "0.4.6",
     "rimraf": "2.6.2",
     "console.table": "0.9.1",
-    "gzip-size": "4.0.0"
+    "gzip-size": "4.0.0",
+    "md5-file": "3.2.2"
   },
   "engines": {
     "node": ">= 5",

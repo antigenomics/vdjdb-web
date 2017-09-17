@@ -3,12 +3,15 @@ import play.sbt.PlayImport.PlayKeys.playRunHooks
 name := """VDJdb"""
 
 version := "1.1.1"
-
-lazy val root = (project in file(".")).enablePlugins(PlayScala, LauncherJarPlugin)
-
-scalaVersion := "2.12.2"
+scalaVersion := "2.12.3"
 
 resolvers += "Local Maven Repository" at Path.userHome.asFile.toURI.toURL + ".m2/repository"
+resolvers += Resolver.sonatypeRepo("releases")
+
+lazy val root = (project in file("."))
+    .enablePlugins(PlayScala, LauncherJarPlugin, SbtWeb)
+
+pipelineStages := Seq(digest)
 
 libraryDependencies ++= Seq(
     "com.antigenomics" % "vdjdb" % "1.1.6",
@@ -52,6 +55,7 @@ buildFrontend := {
     }
     logger.log.info("Frontend bundle built successfully")
 }
+
 (packageBin in Universal) := {
     ((packageBin in Universal) dependsOn buildFrontend).value
 }

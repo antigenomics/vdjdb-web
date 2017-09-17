@@ -18,7 +18,7 @@
             <script type="application/javascript" src="assets/bundles/vendor.dll.js" charset="utf-8"></script>
             <link type="text/css" href="bundles/bundle.css" rel="stylesheet">
         } else {
-            <link type="text/css" href="bundles/bundle.min.css" rel="stylesheet">
+            <link type="text/css" href="@routes.Assets.versioned("bundles/bundle.min.css")" rel="stylesheet">
         }
         <link rel="shortcut icon" type="image/png" href="@routes.Assets.versioned("images/favicon.png")">
     </head>
@@ -33,6 +33,6 @@
     @if(environment.mode == Mode.Dev) {
         <script type="application/javascript" src="bundles/bundle.js" charset="utf-8"></script>
     } else {
-        <script type="application/javascript" src="bundles/bundle.min.js" charset="utf-8"></script>
+        <script type="application/javascript" src="@routes.Assets.versioned("bundles/bundle.min.js")" charset="utf-8"></script>
     }
 </html>

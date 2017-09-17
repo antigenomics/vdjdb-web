@@ -1,7 +1,9 @@
 package backend.controllers
 
 import javax.inject._
+
 import controllers._
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import play.api._
 import play.api.libs.ws._
@@ -21,6 +23,6 @@ class Application @Inject()(ws: WSClient, assets: Assets, environment: Environme
             Ok(response.body).withHeaders(headers: _*).as(contentType)
         }
     } else {
-        assets.at("/public/bundles", file)
+        throw new RuntimeException("Application.bundle should not be used with Production Mode")
     }
 }

@@ -1,7 +1,7 @@
 import { Utils } from '../../../utils/utils';
 import { SetEntry } from '../common/set/set-entry';
-import { Filter, FilterInterface, FilterType } from '../filters';
 import { SliderRangeModel } from '../common/slider/slider.component';
+import { Filter, FilterInterface, FilterType } from '../filters';
 
 export class TCRSegmentsFilter implements FilterInterface {
     public vSegmentSelected: SetEntry[] = [];
