@@ -26,6 +26,33 @@ search.</p>">
     <div class="twelve wide column">
         <slider [min]="tcr.cdr3.lengthMin" [max]="tcr.cdr3.lengthMax" [(model)]="tcr.cdr3.length"></slider>
     </div>
+    <div class="three wide column">
+        <b>By Levenstein distance</b>
+    </div>
+    <div class="twelve wide column">
+        <div class="ui fluid input" [ngClass]="{'error':!tcr.cdr3.isLevensteinValid()}">
+            <input placeholder="Complete amino acid sequence, e.g. CASSLAPGATNEKLFF." [ngModel]="tcr.cdr3.levenstein" (ngModelChange)="tcr.cdr3.checkLevenstein($event)">
+        </div>
+    </div>
+    <div class="three wide column"></div>
+    <div class="four wide column">
+        Substitutions
+        <div class="ui fluid input">
+            <input min="0" max="5" type="number" [ngModel]="tcr.cdr3.levensteinSubstitutions" (ngModelChange)="checkRangeInput('levensteinSubstitutions', $event, 0, 5)">
+        </div>
+    </div>
+    <div class="four wide column">
+        Insertions
+        <div class="ui fluid input">
+            <input min="0" max="3" type="number" [ngModel]="tcr.cdr3.levensteinInsertions" (ngModelChange)="checkRangeInput('levensteinInsertions', $event, 0, 3)">
+        </div>
+    </div>
+    <div class="four wide column">
+        Deletions
+        <div class="ui fluid input">
+            <input min="0" max="3" type="number" [ngModel]="tcr.cdr3.levensteinDeletions" (ngModelChange)="checkRangeInput('levensteinDeletions', $event, 0, 3)">
+        </div>
+    </div>
 </div>
 
 <!--<div class="panel panel-default" ng-if="tcr_options.cdr3">-->

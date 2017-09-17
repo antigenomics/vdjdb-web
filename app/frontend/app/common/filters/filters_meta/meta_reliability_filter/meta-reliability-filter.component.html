@@ -9,8 +9,8 @@
     </div>
     <div class="four wide column">
         <div class="ui input fluid">
-            <input class="form-control" value="0" type="number" [attr.min]="meta.reliability.confidenceScoreMin"
-                   [attr.max]="meta.reliability.confidenceScoreMax" [(ngModel)]="meta.reliability.minimalConfidenceScore"/>
+            <input class="form-control" value="0" type="number" [attr.min]="meta.reliability.confidenceScoreMin" [attr.max]="meta.reliability.confidenceScoreMax"
+                   [ngModel]="meta.reliability.minimalConfidenceScore" (ngModelChange)="checkConfidenceScore($event)"/>
         </div>
     </div>
     <div class="two wide column"></div>

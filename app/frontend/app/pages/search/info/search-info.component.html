@@ -26,7 +26,7 @@
             <p>The database can be searched using T-cell receptor (TCR), antigen, major histocompatibility complex (MHC) and record metadata
                field filters:</p>
             <ul>
-                <li>Click on the corresponding panels below to expand the filters.</li>
+                <li>Click on the corresponding links above to select the filters.</li>
                 <li>Detailed information for each filter can be found by hovering over the question marks.</li>
                 <li>Use the buttons below to refresh the table or reset the filters.</li>
                 <li>Filtered table can be exported as an XLS or a TAB-delimited text file.</li>
@@ -38,10 +38,14 @@
     </div>
     <div class="row fade element" *ngIf="isCurrentState('filter.cdr3')">
         <div class="eight wide column">
-            <tcr-general-filter></tcr-general-filter>
-        </div>
-        <div class="eight wide column">
-            <tcr-segments-filter></tcr-segments-filter>
+            <div class="ui grid">
+                <div class="sixteen wide column">
+                    <tcr-general-filter></tcr-general-filter>
+                </div>
+                <div class="sixteen wide column">
+                    <tcr-segments-filter></tcr-segments-filter>
+                </div>
+            </div>
         </div>
         <div class="eight wide column">
             <tcr-cdr3-filter></tcr-cdr3-filter>

@@ -83,12 +83,22 @@ export class TCRcdr3Filter implements FilterInterface {
     public lengthMax: number = 30;
     public length: SliderRangeModel;
 
+    public levenstein: string;
+    public levensteinValid: boolean;
+    public levensteinSubstitutions: number;
+    public levensteinInsertions: number;
+    public levensteinDeletions: number;
+
     public setDefault(): void {
         this.pattern = '';
         this.patternSubstring = false;
         this.patternValid = true;
-
         this.length = new SliderRangeModel(this.lengthMin, this.lengthMax);
+        this.levenstein = '';
+        this.levensteinValid = true;
+        this.levensteinSubstitutions = 0;
+        this.levensteinInsertions = 0;
+        this.levensteinDeletions = 0;
     }
 
     public collectFilters(filters: Filter[], errors: string[]): void {
@@ -108,6 +118,15 @@ export class TCRcdr3Filter implements FilterInterface {
         } else if (this.length.min !== this.lengthMin || this.length.max !== this.lengthMax) {
             filters.push(new Filter('cdr3', FilterType.Range, false, this.length.toString()));
         }
+
+        if (!this.isLevensteinValid()){
+            errors.push('CDR3 pattern is not valid in levenstein distance filter');
+            return;
+        } else if (this.levenstein.length !== 0) {
+            filters.push(new Filter('cdr3', FilterType.Sequence, false,
+                `${this.levenstein}:${this.levensteinSubstitutions}:${this.levensteinInsertions}:${this.levensteinDeletions}`));
+            console.log(`${this.levenstein}:${this.levensteinSubstitutions}:${this.levensteinInsertions}:${this.levensteinDeletions}`);
+        }
     }
 
     public getFilterId(): string {
@@ -121,5 +140,14 @@ export class TCRcdr3Filter implements FilterInterface {
 
     public isPatternValid(): boolean {
         return this.patternValid;
+    }
+
+    public checkLevenstein(newValue: string): void {
+        this.levenstein = newValue.toUpperCase();
+        this.levensteinValid = Utils.SequencePattern.isPatternValidStrict(this.levenstein);
+    }
+
+    public isLevensteinValid(): boolean {
+        return this.levensteinValid;
     }
 }

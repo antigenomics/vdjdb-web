@@ -59,6 +59,27 @@ export namespace Utils {
             }
             return !(leftBracketStart || error);
         }
+
+        export function isPatternValidStrict(pattern: string): boolean {
+            const maxPatternLength: number = 100;
+
+            if (pattern.length === 0) {
+                return true;
+            }
+
+            if (pattern.length > maxPatternLength) {
+                return false;
+            }
+
+            const allowedCharacters = 'ARNDCQEGHILKMFPSTWYV';
+
+            for (const character of pattern) {
+                if (allowedCharacters.indexOf(character) === -1 || character === ' ') {
+                    return false;
+                }
+            }
+            return true;
+        }
     }
 
     export namespace Window {
