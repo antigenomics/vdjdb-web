@@ -1,7 +1,7 @@
 import { Utils } from '../../../utils/utils';
 import { SetEntry } from '../common/set/set-entry';
 import { SliderRangeModel } from '../common/slider/slider.component';
-import { Filter, FilterInterface, FilterType, FiltersOptions } from '../filters';
+import { Filter, FilterInterface, FiltersOptions, FilterType } from '../filters';
 
 export class TCRSegmentsFilter implements FilterInterface {
     public vSegmentSelected: SetEntry[] = [];
@@ -137,7 +137,7 @@ export class TCRcdr3Filter implements FilterInterface {
             filters.push(new Filter('cdr3', FilterType.Range, false, this.length.toString()));
         }
 
-        if (!this.isLevensteinValid()){
+        if (!this.isLevensteinValid()) {
             errors.push('CDR3 pattern is not valid in levenstein distance filter');
             return;
         } else if (this.levenstein.length !== 0) {

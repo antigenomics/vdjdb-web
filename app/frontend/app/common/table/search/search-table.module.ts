@@ -11,6 +11,9 @@ import { SearchTableEntryUrlComponent } from './entry/url/search-table-entry-url
 import { SearchTableRowComponent } from './row/search-table-row.component';
 import { SearchTableComponent } from './search-table.component';
 import { SearchTableService } from './search-table.service';
+import { WebSocketService } from '../../websocket/websocket.service';
+import { LoggerService } from '../../../utils/logger/logger.service';
+import { NotificationService } from '../../../utils/notification/notification.service';
 
 @NgModule({
     imports:         [ BrowserModule, FormsModule, ModalsModule ],
@@ -31,6 +34,6 @@ import { SearchTableService } from './search-table.service';
                         SearchTableEntryUrlComponent,
                         SearchTableEntryCdrComponent ],
     entryComponents: [ SearchTableEntryOriginalComponent, SearchTableEntryJsonComponent, SearchTableEntryUrlComponent, SearchTableEntryCdrComponent ],
-    providers:       [ SearchTableService ]
+    providers:       [ SearchTableService, WebSocketService ]
 })
 export class SearchTableModule {}

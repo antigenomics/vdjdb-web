@@ -12,6 +12,7 @@ import { Route, RouterModule } from '@angular/router';
 import { ConfigurationService } from './configuration.service';
 import { SearchPageComponent } from './pages/search/search.component';
 import { LoggerService } from './utils/logger/logger.service';
+import { NotificationService } from './utils/notification/notification.service';
 
 const routes: Route[] = [
     { path: '', component: HomePageComponent },
@@ -22,7 +23,7 @@ const routes: Route[] = [
 @NgModule({
     imports:      [ CommonModule, BrowserModule, SearchPageModule, RouterModule.forRoot(routes) ],
     declarations: [ ApplicationComponent, NavigationBarComponent, HomePageComponent, AboutPageComponent ],
-    providers:    [ ConfigurationService, LoggerService ],
+    providers:    [ ConfigurationService, LoggerService, NotificationService ],
     bootstrap:    [ ApplicationComponent ]
 })
 export class ApplicationModule {}

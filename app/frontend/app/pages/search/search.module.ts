@@ -4,7 +4,6 @@ import { FiltersModule } from '../../common/filters/filters.module';
 import { FiltersService } from '../../common/filters/filters.service';
 import { SearchTableModule } from '../../common/table/search/search-table.module';
 import { SearchTableService } from '../../common/table/search/search-table.service';
-import { WebSocketService } from '../../common/websocket/websocket.service';
 import { NotificationModule } from '../../utils/notification/notification.module';
 import { SearchInfoComponent } from './info/search-info.component';
 import { SearchPageComponent } from './search.component';
@@ -13,6 +12,6 @@ import { SearchPageComponent } from './search.component';
     imports:      [ BrowserModule, FiltersModule, SearchTableModule, NotificationModule ],
     declarations: [ SearchPageComponent, SearchInfoComponent ],
     exports:      [ SearchPageComponent, SearchInfoComponent ],
-    providers:    [ FiltersService, SearchTableService, WebSocketService ]
+    providers:    [ FiltersService, SearchTableService ]
 })
 export class SearchPageModule {}

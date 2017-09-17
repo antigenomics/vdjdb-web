@@ -40,26 +40,23 @@ class DatabaseSearchWebsocketActor(out: ActorRef, val database: Database) extend
                         out ! toJson(DatabaseMetadataResponse(database.getMetadata))
                     case SearchResponse.action =>
                         validateData(out, request.data, (searchRequest: SearchDataRequest) => {
+
                             if (searchRequest.filters.nonEmpty) {
                                 val filters: DatabaseFilters = DatabaseFilters.createFromRequest(searchRequest.filters.get, database)
                                 filters.warnings.foreach((warningMessage: String) => {
                                     out ! toJson(WarningMessageResponse(warningMessage))
                                 })
                                 table.update(filters, database)
-                                out ! toJson(SearchResponse(0, table.getPageSize, table.getCount, table.getPage(0)))
-                            } else if (searchRequest.sort.nonEmpty) {
+                            }
+
+                            if (searchRequest.sort.nonEmpty) {
                                 val sorting = searchRequest.sort.get.split(":")
                                 val columnName = sorting(0)
                                 val sortType = sorting(1)
                                 table.sort(columnName, sortType)
-                                val page = searchRequest.page.getOrElse(0)
-                                out ! toJson(SearchResponse(page, table.getPageSize, table.getCount, table.getPage(page)))
-                            } else if (searchRequest.page.nonEmpty) {
-                                val page = searchRequest.page.get
-                                out ! toJson(SearchResponse(page, table.getPageSize, table.getCount, table.getPage(page)))
-                            } else {
-                                out ! SearchResponse.errorMessage
                             }
+                            val page = searchRequest.page.getOrElse(0)
+                            out ! toJson(SearchResponse(page, table.getPageSize, table.getCount, table.getPage(page)))
                         })
                     case "ping" =>
                         out ! toJson(SuccessMessageResponse("pong"))

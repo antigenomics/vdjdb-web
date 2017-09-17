@@ -8,4 +8,8 @@ import { SearchTableService } from './search-table.service';
 })
 export class SearchTableComponent {
     constructor(public table: SearchTableService) {}
+
+    public isLoading(): boolean {
+        return this.table.loading || !this.table.dirty;
+    }
 }
