@@ -47,6 +47,13 @@ class DatabaseSearchWebsocketActor(out: ActorRef, val database: Database) extend
                                 })
                                 table.update(filters, database)
                                 out ! toJson(SearchResponse(0, table.getPageSize, table.getCount, table.getPage(0)))
+                            } else if (searchRequest.sort.nonEmpty) {
+                                val sorting = searchRequest.sort.get.split(":")
+                                val columnName = sorting(0)
+                                val sortType = sorting(1)
+                                table.sort(columnName, sortType)
+                                val page = searchRequest.page.getOrElse(0)
+                                out ! toJson(SearchResponse(page, table.getPageSize, table.getCount, table.getPage(page)))
                             } else if (searchRequest.page.nonEmpty) {
                                 val page = searchRequest.page.get
                                 out ! toJson(SearchResponse(page, table.getPageSize, table.getCount, table.getPage(page)))

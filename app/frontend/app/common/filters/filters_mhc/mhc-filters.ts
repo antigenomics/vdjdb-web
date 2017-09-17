@@ -1,6 +1,6 @@
 import { Utils } from '../../../utils/utils';
 import { SetEntry } from '../common/set/set-entry';
-import { Filter, FilterInterface, FilterType } from '../filters';
+import { Filter, FilterInterface, FiltersOptions, FilterType } from '../filters';
 
 export class MHCGeneralFilter implements FilterInterface {
     public mhci: boolean;
@@ -9,6 +9,10 @@ export class MHCGeneralFilter implements FilterInterface {
     public setDefault(): void {
         this.mhci = true;
         this.mhcii = true;
+    }
+
+    public setOptions(_: FiltersOptions): void {
+        return;
     }
 
     public collectFilters(filters: Filter[], _: string[]): void {
@@ -21,7 +25,7 @@ export class MHCGeneralFilter implements FilterInterface {
     }
 
     public getFilterId(): string {
-        return 'mhc.general';
+        return 'general';
     }
 }
 
@@ -37,6 +41,15 @@ export class MHCHaplotypeFilter implements FilterInterface {
         Utils.Array.clear(this.secondChainSelected);
     }
 
+    public setOptions(options: FiltersOptions): void {
+        if (options.hasOwnProperty('firstChainValues')) {
+            this.firstChainValues = options.firstChainValues;
+        }
+        if (options.hasOwnProperty('secondChainValues')) {
+            this.secondChainValues = options.secondChainValues;
+        }
+    }
+
     public collectFilters(filters: Filter[], _: string[]): void {
         if (this.firstChainSelected.length > 0) {
             filters.push(new Filter('mhc.a', FilterType.SubstringSet, false, SetEntry.toString(this.firstChainSelected)));
@@ -47,6 +60,6 @@ export class MHCHaplotypeFilter implements FilterInterface {
     }
 
     public getFilterId(): string {
-        return 'mhc.haplotype';
+        return 'haplotype';
     }
 }

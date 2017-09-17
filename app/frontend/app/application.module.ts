@@ -10,7 +10,6 @@ import { SearchPageModule } from './pages/search/search.module';
 
 import { Route, RouterModule } from '@angular/router';
 import { ConfigurationService } from './configuration.service';
-import { DatabaseService } from './database/database.service';
 import { SearchPageComponent } from './pages/search/search.component';
 import { LoggerService } from './utils/logger/logger.service';
 
@@ -23,7 +22,7 @@ const routes: Route[] = [
 @NgModule({
     imports:      [ CommonModule, BrowserModule, SearchPageModule, RouterModule.forRoot(routes) ],
     declarations: [ ApplicationComponent, NavigationBarComponent, HomePageComponent, AboutPageComponent ],
-    providers:    [ ConfigurationService, DatabaseService, LoggerService ],
+    providers:    [ ConfigurationService, LoggerService ],
     bootstrap:    [ ApplicationComponent ]
 })
 export class ApplicationModule {}

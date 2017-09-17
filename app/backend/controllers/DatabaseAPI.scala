@@ -37,6 +37,12 @@ class DatabaseAPI @Inject()(cc: ControllerComponents, database: Database)(implic
                     val table = new SearchTable()
                     val filters = DatabaseFilters.createFromRequest(data.get.filters.get, database)
                     table.update(filters, database)
+                    if (data.get.sort.nonEmpty) {
+                        val sorting = data.get.sort.get.split(":")
+                        val columnName = sorting(0)
+                        val sortType = sorting(1)
+                        table.sort(columnName, sortType)
+                    }
                     if (data.get.page.nonEmpty) {
                         val pageSize: Int = data.get.pageSize.getOrElse(100)
                         val page = data.get.page.get

@@ -6,6 +6,7 @@ import backend.server.filters.DatabaseFilters
 import scala.collection.JavaConverters._
 
 case class SearchTable(private var pageSize: Int = SearchTable.DEFAULT_PAGE_SIZE, private var rows: List[SearchTableRow] = List()) {
+    private var currentPage: Int = 0
 
     def setPageSize(pageSize: Int): Unit = {
         this.pageSize = pageSize
@@ -19,12 +20,14 @@ case class SearchTable(private var pageSize: Int = SearchTable.DEFAULT_PAGE_SIZE
 
     def getPage(page: Int): List[SearchTableRow] = {
         if (page >= 0) {
+            currentPage = page
             var fromIndex: Int = pageSize * page
             fromIndex = if (fromIndex > rows.size) rows.size else fromIndex
             var toIndex: Int = pageSize * (page + 1)
             toIndex = if (toIndex > rows.size) rows.size else toIndex
             rows.slice(fromIndex, toIndex)
         } else {
+            currentPage = 0
             getPage(0)
         }
     }

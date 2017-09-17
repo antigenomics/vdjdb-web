@@ -1,6 +1,6 @@
 package backend.server.api
 
-import play.api.libs.json.{Format, JsObject, Json, Writes}
+import play.api.libs.json.{JsObject, Json, Writes}
 
 class SuccessResponse(val action: String)
 

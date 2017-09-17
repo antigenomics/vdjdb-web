@@ -1,13 +1,19 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import 'rxjs/add/operator/filter';
 import 'rxjs/add/operator/take';
 import { Filter } from '../../common/filters/filters';
 import { FiltersService } from '../../common/filters/filters.service';
 import { SearchTableService } from '../../common/table/search/search-table.service';
+import { WebSocketService } from '../../common/websocket/websocket.service';
 import { DatabaseMetadata } from '../../database/database-metadata';
-import { DatabaseService, DatabaseServiceActions } from '../../database/database.service';
 import { LoggerService } from '../../utils/logger/logger.service';
 import { NotificationService } from '../../utils/notification/notification.service';
+
+export const enum SearchPageWebsocketActions {
+    Metadata   = 'meta',
+    ColumnInfo = 'columnInfo',
+    Search     = 'search'
+}
 
 @Component({
     selector:        'search',
@@ -17,48 +23,84 @@ import { NotificationService } from '../../utils/notification/notification.servi
 export class SearchPageComponent {
     public static initialSearchTimeout = 1000;
 
-    public loading: boolean;
+    public loading: boolean = false;
 
-    constructor(private filters: FiltersService, private database: DatabaseService,
+    constructor(private filters: FiltersService, private websocket: WebSocketService,
                 private table: SearchTableService, private logger: LoggerService,
                 private notifications: NotificationService) {
-        this.loading = false;
-
-        this.database.getMetadata().take(1).subscribe({
-            next: (metadata: DatabaseMetadata) => {
-                this.table.updateColumns(metadata.columns);
+        this.websocket.connect('/api/database/connect');
+        this.websocket.onOpen(() => {
+            if (!this.table.dirty) {
+                const metadataRequest = this.websocket.sendMessage({
+                    action: SearchPageWebsocketActions.Metadata
+                });
+                metadataRequest.subscribe({
+                    next: (response: any) => {
+                        const metadata = DatabaseMetadata.deserialize(response.metadata);
+                        const columns = metadata.columns;
+                        const options = {
+                            tcr:  {
+                                segments: {
+                                    vSegmentValues: metadata.getColumnInfo('v.segm').values,
+                                    jSegmentValues: metadata.getColumnInfo('j.segm').values
+                                }
+                            },
+                            ag:   {
+                                origin:  {
+                                    speciesValues: metadata.getColumnInfo('antigen.species').values,
+                                    genesValues:   metadata.getColumnInfo('antigen.gene').values
+                                },
+                                epitope: {
+                                    epitopeValues: metadata.getColumnInfo('antigen.epitope').values
+                                }
+                            },
+                            mhc:  {
+                                haplotype: {
+                                    firstChainValues:  metadata.getColumnInfo('mhc.a').values,
+                                    secondChainValues: metadata.getColumnInfo('mhc.b').values
+                                }
+                            },
+                            meta: {
+                                general: {
+                                    referencesValues: metadata.getColumnInfo('reference.id').values
+                                }
+                            }
+                        };
+                        this.table.updateColumns(columns);
+                        this.filters.setOptions(options);
+                    }
+                });
+                setTimeout(() => {
+                    this.search();
+                }, SearchPageComponent.initialSearchTimeout);
             }
         });
-
-        if (!table.dirty) {
-            setTimeout(() => {
-                this.search();
-            }, SearchPageComponent.initialSearchTimeout);
-        }
     }
 
     public search(): void {
         if (!this.loading) {
-            this.loading = true;
-
             const filters: Filter[] = [];
             const errors: string[] = [];
 
-            this.filters.getFilters(filters, errors);
+            this.filters.collectFilters(filters, errors);
             if (errors.length === 0) {
+                this.loading = true;
                 this.logger.debug('Collected filters', filters);
-                this.database.getMessages(DatabaseServiceActions.SearchAction).take(1).subscribe({
-                    next: (table: any) => {
-                        this.table.update(table);
-                        this.loading = false;
+                const message = this.websocket.sendMessage({
+                    action: SearchPageWebsocketActions.Search,
+                    data:   {
+                        filters
                     }
                 });
-                this.database.filter(filters);
+                message.subscribe((response: any) => {
+                    this.table.update(response);
+                    this.logger.debug('Search', response);
+                    this.loading = false;
+                });
             } else {
                 errors.forEach((error: string) => {
                     this.notifications.error('Filters error', error);
                 });
-                this.loading = false;
             }
         } else {
             this.notifications.warn('Search', 'Loading');
@@ -67,5 +109,9 @@ export class SearchPageComponent {
 
     public reset(): void {
         this.filters.setDefault();
+    }
+
+    public isLoading(): boolean {
+        return this.loading || !this.table.dirty;
     }
 }

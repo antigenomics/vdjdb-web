@@ -1,6 +1,6 @@
 import { Utils } from '../../../utils/utils';
 import { SetEntry } from '../common/set/set-entry';
-import { Filter, FilterInterface, FilterType } from '../filters';
+import { Filter, FilterInterface, FiltersOptions, FilterType } from '../filters';
 
 export class AGOriginFilter implements FilterInterface {
     public speciesSelected: SetEntry[] = [];
@@ -14,6 +14,16 @@ export class AGOriginFilter implements FilterInterface {
         Utils.Array.clear(this.genesSelected);
     }
 
+    public setOptions(options: FiltersOptions): void {
+        if (options.hasOwnProperty('speciesValues')) {
+            this.speciesValues = options.speciesValues;
+        }
+        if (options.hasOwnProperty('genesValues')) {
+            this.genesValues = options.genesValues;
+        }
+        return;
+    }
+
     public collectFilters(filters: Filter[], _: string[]): void {
         if (this.speciesSelected.length > 0) {
             filters.push(new Filter('antigen.species', FilterType.SubstringSet, false, SetEntry.toString(this.speciesSelected)));
@@ -24,7 +34,7 @@ export class AGOriginFilter implements FilterInterface {
     }
 
     public getFilterId(): string {
-        return 'ag.origin';
+        return 'origin';
     }
 }
 
@@ -41,6 +51,13 @@ export class AGEpitopeFilter implements FilterInterface {
         this.epitopePattern = '';
         this.epitopePatternSubstring = false;
         this.epitopePatternValid = true;
+    }
+
+    public setOptions(options: FiltersOptions): void {
+        if (options.hasOwnProperty('epitopeValues')) {
+            this.epitopeValues = options.epitopeValues;
+        }
+        return;
     }
 
     public collectFilters(filters: Filter[], errors: string[]): void {
@@ -61,7 +78,7 @@ export class AGEpitopeFilter implements FilterInterface {
     }
 
     public getFilterId(): string {
-        return 'ag.epitope';
+        return 'epitope';
     }
 
     public checkPattern(newValue: string): void {

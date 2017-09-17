@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Filter, FilterInterface } from '../filters';
+import { Filter, FilterInterface, FiltersOptions } from '../filters';
 import { TCRcdr3Filter, TCRGeneralFilter, TCRSegmentsFilter } from './tcr-filters';
 
 @Injectable()
@@ -18,6 +18,23 @@ export class TCRFiltersService implements FilterInterface {
         this.general.setDefault();
         this.segments.setDefault();
         this.cdr3.setDefault();
+    }
+
+    public setOptions(options: FiltersOptions): void {
+        const generalFilterId = this.general.getFilterId();
+        if (options.hasOwnProperty(generalFilterId)) {
+            this.general.setOptions(options[generalFilterId]);
+        }
+
+        const segmentsFilterId = this.segments.getFilterId();
+        if (options.hasOwnProperty(segmentsFilterId)) {
+            this.segments.setOptions(options[segmentsFilterId]);
+        }
+
+        const cdr3FilterId = this.cdr3.getFilterId();
+        if (options.hasOwnProperty(cdr3FilterId)) {
+            this.cdr3.setOptions(options[cdr3FilterId]);
+        }
     }
 
     public collectFilters(filters: Filter[], errors: string[]): void {

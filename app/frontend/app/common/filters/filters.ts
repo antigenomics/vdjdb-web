@@ -22,8 +22,12 @@ export class Filter {
     }
 }
 
+export type FiltersOptions = any;
+
 export abstract class FilterInterface {
     public abstract setDefault(): void;
+
+    public abstract setOptions(options: FiltersOptions): void;
 
     public abstract collectFilters(filters: Filter[], errors: string[]): void;
 

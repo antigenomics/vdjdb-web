@@ -1,7 +1,7 @@
 import { Utils } from '../../../utils/utils';
 import { SetEntry } from '../common/set/set-entry';
 import { SliderRangeModel } from '../common/slider/slider.component';
-import { Filter, FilterInterface, FilterType } from '../filters';
+import { Filter, FilterInterface, FilterType, FiltersOptions } from '../filters';
 
 export class TCRSegmentsFilter implements FilterInterface {
     public vSegmentSelected: SetEntry[] = [];
@@ -15,6 +15,16 @@ export class TCRSegmentsFilter implements FilterInterface {
         Utils.Array.clear(this.jSegmentSelected);
     }
 
+    public setOptions(options: FiltersOptions): void {
+        if (options.hasOwnProperty('vSegmentValues')) {
+            this.vSegmentValues = options.vSegmentValues;
+        }
+        if (options.hasOwnProperty('jSegmentValues')) {
+            this.jSegmentValues = options.jSegmentValues;
+        }
+        return;
+    }
+
     public collectFilters(filters: Filter[], _: string[]): void {
         if (this.vSegmentSelected.length !== 0) {
             filters.push(new Filter('v.segm', FilterType.SubstringSet, false, SetEntry.toString(this.vSegmentSelected)));
@@ -25,7 +35,7 @@ export class TCRSegmentsFilter implements FilterInterface {
     }
 
     public getFilterId(): string {
-        return 'tcr.segments';
+        return 'segments';
     }
 }
 
@@ -46,6 +56,10 @@ export class TCRGeneralFilter implements FilterInterface {
         this.tra = false;
         this.trb = true;
         this.pairedOnly = false;
+    }
+
+    public setOptions(_: FiltersOptions): void {
+        return;
     }
 
     public collectFilters(filters: Filter[], _: string[]): void {
@@ -70,7 +84,7 @@ export class TCRGeneralFilter implements FilterInterface {
     }
 
     public getFilterId(): string {
-        return 'tcr.general';
+        return 'general';
     }
 }
 
@@ -101,6 +115,10 @@ export class TCRcdr3Filter implements FilterInterface {
         this.levensteinDeletions = 0;
     }
 
+    public setOptions(_: FiltersOptions): void {
+        return;
+    }
+
     public collectFilters(filters: Filter[], errors: string[]): void {
         if (!this.isPatternValid()) {
             errors.push('CDR3 pattern is not valid');
@@ -125,12 +143,11 @@ export class TCRcdr3Filter implements FilterInterface {
         } else if (this.levenstein.length !== 0) {
             filters.push(new Filter('cdr3', FilterType.Sequence, false,
                 `${this.levenstein}:${this.levensteinSubstitutions}:${this.levensteinInsertions}:${this.levensteinDeletions}`));
-            console.log(`${this.levenstein}:${this.levensteinSubstitutions}:${this.levensteinInsertions}:${this.levensteinDeletions}`);
         }
     }
 
     public getFilterId(): string {
-        return 'tcr.cdr3';
+        return 'cdr3';
     }
 
     public checkPattern(newValue: string): void {

@@ -14,4 +14,4 @@ if (configuration.isProductionMode()) {
     enableProdMode();
 }
 const logger = new LoggerService(configuration);
-platformBrowserDynamic().bootstrapModule(ApplicationModule).then(() => logger.info(`Application loaded (${configuration.buildMode})`));
+platformBrowserDynamic().bootstrapModule(ApplicationModule).then(() => logger.info(`Application loaded (${configuration.buildMode})`, ''));

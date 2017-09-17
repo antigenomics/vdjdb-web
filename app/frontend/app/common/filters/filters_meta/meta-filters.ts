@@ -1,6 +1,6 @@
 import { Utils } from '../../../utils/utils';
 import { SetEntry } from '../common/set/set-entry';
-import { Filter, FilterInterface, FilterType } from '../filters';
+import { Filter, FilterInterface, FiltersOptions, FilterType } from '../filters';
 
 export class MetaGeneralFilter implements FilterInterface {
     public referencesSelected: SetEntry[] = [];
@@ -22,6 +22,12 @@ export class MetaGeneralFilter implements FilterInterface {
         this.seqSanger = true;
         this.seqAmplicon = true;
         this.seqSingleCell = true;
+    }
+
+    public setOptions(options: FiltersOptions): void {
+        if (options.hasOwnProperty('referencesValues')) {
+            this.referencesValues = options.referencesValues;
+        }
     }
 
     public collectFilters(filters: Filter[], _: string[]): void {
@@ -49,7 +55,7 @@ export class MetaGeneralFilter implements FilterInterface {
     }
 
     public getFilterId(): string {
-        return 'meta.general';
+        return 'general';
     }
 }
 
@@ -65,6 +71,10 @@ export class MetaReliabilityFilter implements FilterInterface {
         this.minimalConfidenceScore = 0;
         this.nonCanonical = false;
         this.unmapped = false;
+    }
+
+    public setOptions(_: FiltersOptions): void {
+        return;
     }
 
     public collectFilters(filters: Filter[], errors: string[]): void {
@@ -83,6 +93,6 @@ export class MetaReliabilityFilter implements FilterInterface {
     }
 
     public getFilterId(): string {
-        return 'meta.reliability';
+        return 'reliability';
     }
 }

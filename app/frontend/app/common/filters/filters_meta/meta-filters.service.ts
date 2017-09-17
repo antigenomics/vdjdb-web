@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Filter, FilterInterface } from '../filters';
+import { Filter, FilterInterface, FiltersOptions } from '../filters';
 import { MetaGeneralFilter, MetaReliabilityFilter } from './meta-filters';
 
 @Injectable()
@@ -15,6 +15,18 @@ export class MetaFiltersService implements FilterInterface {
     public setDefault(): void {
         this.general.setDefault();
         this.reliability.setDefault();
+    }
+
+    public setOptions(options: FiltersOptions): void {
+        const generalFilterId = this.general.getFilterId();
+        if (options.hasOwnProperty(generalFilterId)) {
+            this.general.setOptions(options[generalFilterId]);
+        }
+
+        const reliabilityFilterId = this.reliability.getFilterId();
+        if (options.hasOwnProperty(reliabilityFilterId)) {
+            this.reliability.setOptions(options[reliabilityFilterId]);
+        }
     }
 
     public collectFilters(filters: Filter[], errors: string[]): void {
