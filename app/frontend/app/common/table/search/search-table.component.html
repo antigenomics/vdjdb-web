@@ -1,9 +1,20 @@
-<div style="width: 100%; overflow-x: scroll; min-height: 100px">
-    <table class="ui unstackable single line celled stripped very basic compact small table">
-        <thead [search-table-columns]="table.columns"></thead>
-        <tbody>
-        <tr *ngFor="let row of table.rows | async" [search-table-row]="row"></tr>
-        </tbody>
-        <tfoot [search-table-columns]="table.columns"></tfoot>
-    </table>
+<div class="ui grid">
+    <search-table-pagination [page]="table.page" range="3" [pageCount]="table.pageCount" (pageChange)="pageChange($event)"></search-table-pagination>
+    <div class="sixteen wide column">
+        <div style="width: 100%; min-height: 100px; overflow-x: scroll">
+            <table class="ui unstackable single line celled stripped compact small table">
+                <thead class="cursor pointer">
+                <tr>
+                    <th class="center aligned" *ngFor="let column of table.columns; let i = index;" (click)="table.sort(column.name)" [ngClass]="isSorted(column.name)">
+                <span class="header" [popup]="column.comment"
+                      [popupHeader]="column.title" [tooltipPlacement]="i < 6 ? 'right' : 'left'" [arrowPosition]="i < 6 ? 'right center' : 'left center'">{{ column.title }}</span>
+                    </th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr *ngFor="let row of table.rows | async" [search-table-row]="row"></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>

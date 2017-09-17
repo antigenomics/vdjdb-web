@@ -39,6 +39,14 @@ export class DatabaseColumnInfo {
     }
 
     get comment(): string {
+        // const string = '<p>' +  this._comment.split(' ').reduce((previous: string, current: string, index: number) => {
+        //     let s = `${previous} ${current}`;
+        //     if (index % 4 === 0) {
+        //         s += '<br>';
+        //     }
+        //     return s;
+        // });
+        // return string + '</p>';
         return this._comment;
     }
 

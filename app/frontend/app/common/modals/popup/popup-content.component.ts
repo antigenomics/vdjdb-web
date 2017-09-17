@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Input } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Input, ViewContainerRef } from '@angular/core';
 import { SafeHtml } from '@angular/platform-browser';
 
 @Component({
@@ -24,11 +24,13 @@ export class PopupContentComponent implements AfterViewInit {
     @Input()
     public placement: 'top' | 'bottom' | 'left' | 'right' = 'top';
 
+    @Input()
+    public arrowPosition: string = 'center left';
+
     public top: number = -100000;
     public left: number = -100000;
 
-    constructor(private element: ElementRef, private cdr: ChangeDetectorRef) {
-    }
+    constructor(private element: ElementRef, private cdr: ChangeDetectorRef) {}
 
     public ngAfterViewInit(): void {
         this.show();
@@ -40,7 +42,7 @@ export class PopupContentComponent implements AfterViewInit {
             return;
         }
 
-        const p = PopupContentComponent.positionElements(this.hostElement, this.element.nativeElement.children[ 0 ], this.placement);
+        const p = PopupContentComponent.positionElements(this.hostElement, this.element.nativeElement.children[ 0 ], this.placement, false);
         this.top = p.top;
         this.left = p.left;
     }

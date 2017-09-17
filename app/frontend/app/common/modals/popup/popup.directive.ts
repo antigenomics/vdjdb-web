@@ -1,4 +1,4 @@
-import { ComponentFactoryResolver, ComponentRef, Directive, HostListener, Input, ViewContainerRef } from '@angular/core';
+import { ApplicationRef, ComponentFactoryResolver, ComponentRef, Directive, HostListener, Input, ViewContainerRef } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
 import { PopupContentComponent } from './popup-content.component';
 
@@ -21,9 +21,22 @@ export class PopupDirective {
     @Input()
     public tooltipPlacement: 'top' | 'bottom' | 'left' | 'right' = 'left';
 
+    @Input()
+    public arrowPosition: string = 'center left';
+
+    @Input()
+    public popupContainer: ViewContainerRef;
+
     constructor(private viewContainerRef: ViewContainerRef,
                 private resolver: ComponentFactoryResolver,
                 private sanitizer: DomSanitizer) {}
+
+    public getViewContainer(): ViewContainerRef {
+        if (this.popupContainer) {
+            return this.popupContainer;
+        }
+        return this.viewContainerRef;
+    }
 
     @HostListener('focusin')
     @HostListener('mouseenter')
@@ -39,15 +52,16 @@ export class PopupDirective {
                 return;
             }
 
-            this.tooltip = this.viewContainerRef.createComponent<PopupContentComponent>(factory);
+            this.tooltip = this.getViewContainer().createComponent<PopupContentComponent>(factory);
             this.tooltip.instance.hostElement = this.viewContainerRef.element.nativeElement;
             this.tooltip.instance.content = this.sanitizer.bypassSecurityTrustHtml(this.content as string);
             this.tooltip.instance.header = this.header;
             this.tooltip.instance.popupWidth = this.popupWidth;
             this.tooltip.instance.placement = this.tooltipPlacement;
+            this.tooltip.instance.arrowPosition = this.arrowPosition;
         } else {
             const tooltip = this.content as PopupContentComponent;
-            tooltip.hostElement = this.viewContainerRef.element.nativeElement;
+            tooltip.hostElement = this.getViewContainer().element.nativeElement;
             tooltip.placement = this.tooltipPlacement;
             tooltip.show();
         }

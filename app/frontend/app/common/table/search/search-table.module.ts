@@ -2,7 +2,7 @@ import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
 import { ModalsModule } from '../../modals/modals.module';
-import { SearchTableColumnsComponent } from './columns/search-table-columns.component';
+import { WebSocketService } from '../../websocket/websocket.service';
 import { SearchTableEntryCdrComponent } from './entry/cdr/search-table-entry-cdr.component';
 import { SearchTableEntryJsonComponent } from './entry/json/search-table-entry-json.component';
 import { SearchTableEntryOriginalComponent } from './entry/original/search-table-entry-original.component';
@@ -11,14 +11,12 @@ import { SearchTableEntryUrlComponent } from './entry/url/search-table-entry-url
 import { SearchTableRowComponent } from './row/search-table-row.component';
 import { SearchTableComponent } from './search-table.component';
 import { SearchTableService } from './search-table.service';
-import { WebSocketService } from '../../websocket/websocket.service';
-import { LoggerService } from '../../../utils/logger/logger.service';
-import { NotificationService } from '../../../utils/notification/notification.service';
+import { SearchTablePaginationComponent } from './pagination/search-table-pagination.component';
 
 @NgModule({
     imports:         [ BrowserModule, FormsModule, ModalsModule ],
     declarations:    [  SearchTableComponent,
-                        SearchTableColumnsComponent,
+                        SearchTablePaginationComponent,
                         SearchTableRowComponent,
                         SearchTableEntryDirective,
                         SearchTableEntryOriginalComponent,
@@ -26,7 +24,7 @@ import { NotificationService } from '../../../utils/notification/notification.se
                         SearchTableEntryUrlComponent,
                         SearchTableEntryCdrComponent ],
     exports:         [  SearchTableComponent,
-                        SearchTableColumnsComponent,
+                        SearchTablePaginationComponent,
                         SearchTableRowComponent,
                         SearchTableEntryDirective,
                         SearchTableEntryOriginalComponent,

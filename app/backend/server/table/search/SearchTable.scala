@@ -14,6 +14,8 @@ case class SearchTable(private var pageSize: Int = SearchTable.DEFAULT_PAGE_SIZE
 
     def getPageSize: Int = pageSize
 
+    def getPageCount: Int = getCount / pageSize
+
     def getRows: List[SearchTableRow] = rows
 
     def getCount: Int = rows.length
