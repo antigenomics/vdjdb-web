@@ -14,6 +14,7 @@ export const enum SearchTableWebsocketActions {
     Search   = 'search'
 }
 
+
 export class SortRule {
     public column: string = '';
     public type: 'asc' | 'desc' | 'none' = 'none';
@@ -33,6 +34,8 @@ export class SearchTableService {
     private _rows: Subject<SearchTableRow[]> = new ReplaySubject(1);
     private _columns: DatabaseColumnInfo[] = [];
     private _sortRule = new SortRule();
+    private _recordsFound: number = 0;
+    private _numberOfRecords: number = 0;
 
     constructor(private connection: WebSocketService, private filters: FiltersService,
                 private logger: LoggerService, private notifications: NotificationService) {
@@ -74,6 +77,7 @@ export class SearchTableService {
                         }
                     };
                     this._columns = columns;
+                    this._numberOfRecords = metadata.numberOfRecords;
                     this.filters.setOptions(options);
                     this.update();
                 }
@@ -148,10 +152,15 @@ export class SearchTableService {
         });
     }
 
+    public exportTable(format: string): void {
+        this.logger.debug('Export', format);
+    }
+
     private updateFromResponse(response: any): void {
         this._page = response.page;
         this._pageSize = response.pageSize;
         this._pageCount = response.pageCount;
+        this._recordsFound = response.recordsFound;
         this._rows.next(response.rows.map((row: any) => new SearchTableRow(row)));
         this._dirty = true;
         this._loading = false;
@@ -174,12 +183,20 @@ export class SearchTableService {
         return this._pageCount;
     }
 
+    get recordsFound(): number {
+        return this._recordsFound;
+    }
+
     get loading() {
         return this._loading;
     }
 
     get sortRule(): SortRule {
         return this._sortRule;
+    }
+
+    get numberOfRecords(): number {
+        return this._numberOfRecords;
     }
 
     get rows() {

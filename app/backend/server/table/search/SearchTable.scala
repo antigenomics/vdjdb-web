@@ -14,11 +14,11 @@ case class SearchTable(private var pageSize: Int = SearchTable.DEFAULT_PAGE_SIZE
 
     def getPageSize: Int = pageSize
 
-    def getPageCount: Int = getCount / pageSize
+    def getPageCount: Int = getRecordsFound / pageSize
 
     def getRows: List[SearchTableRow] = rows
 
-    def getCount: Int = rows.length
+    def getRecordsFound: Int = rows.length
 
     def getPage(page: Int): List[SearchTableRow] = {
         if (page >= 0) {

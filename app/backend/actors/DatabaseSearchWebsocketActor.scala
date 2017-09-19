@@ -56,7 +56,7 @@ class DatabaseSearchWebsocketActor(out: ActorRef, val database: Database) extend
                                 table.sort(columnName, sortType)
                             }
                             val page = searchRequest.page.getOrElse(0)
-                            out ! toJson(SearchResponse(page, table.getPageSize, table.getPageCount, table.getCount, table.getPage(page)))
+                            out ! toJson(SearchResponse(page, table.getPageSize, table.getPageCount, table.getRecordsFound, table.getPage(page)))
                         })
                     case "ping" =>
                         out ! toJson(SuccessMessageResponse("pong"))

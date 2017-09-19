@@ -1,0 +1,7 @@
+@itemVerticalPadding: 0.5em;
+@itemHorizontalPadding: 0.9em;
+
+@paginationMinWidth: 1em;
+
+@paginationActiveBackground: #00B5AD;
+@paginationActiveTextColor: #FFFFFF;

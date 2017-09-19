@@ -83,7 +83,7 @@ export class SearchTablePaginationComponent implements OnInit {
     }
 
     private calculateRange(): { min: number, max: number } {
-        if (this.range >= this.pageCount) {
+        if (this.range * 2 >= this.pageCount) {
             return {
                 min: 0,
                 max: this.pageCount

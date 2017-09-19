@@ -1,0 +1,4 @@
+<div class="ui right floated menu">
+    <a class="item">Export as: </a>
+    <a class="item" *ngFor="let format of getAvailableFormats()">{{ format.title }}</a>
+</div>
