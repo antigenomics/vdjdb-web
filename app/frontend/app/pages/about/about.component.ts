@@ -47,7 +47,7 @@ export class AboutPageComponent {
         }
     ];
 
-    public static joinNames(names: string[]): string {
+    public joinNames(names: string[]): string {
         return names.join(', ');
     }
 }
