@@ -1,4 +1,9 @@
-<div class="ui right floated menu">
-    <a class="item">Export as: </a>
-    <a class="item" *ngFor="let format of getAvailableFormats()">{{ format.title }}</a>
+<div class="ui right floated compact menu">
+    <div class="ui simple dropdown item">
+        Export as:
+        <i class="dropdown icon"></i>
+        <div class="menu">
+            <a class="item" *ngFor="let format of formats" (click)="table.exportTable(format)">{{ format.title }}</a>
+        </div>
+    </div>
 </div>

@@ -11,9 +11,9 @@ import { SearchTableRow } from './row/search-table-row';
 
 export const enum SearchTableWebsocketActions {
     Metadata = 'meta',
-    Search   = 'search'
+    Search   = 'search',
+    Export   = 'export'
 }
-
 
 export class SortRule {
     public column: string = '';
@@ -21,6 +21,16 @@ export class SortRule {
 
     public toString(): string {
         return `${this.column}:${this.type}`;
+    }
+}
+
+export class ExportFormat {
+    public name: string;
+    public title: string;
+
+    constructor(name: string, title: string) {
+        this.name = name;
+        this.title = title;
     }
 }
 
@@ -142,7 +152,7 @@ export class SearchTableService {
         this.logger.debug('Page change', page);
         const request = this.connection.sendMessage({
             action: SearchTableWebsocketActions.Search,
-            data: {
+            data:   {
                 page
             }
         });
@@ -152,8 +162,22 @@ export class SearchTableService {
         });
     }
 
-    public exportTable(format: string): void {
+    public exportTable(format: ExportFormat): void {
         this.logger.debug('Export', format);
+        const request = this.connection.sendMessage({
+            action: SearchTableWebsocketActions.Export,
+            data: {
+                format: format.name
+            }
+        });
+        request.subscribe((response: any) => {
+            this.logger.debug('Export', response);
+        });
+    }
+
+    // noinspection JSMethodCanBeStatic
+    public getAvailableExportFormats(): ExportFormat[] {
+        return [ new ExportFormat('tab-delimited-txt', 'TAB-delimited txt') ];
     }
 
     private updateFromResponse(response: any): void {

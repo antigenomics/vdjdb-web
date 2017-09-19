@@ -1,15 +1,5 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { SearchTableService } from '../search-table.service';
-
-export class ExportFormat {
-    public name: string;
-    public title: string;
-
-    constructor(name: string, title: string) {
-        this.name = name;
-        this.title = title;
-    }
-}
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { ExportFormat, SearchTableService } from '../search-table.service';
 
 @Component({
     selector:        'search-table-export',
@@ -17,15 +7,8 @@ export class ExportFormat {
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SearchTableExportComponent {
+    @Input()
+    public formats: ExportFormat[];
 
     constructor(private table: SearchTableService) {}
-
-    public exportTable(format: ExportFormat): void {
-        this.table.exportTable(format.name);
-    }
-
-    // noinspection JSMethodCanBeStatic
-    public getAvailableFormats(): ExportFormat[] {
-        return [ new ExportFormat('tab-delimited-txt', 'TAB-delimited txt') ];
-    }
 }
