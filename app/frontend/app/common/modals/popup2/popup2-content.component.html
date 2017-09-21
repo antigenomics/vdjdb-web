@@ -1,0 +1,10 @@
+<!--[style.top]="top + 'px'" [style.left]="left + 'px'" style="display: block !important;"-->
+<div class="ui popup visible fade element"
+     [style.width]="br.width"
+     [style.max-width]="br.width"
+     [style.left]="br.left"
+     [style.top]="br.top"
+     style="display: block !important; position: fixed">
+    <div class="header" [innerHTML]="getHeaderContent()"></div>
+    <div class="content" [innerHTML]="getPopupContent()"></div>
+</div>

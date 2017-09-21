@@ -83,11 +83,27 @@ export namespace Utils {
     }
 
     export namespace Window {
+
         export function scroll(element: HTMLElement): void {
             window.scroll({
                 behavior: 'smooth',
                 top:      element.offsetTop
             });
+        }
+
+        export class WindowViewport {
+            public width: number;
+            public height: number;
+        }
+
+        export function getViewport(): WindowViewport {
+            const w = window;
+            const d = document;
+            const e = d.documentElement;
+            const g = d.getElementsByTagName('body')[ 0 ];
+            const width = w.innerWidth || e.clientWidth || g.clientWidth;
+            const height = w.innerHeight || e.clientHeight || g.clientHeight;
+            return { width, height };
         }
     }
 

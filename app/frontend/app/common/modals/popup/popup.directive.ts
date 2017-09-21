@@ -6,8 +6,8 @@ import { PopupContentComponent } from './popup-content.component';
     selector: '[popup]'
 })
 export class PopupDirective {
-    private tooltip: ComponentRef<PopupContentComponent>;
-    private visible: boolean;
+    private _tooltip: ComponentRef<PopupContentComponent>;
+    private _visible: boolean;
 
     @Input('popup')
     public content: string | PopupContentComponent;
@@ -27,9 +27,7 @@ export class PopupDirective {
     @Input()
     public popupContainer: ViewContainerRef;
 
-    constructor(private viewContainerRef: ViewContainerRef,
-                private resolver: ComponentFactoryResolver,
-                private sanitizer: DomSanitizer) {}
+    constructor(private viewContainerRef: ViewContainerRef, private resolver: ComponentFactoryResolver, private sanitizer: DomSanitizer) {}
 
     public getViewContainer(): ViewContainerRef {
         if (this.popupContainer) {
@@ -41,24 +39,24 @@ export class PopupDirective {
     @HostListener('focusin')
     @HostListener('mouseenter')
     public show(): void {
-        if (this.visible) {
+        if (this._visible) {
             return;
         }
 
-        this.visible = true;
+        this._visible = true;
         if (typeof this.content === 'string') {
             const factory = this.resolver.resolveComponentFactory<PopupContentComponent>(PopupContentComponent);
-            if (!this.visible) {
+            if (!this._visible) {
                 return;
             }
 
-            this.tooltip = this.getViewContainer().createComponent<PopupContentComponent>(factory);
-            this.tooltip.instance.hostElement = this.viewContainerRef.element.nativeElement;
-            this.tooltip.instance.content = this.sanitizer.bypassSecurityTrustHtml(this.content as string);
-            this.tooltip.instance.header = this.header;
-            this.tooltip.instance.popupWidth = this.popupWidth;
-            this.tooltip.instance.placement = this.tooltipPlacement;
-            this.tooltip.instance.arrowPosition = this.arrowPosition;
+            this._tooltip = this.getViewContainer().createComponent<PopupContentComponent>(factory);
+            this._tooltip.instance.hostElement = this.viewContainerRef.element.nativeElement;
+            this._tooltip.instance.content = this.sanitizer.bypassSecurityTrustHtml(this.content as string);
+            this._tooltip.instance.header = this.header;
+            this._tooltip.instance.popupWidth = this.popupWidth;
+            this._tooltip.instance.placement = this.tooltipPlacement;
+            this._tooltip.instance.arrowPosition = this.arrowPosition;
         } else {
             const tooltip = this.content as PopupContentComponent;
             tooltip.hostElement = this.getViewContainer().element.nativeElement;
@@ -70,13 +68,13 @@ export class PopupDirective {
     @HostListener('focusout')
     @HostListener('mouseleave')
     public hide(): void {
-        if (!this.visible) {
+        if (!this._visible) {
             return;
         }
 
-        this.visible = false;
-        if (this.tooltip) {
-            this.tooltip.destroy();
+        this._visible = false;
+        if (this._tooltip) {
+            this._tooltip.destroy();
         }
 
         if (this.content instanceof PopupContentComponent) {
