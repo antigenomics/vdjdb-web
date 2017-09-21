@@ -4,9 +4,9 @@ import javax.inject._
 
 import akka.actor.ActorSystem
 import akka.stream.Materializer
-import backend.actors.DatabaseSearchWebsocketActor
+import backend.actors.DatabaseSearchWebSocketActor
 import backend.server.api.database.{DatabaseColumnInfoResponse, DatabaseMetadataResponse}
-import backend.server.api.search.{SearchDataRequest, SearchResponse}
+import backend.server.api.search.{SearchDataRequest, SearchDataResponse}
 import backend.server.database.{Database, DatabaseColumnInfo}
 import backend.server.filters.DatabaseFilters
 import backend.server.table.search.SearchTable
@@ -47,21 +47,21 @@ class DatabaseAPI @Inject()(cc: ControllerComponents, database: Database)(implic
                         val pageSize: Int = data.get.pageSize.getOrElse(100)
                         val page = data.get.page.get
                         table.setPageSize(pageSize)
-                        Ok(toJson(SearchResponse(page, pageSize, table.getPageCount, table.getRecordsFound, table.getPage(page))))
+                        Ok(toJson(SearchDataResponse(page, pageSize, table.getPageCount, table.getRecordsFound, table.getPage(page))))
                     } else {
-                        Ok(toJson(SearchResponse(-1, -1, table.getPageCount, table.getRecordsFound, table.getRows)))
+                        Ok(toJson(SearchDataResponse(-1, -1, table.getPageCount, table.getRecordsFound, table.getRows)))
                     }
                 } else {
-                    BadRequest(SearchResponse.errorMessage)
+                    BadRequest(SearchDataResponse.errorMessage)
                 }
             case _: JsError =>
-                BadRequest(SearchResponse.errorMessage)
+                BadRequest(SearchDataResponse.errorMessage)
         }
     }
 
     def connect: WebSocket = WebSocket.accept[JsValue, JsValue] { _ =>
         ActorFlow.actorRef { out =>
-            DatabaseSearchWebsocketActor.props(out, database)
+            DatabaseSearchWebSocketActor.props(out, database)
         }
     }
 

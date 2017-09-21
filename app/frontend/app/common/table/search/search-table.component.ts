@@ -13,10 +13,6 @@ export class SearchTableComponent {
 
     constructor(public table: SearchTableService) {}
 
-    public isLoading(): boolean {
-        return this.table.loading || !this.table.dirty;
-    }
-
     public pageChange(page: number): void {
         this.table.pageChange(page);
     }

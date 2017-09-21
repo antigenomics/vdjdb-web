@@ -7,9 +7,10 @@ import { NotificationService } from '../../../utils/notification/notification.se
 import { Filter } from '../../filters/filters';
 import { FiltersService } from '../../filters/filters.service';
 import { WebSocketService } from '../../websocket/websocket.service';
+import { ExportFormat } from './export/search-table-export.component';
 import { SearchTableRow } from './row/search-table-row';
 
-export const enum SearchTableWebsocketActions {
+export const enum SearchTableWebSocketActions {
     Metadata = 'meta',
     Search   = 'search',
     Export   = 'export'
@@ -24,23 +25,15 @@ export class SortRule {
     }
 }
 
-export class ExportFormat {
-    public name: string;
-    public title: string;
-
-    constructor(name: string, title: string) {
-        this.name = name;
-        this.title = title;
-    }
-}
-
 @Injectable()
 export class SearchTableService {
+    private _connectionFailed: boolean = false;
+    private _loading: boolean = false;
+
     private _dirty: boolean = false;
     private _page: number = 0;
     private _pageSize: number = 0;
     private _pageCount: number = 0;
-    private _loading: boolean = false;
     private _rows: Subject<SearchTableRow[]> = new ReplaySubject(1);
     private _columns: DatabaseColumnInfo[] = [];
     private _sortRule = new SortRule();
@@ -52,7 +45,7 @@ export class SearchTableService {
         this.connection.connect('/api/database/connect');
         this.connection.onOpen(() => {
             const metadataRequest = this.connection.sendMessage({
-                action: SearchTableWebsocketActions.Metadata
+                action: SearchTableWebSocketActions.Metadata
             });
             metadataRequest.subscribe({
                 next: (response: any) => {
@@ -93,6 +86,14 @@ export class SearchTableService {
                 }
             });
         });
+        this.connection.onClose(() => {
+            this.notifications.warn('Search', 'Trying to reconnect to database');
+            const reconnectSuccess = this.connection.reconnect();
+            if (!reconnectSuccess) {
+                this._connectionFailed = true;
+                this.notifications.error('Search', 'Reconnect failed');
+            }
+        });
     }
 
     public update(): void {
@@ -109,7 +110,7 @@ export class SearchTableService {
             this._loading = true;
             this.logger.debug('Collected filters', filters);
             const request = this.connection.sendMessage({
-                action: SearchTableWebsocketActions.Search,
+                action: SearchTableWebSocketActions.Search,
                 data:   {
                     filters
                 }
@@ -126,9 +127,9 @@ export class SearchTableService {
         }
     }
 
-    public sort(column: string): void {
+    public sort(column: string, sameSort: boolean = false): void {
         this._loading = true;
-        if (this._sortRule.column === column) {
+        if (this._sortRule.column === column && !sameSort) {
             this._sortRule.type = (this._sortRule.type === 'desc') ? 'asc' : 'desc';
         } else {
             this._sortRule.column = column;
@@ -136,7 +137,7 @@ export class SearchTableService {
         }
         this.logger.debug('Sort rule', this._sortRule);
         const request = this.connection.sendMessage({
-            action: SearchTableWebsocketActions.Search,
+            action: SearchTableWebSocketActions.Search,
             data:   {
                 sort: this._sortRule.toString()
             }
@@ -151,7 +152,7 @@ export class SearchTableService {
         this._loading = true;
         this.logger.debug('Page change', page);
         const request = this.connection.sendMessage({
-            action: SearchTableWebsocketActions.Search,
+            action: SearchTableWebSocketActions.Search,
             data:   {
                 page
             }
@@ -165,8 +166,8 @@ export class SearchTableService {
     public exportTable(format: ExportFormat): void {
         this.logger.debug('Export', format);
         const request = this.connection.sendMessage({
-            action: SearchTableWebsocketActions.Export,
-            data: {
+            action: SearchTableWebSocketActions.Export,
+            data:   {
                 format: format.name
             }
         });
@@ -195,11 +196,19 @@ export class SearchTableService {
         this._sortRule.type = 'none';
     }
 
-    get page() {
+    get loading(): boolean {
+        return this._loading;
+    }
+
+    get connectionFailed(): boolean {
+        return this._connectionFailed;
+    }
+
+    get page(): number {
         return this._page;
     }
 
-    get pageSize() {
+    get pageSize(): number {
         return this._pageSize;
     }
 
@@ -211,10 +220,6 @@ export class SearchTableService {
         return this._recordsFound;
     }
 
-    get loading() {
-        return this._loading;
-    }
-
     get sortRule(): SortRule {
         return this._sortRule;
     }
@@ -223,15 +228,15 @@ export class SearchTableService {
         return this._numberOfRecords;
     }
 
-    get rows() {
+    get rows(): Subject<SearchTableRow[]> {
         return this._rows;
     }
 
-    get columns() {
+    get columns(): DatabaseColumnInfo[] {
         return this._columns;
     }
 
-    get dirty() {
+    get dirty(): boolean {
         return this._dirty;
     }
 }

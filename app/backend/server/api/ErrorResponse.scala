@@ -7,6 +7,6 @@ class ErrorResponse(val action: String)
 object ErrorResponse {
     def writesSubclass[T](writer: Writes[T]): Writes[T] = (t: T) => Json.obj(
         "status" -> "error",
-        "action" -> t.asInstanceOf[SuccessResponse].action
+        "action" -> t.asInstanceOf[ErrorResponse].action
     ) ++ writer.writes(t).as[JsObject]
 }

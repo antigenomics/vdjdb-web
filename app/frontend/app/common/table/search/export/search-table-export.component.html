@@ -3,7 +3,7 @@
         Export as:
         <i class="dropdown icon"></i>
         <div class="menu">
-            <a class="item" *ngFor="let format of formats" (click)="table.exportTable(format)">{{ format.title }}</a>
+            <a class="item" *ngFor="let format of formats" (click)="exportTable(format)">{{ format.title }}</a>
         </div>
     </div>
 </div>

@@ -4,7 +4,7 @@ import akka.actor.{Actor, ActorRef, Props}
 import backend.server.api.ClientRequest
 import backend.server.api.common.{ErrorMessageResponse, SuccessMessageResponse, WarningMessageResponse}
 import backend.server.api.database.DatabaseMetadataResponse
-import backend.server.api.search.{SearchDataRequest, SearchResponse}
+import backend.server.api.search.{SearchDataRequest, SearchDataResponse}
 import backend.server.database.Database
 import backend.server.filters.DatabaseFilters
 import backend.server.table.search.SearchTable
@@ -12,7 +12,7 @@ import play.api.libs.json.Json.toJson
 import play.api.libs.json._
 
 
-class DatabaseSearchWebsocketActor(out: ActorRef, val database: Database) extends Actor {
+class DatabaseSearchWebSocketActor(out: ActorRef, val database: Database) extends Actor {
     var table: SearchTable = _
 
     override def preStart(): Unit = {
@@ -38,7 +38,7 @@ class DatabaseSearchWebsocketActor(out: ActorRef, val database: Database) extend
                 action match {
                     case DatabaseMetadataResponse.action =>
                         out ! toJson(DatabaseMetadataResponse(database.getMetadata))
-                    case SearchResponse.action =>
+                    case SearchDataResponse.action =>
                         validateData(out, request.data, (searchRequest: SearchDataRequest) => {
 
                             if (searchRequest.filters.nonEmpty) {
@@ -56,7 +56,7 @@ class DatabaseSearchWebsocketActor(out: ActorRef, val database: Database) extend
                                 table.sort(columnName, sortType)
                             }
                             val page = searchRequest.page.getOrElse(0)
-                            out ! toJson(SearchResponse(page, table.getPageSize, table.getPageCount, table.getRecordsFound, table.getPage(page)))
+                            out ! toJson(SearchDataResponse(page, table.getPageSize, table.getPageCount, table.getRecordsFound, table.getPage(page)))
                         })
                     case "ping" =>
                         out ! toJson(SuccessMessageResponse("pong"))
@@ -82,7 +82,7 @@ class DatabaseSearchWebsocketActor(out: ActorRef, val database: Database) extend
     }
 }
 
-object DatabaseSearchWebsocketActor {
-    def props(out: ActorRef, database: Database): Props = Props(new DatabaseSearchWebsocketActor(out, database))
+object DatabaseSearchWebSocketActor {
+    def props(out: ActorRef, database: Database): Props = Props(new DatabaseSearchWebSocketActor(out, database))
 }
 

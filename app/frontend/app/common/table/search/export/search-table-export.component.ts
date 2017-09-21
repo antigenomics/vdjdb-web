@@ -1,5 +1,14 @@
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { ExportFormat, SearchTableService } from '../search-table.service';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
+
+export class ExportFormat {
+    public name: string;
+    public title: string;
+
+    constructor(name: string, title: string) {
+        this.name = name;
+        this.title = title;
+    }
+}
 
 @Component({
     selector:        'search-table-export',
@@ -10,5 +19,10 @@ export class SearchTableExportComponent {
     @Input()
     public formats: ExportFormat[];
 
-    constructor(private table: SearchTableService) {}
+    @Output()
+    public exportEvent = new EventEmitter();
+
+    public exportTable(format: ExportFormat): void {
+        this.exportEvent.emit(format);
+    }
 }
