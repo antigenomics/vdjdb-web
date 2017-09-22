@@ -10,6 +10,7 @@ import backend.server.database.Database
 import backend.server.filters.DatabaseFilters
 import backend.server.table.search.SearchTable
 import backend.server.table.search.export.SearchTableConverter
+import backend.utils.files.TemporaryFile
 import play.api.libs.json.Json.toJson
 import play.api.libs.json._
 
@@ -64,12 +65,9 @@ class DatabaseSearchWebSocketActor(out: ActorRef, val database: Database) extend
                         validateData(out, request.data, (exportRequest: ExportDataRequest) => {
                             val converter = SearchTableConverter.getConverter(exportRequest.format)
                             if (converter.nonEmpty) {
-                                val link = converter.get.convert(table, database, "/tmp")
-                                if (link.nonEmpty) {
-                                    val name = converter.get.getName
-                                    val guard = converter.get.getGuard
-                                    val hash = converter.get.getHash
-                                    out ! toJson(ExportDataResponse(link.get, name, guard, hash))
+                                val temporaryFile = converter.get.convert(table, database)
+                                if (temporaryFile.nonEmpty) {
+                                    out ! toJson(ExportDataResponse(temporaryFile.get))
                                 }
                             }
                         })

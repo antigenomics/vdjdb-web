@@ -1,11 +1,7 @@
 package backend.controllers
 
-import java.io.File
 import javax.inject._
-
-import akka.stream.scaladsl.{FileIO, Source}
-import akka.util.ByteString
-import play.api.http.HttpEntity
+import backend.utils.files.TemporaryFile
 import controllers._
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -31,35 +27,14 @@ class Application @Inject()(ws: WSClient, assets: Assets, environment: Environme
     }
 
     def downloadTemporaryFile(name: String, path: String, guard: String, hash: String) = Action {
-        val invalidPath: Boolean = path.contains("..") || name.contains("..")
-
-        if (!invalidPath) {
-            val folder = new File("/tmp/" + path + "/")
-            val file = new File("/tmp/" + path + "/" + name)
-            val guardFile = new File("/tmp/" + path + "/." + guard)
-
-            val temporaryExists: Boolean =
-                folder.exists() && folder.isDirectory &&
-                    file.exists() && !file.isDirectory &&
-                    guardFile.exists() && !guardFile.isDirectory
-
-            if (temporaryExists) {
-                val hashValid: Boolean = scala.io.Source.fromFile(guardFile).getLines().toList.head.contentEquals(hash)
-                if (hashValid) {
-                    Ok.sendFile(content = file, fileName = _.getName, inline = false,
-                        onClose = () => {
-                            file.delete()
-                            guardFile.delete()
-                            folder.delete()
-                        })
-                } else {
-                    BadRequest("Invalid request")
-                }
-            } else {
-                BadRequest("Invalid request")
-            }
-        } else {
-            BadRequest("Invalid request")
+        val temporaryFile = TemporaryFile(name, path, guard, hash)
+        temporaryFile.getFile match {
+            case Some(file) =>
+                Ok.sendFile(content = file, fileName = _.getName, inline = false,
+                    onClose = () => {
+                        temporaryFile.clear()
+                    })
+            case None => BadRequest("Invalid request")
         }
     }
 }
