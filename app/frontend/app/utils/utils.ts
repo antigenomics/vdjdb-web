@@ -111,26 +111,48 @@ export namespace Utils {
 
     export namespace Text {
 
-        // export function splitParagraphs(text: string): string[] {
-        //
-        // }
-        //
-        // export function function getIndicesOf(searchStr, str, caseSensitive) {
-        //     var searchStrLen = searchStr.length;
-        //     if (searchStrLen == 0) {
-        //         return [];
-        //     }
-        //     var startIndex = 0, index, indices = [];
-        //     if (!caseSensitive) {
-        //         str = str.toLowerCase();
-        //         searchStr = searchStr.toLowerCase();
-        //     }
-        //     while ((index = str.indexOf(searchStr, startIndex)) > -1) {
-        //         indices.push(index);
-        //         startIndex = index + searchStrLen;
-        //     }
-        //     return indices;
-        // }
+        export function splitParagraphs(text: string): string[] {
+            const openParagraphIndices = getIndicesOf('<p>', text);
+            const closeParagraphIndices = getIndicesOf('</p>', text);
+
+            if (openParagraphIndices.length === 0 ||
+                closeParagraphIndices.length === 0 ||
+                openParagraphIndices.length !== closeParagraphIndices.length) {
+                return [ text ];
+            } else {
+                const paragraphsCount = openParagraphIndices.length;
+                const result: string[] = [];
+                for (let i = 0; i < paragraphsCount; ++i) {
+                    result.push(text.substring(openParagraphIndices[i] + 3, closeParagraphIndices[i]));
+                }
+                return result;
+            }
+
+        }
+
+        export function getIndicesOf(searchStr: string, str: string, caseSensitive: boolean = true) {
+            const searchStringLength = searchStr.length;
+            if (searchStringLength === 0) {
+                return [];
+            }
+            let startIndex = 0;
+            let index;
+            const indices = [];
+
+            if (!caseSensitive) {
+                str = str.toLowerCase();
+                searchStr = searchStr.toLowerCase();
+            }
+
+            /* tslint:disable:no-conditional-assignment */
+            while ((index = str.indexOf(searchStr, startIndex)) > -1) {
+                indices.push(index);
+                startIndex = index + searchStringLength;
+            }
+            /* tslint:enable:no-conditional-assignment */
+
+            return indices;
+        }
 
     }
 

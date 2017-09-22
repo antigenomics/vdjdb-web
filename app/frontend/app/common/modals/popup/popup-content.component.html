@@ -5,6 +5,13 @@
      [style.top]="boundingRect.top"
      [style.bottom]="boundingRect.bottom"
      style="display: block !important; position: fixed; text-align: left !important; white-space: normal;">
-    <div class="header" [innerHTML]="getHeaderContent()"></div>
-    <div class="content" [innerHTML]="getPopupContent()"></div>
+    <div class="header">{{ getHeaderContent() }}</div>
+    <div class="content" *ngIf="display === 'paragraph'">
+        <p *ngFor="let paragraph of getPopupContent()">{{ paragraph }}</p>
+    </div>
+    <div class="content" *ngIf="display === 'list'">
+        <div class="ui list">
+            <div class="item" *ngFor="let item of getPopupContent()">{{ item }}</div>
+        </div>
+    </div>
 </div>

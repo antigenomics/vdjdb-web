@@ -20,7 +20,10 @@ export class PopupDirective {
     public width: number = 400;
 
     @Input('position')
-    public position: string = 'left';
+    public position: 'left' | 'right' | 'top' | 'bottom' = 'left';
+
+    @Input('display')
+    public display: 'paragraph' | 'list' = 'paragraph';
 
     constructor(private viewContainerRef: ViewContainerRef, private resolver: ComponentFactoryResolver) {}
 
@@ -35,6 +38,7 @@ export class PopupDirective {
             this._tooltip.instance.header = this.headerContent;
             this._tooltip.instance.width = this.width;
             this._tooltip.instance.position = this.position;
+            this._tooltip.instance.display = this.display;
             this._visible = true;
         }
     }

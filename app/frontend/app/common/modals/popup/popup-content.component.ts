@@ -18,8 +18,8 @@ export class PopupBoundingRect {
 })
 export class PopupContentComponent implements AfterViewInit {
     private static _magicConstant: number = 20.0;
-    private _content: SafeHtml;
-    private _header: SafeHtml;
+    private _content: string[];
+    private _header: string;
 
     public boundingRect: PopupBoundingRect = new PopupBoundingRect();
 
@@ -31,31 +31,37 @@ export class PopupContentComponent implements AfterViewInit {
     public width: number;
 
     @Input('position')
-    public position: string;
+    public position: 'left' | 'right' | 'top' | 'bottom';
+
+    @Input('display')
+    public display: 'paragraph' | 'list';
 
     @Input('content')
-    set content(popupContent: string) {
-        this._content = this.sanitizer.bypassSecurityTrustHtml(popupContent);
+    set content(popupContent: string | string[]) {
+        if (typeof popupContent === 'string') {
+            this._content = Utils.Text.splitParagraphs(popupContent);
+        } else if (Array.isArray(popupContent)) {
+            this._content = popupContent;
+        }
     }
 
     @Input('header')
     set header(headerContent: string) {
-        this._header = this.sanitizer.bypassSecurityTrustHtml(headerContent);
+        this._header = headerContent;
     }
 
-    constructor(private sanitizer: DomSanitizer, private changeDetector: ChangeDetectorRef) {
-    }
+    constructor(private changeDetector: ChangeDetectorRef) {}
 
     public ngAfterViewInit(): void {
         this.positionElement();
         this.changeDetector.detectChanges();
     }
 
-    public getPopupContent(): SafeHtml {
+    public getPopupContent(): string[] {
         return this._content;
     }
 
-    public getHeaderContent(): SafeHtml {
+    public getHeaderContent(): string {
         return this._header;
     }
 
