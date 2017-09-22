@@ -1,84 +1,53 @@
 import { ComponentFactoryResolver, ComponentRef, Directive, HostListener, Input, ViewContainerRef } from '@angular/core';
-import { DomSanitizer } from '@angular/platform-browser';
+import { InputConverter, NumberConverter } from '../../../utils/input-converter.decorator';
 import { PopupContentComponent } from './popup-content.component';
 
 @Directive({
     selector: '[popup]'
 })
 export class PopupDirective {
+    private _visible: boolean = false;
     private _tooltip: ComponentRef<PopupContentComponent>;
-    private _visible: boolean;
 
     @Input('popup')
-    public content: string | PopupContentComponent;
+    public popupContent: string;
 
-    @Input('popupHeader')
-    public header: string;
+    @Input('header')
+    public headerContent: string;
 
-    @Input('popupWidth')
-    public popupWidth: '' | 'wide' | 'very wide' = '';
+    @Input('width')
+    @InputConverter(NumberConverter)
+    public width: number = 400;
 
-    @Input()
-    public tooltipPlacement: 'top' | 'bottom' | 'left' | 'right' = 'left';
+    @Input('position')
+    public position: string = 'left';
 
-    @Input()
-    public arrowPosition: string = 'center left';
-
-    @Input()
-    public popupContainer: ViewContainerRef;
-
-    constructor(private viewContainerRef: ViewContainerRef, private resolver: ComponentFactoryResolver, private sanitizer: DomSanitizer) {}
-
-    public getViewContainer(): ViewContainerRef {
-        if (this.popupContainer) {
-            return this.popupContainer;
-        }
-        return this.viewContainerRef;
-    }
+    constructor(private viewContainerRef: ViewContainerRef, private resolver: ComponentFactoryResolver) {}
 
     @HostListener('focusin')
     @HostListener('mouseenter')
     public show(): void {
-        if (this._visible) {
-            return;
-        }
-
-        this._visible = true;
-        if (typeof this.content === 'string') {
+        if (!this._visible) {
             const factory = this.resolver.resolveComponentFactory<PopupContentComponent>(PopupContentComponent);
-            if (!this._visible) {
-                return;
-            }
-
-            this._tooltip = this.getViewContainer().createComponent<PopupContentComponent>(factory);
+            this._tooltip = this.viewContainerRef.createComponent<PopupContentComponent>(factory);
             this._tooltip.instance.hostElement = this.viewContainerRef.element.nativeElement;
-            this._tooltip.instance.content = this.sanitizer.bypassSecurityTrustHtml(this.content as string);
-            this._tooltip.instance.header = this.header;
-            this._tooltip.instance.popupWidth = this.popupWidth;
-            this._tooltip.instance.placement = this.tooltipPlacement;
-            this._tooltip.instance.arrowPosition = this.arrowPosition;
-        } else {
-            const tooltip = this.content as PopupContentComponent;
-            tooltip.hostElement = this.getViewContainer().element.nativeElement;
-            tooltip.placement = this.tooltipPlacement;
-            tooltip.show();
+            this._tooltip.instance.content = this.popupContent;
+            this._tooltip.instance.header = this.headerContent;
+            this._tooltip.instance.width = this.width;
+            this._tooltip.instance.position = this.position;
+            this._visible = true;
         }
     }
 
     @HostListener('focusout')
     @HostListener('mouseleave')
     public hide(): void {
-        if (!this._visible) {
-            return;
-        }
-
-        this._visible = false;
-        if (this._tooltip) {
-            this._tooltip.destroy();
-        }
-
-        if (this.content instanceof PopupContentComponent) {
-            (this.content as PopupContentComponent).hide();
+        if (this._visible) {
+            if (this._tooltip) {
+                this._tooltip.destroy();
+            }
+            this._visible = false;
         }
     }
+
 }

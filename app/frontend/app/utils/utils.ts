@@ -85,10 +85,12 @@ export namespace Utils {
     export namespace Window {
 
         export function scroll(element: HTMLElement): void {
-            window.scroll({
-                behavior: 'smooth',
-                top:      element.offsetTop
-            });
+            if (window.scroll) {
+                window.scroll({
+                    behavior: 'smooth',
+                    top:      element.offsetTop
+                });
+            }
         }
 
         export class WindowViewport {
@@ -105,6 +107,31 @@ export namespace Utils {
             const height = w.innerHeight || e.clientHeight || g.clientHeight;
             return { width, height };
         }
+    }
+
+    export namespace Text {
+
+        // export function splitParagraphs(text: string): string[] {
+        //
+        // }
+        //
+        // export function function getIndicesOf(searchStr, str, caseSensitive) {
+        //     var searchStrLen = searchStr.length;
+        //     if (searchStrLen == 0) {
+        //         return [];
+        //     }
+        //     var startIndex = 0, index, indices = [];
+        //     if (!caseSensitive) {
+        //         str = str.toLowerCase();
+        //         searchStr = searchStr.toLowerCase();
+        //     }
+        //     while ((index = str.indexOf(searchStr, startIndex)) > -1) {
+        //         indices.push(index);
+        //         startIndex = index + searchStrLen;
+        //     }
+        //     return indices;
+        // }
+
     }
 
 }

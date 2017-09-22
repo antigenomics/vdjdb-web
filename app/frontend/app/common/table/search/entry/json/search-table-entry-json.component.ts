@@ -3,7 +3,7 @@ import { DatabaseColumnInfo } from '../../../../../database/database-metadata';
 
 @Component({
     selector: 'search-table-entry-json',
-    template: '<i class="help circle icon cursor pointer" [style.color]="color" [popup]="value" [popupHeader]="title"></i>',
+    template: '<i class="help circle icon cursor pointer" [style.color]="color" [popup]="value" [header]="title" width="200"></i>',
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SearchTableEntryJsonComponent {

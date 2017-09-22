@@ -1,4 +1,10 @@
-<div class="ui {{ arrowPosition }} popup visible fade element {{ popupWidth }}" [style.top]="top + 'px'" [style.left]="left + 'px'" style="display: block !important;">
-    <div class="header">{{ header }}</div>
-    <div class="content" [innerHTML]="content"></div>
+<div class="ui popup visible fade element"
+     [style.width]="boundingRect.width"
+     [style.max-width]="boundingRect.width"
+     [style.left]="boundingRect.left"
+     [style.top]="boundingRect.top"
+     [style.bottom]="boundingRect.bottom"
+     style="display: block !important; position: fixed; text-align: left !important; white-space: normal;">
+    <div class="header" [innerHTML]="getHeaderContent()"></div>
+    <div class="content" [innerHTML]="getPopupContent()"></div>
 </div>

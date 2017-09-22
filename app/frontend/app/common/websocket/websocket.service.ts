@@ -22,7 +22,7 @@ export class WebSocketRequestMessage {
 
 @Injectable()
 export class WebSocketService {
-    private static pingConnectionTimeout: number = 10000;
+    private static pingConnectionTimeout: number = 15000;
     private static maxReconnectAttemps: number = 5;
 
     private _currentReconnectAttempt: number = 0;
@@ -36,7 +36,8 @@ export class WebSocketService {
     private _onErrorCallback: (event: Event) => void;
     private _onCloseCallback: (event: CloseEvent) => void;
 
-    constructor(private configuration: ConfigurationService, private logger: LoggerService) {}
+    constructor(private configuration: ConfigurationService, private logger: LoggerService) {
+    }
 
     public connect(url: string): void {
         if (this._connection) {
@@ -97,7 +98,7 @@ export class WebSocketService {
             this._connection.close();
         }
         if (this._connectionTimeoutEvent) {
-            window.clearTimeout(this._connectionTimeoutEvent);
+            window.clearInterval(this._connectionTimeoutEvent);
         }
         this._connection = undefined;
     }
@@ -131,7 +132,8 @@ export class WebSocketService {
         if (this._connectionTimeoutEvent) {
             window.clearTimeout(this._connectionTimeoutEvent);
         }
-        this._connectionTimeoutEvent = window.setTimeout(() => {
+        this._connectionTimeoutEvent = window.setInterval(() => {
+            this.logger.debug('WebSocket service', 'ping');
             this._connection.send(JSON.stringify({ action: 'ping' }));
         }, WebSocketService.pingConnectionTimeout);
 
