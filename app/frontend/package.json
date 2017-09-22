@@ -1,6 +1,6 @@
 {
   "name": "vdjdb-webpack",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "Webpack configuration for VDJdb-server",
   "private": true,
   "scripts": {
@@ -15,23 +15,23 @@
   "author": "Dmitry Bagaev",
   "homepage": "https://github.com/antigenomics/vdjdb-web-private",
   "dependencies": {
-    "@angular/common": "4.4.2",
-    "@angular/core": "4.4.2",
-    "@angular/forms": "4.4.2",
-    "@angular/platform-browser": "4.4.2",
-    "@angular/router": "4.4.2",
+    "@angular/common": "4.4.3",
+    "@angular/core": "4.4.3",
+    "@angular/forms": "4.4.3",
+    "@angular/platform-browser": "4.4.3",
+    "@angular/router": "4.4.3",
     "core-js": "2.5.1",
     "reflect-metadata": "0.1.10",
     "rxjs": "5.4.3",
     "zone.js": "0.8.17"
   },
   "devDependencies": {
-    "@angular/compiler": "4.4.2",
-    "@angular/compiler-cli": "4.4.2",
-    "@angular/platform-browser-dynamic": "4.4.2",
+    "@angular/compiler": "4.4.3",
+    "@angular/compiler-cli": "4.4.3",
+    "@angular/platform-browser-dynamic": "4.4.3",
     "@types/angular": "1.6.32",
     "@types/node": "8.0.20",
-    "@types/webpack": "3.0.10",
+    "@types/webpack": "3.0.11",
     "@types/uglify-js": "2.6.29",
     "@types/source-map": "0.5.1",
     "@ngtools/webpack": "1.7.1",
@@ -62,7 +62,7 @@
     "rimraf": "2.6.2",
     "console.table": "0.9.1",
     "gzip-size": "4.0.0",
-    "md5-file": "3.2.2"
+    "md5-file": "3.2.3"
   },
   "engines": {
     "node": ">= 5",

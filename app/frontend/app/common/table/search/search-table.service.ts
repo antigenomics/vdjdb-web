@@ -4,12 +4,12 @@ import { Subject } from 'rxjs/Subject';
 import { DatabaseColumnInfo, DatabaseMetadata } from '../../../database/database-metadata';
 import { LoggerService } from '../../../utils/logger/logger.service';
 import { NotificationService } from '../../../utils/notification/notification.service';
+import { Utils } from '../../../utils/utils';
 import { Filter } from '../../filters/filters';
 import { FiltersService } from '../../filters/filters.service';
 import { WebSocketService } from '../../websocket/websocket.service';
 import { ExportFormat } from './export/search-table-export.component';
 import { SearchTableRow } from './row/search-table-row';
-import { Utils } from '../../../utils/utils';
 
 export const enum SearchTableWebSocketActions {
     Metadata = 'meta',
