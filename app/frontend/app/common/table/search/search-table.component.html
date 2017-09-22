@@ -12,8 +12,7 @@
                 </tr>
                 <tr>
                     <th class="center aligned" *ngFor="let column of table.columns; let i = index;" (click)="table.sort(column.name)" [ngClass]="isSorted(column.name)">
-                <span class="header" [popup]="column.comment"
-                      [popupHeader]="column.title" [tooltipPlacement]="i < 6 ? 'right' : 'left'" [arrowPosition]="i < 6 ? 'right center' : 'left center'">{{ column.title }}</span>
+                        <span class="header" [popup]="column.comment" [header]="column.title" position="top" width="300">{{ column.title }}</span>
                     </th>
                 </tr>
                 </thead>

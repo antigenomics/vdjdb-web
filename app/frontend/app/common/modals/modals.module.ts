@@ -7,7 +7,7 @@ import { PopupDirective } from './popup/popup.directive';
 @NgModule({
     imports:         [ BrowserModule, FormsModule ],
     declarations:    [ PopupDirective, PopupContentComponent ],
-    exports:         [ PopupDirective, PopupContentComponent ],
+    exports:         [ PopupDirective, PopupContentComponent],
     entryComponents: [ PopupContentComponent ]
 })
 export class ModalsModule {}

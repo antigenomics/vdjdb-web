@@ -1,5 +1,14 @@
-import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Input } from '@angular/core';
-import { SafeHtml } from '@angular/platform-browser';
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, Input } from '@angular/core';
+import { InputConverter, NumberConverter } from '../../../utils/input-converter.decorator';
+import { Utils } from '../../../utils/utils';
+import WindowViewport = Utils.Window.WindowViewport;
+
+export class PopupBoundingRect {
+    public left: string;
+    public top: string;
+    public bottom: string;
+    public width: string;
+}
 
 @Component({
     selector:        'popup-content',
@@ -7,168 +16,137 @@ import { SafeHtml } from '@angular/platform-browser';
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class PopupContentComponent implements AfterViewInit {
-    private static popupContentHideValue: number = -100000;
+    private static _magicConstant: number = 20.0;
+    private _content: string[];
+    private _header: string;
 
-    @Input()
+    public boundingRect: PopupBoundingRect = new PopupBoundingRect();
+
+    @Input('hostElement')
     public hostElement: HTMLElement;
 
-    @Input()
-    public content: SafeHtml;
+    @Input('width')
+    @InputConverter(NumberConverter)
+    public width: number;
 
-    @Input()
-    public header: string;
+    @Input('position')
+    public position: 'left' | 'right' | 'top' | 'bottom';
 
-    @Input()
-    public popupWidth: '' | 'wide' | 'very wide' = '';
+    @Input('display')
+    public display: 'paragraph' | 'list';
 
-    @Input()
-    public placement: 'top' | 'bottom' | 'left' | 'right' = 'top';
+    @Input('content')
+    set content(popupContent: string | string[]) {
+        if (typeof popupContent === 'string') {
+            this._content = Utils.Text.splitParagraphs(popupContent);
+        } else if (Array.isArray(popupContent)) {
+            this._content = popupContent;
+        }
+    }
 
-    @Input()
-    public arrowPosition: string = 'center left';
+    @Input('header')
+    set header(headerContent: string) {
+        this._header = headerContent;
+    }
 
-    public top: number = -100000;
-    public left: number = -100000;
-
-    constructor(private element: ElementRef, private cdr: ChangeDetectorRef) {}
+    constructor(private changeDetector: ChangeDetectorRef) {}
 
     public ngAfterViewInit(): void {
-        this.show();
-        this.cdr.detectChanges();
+        this.positionElement();
+        this.changeDetector.detectChanges();
     }
 
-    public show(): void {
-        if (!this.hostElement) {
-            return;
-        }
-
-        const p = PopupContentComponent.positionElements(this.hostElement, this.element.nativeElement.children[ 0 ], this.placement, false);
-        this.top = p.top;
-        this.left = p.left;
+    public getPopupContent(): string[] {
+        return this._content;
     }
 
-    public hide(): void {
-        this.top = PopupContentComponent.popupContentHideValue;
-        this.left = PopupContentComponent.popupContentHideValue;
+    public getHeaderContent(): string {
+        return this._header;
     }
 
-    private static parentOffsetEl(nativeEl: HTMLElement): any {
-        let offsetParent: any = nativeEl.offsetParent || window.document;
-        while (offsetParent && offsetParent !== window.document && PopupContentComponent.isStaticPositioned(offsetParent)) {
-            offsetParent = offsetParent.offsetParent;
-        }
-        return offsetParent || window.document;
-    }
+    private positionElement(): void {
+        const hostBoundingRectangle = this.hostElement.getBoundingClientRect();
+        const windowViewport = Utils.Window.getViewport();
 
-    private static positionElements(hostEl: HTMLElement, targetEl: HTMLElement,
-                                    positionStr: string, appendToBody: boolean = false): { top: number, left: number } {
-        const positionStrParts = positionStr.split('-');
-        const pos0 = positionStrParts[ 0 ];
-        const pos1 = positionStrParts[ 1 ] || 'center';
-        const hostElPos = appendToBody ? PopupContentComponent.offset(hostEl) : PopupContentComponent.position(hostEl);
-        const targetElWidth = targetEl.offsetWidth;
-        const targetElHeight = targetEl.offsetHeight;
-        const shiftWidth: any = {
-            center(): number {
-                return hostElPos.left + hostElPos.width / 2 - targetElWidth / 2;
-            },
-            left(): number {
-                return hostElPos.left;
-            },
-            right(): number {
-                return hostElPos.left + hostElPos.width;
-            }
-        };
-
-        const shiftHeight: any = {
-            center(): number {
-                return hostElPos.top + hostElPos.height / 2 - targetElHeight / 2;
-            },
-            top(): number {
-                return hostElPos.top;
-            },
-            bottom(): number {
-                return hostElPos.top + hostElPos.height;
-            }
-        };
-
-        let targetElPos: { top: number, left: number };
-        switch (pos0) {
-            case 'right':
-                targetElPos = {
-                    top:  shiftHeight[ pos1 ](),
-                    left: shiftWidth[ pos0 ]()
-                };
-                break;
-
+        switch (this.position) {
             case 'left':
-                targetElPos = {
-                    top:  shiftHeight[ pos1 ](),
-                    left: hostElPos.left - targetElWidth
-                };
+                this.positionLeft(hostBoundingRectangle, windowViewport);
                 break;
-
+            case 'right':
+                this.positionRight(hostBoundingRectangle, windowViewport);
+                break;
+            case 'top':
+                this.positionTop(hostBoundingRectangle, windowViewport);
+                break;
             case 'bottom':
-                targetElPos = {
-                    top:  shiftHeight[ pos0 ](),
-                    left: shiftWidth[ pos1 ]()
-                };
+                this.positionBottom(hostBoundingRectangle, windowViewport);
                 break;
-
             default:
-                targetElPos = {
-                    top:  hostElPos.top - targetElHeight,
-                    left: shiftWidth[ pos1 ]()
-                };
                 break;
         }
-
-        return targetElPos;
+        this.boundingRect.width = this.width + 'px';
     }
 
-    private static position(nativeEl: HTMLElement): { width: number, height: number, top: number, left: number } {
-        let offsetParentBCR = { top: 0, left: 0 };
-        const elBCR = PopupContentComponent.offset(nativeEl);
-        const offsetParentEl = PopupContentComponent.parentOffsetEl(nativeEl);
-        if (offsetParentEl !== window.document) {
-            offsetParentBCR = PopupContentComponent.offset(offsetParentEl);
-            offsetParentBCR.top += offsetParentEl.clientTop - offsetParentEl.scrollTop;
-            offsetParentBCR.left += offsetParentEl.clientLeft - offsetParentEl.scrollLeft;
+    private positionLeft(hostBoundingRectangle: ClientRect, _: WindowViewport): void {
+        let left = hostBoundingRectangle.left - this.width - PopupContentComponent._magicConstant;
+        const top = hostBoundingRectangle.top;
+
+        if (left < 0) {
+            left = hostBoundingRectangle.left + hostBoundingRectangle.width;
         }
 
-        const boundingClientRect = nativeEl.getBoundingClientRect();
-        return {
-            width:  boundingClientRect.width || nativeEl.offsetWidth,
-            height: boundingClientRect.height || nativeEl.offsetHeight,
-            top:    elBCR.top - offsetParentBCR.top,
-            left:   elBCR.left - offsetParentBCR.left
-        };
+        this.boundingRect.left = left + 'px';
+        this.boundingRect.top = top + 'px';
+        this.boundingRect.bottom = 'auto';
     }
 
-    private static offset(nativeEl: any): { width: number, height: number, top: number, left: number } {
-        const boundingClientRect = nativeEl.getBoundingClientRect();
-        return {
-            width:  boundingClientRect.width || nativeEl.offsetWidth,
-            height: boundingClientRect.height || nativeEl.offsetHeight,
-            top:    boundingClientRect.top + (window.pageYOffset || window.document.documentElement.scrollTop),
-            left:   boundingClientRect.left + (window.pageXOffset || window.document.documentElement.scrollLeft)
-        };
-    }
+    private positionRight(hostBoundingRectangle: ClientRect, windowViewport: WindowViewport): void {
+        let left = hostBoundingRectangle.left + hostBoundingRectangle.width;
+        const top = hostBoundingRectangle.top;
 
-    private static getStyle(nativeEl: HTMLElement, cssProp: string): string {
-        if ((nativeEl as any).currentStyle) {
-            return (nativeEl as any).currentStyle[ cssProp ];
+        if ((left + this.width) > windowViewport.width) {
+            left = hostBoundingRectangle.left - this.width;
         }
 
-        if (window.getComputedStyle) {
-            return (window.getComputedStyle(nativeEl) as any)[ cssProp ];
+        this.boundingRect.left = left + 'px';
+        this.boundingRect.top = top + 'px';
+        this.boundingRect.bottom = 'auto';
+    }
+
+    private positionTop(hostBoundingRectangle: ClientRect, windowViewport: WindowViewport): void {
+        let left = hostBoundingRectangle.left - (this.width / 2.0);
+        const bottom = windowViewport.height - hostBoundingRectangle.top;
+
+        const rightOverflow = (left + this.width + PopupContentComponent._magicConstant) - windowViewport.width;
+        if (rightOverflow > 0) {
+            left -= rightOverflow;
         }
 
-        // finally try and get inline style
-        return (nativeEl.style as any)[ cssProp ];
+        if (left < 0) {
+            left = PopupContentComponent._magicConstant;
+        }
+
+        this.boundingRect.left = left + 'px';
+        this.boundingRect.top = 'auto';
+        this.boundingRect.bottom = bottom + 'px';
     }
 
-    private static isStaticPositioned(nativeEl: HTMLElement): boolean {
-        return (PopupContentComponent.getStyle(nativeEl, 'position') || 'static' ) === 'static';
+    private positionBottom(hostBoundingRectangle: ClientRect, windowViewport: WindowViewport): void {
+        let left = hostBoundingRectangle.left - (this.width / 2.0);
+        const top = hostBoundingRectangle.top + hostBoundingRectangle.height;
+
+        const rightOverflow = (left + this.width + PopupContentComponent._magicConstant) - windowViewport.width;
+        if (rightOverflow > 0) {
+            left -= rightOverflow;
+        }
+
+        if (left < 0) {
+            left = PopupContentComponent._magicConstant;
+        }
+
+        this.boundingRect.left = left + 'px';
+        this.boundingRect.top = top + 'px';
+        this.boundingRect.bottom = 'auto';
     }
+
 }

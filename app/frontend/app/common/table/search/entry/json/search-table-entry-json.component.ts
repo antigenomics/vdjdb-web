@@ -3,11 +3,11 @@ import { DatabaseColumnInfo } from '../../../../../database/database-metadata';
 
 @Component({
     selector: 'search-table-entry-json',
-    template: '<i class="help circle icon cursor pointer" [style.color]="color" [popup]="value" [popupHeader]="title"></i>',
+    template: '<i class="help circle icon cursor pointer" [style.color]="color" [popup]="value" [header]="title" width="250" display="list"></i>',
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SearchTableEntryJsonComponent {
-    private _value: string;
+    private _value: string[];
     private _title: string;
     private _color: string;
 
@@ -16,12 +16,12 @@ export class SearchTableEntryJsonComponent {
         try {
             const json = JSON.parse(jsonString);
             let color = 'black';
-            let text = '<div class="ui list">';
+            const text: string[] = [];
 
             const properties = Object.keys(json).sort();
             properties.forEach((property: string) => {
                 if (json[property] !== '') {
-                    text += `<div class="item">${property} : ${json[property]}</div>`;
+                    text.push(`${property} : ${json[property]}`);
                 }
             });
 
@@ -45,10 +45,10 @@ export class SearchTableEntryJsonComponent {
                 }
             }
 
-            this._value = text + '</div>';
+            this._value = text;
             this._color = color;
         } catch (e) {
-            this._value = '';
+            this._value = [];
             this._color = 'black';
         }
     }
