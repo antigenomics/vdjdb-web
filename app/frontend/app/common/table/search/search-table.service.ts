@@ -9,6 +9,7 @@ import { FiltersService } from '../../filters/filters.service';
 import { WebSocketService } from '../../websocket/websocket.service';
 import { ExportFormat } from './export/search-table-export.component';
 import { SearchTableRow } from './row/search-table-row';
+import { Utils } from '../../../utils/utils';
 
 export const enum SearchTableWebSocketActions {
     Metadata = 'meta',
@@ -173,6 +174,13 @@ export class SearchTableService {
         });
         request.subscribe((response: any) => {
             this.logger.debug('Export', response);
+
+            const name = response.name;
+            const link = response.link;
+            const guard = response.guard;
+            const hash = response.hash;
+            Utils.File.download(`/temporary/${name}/${link}/${guard}/${hash}`);
+            // link: String, name: String, guard: String, hash: String
         });
     }
 

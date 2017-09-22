@@ -7,6 +7,8 @@ GET        /                                         backend.controllers.Applica
 GET        /search                                   backend.controllers.Application.index
 GET        /about                                    backend.controllers.Application.index
 
+GET        /temporary/:name/:path/:guard/:hash       backend.controllers.Application.downloadTemporaryFile(name, path, guard, hash)
+
 # Database API
 GET        /api/database/meta                        backend.controllers.DatabaseAPI.meta
 GET        /api/database/meta/columns/:column        backend.controllers.DatabaseAPI.columnInfo(column: String)

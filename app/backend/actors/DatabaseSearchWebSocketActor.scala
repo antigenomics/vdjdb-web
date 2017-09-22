@@ -4,10 +4,12 @@ import akka.actor.{Actor, ActorRef, Props}
 import backend.server.api.ClientRequest
 import backend.server.api.common.{ErrorMessageResponse, SuccessMessageResponse, WarningMessageResponse}
 import backend.server.api.database.DatabaseMetadataResponse
+import backend.server.api.export.{ExportDataRequest, ExportDataResponse}
 import backend.server.api.search.{SearchDataRequest, SearchDataResponse}
 import backend.server.database.Database
 import backend.server.filters.DatabaseFilters
 import backend.server.table.search.SearchTable
+import backend.server.table.search.export.SearchTableConverter
 import play.api.libs.json.Json.toJson
 import play.api.libs.json._
 
@@ -57,6 +59,19 @@ class DatabaseSearchWebSocketActor(out: ActorRef, val database: Database) extend
                             }
                             val page = searchRequest.page.getOrElse(0)
                             out ! toJson(SearchDataResponse(page, table.getPageSize, table.getPageCount, table.getRecordsFound, table.getPage(page)))
+                        })
+                    case ExportDataResponse.action =>
+                        validateData(out, request.data, (exportRequest: ExportDataRequest) => {
+                            val converter = SearchTableConverter.getConverter(exportRequest.format)
+                            if (converter.nonEmpty) {
+                                val link = converter.get.convert(table, database, "/tmp")
+                                if (link.nonEmpty) {
+                                    val name = converter.get.getName
+                                    val guard = converter.get.getGuard
+                                    val hash = converter.get.getHash
+                                    out ! toJson(ExportDataResponse(link.get, name, guard, hash))
+                                }
+                            }
                         })
                     case "ping" =>
                         out ! toJson(SuccessMessageResponse("pong"))
