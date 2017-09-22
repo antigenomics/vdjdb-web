@@ -1,5 +1,4 @@
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, Input } from '@angular/core';
-import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { InputConverter, NumberConverter } from '../../../utils/input-converter.decorator';
 import { Utils } from '../../../utils/utils';
 import WindowViewport = Utils.Window.WindowViewport;
