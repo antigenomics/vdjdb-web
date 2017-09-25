@@ -1,4 +1,4 @@
-import { ComponentFactoryResolver, ComponentRef, Directive, Input, OnDestroy, OnInit, ViewContainerRef } from '@angular/core';
+import { Component, ComponentFactoryResolver, ComponentRef, Input, OnDestroy, OnInit, ViewChild, ViewContainerRef } from '@angular/core';
 import { DatabaseColumnInfo } from '../../../../database/database-metadata';
 import { LoggerService } from '../../../../utils/logger/logger.service';
 import { SearchTableRow } from '../row/search-table-row';
@@ -8,10 +8,11 @@ import { SearchTableEntryOriginalComponent } from './original/search-table-entry
 import { SearchTableEntry } from './search-table-entry';
 import { SearchTableEntryUrlComponent } from './url/search-table-entry-url.component';
 
-@Directive({
-    selector: '[search-table-entry]'
+@Component({
+    selector: '[search-table-entry]',
+    template: '<ng-container #container></ng-container>'
 })
-export class SearchTableEntryDirective implements OnInit, OnDestroy {
+export class SearchTableEntryComponent implements OnInit, OnDestroy {
     private component: ComponentRef<any>;
 
     @Input('search-table-entry')
@@ -23,31 +24,34 @@ export class SearchTableEntryDirective implements OnInit, OnDestroy {
     @Input('parent-row')
     public row: SearchTableRow;
 
-    constructor(private viewContainerRef: ViewContainerRef, private resolver: ComponentFactoryResolver, private logger: LoggerService) {}
+    @ViewChild('container', { read: ViewContainerRef })
+    public container: ViewContainerRef;
+
+    constructor(private resolver: ComponentFactoryResolver, private logger: LoggerService) {}
 
     public ngOnInit() {
         if (this.entry.column === this.column.name) {
             switch (this.column.name) {
                 case 'cdr3':
                     const cdr = this.resolver.resolveComponentFactory<SearchTableEntryCdrComponent>(SearchTableEntryCdrComponent);
-                    this.component = this.viewContainerRef.createComponent<SearchTableEntryCdrComponent>(cdr);
+                    this.component = this.container.createComponent<SearchTableEntryCdrComponent>(cdr);
                     this.component.instance.generate(this.entry.value, this.row);
                     break;
                 case 'reference.id':
                     const url = this.resolver.resolveComponentFactory<SearchTableEntryUrlComponent>(SearchTableEntryUrlComponent);
-                    this.component = this.viewContainerRef.createComponent<SearchTableEntryUrlComponent>(url);
+                    this.component = this.container.createComponent<SearchTableEntryUrlComponent>(url);
                     this.component.instance.generate(this.entry.value);
                     break;
                 case 'method':
                 case 'meta':
                 case 'cdr3fix':
                     const json = this.resolver.resolveComponentFactory<SearchTableEntryJsonComponent>(SearchTableEntryJsonComponent);
-                    this.component = this.viewContainerRef.createComponent<SearchTableEntryJsonComponent>(json);
+                    this.component = this.container.createComponent<SearchTableEntryJsonComponent>(json);
                     this.component.instance.generate(this.column.title, this.entry.value, this.column);
                     break;
                 default:
                     const original = this.resolver.resolveComponentFactory<SearchTableEntryOriginalComponent>(SearchTableEntryOriginalComponent);
-                    this.component = this.viewContainerRef.createComponent<SearchTableEntryOriginalComponent>(original);
+                    this.component = this.container.createComponent<SearchTableEntryOriginalComponent>(original);
                     this.component.instance.generate(this.entry.value);
             }
         } else {
