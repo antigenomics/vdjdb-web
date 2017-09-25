@@ -4,6 +4,7 @@ import {
 } from '@angular/core';
 import { LoggerService } from '../../../../utils/logger/logger.service';
 import { SearchTableEntryCdrComponent } from '../entry/cdr/search-table-entry-cdr.component';
+import { SearchTableEntryGeneComponent } from '../entry/gene/search-table-entry-gene.component';
 import { SearchTableEntryJsonComponent } from '../entry/json/search-table-entry-json.component';
 import { SearchTableEntryOriginalComponent } from '../entry/original/search-table-entry-original.component';
 import { SearchTableEntry } from '../entry/search-table-entry';
@@ -12,7 +13,7 @@ import { SearchTableService } from '../search-table.service';
 import { SearchTableRow } from './search-table-row';
 
 @Component({
-    selector:        '[search-table-row]',
+    selector:        'tr[search-table-row]',
     templateUrl:     './search-table-row.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -25,20 +26,25 @@ export class SearchTableRowComponent implements OnInit, OnDestroy {
     @ViewChild('rowViewContainer', { read: ViewContainerRef })
     public rowViewContainer: ViewContainerRef;
 
-    constructor(private resolver: ComponentFactoryResolver, private table: SearchTableService, private logger: LoggerService) {
-    }
+    constructor(private hostViewContainer: ViewContainerRef, private resolver: ComponentFactoryResolver,
+                private table: SearchTableService, private logger: LoggerService) {}
 
     public ngOnInit(): void {
         const cdrComponentResolver = this.resolver.resolveComponentFactory<SearchTableEntryCdrComponent>(SearchTableEntryCdrComponent);
         const urlComponentResolver = this.resolver.resolveComponentFactory<SearchTableEntryUrlComponent>(SearchTableEntryUrlComponent);
         const jsonComponentResolver = this.resolver.resolveComponentFactory<SearchTableEntryJsonComponent>(SearchTableEntryJsonComponent);
         const originalComponentResolver = this.resolver.resolveComponentFactory<SearchTableEntryOriginalComponent>(SearchTableEntryOriginalComponent);
+        const geneComponentResolver = this.resolver.resolveComponentFactory<SearchTableEntryGeneComponent>(SearchTableEntryGeneComponent);
 
         this.row.entries.forEach((entry: SearchTableEntry, index: number) => {
             const column = this.table.columns[ index ];
             if (entry.column === column.name) {
                 let component: ComponentRef<any>;
                 switch (entry.column) {
+                    case 'gene':
+                        component = this.rowViewContainer.createComponent<SearchTableEntryGeneComponent>(geneComponentResolver);
+                        component.instance.generate(entry.value, this.hostViewContainer, this.row);
+                        break;
                     case 'cdr3':
                         component = this.rowViewContainer.createComponent<SearchTableEntryCdrComponent>(cdrComponentResolver);
                         component.instance.generate(entry.value, this.row);

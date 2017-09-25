@@ -1,0 +1,9 @@
+<div class="ui right floated compact menu">
+    <div class="ui simple dropdown item">
+        Page size: {{ pageSize }}
+        <i class="dropdown icon"></i>
+        <div class="menu">
+            <a class="item" *ngFor="let size of sizes" (click)="changeSize(size)">{{ size }}</a>
+        </div>
+    </div>
+</div>

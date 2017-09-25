@@ -7,8 +7,8 @@ import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 })
 export class FiltersHeaderComponent {
     @Input()
-    public title: string;
+    public headerTitle: string;
 
     @Input()
-    public help: string;
+    public headerHelp: string;
 }

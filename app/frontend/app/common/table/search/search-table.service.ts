@@ -189,6 +189,29 @@ export class SearchTableService {
         return [ new ExportFormat('tab-delimited-txt', 'TAB-delimited txt') ];
     }
 
+    public changePageSize(pageSize: number): void {
+        this._loading = true;
+        this._pageSize = pageSize;
+        this.logger.debug('Page size', pageSize);
+        const request = this.connection.sendMessage({
+            action: SearchTableWebSocketActions.Search,
+            data: {
+                pageSize
+            }
+        });
+        request.subscribe((response: any) => {
+            this.logger.debug('Page size', response);
+            this.updateFromResponse(response);
+        });
+    }
+
+    // noinspection JSMethodCanBeStatic
+    public getAvailablePageSizes(): number[] {
+        /*tslint:disable:no-magic-numbers*/
+        return [ 25, 50, 100 ];
+        /*tslint:enable:no-magic-numbers*/
+    }
+
     private updateFromResponse(response: any): void {
         this._page = response.page;
         this._pageSize = response.pageSize;

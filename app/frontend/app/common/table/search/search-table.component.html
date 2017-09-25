@@ -8,6 +8,7 @@
                         <search-table-pagination [page]="table.page" range="5" [pageCount]="table.pageCount" (pageChange)="pageChange($event)"></search-table-pagination>
                         <search-table-info [found]="table.recordsFound" [total]="table.numberOfRecords"></search-table-info>
                         <search-table-export [formats]="table.getAvailableExportFormats()" (exportEvent)="table.exportTable($event)"></search-table-export>
+                        <search-table-pagesize [sizes]="table.getAvailablePageSizes()" [pageSize]="table.pageSize" (changePageSize)="table.changePageSize($event)"></search-table-pagesize>
                     </th>
                 </tr>
                 <tr>

@@ -58,6 +58,11 @@ class DatabaseSearchWebSocketActor(out: ActorRef, val database: Database) extend
                                 val sortType = sorting(1)
                                 table.sort(columnName, sortType)
                             }
+
+                            if (searchRequest.pageSize.nonEmpty) {
+                                table.setPageSize(searchRequest.pageSize.get)
+                            }
+
                             val page = searchRequest.page.getOrElse(0)
                             out ! toJson(SearchDataResponse(page, table.getPageSize, table.getPageCount, table.getRecordsFound, table.getPage(page)))
                         })
