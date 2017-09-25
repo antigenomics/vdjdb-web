@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 
 @Component({
-    selector: 'search-table-entry-url',
+    selector: 'td[search-table-entry-url]',
     template: '<a [attr.href]="link" target="_blank" rel="noopener">{{ value }}</a>',
     changeDetection: ChangeDetectionStrategy.OnPush
 })

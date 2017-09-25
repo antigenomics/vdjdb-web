@@ -3,7 +3,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { SearchTableRow } from '../../row/search-table-row';
 
 @Component({
-    selector: 'search-table-entry-cdr',
+    selector: 'td[search-table-entry-cdr]',
     template: `<span style="color:#4daf4a;">{{ vRegion }}</span><span [style.color]="otherRegionColor">{{ otherRegion }}</span><span style="color: #377eb8">{{ jRegion }}</span>`,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

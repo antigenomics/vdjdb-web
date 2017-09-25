@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 
 @Component({
-    selector: 'search-table-entry-original',
+    selector: 'td[search-table-entry-original]',
     template: '{{ value }}',
     changeDetection: ChangeDetectionStrategy.OnPush
 })
