@@ -10,11 +10,13 @@ import { FiltersService } from '../../filters/filters.service';
 import { WebSocketService } from '../../websocket/websocket.service';
 import { ExportFormat } from './export/search-table-export.component';
 import { SearchTableRow } from './row/search-table-row';
+import { Observable } from 'rxjs/Observable';
 
 export const enum SearchTableWebSocketActions {
     Metadata = 'meta',
     Search   = 'search',
-    Export   = 'export'
+    Export   = 'export',
+    Paired   = 'paired'
 }
 
 export class SortRule {
@@ -210,6 +212,17 @@ export class SearchTableService {
         /*tslint:disable:no-magic-numbers*/
         return [ 25, 50, 100 ];
         /*tslint:enable:no-magic-numbers*/
+    }
+
+    public getPaired(pairedID: string, gene: string): Observable<any> {
+        this.logger.debug('Paired', { pairedID, gene });
+        return this.connection.sendMessage({
+            action: SearchTableWebSocketActions.Paired,
+            data:   {
+                pairedID,
+                gene
+            }
+        });
     }
 
     private updateFromResponse(response: any): void {

@@ -1,6 +1,6 @@
 import {
     ChangeDetectionStrategy, Component, ComponentFactoryResolver, ComponentRef, Input, OnDestroy, OnInit, ViewChild,
-    ViewContainerRef
+    ViewContainerRef, HostBinding,
 } from '@angular/core';
 import { LoggerService } from '../../../../utils/logger/logger.service';
 import { SearchTableEntryCdrComponent } from '../entry/cdr/search-table-entry-cdr.component';
@@ -11,6 +11,7 @@ import { SearchTableEntry } from '../entry/search-table-entry';
 import { SearchTableEntryUrlComponent } from '../entry/url/search-table-entry-url.component';
 import { SearchTableService } from '../search-table.service';
 import { SearchTableRow } from './search-table-row';
+import { BooleanConverter, InputConverter } from '../../../../utils/input-converter.decorator';
 
 @Component({
     selector:        'tr[search-table-row]',
@@ -19,6 +20,16 @@ import { SearchTableRow } from './search-table-row';
 })
 export class SearchTableRowComponent implements OnInit, OnDestroy {
     private components: Array<ComponentRef<any>> = [];
+
+    @HostBinding('class.center')
+    public centered: boolean = true;
+
+    @HostBinding('class.aligned')
+    public aligned: boolean = true;
+
+    @Input('allowPaired')
+    @InputConverter(BooleanConverter)
+    public allowPaired: boolean = true;
 
     @Input('search-table-row')
     public row: SearchTableRow;
@@ -36,38 +47,45 @@ export class SearchTableRowComponent implements OnInit, OnDestroy {
         const originalComponentResolver = this.resolver.resolveComponentFactory<SearchTableEntryOriginalComponent>(SearchTableEntryOriginalComponent);
         const geneComponentResolver = this.resolver.resolveComponentFactory<SearchTableEntryGeneComponent>(SearchTableEntryGeneComponent);
 
-        this.row.entries.forEach((entry: SearchTableEntry, index: number) => {
-            const column = this.table.columns[ index ];
-            if (entry.column === column.name) {
-                let component: ComponentRef<any>;
-                switch (entry.column) {
-                    case 'gene':
-                        component = this.rowViewContainer.createComponent<SearchTableEntryGeneComponent>(geneComponentResolver);
-                        component.instance.generate(entry.value, this.hostViewContainer, this.row);
-                        break;
-                    case 'cdr3':
-                        component = this.rowViewContainer.createComponent<SearchTableEntryCdrComponent>(cdrComponentResolver);
-                        component.instance.generate(entry.value, this.row);
-                        break;
-                    case 'reference.id':
-                        component = this.rowViewContainer.createComponent<SearchTableEntryUrlComponent>(urlComponentResolver);
-                        component.instance.generate(entry.value);
-                        break;
-                    case 'method':
-                    case 'meta':
-                    case 'cdr3fix':
-                        component = this.rowViewContainer.createComponent<SearchTableEntryJsonComponent>(jsonComponentResolver);
-                        component.instance.generate(column.title, entry.value, column);
-                        break;
-                    default:
-                        component = this.rowViewContainer.createComponent<SearchTableEntryOriginalComponent>(originalComponentResolver);
-                        component.instance.generate(entry.value);
+        if (this.row.entries) {
+            this.row.entries.forEach((entry: SearchTableEntry, index: number) => {
+                const column = this.table.columns[ index ];
+                if (entry.column === column.name) {
+                    let component: ComponentRef<any>;
+                    switch (entry.column) {
+                        case 'gene':
+                            if (this.allowPaired) {
+                                component = this.rowViewContainer.createComponent<SearchTableEntryGeneComponent>(geneComponentResolver);
+                                component.instance.generate(entry.value, this.row.metadata.pairedID, this.hostViewContainer);
+                            } else {
+                                component = this.rowViewContainer.createComponent<SearchTableEntryOriginalComponent>(originalComponentResolver);
+                                component.instance.generate(entry.value);
+                            }
+                            break;
+                        case 'cdr3':
+                            component = this.rowViewContainer.createComponent<SearchTableEntryCdrComponent>(cdrComponentResolver);
+                            component.instance.generate(entry.value, this.row);
+                            break;
+                        case 'reference.id':
+                            component = this.rowViewContainer.createComponent<SearchTableEntryUrlComponent>(urlComponentResolver);
+                            component.instance.generate(entry.value);
+                            break;
+                        case 'method':
+                        case 'meta':
+                        case 'cdr3fix':
+                            component = this.rowViewContainer.createComponent<SearchTableEntryJsonComponent>(jsonComponentResolver);
+                            component.instance.generate(column.title, entry.value, column);
+                            break;
+                        default:
+                            component = this.rowViewContainer.createComponent<SearchTableEntryOriginalComponent>(originalComponentResolver);
+                            component.instance.generate(entry.value);
+                    }
+                    this.components.push(component);
+                } else {
+                    this.logger.debug(`Assert ${entry.column} === ${column.name} failed.`, 'Data corrupted');
                 }
-                this.components.push(component);
-            } else {
-                this.logger.debug(`Assert ${entry.column} === ${column.name} failed.`, 'Data corrupted');
-            }
-        });
+            });
+        }
     }
 
     public ngOnDestroy(): void {

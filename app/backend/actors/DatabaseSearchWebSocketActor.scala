@@ -5,9 +5,10 @@ import backend.server.api.ClientRequest
 import backend.server.api.common.{ErrorMessageResponse, SuccessMessageResponse, WarningMessageResponse}
 import backend.server.api.database.DatabaseMetadataResponse
 import backend.server.api.export.{ExportDataRequest, ExportDataResponse}
+import backend.server.api.paired.{PairedDataRequest, PairedDataResponse}
 import backend.server.api.search.{SearchDataRequest, SearchDataResponse}
 import backend.server.database.Database
-import backend.server.filters.DatabaseFilters
+import backend.server.filters.{DatabaseFilters, FilterType, RequestFilter}
 import backend.server.table.search.SearchTable
 import backend.server.table.search.export.SearchTableConverter
 import backend.utils.files.TemporaryFile
@@ -43,7 +44,6 @@ class DatabaseSearchWebSocketActor(out: ActorRef, val database: Database) extend
                         out ! toJson(DatabaseMetadataResponse(database.getMetadata))
                     case SearchDataResponse.action =>
                         validateData(out, request.data, (searchRequest: SearchDataRequest) => {
-
                             if (searchRequest.filters.nonEmpty) {
                                 val filters: DatabaseFilters = DatabaseFilters.createFromRequest(searchRequest.filters.get, database)
                                 filters.warnings.foreach((warningMessage: String) => {
@@ -65,6 +65,26 @@ class DatabaseSearchWebSocketActor(out: ActorRef, val database: Database) extend
 
                             val page = searchRequest.page.getOrElse(0)
                             out ! toJson(SearchDataResponse(page, table.getPageSize, table.getPageCount, table.getRecordsFound, table.getPage(page)))
+                        })
+                    case PairedDataResponse.action =>
+                        validateData(out, request.data, (pairedRequest: PairedDataRequest) => {
+                            if (!pairedRequest.pairedID.contentEquals("0")) {
+                                val pairedFilterRequest: List[RequestFilter] = List(
+                                    RequestFilter("complex.id", FilterType.Exact, negative = false, pairedRequest.pairedID),
+                                    RequestFilter("gene", FilterType.Exact, negative = true, pairedRequest.gene)
+                                )
+                                val pairedFilters: DatabaseFilters = DatabaseFilters.createFromRequest(pairedFilterRequest, database)
+                                val pairedTable: SearchTable = SearchTable()
+                                pairedTable.update(pairedFilters, database)
+
+                                if (pairedTable.getRecordsFound == 1) {
+                                    out ! toJson(PairedDataResponse(Some(pairedTable.getRows.head), found = true))
+                                } else {
+                                    out ! toJson(PairedDataResponse(None, found = false))
+                                }
+                            } else {
+                                out ! toJson(PairedDataResponse(None, found = false))
+                            }
                         })
                     case ExportDataResponse.action =>
                         validateData(out, request.data, (exportRequest: ExportDataRequest) => {
