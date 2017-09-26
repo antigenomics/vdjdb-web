@@ -59,7 +59,7 @@ export class SearchTableRowComponent implements OnInit, OnDestroy {
                                 component.instance.generate(entry.value, this.row.metadata.pairedID, this.hostViewContainer);
                             } else {
                                 component = this.rowViewContainer.createComponent<SearchTableEntryOriginalComponent>(originalComponentResolver);
-                                component.instance.generate(entry.value);
+                                component.instance.generate(`Paired: ${entry.value}`);
                             }
                             break;
                         case 'cdr3':

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ComponentFactoryResolver, ComponentRef, HostListener, ViewContainerRef, Renderer2 } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ComponentFactoryResolver, ComponentRef, HostListener, ViewContainerRef, Renderer2, ChangeDetectorRef } from '@angular/core';
 import { SearchTableRowComponent } from '../../row/search-table-row.component';
 import { SearchTableRow } from '../../row/search-table-row';
 import { SearchTableService } from '../../search-table.service';
@@ -6,7 +6,8 @@ import { NotificationService } from '../../../../../utils/notification/notificat
 
 @Component({
     selector:        'td[search-table-entry-gene]',
-    template:        '<i class="plus icon cursor pointer" [class.disabled]="isDisabled()"></i>{{ value }}',
+    template:        `<i class="plus icon cursor pointer" [class.disabled]="isDisabled()" *ngIf="!visible"></i>
+                      <i class="minus icon cursor pointer" *ngIf="visible"></i>{{ value }}`,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SearchTableEntryGeneComponent {
@@ -20,7 +21,8 @@ export class SearchTableEntryGeneComponent {
     private _pairedID: string;
 
     constructor(private resolver: ComponentFactoryResolver, private renderer: Renderer2,
-                private table: SearchTableService, private notifications: NotificationService) {
+                private table: SearchTableService, private notifications: NotificationService,
+                private changeDetector: ChangeDetectorRef) {
     }
 
     public generate(value: string, pairedID: string, viewContainer: ViewContainerRef): void {
@@ -54,6 +56,7 @@ export class SearchTableEntryGeneComponent {
                     this._pairedRow.changeDetectorRef.detectChanges();
                     this.renderer.addClass(this._pairedRow.location.nativeElement, 'warning');
                     this._visible = true;
+                    this.changeDetector.detectChanges();
                 });
             } else if (this._loading) {
                 this.notifications.info('Paired', 'Loading...');
@@ -63,6 +66,10 @@ export class SearchTableEntryGeneComponent {
 
     public isDisabled(): boolean {
         return this._pairedID === '0';
+    }
+
+    get visible(): boolean {
+        return this._visible;
     }
 
     get value(): string {
