@@ -1,7 +1,8 @@
 package backend.controllers
 
 import javax.inject._
-import backend.utils.files.TemporaryFile
+
+import backend.utils.files.{TemporaryFile, TemporaryFileLink}
 import controllers._
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -26,14 +27,19 @@ class Application @Inject()(ws: WSClient, assets: Assets, environment: Environme
         throw new RuntimeException("Application.bundle should not be used with Production Mode")
     }
 
-    def downloadTemporaryFile(name: String, path: String, guard: String, hash: String) = Action {
-        val temporaryFile = TemporaryFile(name, path, guard, hash)
-        temporaryFile.getFile match {
-            case Some(file) =>
-                Ok.sendFile(content = file, fileName = _.getName, inline = false,
-                    onClose = () => {
-                        temporaryFile.clear()
-                    })
+    def downloadTemporaryFile(path: String, guard: String, hash: String) = Action {
+        val link = TemporaryFileLink(path, guard, hash)
+        val temporary = TemporaryFile.find(link)
+        temporary match {
+            case Some(temporaryFile) =>
+                temporaryFile.getFile match {
+                    case Some(file) =>
+                        Ok.sendFile(content = file, fileName = _.getName, inline = false,
+                            onClose = () => {
+                                temporaryFile.delete()
+                            })
+                    case None => BadRequest("Invalid request")
+                }
             case None => BadRequest("Invalid request")
         }
     }

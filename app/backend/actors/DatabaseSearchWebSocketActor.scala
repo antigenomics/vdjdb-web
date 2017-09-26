@@ -1,6 +1,6 @@
 package backend.actors
 
-import akka.actor.{Actor, ActorRef, Props}
+import akka.actor.{Actor, ActorRef, ActorSystem, Props}
 import backend.server.api.ClientRequest
 import backend.server.api.common.{ErrorMessageResponse, SuccessMessageResponse, WarningMessageResponse}
 import backend.server.api.database.DatabaseMetadataResponse
@@ -11,18 +11,14 @@ import backend.server.database.Database
 import backend.server.filters.{DatabaseFilters, FilterType, RequestFilter}
 import backend.server.table.search.SearchTable
 import backend.server.table.search.export.SearchTableConverter
-import backend.utils.files.TemporaryFile
 import play.api.libs.json.Json.toJson
 import play.api.libs.json._
 
+import scala.concurrent.ExecutionContext
 
-class DatabaseSearchWebSocketActor(out: ActorRef, val database: Database) extends Actor {
-    var table: SearchTable = _
 
-    override def preStart(): Unit = {
-        super.preStart()
-        table = new SearchTable()
-    }
+case class DatabaseSearchWebSocketActor(out: ActorRef, database: Database, actorSystem: ActorSystem)(implicit ec: ExecutionContext) extends Actor {
+    val table: SearchTable = new SearchTable()
 
     override def receive: Receive = {
         case request: JsValue =>
@@ -90,9 +86,10 @@ class DatabaseSearchWebSocketActor(out: ActorRef, val database: Database) extend
                         validateData(out, request.data, (exportRequest: ExportDataRequest) => {
                             val converter = SearchTableConverter.getConverter(exportRequest.format)
                             if (converter.nonEmpty) {
-                                val temporaryFile = converter.get.convert(table, database)
-                                if (temporaryFile.nonEmpty) {
-                                    out ! toJson(ExportDataResponse(temporaryFile.get))
+                                val temporaryFileLink = converter.get.convert(table, database)
+                                if (temporaryFileLink.nonEmpty) {
+                                    temporaryFileLink.get.autoremove(actorSystem)
+                                    out ! toJson(ExportDataResponse(temporaryFileLink.get.getDownloadLink))
                                 }
                             }
                         })
@@ -121,6 +118,7 @@ class DatabaseSearchWebSocketActor(out: ActorRef, val database: Database) extend
 }
 
 object DatabaseSearchWebSocketActor {
-    def props(out: ActorRef, database: Database): Props = Props(new DatabaseSearchWebSocketActor(out, database))
+    def props(out: ActorRef, database: Database, actorSystem: ActorSystem)(implicit ec: ExecutionContext): Props =
+        Props(new DatabaseSearchWebSocketActor(out, database, actorSystem))
 }
 

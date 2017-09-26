@@ -2,10 +2,9 @@ package backend.server.api.export
 
 import backend.server.api.SuccessResponse
 import backend.server.api.common.ErrorMessageResponse
-import backend.utils.files.TemporaryFile
 import play.api.libs.json.{JsValue, Json, Writes}
 
-case class ExportDataResponse(file: TemporaryFile) extends SuccessResponse(ExportDataResponse.action)
+case class ExportDataResponse(link: String) extends SuccessResponse(ExportDataResponse.action)
 
 object ExportDataResponse {
     final val action: String = "export"

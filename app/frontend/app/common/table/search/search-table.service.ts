@@ -176,13 +176,7 @@ export class SearchTableService {
         });
         request.subscribe((response: any) => {
             this.logger.debug('Export', response);
-
-            const file = response.file;
-            const name = file.name;
-            const path = file.path;
-            const guard = file.guard;
-            const hash = file.hash;
-            Utils.File.download(`/temporary/${name}/${path}/${guard}/${hash}`);
+            Utils.File.download(response.link);
         });
     }
 

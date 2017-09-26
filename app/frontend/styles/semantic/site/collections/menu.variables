@@ -17,3 +17,6 @@
 
 @activeHoverItemBackground: @teal;
 @activeHoverItemColor: #FFFFFF;
+
+@invertedDividerBackground: #3e3e3e;
+@invertedBackground: #3e3e3e;

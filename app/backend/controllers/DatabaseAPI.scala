@@ -15,7 +15,10 @@ import play.api.libs.json._
 import play.api.libs.streams.ActorFlow
 import play.api.mvc._
 
-class DatabaseAPI @Inject()(cc: ControllerComponents, database: Database)(implicit system: ActorSystem, mat: Materializer) extends AbstractController(cc) {
+import scala.concurrent.ExecutionContext
+
+class DatabaseAPI @Inject()(cc: ControllerComponents, database: Database, actorSystem: ActorSystem)
+                           (implicit system: ActorSystem, mat: Materializer, ec: ExecutionContext) extends AbstractController(cc) {
 
     def meta = Action {
         Ok(toJson(DatabaseMetadataResponse(database.getMetadata)))
@@ -61,7 +64,7 @@ class DatabaseAPI @Inject()(cc: ControllerComponents, database: Database)(implic
 
     def connect: WebSocket = WebSocket.accept[JsValue, JsValue] { _ =>
         ActorFlow.actorRef { out =>
-            DatabaseSearchWebSocketActor.props(out, database)
+            DatabaseSearchWebSocketActor.props(out, database, actorSystem)
         }
     }
 

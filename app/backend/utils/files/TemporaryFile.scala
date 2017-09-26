@@ -5,82 +5,56 @@ import java.text.SimpleDateFormat
 import java.util.Date
 
 import backend.utils.CommonUtils
-import play.api.libs.json.{Json, OWrites}
 
 import scala.io.Source
 
-case class TemporaryFile(name: String, path: String, guard: String, hash: String) {
+case class TemporaryFile(private val filePath: String, private val guardPath: String, private val folderPath: String) {
 
-    def validate(): Boolean = {
-        val invalidPath: Boolean = path.contains("..") || name.contains("..")
-
-        if (!invalidPath) {
-            val folderPath = TemporaryFile.tmpDirectory + "/" + path + "/"
-            val filePath = folderPath + name
-            val guardFilePath = folderPath + ".guard" + guard
-
-            val folder = new File(folderPath)
-            val file = new File(filePath)
-            val guardFile = new File(guardFilePath)
-
-            val temporaryExists: Boolean =
-                folder.exists() && folder.isDirectory &&
-                    file.exists() && !file.isDirectory &&
-                    guardFile.exists() && !guardFile.isDirectory
-
-            if (temporaryExists) {
-                val fileHash = FileUtils.fileContentHash("MD5", filePath)
-                val guardHash = Source.fromFile(guardFile).getLines().toList.head
-                val hashValid: Boolean = guardHash.contains(fileHash) && guardHash.contentEquals(hash)
-
-                hashValid
-            } else {
-                false
-            }
-        } else {
-            false
-        }
+    def isLocked: Boolean = {
+        val lockFile = new File(folderPath + ".lock")
+        lockFile.exists()
     }
 
     def getFile: Option[File] = {
-        if (validate()) {
-            val folderPath = TemporaryFile.tmpDirectory + "/" + path + "/"
-            val filePath = folderPath + name
-            Some(new File(filePath))
+        val file = new File(filePath)
+        if (file.exists() && file.isFile) {
+            Some(file)
         } else {
             None
         }
     }
 
-    def clear(): Unit = {
-        val folderPath = TemporaryFile.tmpDirectory + "/" + path + "/"
-        val filePath = folderPath + name
-        val guardFilePath = folderPath + ".guard" + guard
-
+    def delete(): Unit = {
         val folder = new File(folderPath)
         val file = new File(filePath)
-        val guardFile = new File(guardFilePath)
+        val guardFile = new File(guardPath)
+        val lockFile = new File(folderPath + ".lock")
 
-        guardFile.delete()
-        file.delete()
-        folder.delete()
+        if (guardFile.exists()) {
+            guardFile.delete()
+        }
+        if (file.exists()) {
+            file.delete()
+        }
+        if (lockFile.exists()) {
+            lockFile.delete()
+        }
+        if (folder.exists()) {
+            folder.delete()
+        }
     }
 
 }
 
 object TemporaryFile {
-    implicit val temporaryFileWrites: OWrites[TemporaryFile] = Json.writes[TemporaryFile]
+    private val tmpDirectory: String = "/tmp/vdjdb"
 
-    // TODO Configuration file
-    private val tmpDirectory: String = "/tmp"
-
-    // TODO Create scheduler to delete temporary files in case of nobody needs it
-    def create(name: String, content: String): TemporaryFile = {
+    def create(name: String, content: String): TemporaryFileLink = {
         val dateFormat: SimpleDateFormat = new SimpleDateFormat("HH:mm-dd-MM-yyyy")
         val currentData: String = dateFormat.format(new Date())
 
-        val path = CommonUtils.randomAlphaString(30)
-        val outputFolderPath = TemporaryFile.tmpDirectory + "/" + path + "/"
+        val unique = CommonUtils.randomAlphaString(30)
+        val outputFolderPath = TemporaryFile.tmpDirectory + "/" + unique + "/"
         FileUtils.createDirectory(outputFolderPath)
 
         val fileName = currentData + "-" + name
@@ -94,9 +68,56 @@ object TemporaryFile {
         val guard = CommonUtils.randomAlphaNumericString(50)
 
         val guardWriter = new PrintWriter(new File(outputFolderPath + ".guard" + guard))
-        guardWriter.write(hash)
+        guardWriter.println(fileName)
+        guardWriter.println(hash)
         guardWriter.close()
 
-        TemporaryFile(fileName, path, guard, hash)
+        TemporaryFileLink(unique, guard, hash)
+    }
+
+    def find(link: TemporaryFileLink, lock: Boolean = true): Option[TemporaryFile] = {
+        val unique = link.unique
+        val guard = link.guard
+        val hash = link.hash
+
+        val invalidLink = unique.contains("..") || guard.contains("..")
+
+        if (!invalidLink) {
+            val folderPath = TemporaryFile.tmpDirectory + "/" + unique + "/"
+            val guardPath = folderPath + ".guard" + guard
+
+            val folder = new File(folderPath)
+            val guardFile = new File(guardPath)
+
+            val temporaryExists: Boolean =
+                folder.exists() && folder.isDirectory &&
+                    guardFile.exists() && !guardFile.isDirectory
+
+            if (temporaryExists) {
+                if (lock) {
+                    val lockPath = folderPath + ".lock"
+                    val lockFile = new File(lockPath)
+                    lockFile.createNewFile()
+                }
+
+                val guard = Source.fromFile(guardFile).getLines().toList
+                val guardFileName = guard.head
+                val guardHash = guard(1)
+
+                val filePath = folderPath + guardFileName
+                val fileHash = FileUtils.fileContentHash("MD5", filePath)
+                val hashValid: Boolean = guardHash.contains(fileHash) && guardHash.contentEquals(hash)
+
+                if (hashValid) {
+                    Some(TemporaryFile(filePath, guardPath, folderPath))
+                } else {
+                    None
+                }
+            } else {
+                None
+            }
+        } else {
+            None
+        }
     }
 }
