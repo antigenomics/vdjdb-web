@@ -1,30 +1,26 @@
 <div class="ui grid stackable">
-    <div class="row">
-        <div class="sixteen wide column">
-            <div class="ui breadcrumb">
-                <a class="section" (click)="setCurrentState('info')">Info</a>
-                <div class="divider"> /</div>
-                <a class="section" (click)="setCurrentState('filter.cdr3')">CDR3</a>
-                <div class="divider"> /</div>
-                <a class="section" (click)="setCurrentState('filter.ag')">Antigen</a>
-                <div class="divider"> /</div>
-                <a class="section" (click)="setCurrentState('filter.mhc')">MHC</a>
-                <div class="divider"> /</div>
-                <a class="section" (click)="setCurrentState('filter.meta')">Meta</a>
-            </div>
+    <div class="eight wide column">
+        <div class="ui five item menu">
+            <a class="item" [class.active]="isCurrentState('info')" (click)="setCurrentState('info')">Info</a>
+            <a class="item" [class.active]="isCurrentState('filter.cdr3')" (click)="setCurrentState('filter.cdr3')">CDR3</a>
+            <a class="item" [class.active]="isCurrentState('filter.ag')" (click)="setCurrentState('filter.ag')">Antigen</a>
+            <a class="item" [class.active]="isCurrentState('filter.mhc')" (click)="setCurrentState('filter.mhc')">MHC</a>
+            <a class="item" [class.active]="isCurrentState('filter.meta')" (click)="setCurrentState('filter.meta')">Meta</a>
         </div>
     </div>
+</div>
+<div class="ui grid stackable" style="min-height: 360px">
     <div class="row fade element" *ngIf="isCurrentState('info')">
         <div class="sixteen wide column">
             <p>The table below shows VDJdb records, more information for each column contents is displayed when hovering over the column
-               name.</p>
+                name.</p>
             <p>Multiple records with the same TCR and antigen can be present if they come from different donors screened in the same study or
-               different studies. The number of occurrences in samples and studies is listed in Meta column and reflected in confidence
-               score.</p>
+                different studies. The number of occurrences in samples and studies is listed in Meta column and reflected in confidence
+                score.</p>
             <p>In case a paired TCR chain (alpha or beta) is available for a given record, it can be fetched by clicking the plus sign to the
-               left of the record.</p>
+                left of the record.</p>
             <p>The database can be searched using T-cell receptor (TCR), antigen, major histocompatibility complex (MHC) and record metadata
-               field filters:</p>
+                field filters:</p>
             <ul>
                 <li>Click on the corresponding links above to select the filters.</li>
                 <li>Detailed information for each filter can be found by hovering over the question marks.</li>

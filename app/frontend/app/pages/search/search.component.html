@@ -6,7 +6,7 @@
             <search-info></search-info>
         </div>
         <div class="ui attached secondary clearing segment">
-            <button class="ui orange button right floated" [ngClass]="{'disabled':isConnectionFailed()}" (click)="reset()">Reset filters</button>
+            <button class="ui blue button right floated" [ngClass]="{'disabled':isConnectionFailed()}" (click)="reset()">Reset filters</button>
             <button class="ui teal button left floated" [ngClass]="{'loading':isLoading(),'disabled':isConnectionFailed()}" (click)="search()">Refresh table</button>
         </div>
     </div>

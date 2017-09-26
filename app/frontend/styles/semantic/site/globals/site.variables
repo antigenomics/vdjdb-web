@@ -1,2 +1,4 @@
 @emSize      : 14px;
 @fontSize    : 14px;
+
+@teal: #48af75;

@@ -3,5 +3,17 @@
 
 @paginationMinWidth: 1em;
 
-@paginationActiveBackground: #00B5AD;
+@paginationActiveBackground: @teal;
 @paginationActiveTextColor: #FFFFFF;
+
+@pressedItemBackground: @teal;
+@pressedItemTextColor: #FFFFFF;
+
+@hoverItemBackground: @teal;
+@hoverItemTextColor: #FFFFFF;
+
+@activeItemBackground: @teal;
+@activeItemTextColor: #FFFFFF;
+
+@activeHoverItemBackground: @teal;
+@activeHoverItemColor: #FFFFFF;
