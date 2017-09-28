@@ -1,8 +1,10 @@
-import { ChangeDetectionStrategy, Component, ComponentFactoryResolver, ComponentRef, HostListener, ViewContainerRef, Renderer2, ChangeDetectorRef } from '@angular/core';
-import { SearchTableRowComponent } from '../../row/search-table-row.component';
-import { SearchTableRow } from '../../row/search-table-row';
-import { SearchTableService } from '../../search-table.service';
+import {
+    ChangeDetectionStrategy, ChangeDetectorRef, Component, ComponentFactoryResolver, ComponentRef, HostListener, Renderer2, ViewContainerRef
+} from '@angular/core';
 import { NotificationService } from '../../../../../utils/notification/notification.service';
+import { SearchTableRow } from '../../row/search-table-row';
+import { SearchTableRowComponent } from '../../row/search-table-row.component';
+import { SearchTableService } from '../../search-table.service';
 
 @Component({
     selector:        'td[search-table-entry-gene]',
@@ -45,7 +47,7 @@ export class SearchTableEntryGeneComponent {
                 this._visible = !this._visible;
             } else if (!this._loading) {
                 this._loading = true;
-                let paired = this.table.getPaired(this._pairedID, this._value);
+                const paired = this.table.getPaired(this._pairedID, this._value);
                 paired.subscribe((pairedResponse: any) => {
                     this._loading = false;
                     const rowComponentResolver = this.resolver.resolveComponentFactory<SearchTableRowComponent>(SearchTableRowComponent);

@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { Observable } from 'rxjs/Observable';
 import { ReplaySubject } from 'rxjs/ReplaySubject';
 import { Subject } from 'rxjs/Subject';
 import { DatabaseColumnInfo, DatabaseMetadata } from '../../../database/database-metadata';
@@ -10,7 +11,6 @@ import { FiltersService } from '../../filters/filters.service';
 import { WebSocketService } from '../../websocket/websocket.service';
 import { ExportFormat } from './export/search-table-export.component';
 import { SearchTableRow } from './row/search-table-row';
-import { Observable } from 'rxjs/Observable';
 
 export const enum SearchTableWebSocketActions {
     Metadata = 'meta',
