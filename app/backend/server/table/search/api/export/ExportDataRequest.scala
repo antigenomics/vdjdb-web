@@ -1,4 +1,4 @@
-package backend.server.api.export
+package backend.server.table.search.api.export
 
 import play.api.libs.json.{Json, Reads}
 

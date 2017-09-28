@@ -1,4 +1,4 @@
-package backend.server.api.database
+package backend.server.database.api.metadata
 
 import backend.server.api.SuccessResponse
 import backend.server.api.common.ErrorMessageResponse

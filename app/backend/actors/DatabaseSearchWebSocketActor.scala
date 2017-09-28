@@ -1,14 +1,15 @@
 package backend.actors
 
-import akka.actor.{Actor, ActorRef, ActorSystem, Props}
+import akka.actor.{Actor, ActorRef, ActorSystem, PoisonPill, Props}
 import backend.server.api.ClientRequest
 import backend.server.api.common.{ErrorMessageResponse, SuccessMessageResponse, WarningMessageResponse}
-import backend.server.api.database.DatabaseMetadataResponse
-import backend.server.api.export.{ExportDataRequest, ExportDataResponse}
-import backend.server.api.paired.{PairedDataRequest, PairedDataResponse}
-import backend.server.api.search.{SearchDataRequest, SearchDataResponse}
+import backend.server.table.search.api.export.{ExportDataRequest, ExportDataResponse}
+import backend.server.table.search.api.paired.{PairedDataRequest, PairedDataResponse}
+import backend.server.table.search.api.search.{SearchDataRequest, SearchDataResponse}
 import backend.server.database.Database
-import backend.server.filters.{DatabaseFilters, FilterType, RequestFilter}
+import backend.server.database.api.metadata.DatabaseMetadataResponse
+import backend.server.database.filters.{DatabaseFilterRequest, DatabaseFilterType, DatabaseFilters}
+import backend.server.limit.{IpLimit, RequestLimits}
 import backend.server.table.search.SearchTable
 import backend.server.table.search.export.SearchTableConverter
 import play.api.libs.json.Json.toJson
@@ -17,19 +18,30 @@ import play.api.libs.json._
 import scala.concurrent.ExecutionContext
 
 
-case class DatabaseSearchWebSocketActor(out: ActorRef, database: Database, actorSystem: ActorSystem)(implicit ec: ExecutionContext) extends Actor {
+case class DatabaseSearchWebSocketActor(out: ActorRef, database: Database, actorSystem: ActorSystem, limit: IpLimit, requestLimits: RequestLimits)
+                                       (implicit ec: ExecutionContext) extends Actor {
     val table: SearchTable = new SearchTable()
 
     override def receive: Receive = {
         case request: JsValue =>
-            val validation: JsResult[ClientRequest] = request.validate[ClientRequest]
-            validation match {
-                case clientRequest: JsSuccess[ClientRequest] =>
-                    handleMessage(out, clientRequest.get)
-                case _: JsError =>
-                    out ! ErrorMessageResponse("Invalid request")
+            if (requestLimits.allowConnection(limit)) {
+                val timeStart: Long = System.currentTimeMillis
+                val validation: JsResult[ClientRequest] = request.validate[ClientRequest]
+                validation match {
+                    case clientRequest: JsSuccess[ClientRequest] =>
+                        handleMessage(out, clientRequest.get)
+                    case _: JsError =>
+                        out ! ErrorMessageResponse("Invalid request")
 
+                }
+                val timeEnd: Long = System.currentTimeMillis
+                val timeSpent = timeEnd - timeStart
+                requestLimits.updateLimits(limit, 1, timeSpent)
+            } else {
+                out ! PoisonPill
             }
+        case _ =>
+            out ! PoisonPill
     }
 
     def handleMessage(out: ActorRef, request: ClientRequest): Unit = {
@@ -65,9 +77,9 @@ case class DatabaseSearchWebSocketActor(out: ActorRef, database: Database, actor
                     case PairedDataResponse.action =>
                         validateData(out, request.data, (pairedRequest: PairedDataRequest) => {
                             if (!pairedRequest.pairedID.contentEquals("0")) {
-                                val pairedFilterRequest: List[RequestFilter] = List(
-                                    RequestFilter("complex.id", FilterType.Exact, negative = false, pairedRequest.pairedID),
-                                    RequestFilter("gene", FilterType.Exact, negative = true, pairedRequest.gene)
+                                val pairedFilterRequest: List[DatabaseFilterRequest] = List(
+                                    DatabaseFilterRequest("complex.id", DatabaseFilterType.Exact, negative = false, pairedRequest.pairedID),
+                                    DatabaseFilterRequest("gene", DatabaseFilterType.Exact, negative = true, pairedRequest.gene)
                                 )
                                 val pairedFilters: DatabaseFilters = DatabaseFilters.createFromRequest(pairedFilterRequest, database)
                                 val pairedTable: SearchTable = SearchTable()
@@ -118,7 +130,8 @@ case class DatabaseSearchWebSocketActor(out: ActorRef, database: Database, actor
 }
 
 object DatabaseSearchWebSocketActor {
-    def props(out: ActorRef, database: Database, actorSystem: ActorSystem)(implicit ec: ExecutionContext): Props =
-        Props(new DatabaseSearchWebSocketActor(out, database, actorSystem))
+    def props(out: ActorRef, database: Database, actorSystem: ActorSystem, limit: IpLimit, requestLimits: RequestLimits)
+             (implicit ec: ExecutionContext): Props =
+        Props(new DatabaseSearchWebSocketActor(out, database, actorSystem, limit, requestLimits))
 }
 

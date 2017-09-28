@@ -5,19 +5,20 @@ import javax.inject._
 import akka.actor.ActorSystem
 import akka.stream.Materializer
 import backend.actors.DatabaseSearchWebSocketActor
-import backend.server.api.database.{DatabaseColumnInfoResponse, DatabaseMetadataResponse}
-import backend.server.api.search.{SearchDataRequest, SearchDataResponse}
+import backend.server.database.api.metadata.{DatabaseColumnInfoResponse, DatabaseMetadataResponse}
+import backend.server.table.search.api.search.{SearchDataRequest, SearchDataResponse}
 import backend.server.database.{Database, DatabaseColumnInfo}
-import backend.server.filters.DatabaseFilters
+import backend.server.database.filters.DatabaseFilters
+import backend.server.limit.RequestLimits
 import backend.server.table.search.SearchTable
 import play.api.libs.json.Json.toJson
 import play.api.libs.json._
 import play.api.libs.streams.ActorFlow
 import play.api.mvc._
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
-class DatabaseAPI @Inject()(cc: ControllerComponents, database: Database, actorSystem: ActorSystem)
+class DatabaseAPI @Inject()(cc: ControllerComponents, database: Database, actorSystem: ActorSystem, limits: RequestLimits)
                            (implicit system: ActorSystem, mat: Materializer, ec: ExecutionContext) extends AbstractController(cc) {
 
     def meta = Action {
@@ -62,10 +63,14 @@ class DatabaseAPI @Inject()(cc: ControllerComponents, database: Database, actorS
         }
     }
 
-    def connect: WebSocket = WebSocket.accept[JsValue, JsValue] { _ =>
-        ActorFlow.actorRef { out =>
-            DatabaseSearchWebSocketActor.props(out, database, actorSystem)
-        }
+    def connect: WebSocket = WebSocket.acceptOrResult[JsValue, JsValue] { request =>
+        Future.successful(if (limits.allowConnection(request)) {
+            Right(ActorFlow.actorRef { out =>
+                DatabaseSearchWebSocketActor.props(out, database, actorSystem, limits.getLimit(request), limits)
+            })
+        } else {
+            Left(Forbidden)
+        })
     }
 
 }
