@@ -9,7 +9,7 @@ import backend.server.database.api.metadata.{DatabaseColumnInfoResponse, Databas
 import backend.server.table.search.api.search.{SearchDataRequest, SearchDataResponse}
 import backend.server.database.{Database, DatabaseColumnInfo}
 import backend.server.database.filters.DatabaseFilters
-import backend.server.guard.RequestLimitGuard
+import backend.server.limit.RequestLimits
 import backend.server.table.search.SearchTable
 import play.api.libs.json.Json.toJson
 import play.api.libs.json._
@@ -18,7 +18,7 @@ import play.api.mvc._
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class DatabaseAPI @Inject()(cc: ControllerComponents, database: Database, actorSystem: ActorSystem, guard: RequestLimitGuard)
+class DatabaseAPI @Inject()(cc: ControllerComponents, database: Database, actorSystem: ActorSystem, limits: RequestLimits)
                            (implicit system: ActorSystem, mat: Materializer, ec: ExecutionContext) extends AbstractController(cc) {
 
     def meta = Action {
@@ -64,14 +64,12 @@ class DatabaseAPI @Inject()(cc: ControllerComponents, database: Database, actorS
     }
 
     def connect: WebSocket = WebSocket.acceptOrResult[JsValue, JsValue] { request =>
-        Future.successful(request.session.get("user") match {
-//            case None => Left(Forbidden)
-            case None => Right(ActorFlow.actorRef { out =>
-                DatabaseSearchWebSocketActor.props(out, database, actorSystem)
+        Future.successful(if (limits.allowConnection(request)) {
+            Right(ActorFlow.actorRef { out =>
+                DatabaseSearchWebSocketActor.props(out, database, actorSystem, limits.getLimit(request), limits)
             })
-            case Some(_) => Right(ActorFlow.actorRef { out =>
-                DatabaseSearchWebSocketActor.props(out, database, actorSystem)
-            })
+        } else {
+            Left(Forbidden)
         })
     }
 

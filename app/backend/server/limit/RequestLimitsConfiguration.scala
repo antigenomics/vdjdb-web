@@ -1,14 +1,14 @@
-package backend.server.guard
+package backend.server.limit
 
 import com.typesafe.config.Config
 import play.api.ConfigLoader
 
-case class RequestLimitGuardConfiguration(maxRequestsCount: Int, countClearInterval: Int, maxRequestsTime: Long, timeClearInterval: Int)
+case class RequestLimitsConfiguration(maxRequestsCount: Int, countClearInterval: Int, maxRequestsTime: Long, timeClearInterval: Int)
 
-object RequestLimitGuardConfiguration {
-    implicit val configLoader: ConfigLoader[RequestLimitGuardConfiguration] = (rootConfig: Config, path: String) => {
+object RequestLimitsConfiguration {
+    implicit val configLoader: ConfigLoader[RequestLimitsConfiguration] = (rootConfig: Config, path: String) => {
         val config = rootConfig.getConfig(path)
-        RequestLimitGuardConfiguration(
+        RequestLimitsConfiguration(
             maxRequestsCount = config.getInt("maxRequestsCount"),
             countClearInterval = config.getInt("countClearInterval"),
             maxRequestsTime = config.getLong("maxRequestsTime"),

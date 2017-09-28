@@ -1,8 +1,8 @@
 import play.sbt.PlayImport.PlayKeys.playRunHooks
 
-name := """VDJdb"""
+name := """VDJdb-server"""
 
-version := "1.1.1"
+version := "2.0.0-beta.1"
 scalaVersion := "2.12.3"
 
 resolvers += "Local Maven Repository" at Path.userHome.asFile.toURI.toURL + ".m2/repository"
@@ -25,7 +25,11 @@ libraryDependencies ++= Seq(
 scalacOptions ++= Seq(
     "–unchecked",
     "-feature",
-    "–optimise"
+    "–optimise",
+    "-deprecation",
+    "-Ywarn-value-discard",
+    "-Ywarn-dead-code",
+    "-Ywarn-unused"
 )
 
 // Starts: Prevent documentation of API for production bundles

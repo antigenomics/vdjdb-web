@@ -1,4 +1,4 @@
-package backend.server.guard
+package backend.server.limit
 
 import javax.inject.{Inject, Singleton}
 
@@ -12,22 +12,12 @@ import scala.collection.mutable
 import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._
 
-private case class IpLimit(var requestCount: Int, var requestTime: Long) {
-    def clearCount(): Unit = {
-        requestCount = 0
-    }
-
-    def clearTime(): Unit = {
-        requestTime = 0
-    }
-}
-
 @Singleton
-class RequestLimitGuard @Inject()(configuration: Configuration, actorSystem: ActorSystem)
-                                 (implicit val mat: Materializer, ec: ExecutionContext) extends Filter {
+class RequestLimits @Inject()(configuration: Configuration, actorSystem: ActorSystem)
+                             (implicit val mat: Materializer, ec: ExecutionContext) extends Filter {
 
     private val logger = LoggerFactory.getLogger(this.getClass)
-    private val limitConfiguration = configuration.get[RequestLimitGuardConfiguration]("play.filters.guard")
+    private val limitConfiguration = configuration.get[RequestLimitsConfiguration]("play.filters.limits")
     private val bucket = mutable.LinkedHashMap.empty[String, IpLimit]
 
     actorSystem.scheduler.schedule(initialDelay = limitConfiguration.countClearInterval.seconds, interval = limitConfiguration.countClearInterval.seconds) {
@@ -80,15 +70,27 @@ class RequestLimitGuard @Inject()(configuration: Configuration, actorSystem: Act
         request.headers.get("X-Real-IP").getOrElse(request.remoteAddress)
     }
 
+    def getLimit(request: RequestHeader): IpLimit = {
+        bucket(getIp(request))
+    }
+
     def allowConnection(request: RequestHeader): Boolean = {
         val ip = getIp(request)
         val limit = bucket.getOrElseUpdate(ip, op = IpLimit(0, 0))
+        allowConnection(limit)
+    }
+
+    def allowConnection(limit: IpLimit): Boolean = {
         limit.requestCount < limitConfiguration.maxRequestsCount && limit.requestTime < limitConfiguration.maxRequestsTime
     }
 
     def updateLimits(request: RequestHeader, count: Int, time: Long): Unit = {
         val ip = getIp(request)
         val limit = bucket(ip)
+        updateLimits(limit, count, time)
+    }
+
+    def updateLimits(limit: IpLimit, count: Int, time: Long): Unit = {
         limit.requestCount += count
         limit.requestTime += time
     }
