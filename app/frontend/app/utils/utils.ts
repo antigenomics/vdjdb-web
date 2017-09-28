@@ -1,3 +1,6 @@
+import { Observable } from 'rxjs/Observable';
+import { Observer } from 'rxjs/Observer';
+
 export namespace Utils {
 
     export namespace Array {
@@ -123,7 +126,7 @@ export namespace Utils {
                 const paragraphsCount = openParagraphIndices.length;
                 const result: string[] = [];
                 for (let i = 0; i < paragraphsCount; ++i) {
-                    result.push(text.substring(openParagraphIndices[i] + 3, closeParagraphIndices[i]));
+                    result.push(text.substring(openParagraphIndices[ i ] + 3, closeParagraphIndices[ i ]));
                 }
                 return result;
             }
@@ -164,6 +167,26 @@ export namespace Utils {
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
+        }
+
+    }
+
+    export namespace HTTP {
+
+        export function get(url: string): Observable<XMLHttpRequest> {
+            return Observable.create((observer: Observer<XMLHttpRequest>) => {
+                const xhttp = new XMLHttpRequest();
+                const lastReadyState = 4;
+                const successStatus = 200;
+                xhttp.onreadystatechange = function() {
+                    if (this.readyState === lastReadyState && this.status === successStatus) {
+                        observer.next(this);
+                        observer.complete();
+                    }
+                };
+                xhttp.open('GET', url, true);
+                xhttp.send();
+            });
         }
 
     }
