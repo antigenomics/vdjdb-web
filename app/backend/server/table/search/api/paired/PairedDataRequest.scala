@@ -1,4 +1,4 @@
-package backend.server.api.paired
+package backend.server.table.search.api.paired
 
 import play.api.libs.json.{Json, Reads}
 

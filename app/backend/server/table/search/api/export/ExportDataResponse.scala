@@ -1,4 +1,4 @@
-package backend.server.api.export
+package backend.server.table.search.api.export
 
 import backend.server.api.SuccessResponse
 import backend.server.api.common.ErrorMessageResponse

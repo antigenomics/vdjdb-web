@@ -1,6 +1,6 @@
-package backend.server.filters
+package backend.server.database.filters
 
-object FilterType extends Enumeration {
+object DatabaseFilterType extends Enumeration {
     type FilterType = String
     val Exact = "exact"
     val ExactSet = "exact:set"

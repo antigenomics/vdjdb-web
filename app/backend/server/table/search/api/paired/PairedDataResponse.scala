@@ -1,4 +1,4 @@
-package backend.server.api.paired
+package backend.server.table.search.api.paired
 
 import backend.server.api.SuccessResponse
 import backend.server.api.common.ErrorMessageResponse

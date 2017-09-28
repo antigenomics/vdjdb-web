@@ -2,7 +2,7 @@ package backend.server.table.search
 
 
 import backend.server.database.Database
-import backend.server.filters.DatabaseFilters
+import backend.server.database.filters.DatabaseFilters
 
 import scala.collection.JavaConverters._
 
