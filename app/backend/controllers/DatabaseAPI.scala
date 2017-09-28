@@ -21,6 +21,15 @@ import scala.concurrent.{ExecutionContext, Future}
 class DatabaseAPI @Inject()(cc: ControllerComponents, database: Database, actorSystem: ActorSystem, limits: RequestLimits)
                            (implicit system: ActorSystem, mat: Materializer, ec: ExecutionContext) extends AbstractController(cc) {
 
+    def summary = Action {
+        database.getSummaryFile match {
+            case Some(file) =>
+                Ok.sendFile(content = file, fileName = _.getName, inline = true)
+            case None =>
+                BadRequest("No summary")
+        }
+    }
+
     def meta = Action {
         Ok(toJson(DatabaseMetadataResponse(database.getMetadata)))
     }

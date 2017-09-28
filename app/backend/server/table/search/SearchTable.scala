@@ -21,6 +21,8 @@ case class SearchTable(private var pageSize: Int = SearchTable.DEFAULT_PAGE_SIZE
 
     def getRecordsFound: Int = rows.length
 
+    def getCurrentPage: Int = currentPage
+
     def getPage(page: Int): List[SearchTableRow] = {
         if (page >= 0) {
             currentPage = page

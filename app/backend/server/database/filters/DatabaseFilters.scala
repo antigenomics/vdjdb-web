@@ -16,7 +16,6 @@ case class DatabaseFilters(text: util.ArrayList[TextFilter], sequence: util.Arra
 object DatabaseFilters {
     def createFromRequest(request: List[DatabaseFilterRequest], database: Database): DatabaseFilters = {
         val warnings = ListBuffer[String]()
-        val metadata = database.getMetadata
         val text = new util.ArrayList[TextFilter]()
         val sequence = new util.ArrayList[SequenceFilter]()
 

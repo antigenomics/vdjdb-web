@@ -10,6 +10,7 @@ import { SearchPageModule } from './pages/search/search.module';
 
 import { Route, RouterModule } from '@angular/router';
 import { ConfigurationService } from './configuration.service';
+import { SummaryComponent } from './pages/home/summary/summary.component';
 import { SearchPageComponent } from './pages/search/search.component';
 import { LoggerService } from './utils/logger/logger.service';
 import { NotificationService } from './utils/notification/notification.service';
@@ -22,7 +23,7 @@ const routes: Route[] = [
 
 @NgModule({
     imports:      [ CommonModule, BrowserModule, SearchPageModule, RouterModule.forRoot(routes) ],
-    declarations: [ ApplicationComponent, NavigationBarComponent, HomePageComponent, AboutPageComponent ],
+    declarations: [ ApplicationComponent, NavigationBarComponent, HomePageComponent, SummaryComponent, AboutPageComponent ],
     providers:    [ ConfigurationService, LoggerService, NotificationService ],
     bootstrap:    [ ApplicationComponent ]
 })
