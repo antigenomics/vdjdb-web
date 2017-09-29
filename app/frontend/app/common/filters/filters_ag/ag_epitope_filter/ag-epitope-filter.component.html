@@ -11,7 +11,7 @@
     </div>
     <div class="twelve wide column">
         <div class="ui right labeled fluid input" [ngClass]="{'error':!ag.epitope.isPatternValid()}">
-            <input placeholder="Amino acid pattern, e.g. CSAR[DE]GTGNGYTF or CSARDXTGNGYTF."
+            <input placeholder="Amino acid pattern, e.g. LLFG[FY][AP]VYV or LLFGXXXYV"
                    type="text" [ngModel]="ag.epitope.epitopePattern" (ngModelChange)="ag.epitope.checkPattern($event)">
             <div class="ui basic label">
                 <div class="ui checkbox">
