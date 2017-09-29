@@ -19,19 +19,21 @@
             <label>Mouse</label>
         </div>
     </div>
-    <div class="two wide column"></div>
+    <div class="one wide column"></div>
     <div class="three wide column">
         <b>Gene (chain)</b>
     </div>
-    <div class="two wide column">
+    <div class="four wide column">
         <div class="ui checkbox">
             <input [(ngModel)]="tcr.general.tra" type="checkbox">
             <label>TRA</label>
         </div>
+        <br>
         <div class="ui checkbox">
             <input [(ngModel)]="tcr.general.trb" type="checkbox">
             <label>TRB</label>
         </div>
+        <br>
         <div class="ui checkbox">
             <input [(ngModel)]="tcr.general.pairedOnly" type="checkbox">
             <label>Only paired records</label>

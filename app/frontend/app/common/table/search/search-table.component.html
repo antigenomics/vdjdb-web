@@ -1,6 +1,6 @@
 <div class="ui grid">
     <div class="sixteen wide column">
-        <div style="width: 100%; min-height: 100px; overflow-x: scroll">
+        <div style="width: 100%; min-height: 100px; overflow-x: auto" *ngIf="!table.isEmpty()">
             <table class="ui unstackable single line celled stripped very compact small table" [style.font-size]="headerFontSize">
                 <thead class="cursor pointer">
                 <tr>

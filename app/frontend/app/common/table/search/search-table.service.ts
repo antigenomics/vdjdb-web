@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { EventEmitter, Injectable } from '@angular/core';
 import { Observable } from 'rxjs/Observable';
 import { ReplaySubject } from 'rxjs/ReplaySubject';
 import { Subject } from 'rxjs/Subject';
@@ -42,6 +42,8 @@ export class SearchTableService {
     private _sortRule = new SortRule();
     private _recordsFound: number = 0;
     private _numberOfRecords: number = 0;
+
+    private _updateEvent = new EventEmitter();
 
     constructor(private connection: WebSocketService, private filters: FiltersService,
                 private logger: LoggerService, private notifications: NotificationService) {
@@ -219,6 +221,10 @@ export class SearchTableService {
         });
     }
 
+    public isEmpty(): boolean {
+        return this.recordsFound === 0;
+    }
+
     private updateFromResponse(response: any): void {
         this._page = response.page;
         this._pageSize = response.pageSize;
@@ -227,6 +233,7 @@ export class SearchTableService {
         this._rows.next(response.rows.map((row: any) => new SearchTableRow(row)));
         this._dirty = true;
         this._loading = false;
+        this._updateEvent.emit();
     }
 
     private clearSortRule(): void {
@@ -276,5 +283,9 @@ export class SearchTableService {
 
     get dirty(): boolean {
         return this._dirty;
+    }
+
+    get updateEvent() {
+        return this._updateEvent;
     }
 }

@@ -1,4 +1,5 @@
-import { ChangeDetectorRef, Component, ElementRef, HostListener, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Subscription } from 'rxjs/Subscription';
 import { SearchTableService } from './search-table.service';
 
 @Component({
@@ -6,9 +7,11 @@ import { SearchTableService } from './search-table.service';
     templateUrl:     './search-table.component.html',
     styleUrls:       [ './search-table.component.css' ]
 })
-export class SearchTableComponent implements OnInit {
+export class SearchTableComponent implements OnInit, OnDestroy {
     private static _resizeEventWaitTime: number = 200;
     private _resizeEventTimeout: number;
+    private _updateEventSubscription: Subscription;
+
     public headerFontSize: string;
 
     @ViewChild('pagination')
@@ -25,6 +28,9 @@ export class SearchTableComponent implements OnInit {
     }
 
     public ngOnInit(): void {
+        this._updateEventSubscription = this.table.updateEvent.subscribe(() => {
+            this.changeDetector.detectChanges();
+        });
         this.calculateHeaderFontSize();
     }
 
@@ -44,6 +50,10 @@ export class SearchTableComponent implements OnInit {
             default:
                 return [];
         }
+    }
+
+    public ngOnDestroy(): void {
+        this._updateEventSubscription.unsubscribe();
     }
 
     private calculateHeaderFontSize(): void {
