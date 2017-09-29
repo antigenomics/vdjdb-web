@@ -1,5 +1,5 @@
 @itemVerticalPadding: 0.5em;
-@itemHorizontalPadding: 0.9em;
+@itemHorizontalPadding: 0.65em;
 
 @paginationMinWidth: 1em;
 
