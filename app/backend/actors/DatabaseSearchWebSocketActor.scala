@@ -8,6 +8,7 @@ import backend.server.table.search.api.paired.{PairedDataRequest, PairedDataResp
 import backend.server.table.search.api.search.{SearchDataRequest, SearchDataResponse}
 import backend.server.database.Database
 import backend.server.database.api.metadata.DatabaseMetadataResponse
+import backend.server.database.api.suggestions.{DatabaseColumnSuggestionsRequest, DatabaseColumnSuggestionsResponse}
 import backend.server.database.filters.{DatabaseFilterRequest, DatabaseFilterType, DatabaseFilters}
 import backend.server.limit.{IpLimit, RequestLimits}
 import backend.server.table.search.SearchTable
@@ -50,6 +51,13 @@ case class DatabaseSearchWebSocketActor(out: ActorRef, database: Database, actor
                 action match {
                     case DatabaseMetadataResponse.action =>
                         out ! toJson(DatabaseMetadataResponse(database.getMetadata))
+                    case DatabaseColumnSuggestionsResponse.action =>
+                        validateData(out, request.data, (suggestionsRequest: DatabaseColumnSuggestionsRequest) => {
+                            database.getSuggestions(suggestionsRequest.column) match {
+                                case Some(suggestions) => out ! toJson(suggestions)
+                                case None => out ! toJson(DatabaseColumnSuggestionsResponse.errorMessage)
+                            }
+                        })
                     case SearchDataResponse.action =>
                         validateData(out, request.data, (searchRequest: SearchDataRequest) => {
                             if (searchRequest.filters.nonEmpty) {

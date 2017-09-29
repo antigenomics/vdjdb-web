@@ -37,8 +37,8 @@ export class MHCHaplotypeFilter implements FilterInterface {
     public secondChainValues: string[] = [];
 
     public setDefault(): void {
-        Utils.Array.clear(this.firstChainSelected);
-        Utils.Array.clear(this.secondChainSelected);
+        this.firstChainSelected = [];
+        this.secondChainSelected = [];
     }
 
     public setOptions(options: FiltersOptions): void {

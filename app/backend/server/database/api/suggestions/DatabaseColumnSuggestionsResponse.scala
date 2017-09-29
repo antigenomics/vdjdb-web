@@ -4,14 +4,14 @@ import backend.server.api.SuccessResponse
 import backend.server.api.common.ErrorMessageResponse
 import play.api.libs.json.{JsValue, Json, Writes}
 
-case class DatabaseColumnSuggestionResponse(suggestions: Map[String, List[DatabaseColumnSuggestions]])
-    extends SuccessResponse(DatabaseColumnSuggestionResponse.action)
+case class DatabaseColumnSuggestionsResponse(suggestions: Map[String, List[DatabaseColumnSuggestion]])
+    extends SuccessResponse(DatabaseColumnSuggestionsResponse.action)
 
-object DatabaseColumnSuggestionResponse {
+object DatabaseColumnSuggestionsResponse {
     final val action: String = "suggestions"
 
-    implicit val databaseColumnSuggestionRequestWrites: Writes[DatabaseColumnSuggestionResponse] =
-        SuccessResponse.writesSubclass(Json.writes[DatabaseColumnSuggestionResponse])
+    implicit val databaseColumnSuggestionsRequestWrites: Writes[DatabaseColumnSuggestionsResponse] =
+        SuccessResponse.writesSubclass(Json.writes[DatabaseColumnSuggestionsResponse])
 
     def errorMessage: JsValue = Json.toJson(ErrorMessageResponse("Invalid suggestions request"))
 }

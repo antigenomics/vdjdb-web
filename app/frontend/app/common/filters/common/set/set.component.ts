@@ -1,18 +1,33 @@
-import { Component, ElementRef, EventEmitter, Input, Output, ViewChild } from '@angular/core';
-import { Utils } from '../../../../utils/utils';
+import { ChangeDetectionStrategy, Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
 import { SetEntry } from './set-entry';
+import { SuggestionEntry } from './suggestion-entry';
+import { Utils } from '../../../../utils/utils';
 
 @Component({
     selector:        'set',
-    templateUrl:     './set.component.html'
+    templateUrl:     './set.component.html',
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class SetComponent {
+export class SetComponent implements OnInit {
     private _searchVisible: boolean = false;
+    private _selected: SetEntry[] = [];
+
+    private _suggestions: { [value: string]: SuggestionEntry[]; };
+    private _visibleSuggestions: SuggestionEntry[] = [];
+    private _suggestionsAvailable: boolean = false;
+    private _suggestionVisible: boolean = false;
 
     @ViewChild('input') public input: ElementRef;
 
     @Input()
-    public selected: SetEntry[] = [];
+    public set selected(input: SetEntry[]) {
+        this._selected = input;
+        this.updateSuggestions();
+    }
+
+    public get selected(): SetEntry[] {
+        return this._selected;
+    }
 
     @Output()
     public selectedChange = new EventEmitter();
@@ -26,7 +41,21 @@ export class SetComponent {
     @Input()
     public inputUpperOnly: boolean = false;
 
+    @Input()
+    public set suggestions(input: { [value: string]: SuggestionEntry[]; }) {
+        this._suggestionsAvailable = true;
+        this._suggestions = input;
+    }
+
+    public get visibleSuggestions(): SuggestionEntry[] {
+        return this._visibleSuggestions;
+    }
+
     public inputText: string = '';
+
+    public ngOnInit(): void {
+        this.updateSuggestions();
+    }
 
     public focus() {
         this.input.nativeElement.focus();
@@ -64,21 +93,66 @@ export class SetComponent {
 
     public append(entry: SetEntry): void {
         if (!entry.disabled) {
-            this.selected.push(entry);
-            this.selectedChange.emit(this.selected);
+            this._selected.push(entry);
+            this.selectedChange.emit(this._selected);
+            this.updateSuggestions();
             this.change('');
         }
     }
 
     public remove(entry: SetEntry): void {
-        Utils.Array.deleteElement(this.selected, entry);
+        Utils.Array.deleteElement(this._selected, entry);
+        this.updateSuggestions();
+        this.selectedChange.emit(this._selected);
     }
 
     public isPlaceholderVisible(): boolean {
-        return this.inputText.length === 0 && this.selected.length === 0;
+        return this.inputText.length === 0 && this._selected.length === 0;
     }
 
     public isSearchVisible() {
         return this._searchVisible && this.values.length !== 0;
+    }
+
+    public showSuggestions(): void {
+        this._suggestionVisible = true;
+    }
+
+    public hideSuggestions(): void {
+        this._suggestionVisible = false;
+    }
+
+    public isSuggestionAvailable(): boolean {
+        return this._suggestionsAvailable && this._visibleSuggestions.length !== 0;
+    }
+
+    public isSuggestionsVisible(): boolean {
+        return this._suggestionVisible;
+    }
+
+    public addSuggestion(entry: SuggestionEntry): void {
+        this.append({ value: entry.value, display: entry.value, disabled: false });
+    }
+
+    public updateSuggestions(): void {
+        if (this._suggestionsAvailable) {
+            let suggestions: SuggestionEntry[] = [];
+            const selectedValues: string[] = [];
+            this._selected.forEach((selected: SetEntry) => {
+                if (!selected.disabled && selected.display.indexOf('Search substring') === -1) {
+                    suggestions = suggestions.concat(this._suggestions[ selected.value ]);
+                    selectedValues.push(selected.value);
+                }
+            });
+
+            const uniqueValues: string[] = [];
+            this._visibleSuggestions = suggestions.filter((entry: SuggestionEntry, _: number, __: SuggestionEntry[]) => {
+                if (uniqueValues.indexOf(entry.value) === -1 && selectedValues.indexOf(entry.value) === -1) {
+                    uniqueValues.push(entry.value);
+                    return true;
+                }
+                return false;
+            });
+        }
     }
 }

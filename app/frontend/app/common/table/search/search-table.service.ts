@@ -14,6 +14,7 @@ import { SearchTableRow } from './row/search-table-row';
 
 export const enum SearchTableWebSocketActions {
     Metadata = 'meta',
+    Suggestions = 'suggestions',
     Search   = 'search',
     Export   = 'export',
     Paired   = 'paired'
@@ -88,6 +89,26 @@ export class SearchTableService {
                     this._numberOfRecords = metadata.numberOfRecords;
                     this.filters.setOptions(options);
                     this.update();
+                }
+            });
+
+            const suggestionsRequest = this.connection.sendMessage({
+                action: SearchTableWebSocketActions.Suggestions,
+                data: {
+                    column: 'antigen.epitope'
+                }
+            });
+            suggestionsRequest.subscribe({
+                next: (response: any) => {
+                    this.logger.debug('Suggestions', response);
+                    const options = {
+                        ag: {
+                            epitope: {
+                                epitopeSuggestions: response.suggestions
+                            }
+                        }
+                    };
+                    this.filters.setOptions(options);
                 }
             });
         });
@@ -222,7 +243,7 @@ export class SearchTableService {
     }
 
     public isEmpty(): boolean {
-        return this.recordsFound === 0;
+        return this._dirty && this._recordsFound === 0;
     }
 
     private updateFromResponse(response: any): void {

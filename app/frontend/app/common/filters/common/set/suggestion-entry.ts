@@ -1,4 +1,4 @@
-export class Suggestion {
+export class SuggestionEntry {
     public value: string;
     public meta: string;
 

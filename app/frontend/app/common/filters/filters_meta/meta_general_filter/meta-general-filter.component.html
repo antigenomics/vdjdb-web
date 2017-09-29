@@ -15,33 +15,37 @@
     <div class="three wide column">
         <b>Assay type</b>
     </div>
-    <div class="three wide column">
+    <div class="four wide column">
         <div class="ui checkbox">
             <input [(ngModel)]="meta.general.methodSort" type="checkbox">
             <label>Multimer sorting</label>
         </div>
+        <br>
         <div class="ui checkbox">
             <input [(ngModel)]="meta.general.methodCulture" type="checkbox">
             <label>Culture-based</label>
         </div>
+        <br>
         <div class="ui checkbox">
             <input [(ngModel)]="meta.general.methodOther" type="checkbox">
             <label>Other</label>
         </div>
     </div>
-    <div class="two wide column"></div>
+    <div class="one wide column"></div>
     <div class="three wide column">
         <b>Sequencing</b>
     </div>
-    <div class="three wide column">
+    <div class="four wide column">
         <div class="ui checkbox">
             <input [(ngModel)]="meta.general.seqSanger" type="checkbox">
             <label>Sanger</label>
         </div>
+        <br>
         <div class="ui checkbox">
             <input [(ngModel)]="meta.general.seqAmplicon" type="checkbox">
             <label>High-throughput</label>
         </div>
+        <br>
         <div class="ui checkbox">
             <input [(ngModel)]="meta.general.seqSingleCell" type="checkbox">
             <label>Single-cell</label>

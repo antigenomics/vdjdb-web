@@ -11,8 +11,8 @@ export class TCRSegmentsFilter implements FilterInterface {
     public jSegmentValues: string[] = [];
 
     public setDefault(): void {
-        Utils.Array.clear(this.vSegmentSelected);
-        Utils.Array.clear(this.jSegmentSelected);
+        this.vSegmentSelected = [];
+        this.jSegmentSelected = [];
     }
 
     public setOptions(options: FiltersOptions): void {

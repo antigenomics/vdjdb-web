@@ -5,16 +5,7 @@
     <p>After selecting an epitope from the database in the 'Sequence(s)' field, you can click the suggestions button below to view the list of similar epitopes.</p>">
 </filters-header>
 
-<div class="ui grid middle aligned">
-    <div class="three wide column">
-        <b>Sequence(s)</b>
-    </div>
-    <div class="twelve wide column">
-        <set [(selected)]="ag.epitope.epitopeSelected"
-             [values]="ag.epitope.epitopeValues"
-             [inputUpperOnly]="true"
-             placeholder="List of epitope sequences, start typing to see suggestions..."></set>
-    </div>
+<div class="ui grid">
     <div class="three wide column">
         <b>Sequence or pattern</b>
     </div>
@@ -29,5 +20,15 @@
                 </div>
             </div>
         </div>
+    </div>
+    <div class="three wide column">
+        <b>Sequence(s)</b>
+    </div>
+    <div class="twelve wide column">
+        <set [(selected)]="ag.epitope.epitopeSelected"
+             [values]="ag.epitope.epitopeValues"
+             [inputUpperOnly]="true"
+             [suggestions]="ag.epitope.epitopeSuggestions"
+             placeholder="List of epitope sequences, start typing to see suggestions..."></set>
     </div>
 </div>

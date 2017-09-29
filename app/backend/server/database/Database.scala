@@ -4,16 +4,22 @@ import java.io.{File, FileInputStream}
 import java.nio.file.{Files, Paths}
 import javax.inject.{Inject, Singleton}
 
+import backend.server.database.api.suggestions.{DatabaseColumnSuggestion, DatabaseColumnSuggestionsResponse}
+import com.antigenomics.vdjdb.web.EpitopeSuggestionGenerator
 import com.antigenomics.vdjdb.{Util, VdjdbInstance}
 import com.typesafe.scalalogging._
 import org.slf4j.LoggerFactory
 import play.api.Configuration
+
+import scala.collection.JavaConverters._
+import scala.collection.mutable
 
 @Singleton
 case class Database @Inject() (configuration: Configuration) {
     private final val instance: VdjdbInstance = Database.createInstanceFromConfiguration(configuration)
     private final val metadata: DatabaseMetadata = DatabaseMetadata.createFromInstance(instance)
     private final val databaseLocation: String = Database.getDatabaseLocation(configuration)
+    private final val suggestions = mutable.HashMap[String, DatabaseColumnSuggestionsResponse]()
 
     def getMetadata: DatabaseMetadata = metadata
 
@@ -27,6 +33,20 @@ case class Database @Inject() (configuration: Configuration) {
             Some(summaryFile)
         } else {
             None
+        }
+    }
+
+    def getSuggestions(column: String): Option[DatabaseColumnSuggestionsResponse] = {
+        if (suggestions.contains(column)) {
+            Some(suggestions(column))
+        } else {
+            column match {
+                case "antigen.epitope" =>
+                    suggestions.update(column, DatabaseColumnSuggestionsResponse(EpitopeSuggestionGenerator.generateSuggestions(instance)
+                        .asScala.mapValues(_.asScala.map(DatabaseColumnSuggestion.createFromEpitopeSuggestion).toList).toMap))
+                    getSuggestions(column)
+                case _ => None
+            }
         }
     }
 }

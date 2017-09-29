@@ -6,5 +6,6 @@ import { TCRFiltersService } from '../tcr-filters.service';
     templateUrl:     './tcr-segments-filter.component.html'
 })
 export class TCRSegmentsFilterComponent {
-    constructor(public tcr: TCRFiltersService) {}
+    constructor(public tcr: TCRFiltersService) {
+    }
 }

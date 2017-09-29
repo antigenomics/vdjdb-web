@@ -1,4 +1,3 @@
-import { Utils } from '../../../utils/utils';
 import { SetEntry } from '../common/set/set-entry';
 import { Filter, FilterInterface, FiltersOptions, FilterType } from '../filters';
 
@@ -15,7 +14,7 @@ export class MetaGeneralFilter implements FilterInterface {
     public seqSingleCell: boolean;
 
     public setDefault(): void {
-        Utils.Array.clear(this.referencesSelected);
+        this.referencesSelected = [];
         this.methodSort = true;
         this.methodCulture = true;
         this.methodOther = true;

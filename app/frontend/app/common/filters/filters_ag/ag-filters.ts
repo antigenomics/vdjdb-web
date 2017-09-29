@@ -1,5 +1,6 @@
 import { Utils } from '../../../utils/utils';
 import { SetEntry } from '../common/set/set-entry';
+import { SuggestionEntry } from '../common/set/suggestion-entry';
 import { Filter, FilterInterface, FiltersOptions, FilterType } from '../filters';
 
 export class AGOriginFilter implements FilterInterface {
@@ -10,8 +11,8 @@ export class AGOriginFilter implements FilterInterface {
     public genesValues: string[] = [];
 
     public setDefault(): void {
-        Utils.Array.clear(this.speciesSelected);
-        Utils.Array.clear(this.genesSelected);
+        this.speciesSelected = [];
+        this.genesSelected = [];
     }
 
     public setOptions(options: FiltersOptions): void {
@@ -41,13 +42,14 @@ export class AGOriginFilter implements FilterInterface {
 export class AGEpitopeFilter implements FilterInterface {
     public epitopeSelected: SetEntry[] = [];
     public epitopeValues: string[] = [];
+    public epitopeSuggestions: { [value: string]: SuggestionEntry[]; } = {};
 
     public epitopePattern: string;
     public epitopePatternSubstring: boolean;
     public epitopePatternValid: boolean;
 
     public setDefault(): void {
-        Utils.Array.clear(this.epitopeSelected);
+        this.epitopeSelected = [];
         this.epitopePattern = '';
         this.epitopePatternSubstring = false;
         this.epitopePatternValid = true;
@@ -56,6 +58,14 @@ export class AGEpitopeFilter implements FilterInterface {
     public setOptions(options: FiltersOptions): void {
         if (options.hasOwnProperty('epitopeValues')) {
             this.epitopeValues = options.epitopeValues;
+        }
+        if (options.hasOwnProperty('epitopeSuggestions')) {
+            for (const key in options.epitopeSuggestions) {
+                if (options.epitopeSuggestions.hasOwnProperty(key)) {
+                    const value = options.epitopeSuggestions[ key ];
+                    this.epitopeSuggestions[ key ] = value.map((o: any) => new SuggestionEntry(o));
+                }
+            }
         }
         return;
     }
