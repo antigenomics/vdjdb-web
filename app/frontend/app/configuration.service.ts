@@ -5,15 +5,15 @@ declare let buildMode: string;
 @Injectable()
 export class ConfigurationService {
     private _buildMode: string;
-    private _websocketProtocol: string;
-    private _websocketLocation: string;
-    private _websocketPrefix: string;
+    private _webSocketProtocol: string;
+    private _webSocketLocation: string;
+    private _webSocketPrefix: string;
 
     constructor() {
         this._buildMode = buildMode;
-        this._websocketProtocol = 'ws://';
-        this._websocketLocation = location.host;
-        this._websocketPrefix = this._websocketProtocol + this._websocketLocation;
+        this._webSocketProtocol = 'ws://';
+        this._webSocketLocation = location.host;
+        this._webSocketPrefix = this._webSocketProtocol + this._webSocketLocation;
     }
 
     public isDevelopmentMode(): boolean {
@@ -28,15 +28,15 @@ export class ConfigurationService {
         return this._buildMode;
     }
 
-    get websocketProtocol(): string {
-        return this._websocketProtocol;
+    get webSocketProtocol(): string {
+        return this._webSocketProtocol;
     }
 
-    get websocketLocation(): string {
-        return this._websocketLocation;
+    get webSocketLocation(): string {
+        return this._webSocketLocation;
     }
 
-    get websocketPrefix(): string {
-        return this._websocketPrefix;
+    get webSocketPrefix(): string {
+        return this._webSocketPrefix;
     }
 }

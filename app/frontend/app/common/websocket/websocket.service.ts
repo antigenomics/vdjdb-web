@@ -23,7 +23,7 @@ export class WebSocketRequestMessage {
 @Injectable()
 export class WebSocketService {
     private static pingConnectionTimeout: number = 15000;
-    private static maxReconnectAttemps: number = 5;
+    private static maxReconnectAttempts: number = 5;
 
     private _currentReconnectAttempt: number = 0;
     private _lastConnectedUrl: string;
@@ -45,7 +45,7 @@ export class WebSocketService {
         }
 
         this._currentReconnectAttempt = 0;
-        this._lastConnectedUrl = this.configuration.websocketPrefix + url;
+        this._lastConnectedUrl = this.configuration.webSocketPrefix + url;
         this._connection = new WebSocket(this._lastConnectedUrl);
 
         this.bindConnectionEvents();
@@ -53,7 +53,7 @@ export class WebSocketService {
 
     public reconnect(): boolean {
         this._currentReconnectAttempt += 1;
-        if (this._currentReconnectAttempt < WebSocketService.maxReconnectAttemps) {
+        if (this._currentReconnectAttempt < WebSocketService.maxReconnectAttempts) {
             this.disconnect();
             this._connection = new WebSocket(this._lastConnectedUrl);
             this.bindConnectionEvents();
