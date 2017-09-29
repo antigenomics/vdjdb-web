@@ -27,9 +27,7 @@ scalacOptions ++= Seq(
     "-feature",
     "–optimise",
     "-deprecation",
-    "-Ywarn-value-discard",
-    "-Ywarn-dead-code",
-    "-Ywarn-unused"
+    "-Ywarn-dead-code"
 )
 
 // Starts: Prevent documentation of API for production bundles
