@@ -19,6 +19,7 @@ export class PopupContentComponent implements AfterViewInit {
     private static _magicConstant: number = 20.0;
     private _content: string[];
     private _header: string;
+    private _footer: string;
 
     public boundingRect: PopupBoundingRect = new PopupBoundingRect();
 
@@ -49,6 +50,11 @@ export class PopupContentComponent implements AfterViewInit {
         this._header = headerContent;
     }
 
+    @Input('footer')
+    set footer(footerContent: string) {
+        this._footer = footerContent;
+    }
+
     constructor(private changeDetector: ChangeDetectorRef) {}
 
     public ngAfterViewInit(): void {
@@ -62,6 +68,14 @@ export class PopupContentComponent implements AfterViewInit {
 
     public getHeaderContent(): string {
         return this._header;
+    }
+
+    public isFooterExists(): boolean {
+        return this._footer !== undefined;
+    }
+
+    public getFooterContent(): string {
+        return this._footer;
     }
 
     private positionElement(): void {

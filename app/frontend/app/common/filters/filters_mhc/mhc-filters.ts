@@ -1,4 +1,3 @@
-import { Utils } from '../../../utils/utils';
 import { SetEntry } from '../common/set/set-entry';
 import { Filter, FilterInterface, FiltersOptions, FilterType } from '../filters';
 

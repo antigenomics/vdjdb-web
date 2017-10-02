@@ -10,13 +10,14 @@ import { RouterModule } from '@angular/router';
 import { ConfigurationService } from './configuration.service';
 import { AboutPageModule } from './pages/about/about.module';
 import { HomePageModule } from './pages/home/home.module';
+import { ClipboardService } from './utils/clipboard/clipboard.service';
 import { LoggerService } from './utils/logger/logger.service';
 import { NotificationService } from './utils/notification/notification.service';
 
 @NgModule({
     imports:      [ CommonModule, BrowserModule, HomePageModule, AboutPageModule, SearchPageModule, RouterModule.forRoot([]) ],
     declarations: [ ApplicationComponent, NavigationBarComponent ],
-    providers:    [ ConfigurationService, LoggerService, NotificationService ],
+    providers:    [ ConfigurationService, LoggerService, NotificationService, ClipboardService ],
     bootstrap:    [ ApplicationComponent ]
 })
 export class ApplicationModule {}

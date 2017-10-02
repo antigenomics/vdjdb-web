@@ -2,7 +2,7 @@ import play.sbt.PlayImport.PlayKeys.playRunHooks
 
 name := """VDJdb-server"""
 
-version := "2.0.0-RC.1"
+version := "2.0.0-RC.2"
 scalaVersion := "2.12.3"
 
 resolvers += "Local Maven Repository" at Path.userHome.asFile.toURI.toURL + ".m2/repository"

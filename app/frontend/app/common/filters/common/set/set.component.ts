@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
+import { Utils } from '../../../../utils/utils';
 import { SetEntry } from './set-entry';
 import { SuggestionEntry } from './suggestion-entry';
-import { Utils } from '../../../../utils/utils';
 
 @Component({
     selector:        'set',

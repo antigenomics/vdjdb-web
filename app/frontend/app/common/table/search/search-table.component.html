@@ -13,7 +13,7 @@
                 </tr>
                 <tr>
                     <th class="center aligned collapsing" *ngFor="let column of table.columns; let i = index;" (click)="table.sort(column.name)" [ngClass]="isSorted(column.name)">
-                        <span class="header" [popup]="column.comment" [header]="column.title" position="top" width="300">{{ column.title }}</span>
+                        <span class="header" [popup]="column.comment" footer="Click to sort" [header]="column.title" position="top" width="300">{{ column.title }}</span>
                     </th>
                 </tr>
                 </thead>

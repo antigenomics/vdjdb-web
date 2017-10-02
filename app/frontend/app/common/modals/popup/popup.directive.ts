@@ -15,6 +15,9 @@ export class PopupDirective {
     @Input('header')
     public headerContent: string;
 
+    @Input('footer')
+    public footerContent: string;
+
     @Input('width')
     @InputConverter(NumberConverter)
     public width: number = 400;
@@ -36,6 +39,7 @@ export class PopupDirective {
             this._tooltip.instance.hostElement = this.viewContainerRef.element.nativeElement;
             this._tooltip.instance.content = this.popupContent;
             this._tooltip.instance.header = this.headerContent;
+            this._tooltip.instance.footer = this.footerContent;
             this._tooltip.instance.width = this.width;
             this._tooltip.instance.position = this.position;
             this._tooltip.instance.display = this.display;
