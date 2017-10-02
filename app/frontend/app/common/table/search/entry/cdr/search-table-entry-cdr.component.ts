@@ -33,6 +33,8 @@ export class SearchTableEntryCdrComponent {
             this._otherRegionColor = '#ff5050';
             this._otherRegion = input.substring(jStart - 1, vEnd);
             this._jRegion = input.substring(vEnd, input.length);
+        } else if (vEnd < 0 && jStart < 0) {
+            this._otherRegion = input;
         }
     }
 
