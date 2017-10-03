@@ -6,6 +6,7 @@
      [style.bottom]="boundingRect.bottom"
      style="display: block !important; position: fixed; text-align: left !important; white-space: normal;">
     <div class="header">{{ getHeaderContent() }}</div>
+    <div class="ui divider"></div>
     <div class="content" *ngIf="display === 'paragraph'">
         <p *ngFor="let paragraph of getPopupContent()">{{ paragraph }}</p>
     </div>
