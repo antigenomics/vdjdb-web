@@ -74,6 +74,7 @@ export class WebSocketService {
     }
 
     public onClose(callback: (event: CloseEvent) => void): void {
+        this.logger.error('WebSocket close: ', event);
         this._onCloseCallback = callback;
     }
 
