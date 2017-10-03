@@ -41,7 +41,7 @@ module.exports = {
                 loader: 'file-loader',
                 options: {
                     name: 'fonts/[name].[ext]',
-                    publicPath: 'http://localhost:9000/assets/bundles/'
+                    publicPath: '/assets/bundles/'
                 }
             },
             {
