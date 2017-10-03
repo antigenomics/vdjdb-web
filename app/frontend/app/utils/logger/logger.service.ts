@@ -5,8 +5,6 @@ import { ConfigurationService } from '../../configuration.service';
 @Injectable()
 export class LoggerService {
 
-    constructor(private configuration: ConfigurationService) {}
-
     // noinspection JSMethodCanBeStatic
     public info(title: any, content?: any) {
         console.log(title, content);
@@ -23,7 +21,7 @@ export class LoggerService {
     }
 
     public debug(title: any, content?: any) {
-        if (this.configuration.isDevelopmentMode()) {
+        if (ConfigurationService.isDevelopmentMode()) {
             this.info('Debug: ' + title, content);
         }
     }

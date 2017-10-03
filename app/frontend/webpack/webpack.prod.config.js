@@ -3,6 +3,7 @@ console.log('Building frontend in production mode');
 const path = require('path');
 const webpack = require('webpack');
 const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
+const ClosureCompilerPlugin = require('webpack-closure-compiler');
 const AotPlugin = require('@ngtools/webpack').AotPlugin;
 const TSLintPlugin = require('tslint-webpack-plugin');
 
@@ -70,6 +71,8 @@ defaultConfiguration.plugins.push(
             }
         }
     }));
+
+
 
 module.exports = defaultConfiguration;
 

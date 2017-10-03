@@ -36,8 +36,7 @@ export class WebSocketService {
     private _onErrorCallback: (event: Event) => void;
     private _onCloseCallback: (event: CloseEvent) => void;
 
-    constructor(private configuration: ConfigurationService, private logger: LoggerService) {
-    }
+    constructor(private logger: LoggerService) {}
 
     public connect(url: string): void {
         if (this._connection) {
@@ -45,7 +44,7 @@ export class WebSocketService {
         }
 
         this._currentReconnectAttempt = 0;
-        this._lastConnectedUrl = this.configuration.webSocketPrefix + url;
+        this._lastConnectedUrl = ConfigurationService.webSocketPrefix + url;
         this._connection = new WebSocket(this._lastConnectedUrl);
 
         this.bindConnectionEvents();
@@ -137,7 +136,7 @@ export class WebSocketService {
             this._connection.send(JSON.stringify({ action: 'ping' }));
         }, WebSocketService.pingConnectionTimeout);
 
-        if (this.configuration.isDevelopmentMode()) {
+        if (ConfigurationService.isDevelopmentMode()) {
             this._messages.subscribe((message: any) => {
                 if (message.status === WebSocketResponseStatus.Error) {
                     this.logger.debug('WebSocket error message: ', message);
