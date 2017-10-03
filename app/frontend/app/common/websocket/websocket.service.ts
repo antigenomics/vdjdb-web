@@ -111,7 +111,7 @@ export class WebSocketService {
         };
 
         this._connection.onerror = (error: Event) => {
-            this.logger.debug('WebSocket service error:', error);
+            this.logger.error('WebSocket service error:', error);
             if (this._onErrorCallback) {
                 this._onErrorCallback(event);
             }

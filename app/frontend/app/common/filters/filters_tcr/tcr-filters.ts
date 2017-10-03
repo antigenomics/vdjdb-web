@@ -40,13 +40,36 @@ export class TCRSegmentsFilter implements FilterInterface {
 }
 
 export class TCRGeneralFilter implements FilterInterface {
+    private _tra: boolean;
+    private _trb: boolean;
+
+    public set tra(input: boolean) {
+        this._tra = input;
+        if (this._tra === false && this._trb === false) {
+            this._trb = true;
+        }
+    }
+
+    public get tra(): boolean {
+        return this._tra;
+    }
+
+    public set trb(input: boolean) {
+        this._trb = input;
+        if (this._tra === false && this._trb === false) {
+            this._tra = true;
+        }
+    }
+
+    public get trb(): boolean {
+        return this._trb;
+    }
+
+    public pairedOnly: boolean;
+
     public human: boolean;
     public monkey: boolean;
     public mouse: boolean;
-
-    public tra: boolean;
-    public trb: boolean;
-    public pairedOnly: boolean;
 
     public setDefault(): void {
         this.human = true;
