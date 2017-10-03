@@ -15,7 +15,7 @@ export class SearchTableEntryUrlComponent {
         if (input.indexOf('PMID') >= 0) {
             const id = input.substring(SearchTableEntryUrlComponent.prefixPMIDLength, input.length);
             this._link = `http://www.ncbi.nlm.nih.gov/pubmed/?term=${id}`;
-            this._value = `PMID: ${id}`;
+            this._value = `PMID:${id}`;
         } else if (input.indexOf('http') >= 0) {
             let domain;
             // find & remove protocol (http, ftp, etc.) and get domain
