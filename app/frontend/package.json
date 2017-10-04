@@ -1,6 +1,6 @@
 {
   "name": "vdjdb-webpack",
-  "version": "2.0.0-RC.2",
+  "version": "2.0.1",
   "description": "Webpack configuration for VDJdb-server",
   "private": true,
   "scripts": {
