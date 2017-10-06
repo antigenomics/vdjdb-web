@@ -10,16 +10,18 @@ import { Subject } from 'rxjs/Subject';
 // import 'rxjs/Rx'
 import { ConfigurationService } from '../../configuration.service';
 import { LoggerService } from '../../utils/logger/logger.service';
+import { IWebSocketRequestData } from './websocket-request';
+import { WebSocketResponseData } from './websocket-response';
 
 export namespace WebSocketResponseStatus {
     export const Success: string = 'success';
     export const Warning: string = 'warning';
-    export const Error: string   = 'error';
+    export const Error: string = 'error';
 }
 
 export class WebSocketRequestMessage {
     public action?: string;
-    public data?: any;
+    public data?: IWebSocketRequestData;
 }
 
 @Injectable()
@@ -31,14 +33,15 @@ export class WebSocketService {
     private _lastConnectedUrl: string;
     private _connectionTimeoutEvent: number = -1;
     private _connection: WebSocket;
-    private _messages: Subject<any> = new Subject();
+    private _messages: Subject<WebSocketResponseData> = new Subject();
 
     // Callbacks
     private _onOpenCallback: (event: Event) => void;
     private _onErrorCallback: (event: Event) => void;
     private _onCloseCallback: (event: CloseEvent) => void;
 
-    constructor(private logger: LoggerService) {}
+    constructor(private logger: LoggerService) {
+    }
 
     public connect(url: string): void {
         if (this._connection) {
@@ -79,16 +82,12 @@ export class WebSocketService {
         this._onCloseCallback = callback;
     }
 
-    public sendMessage(message: WebSocketRequestMessage): Observable<any> {
-        return Observable.create((observer: Observer<any>) => {
+    public sendMessage(message: WebSocketRequestMessage): Observable<WebSocketResponseData> {
+        return Observable.create((observer: Observer<WebSocketResponseData>) => {
             this._messages
-                //.filter((response: any) => {
-                //    return response.action === message.action;
-                //})
-                //.first()
                 .subscribe((response: any) => {
                     if (response.action === message.action) {
-                        observer.next(response);
+                        observer.next(new WebSocketResponseData(response));
                         observer.complete();
                     }
                 });

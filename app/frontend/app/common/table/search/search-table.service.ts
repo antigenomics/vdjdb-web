@@ -6,11 +6,13 @@ import { DatabaseColumnInfo, DatabaseMetadata } from '../../../database/database
 import { LoggerService } from '../../../utils/logger/logger.service';
 import { NotificationService } from '../../../utils/notification/notification.service';
 import { Utils } from '../../../utils/utils';
-import { Filter, IFiltersOptions, FiltersOptions, IFilter } from '../../filters/filters';
+import { Filter, FiltersOptions, IFilter } from '../../filters/filters';
 import { FiltersService } from '../../filters/filters.service';
+import { WebSocketRequestData } from '../../websocket/websocket-request';
 import { WebSocketService } from '../../websocket/websocket.service';
 import { ExportFormat } from './export/search-table-export.component';
 import { SearchTableRow } from './row/search-table-row';
+import { WebSocketResponseData } from '../../websocket/websocket-response';
 
 export namespace SearchTableWebSocketActions {
     export const Metadata: string = 'meta';
@@ -54,42 +56,37 @@ export class SearchTableService {
                 action: SearchTableWebSocketActions.Metadata
             });
             metadataRequest.subscribe({
-                next: (response: any) => {
-                    const metadata = DatabaseMetadata.deserialize(response['metadata']);
+                next: (response: WebSocketResponseData) => {
+                    const metadata = DatabaseMetadata.deserialize(response.get('metadata'));
                     const columns = metadata.columns;
-                    const options: FiltersOptions = new FiltersOptions();
-                    options.addOption('tcr.segments.vSegmentValues', metadata.getColumnInfo('v.segm').values);
-                    options.addOption('tcr.segments.jSegmentValues', metadata.getColumnInfo('j.segm').values);
-                    options.addOption('ag.origin.speciesValues', metadata.getColumnInfo('antigen.species').values);
-                    options.addOption('ag.origin.genesValues', metadata.getColumnInfo('antigen.gene').values);
-                    options.addOption('ag.epitope.epitopeValues', metadata.getColumnInfo('antigen.epitope').values);
-                    options.addOption('mhc.haplotype.firstChainValues', metadata.getColumnInfo('mhc.a').values);
-                    options.addOption('mhc.haplotype.secondChainValues', metadata.getColumnInfo('mhc.b').values);
-                    options.addOption('meta.general.referencesValues', metadata.getColumnInfo('reference.id').values);
+                    const options = new FiltersOptions();
+                    options.add('tcr.segments.vSegmentValues', metadata.getColumnInfo('v.segm').values);
+                    options.add('tcr.segments.jSegmentValues', metadata.getColumnInfo('j.segm').values);
+                    options.add('ag.origin.speciesValues', metadata.getColumnInfo('antigen.species').values);
+                    options.add('ag.origin.genesValues', metadata.getColumnInfo('antigen.gene').values);
+                    options.add('ag.epitope.epitopeValues', metadata.getColumnInfo('antigen.epitope').values);
+                    options.add('mhc.haplotype.firstChainValues', metadata.getColumnInfo('mhc.a').values);
+                    options.add('mhc.haplotype.secondChainValues', metadata.getColumnInfo('mhc.b').values);
+                    options.add('meta.general.referencesValues', metadata.getColumnInfo('reference.id').values);
                     this._columns = columns;
                     this._numberOfRecords = metadata.numberOfRecords;
-                    this.filters.setOptions(options.getOptions());
+                    this.filters.setOptions(options.unpack());
                     this.update();
                 }
             });
 
             const suggestionsRequest = this.connection.sendMessage({
                 action: SearchTableWebSocketActions.Suggestions,
-                data: {
-                    column: 'antigen.epitope'
-                }
+                data: new WebSocketRequestData()
+                      .add('column', 'antigen.epitope')
+                      .unpack()
             });
             suggestionsRequest.subscribe({
-                next: (response: any) => {
+                next: (response: WebSocketResponseData) => {
                     this.logger.debug('Suggestions', response);
-                    const options = {
-                        ag: {
-                            epitope: {
-                                epitopeSuggestions: response.suggestions
-                            }
-                        }
-                    };
-                    this.filters.setOptions(options);
+                    const options = new FiltersOptions();
+                    options.add('ag.epitope.epitopeSuggestions', response.get('suggestion'));
+                    this.filters.setOptions(options.unpack());
                 }
             });
         });
@@ -118,11 +115,11 @@ export class SearchTableService {
             this.logger.debug('Collected filters', filters);
             const request = this.connection.sendMessage({
                 action: SearchTableWebSocketActions.Search,
-                data:   {
-                    filters: filters.map((filter: Filter): IFilter => filter.unpack())
-                }
+                data: new WebSocketRequestData()
+                      .add('filters', filters.map((filter: Filter): IFilter => filter.unpack()))
+                      .unpack()
             });
-            request.subscribe((response: any) => {
+            request.subscribe((response: WebSocketResponseData) => {
                 this.logger.debug('Search', response);
                 this.updateFromResponse(response);
                 this.clearSortRule();
@@ -145,11 +142,11 @@ export class SearchTableService {
         this.logger.debug('Sort rule', this._sortRule);
         const request = this.connection.sendMessage({
             action: SearchTableWebSocketActions.Search,
-            data:   {
-                sort: this._sortRule.toString()
-            }
+            data: new WebSocketRequestData()
+                  .add('sort', this._sortRule.toString())
+                  .unpack()
         });
-        request.subscribe((response: any) => {
+        request.subscribe((response: WebSocketResponseData) => {
             this.logger.debug('Sort', response);
             this.updateFromResponse(response);
         });
@@ -160,11 +157,11 @@ export class SearchTableService {
         this.logger.debug('Page change', page);
         const request = this.connection.sendMessage({
             action: SearchTableWebSocketActions.Search,
-            data:   {
-                page
-            }
+            data: new WebSocketRequestData()
+                  .add('page', page)
+                  .unpack()
         });
-        request.subscribe((response: any) => {
+        request.subscribe((response: WebSocketResponseData) => {
             this.logger.debug('Page change', response);
             this.updateFromResponse(response);
         });
@@ -174,13 +171,13 @@ export class SearchTableService {
         this.logger.debug('Export', format);
         const request = this.connection.sendMessage({
             action: SearchTableWebSocketActions.Export,
-            data:   {
-                format: format.name
-            }
+            data: new WebSocketRequestData()
+                  .add('format', format.name)
+                  .unpack()
         });
-        request.subscribe((response: any) => {
+        request.subscribe((response: WebSocketResponseData) => {
             this.logger.debug('Export', response);
-            Utils.File.download(response.link);
+            Utils.File.download(response.get('link'));
         });
     }
 
@@ -195,11 +192,11 @@ export class SearchTableService {
         this.logger.debug('Page size', pageSize);
         const request = this.connection.sendMessage({
             action: SearchTableWebSocketActions.Search,
-            data: {
-                pageSize
-            }
+            data: new WebSocketRequestData()
+                  .add('pageSize', pageSize)
+                  .unpack()
         });
-        request.subscribe((response: any) => {
+        request.subscribe((response: WebSocketResponseData) => {
             this.logger.debug('Page size', response);
             this.updateFromResponse(response);
         });
@@ -216,10 +213,10 @@ export class SearchTableService {
         this.logger.debug('Paired', { pairedID, gene });
         return this.connection.sendMessage({
             action: SearchTableWebSocketActions.Paired,
-            data:   {
-                pairedID,
-                gene
-            }
+            data: new WebSocketRequestData()
+                  .add('pairedID', pairedID)
+                  .add('gene', gene)
+                  .unpack()
         });
     }
 
@@ -227,12 +224,12 @@ export class SearchTableService {
         return this._dirty && this._recordsFound === 0;
     }
 
-    private updateFromResponse(response: any): void {
-        this._page = response['page'];
-        this._pageSize = response['pageSize'];
-        this._pageCount = response['pageCount'];
-        this._recordsFound = response['recordsFound'];
-        this._rows.next(response['rows'].map((row: any) => new SearchTableRow(row)));
+    private updateFromResponse(response: WebSocketResponseData): void {
+        this._page = response.get('page');
+        this._pageSize = response.get('pageSize');
+        this._pageCount = response.get('pageCount');
+        this._recordsFound = response.get('recordsFound');
+        this._rows.next(response.get('rows').map((row: any) => new SearchTableRow(row)));
         this._dirty = true;
         this._loading = false;
         this._updateEvent.emit();

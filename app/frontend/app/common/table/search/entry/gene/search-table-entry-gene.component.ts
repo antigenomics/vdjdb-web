@@ -1,9 +1,8 @@
 import {
-    ChangeDetectionStrategy, ChangeDetectorRef, Component, ComponentFactoryResolver, ComponentRef, HostListener, Renderer2, ViewContainerRef
+    ChangeDetectionStrategy, ChangeDetectorRef, Component, ComponentFactory, ComponentRef, HostListener, Renderer2, ViewContainerRef
 } from '@angular/core';
 import { NotificationService } from '../../../../../utils/notification/notification.service';
 import { SearchTableRow } from '../../row/search-table-row';
-import { SearchTableRowComponent } from '../../row/search-table-row.component';
 import { SearchTableService } from '../../search-table.service';
 
 @Component({
@@ -17,20 +16,21 @@ export class SearchTableEntryGeneComponent {
     private _loading: boolean = false;
 
     private _visible: boolean = false;
-    private _pairedRow: ComponentRef<SearchTableRowComponent>;
+    private _pairedRow: ComponentRef<any>;
+    private _pairedRowResolver: ComponentFactory<any>;
 
     private _value: string;
     private _pairedID: string;
 
-    constructor(private resolver: ComponentFactoryResolver, private renderer: Renderer2,
-                private table: SearchTableService, private notifications: NotificationService,
+    constructor(private renderer: Renderer2, private table: SearchTableService, private notifications: NotificationService,
                 private changeDetector: ChangeDetectorRef) {
     }
 
-    public generate(value: string, pairedID: string, viewContainer: ViewContainerRef): void {
+    public generate(value: string, pairedID: string, viewContainer: ViewContainerRef, pairedRowResolver: ComponentFactory<any>): void {
         this._value = value;
         this._pairedID = pairedID;
         this._hostRowViewContainer = viewContainer;
+        this._pairedRowResolver = pairedRowResolver;
     }
 
     @HostListener('click')
@@ -50,9 +50,8 @@ export class SearchTableEntryGeneComponent {
                 const paired = this.table.getPaired(this._pairedID, this._value);
                 paired.subscribe((pairedResponse: any) => {
                     this._loading = false;
-                    const rowComponentResolver = this.resolver.resolveComponentFactory<SearchTableRowComponent>(SearchTableRowComponent);
-                    this._pairedRow = this._hostRowViewContainer.createComponent(rowComponentResolver);
-                    this._pairedRow.instance.row = new SearchTableRow(pairedResponse.paired);
+                    this._pairedRow = this._hostRowViewContainer.createComponent(this._pairedRowResolver);
+                    this._pairedRow.instance.row = new SearchTableRow(pairedResponse['paired']);
                     this._pairedRow.instance.allowPaired = false;
                     this._pairedRow.instance.ngOnInit();
                     this._pairedRow.changeDetectorRef.detectChanges();

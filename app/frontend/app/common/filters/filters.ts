@@ -34,7 +34,7 @@ export interface IFiltersOptions {
 export class FiltersOptions {
     private _options: IFiltersOptions = {};
 
-    public addOption(keys: string, data: any): void {
+    public add(keys: string, data: any): void {
         const keySet = keys.split('.');
         let option = this._options;
         for (let i = 0; i < keySet.length - 1; ++i) {
@@ -47,7 +47,7 @@ export class FiltersOptions {
         option[keySet[keySet.length - 1]] = data;
     }
 
-    public getOptions(): IFiltersOptions {
+    public unpack(): IFiltersOptions {
         return this._options;
     }
 }
