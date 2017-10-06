@@ -1,7 +1,7 @@
 export class ConfigurationService {
-    public static get buildMode(): string { return 'production'; }
+    public static buildMode(): string { return 'production'; }
 
-    public static get webSocketProtocol(): string {
+    public static webSocketProtocol(): string {
         if (location.protocol === 'https:') {
             return 'wss://';
         } else {
@@ -9,15 +9,15 @@ export class ConfigurationService {
         }
     }
 
-    public static get webSocketLocation(): string { return location.host; }
+    public static webSocketLocation(): string { return location.host; }
 
-    public static get webSocketPrefix(): string { return ConfigurationService.webSocketProtocol + ConfigurationService.webSocketLocation; }
+    public static webSocketPrefix(): string { return ConfigurationService.webSocketProtocol() + ConfigurationService.webSocketLocation(); }
 
     public static isDevelopmentMode(): boolean {
-        return this.buildMode === 'development';
+        return ConfigurationService.buildMode() === 'development';
     }
 
     public static isProductionMode(): boolean {
-        return this.buildMode === 'production';
+        return ConfigurationService.buildMode() === 'production';
     }
 }

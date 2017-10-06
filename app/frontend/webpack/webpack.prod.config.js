@@ -2,7 +2,7 @@ console.log('Building frontend in production mode');
 
 const path = require('path');
 const webpack = require('webpack');
-const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
+// const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
 // const AotPlugin = require('@ngtools/webpack').AotPlugin;
 const TSLintPlugin = require('tslint-webpack-plugin');
 
@@ -16,11 +16,11 @@ defaultConfiguration.entry[ 'vendor.min.js' ] = [
 ];
 defaultConfiguration.stats = 'errors-only';
 defaultConfiguration.devtool = false;
-defaultConfiguration.module.rules.push({
-    test: /\.ts(x?)$/,
-    exclude: /node_modules/,
-    loaders: [ '@ngtools/webpack' ]
-});
+// defaultConfiguration.module.rules.push({
+//     test: /\.ts(x?)$/,
+//     exclude: /node_modules/,
+//     loaders: [ '@ngtools/webpack' ]
+// });
 
 defaultConfiguration.plugins.push(
     new TSLintPlugin({

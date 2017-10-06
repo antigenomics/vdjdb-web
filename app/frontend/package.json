@@ -6,17 +6,16 @@
   "scripts": {
     "start": "node ./webpack/webpack.dev.server",
     "bundle:clean": "rimraf ../../public/bundles/*",
-    "bundle:build": "webpack -p --config ./webpack/webpack.prod.config.js",
+    "bundle:webpack": "webpack -p --config ./webpack/webpack.prod.config.js",
     "bundle:purify": "purifycss ../../public/bundles/bundle.css ../../public/bundles/bundle.min.js ./views/main.scala.html --min --out ../../public/bundles/bundle.min.css",
     "bundle:stats": "node ./webpack/webpack.prod.postinstall.js",
-    "bundle": "npm run bundle:clean && npm run bundle:build && npm run bundle:purify",
-    "lint": "tslint --project tsconfig.prod.json --config tslint.json --type-check --force ./app/**/*",
-    "postinstall": "node ./styles/semantic-fix.js",
-
-    "bundle:experimental": "npm run bundle && npm run bundle:vendor && npm run bundle:ngc && npm run bundle:closure && npm run bundle:stats",
+    "bundle:aot": "npm run bundle:vendor && npm run bundle:ngc && npm run bundle:closure",
     "bundle:vendor": "tsc -p vendor",
     "bundle:ngc": "ngc -p tsconfig.prod.json",
-    "bundle:closure": "node ./build.prod.js"
+    "bundle:closure": "node ./build.prod.js",
+    "bundle": "npm run bundle:clean && npm run bundle:aot && npm run bundle:webpack && npm run bundle:purify && npm run bundle:stats",
+    "lint": "tslint --project tsconfig.prod.json --config tslint.json --type-check --force ./app/**/*",
+    "postinstall": "node ./styles/semantic-fix.js"
   },
   "author": "Dmitry Bagaev",
   "homepage": "https://github.com/antigenomics/vdjdb-web-private",

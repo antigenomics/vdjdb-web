@@ -9,4 +9,4 @@ if (ConfigurationService.isProductionMode()) {
     enableProdMode();
 }
 const logger = new LoggerService();
-platformBrowser().bootstrapModuleFactory(ApplicationModuleNgFactory).then(() => logger.info(`Application loaded (${ConfigurationService.buildMode})`, ''));
+platformBrowser().bootstrapModuleFactory(ApplicationModuleNgFactory).then(() => logger.info(`Application loaded (${ConfigurationService.buildMode()})`, ''));

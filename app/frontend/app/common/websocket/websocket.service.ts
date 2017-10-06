@@ -46,7 +46,7 @@ export class WebSocketService {
         }
 
         this._currentReconnectAttempt = 0;
-        this._lastConnectedUrl = ConfigurationService.webSocketPrefix + url;
+        this._lastConnectedUrl = ConfigurationService.webSocketPrefix() + url;
         this._connection = new WebSocket(this._lastConnectedUrl);
 
         this.bindConnectionEvents();
