@@ -1,12 +1,12 @@
-import { enableProdMode } from '@angular/core';
-import { platformBrowser } from '@angular/platform-browser';
+import 'core-js';
+import 'reflect-metadata';
+import 'zone.js';
 
-import { ApplicationModuleNgFactory } from './build/app/application.module.ngfactory';
+import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
+import { ApplicationModule } from './application.module';
 import { ConfigurationService } from './configuration.service';
 import { LoggerService } from './utils/logger/logger.service';
 
-if (ConfigurationService.isProductionMode()) {
-    enableProdMode();
-}
 const logger = new LoggerService();
-platformBrowser().bootstrapModuleFactory(ApplicationModuleNgFactory).then(() => logger.info(`Application loaded (${ConfigurationService.buildMode()})`, ''));
+platformBrowserDynamic().bootstrapModule(ApplicationModule)
+                        .then(() => logger.info(`Application loaded`, ConfigurationService.buildMode()));

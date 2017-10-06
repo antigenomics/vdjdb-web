@@ -11,7 +11,7 @@
     "suppressImplicitAnyIndexErrors": true,
     "moduleResolution": "node",
     "target": "es2015",
-    "outDir": "./rxjs",
+    "outDir": "../lib/rxjs-dist/rxjs",
     "lib": [
       "es5",
       "es2015.iterable",

@@ -10,14 +10,14 @@ const files = [
     'node_modules/@angular/forms/@angular/forms.js',
     'node_modules/@angular/platform-browser/@angular/platform-browser.js',
     'vendor/zone_extern.js'
-].concat(glob.sync('./vendor/rxjs/**/*.js')).concat(glob.sync('./lib/**/*.js'));
+].concat(glob.sync('./lib/aot/**/*.js')).concat(glob.sync('./lib/rxjs-dist/rxjs/**/*.js'));
 
 const compiler = new closureCompiler({
     js: files,
     language_in: 'ES6_STRICT',
     language_out: 'ES5',
     compilation_level: 'ADVANCED_OPTIMIZATIONS',
-    entry_point: 'lib/main.js',
+    entry_point: './lib/aot/main.prod.js',
     js_output_file: '../../public/bundles/bundle.min.js',
     create_source_map: '%outname%.map',
     warning_level: 'QUIET',
@@ -30,7 +30,7 @@ const compiler = new closureCompiler({
         'node_modules/@angular/platform-browser',
         'node_modules/@angular/router',
         'node_modules/@angular/forms',
-        'vendor'
+        'lib/rxjs-dist'
     ]
 });
 
