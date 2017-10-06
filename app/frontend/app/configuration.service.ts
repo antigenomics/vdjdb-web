@@ -1,7 +1,5 @@
-declare let buildMode: string;
-
 export class ConfigurationService {
-    public static get buildMode(): string { return buildMode; }
+    public static get buildMode(): string { return 'production'; }
 
     public static get webSocketProtocol(): string {
         if (location.protocol === 'https:') {

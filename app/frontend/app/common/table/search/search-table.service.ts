@@ -12,12 +12,12 @@ import { WebSocketService } from '../../websocket/websocket.service';
 import { ExportFormat } from './export/search-table-export.component';
 import { SearchTableRow } from './row/search-table-row';
 
-export const enum SearchTableWebSocketActions {
-    Metadata = 'meta',
-    Suggestions = 'suggestions',
-    Search   = 'search',
-    Export   = 'export',
-    Paired   = 'paired'
+export namespace SearchTableWebSocketActions {
+    export const Metadata: string = 'meta';
+    export const Suggestions: string = 'suggestions';
+    export const Search: string   = 'search';
+    export const Export: string   = 'export';
+    export const Paired: string   = 'paired';
 }
 
 export class SortRule {

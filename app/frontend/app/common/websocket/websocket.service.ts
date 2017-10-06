@@ -1,18 +1,20 @@
 import { Injectable } from '@angular/core';
-import 'rxjs/add/operator/do';
-import 'rxjs/add/operator/filter';
-import 'rxjs/add/operator/first';
-import 'rxjs/add/operator/share';
+// import { Observable, Observer, Subject } from 'rxjs/Rx';
 import { Observable } from 'rxjs/Observable';
 import { Observer } from 'rxjs/Observer';
 import { Subject } from 'rxjs/Subject';
+// import { do } from 'rxjs/operator/do';
+// import { filter } from 'rxjs/operator/filter';
+// import { first } from 'rxjs/operator/first';
+// import { share } from 'rxjs/operator/share';
+// import 'rxjs/Rx'
 import { ConfigurationService } from '../../configuration.service';
 import { LoggerService } from '../../utils/logger/logger.service';
 
-export const enum WebSocketResponseStatus {
-    Success = 'success',
-    Warning = 'warning',
-    Error   = 'error'
+export namespace WebSocketResponseStatus {
+    export const Success:string = 'success';
+    export const Warning:string = 'warning';
+    export const Error:string   = 'error';
 }
 
 export class WebSocketRequestMessage {
@@ -80,10 +82,10 @@ export class WebSocketService {
     public sendMessage(message: WebSocketRequestMessage): Observable<any> {
         return Observable.create((observer: Observer<any>) => {
             this._messages
-                .filter((response: any) => {
-                    return response.action === message.action;
-                })
-                .first()
+                //.filter((response: any) => {
+                //    return response.action === message.action;
+                //})
+                //.first()
                 .subscribe((response: any) => {
                     observer.next(response);
                     observer.complete();

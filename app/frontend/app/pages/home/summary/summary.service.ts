@@ -1,5 +1,4 @@
 import { Injectable } from '@angular/core';
-import 'rxjs/add/observable/of';
 import { Observable } from 'rxjs/Observable';
 import { Observer } from 'rxjs/Observer';
 import { LoggerService } from '../../../utils/logger/logger.service';
@@ -14,7 +13,10 @@ export class SummaryService {
 
     public getSummaryContent(): Observable<string> {
         if (this._rejected) {
-            return Observable.of('');
+            return Observable.create((observer: Observer<string>) => {
+                observer.next('');
+                observer.complete();
+            });
         }
         if (this._summaryContent) {
             return Observable.create((observer: Observer<string>) => {

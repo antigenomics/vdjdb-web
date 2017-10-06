@@ -1,15 +1,17 @@
 import { EventEmitter, Injectable } from '@angular/core';
-import 'rxjs/add/operator/take';
+// import { take } from 'rxjs/operator/take';
 import { Filter, FilterInterface, FiltersOptions } from './filters';
 import { AGFiltersService } from './filters_ag/ag-filters.service';
 import { MetaFiltersService } from './filters_meta/meta-filters.service';
 import { MHCFiltersService } from './filters_mhc/mhc-filters.service';
 import { TCRFiltersService } from './filters_tcr/tcr-filters.service';
 
-export const enum FiltersServiceEventType {
-    Meta,
-    Reset,
-    Get
+export type FiltersServiceEventType = number;
+
+export namespace FiltersServiceEventType {
+    export const Meta: number = 0;
+    export const Reset: number = 1;
+    export const Get: number = 2;
 }
 
 @Injectable()

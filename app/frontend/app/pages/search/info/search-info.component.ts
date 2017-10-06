@@ -13,10 +13,13 @@ export class SearchInfoComponent implements OnDestroy {
 
     constructor(private filters: FiltersService, private changeDetector: ChangeDetectorRef) {
         this._resetEvent = this.filters.getEvents()
-            .filter((event: FiltersServiceEventType) => {
-                return event === FiltersServiceEventType.Reset;
-            }).subscribe(() => {
-            this.changeDetector.detectChanges();
+            //.filter((event: FiltersServiceEventType) => {
+            //    return event === FiltersServiceEventType.Reset;
+            //})
+            .subscribe((event: FiltersServiceEventType) => {
+            if (event === FiltersServiceEventType.Reset) {
+                this.changeDetector.detectChanges();
+            }
         });
     }
 

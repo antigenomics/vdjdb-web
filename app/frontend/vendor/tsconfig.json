@@ -1,0 +1,33 @@
+{
+  "compilerOptions": {
+    "rootDir": "../node_modules/rxjs/src",
+    "removeComments": true,
+    "preserveConstEnums": true,
+    "sourceMap": false,
+    "declaration": false,
+    "noImplicitAny": true,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "suppressImplicitAnyIndexErrors": true,
+    "moduleResolution": "node",
+    "target": "es2015",
+    "outDir": "./rxjs",
+    "lib": [
+      "es5",
+      "es2015.iterable",
+      "es2015.collection",
+      "es2015.promise",
+      "dom"
+    ]
+  },
+  "formatCodeOptions": {
+    "indentSize": 2,
+    "tabSize": 2
+  },
+  "files": [
+    "../node_modules/rxjs/src/Rx.ts"
+  ],
+  "angularCompilerOptions": {
+    "annotateForClosureCompiler": true
+  }
+}

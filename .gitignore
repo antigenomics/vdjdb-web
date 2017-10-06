@@ -1,5 +1,9 @@
 # Front end
 /app/frontend/node_modules
+/app/frontend/dist
+/app/frontend/lib
+/app/frontend/app/build
+/app/frontend/vendor/rxjs
 
 # Front end build artifacts
 /public/bundles

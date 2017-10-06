@@ -1,11 +1,13 @@
-export const enum FilterType {
-    Exact        = 'exact',
-    ExactSet     = 'exact:set',
-    SubstringSet = 'substring:set',
-    Pattern      = 'pattern',
-    Level        = 'level',
-    Range        = 'range',
-    Sequence     = 'sequence'
+export type FilterType = string;
+
+export namespace FilterType {
+    export const Exact: string        = 'exact';
+    export const ExactSet: string     = 'exact:set';
+    export const SubstringSet: string = 'substring:set';
+    export const Pattern: string      = 'pattern';
+    export const Level: string        = 'level';
+    export const Range: string        = 'range';
+    export const Sequence: string     = 'sequence';
 }
 
 export class Filter {

@@ -1,7 +1,9 @@
-export const enum NotificationItemType {
-    Info  = 'info',
-    Warn  = 'warn',
-    Error = 'error'
+export type NotificationItemType = string;
+
+export namespace NotificationItemType {
+    export const Info: string  = 'info';
+    export const Warn: string  = 'warn';
+    export const Error: string = 'error';
 }
 
 export class NotificationItem {
