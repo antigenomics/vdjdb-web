@@ -2,6 +2,7 @@ import {
     ChangeDetectionStrategy, ChangeDetectorRef, Component, ComponentFactory, ComponentRef, HostListener, Renderer2, ViewContainerRef
 } from '@angular/core';
 import { NotificationService } from '../../../../../utils/notification/notification.service';
+import { WebSocketResponseData } from '../../../../websocket/websocket-response';
 import { SearchTableRow } from '../../row/search-table-row';
 import { SearchTableService } from '../../search-table.service';
 
@@ -48,10 +49,10 @@ export class SearchTableEntryGeneComponent {
             } else if (!this._loading) {
                 this._loading = true;
                 const paired = this.table.getPaired(this._pairedID, this._value);
-                paired.subscribe((pairedResponse: any) => {
+                paired.subscribe((response: WebSocketResponseData) => {
                     this._loading = false;
                     this._pairedRow = this._hostRowViewContainer.createComponent(this._pairedRowResolver);
-                    this._pairedRow.instance.row = new SearchTableRow(pairedResponse['paired']);
+                    this._pairedRow.instance.row = new SearchTableRow(response.get('paired'));
                     this._pairedRow.instance.allowPaired = false;
                     this._pairedRow.instance.ngOnInit();
                     this._pairedRow.changeDetectorRef.detectChanges();

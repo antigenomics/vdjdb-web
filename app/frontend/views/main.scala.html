@@ -19,55 +19,13 @@
             <script type="application/javascript" src="assets/bundles/vendor.dll.js" charset="utf-8"></script>
             <link type="text/css" href="bundles/bundle.css" rel="stylesheet">
         } else {
+            <script type="application/javascript" src="@routes.Assets.versioned("bundles/vendor.min.js")" charset="utf-8"></script>
             <link type="text/css" href="@routes.Assets.versioned("bundles/bundle.min.css")" rel="stylesheet">
             @if(analytics.isYandexAnalyticsAvailable) {
-                    <!-- Yandex.Metrika counter -->
-                <script type="text/javascript" >
-                        (function (d, w, c) {
-                            (w[c] = w[c] || []).push(function () {
-                                try {
-                                    var id = '@analytics.getYandexAnalyticsID';
-                                    w['yaCounter' + id] = new Ya.Metrika({
-                                        id: parseInt(id),
-                                        clickmap: true,
-                                        trackLinks: true,
-                                        accurateTrackBounce: true,
-                                        webvisor: true
-                                    });
-                                } catch (e) {
-                                }
-                            });
-
-                            var n = d.getElementsByTagName("script")[0],
-                                    s = d.createElement("script"),
-                                    f = function () {
-                                        n.parentNode.insertBefore(s, n);
-                                    };
-                            s.type = "text/javascript";
-                            s.async = true;
-                            s.src = "https://mc.yandex.ru/metrika/watch.js";
-
-                            if (w.opera == "[object Opera]") {
-                                d.addEventListener("DOMContentLoaded", f, false);
-                            } else {
-                                f();
-                            }
-                        })(document, window, "yandex_metrika_callbacks");
-                </script>
-                <noscript><div><img src="https://mc.yandex.ru/watch/43715979" style="position: absolute;left: -9999px;" alt="" /></div></noscript>
-                    <!-- /Yandex.Metrika counter -->
+                @frontend.views.html.analytics.yandex(analytics)
             }
             @if(analytics.isGoogleAnalyticsAvailable) {
-                <!-- Global Site Tag (gtag.js) - Google Analytics -->
-                <script async src="https://www.googletagmanager.com/gtag/js?id=@analytics.getGoogleAnalyticsID"></script>
-                <script>
-                        window.dataLayer = window.dataLayer || [];
-                        function gtag(){dataLayer.push(arguments)};
-                        gtag('js', new Date());
-
-                        gtag('config', '@analytics.getGoogleAnalyticsID');
-                </script>
-
+                @frontend.views.html.analytics.google(analytics)
             }
         }
         <link rel="shortcut icon" type="image/png" href="@routes.Assets.versioned("images/favicon.png")">
@@ -82,7 +40,6 @@
     @if(environment.mode == Mode.Dev) {
         <script type="application/javascript" src="bundles/bundle.js" charset="utf-8"></script>
     } else {
-        <script type="application/javascript" src="@routes.Assets.versioned("bundles/vendor.min.js")" charset="utf-8"></script>
         <script type="application/javascript" src="@routes.Assets.versioned("bundles/bundle.min.js")" charset="utf-8"></script>
     }
 </html>

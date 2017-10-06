@@ -9,10 +9,10 @@ import { Utils } from '../../../utils/utils';
 import { Filter, FiltersOptions, IFilter } from '../../filters/filters';
 import { FiltersService } from '../../filters/filters.service';
 import { WebSocketRequestData } from '../../websocket/websocket-request';
+import { WebSocketResponseData } from '../../websocket/websocket-response';
 import { WebSocketService } from '../../websocket/websocket.service';
 import { ExportFormat } from './export/search-table-export.component';
 import { SearchTableRow } from './row/search-table-row';
-import { WebSocketResponseData } from '../../websocket/websocket-response';
 
 export namespace SearchTableWebSocketActions {
     export const Metadata: string = 'meta';
@@ -39,6 +39,7 @@ export class SearchTableService {
     private _dirty: boolean = false;
     private _page: number = 0;
     private _pageSize: number = 0;
+    private _pageRange: number = 5;
     private _pageCount: number = 0;
     private _rows: Subject<SearchTableRow[]> = new ReplaySubject(1);
     private _columns: DatabaseColumnInfo[] = [];
@@ -209,7 +210,7 @@ export class SearchTableService {
         /*tslint:enable:no-magic-numbers*/
     }
 
-    public getPaired(pairedID: string, gene: string): Observable<any> {
+    public getPaired(pairedID: string, gene: string): Observable<WebSocketResponseData> {
         this.logger.debug('Paired', { pairedID, gene });
         return this.connection.sendMessage({
             action: SearchTableWebSocketActions.Paired,
@@ -254,6 +255,10 @@ export class SearchTableService {
 
     get pageSize(): number {
         return this._pageSize;
+    }
+
+    get pageRange(): number {
+        return this._pageRange;
     }
 
     get pageCount(): number {
