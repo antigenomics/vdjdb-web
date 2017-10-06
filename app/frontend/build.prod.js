@@ -20,7 +20,7 @@ const compiler = new closureCompiler({
   language_out: 'ES5',
   compilation_level: 'ADVANCED_OPTIMIZATIONS',
   entry_point: 'lib/main.js',
-  js_output_file: '../public/bundles/bundle.closure.min.js',
+  js_output_file: '../../public/bundles/bundle.min.js',
   create_source_map: '%outname%.map',
   warning_level: 'QUIET',
   rewrite_polyfills: false,

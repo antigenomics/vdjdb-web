@@ -31,6 +31,7 @@ if (fs.existsSync(pathToBundle + '/bundle.css')) {
 }
 
 const bundleFiles = [
+    'vendor.min.js',
     'bundle.min.js',
     'bundle.min.css'
 ];
