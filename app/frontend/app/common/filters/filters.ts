@@ -10,17 +10,20 @@ export namespace FilterType {
     export const Sequence: string     = 'sequence';
 }
 
+export interface IFilter { [index: string]: any; }
+
 export class Filter {
-    public column: string;
-    public filterType: FilterType;
-    public negative: boolean;
-    public value: string;
+    private _filter: IFilter = {};
 
     constructor(column: string, filterType: FilterType, negative: boolean, value: string) {
-        this.column = column;
-        this.filterType = filterType;
-        this.negative = negative;
-        this.value = value;
+        this._filter['column'] = column;
+        this._filter['filterType'] = filterType;
+        this._filter['negative'] = negative;
+        this._filter['value'] = value;
+    }
+
+    public unpack(): IFilter {
+        return this._filter;
     }
 }
 

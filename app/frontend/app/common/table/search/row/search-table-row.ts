@@ -6,9 +6,9 @@ export class SearchTableRowMetadata {
     public cdr3jStart: number;
 
     constructor(meta: any) {
-        this.pairedID = meta.pairedID;
-        this.cdr3vEnd = meta.cdr3vEnd;
-        this.cdr3jStart = meta.cdr3jStart;
+        this.pairedID = meta['pairedID'];
+        this.cdr3vEnd = meta['cdr3vEnd'];
+        this.cdr3jStart = meta['cdr3jStart'];
     }
 }
 
@@ -17,7 +17,7 @@ export class SearchTableRow {
     public metadata: SearchTableRowMetadata;
 
     constructor(row: any) {
-        this.entries = row.entries.map((entry: any) => new SearchTableEntry(entry.column, entry.value));
-        this.metadata = new SearchTableRowMetadata(row.metadata);
+        this.entries = row['entries'].map((entry: any) => new SearchTableEntry(entry));
+        this.metadata = new SearchTableRowMetadata(row['metadata']);
     }
 }

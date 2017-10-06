@@ -6,7 +6,7 @@ import { DatabaseColumnInfo, DatabaseMetadata } from '../../../database/database
 import { LoggerService } from '../../../utils/logger/logger.service';
 import { NotificationService } from '../../../utils/notification/notification.service';
 import { Utils } from '../../../utils/utils';
-import { Filter, IFiltersOptions, FiltersOptions } from '../../filters/filters';
+import { Filter, IFiltersOptions, FiltersOptions, IFilter } from '../../filters/filters';
 import { FiltersService } from '../../filters/filters.service';
 import { WebSocketService } from '../../websocket/websocket.service';
 import { ExportFormat } from './export/search-table-export.component';
@@ -119,7 +119,7 @@ export class SearchTableService {
             const request = this.connection.sendMessage({
                 action: SearchTableWebSocketActions.Search,
                 data:   {
-                    filters
+                    filters: filters.map((filter: Filter): IFilter => filter.unpack())
                 }
             });
             request.subscribe((response: any) => {
@@ -228,11 +228,11 @@ export class SearchTableService {
     }
 
     private updateFromResponse(response: any): void {
-        this._page = response.page;
-        this._pageSize = response.pageSize;
-        this._pageCount = response.pageCount;
-        this._recordsFound = response.recordsFound;
-        this._rows.next(response.rows.map((row: any) => new SearchTableRow(row)));
+        this._page = response['page'];
+        this._pageSize = response['pageSize'];
+        this._pageCount = response['pageCount'];
+        this._recordsFound = response['recordsFound'];
+        this._rows.next(response['rows'].map((row: any) => new SearchTableRow(row)));
         this._dirty = true;
         this._loading = false;
         this._updateEvent.emit();
