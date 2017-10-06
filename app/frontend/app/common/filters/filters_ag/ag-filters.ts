@@ -1,7 +1,7 @@
 import { Utils } from '../../../utils/utils';
 import { SetEntry } from '../common/set/set-entry';
 import { SuggestionEntry } from '../common/set/suggestion-entry';
-import { Filter, FilterInterface, FiltersOptions, FilterType } from '../filters';
+import { Filter, FilterInterface, IFiltersOptions, FilterType } from '../filters';
 
 export class AGOriginFilter implements FilterInterface {
     public speciesSelected: SetEntry[] = [];
@@ -15,12 +15,12 @@ export class AGOriginFilter implements FilterInterface {
         this.genesSelected = [];
     }
 
-    public setOptions(options: FiltersOptions): void {
+    public setOptions(options: IFiltersOptions): void {
         if (options.hasOwnProperty('speciesValues')) {
-            this.speciesValues = options.speciesValues;
+            this.speciesValues = options['speciesValues'];
         }
         if (options.hasOwnProperty('genesValues')) {
-            this.genesValues = options.genesValues;
+            this.genesValues = options['genesValues'];
         }
         return;
     }
@@ -55,14 +55,14 @@ export class AGEpitopeFilter implements FilterInterface {
         this.epitopePatternValid = true;
     }
 
-    public setOptions(options: FiltersOptions): void {
+    public setOptions(options: IFiltersOptions): void {
         if (options.hasOwnProperty('epitopeValues')) {
-            this.epitopeValues = options.epitopeValues;
+            this.epitopeValues = options['epitopeValues'];
         }
         if (options.hasOwnProperty('epitopeSuggestions')) {
-            for (const key in options.epitopeSuggestions) {
-                if (options.epitopeSuggestions.hasOwnProperty(key)) {
-                    const value = options.epitopeSuggestions[ key ];
+            for (const key in options['epitopeSuggestions']) {
+                if (options['epitopeSuggestions'].hasOwnProperty(key)) {
+                    const value = options['epitopeSuggestions'][ key ];
                     this.epitopeSuggestions[ key ] = value.map((o: any) => new SuggestionEntry(o));
                 }
             }

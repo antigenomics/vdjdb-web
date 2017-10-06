@@ -1,3 +1,13 @@
+export interface IDatabaseColumnInfo {
+    name: string;
+    columnType: string;
+    visible: boolean;
+    dataType: string;
+    title: string;
+    comment: string;
+    values: string[];
+}
+
 export class DatabaseColumnInfo {
 
     private _name: string;
@@ -39,14 +49,6 @@ export class DatabaseColumnInfo {
     }
 
     get comment(): string {
-        // const string = '<p>' +  this._comment.split(' ').reduce((previous: string, current: string, index: number) => {
-        //     let s = `${previous} ${current}`;
-        //     if (index % 4 === 0) {
-        //         s += '<br>';
-        //     }
-        //     return s;
-        // });
-        // return string + '</p>';
         return this._comment;
     }
 
@@ -54,13 +56,19 @@ export class DatabaseColumnInfo {
         return this._values;
     }
 
-    public static deserialize(input: any): DatabaseColumnInfo {
-        return new DatabaseColumnInfo(input.name, input.columnType, input.visible, input.dataType, input.title, input.comment, input.values);
+    public static deserialize(input: IDatabaseColumnInfo): DatabaseColumnInfo {
+        return new DatabaseColumnInfo(input['name'], input['columnType'], input['visible'],
+            input['dataType'], input['title'], input['comment'], input['values']);
     }
 }
 
-export class DatabaseMetadata {
+export interface IDatabaseMetadata {
+    numberOfRecords: number;
+    numberOfColumns: number;
+    columns: any[];
+}
 
+export class DatabaseMetadata {
     private _numberOfRecords: number;
     private _numberOfColumns: number;
     private _columns: DatabaseColumnInfo[];
@@ -87,8 +95,8 @@ export class DatabaseMetadata {
         return this._columns.find((i: DatabaseColumnInfo) => i.name === columnName);
     }
 
-    public static deserialize(input: any): DatabaseMetadata {
-        return new DatabaseMetadata(input.numberOfRecords, input.numberOfColumns, input.columns.map((c: any) => DatabaseColumnInfo.deserialize(c)));
+    public static deserialize(input: IDatabaseMetadata): DatabaseMetadata {
+        return new DatabaseMetadata(input['numberOfRecords'], input['numberOfColumns'], input['columns'].map((c: any) => DatabaseColumnInfo.deserialize(c)));
     }
 
 }

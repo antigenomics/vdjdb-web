@@ -1,7 +1,7 @@
 import { Utils } from '../../../utils/utils';
 import { SetEntry } from '../common/set/set-entry';
 import { SliderRangeModel } from '../common/slider/slider.component';
-import { Filter, FilterInterface, FiltersOptions, FilterType } from '../filters';
+import { Filter, FilterInterface, IFiltersOptions, FilterType } from '../filters';
 
 export class TCRSegmentsFilter implements FilterInterface {
     public vSegmentSelected: SetEntry[] = [];
@@ -15,12 +15,12 @@ export class TCRSegmentsFilter implements FilterInterface {
         this.jSegmentSelected = [];
     }
 
-    public setOptions(options: FiltersOptions): void {
+    public setOptions(options: IFiltersOptions): void {
         if (options.hasOwnProperty('vSegmentValues')) {
-            this.vSegmentValues = options.vSegmentValues;
+            this.vSegmentValues = options['vSegmentValues'];
         }
         if (options.hasOwnProperty('jSegmentValues')) {
-            this.jSegmentValues = options.jSegmentValues;
+            this.jSegmentValues = options['jSegmentValues'];
         }
         return;
     }
@@ -81,7 +81,7 @@ export class TCRGeneralFilter implements FilterInterface {
         this.pairedOnly = false;
     }
 
-    public setOptions(_: FiltersOptions): void {
+    public setOptions(_: IFiltersOptions): void {
         return;
     }
 
@@ -138,7 +138,7 @@ export class TCRcdr3Filter implements FilterInterface {
         this.levensteinDeletions = 0;
     }
 
-    public setOptions(_: FiltersOptions): void {
+    public setOptions(_: IFiltersOptions): void {
         return;
     }
 

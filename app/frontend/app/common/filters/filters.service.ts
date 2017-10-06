@@ -1,6 +1,6 @@
 import { EventEmitter, Injectable } from '@angular/core';
 // import { take } from 'rxjs/operator/take';
-import { Filter, FilterInterface, FiltersOptions } from './filters';
+import { Filter, FilterInterface, IFiltersOptions } from './filters';
 import { AGFiltersService } from './filters_ag/ag-filters.service';
 import { MetaFiltersService } from './filters_meta/meta-filters.service';
 import { MHCFiltersService } from './filters_mhc/mhc-filters.service';
@@ -35,7 +35,7 @@ export class FiltersService implements FilterInterface {
         this._filtersEvents.emit(FiltersServiceEventType.Reset);
     }
 
-    public setOptions(options: FiltersOptions): void {
+    public setOptions(options: IFiltersOptions): void {
         const tcrFilterId = this.tcr.getFilterId();
         if (options.hasOwnProperty(tcrFilterId)) {
             this.tcr.setOptions(options[tcrFilterId]);

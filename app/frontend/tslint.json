@@ -21,7 +21,7 @@
     "no-trailing-whitespace": false,
     "no-conditional-assignment": true,
     "no-null-keyword": true,
-    "no-string-literal": true,
+    "no-string-literal": false,
     "switch-default": true,
     "triple-equals": true,
     "deprecation": true,

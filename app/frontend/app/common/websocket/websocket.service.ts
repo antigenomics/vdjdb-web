@@ -12,9 +12,9 @@ import { ConfigurationService } from '../../configuration.service';
 import { LoggerService } from '../../utils/logger/logger.service';
 
 export namespace WebSocketResponseStatus {
-    export const Success:string = 'success';
-    export const Warning:string = 'warning';
-    export const Error:string   = 'error';
+    export const Success: string = 'success';
+    export const Warning: string = 'warning';
+    export const Error: string   = 'error';
 }
 
 export class WebSocketRequestMessage {
@@ -87,8 +87,10 @@ export class WebSocketService {
                 //})
                 //.first()
                 .subscribe((response: any) => {
-                    observer.next(response);
-                    observer.complete();
+                    if (response.action === message.action) {
+                        observer.next(response);
+                        observer.complete();
+                    }
                 });
             this._connection.send(JSON.stringify(message));
         });

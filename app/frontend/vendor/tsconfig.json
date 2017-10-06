@@ -3,8 +3,8 @@
     "rootDir": "../node_modules/rxjs/src",
     "removeComments": true,
     "preserveConstEnums": true,
-    "sourceMap": false,
-    "declaration": false,
+    "sourceMap": true,
+    "declaration": true,
     "noImplicitAny": true,
     "noImplicitReturns": true,
     "noImplicitThis": true,
@@ -26,8 +26,5 @@
   },
   "files": [
     "../node_modules/rxjs/src/Rx.ts"
-  ],
-  "angularCompilerOptions": {
-    "annotateForClosureCompiler": true
-  }
+  ]
 }

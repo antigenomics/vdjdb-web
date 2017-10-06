@@ -1,5 +1,5 @@
 import { SetEntry } from '../common/set/set-entry';
-import { Filter, FilterInterface, FiltersOptions, FilterType } from '../filters';
+import { Filter, FilterInterface, IFiltersOptions, FilterType } from '../filters';
 
 export class MHCGeneralFilter implements FilterInterface {
     public mhci: boolean;
@@ -10,7 +10,7 @@ export class MHCGeneralFilter implements FilterInterface {
         this.mhcii = true;
     }
 
-    public setOptions(_: FiltersOptions): void {
+    public setOptions(_: IFiltersOptions): void {
         return;
     }
 
@@ -40,12 +40,12 @@ export class MHCHaplotypeFilter implements FilterInterface {
         this.secondChainSelected = [];
     }
 
-    public setOptions(options: FiltersOptions): void {
+    public setOptions(options: IFiltersOptions): void {
         if (options.hasOwnProperty('firstChainValues')) {
-            this.firstChainValues = options.firstChainValues;
+            this.firstChainValues = options['firstChainValues'];
         }
         if (options.hasOwnProperty('secondChainValues')) {
-            this.secondChainValues = options.secondChainValues;
+            this.secondChainValues = options['secondChainValues'];
         }
     }
 

@@ -1,9 +1,14 @@
-export class SuggestionEntry {
+export interface ISuggestionEntry {
+    value: string;
+    meta: string;
+}
+
+export class SuggestionEntry implements ISuggestionEntry {
     public value: string;
     public meta: string;
 
-    constructor(o: any) {
-        this.value = o.value;
-        this.meta = o.meta;
+    constructor(entry: ISuggestionEntry) {
+        this.value = entry['value'];
+        this.meta = entry['meta'];
     }
 }

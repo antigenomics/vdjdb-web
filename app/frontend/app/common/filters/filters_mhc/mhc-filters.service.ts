@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Filter, FilterInterface, FiltersOptions } from '../filters';
+import { Filter, FilterInterface, IFiltersOptions } from '../filters';
 import { MHCGeneralFilter, MHCHaplotypeFilter } from './mhc-filters';
 
 @Injectable()
@@ -17,7 +17,7 @@ export class MHCFiltersService implements FilterInterface {
         this.haplotype.setDefault();
     }
 
-    public setOptions(options: FiltersOptions): void {
+    public setOptions(options: IFiltersOptions): void {
         const generalFilterId = this.general.getFilterId();
         if (options.hasOwnProperty(generalFilterId)) {
             this.general.setOptions(options[generalFilterId]);

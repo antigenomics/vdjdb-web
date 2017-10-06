@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Filter, FilterInterface, FiltersOptions } from '../filters';
+import { Filter, FilterInterface, IFiltersOptions } from '../filters';
 import { AGEpitopeFilter, AGOriginFilter } from './ag-filters';
 
 @Injectable()
@@ -17,7 +17,7 @@ export class AGFiltersService implements FilterInterface {
         this.origin.setDefault();
     }
 
-    public setOptions(options: FiltersOptions): void {
+    public setOptions(options: IFiltersOptions): void {
         const epitopeFilterId = this.epitope.getFilterId();
         if (options.hasOwnProperty(epitopeFilterId)) {
             this.epitope.setOptions(options[epitopeFilterId]);

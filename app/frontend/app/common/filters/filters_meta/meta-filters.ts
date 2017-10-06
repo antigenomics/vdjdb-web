@@ -1,5 +1,5 @@
 import { SetEntry } from '../common/set/set-entry';
-import { Filter, FilterInterface, FiltersOptions, FilterType } from '../filters';
+import { Filter, FilterInterface, IFiltersOptions, FilterType } from '../filters';
 
 export class MetaGeneralFilter implements FilterInterface {
     public referencesSelected: SetEntry[] = [];
@@ -23,9 +23,9 @@ export class MetaGeneralFilter implements FilterInterface {
         this.seqSingleCell = true;
     }
 
-    public setOptions(options: FiltersOptions): void {
+    public setOptions(options: IFiltersOptions): void {
         if (options.hasOwnProperty('referencesValues')) {
-            this.referencesValues = options.referencesValues;
+            this.referencesValues = options['referencesValues'];
         }
     }
 
@@ -72,7 +72,7 @@ export class MetaReliabilityFilter implements FilterInterface {
         this.unmapped = false;
     }
 
-    public setOptions(_: FiltersOptions): void {
+    public setOptions(_: IFiltersOptions): void {
         return;
     }
 

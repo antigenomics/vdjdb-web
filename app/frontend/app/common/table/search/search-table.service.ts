@@ -6,7 +6,7 @@ import { DatabaseColumnInfo, DatabaseMetadata } from '../../../database/database
 import { LoggerService } from '../../../utils/logger/logger.service';
 import { NotificationService } from '../../../utils/notification/notification.service';
 import { Utils } from '../../../utils/utils';
-import { Filter } from '../../filters/filters';
+import { Filter, IFiltersOptions, FiltersOptions } from '../../filters/filters';
 import { FiltersService } from '../../filters/filters.service';
 import { WebSocketService } from '../../websocket/websocket.service';
 import { ExportFormat } from './export/search-table-export.component';
@@ -55,39 +55,20 @@ export class SearchTableService {
             });
             metadataRequest.subscribe({
                 next: (response: any) => {
-                    const metadata = DatabaseMetadata.deserialize(response.metadata);
+                    const metadata = DatabaseMetadata.deserialize(response['metadata']);
                     const columns = metadata.columns;
-                    const options = {
-                        tcr:  {
-                            segments: {
-                                vSegmentValues: metadata.getColumnInfo('v.segm').values,
-                                jSegmentValues: metadata.getColumnInfo('j.segm').values
-                            }
-                        },
-                        ag:   {
-                            origin:  {
-                                speciesValues: metadata.getColumnInfo('antigen.species').values,
-                                genesValues:   metadata.getColumnInfo('antigen.gene').values
-                            },
-                            epitope: {
-                                epitopeValues: metadata.getColumnInfo('antigen.epitope').values
-                            }
-                        },
-                        mhc:  {
-                            haplotype: {
-                                firstChainValues:  metadata.getColumnInfo('mhc.a').values,
-                                secondChainValues: metadata.getColumnInfo('mhc.b').values
-                            }
-                        },
-                        meta: {
-                            general: {
-                                referencesValues: metadata.getColumnInfo('reference.id').values
-                            }
-                        }
-                    };
+                    const options: FiltersOptions = new FiltersOptions();
+                    options.addOption('tcr.segments.vSegmentValues', metadata.getColumnInfo('v.segm').values);
+                    options.addOption('tcr.segments.jSegmentValues', metadata.getColumnInfo('j.segm').values);
+                    options.addOption('ag.origin.speciesValues', metadata.getColumnInfo('antigen.species').values);
+                    options.addOption('ag.origin.genesValues', metadata.getColumnInfo('antigen.gene').values);
+                    options.addOption('ag.epitope.epitopeValues', metadata.getColumnInfo('antigen.epitope').values);
+                    options.addOption('mhc.haplotype.firstChainValues', metadata.getColumnInfo('mhc.a').values);
+                    options.addOption('mhc.haplotype.secondChainValues', metadata.getColumnInfo('mhc.b').values);
+                    options.addOption('meta.general.referencesValues', metadata.getColumnInfo('reference.id').values);
                     this._columns = columns;
                     this._numberOfRecords = metadata.numberOfRecords;
-                    this.filters.setOptions(options);
+                    this.filters.setOptions(options.getOptions());
                     this.update();
                 }
             });
