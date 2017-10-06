@@ -2,8 +2,8 @@ import {
     ChangeDetectionStrategy, ChangeDetectorRef, Component, ComponentFactoryResolver, ComponentRef, HostListener, Renderer2, ViewContainerRef
 } from '@angular/core';
 import { NotificationService } from '../../../../../utils/notification/notification.service';
-// import { SearchTableRow } from '../../row/search-table-row';
-// import { SearchTableRowComponent } from '../../row/search-table-row.component';
+import { SearchTableRow } from '../../row/search-table-row';
+import { SearchTableRowComponent } from '../../row/search-table-row.component';
 import { SearchTableService } from '../../search-table.service';
 
 @Component({
@@ -17,7 +17,7 @@ export class SearchTableEntryGeneComponent {
     private _loading: boolean = false;
 
     private _visible: boolean = false;
-    // private _pairedRow: ComponentRef<SearchTableRowComponent>;
+    private _pairedRow: ComponentRef<SearchTableRowComponent>;
 
     private _value: string;
     private _pairedID: string;
@@ -38,11 +38,11 @@ export class SearchTableEntryGeneComponent {
         if (this._pairedID === '0') {
             this.notifications.warn('Paired', 'Paired not found');
         } else {
-            if (/* this._pairedRow*/ this._visible) {
+            if (this._pairedRow) {
                 if (this._visible) {
-                    // this.renderer.setStyle(this._pairedRow.location.nativeElement, 'display', 'none');
+                    this.renderer.setStyle(this._pairedRow.location.nativeElement, 'display', 'none');
                 } else {
-                    // this.renderer.setStyle(this._pairedRow.location.nativeElement, 'display', 'table-row');
+                    this.renderer.setStyle(this._pairedRow.location.nativeElement, 'display', 'table-row');
                 }
                 this._visible = !this._visible;
             } else if (!this._loading) {
@@ -50,13 +50,13 @@ export class SearchTableEntryGeneComponent {
                 const paired = this.table.getPaired(this._pairedID, this._value);
                 paired.subscribe((pairedResponse: any) => {
                     this._loading = false;
-                    // const rowComponentResolver = this.resolver.resolveComponentFactory<SearchTableRowComponent>(SearchTableRowComponent);
-                    // this._pairedRow = this._hostRowViewContainer.createComponent(rowComponentResolver);
-                    // this._pairedRow.instance.row = new SearchTableRow(pairedResponse.paired);
-                    // this._pairedRow.instance.allowPaired = false;
-                    // this._pairedRow.instance.ngOnInit();
-                    // this._pairedRow.changeDetectorRef.detectChanges();
-                    // this.renderer.addClass(this._pairedRow.location.nativeElement, 'warning');
+                    const rowComponentResolver = this.resolver.resolveComponentFactory<SearchTableRowComponent>(SearchTableRowComponent);
+                    this._pairedRow = this._hostRowViewContainer.createComponent(rowComponentResolver);
+                    this._pairedRow.instance.row = new SearchTableRow(pairedResponse.paired);
+                    this._pairedRow.instance.allowPaired = false;
+                    this._pairedRow.instance.ngOnInit();
+                    this._pairedRow.changeDetectorRef.detectChanges();
+                    this.renderer.addClass(this._pairedRow.location.nativeElement, 'warning');
                     this._visible = true;
                     this.changeDetector.detectChanges();
                 });

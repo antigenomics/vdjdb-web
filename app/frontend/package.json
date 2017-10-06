@@ -5,7 +5,7 @@
   "private": true,
   "scripts": {
     "start": "node ./webpack/webpack.dev.server",
-    "bundle:clean": "rimraf ../../public/bundles/*",
+    "bundle:clean-start": "rimraf ../../public/bundles/*",
     "bundle:webpack": "webpack -p --config ./webpack/webpack.prod.config.js",
     "bundle:purify": "purifycss ../../public/bundles/bundle.css ../../public/bundles/bundle.min.js ./views/main.scala.html --min --out ../../public/bundles/bundle.min.css",
     "bundle:stats": "node ./webpack/webpack.prod.postinstall.js",
@@ -13,7 +13,8 @@
     "bundle:vendor": "tsc -p vendor",
     "bundle:ngc": "ngc -p tsconfig.prod.json",
     "bundle:closure": "node ./build.prod.js",
-    "bundle": "npm run bundle:clean && npm run bundle:aot && npm run bundle:webpack && npm run bundle:purify && npm run bundle:stats",
+    "bundle:clean-end": "rimrag lib vendor/rxjs",
+    "bundle": "npm run bundle:clean-start && npm run bundle:aot && npm run bundle:webpack && npm run bundle:purify && npm run bundle:stats",
     "lint": "tslint --project tsconfig.prod.json --config tslint.json --type-check --force ./app/**/*",
     "postinstall": "node ./styles/semantic-fix.js"
   },

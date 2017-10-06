@@ -26,6 +26,7 @@ defaultConfiguration.plugins.push(
     new TSLintPlugin({
         config: path.resolve(__dirname, '../tslint.json'),
         files: [ './app/**/*.ts' ],
+        exclude: [ './app/build/**/*.ts' ],
         fix: false,
         project: path.resolve(__dirname, '../tsconfig.prod.json'),
         typeCheck: true
