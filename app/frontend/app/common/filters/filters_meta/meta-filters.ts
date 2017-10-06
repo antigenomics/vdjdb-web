@@ -1,5 +1,5 @@
 import { SetEntry } from '../common/set/set-entry';
-import { Filter, FilterInterface, IFiltersOptions, FilterType } from '../filters';
+import { Filter, FilterInterface, FilterType, IFiltersOptions } from '../filters';
 
 export class MetaGeneralFilter implements FilterInterface {
     public referencesSelected: SetEntry[] = [];
@@ -24,32 +24,35 @@ export class MetaGeneralFilter implements FilterInterface {
     }
 
     public setOptions(options: IFiltersOptions): void {
+        /* Disable tslint to prevent ClosureCompiler mangling */
+        /* tslint:disable:no-string-literal */
         if (options.hasOwnProperty('referencesValues')) {
             this.referencesValues = options['referencesValues'];
         }
+        /* tslint:enable:no-string-literal */
     }
 
     public collectFilters(filters: Filter[], _: string[]): void {
         if (this.referencesSelected.length > 0) {
-            filters.push(new Filter('reference.id', FilterType.SubstringSet, false, SetEntry.toString(this.referencesSelected)));
+            filters.push(new Filter('reference.id', FilterType.SUBSTRING_SET, false, SetEntry.toString(this.referencesSelected)));
         }
         if (this.methodSort === false) {
-            filters.push(new Filter('web.method', FilterType.Exact, true, 'sort'));
+            filters.push(new Filter('web.method', FilterType.EXACT, true, 'sort'));
         }
         if (this.methodCulture === false) {
-            filters.push(new Filter('web.method', FilterType.Exact, true, 'culture'));
+            filters.push(new Filter('web.method', FilterType.EXACT, true, 'culture'));
         }
         if (this.methodOther === false) {
-            filters.push(new Filter('web.method', FilterType.Exact, true, 'other'));
+            filters.push(new Filter('web.method', FilterType.EXACT, true, 'other'));
         }
         if (this.seqSanger === false) {
-            filters.push(new Filter('web.method.seq', FilterType.Exact, true, 'sanger'));
+            filters.push(new Filter('web.method.seq', FilterType.EXACT, true, 'sanger'));
         }
         if (this.seqAmplicon === false) {
-            filters.push(new Filter('web.method.seq', FilterType.Exact, true, 'amplicon'));
+            filters.push(new Filter('web.method.seq', FilterType.EXACT, true, 'amplicon'));
         }
         if (this.seqSingleCell === false) {
-            filters.push(new Filter('web.method.seq', FilterType.Exact, true, 'singlecell'));
+            filters.push(new Filter('web.method.seq', FilterType.EXACT, true, 'singlecell'));
         }
     }
 
@@ -81,13 +84,13 @@ export class MetaReliabilityFilter implements FilterInterface {
             errors.push(`Invalid minimal confidence score value, should be between ${this.confidenceScoreMin} and ${this.confidenceScoreMax}`);
         }
         if (this.minimalConfidenceScore > 0) {
-            filters.push(new Filter('vdjdb.score', FilterType.Level, false, this.minimalConfidenceScore.toString()));
+            filters.push(new Filter('vdjdb.score', FilterType.LEVEL, false, this.minimalConfidenceScore.toString()));
         }
         if (this.nonCanonical === false) {
-            filters.push(new Filter('web.cdr3fix.nc', FilterType.Exact, true, 'yes'));
+            filters.push(new Filter('web.cdr3fix.nc', FilterType.EXACT, true, 'yes'));
         }
         if (this.unmapped === false) {
-            filters.push(new Filter('web.cdr3fix.unmp', FilterType.Exact, true, 'yes'));
+            filters.push(new Filter('web.cdr3fix.unmp', FilterType.EXACT, true, 'yes'));
         }
     }
 

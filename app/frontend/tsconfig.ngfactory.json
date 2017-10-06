@@ -21,10 +21,7 @@
     "declaration": true
   },
   "exclude": [ "node_modules", "vendor", "build", "app/main.prod.ts" ],
-  "files": [
-    "app/application.module.ts",
-    "app/main.ts"
-  ],
+  "include": [ "./app/**/*.ts" ],
   "compileOnSave": false,
   "buildOnSave": false,
   "angularCompilerOptions": {

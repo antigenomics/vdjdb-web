@@ -1,22 +1,16 @@
 import { Injectable } from '@angular/core';
-// import { Observable, Observer, Subject } from 'rxjs/Rx';
 import { Observable } from 'rxjs/Observable';
 import { Observer } from 'rxjs/Observer';
 import { Subject } from 'rxjs/Subject';
-// import { do } from 'rxjs/operator/do';
-// import { filter } from 'rxjs/operator/filter';
-// import { first } from 'rxjs/operator/first';
-// import { share } from 'rxjs/operator/share';
-// import 'rxjs/Rx'
 import { ConfigurationService } from '../../configuration.service';
 import { LoggerService } from '../../utils/logger/logger.service';
 import { IWebSocketRequestData } from './websocket-request';
 import { WebSocketResponseData } from './websocket-response';
 
 export namespace WebSocketResponseStatus {
-    export const Success: string = 'success';
-    export const Warning: string = 'warning';
-    export const Error: string = 'error';
+    export const SUCCESS: string = 'success';
+    export const WARNING: string = 'warning';
+    export const ERROR: string = 'error';
 }
 
 export class WebSocketRequestMessage {
@@ -141,7 +135,7 @@ export class WebSocketService {
 
         if (ConfigurationService.isDevelopmentMode()) {
             this._messages.subscribe((message: any) => {
-                if (message.status === WebSocketResponseStatus.Error) {
+                if (message.status === WebSocketResponseStatus.ERROR) {
                     this.logger.debug('WebSocket error message: ', message);
                 }
             });

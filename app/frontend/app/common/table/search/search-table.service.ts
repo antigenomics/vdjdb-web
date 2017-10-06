@@ -15,11 +15,11 @@ import { ExportFormat } from './export/search-table-export.component';
 import { SearchTableRow } from './row/search-table-row';
 
 export namespace SearchTableWebSocketActions {
-    export const Metadata: string = 'meta';
-    export const Suggestions: string = 'suggestions';
-    export const Search: string   = 'search';
-    export const Export: string   = 'export';
-    export const Paired: string   = 'paired';
+    export const METADATA: string = 'meta';
+    export const SUGGESTIONS: string = 'suggestions';
+    export const SEARCH: string = 'search';
+    export const EXPORT: string = 'export';
+    export const PAIRED: string = 'paired';
 }
 
 export class SortRule {
@@ -54,7 +54,7 @@ export class SearchTableService {
         this.connection.connect('/api/database/connect');
         this.connection.onOpen(() => {
             const metadataRequest = this.connection.sendMessage({
-                action: SearchTableWebSocketActions.Metadata
+                action: SearchTableWebSocketActions.METADATA
             });
             metadataRequest.subscribe({
                 next: (response: WebSocketResponseData) => {
@@ -77,7 +77,7 @@ export class SearchTableService {
             });
 
             const suggestionsRequest = this.connection.sendMessage({
-                action: SearchTableWebSocketActions.Suggestions,
+                action: SearchTableWebSocketActions.SUGGESTIONS,
                 data: new WebSocketRequestData()
                       .add('column', 'antigen.epitope')
                       .unpack()
@@ -115,7 +115,7 @@ export class SearchTableService {
             this._loading = true;
             this.logger.debug('Collected filters', filters);
             const request = this.connection.sendMessage({
-                action: SearchTableWebSocketActions.Search,
+                action: SearchTableWebSocketActions.SEARCH,
                 data: new WebSocketRequestData()
                       .add('filters', filters.map((filter: Filter): IFilter => filter.unpack()))
                       .unpack()
@@ -142,7 +142,7 @@ export class SearchTableService {
         }
         this.logger.debug('Sort rule', this._sortRule);
         const request = this.connection.sendMessage({
-            action: SearchTableWebSocketActions.Search,
+            action: SearchTableWebSocketActions.SEARCH,
             data: new WebSocketRequestData()
                   .add('sort', this._sortRule.toString())
                   .unpack()
@@ -157,7 +157,7 @@ export class SearchTableService {
         this._loading = true;
         this.logger.debug('Page change', page);
         const request = this.connection.sendMessage({
-            action: SearchTableWebSocketActions.Search,
+            action: SearchTableWebSocketActions.SEARCH,
             data: new WebSocketRequestData()
                   .add('page', page)
                   .unpack()
@@ -169,9 +169,9 @@ export class SearchTableService {
     }
 
     public exportTable(format: ExportFormat): void {
-        this.logger.debug('Export', format);
+        this.logger.debug('EXPORT', format);
         const request = this.connection.sendMessage({
-            action: SearchTableWebSocketActions.Export,
+            action: SearchTableWebSocketActions.EXPORT,
             data: new WebSocketRequestData()
                   .add('format', format.name)
                   .unpack()
@@ -192,7 +192,7 @@ export class SearchTableService {
         this._pageSize = pageSize;
         this.logger.debug('Page size', pageSize);
         const request = this.connection.sendMessage({
-            action: SearchTableWebSocketActions.Search,
+            action: SearchTableWebSocketActions.SEARCH,
             data: new WebSocketRequestData()
                   .add('pageSize', pageSize)
                   .unpack()
@@ -213,7 +213,7 @@ export class SearchTableService {
     public getPaired(pairedID: string, gene: string): Observable<WebSocketResponseData> {
         this.logger.debug('Paired', { pairedID, gene });
         return this.connection.sendMessage({
-            action: SearchTableWebSocketActions.Paired,
+            action: SearchTableWebSocketActions.PAIRED,
             data: new WebSocketRequestData()
                   .add('pairedID', pairedID)
                   .add('gene', gene)

@@ -1,6 +1,8 @@
 const closureCompiler = require('google-closure-compiler').compiler;
 const glob = require('glob');
 
+console.log('Building frontend in production mode.');
+
 const files = [
     'node_modules/zone.js/dist/zone.js',
     'node_modules/@angular/core/@angular/core.js',

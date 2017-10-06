@@ -1,13 +1,3 @@
-export interface IDatabaseColumnInfo {
-    name: string;
-    columnType: string;
-    visible: boolean;
-    dataType: string;
-    title: string;
-    comment: string;
-    values: string[];
-}
-
 export class DatabaseColumnInfo {
 
     private _name: string;
@@ -56,16 +46,13 @@ export class DatabaseColumnInfo {
         return this._values;
     }
 
-    public static deserialize(input: IDatabaseColumnInfo): DatabaseColumnInfo {
+    public static deserialize(input: any): DatabaseColumnInfo {
+        /* Disable tslint to prevent ClosureCompiler mangling */
+        /* tslint:disable:no-string-literal */
         return new DatabaseColumnInfo(input['name'], input['columnType'], input['visible'],
             input['dataType'], input['title'], input['comment'], input['values']);
+        /* tslint:enable:no-string-literal */
     }
-}
-
-export interface IDatabaseMetadata {
-    numberOfRecords: number;
-    numberOfColumns: number;
-    columns: any[];
 }
 
 export class DatabaseMetadata {
@@ -95,8 +82,11 @@ export class DatabaseMetadata {
         return this._columns.find((i: DatabaseColumnInfo) => i.name === columnName);
     }
 
-    public static deserialize(input: IDatabaseMetadata): DatabaseMetadata {
+    public static deserialize(input: any): DatabaseMetadata {
+        /* Disable tslint to prevent ClosureCompiler mangling */
+        /* tslint:disable:no-string-literal */
         return new DatabaseMetadata(input['numberOfRecords'], input['numberOfColumns'], input['columns'].map((c: any) => DatabaseColumnInfo.deserialize(c)));
+        /* tslint:enable:no-string-literal */
     }
 
 }

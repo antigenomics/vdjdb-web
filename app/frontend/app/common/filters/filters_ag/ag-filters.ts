@@ -1,7 +1,7 @@
 import { Utils } from '../../../utils/utils';
 import { SetEntry } from '../common/set/set-entry';
 import { SuggestionEntry } from '../common/set/suggestion-entry';
-import { Filter, FilterInterface, IFiltersOptions, FilterType } from '../filters';
+import { Filter, FilterInterface, FilterType, IFiltersOptions } from '../filters';
 
 export class AGOriginFilter implements FilterInterface {
     public speciesSelected: SetEntry[] = [];
@@ -16,21 +16,23 @@ export class AGOriginFilter implements FilterInterface {
     }
 
     public setOptions(options: IFiltersOptions): void {
+        /* Disable tslint to prevent ClosureCompiler mangling */
+        /* tslint:disable:no-string-literal */
         if (options.hasOwnProperty('speciesValues')) {
             this.speciesValues = options['speciesValues'];
         }
         if (options.hasOwnProperty('genesValues')) {
             this.genesValues = options['genesValues'];
         }
-        return;
+        /* tslint:enable:no-string-literal */
     }
 
     public collectFilters(filters: Filter[], _: string[]): void {
         if (this.speciesSelected.length > 0) {
-            filters.push(new Filter('antigen.species', FilterType.SubstringSet, false, SetEntry.toString(this.speciesSelected)));
+            filters.push(new Filter('antigen.species', FilterType.SUBSTRING_SET, false, SetEntry.toString(this.speciesSelected)));
         }
         if (this.genesSelected.length > 0) {
-            filters.push(new Filter('antigen.gene', FilterType.SubstringSet, false, SetEntry.toString(this.genesSelected)));
+            filters.push(new Filter('antigen.gene', FilterType.SUBSTRING_SET, false, SetEntry.toString(this.genesSelected)));
         }
     }
 
@@ -56,6 +58,8 @@ export class AGEpitopeFilter implements FilterInterface {
     }
 
     public setOptions(options: IFiltersOptions): void {
+        /* Disable tslint to prevent ClosureCompiler mangling */
+        /* tslint:disable:no-string-literal */
         if (options.hasOwnProperty('epitopeValues')) {
             this.epitopeValues = options['epitopeValues'];
         }
@@ -67,7 +71,7 @@ export class AGEpitopeFilter implements FilterInterface {
                 }
             }
         }
-        return;
+        /* tslint:enable:no-string-literal */
     }
 
     public collectFilters(filters: Filter[], errors: string[]): void {
@@ -76,14 +80,14 @@ export class AGEpitopeFilter implements FilterInterface {
             return;
         }
         if (this.epitopeSelected.length > 0) {
-            filters.push(new Filter('antigen.epitope', FilterType.SubstringSet, false, SetEntry.toString(this.epitopeSelected)));
+            filters.push(new Filter('antigen.epitope', FilterType.SUBSTRING_SET, false, SetEntry.toString(this.epitopeSelected)));
         }
         if (this.epitopePattern.length !== 0) {
             let value = this.epitopePattern;
             if (this.epitopePatternSubstring === false) {
                 value = `^${value}$`;
             }
-            filters.push(new Filter('antigen.epitope', FilterType.Pattern, false, value.replace(/X/g, '.')));
+            filters.push(new Filter('antigen.epitope', FilterType.PATTERN, false, value.replace(/X/g, '.')));
         }
     }
 

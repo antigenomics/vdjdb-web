@@ -1,4 +1,4 @@
-console.log('Building frontend in production mode');
+console.log('Configuring webpack in production mode');
 
 const path = require('path');
 const webpack = require('webpack');
@@ -26,9 +26,9 @@ defaultConfiguration.plugins.push(
     new TSLintPlugin({
         config: path.resolve(__dirname, '../tslint.json'),
         files: [ './app/**/*.ts' ],
-        exclude: [ './app/build/**/*.ts' ],
+        exclude: [ './app/main.prod.ts' ],
         fix: false,
-        project: path.resolve(__dirname, '../tsconfig.prod.json'),
+        project: path.resolve(__dirname, '../tsconfig.ngfactory.json'),
         typeCheck: true
     }),
     // new AotPlugin({
