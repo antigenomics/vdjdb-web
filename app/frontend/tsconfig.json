@@ -1,19 +1,15 @@
 {
   "compilerOptions": {
     "outDir": "dist",
-    "target": "es2016",
-    "module": "commonjs",
+    "target": "es2015",
+    "module": "es2015",
     "sourceMap": true,
+    "lib": [ "dom", "es2015" ],
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "moduleResolution": "node",
     "typeRoots": [ "node_modules/@types" ],
-    "types": [ 
-      "node",
-      "source-map",
-      "uglify-js",
-      "webpack"
-    ],
+    "types": [ "node", "source-map", "uglify-js", "webpack" ],
     "noImplicitAny": true,
     "removeComments": true,
     "alwaysStrict": true,
@@ -22,7 +18,7 @@
     "noUnusedParameters": true,
     "allowJs": true
   },
-  "exclude": [ "node_modules" ],
+  "exclude": [ "node_modules", "vendor", "app/main.prod.ts" ],
   "compileOnSave": false,
   "buildOnSave": false
 }
