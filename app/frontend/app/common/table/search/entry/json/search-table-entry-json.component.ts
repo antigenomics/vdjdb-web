@@ -18,12 +18,16 @@ export class SearchTableEntryJsonComponent {
 
     @HostListener('click')
     public copyToClipboard(): void {
-        const copyContent = this._value.join('\n');
-        const result = this.clipboard.copyFromContent(copyContent);
-        if (result) {
-            this.notifications.info('Copy to clipboard', 'Copied successfully');
+        if (this._value.length !== 0) {
+            const copyContent = this._value.join('\n');
+            const result = this.clipboard.copyFromContent(copyContent);
+            if (result) {
+                this.notifications.info('Copy to clipboard', 'Copied successfully');
+            } else {
+                this.notifications.error('Copy to clipboard', 'Your browser is not supported');
+            }
         } else {
-            this.notifications.error('Copy to clipboard', 'Your browser is not supported');
+            this.notifications.warn('Copy to clipboard', 'Empty content');
         }
     }
 

@@ -63,7 +63,7 @@ export class PopupContentComponent implements AfterViewInit {
     }
 
     public getPopupContent(): string[] {
-        return this._content;
+        return this._content.length === 0 ? [ 'No content' ] : this._content;
     }
 
     public getHeaderContent(): string {
