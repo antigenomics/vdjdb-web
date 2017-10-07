@@ -5,6 +5,7 @@ import backend.server.database.Database
 import backend.server.database.filters.DatabaseFilters
 
 import scala.collection.JavaConverters._
+import scala.math.Ordering.String
 
 case class SearchTable(private var pageSize: Int = SearchTable.DEFAULT_PAGE_SIZE, private var rows: List[SearchTableRow] = List()) {
     private var currentPage: Int = 0
@@ -38,17 +39,17 @@ case class SearchTable(private var pageSize: Int = SearchTable.DEFAULT_PAGE_SIZE
     }
 
     def sort(columnName: String, sortType: String): Unit = {
-        rows = rows.sortWith((e1, e2) => {
-            val v1 = e1.entries.find(entry => entry.column == columnName).get.value
-            val v2 = e2.entries.find(entry => entry.column == columnName).get.value
-            val m = v1 > v2
+        if ((sortType == "desc" || sortType == "asc") && (columnName.length != 0)) {
+            rows = rows.sortWith((e1, e2) => {
+                val v1 = e1.entries.find(entry => entry.column == columnName).get.value
+                val v2 = e2.entries.find(entry => entry.column == columnName).get.value
 
-            sortType match {
-                case "desc" => m
-                case "asc" => !m
-                case _ => m
-            }
-        })
+                sortType match {
+                    case "desc" => String.gt(v1, v2)
+                    case "asc" => String.lteq(v1, v2)
+                }
+            })
+        }
     }
 
     def update(filters: DatabaseFilters, database: Database): SearchTable = {

@@ -7,10 +7,20 @@ import { LoggerService } from '../../utils/logger/logger.service';
 import { IWebSocketRequestData } from './websocket-request';
 import { WebSocketResponseData } from './websocket-response';
 
+export type WebSocketResponseStatus = string;
+
 export namespace WebSocketResponseStatus {
     export const SUCCESS: string = 'success';
     export const WARNING: string = 'warning';
     export const ERROR: string = 'error';
+}
+
+export type WebSocketConnectionStatus = number;
+
+export namespace WebSocketConnectionStatus {
+    export const CONNECTING: number = 0;
+    export const CONNECTED: number = 1;
+    export const CLOSED: number = 2;
 }
 
 export class WebSocketRequestMessage {
@@ -21,12 +31,13 @@ export class WebSocketRequestMessage {
 @Injectable()
 export class WebSocketService {
     private static pingConnectionTimeout: number = 15000;
-    private static maxReconnectAttempts: number = 5;
+    private static maxReconnectAttempts: number = 1000;
 
     private _currentReconnectAttempt: number = 0;
     private _lastConnectedUrl: string;
     private _connectionTimeoutEvent: number = -1;
     private _connection: WebSocket;
+    private _connectionStatus: WebSocketConnectionStatus = WebSocketConnectionStatus.CONNECTING;
     private _messages: Subject<WebSocketResponseData> = new Subject();
 
     // Callbacks
@@ -34,7 +45,14 @@ export class WebSocketService {
     private _onErrorCallback: (event: Event) => void;
     private _onCloseCallback: (event: CloseEvent) => void;
 
-    constructor(private logger: LoggerService) {
+    constructor(private logger: LoggerService) {}
+
+    public isDisconnected(): boolean {
+        return this._connectionStatus === WebSocketConnectionStatus.CLOSED;
+    }
+
+    public isConnected(): boolean {
+        return this._connectionStatus === WebSocketConnectionStatus.CONNECTED;
     }
 
     public connect(url: string): void {
@@ -101,10 +119,14 @@ export class WebSocketService {
 
     private bindConnectionEvents(): void {
         this._connection.onopen = (event: Event) => {
+            this._connectionStatus = WebSocketConnectionStatus.CONNECTED;
             this.logger.debug('WebSocket service open: ', this._lastConnectedUrl);
             if (this._onOpenCallback) {
                 this._onOpenCallback(event);
             }
+            window.setTimeout(() => {
+                this.disconnect();
+            }, 1000);
         };
 
         this._connection.onerror = (error: Event) => {
@@ -115,6 +137,7 @@ export class WebSocketService {
         };
 
         this._connection.onclose = (event: CloseEvent) => {
+            this._connectionStatus = WebSocketConnectionStatus.CLOSED;
             this.logger.error('WebSocket service close:', event);
             if (this._onCloseCallback) {
                 this._onCloseCallback(event);

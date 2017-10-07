@@ -21,8 +21,4 @@ export class SearchPageComponent {
     public isLoading(): boolean {
         return this.table.loading || !this.table.dirty;
     }
-
-    public isConnectionFailed(): boolean {
-        return this.table.connectionFailed;
-    }
 }

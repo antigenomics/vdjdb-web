@@ -21,7 +21,7 @@ import scala.concurrent.ExecutionContext
 
 case class DatabaseSearchWebSocketActor(out: ActorRef, database: Database, actorSystem: ActorSystem, limit: IpLimit, requestLimits: RequestLimits)
                                        (implicit ec: ExecutionContext) extends Actor {
-    val table: SearchTable = new SearchTable()
+    private final val table: SearchTable = new SearchTable()
 
     override def receive: Receive = {
         case request: JsValue =>
