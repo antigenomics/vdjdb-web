@@ -92,9 +92,6 @@ export class SearchTableService {
                 }
             });
         });
-        this.connection.onClose(() => {
-            this.notifications.warn('Search', 'Debug disconnected');
-        });
     }
 
     public update(): void {
