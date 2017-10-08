@@ -8,13 +8,14 @@ import { SearchTableService } from '../../search-table.service';
 
 @Component({
     selector:        'td[search-table-entry-gene]',
-    template:        `<i class="plus icon cursor pointer" [class.disabled]="isDisabled()" *ngIf="!visible"></i>
-                      <i class="minus icon cursor pointer" *ngIf="visible"></i>{{ value }}`,
+    template:        `<div class="ui active mini centered inline loader" *ngIf="pairedLoading"></div>
+                      <i class="plus icon cursor pointer" [class.disabled]="isDisabled()" *ngIf="!visible && !pairedLoading"></i>
+                      <i class="minus icon cursor pointer" *ngIf="visible && !pairedLoading"></i><span *ngIf="!pairedLoading">{{ value }}</span>`,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SearchTableEntryGeneComponent {
     private _hostRowViewContainer: ViewContainerRef;
-    private _loading: boolean = false;
+    private _pairedLoading: boolean = false;
 
     private _visible: boolean = false;
     private _pairedRow: ComponentRef<any>;
@@ -46,11 +47,11 @@ export class SearchTableEntryGeneComponent {
                     this.renderer.setStyle(this._pairedRow.location.nativeElement, 'display', 'table-row');
                 }
                 this._visible = !this._visible;
-            } else if (!this._loading) {
-                this._loading = true;
+            } else if (!this._pairedLoading) {
+                this._pairedLoading = true;
                 const paired = this.table.getPaired(this._pairedID, this._value);
                 paired.subscribe((response: WebSocketResponseData) => {
-                    this._loading = false;
+                    this._pairedLoading = false;
                     this._pairedRow = this._hostRowViewContainer.createComponent(this._pairedRowResolver);
                     this._pairedRow.instance.row = new SearchTableRow(response.get('paired'));
                     this._pairedRow.instance.allowPaired = false;
@@ -60,7 +61,7 @@ export class SearchTableEntryGeneComponent {
                     this._visible = true;
                     this.changeDetector.detectChanges();
                 });
-            } else if (this._loading) {
+            } else if (this._pairedLoading) {
                 this.notifications.info('Paired', 'Loading...');
             }
         }
@@ -72,6 +73,10 @@ export class SearchTableEntryGeneComponent {
 
     get visible(): boolean {
         return this._visible;
+    }
+
+    get pairedLoading(): boolean {
+        return this._pairedLoading;
     }
 
     get value(): string {

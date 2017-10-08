@@ -1,7 +1,7 @@
 package backend.actors
 
 import akka.actor.{Actor, ActorRef, ActorSystem, PoisonPill, Props}
-import backend.server.api.ClientRequest
+import backend.server.api.{ClientRequest, SuccessResponse}
 import backend.server.api.common.{ErrorMessageResponse, SuccessMessageResponse, WarningMessageResponse}
 import backend.server.table.search.api.export.{ExportDataRequest, ExportDataResponse}
 import backend.server.table.search.api.paired.{PairedDataRequest, PairedDataResponse}
@@ -79,8 +79,12 @@ case class DatabaseSearchWebSocketActor(out: ActorRef, database: Database, actor
                                 table.setPageSize(searchRequest.pageSize.get)
                             }
 
-                            val page = searchRequest.page.getOrElse(0)
-                            out ! toJson(SearchDataResponse(page, table.getPageSize, table.getPageCount, table.getRecordsFound, table.getPage(page)))
+                            if (!searchRequest.reconnect.getOrElse(false)) {
+                                val page = searchRequest.page.getOrElse(0)
+                                out ! toJson(SearchDataResponse(page, table.getPageSize, table.getPageCount, table.getRecordsFound, table.getPage(page)))
+                            } else {
+                                out ! toJson(SuccessResponse.createSimpleResponse(SearchDataResponse.action))
+                            }
                         })
                     case PairedDataResponse.action =>
                         validateData(out, request.data, (pairedRequest: PairedDataRequest) => {

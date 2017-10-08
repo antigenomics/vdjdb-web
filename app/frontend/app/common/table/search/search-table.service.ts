@@ -13,6 +13,7 @@ import { WebSocketResponseData } from '../../websocket/websocket-response';
 import { WebSocketService } from '../../websocket/websocket.service';
 import { ExportFormat } from './export/search-table-export.component';
 import { SearchTableRow } from './row/search-table-row';
+import { Observer } from 'rxjs/Observer';
 
 export namespace SearchTableWebSocketActions {
     export const METADATA: string = 'meta';
@@ -36,8 +37,9 @@ export class SearchTableService {
     private _loading: boolean = false;
 
     private _dirty: boolean = false;
+    private _filters: IFilter[] = [];
     private _page: number = 0;
-    private _pageSize: number = 0;
+    private _pageSize: number = 25;
     private _pageRange: number = 5;
     private _pageCount: number = 0;
     private _rows: Subject<SearchTableRow[]> = new ReplaySubject(1);
@@ -108,11 +110,13 @@ export class SearchTableService {
             this.filters.collectFilters(filters, errors);
             if (errors.length === 0) {
                 this._loading = true;
+                this._filters = filters.map((filter: Filter): IFilter => filter.unpack());
                 this.logger.debug('Collected filters', filters);
                 const request = this.connection.sendMessage({
                     action: SearchTableWebSocketActions.SEARCH,
                     data:   new WebSocketRequestData()
-                            .add('filters', filters.map((filter: Filter): IFilter => filter.unpack()))
+                            .add('filters', this._filters)
+                            .add('pageSize', this._pageSize)
                             .unpack()
                 });
                 request.subscribe((response: WebSocketResponseData) => {
@@ -124,6 +128,7 @@ export class SearchTableService {
                 errors.forEach((error: string) => {
                     this.notifications.error('Filters error', error);
                 });
+                this._loading = false;
             }
         }, false);
     }
@@ -209,19 +214,25 @@ export class SearchTableService {
 
     // noinspection JSMethodCanBeStatic
     public getAvailablePageSizes(): number[] {
-        /*tslint:disable:no-magic-numbers*/
-        return [ 25, 50, 100 ];
-        /*tslint:enable:no-magic-numbers*/
+        return [ 25, 50, 100 ]; // tslint:disable-line:no-magic-numbers
     }
 
     public getPaired(pairedID: string, gene: string): Observable<WebSocketResponseData> {
         this.logger.debug('Paired', { pairedID, gene });
-        return this.connection.sendMessage({
-            action: SearchTableWebSocketActions.PAIRED,
-            data:   new WebSocketRequestData()
-                    .add('pairedID', pairedID)
-                    .add('gene', gene)
-                    .unpack()
+        return Observable.create((observer: Observer<WebSocketResponseData>) => {
+            this.checkConnection(() => {
+                const pairedRequest = this.connection.sendMessage({
+                    action: SearchTableWebSocketActions.PAIRED,
+                    data:   new WebSocketRequestData()
+                            .add('pairedID', pairedID)
+                            .add('gene', gene)
+                            .unpack()
+                });
+                pairedRequest.subscribe((response: WebSocketResponseData) => {
+                    observer.next(response);
+                    observer.complete();
+                });
+            }, true, false);
         });
     }
 
@@ -229,37 +240,37 @@ export class SearchTableService {
         return this._dirty && this._recordsFound === 0;
     }
 
-    public checkConnection(callback: () => void, init: boolean = true): void {
-        this._loading = true;
+    public checkConnection(callback: () => void, init: boolean = true, loading: boolean = true): void {
+        if (loading) {
+            this._loading = true;
+        }
         if (this.connection.isDisconnected()) {
-            this.notifications.info('Database', 'Reconnecting...')
-            this.logger.debug('Check connection failed', 'reconnecting...');
+            this.notifications.info('Database', 'Reconnecting...');
+            this.logger.warn('Database', 'Reconnecting...');
             this.connection.onOpen(() => {
                 if (init) {
-                    this._loading = true;
-                    const filters: Filter[] = [];
-                    const errors: string[] = [];
-                    this.filters.collectFilters(filters, errors);
-
                     const reconnectRequest = this.connection.sendMessage({
                         action: SearchTableWebSocketActions.SEARCH,
                         data:   new WebSocketRequestData()
-                                .add('filters', filters.map((filter: Filter): IFilter => filter.unpack()))
+                                .add('filters', this._filters)
                                 .add('sort', this._sortRule.toString())
                                 .add('page', this._page)
                                 .add('pageSize', this._pageSize)
+                                .add('reconnect', true)
                                 .unpack()
                     });
                     reconnectRequest.subscribe((response: WebSocketResponseData) => {
-                        this.logger.debug('Search', response);
-                        this.updateFromResponse(response);
+                        this.logger.debug('Search reconnected', response);
                         callback();
                     });
                 } else {
                     callback();
                 }
             });
-            this.connection.reconnect();
+            const reconnectSuccess = this.connection.reconnect();
+            if (!reconnectSuccess) {
+                this.notifications.error('Database', 'Unable to reconnect, please check your internet connection');
+            }
         } else {
             callback();
         }

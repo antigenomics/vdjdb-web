@@ -3,7 +3,8 @@ package backend.server.table.search.api.search
 import backend.server.database.filters.DatabaseFilterRequest
 import play.api.libs.json.{JsSuccess, JsValue, Reads}
 
-case class SearchDataRequest(filters: Option[List[DatabaseFilterRequest]], page: Option[Int], pageSize: Option[Int], sort: Option[String], pairedID: Option[Int])
+case class SearchDataRequest(filters: Option[List[DatabaseFilterRequest]], page: Option[Int], pageSize: Option[Int],
+                             sort: Option[String], pairedID: Option[Int], reconnect: Option[Boolean])
 
 object SearchDataRequest {
     implicit val searchTableResultsDataRequestReads: Reads[SearchDataRequest] = (json: JsValue) =>
@@ -12,5 +13,6 @@ object SearchDataRequest {
             (json \ "page").asOpt[Int],
             (json \ "pageSize").asOpt[Int],
             (json \ "sort").asOpt[String],
-            (json \ "pairedID").asOpt[Int]))
+            (json \ "pairedID").asOpt[Int],
+            (json \ "reconnect").asOpt[Boolean]))
 }

@@ -124,9 +124,6 @@ export class WebSocketService {
             if (this._onOpenCallback) {
                 this._onOpenCallback(event);
             }
-            window.setTimeout(() => {
-                this.disconnect();
-            }, 1000);
         };
 
         this._connection.onerror = (error: Event) => {
