@@ -1,7 +1,9 @@
-export const enum NotificationItemType {
-    Info  = 'info',
-    Warn  = 'warn',
-    Error = 'error'
+export type NotificationItemType = string;
+
+export namespace NotificationItemType {
+    export const INFO: string = 'info';
+    export const WARN: string = 'warn';
+    export const ERROR: string = 'error';
 }
 
 export class NotificationItem {
@@ -18,14 +20,14 @@ export class NotificationItem {
     }
 
     public isInfo(): boolean {
-        return this.type === NotificationItemType.Info;
+        return this.type === NotificationItemType.INFO;
     }
 
     public isWarn(): boolean {
-        return this.type === NotificationItemType.Warn;
+        return this.type === NotificationItemType.WARN;
     }
 
     public isError(): boolean {
-        return this.type === NotificationItemType.Error;
+        return this.type === NotificationItemType.ERROR;
     }
 }

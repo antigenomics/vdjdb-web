@@ -1,5 +1,4 @@
 import { Pipe, PipeTransform } from '@angular/core';
-import { isUndefined } from 'util';
 import { SetEntry } from './set-entry';
 
 @Pipe({
@@ -13,7 +12,7 @@ export class AutocompletePipe implements PipeTransform {
             display: 'Search substring: ' + model,
             disabled: false
         }];
-        if (isUndefined(model) || model === '') {
+        if (model === undefined || model === '') {
             result = values.map((value: string) => ({ value, display: value, disabled: false }));
         } else {
             const filtered = values

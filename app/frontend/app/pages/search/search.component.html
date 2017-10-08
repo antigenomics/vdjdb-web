@@ -6,24 +6,17 @@
             <search-info></search-info>
         </div>
         <div class="ui attached secondary clearing segment">
-            <button class="ui blue button right floated" [ngClass]="{'disabled':isConnectionFailed()}" (click)="reset()">Reset filters</button>
-            <button class="ui teal button left floated" [ngClass]="{'loading':isLoading(),'disabled':isConnectionFailed()}" (click)="search()">Refresh table</button>
+            <button class="ui blue button right floated" (click)="reset()">Reset filters</button>
+            <button class="ui teal button left floated" [ngClass]="{'loading':isLoading()}" (click)="search()">Refresh table</button>
         </div>
     </div>
     <div class="ui raised segments">
         <h3 class="ui top attached header">Results</h3>
-        <div class="ui attached teal padded blurring segment" *ngIf="!isConnectionFailed()">
+        <div class="ui attached teal padded blurring segment">
             <div class="ui inverted dimmer" [ngClass]="{'active':isLoading()}">
                 <div class="ui large text loader top element">Updating</div>
             </div>
             <search-table></search-table>
-        </div>
-        <div class="ui attached teal padded blurring segment" *ngIf="isConnectionFailed()">
-            <div class="ui negative message">
-                <div class="header">
-                    The page has been idle for too long (or there is a connection problem). Application is not able to reconnect to database.
-                </div>
-            </div>
         </div>
     </div>
 </div>

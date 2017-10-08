@@ -1,5 +1,5 @@
 import { SetEntry } from '../common/set/set-entry';
-import { Filter, FilterInterface, FiltersOptions, FilterType } from '../filters';
+import { Filter, FilterInterface, FilterType, IFiltersOptions } from '../filters';
 
 export class MHCGeneralFilter implements FilterInterface {
     public mhci: boolean;
@@ -10,16 +10,16 @@ export class MHCGeneralFilter implements FilterInterface {
         this.mhcii = true;
     }
 
-    public setOptions(_: FiltersOptions): void {
+    public setOptions(_: IFiltersOptions): void {
         return;
     }
 
     public collectFilters(filters: Filter[], _: string[]): void {
         if (this.mhci === false) {
-            filters.push(new Filter('mhc.class', FilterType.Exact, true, 'MHCI'));
+            filters.push(new Filter('mhc.class', FilterType.EXACT, true, 'MHCI'));
         }
         if (this.mhcii === false) {
-            filters.push(new Filter('mhc.class', FilterType.Exact, true, 'MHCII'));
+            filters.push(new Filter('mhc.class', FilterType.EXACT, true, 'MHCII'));
         }
     }
 
@@ -40,21 +40,24 @@ export class MHCHaplotypeFilter implements FilterInterface {
         this.secondChainSelected = [];
     }
 
-    public setOptions(options: FiltersOptions): void {
+    public setOptions(options: IFiltersOptions): void {
+        /* Disable tslint to prevent ClosureCompiler mangling */
+        /* tslint:disable:no-string-literal */
         if (options.hasOwnProperty('firstChainValues')) {
-            this.firstChainValues = options.firstChainValues;
+            this.firstChainValues = options['firstChainValues'];
         }
         if (options.hasOwnProperty('secondChainValues')) {
-            this.secondChainValues = options.secondChainValues;
+            this.secondChainValues = options['secondChainValues'];
         }
+        /* tslint:enable:no-string-literal */
     }
 
     public collectFilters(filters: Filter[], _: string[]): void {
         if (this.firstChainSelected.length > 0) {
-            filters.push(new Filter('mhc.a', FilterType.SubstringSet, false, SetEntry.toString(this.firstChainSelected)));
+            filters.push(new Filter('mhc.a', FilterType.SUBSTRING_SET, false, SetEntry.toString(this.firstChainSelected)));
         }
         if (this.secondChainSelected.length > 0) {
-            filters.push(new Filter('mhc.b', FilterType.SubstringSet, false, SetEntry.toString(this.secondChainSelected)));
+            filters.push(new Filter('mhc.b', FilterType.SUBSTRING_SET, false, SetEntry.toString(this.secondChainSelected)));
         }
     }
 

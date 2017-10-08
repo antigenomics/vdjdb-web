@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "outDir": "./lib/aot",
+    "outDir": "./lib/factory",
     "target": "es6",
     "module": "es2015",
     "sourceMap": false,
@@ -20,7 +20,7 @@
     "noUnusedParameters": false,
     "declaration": true
   },
-  "exclude": [ "node_modules", "vendor", "build", "app/main.ts" ],
+  "exclude": [ "node_modules", "vendor", "build", "app/main.prod.ts" ],
   "include": [ "./app/**/*.ts" ],
   "compileOnSave": false,
   "buildOnSave": false,

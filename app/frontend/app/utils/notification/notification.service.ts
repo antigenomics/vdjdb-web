@@ -2,10 +2,12 @@ import { EventEmitter, Injectable } from '@angular/core';
 import { Utils } from '../utils';
 import { NotificationItem, NotificationItemType } from './notification-item';
 
-export const enum NotificationServiceEventType {
-    Add,
-    DeleteFadeOut,
-    Delete
+export type NotificationServiceEventType = number;
+
+export namespace NotificationServiceEventType {
+    export const ADD: number = 0;
+    export const DELETE_FADE_OUT: number = 1;
+    export const DELETE: number = 2;
 }
 
 @Injectable()
@@ -17,17 +19,17 @@ export class NotificationService {
 
     // noinspection JSMethodCanBeStatic
     public info(title: string, content?: string): void {
-        this.addNotification(NotificationItemType.Info, title, content);
+        this.addNotification(NotificationItemType.INFO, title, content);
     }
 
     // noinspection JSMethodCanBeStatic
     public warn(title: string, content?: string): void {
-        this.addNotification(NotificationItemType.Warn, title, content);
+        this.addNotification(NotificationItemType.WARN, title, content);
     }
 
     // noinspection JSMethodCanBeStatic
     public error(title: string, content?: string): void {
-        this.addNotification(NotificationItemType.Error, title, content);
+        this.addNotification(NotificationItemType.ERROR, title, content);
     }
 
     public getNotifications(): NotificationItem[] {
@@ -41,13 +43,13 @@ export class NotificationService {
     private addNotification(type: NotificationItemType, title: string, content?: string): void {
         const item: NotificationItem = new NotificationItem(type, title, content);
         this._notifications.push(item);
-        this._notificationEvents.emit(NotificationServiceEventType.Add);
+        this._notificationEvents.emit(NotificationServiceEventType.ADD);
         window.setTimeout(() => {
             item.visible = 0;
-            this._notificationEvents.emit(NotificationServiceEventType.DeleteFadeOut);
+            this._notificationEvents.emit(NotificationServiceEventType.DELETE_FADE_OUT);
             window.setTimeout(() => {
                 Utils.Array.deleteElement(this._notifications, item);
-                this._notificationEvents.emit(NotificationServiceEventType.Delete);
+                this._notificationEvents.emit(NotificationServiceEventType.DELETE);
             }, NotificationService._notificationFadeOutTimeout);
         }, NotificationService._notificationDeleteTimeout);
     }

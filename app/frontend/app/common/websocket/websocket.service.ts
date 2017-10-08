@@ -1,35 +1,44 @@
 import { Injectable } from '@angular/core';
-import 'rxjs/add/operator/do';
-import 'rxjs/add/operator/filter';
-import 'rxjs/add/operator/first';
-import 'rxjs/add/operator/share';
 import { Observable } from 'rxjs/Observable';
 import { Observer } from 'rxjs/Observer';
 import { Subject } from 'rxjs/Subject';
 import { ConfigurationService } from '../../configuration.service';
 import { LoggerService } from '../../utils/logger/logger.service';
+import { IWebSocketRequestData } from './websocket-request';
+import { WebSocketResponseData } from './websocket-response';
 
-export const enum WebSocketResponseStatus {
-    Success = 'success',
-    Warning = 'warning',
-    Error   = 'error'
+export type WebSocketResponseStatus = string;
+
+export namespace WebSocketResponseStatus {
+    export const SUCCESS: string = 'success';
+    export const WARNING: string = 'warning';
+    export const ERROR: string = 'error';
+}
+
+export type WebSocketConnectionStatus = number;
+
+export namespace WebSocketConnectionStatus {
+    export const CONNECTING: number = 0;
+    export const CONNECTED: number = 1;
+    export const CLOSED: number = 2;
 }
 
 export class WebSocketRequestMessage {
     public action?: string;
-    public data?: any;
+    public data?: IWebSocketRequestData;
 }
 
 @Injectable()
 export class WebSocketService {
     private static pingConnectionTimeout: number = 15000;
-    private static maxReconnectAttempts: number = 5;
+    private static maxReconnectAttempts: number = 1000;
 
     private _currentReconnectAttempt: number = 0;
     private _lastConnectedUrl: string;
     private _connectionTimeoutEvent: number = -1;
     private _connection: WebSocket;
-    private _messages: Subject<any> = new Subject();
+    private _connectionStatus: WebSocketConnectionStatus = WebSocketConnectionStatus.CONNECTING;
+    private _messages: Subject<WebSocketResponseData> = new Subject();
 
     // Callbacks
     private _onOpenCallback: (event: Event) => void;
@@ -38,13 +47,21 @@ export class WebSocketService {
 
     constructor(private logger: LoggerService) {}
 
+    public isDisconnected(): boolean {
+        return this._connectionStatus === WebSocketConnectionStatus.CLOSED;
+    }
+
+    public isConnected(): boolean {
+        return this._connectionStatus === WebSocketConnectionStatus.CONNECTED;
+    }
+
     public connect(url: string): void {
         if (this._connection) {
             return;
         }
 
         this._currentReconnectAttempt = 0;
-        this._lastConnectedUrl = ConfigurationService.webSocketPrefix + url;
+        this._lastConnectedUrl = ConfigurationService.webSocketPrefix() + url;
         this._connection = new WebSocket(this._lastConnectedUrl);
 
         this.bindConnectionEvents();
@@ -77,16 +94,14 @@ export class WebSocketService {
         this._onCloseCallback = callback;
     }
 
-    public sendMessage(message: WebSocketRequestMessage): Observable<any> {
-        return Observable.create((observer: Observer<any>) => {
+    public sendMessage(message: WebSocketRequestMessage): Observable<WebSocketResponseData> {
+        return Observable.create((observer: Observer<WebSocketResponseData>) => {
             this._messages
-                .filter((response: any) => {
-                    return response.action === message.action;
-                })
-                .first()
                 .subscribe((response: any) => {
-                    observer.next(response);
-                    observer.complete();
+                    if (response.action === message.action) {
+                        observer.next(new WebSocketResponseData(response));
+                        observer.complete();
+                    }
                 });
             this._connection.send(JSON.stringify(message));
         });
@@ -104,6 +119,7 @@ export class WebSocketService {
 
     private bindConnectionEvents(): void {
         this._connection.onopen = (event: Event) => {
+            this._connectionStatus = WebSocketConnectionStatus.CONNECTED;
             this.logger.debug('WebSocket service open: ', this._lastConnectedUrl);
             if (this._onOpenCallback) {
                 this._onOpenCallback(event);
@@ -118,6 +134,7 @@ export class WebSocketService {
         };
 
         this._connection.onclose = (event: CloseEvent) => {
+            this._connectionStatus = WebSocketConnectionStatus.CLOSED;
             this.logger.error('WebSocket service close:', event);
             if (this._onCloseCallback) {
                 this._onCloseCallback(event);
@@ -138,7 +155,7 @@ export class WebSocketService {
 
         if (ConfigurationService.isDevelopmentMode()) {
             this._messages.subscribe((message: any) => {
-                if (message.status === WebSocketResponseStatus.Error) {
+                if (message.status === WebSocketResponseStatus.ERROR) {
                     this.logger.debug('WebSocket error message: ', message);
                 }
             });

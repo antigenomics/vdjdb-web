@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Filter, FilterInterface, FiltersOptions } from '../filters';
+import { Filter, FilterInterface, IFiltersOptions } from '../filters';
 import { MetaGeneralFilter, MetaReliabilityFilter } from './meta-filters';
 
 @Injectable()
@@ -17,7 +17,7 @@ export class MetaFiltersService implements FilterInterface {
         this.reliability.setDefault();
     }
 
-    public setOptions(options: FiltersOptions): void {
+    public setOptions(options: IFiltersOptions): void {
         const generalFilterId = this.general.getFilterId();
         if (options.hasOwnProperty(generalFilterId)) {
             this.general.setOptions(options[generalFilterId]);

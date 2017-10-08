@@ -46,6 +46,7 @@ export class SearchTableRowComponent implements OnInit, OnDestroy {
         const jsonComponentResolver = this.resolver.resolveComponentFactory<SearchTableEntryJsonComponent>(SearchTableEntryJsonComponent);
         const originalComponentResolver = this.resolver.resolveComponentFactory<SearchTableEntryOriginalComponent>(SearchTableEntryOriginalComponent);
         const geneComponentResolver = this.resolver.resolveComponentFactory<SearchTableEntryGeneComponent>(SearchTableEntryGeneComponent);
+        const rowComponentResolver = this.resolver.resolveComponentFactory<SearchTableRowComponent>(SearchTableRowComponent);
 
         if (this.row.entries) {
             this.row.entries.forEach((entry: SearchTableEntry, index: number) => {
@@ -56,10 +57,10 @@ export class SearchTableRowComponent implements OnInit, OnDestroy {
                         case 'gene':
                             if (this.allowPaired) {
                                 component = this.rowViewContainer.createComponent<SearchTableEntryGeneComponent>(geneComponentResolver);
-                                component.instance.generate(entry.value, this.row.metadata.pairedID, this.hostViewContainer);
+                                component.instance.generate(entry.value, this.row.metadata.pairedID, this.hostViewContainer, rowComponentResolver);
                             } else {
                                 component = this.rowViewContainer.createComponent<SearchTableEntryOriginalComponent>(originalComponentResolver);
-                                component.instance.generate(`Paired: ${entry.value}`);
+                                component.instance.generate(`${entry.value}`);
                             }
                             break;
                         case 'cdr3':

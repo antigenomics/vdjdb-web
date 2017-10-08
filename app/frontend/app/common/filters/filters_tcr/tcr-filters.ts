@@ -1,7 +1,7 @@
 import { Utils } from '../../../utils/utils';
 import { SetEntry } from '../common/set/set-entry';
 import { SliderRangeModel } from '../common/slider/slider.component';
-import { Filter, FilterInterface, FiltersOptions, FilterType } from '../filters';
+import { Filter, FilterInterface, FilterType, IFiltersOptions } from '../filters';
 
 export class TCRSegmentsFilter implements FilterInterface {
     public vSegmentSelected: SetEntry[] = [];
@@ -15,22 +15,25 @@ export class TCRSegmentsFilter implements FilterInterface {
         this.jSegmentSelected = [];
     }
 
-    public setOptions(options: FiltersOptions): void {
+    public setOptions(options: IFiltersOptions): void {
+        /* Disable tslint to prevent ClosureCompiler mangling */
+        /* tslint:disable:no-string-literal */
         if (options.hasOwnProperty('vSegmentValues')) {
-            this.vSegmentValues = options.vSegmentValues;
+            this.vSegmentValues = options['vSegmentValues'];
         }
         if (options.hasOwnProperty('jSegmentValues')) {
-            this.jSegmentValues = options.jSegmentValues;
+            this.jSegmentValues = options['jSegmentValues'];
         }
+        /* tslint:enable:no-string-literal */
         return;
     }
 
     public collectFilters(filters: Filter[], _: string[]): void {
         if (this.vSegmentSelected.length !== 0) {
-            filters.push(new Filter('v.segm', FilterType.SubstringSet, false, SetEntry.toString(this.vSegmentSelected)));
+            filters.push(new Filter('v.segm', FilterType.SUBSTRING_SET, false, SetEntry.toString(this.vSegmentSelected)));
         }
         if (this.jSegmentSelected.length !== 0) {
-            filters.push(new Filter('j.segm', FilterType.SubstringSet, false, SetEntry.toString(this.jSegmentSelected)));
+            filters.push(new Filter('j.segm', FilterType.SUBSTRING_SET, false, SetEntry.toString(this.jSegmentSelected)));
         }
     }
 
@@ -81,28 +84,28 @@ export class TCRGeneralFilter implements FilterInterface {
         this.pairedOnly = false;
     }
 
-    public setOptions(_: FiltersOptions): void {
+    public setOptions(_: IFiltersOptions): void {
         return;
     }
 
     public collectFilters(filters: Filter[], _: string[]): void {
         if (this.human === false) {
-            filters.push(new Filter('species', FilterType.Exact, true, 'HomoSapiens'));
+            filters.push(new Filter('species', FilterType.EXACT, true, 'HomoSapiens'));
         }
         if (this.monkey === false) {
-            filters.push(new Filter('species', FilterType.Exact, true, 'MacacaMulatta'));
+            filters.push(new Filter('species', FilterType.EXACT, true, 'MacacaMulatta'));
         }
         if (this.mouse === false) {
-            filters.push(new Filter('species', FilterType.Exact, true, 'MusMusculus'));
+            filters.push(new Filter('species', FilterType.EXACT, true, 'MusMusculus'));
         }
         if (this.tra === false) {
-            filters.push(new Filter('gene', FilterType.Exact, true, 'TRA'));
+            filters.push(new Filter('gene', FilterType.EXACT, true, 'TRA'));
         }
         if (this.trb === false) {
-            filters.push(new Filter('gene', FilterType.Exact, true, 'TRB'));
+            filters.push(new Filter('gene', FilterType.EXACT, true, 'TRB'));
         }
         if (this.pairedOnly === true) {
-            filters.push(new Filter('complex.id', FilterType.Exact, true, '0'));
+            filters.push(new Filter('complex.id', FilterType.EXACT, true, '0'));
         }
     }
 
@@ -138,7 +141,7 @@ export class TCRcdr3Filter implements FilterInterface {
         this.levensteinDeletions = 0;
     }
 
-    public setOptions(_: FiltersOptions): void {
+    public setOptions(_: IFiltersOptions): void {
         return;
     }
 
@@ -151,20 +154,20 @@ export class TCRcdr3Filter implements FilterInterface {
             if (this.patternSubstring === false) {
                 value = `^${value}$`;
             }
-            filters.push(new Filter('cdr3', FilterType.Pattern, false, value.replace(/X/g, '.')));
+            filters.push(new Filter('cdr3', FilterType.PATTERN, false, value.replace(/X/g, '.')));
         }
 
         if (this.length.min < this.lengthMin || this.length.max > this.lengthMax) {
             errors.push('Incorrect cdr3 length');
         } else if (this.length.min !== this.lengthMin || this.length.max !== this.lengthMax) {
-            filters.push(new Filter('cdr3', FilterType.Range, false, this.length.toString()));
+            filters.push(new Filter('cdr3', FilterType.RANGE, false, this.length.toString()));
         }
 
         if (!this.isLevensteinValid()) {
             errors.push('CDR3 pattern is not valid in levenstein distance filter');
             return;
         } else if (this.levenstein.length !== 0) {
-            filters.push(new Filter('cdr3', FilterType.Sequence, false,
+            filters.push(new Filter('cdr3', FilterType.SEQUENCE, false,
                 `${this.levenstein}:${this.levensteinSubstitutions}:${this.levensteinInsertions}:${this.levensteinDeletions}`));
         }
     }
