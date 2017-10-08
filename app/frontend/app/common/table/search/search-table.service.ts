@@ -1,5 +1,6 @@
 import { EventEmitter, Injectable } from '@angular/core';
 import { Observable } from 'rxjs/Observable';
+import { Observer } from 'rxjs/Observer';
 import { ReplaySubject } from 'rxjs/ReplaySubject';
 import { Subject } from 'rxjs/Subject';
 import { DatabaseColumnInfo, DatabaseMetadata } from '../../../database/database-metadata';
@@ -13,7 +14,6 @@ import { WebSocketResponseData } from '../../websocket/websocket-response';
 import { WebSocketService } from '../../websocket/websocket.service';
 import { ExportFormat } from './export/search-table-export.component';
 import { SearchTableRow } from './row/search-table-row';
-import { Observer } from 'rxjs/Observer';
 
 export namespace SearchTableWebSocketActions {
     export const METADATA: string = 'meta';

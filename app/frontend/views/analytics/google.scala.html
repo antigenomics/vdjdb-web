@@ -1,7 +1,6 @@
-@import backend.utils.analytics.Analytics
-@(analytics: Analytics)
+@(googleID: String)
 <!-- Global Site Tag (gtag.js) - Google Analytics -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=@analytics.getGoogleAnalyticsID"></script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=@googleID"></script>
 <script>
         window.dataLayer = window.dataLayer || [];
 
@@ -10,5 +9,5 @@
         }
 
         gtag('js', new Date());
-        gtag('config', '@analytics.getGoogleAnalyticsID');
+        gtag('config', '@googleID');
 </script>
