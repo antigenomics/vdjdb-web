@@ -18,9 +18,10 @@ export namespace WebSocketResponseStatus {
 export type WebSocketConnectionStatus = number;
 
 export namespace WebSocketConnectionStatus {
-    export const CONNECTING: number = 0;
-    export const CONNECTED: number = 1;
-    export const CLOSED: number = 2;
+    export const UNDEFINED: number = 0;
+    export const CONNECTING: number = 1;
+    export const CONNECTED: number = 2;
+    export const CLOSED: number = 3;
 }
 
 export class WebSocketRequestMessage {
@@ -37,7 +38,7 @@ export class WebSocketService {
     private _lastConnectedUrl: string;
     private _connectionTimeoutEvent: number = -1;
     private _connection: WebSocket;
-    private _connectionStatus: WebSocketConnectionStatus = WebSocketConnectionStatus.CONNECTING;
+    private _connectionStatus: WebSocketConnectionStatus = WebSocketConnectionStatus.UNDEFINED;
     private _messages: Subject<WebSocketResponseData> = new Subject();
 
     // Callbacks
@@ -62,6 +63,7 @@ export class WebSocketService {
 
         this._currentReconnectAttempt = 0;
         this._lastConnectedUrl = ConfigurationService.webSocketPrefix() + url;
+        this._connectionStatus = WebSocketConnectionStatus.CONNECTING;
         this._connection = new WebSocket(this._lastConnectedUrl);
 
         this.bindConnectionEvents();
@@ -126,8 +128,8 @@ export class WebSocketService {
             }
         };
 
-        this._connection.onerror = (error: Event) => {
-            this.logger.error('WebSocket service error:', error);
+        this._connection.onerror = (event: Event) => {
+            this.logger.error('WebSocket service error:', event);
             if (this._onErrorCallback) {
                 this._onErrorCallback(event);
             }
