@@ -16,6 +16,9 @@ GET         /api/database/meta/columns/:column        backend.controllers.Databa
 POST        /api/database/search                      backend.controllers.DatabaseAPI.search
 GET         /api/database/connect                     backend.controllers.DatabaseAPI.connect
 
+# Authorization API
+GET         /authorization/login                       backend.controllers.Authorization.testController
+
 
 # Map static resources from the /public folder to the /assets URL path
 GET         /assets/*file                             controllers.Assets.versioned(path="/public", file: Asset)
