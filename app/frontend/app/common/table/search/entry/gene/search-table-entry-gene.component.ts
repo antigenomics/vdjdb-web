@@ -36,7 +36,7 @@ export class SearchTableEntryGeneComponent {
     }
 
     @HostListener('click')
-    public checkPaired(): void {
+    public async checkPaired(): Promise<void> {
         if (this._pairedID === '0') {
             this.notifications.warn('Paired', 'Paired not found');
         } else {
@@ -49,18 +49,16 @@ export class SearchTableEntryGeneComponent {
                 this._visible = !this._visible;
             } else if (!this._pairedLoading) {
                 this._pairedLoading = true;
-                const paired = this.table.getPaired(this._pairedID, this._value);
-                paired.subscribe((response: WebSocketResponseData) => {
-                    this._pairedLoading = false;
-                    this._pairedRow = this._hostRowViewContainer.createComponent(this._pairedRowResolver);
-                    this._pairedRow.instance.row = new SearchTableRow(response.get('paired'));
-                    this._pairedRow.instance.allowPaired = false;
-                    this._pairedRow.instance.ngOnInit();
-                    this._pairedRow.changeDetectorRef.detectChanges();
-                    this.renderer.addClass(this._pairedRow.location.nativeElement, 'warning');
-                    this._visible = true;
-                    this.changeDetector.detectChanges();
-                });
+                const pairedResponse = await this.table.getPaired(this._pairedID, this._value);
+                this._pairedRow = this._hostRowViewContainer.createComponent(this._pairedRowResolver);
+                this._pairedRow.instance.row = new SearchTableRow(pairedResponse.get('paired'));
+                this._pairedRow.instance.allowPaired = false;
+                this._pairedRow.instance.ngOnInit();
+                this._pairedRow.changeDetectorRef.detectChanges();
+                this.renderer.addClass(this._pairedRow.location.nativeElement, 'warning');
+                this._visible = true;
+                this._pairedLoading = false;
+                this.changeDetector.detectChanges();
             } else if (this._pairedLoading) {
                 this.notifications.info('Paired', 'Loading...');
             }

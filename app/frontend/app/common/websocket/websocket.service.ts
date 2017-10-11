@@ -96,15 +96,14 @@ export class WebSocketService {
         this._onCloseCallback = callback;
     }
 
-    public sendMessage(message: WebSocketRequestMessage): Observable<WebSocketResponseData> {
-        return Observable.create((observer: Observer<WebSocketResponseData>) => {
-            this._messages
-                .subscribe((response: any) => {
-                    if (response.action === message.action) {
-                        observer.next(new WebSocketResponseData(response));
-                        observer.complete();
-                    }
-                });
+    public async sendMessage(message: WebSocketRequestMessage): Promise<WebSocketResponseData> {
+        return new Promise<WebSocketResponseData>((resolve) => {
+            const subscription = this._messages.subscribe((response: any) => {
+                if (response.action === message.action) {
+                    subscription.unsubscribe();
+                    resolve(new WebSocketResponseData(response));
+                }
+            });
             this._connection.send(JSON.stringify(message));
         });
     }
@@ -143,7 +142,7 @@ export class WebSocketService {
             }
         };
 
-        this._connection.onmessage = (message: any) => {
+        this._connection.onmessage = (message: MessageEvent) => {
             this._messages.next(JSON.parse(message.data));
         };
 

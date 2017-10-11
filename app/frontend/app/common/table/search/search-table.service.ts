@@ -52,29 +52,9 @@ export class SearchTableService {
 
     constructor(private connection: WebSocketService, private filters: FiltersService,
                 private logger: LoggerService, private notifications: NotificationService) {
-        this.connection.connect('/api/database/connect');
-        this.connection.onOpen(() => {
+        this.connection.onOpen(async () => {
             const metadataRequest = this.connection.sendMessage({
                 action: SearchTableWebSocketActions.METADATA
-            });
-            metadataRequest.subscribe({
-                next: (response: WebSocketResponseData) => {
-                    const metadata = DatabaseMetadata.deserialize(response.get('metadata'));
-                    const columns = metadata.columns;
-                    const options = new FiltersOptions();
-                    options.add('tcr.segments.vSegmentValues', metadata.getColumnInfo('v.segm').values);
-                    options.add('tcr.segments.jSegmentValues', metadata.getColumnInfo('j.segm').values);
-                    options.add('ag.origin.speciesValues', metadata.getColumnInfo('antigen.species').values);
-                    options.add('ag.origin.genesValues', metadata.getColumnInfo('antigen.gene').values);
-                    options.add('ag.epitope.epitopeValues', metadata.getColumnInfo('antigen.epitope').values);
-                    options.add('mhc.haplotype.firstChainValues', metadata.getColumnInfo('mhc.a').values);
-                    options.add('mhc.haplotype.secondChainValues', metadata.getColumnInfo('mhc.b').values);
-                    options.add('meta.general.referencesValues', metadata.getColumnInfo('reference.id').values);
-                    this._columns = columns;
-                    this._numberOfRecords = metadata.numberOfRecords;
-                    this.filters.setOptions(options.unpack());
-                    this.update();
-                }
             });
 
             const suggestionsRequest = this.connection.sendMessage({
@@ -83,107 +63,114 @@ export class SearchTableService {
                         .add('column', 'antigen.epitope')
                         .unpack()
             });
-            suggestionsRequest.subscribe({
-                next: (response: WebSocketResponseData) => {
-                    this.logger.debug('Suggestions', response);
-                    const options = new FiltersOptions();
-                    options.add('ag.epitope.epitopeSuggestions', response.get('suggestion'));
-                    this.filters.setOptions(options.unpack());
-                }
-            });
+
+            const metadataResponse = await metadataRequest;
+            this.logger.debug('Metadata', metadataResponse);
+            const metadata = DatabaseMetadata.deserialize(metadataResponse.get('metadata'));
+            const columns = metadata.columns;
+            const metadataOptions = new FiltersOptions();
+            metadataOptions.add('tcr.segments.vSegmentValues', metadata.getColumnInfo('v.segm').values);
+            metadataOptions.add('tcr.segments.jSegmentValues', metadata.getColumnInfo('j.segm').values);
+            metadataOptions.add('ag.origin.speciesValues', metadata.getColumnInfo('antigen.species').values);
+            metadataOptions.add('ag.origin.genesValues', metadata.getColumnInfo('antigen.gene').values);
+            metadataOptions.add('ag.epitope.epitopeValues', metadata.getColumnInfo('antigen.epitope').values);
+            metadataOptions.add('mhc.haplotype.firstChainValues', metadata.getColumnInfo('mhc.a').values);
+            metadataOptions.add('mhc.haplotype.secondChainValues', metadata.getColumnInfo('mhc.b').values);
+            metadataOptions.add('meta.general.referencesValues', metadata.getColumnInfo('reference.id').values);
+            this._columns = columns;
+            this._numberOfRecords = metadata.numberOfRecords;
+            this.filters.setOptions(metadataOptions.unpack());
+            this.update();
+
+            const suggestionResponse = await suggestionsRequest;
+            this.logger.debug('Suggestions', suggestionResponse);
+            const suggestionsOptions = new FiltersOptions();
+            suggestionsOptions.add('ag.epitope.epitopeSuggestions', suggestionResponse.get('suggestion'));
+            this.filters.setOptions(suggestionsOptions.unpack());
         });
+        this.connection.connect('/api/database/connect');
     }
 
-    public update(): void {
+    public async update(): Promise<void> {
         if (this._loading) {
             this.notifications.warn('Search', 'Loading');
             return;
         }
 
-        this.checkConnection(() => {
-            const filters: Filter[] = [];
-            const errors: string[] = [];
+        await this.checkConnection(false);
 
-            this.filters.collectFilters(filters, errors);
-            if (errors.length === 0) {
-                this._loading = true;
-                this._filters = filters.map((filter: Filter): IFilter => filter.unpack());
-                this.logger.debug('Collected filters', filters);
-                const request = this.connection.sendMessage({
-                    action: SearchTableWebSocketActions.SEARCH,
-                    data:   new WebSocketRequestData()
-                            .add('filters', this._filters)
-                            .add('pageSize', this._pageSize)
-                            .unpack()
-                });
-                request.subscribe((response: WebSocketResponseData) => {
-                    this.logger.debug('Search', response);
-                    this.updateFromResponse(response);
-                    this.clearSortRule();
-                });
-            } else {
-                errors.forEach((error: string) => {
-                    this.notifications.error('Filters error', error);
-                });
-                this._loading = false;
-            }
-        }, false);
-    }
+        const filters: Filter[] = [];
+        const errors: string[] = [];
+        this.filters.collectFilters(filters, errors);
+        this.logger.debug('Collected filters', filters);
 
-    public sort(column: string, sameSort: boolean = false): void {
-        this.checkConnection(() => {
+        if (errors.length === 0) {
             this._loading = true;
-            if (this._sortRule.column === column && !sameSort) {
-                this._sortRule.type = (this._sortRule.type === 'desc') ? 'asc' : 'desc';
-            } else {
-                this._sortRule.column = column;
-                this._sortRule.type = 'desc';
-            }
-            this.logger.debug('Sort rule', this._sortRule);
-            const request = this.connection.sendMessage({
+            this._filters = FiltersService.unpackFilters(filters);
+            const searchResponse = await this.connection.sendMessage({
                 action: SearchTableWebSocketActions.SEARCH,
                 data:   new WebSocketRequestData()
-                        .add('sort', this._sortRule.toString())
+                        .add('filters', this._filters)
+                        .add('pageSize', this._pageSize)
                         .unpack()
             });
-            request.subscribe((response: WebSocketResponseData) => {
-                this.logger.debug('Sort', response);
-                this.updateFromResponse(response);
+
+            this.logger.debug('Search', searchResponse);
+            this.updateFromResponse(searchResponse);
+            this.clearSortRule();
+        } else {
+            errors.forEach((error: string) => {
+                this.notifications.error('Filters error', error);
             });
-        });
+            this._loading = false;
+        }
     }
 
-    public pageChange(page: number): void {
-        this.checkConnection(() => {
-            this._loading = true;
-            this.logger.debug('Page change', page);
-            const request = this.connection.sendMessage({
-                action: SearchTableWebSocketActions.SEARCH,
-                data:   new WebSocketRequestData()
-                        .add('page', page)
-                        .unpack()
-            });
-            request.subscribe((response: WebSocketResponseData) => {
-                this.logger.debug('Page change', response);
-                this.updateFromResponse(response);
-            });
+    public async sort(column: string, sameSort: boolean = false): Promise<void> {
+        await this.checkConnection();
+        this._loading = true;
+        if (this._sortRule.column === column && !sameSort) {
+            this._sortRule.type = (this._sortRule.type === 'desc') ? 'asc' : 'desc';
+        } else {
+            this._sortRule.column = column;
+            this._sortRule.type = 'desc';
+        }
+        this.logger.debug('Sort rule', this._sortRule);
+        const sortResponse = await this.connection.sendMessage({
+            action: SearchTableWebSocketActions.SEARCH,
+            data:   new WebSocketRequestData()
+                    .add('sort', this._sortRule.toString())
+                    .unpack()
         });
+        this.logger.debug('Sort', sortResponse);
+        this.updateFromResponse(sortResponse);
     }
 
-    public exportTable(format: ExportFormat): void {
-        this.checkConnection(() => {
-            this.logger.debug('Export', format);
-            const request = this.connection.sendMessage({
-                action: SearchTableWebSocketActions.EXPORT,
-                data:   new WebSocketRequestData()
-                        .add('format', format.name)
-                        .unpack()
-            });
-            request.subscribe((response: WebSocketResponseData) => {
-                this.logger.debug('Export', response);
-                Utils.File.download(response.get('link'));
-            });
+    public async pageChange(page: number): Promise<void> {
+        await this.checkConnection();
+        this._loading = true;
+        this.logger.debug('Page change', page);
+        const pageChangeResponse = await this.connection.sendMessage({
+            action: SearchTableWebSocketActions.SEARCH,
+            data:   new WebSocketRequestData()
+                    .add('page', page)
+                    .unpack()
         });
+        this.logger.debug('Page change', pageChangeResponse);
+        this.updateFromResponse(pageChangeResponse);
+    }
+
+    public async exportTable(format: ExportFormat): Promise<void> {
+        await this.checkConnection();
+        this.logger.debug('Export', format);
+        const exportResponse = await this.connection.sendMessage({
+            action: SearchTableWebSocketActions.EXPORT,
+            data:   new WebSocketRequestData()
+                    .add('format', format.name)
+                    .unpack()
+        });
+        this.logger.debug('Export', exportResponse);
+        Utils.File.download(exportResponse.get('link'));
     }
 
     // noinspection JSMethodCanBeStatic
@@ -191,22 +178,19 @@ export class SearchTableService {
         return [ new ExportFormat('tab-delimited-txt', 'TAB-delimited txt') ];
     }
 
-    public changePageSize(pageSize: number): void {
-        this.checkConnection(() => {
-            this._loading = true;
-            this._pageSize = pageSize;
-            this.logger.debug('Page size', pageSize);
-            const request = this.connection.sendMessage({
-                action: SearchTableWebSocketActions.SEARCH,
-                data:   new WebSocketRequestData()
-                        .add('pageSize', pageSize)
-                        .unpack()
-            });
-            request.subscribe((response: WebSocketResponseData) => {
-                this.logger.debug('Page size', response);
-                this.updateFromResponse(response);
-            });
+    public async changePageSize(pageSize: number): Promise<void> {
+        await this.checkConnection();
+        this._loading = true;
+        this._pageSize = pageSize;
+        this.logger.debug('Page size', pageSize);
+        const changePageSizeResponse = await this.connection.sendMessage({
+            action: SearchTableWebSocketActions.SEARCH,
+            data:   new WebSocketRequestData()
+                    .add('pageSize', pageSize)
+                    .unpack()
         });
+        this.logger.debug('Page size', changePageSizeResponse);
+        this.updateFromResponse(changePageSizeResponse);
     }
 
     // noinspection JSMethodCanBeStatic
@@ -214,22 +198,15 @@ export class SearchTableService {
         return [ 25, 50, 100 ]; // tslint:disable-line:no-magic-numbers
     }
 
-    public getPaired(pairedID: string, gene: string): Observable<WebSocketResponseData> {
+    public async getPaired(pairedID: string, gene: string): Promise<WebSocketResponseData> {
         this.logger.debug('Paired', { pairedID, gene });
-        return Observable.create((observer: Observer<WebSocketResponseData>) => {
-            this.checkConnection(() => {
-                const pairedRequest = this.connection.sendMessage({
-                    action: SearchTableWebSocketActions.PAIRED,
-                    data:   new WebSocketRequestData()
-                            .add('pairedID', pairedID)
-                            .add('gene', gene)
-                            .unpack()
-                });
-                pairedRequest.subscribe((response: WebSocketResponseData) => {
-                    observer.next(response);
-                    observer.complete();
-                });
-            }, true, false);
+        await this.checkConnection(true, false);
+        return this.connection.sendMessage({
+            action: SearchTableWebSocketActions.PAIRED,
+            data:   new WebSocketRequestData()
+                    .add('pairedID', pairedID)
+                    .add('gene', gene)
+                    .unpack()
         });
     }
 
@@ -237,40 +214,40 @@ export class SearchTableService {
         return this._dirty && this._recordsFound === 0;
     }
 
-    public checkConnection(callback: () => void, init: boolean = true, loading: boolean = true): void {
-        if (loading) {
-            this._loading = true;
-        }
-        if (this.connection.isDisconnected()) {
-            this.notifications.info('Database', 'Reconnecting...');
-            this.logger.warn('Database', 'Reconnecting...');
-            this.connection.onOpen(() => {
-                if (init) {
-                    const reconnectRequest = this.connection.sendMessage({
-                        action: SearchTableWebSocketActions.SEARCH,
-                        data:   new WebSocketRequestData()
-                                .add('filters', this._filters)
-                                .add('sort', this._sortRule.toString())
-                                .add('page', this._page)
-                                .add('pageSize', this._pageSize)
-                                .add('reconnect', true)
-                                .unpack()
-                    });
-                    reconnectRequest.subscribe((response: WebSocketResponseData) => {
-                        this.logger.debug('Search reconnected', response);
-                        callback();
-                    });
-                } else {
-                    callback();
-                }
-            });
-            const reconnectSuccess = this.connection.reconnect();
-            if (!reconnectSuccess) {
-                this.notifications.error('Database', 'Unable to reconnect, please check your internet connection');
+    public async checkConnection(reInitOnBadConnection: boolean = true, showLoadingBar: boolean = true): Promise<void> {
+        return new Promise<void>((resolve) => {
+            if (showLoadingBar) {
+                this._loading = true;
             }
-        } else {
-            callback();
-        }
+            if (this.connection.isDisconnected()) {
+                this.notifications.info('Database', 'Reconnecting...');
+                this.logger.warn('Database', 'Reconnecting...');
+                this.connection.onOpen(async () => {
+                    if (reInitOnBadConnection) {
+                        const reInitResponse = await this.connection.sendMessage({
+                            action: SearchTableWebSocketActions.SEARCH,
+                            data:   new WebSocketRequestData()
+                                    .add('filters', this._filters)
+                                    .add('sort', this._sortRule.toString())
+                                    .add('page', this._page)
+                                    .add('pageSize', this._pageSize)
+                                    .add('reconnect', true)
+                                    .unpack()
+                        });
+                        this.logger.debug('Search reconnected', reInitResponse);
+                        resolve();
+                    } else {
+                        resolve();
+                    }
+                });
+                const reconnectSuccess = this.connection.reconnect();
+                if (!reconnectSuccess) {
+                    this.notifications.error('Database', 'Unable to reconnect, please check your internet connection');
+                }
+            } else {
+                resolve();
+            }
+        });
     }
 
     private updateFromResponse(response: WebSocketResponseData): void {

@@ -1,5 +1,5 @@
 import { EventEmitter, Injectable } from '@angular/core';
-import { Filter, FilterInterface, IFiltersOptions } from './filters';
+import { Filter, FilterInterface, IFilter, IFiltersOptions } from './filters';
 import { AGFiltersService } from './filters_ag/ag-filters.service';
 import { MetaFiltersService } from './filters_meta/meta-filters.service';
 import { MHCFiltersService } from './filters_mhc/mhc-filters.service';
@@ -67,5 +67,9 @@ export class FiltersService implements FilterInterface {
 
     public getFilterId(): string {
         return 'main';
+    }
+
+    public static unpackFilters(filters: Filter[]): IFilter[] {
+        return filters.map((filter: Filter) => filter.unpack());
     }
 }
