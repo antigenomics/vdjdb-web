@@ -9,7 +9,7 @@
     "bundle:clean:all": "npm run bundle:clean:public && npm run bundle:clean:build",
     "bundle:clean:public": "rimraf ../../public/bundles/*",
     "bundle:aot": "npm run bundle:vendor && npm run bundle:ngc:factory && npm run bundle:ngc:prod && npm run bundle:closure",
-    "bundle:vendor": "tsc -p vendor",
+    "bundle:vendor": "tsc -p vendor && node ./scripts/rxjs-fix.prod.js",
     "bundle:ngc:factory": "ngc -p tsconfig.ngfactory.json",
     "bundle:ngc:prod": "ngc -p tsconfig.prod.json",
     "bundle:closure": "node ./scripts/build.prod.js",

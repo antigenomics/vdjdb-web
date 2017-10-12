@@ -1,6 +1,4 @@
 import { EventEmitter, Injectable } from '@angular/core';
-import { Observable } from 'rxjs/Observable';
-import { Observer } from 'rxjs/Observer';
 import { ReplaySubject } from 'rxjs/ReplaySubject';
 import { Subject } from 'rxjs/Subject';
 import { DatabaseColumnInfo, DatabaseMetadata } from '../../../database/database-metadata';
@@ -80,6 +78,8 @@ export class SearchTableService {
             this._columns = columns;
             this._numberOfRecords = metadata.numberOfRecords;
             this.filters.setOptions(metadataOptions.unpack());
+
+            // noinspection JSIgnoredPromiseFromCall
             this.update();
 
             const suggestionResponse = await suggestionsRequest;
@@ -107,7 +107,7 @@ export class SearchTableService {
         if (errors.length === 0) {
             this._loading = true;
             this._filters = FiltersService.unpackFilters(filters);
-            const searchResponse = await this.connection.sendMessage({
+            const response = await this.connection.sendMessage({
                 action: SearchTableWebSocketActions.SEARCH,
                 data:   new WebSocketRequestData()
                         .add('filters', this._filters)
@@ -115,8 +115,8 @@ export class SearchTableService {
                         .unpack()
             });
 
-            this.logger.debug('Search', searchResponse);
-            this.updateFromResponse(searchResponse);
+            this.logger.debug('Search', response);
+            this.updateFromResponse(response);
             this.clearSortRule();
         } else {
             errors.forEach((error: string) => {
@@ -136,41 +136,41 @@ export class SearchTableService {
             this._sortRule.type = 'desc';
         }
         this.logger.debug('Sort rule', this._sortRule);
-        const sortResponse = await this.connection.sendMessage({
+        const response = await this.connection.sendMessage({
             action: SearchTableWebSocketActions.SEARCH,
             data:   new WebSocketRequestData()
                     .add('sort', this._sortRule.toString())
                     .unpack()
         });
-        this.logger.debug('Sort', sortResponse);
-        this.updateFromResponse(sortResponse);
+        this.logger.debug('Sort', response);
+        this.updateFromResponse(response);
     }
 
     public async pageChange(page: number): Promise<void> {
         await this.checkConnection();
         this._loading = true;
         this.logger.debug('Page change', page);
-        const pageChangeResponse = await this.connection.sendMessage({
+        const response = await this.connection.sendMessage({
             action: SearchTableWebSocketActions.SEARCH,
             data:   new WebSocketRequestData()
                     .add('page', page)
                     .unpack()
         });
-        this.logger.debug('Page change', pageChangeResponse);
-        this.updateFromResponse(pageChangeResponse);
+        this.logger.debug('Page change', response);
+        this.updateFromResponse(response);
     }
 
     public async exportTable(format: ExportFormat): Promise<void> {
-        await this.checkConnection();
+        await this.checkConnection(true, false);
         this.logger.debug('Export', format);
-        const exportResponse = await this.connection.sendMessage({
+        const response = await this.connection.sendMessage({
             action: SearchTableWebSocketActions.EXPORT,
             data:   new WebSocketRequestData()
                     .add('format', format.name)
                     .unpack()
         });
-        this.logger.debug('Export', exportResponse);
-        Utils.File.download(exportResponse.get('link'));
+        this.logger.debug('Export', response);
+        Utils.File.download(response.get('link'));
     }
 
     // noinspection JSMethodCanBeStatic
@@ -183,14 +183,14 @@ export class SearchTableService {
         this._loading = true;
         this._pageSize = pageSize;
         this.logger.debug('Page size', pageSize);
-        const changePageSizeResponse = await this.connection.sendMessage({
+        const response = await this.connection.sendMessage({
             action: SearchTableWebSocketActions.SEARCH,
             data:   new WebSocketRequestData()
                     .add('pageSize', pageSize)
                     .unpack()
         });
-        this.logger.debug('Page size', changePageSizeResponse);
-        this.updateFromResponse(changePageSizeResponse);
+        this.logger.debug('Page size', response);
+        this.updateFromResponse(response);
     }
 
     // noinspection JSMethodCanBeStatic

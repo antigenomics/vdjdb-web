@@ -1,13 +1,12 @@
 package backend.server.database.api.metadata
 
-import backend.server.api.SuccessResponse
 import backend.server.database.DatabaseMetadata
 import play.api.libs.json.{Json, Writes}
 
-case class DatabaseMetadataResponse(metadata: DatabaseMetadata) extends SuccessResponse(DatabaseMetadataResponse.action)
+case class DatabaseMetadataResponse(metadata: DatabaseMetadata)
 
 object DatabaseMetadataResponse {
-    final val action: String = "meta"
+    final val Action: String = "meta"
 
-    implicit val databaseMetadataResponseFormat: Writes[DatabaseMetadataResponse] = SuccessResponse.writesSubclass(Json.writes[DatabaseMetadataResponse])
+    implicit val databaseMetadataResponseFormat: Writes[DatabaseMetadataResponse] = Json.writes[DatabaseMetadataResponse]
 }

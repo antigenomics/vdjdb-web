@@ -1,8 +1,7 @@
 package backend.actors
 
 import akka.actor.{Actor, ActorRef, ActorSystem, PoisonPill, Props}
-import backend.server.api.{ClientRequest, SuccessResponse}
-import backend.server.api.common.{ErrorMessageResponse, SuccessMessageResponse, WarningMessageResponse}
+import backend.server.api.ClientRequest
 import backend.server.table.search.api.export.{ExportDataRequest, ExportDataResponse}
 import backend.server.table.search.api.paired.{PairedDataRequest, PairedDataResponse}
 import backend.server.table.search.api.search.{SearchDataRequest, SearchDataResponse}
@@ -13,7 +12,6 @@ import backend.server.database.filters.{DatabaseFilterRequest, DatabaseFilterTyp
 import backend.server.limit.{IpLimit, RequestLimits}
 import backend.server.table.search.SearchTable
 import backend.server.table.search.export.SearchTableConverter
-import play.api.libs.json.Json.toJson
 import play.api.libs.json._
 
 import scala.concurrent.ExecutionContext
@@ -30,10 +28,14 @@ case class DatabaseSearchWebSocketActor(out: ActorRef, database: Database, actor
                 val validation: JsResult[ClientRequest] = request.validate[ClientRequest]
                 validation match {
                     case clientRequest: JsSuccess[ClientRequest] =>
-                        handleMessage(out, clientRequest.get)
+                        val request = clientRequest.get
+                        request.action match {
+                            case Some(action) =>
+                                handleMessage(WebSocketOutActorRef(request.id, action, out), request.data)
+                            case None =>
+                        }
                     case _: JsError =>
-                        out ! ErrorMessageResponse("Invalid request")
-
+                        out ! Json.toJson("Invalid request")
                 }
                 val timeEnd: Long = System.currentTimeMillis
                 val timeSpent = timeEnd - timeStart
@@ -45,98 +47,94 @@ case class DatabaseSearchWebSocketActor(out: ActorRef, database: Database, actor
             out ! PoisonPill
     }
 
-    def handleMessage(out: ActorRef, request: ClientRequest): Unit = {
-        request.action match {
-            case Some(action) =>
-                action match {
-                    case DatabaseMetadataResponse.action =>
-                        out ! toJson(DatabaseMetadataResponse(database.getMetadata))
-                    case DatabaseColumnSuggestionsResponse.action =>
-                        validateData(out, request.data, (suggestionsRequest: DatabaseColumnSuggestionsRequest) => {
-                            database.getSuggestions(suggestionsRequest.column) match {
-                                case Some(suggestions) => out ! toJson(suggestions)
-                                case None => out ! toJson(DatabaseColumnSuggestionsResponse.errorMessage)
-                            }
+    def handleMessage(out: WebSocketOutActorRef, data: Option[JsValue]): Unit = {
+        out.getAction match {
+            case DatabaseMetadataResponse.Action =>
+                out.success(DatabaseMetadataResponse(database.getMetadata))
+            case DatabaseColumnSuggestionsResponse.Action =>
+                validateData(out, data, (suggestionsRequest: DatabaseColumnSuggestionsRequest) => {
+                    database.getSuggestions(suggestionsRequest.column) match {
+                        case Some(suggestions) => out.success(suggestions)
+                        case None => out.errorMessage("Invalid suggestions request")
+                    }
+                })
+            case SearchDataResponse.Action =>
+                validateData(out, data, (searchRequest: SearchDataRequest) => {
+                    if (searchRequest.filters.nonEmpty) {
+                        val filters: DatabaseFilters = DatabaseFilters.createFromRequest(searchRequest.filters.get, database)
+                        filters.warnings.foreach((message: String) => {
+                            out.warningMessage(message)
                         })
-                    case SearchDataResponse.action =>
-                        validateData(out, request.data, (searchRequest: SearchDataRequest) => {
-                            if (searchRequest.filters.nonEmpty) {
-                                val filters: DatabaseFilters = DatabaseFilters.createFromRequest(searchRequest.filters.get, database)
-                                filters.warnings.foreach((warningMessage: String) => {
-                                    out ! toJson(WarningMessageResponse(warningMessage))
-                                })
-                                table.update(filters, database)
-                            }
+                        table.update(filters, database)
+                    }
 
-                            if (searchRequest.sort.nonEmpty) {
-                                val sorting = searchRequest.sort.get.split(":")
-                                val columnName = sorting(0)
-                                val sortType = sorting(1)
-                                table.sort(columnName, sortType)
-                            }
+                    if (searchRequest.sort.nonEmpty) {
+                        val sorting = searchRequest.sort.get.split(":")
+                        val columnName = sorting(0)
+                        val sortType = sorting(1)
+                        table.sort(columnName, sortType)
+                    }
 
-                            if (searchRequest.pageSize.nonEmpty) {
-                                table.setPageSize(searchRequest.pageSize.get)
-                            }
+                    if (searchRequest.pageSize.nonEmpty) {
+                        table.setPageSize(searchRequest.pageSize.get)
+                    }
 
-                            if (!searchRequest.reconnect.getOrElse(false)) {
-                                val page = searchRequest.page.getOrElse(0)
-                                out ! toJson(SearchDataResponse(page, table.getPageSize, table.getPageCount, table.getRecordsFound, table.getPage(page)))
-                            } else {
-                                out ! toJson(SuccessResponse.createSimpleResponse(SearchDataResponse.action))
-                            }
-                        })
-                    case PairedDataResponse.action =>
-                        validateData(out, request.data, (pairedRequest: PairedDataRequest) => {
-                            if (!pairedRequest.pairedID.contentEquals("0")) {
-                                val pairedFilterRequest: List[DatabaseFilterRequest] = List(
-                                    DatabaseFilterRequest("complex.id", DatabaseFilterType.Exact, negative = false, pairedRequest.pairedID),
-                                    DatabaseFilterRequest("gene", DatabaseFilterType.Exact, negative = true, pairedRequest.gene)
-                                )
-                                val pairedFilters: DatabaseFilters = DatabaseFilters.createFromRequest(pairedFilterRequest, database)
-                                val pairedTable: SearchTable = SearchTable()
-                                pairedTable.update(pairedFilters, database)
+                    if (!searchRequest.reconnect.getOrElse(false)) {
+                        val page = searchRequest.page.getOrElse(0)
+                        out.success(SearchDataResponse(page, table.getPageSize, table.getPageCount, table.getRecordsFound, table.getPage(page)))
+                    } else {
+                        out.handshake()
+                    }
+                })
+            case PairedDataResponse.Action =>
+                validateData(out, data, (pairedRequest: PairedDataRequest) => {
+                    if (!pairedRequest.pairedID.contentEquals("0")) {
+                        val pairedFilterRequest: List[DatabaseFilterRequest] = List(
+                            DatabaseFilterRequest("complex.id", DatabaseFilterType.Exact, negative = false, pairedRequest.pairedID),
+                            DatabaseFilterRequest("gene", DatabaseFilterType.Exact, negative = true, pairedRequest.gene)
+                        )
+                        val pairedFilters: DatabaseFilters = DatabaseFilters.createFromRequest(pairedFilterRequest, database)
+                        val pairedTable: SearchTable = SearchTable()
+                        pairedTable.update(pairedFilters, database)
 
-                                if (pairedTable.getRecordsFound == 1) {
-                                    out ! toJson(PairedDataResponse(Some(pairedTable.getRows.head), found = true))
-                                } else {
-                                    out ! toJson(PairedDataResponse(None, found = false))
-                                }
-                            } else {
-                                out ! toJson(PairedDataResponse(None, found = false))
-                            }
-                        })
-                    case ExportDataResponse.action =>
-                        validateData(out, request.data, (exportRequest: ExportDataRequest) => {
-                            val converter = SearchTableConverter.getConverter(exportRequest.format)
-                            if (converter.nonEmpty) {
-                                val temporaryFileLink = converter.get.convert(table, database)
-                                if (temporaryFileLink.nonEmpty) {
-                                    temporaryFileLink.get.autoremove(actorSystem)
-                                    out ! toJson(ExportDataResponse(temporaryFileLink.get.getDownloadLink))
-                                }
-                            }
-                        })
-                    case "ping" =>
-                        out ! toJson(SuccessMessageResponse("pong"))
-                    case _ =>
-                        out ! toJson(ErrorMessageResponse("Invalid action"))
-                }
-            case None =>
+                        if (pairedTable.getRecordsFound == 1) {
+                            out.success(PairedDataResponse(Some(pairedTable.getRows.head), found = true))
+                        } else {
+                            out.error(PairedDataResponse(None, found = false))
+                        }
+                    } else {
+                        out.error(PairedDataResponse(None, found = false))
+                    }
+                })
+            case ExportDataResponse.Action =>
+                validateData(out, data, (exportRequest: ExportDataRequest) => {
+                    val converter = SearchTableConverter.getConverter(exportRequest.format)
+                    if (converter.nonEmpty) {
+                        val temporaryFileLink = converter.get.convert(table, database)
+                        if (temporaryFileLink.nonEmpty) {
+                            temporaryFileLink.get.autoremove(actorSystem)
+                            out.success(ExportDataResponse(temporaryFileLink.get.getDownloadLink))
+                        }
+                    }
+                })
+            case "ping" =>
+                out.handshake()
+            case _ =>
+                out.errorMessage("Invalid action")
         }
     }
 
-    def validateData[T](out: ActorRef, data: Option[JsValue], callback: T => Unit)(implicit tr: Reads[T]): Unit = {
+    def validateData[T](out: WebSocketOutActorRef, data: Option[JsValue], callback: T => Unit)(implicit tr: Reads[T]): Unit = {
         if (data.nonEmpty) {
             val dataValidation: JsResult[T] = data.get.validate[T]
             dataValidation match {
                 case success: JsSuccess[T] =>
                     callback(success.get)
                 case _: JsError =>
-                    out ! toJson(ErrorMessageResponse("Invalid request"))
+                    out.errorMessage("Invalid request")
             }
         } else {
-            out ! toJson(ErrorMessageResponse("Empty data field"))
+            out.errorMessage("Empty data field")
         }
     }
 }

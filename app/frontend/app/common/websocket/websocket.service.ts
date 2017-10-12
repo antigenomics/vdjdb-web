@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs/Observable';
-import { Observer } from 'rxjs/Observer';
+import 'rxjs/add/operator/filter';
+import 'rxjs/add/operator/take';
 import { Subject } from 'rxjs/Subject';
 import { ConfigurationService } from '../../configuration.service';
 import { LoggerService } from '../../utils/logger/logger.service';
@@ -25,15 +25,17 @@ export namespace WebSocketConnectionStatus {
 }
 
 export class WebSocketRequestMessage {
+    public id?: number;
     public action?: string;
     public data?: IWebSocketRequestData;
 }
 
 @Injectable()
 export class WebSocketService {
-    private static pingConnectionTimeout: number = 15000;
+    private static pingConnectionTimeout: number = 30000;
     private static maxReconnectAttempts: number = 1000;
 
+    private _uniqueMessageID: number = 0;
     private _currentReconnectAttempt: number = 0;
     private _lastConnectedUrl: string;
     private _connectionTimeoutEvent: number = -1;
@@ -46,7 +48,8 @@ export class WebSocketService {
     private _onErrorCallback: (event: Event) => void;
     private _onCloseCallback: (event: CloseEvent) => void;
 
-    constructor(private logger: LoggerService) {}
+    constructor(private logger: LoggerService) {
+    }
 
     public isDisconnected(): boolean {
         return this._connectionStatus === WebSocketConnectionStatus.CLOSED;
@@ -97,13 +100,16 @@ export class WebSocketService {
     }
 
     public async sendMessage(message: WebSocketRequestMessage): Promise<WebSocketResponseData> {
+        message.id = this._uniqueMessageID++;
         return new Promise<WebSocketResponseData>((resolve) => {
-            const subscription = this._messages.subscribe((response: any) => {
-                if (response.action === message.action) {
-                    subscription.unsubscribe();
+            this._messages
+                .filter((response: any) => {
+                    return (message.action === response.action) && (message.id === response.id);
+                })
+                .take(1)
+                .subscribe((response: any) => {
                     resolve(new WebSocketResponseData(response));
-                }
-            });
+                });
             this._connection.send(JSON.stringify(message));
         });
     }
@@ -151,7 +157,10 @@ export class WebSocketService {
         }
         this._connectionTimeoutEvent = window.setInterval(() => {
             this.logger.debug('WebSocket service', 'ping');
-            this._connection.send(JSON.stringify({ action: 'ping' }));
+            // noinspection JSIgnoredPromiseFromCall
+            this.sendMessage({
+                action: 'ping'
+            });
         }, WebSocketService.pingConnectionTimeout);
 
         if (ConfigurationService.isDevelopmentMode()) {

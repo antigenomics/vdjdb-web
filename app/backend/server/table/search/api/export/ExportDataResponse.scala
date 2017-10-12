@@ -1,15 +1,11 @@
 package backend.server.table.search.api.export
 
-import backend.server.api.SuccessResponse
-import backend.server.api.common.ErrorMessageResponse
-import play.api.libs.json.{JsValue, Json, Writes}
+import play.api.libs.json.{Json, Writes}
 
-case class ExportDataResponse(link: String) extends SuccessResponse(ExportDataResponse.action)
+case class ExportDataResponse(link: String)
 
 object ExportDataResponse {
-    final val action: String = "export"
+    final val Action: String = "export"
 
-    implicit val exportDataResponseWrites: Writes[ExportDataResponse] = SuccessResponse.writesSubclass(Json.writes[ExportDataResponse])
-
-    def errorMessage: JsValue = Json.toJson(ErrorMessageResponse("Invalid export request"))
+    implicit val exportDataResponseWrites: Writes[ExportDataResponse] = Json.writes[ExportDataResponse]
 }

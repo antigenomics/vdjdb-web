@@ -1,11 +1,15 @@
 package backend.server.api
 
-import play.api.libs.json.{JsSuccess, JsValue, Reads}
+import play.api.libs.json.{JsError, JsSuccess, JsValue, Reads}
 
-case class ClientRequest(action: Option[String], data: Option[JsValue])
+case class ClientRequest(id: Int, action: Option[String], data: Option[JsValue])
 
 object ClientRequest {
     implicit val clientRequestReads: Reads[ClientRequest] = (json: JsValue) => {
-        JsSuccess(ClientRequest((json \ "action").asOpt[String], (json \ "data").asOpt[JsValue]))
+        if ((json \ "id").isEmpty) {
+            JsError()
+        } else {
+            JsSuccess(ClientRequest((json \ "id").as[Int], (json \ "action").asOpt[String], (json \ "data").asOpt[JsValue]))
+        }
     }
 }

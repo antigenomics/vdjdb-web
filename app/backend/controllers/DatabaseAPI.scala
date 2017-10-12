@@ -39,7 +39,7 @@ class DatabaseAPI @Inject()(cc: ControllerComponents, database: Database, actorS
         if (column.nonEmpty) {
             Ok(toJson(DatabaseColumnInfoResponse(column.get)))
         } else {
-            BadRequest(DatabaseColumnInfoResponse.errorMessage)
+            BadRequest("Invalid request")
         }
     }
 
@@ -65,10 +65,10 @@ class DatabaseAPI @Inject()(cc: ControllerComponents, database: Database, actorS
                         Ok(toJson(SearchDataResponse(-1, -1, table.getPageCount, table.getRecordsFound, table.getRows)))
                     }
                 } else {
-                    BadRequest(SearchDataResponse.errorMessage)
+                    BadRequest("Invalid request")
                 }
             case _: JsError =>
-                BadRequest(SearchDataResponse.errorMessage)
+                BadRequest("Invalid request")
         }
     }
 

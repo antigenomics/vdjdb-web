@@ -25,6 +25,7 @@ const compiler = new closureCompiler({
     warning_level: 'QUIET',
     rewrite_polyfills: false,
     dependency_mode: 'strict',
+    process_common_js_modules: true,
     js_module_root: [
         'node_modules/@angular/core',
         'node_modules/@angular/common',
