@@ -76,14 +76,18 @@ object TemporaryFile {
         val fileName = currentData + "-" + name
         val fileAbsolutePath = outputFolderPath + fileName
 
-        val printWriter = new PrintWriter(new File(fileAbsolutePath))
+        val contentFile = new File(fileAbsolutePath)
+        contentFile.createNewFile()
+        val printWriter = new PrintWriter(contentFile)
         printWriter.write(content)
         printWriter.close()
 
         val hash = FileUtils.fileContentHash("MD5", fileAbsolutePath) + currentData
         val guard = CommonUtils.randomAlphaNumericString(50)
 
-        val guardWriter = new PrintWriter(new File(outputFolderPath + ".guard" + guard))
+        val guardFile = new File(outputFolderPath + ".guard" + guard)
+        guardFile.createNewFile()
+        val guardWriter = new PrintWriter(guardFile)
         guardWriter.println(fileName)
         guardWriter.println(hash)
         guardWriter.close()
