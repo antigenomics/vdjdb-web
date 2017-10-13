@@ -88,7 +88,7 @@ case class DatabaseSearchWebSocketActor(out: ActorRef, database: Database, actor
                         val sorting = searchRequest.sort.get.split(":")
                         val columnName = sorting(0)
                         val sortType = sorting(1)
-                        table.sort(columnName, sortType)
+                        table.sort(database.getMetadata.getColumnIndex(columnName), sortType)
                     }
 
                     if (searchRequest.pageSize.nonEmpty) {

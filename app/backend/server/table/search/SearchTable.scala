@@ -54,12 +54,11 @@ case class SearchTable(private var pageSize: Int = SearchTable.DEFAULT_PAGE_SIZE
         }
     }
 
-    def sort(columnName: String, sortType: String): Unit = {
-        if ((sortType == "desc" || sortType == "asc") && (columnName.length != 0)) {
+    def sort(columnIndex: Int, sortType: String): Unit = {
+        if ((sortType == "desc" || sortType == "asc") && (columnIndex >= 0)) {
             rows = rows.sortWith((e1, e2) => {
-                val v1 = e1.entries.find(entry => entry.column == columnName).get.value
-                val v2 = e2.entries.find(entry => entry.column == columnName).get.value
-
+                val v1 = e1.entries(columnIndex)
+                val v2 = e2.entries(columnIndex)
                 sortType match {
                     case "desc" => String.gt(v1, v2)
                     case "asc" => String.lteq(v1, v2)

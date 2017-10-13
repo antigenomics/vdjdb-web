@@ -70,7 +70,7 @@ class DatabaseAPI @Inject()(cc: ControllerComponents, database: Database, actorS
                         val sorting = data.get.sort.get.split(":")
                         val columnName = sorting(0)
                         val sortType = sorting(1)
-                        table.sort(columnName, sortType)
+                        table.sort(database.getMetadata.getColumnIndex(columnName), sortType)
                     }
                     if (data.get.page.nonEmpty) {
                         val pageSize: Int = data.get.pageSize.getOrElse(100)

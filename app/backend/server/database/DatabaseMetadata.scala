@@ -25,6 +25,10 @@ import scala.collection.JavaConverters._
 case class DatabaseMetadata(numberOfRecords: Int, numberOfColumns: Int, columns: List[DatabaseColumnInfo]) {
     require(numberOfRecords > 0, "number of records should be greater than zero")
     require(numberOfColumns > 0, "number of columns should be greater than zero")
+
+    def getColumnIndex(columnName: String): Int = {
+        columns.indexWhere(_.name == columnName)
+    }
 }
 
 object DatabaseMetadata {

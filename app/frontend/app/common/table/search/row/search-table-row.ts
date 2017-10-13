@@ -14,8 +14,6 @@
  *    limitations under the License.
  */
 
-import { SearchTableEntry } from '../entry/search-table-entry';
-
 export class SearchTableRowMetadata {
     public pairedID: string;
     public cdr3vEnd: number;
@@ -32,13 +30,13 @@ export class SearchTableRowMetadata {
 }
 
 export class SearchTableRow {
-    public entries: SearchTableEntry[];
+    public entries: string[];
     public metadata: SearchTableRowMetadata;
 
     constructor(row: any) {
         /* Disable tslint to prevent ClosureCompiler mangling */
         /* tslint:disable:no-string-literal */
-        this.entries = row['entries'].map((entry: any) => new SearchTableEntry(entry));
+        this.entries = row['entries'];
         this.metadata = new SearchTableRowMetadata(row['metadata']);
         /* tslint:enable:no-string-literal */
     }

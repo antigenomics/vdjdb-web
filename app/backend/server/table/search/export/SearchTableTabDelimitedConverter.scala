@@ -31,7 +31,7 @@ case class SearchTableTabDelimitedConverter() extends SearchTableConverter {
             val header = database.getMetadata.columns.map(column => column.title).mkString("", "\t", "\r\n")
             content.append(header)
 
-            rows.foreach(row => content.append(row.entries.map(entry => entry.value).mkString("", "\t", "\r\n")))
+            rows.foreach(row => content.append(row.entries.mkString("", "\t", "\r\n")))
 
             Some(TemporaryFile.create("SearchTable.txt", content.toString()))
         } else {
