@@ -20,7 +20,7 @@
   <conversionRule conversionWord="coloredLevel" converterClass="play.api.libs.logback.ColoredLevel" />
 
   <appender name="FILE" class="ch.qos.logback.core.FileAppender">
-    <file>${application.logger.path}/application.log</file>
+    <file>${loggerPath}/application.log</file>
     <encoder>
       <pattern>%date [%level] from %logger in %thread - %message%n%xException</pattern>
     </encoder>

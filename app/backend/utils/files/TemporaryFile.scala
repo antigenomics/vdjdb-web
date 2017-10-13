@@ -63,14 +63,12 @@ case class TemporaryFile(private val filePath: String, private val guardPath: St
 }
 
 object TemporaryFile {
-    private val tmpDirectory: String = "/tmp/vdjdb"
-
-    def create(name: String, content: String): TemporaryFileLink = {
+    def create(name: String, content: String)(implicit configuration: TemporaryConfiguration): TemporaryFileLink = {
         val dateFormat: SimpleDateFormat = new SimpleDateFormat("HH:mm-dd-MM-yyyy")
         val currentDate: String = dateFormat.format(new Date())
 
         val unique = CommonUtils.randomAlphaString(30)
-        val outputFolderPath = TemporaryFile.tmpDirectory + "/" + unique
+        val outputFolderPath = configuration.path + "/" + unique
 
         val outputFolder = new File(outputFolderPath)
         if (outputFolder.mkdirs()) {
@@ -99,7 +97,7 @@ object TemporaryFile {
         }
     }
 
-    def find(link: TemporaryFileLink, lock: Boolean = true): Option[TemporaryFile] = {
+    def find(link: TemporaryFileLink, lock: Boolean = true)(implicit configuration: TemporaryConfiguration): Option[TemporaryFile] = {
         val unique = link.unique
         val guard = link.guard
         val hash = link.hash
@@ -107,7 +105,7 @@ object TemporaryFile {
         val invalidLink = unique.contains("..") || guard.contains("..")
 
         if (!invalidLink) {
-            val folderPath = TemporaryFile.tmpDirectory + "/" + unique + "/"
+            val folderPath = configuration.path + "/" + unique + "/"
             val guardPath = folderPath + ".guard" + guard
 
             val folder = new File(folderPath)

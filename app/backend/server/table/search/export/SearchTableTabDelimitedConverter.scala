@@ -18,9 +18,9 @@ package backend.server.table.search.export
 
 import backend.server.database.Database
 import backend.server.table.search.SearchTable
-import backend.utils.files.{TemporaryFile, TemporaryFileLink}
+import backend.utils.files.{TemporaryConfiguration, TemporaryFile, TemporaryFileLink}
 
-case class SearchTableTabDelimitedConverter() extends SearchTableConverter {
+case class SearchTableTabDelimitedConverter()(implicit temporaryConfiguration: TemporaryConfiguration) extends SearchTableConverter {
 
     override def convert(table: SearchTable, database: Database): Option[TemporaryFileLink] = {
         val rows = table.getRows

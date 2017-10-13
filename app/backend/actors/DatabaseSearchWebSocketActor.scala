@@ -28,13 +28,14 @@ import backend.server.database.filters.{DatabaseFilterRequest, DatabaseFilterTyp
 import backend.server.limit.{IpLimit, RequestLimits}
 import backend.server.table.search.SearchTable
 import backend.server.table.search.export.SearchTableConverter
+import backend.utils.files.TemporaryConfiguration
 import play.api.libs.json._
 
 import scala.concurrent.ExecutionContext
 
 
 case class DatabaseSearchWebSocketActor(out: ActorRef, database: Database, actorSystem: ActorSystem, limit: IpLimit, requestLimits: RequestLimits)
-                                       (implicit ec: ExecutionContext) extends Actor {
+                                       (implicit ec: ExecutionContext, temporaryConfiguration: TemporaryConfiguration) extends Actor {
     private final val table: SearchTable = new SearchTable()
 
     override def receive: Receive = {
@@ -157,7 +158,7 @@ case class DatabaseSearchWebSocketActor(out: ActorRef, database: Database, actor
 
 object DatabaseSearchWebSocketActor {
     def props(out: ActorRef, database: Database, actorSystem: ActorSystem, limit: IpLimit, requestLimits: RequestLimits)
-             (implicit ec: ExecutionContext): Props =
+             (implicit ec: ExecutionContext, temporaryConfiguration: TemporaryConfiguration): Props =
         Props(new DatabaseSearchWebSocketActor(out, database, actorSystem, limit, requestLimits))
 }
 

@@ -19,7 +19,7 @@ package backend.controllers
 import javax.inject._
 
 import backend.utils.analytics.Analytics
-import backend.utils.files.{TemporaryFile, TemporaryFileLink}
+import backend.utils.files.{TemporaryConfiguration, TemporaryFile, TemporaryFileLink}
 import controllers._
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -27,8 +27,9 @@ import play.api._
 import play.api.libs.ws._
 import play.api.mvc._
 
-class Application @Inject()(ws: WSClient, assets: Assets, environment: Environment, analytics: Analytics, cc: ControllerComponents)
+class Application @Inject()(ws: WSClient, assets: Assets, environment: Environment, configuration: Configuration, analytics: Analytics, cc: ControllerComponents)
     extends AbstractController(cc) {
+    implicit val temporaryConfiguration: TemporaryConfiguration = configuration.get[TemporaryConfiguration]("application.temporary")
 
     def index: Action[AnyContent] = Action {
         Ok(frontend.views.html.main(environment, analytics))

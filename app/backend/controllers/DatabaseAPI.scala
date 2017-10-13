@@ -27,6 +27,8 @@ import backend.server.database.{Database, DatabaseColumnInfo}
 import backend.server.database.filters.DatabaseFilters
 import backend.server.limit.RequestLimits
 import backend.server.table.search.SearchTable
+import backend.utils.files.TemporaryConfiguration
+import play.api.Configuration
 import play.api.libs.json.Json.toJson
 import play.api.libs.json._
 import play.api.libs.streams.ActorFlow
@@ -34,8 +36,9 @@ import play.api.mvc._
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class DatabaseAPI @Inject()(cc: ControllerComponents, database: Database, actorSystem: ActorSystem, limits: RequestLimits)
+class DatabaseAPI @Inject()(cc: ControllerComponents, database: Database, actorSystem: ActorSystem, limits: RequestLimits, configuration: Configuration)
                            (implicit system: ActorSystem, mat: Materializer, ec: ExecutionContext) extends AbstractController(cc) {
+    implicit val temporaryConfiguration: TemporaryConfiguration = configuration.get[TemporaryConfiguration]("application.temporary")
 
     def summary = Action {
         database.getSummaryFile match {

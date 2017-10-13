@@ -25,7 +25,7 @@ import scala.concurrent.duration._
 case class TemporaryFileLink(unique: String, guard: String, hash: String) {
     def getDownloadLink: String = "/temporary/" + unique + "/" + guard + "/" + hash
 
-    def autoremove(actorSystem: ActorSystem)(implicit ec: ExecutionContext): Unit = {
+    def autoremove(actorSystem: ActorSystem)(implicit ec: ExecutionContext, temporaryConfiguration: TemporaryConfiguration): Unit = {
         actorSystem.scheduler.scheduleOnce(delay = 600.seconds) {
             val temporary = TemporaryFile.find(this, lock = false)
             temporary match {

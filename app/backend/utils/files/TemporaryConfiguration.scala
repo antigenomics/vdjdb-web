@@ -14,21 +14,16 @@
  *    limitations under the License.
  */
 
-package backend.server.table.search.export
+package backend.utils.files
 
-import backend.server.database.Database
-import backend.server.table.search.SearchTable
-import backend.utils.files.{TemporaryConfiguration, TemporaryFileLink}
+import com.typesafe.config.Config
+import play.api.ConfigLoader
 
-trait SearchTableConverter {
-    def convert(table: SearchTable, database: Database): Option[TemporaryFileLink]
-}
+case class TemporaryConfiguration(path: String)
 
-object SearchTableConverter {
-    def getConverter(converterType: String)(implicit temporaryConfiguration: TemporaryConfiguration): Option[SearchTableConverter] = {
-        converterType match {
-            case "tab-delimited-txt" => Some(SearchTableTabDelimitedConverter())
-            case _ => None
-        }
+object TemporaryConfiguration {
+    implicit val analyticsConfigurationLoader: ConfigLoader[TemporaryConfiguration] = (rootConfig: Config, path: String) => {
+        val config = rootConfig.getConfig(path)
+        TemporaryConfiguration(path = config.getString("path"))
     }
 }
