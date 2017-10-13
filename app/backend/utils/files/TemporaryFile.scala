@@ -67,32 +67,36 @@ object TemporaryFile {
 
     def create(name: String, content: String): TemporaryFileLink = {
         val dateFormat: SimpleDateFormat = new SimpleDateFormat("HH:mm-dd-MM-yyyy")
-        val currentData: String = dateFormat.format(new Date())
+        val currentDate: String = dateFormat.format(new Date())
 
         val unique = CommonUtils.randomAlphaString(30)
-        val outputFolderPath = TemporaryFile.tmpDirectory + "/" + unique + "/"
-        FileUtils.createDirectory(outputFolderPath)
+        val outputFolderPath = TemporaryFile.tmpDirectory + "/" + unique
 
-        val fileName = currentData + "-" + name
-        val fileAbsolutePath = outputFolderPath + fileName
+        val outputFolder = new File(outputFolderPath)
+        if (outputFolder.mkdirs()) {
+            val fileName = currentDate + "-" + name
+            val fileAbsolutePath = outputFolderPath + "/" + fileName
 
-        val contentFile = new File(fileAbsolutePath)
-        contentFile.createNewFile()
-        val printWriter = new PrintWriter(contentFile)
-        printWriter.write(content)
-        printWriter.close()
+            val contentFile = new File(fileAbsolutePath)
+            contentFile.createNewFile()
+            val printWriter = new PrintWriter(contentFile)
+            printWriter.write(content)
+            printWriter.close()
 
-        val hash = FileUtils.fileContentHash("MD5", fileAbsolutePath) + currentData
-        val guard = CommonUtils.randomAlphaNumericString(50)
+            val hash = FileUtils.fileContentHash("MD5", fileAbsolutePath) + currentDate
+            val guard = CommonUtils.randomAlphaNumericString(50)
 
-        val guardFile = new File(outputFolderPath + ".guard" + guard)
-        guardFile.createNewFile()
-        val guardWriter = new PrintWriter(guardFile)
-        guardWriter.println(fileName)
-        guardWriter.println(hash)
-        guardWriter.close()
+            val guardFile = new File(outputFolderPath + "/.guard" + guard)
+            guardFile.createNewFile()
+            val guardWriter = new PrintWriter(guardFile)
+            guardWriter.println(fileName)
+            guardWriter.println(hash)
+            guardWriter.close()
 
-        TemporaryFileLink(unique, guard, hash)
+            TemporaryFileLink(unique, guard, hash)
+        } else {
+            TemporaryFileLink("", "", "")
+        }
     }
 
     def find(link: TemporaryFileLink, lock: Boolean = true): Option[TemporaryFile] = {
