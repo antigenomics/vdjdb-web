@@ -16,8 +16,7 @@
     "noFallthroughCasesInSwitch": true,
     "noImplicitReturns": true,
     "noUnusedParameters": true,
-    "allowJs": true,
-    "preserveConstEnums": true
+    "allowJs": true
   },
   "exclude": [ "node_modules", "vendor", "app/main.prod.ts" ],
   "compileOnSave": false,

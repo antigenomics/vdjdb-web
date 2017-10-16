@@ -18,8 +18,7 @@
     "noFallthroughCasesInSwitch": true,
     "noImplicitReturns": true,
     "noUnusedParameters": false,
-    "declaration": true,
-    "preserveConstEnums": true
+    "declaration": true
   },
   "exclude": [ "node_modules", "vendor", "build", "app/main.prod.ts" ],
   "include": [ "./app/**/*.ts" ],

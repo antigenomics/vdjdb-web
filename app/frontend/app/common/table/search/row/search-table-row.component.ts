@@ -53,7 +53,7 @@ export class SearchTableRowComponent implements OnInit, OnDestroy {
     public rowViewContainer: ViewContainerRef;
 
     constructor(private hostViewContainer: ViewContainerRef, private resolver: ComponentFactoryResolver,
-                private table: SearchTableService, private logger: LoggerService) {
+                private table: SearchTableService) {
     }
 
     public ngOnInit(): void {
