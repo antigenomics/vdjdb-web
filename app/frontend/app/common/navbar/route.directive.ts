@@ -23,7 +23,7 @@ import { Utils } from '../../utils/utils';
     selector: '[route]'
 })
 export class RouteDirective {
-    @Input('navbar-route')
+    @Input('route')
     public routeURL: string;
 
     @InputConverter(BooleanConverter)
