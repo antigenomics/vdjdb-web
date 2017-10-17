@@ -35,7 +35,7 @@ class Application @Inject()(ws: WSClient, assets: Assets, configuration: Configu
 
     def index: Action[AnyContent] = Action.async { implicit request =>
         Future.successful {
-            Ok(frontend.views.html.main())
+            Ok(frontend.views.html.index())
         }
     }
 

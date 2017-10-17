@@ -1,0 +1,9 @@
+@import play.api.{Environment, Mode}
+@import backend.utils.analytics.Analytics
+@()(implicit environment: Environment, analytics: Analytics)
+@if(environment.mode == Mode.Dev) {
+    <script type="application/javascript" src="assets/bundles/polyfills.dll.js" charset="utf-8"></script>
+    <script type="application/javascript" src="assets/bundles/vendor.dll.js" charset="utf-8"></script>
+} else {
+    <script type="application/javascript" src="@routes.Assets.versioned("bundles/vendor.min.js")" charset="utf-8"></script>
+}

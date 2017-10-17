@@ -1,0 +1,12 @@
+@import play.api.Environment
+@import backend.utils.analytics.Analytics
+@()(implicit environment: Environment, analytics: Analytics)
+
+@frontend.views.html.main("VDJdb", vendor = true) {
+    <application>
+        <div class="load content">
+            <div class="ui active centered inline massive loader"></div>
+        </div>
+    </application>
+    @frontend.views.html.assets.applications.search()
+}
