@@ -6,31 +6,38 @@ import backend.models.authorization.forms.LoginForm
 import backend.models.authorization.user.UserProvider
 import backend.utils.analytics.Analytics
 import play.api.Environment
+import play.api.i18n.{Lang, Langs, Messages, MessagesApi}
 import play.api.mvc.{AbstractController, Action, AnyContent, ControllerComponents}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class Authorization @Inject()(cc: ControllerComponents, userProvider: UserProvider)
-                             (implicit ec: ExecutionContext, environment: Environment, analytics: Analytics) extends AbstractController(cc) {
+class Authorization @Inject()(cc: ControllerComponents, userProvider: UserProvider, languages: Langs, messagesApi: MessagesApi)
+                             (implicit ec: ExecutionContext, environment: Environment, analytics: Analytics)
+    extends AbstractController(cc) {
+    implicit val messages: Messages = messagesApi.preferred(Seq(Lang.defaultLang))
 
     def login: Action[AnyContent] = Action.async { implicit request =>
-        Future.successful(Ok(frontend.views.html.authorization.login(LoginForm.createEmpty)))
+        Future.successful {
+            Ok(frontend.views.html.authorization.login(LoginForm.loginFormMapping))
+        }
     }
 
     def onLogin: Action[AnyContent] = Action.async { implicit request =>
         Future.successful {
-            val requestBody: Option[Map[String, Seq[String]]] = request.body.asFormUrlEncoded
-            if (requestBody.nonEmpty) {
-                val form = LoginForm.createFromBodyRequest(requestBody.get)
-                if (form.hasErrors) {
-                    println(form.getMessages)
-                    Ok(frontend.views.html.authorization.login(form))
-                } else {
-                    Redirect("/authorization/login")
+            LoginForm.loginFormMapping.bindFromRequest.fold(
+                formWithErrors => {
+                    // binding failure, you retrieve the form containing errors:
+                    println("Bad!")
+                    BadRequest(frontend.views.html.authorization.login(formWithErrors))
+                },
+                form => {
+                    println("Ok!")
+                    /* binding success, you get the actual value. */
+//                    val newUser = models.User(userData.name, userData.age)
+//                    val id = models.User.create(newUser)
+                    Redirect(routes.Authorization.login())
                 }
-            } else {
-                Ok(frontend.views.html.authorization.login(LoginForm.createEmpty))
-            }
+            )
         }
     }
 

@@ -2,7 +2,7 @@
 @import backend.utils.analytics.Analytics
 @import helper._
 @import backend.models.authorization.forms.LoginForm
-@(form: LoginForm)(implicit environment: Environment, analytics: Analytics, request: Request[_])
+@(form: Form[LoginForm])(implicit environment: Environment, analytics: Analytics, request: Request[_], messages: Messages)
 <html lang="en">
     <head>
         <link rel="manifest" href="assets/manifest.json" type="application/manifest+json">
@@ -27,11 +27,19 @@
                 <form class="ui form" method="POST" action="/authorization/login" id="login">
                     <h3 class="ui top attached header">Login</h3>
                     <div class="ui attached segment teal padded">
+                        @if(form.hasErrors){
+                            @for(error <- form.errors){
+                                <div class="ui message error" style="display: block">
+                                    <div class="header">@error.key.capitalize error</div>
+                                    @messages(error.message)
+                                </div>
+                            }
+                        }
                         @CSRF.formField
                         <div class="field">
                             <div class="ui left icon input">
                                 <i class="user icon"></i>
-                                <input type="email" name="email" placeholder="E-mail address">
+                                <input type="email" name="email" value="@form("email").value.getOrElse("")" placeholder="E-mail address">
                             </div>
                         </div>
                         <div class="field">
@@ -45,14 +53,6 @@
                         <div class="ui divider"></div>
                         <p>Don't have an account? <a class="cursor pointer">Sign up now!</a></p>
                         <p class="cursor pointer"><a href="/" rel="noopener">Back to home.</a></p>
-                        @if(form.hasMessages){
-                            @for(message <- form.getMessages) {
-                                <div class="ui message @message.messageType">
-                                    <div class="header">@message.title</div>
-                                    @message.message
-                                </div>
-                            }
-                        }
                     </div>
                 </form>
             </div>
