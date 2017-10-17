@@ -1,7 +1,6 @@
 @import play.api.{Environment, Mode}
 @import backend.utils.analytics.Analytics
-@()(implicit environment: Environment, analytics: Analytics)
-<!DOCTYPE html>
+@(title: String)(content: Html)(implicit environment: Environment, analytics: Analytics)
 
 <html lang="en">
     <head>
@@ -12,29 +11,23 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        <title>VDJdb</title>
+        <title>@title</title>
 
         @if(environment.mode == Mode.Dev) {
             <link type="text/css" href="bundles/bundle.css" rel="stylesheet">
-            <script type="application/javascript" src="assets/bundles/polyfills.dll.js" charset="utf-8"></script>
-            <script type="application/javascript" src="assets/bundles/vendor.dll.js" charset="utf-8"></script>
         } else {
             <link type="text/css" href="@routes.Assets.versioned("bundles/bundle.min.css")" rel="stylesheet">
-            <script type="application/javascript" src="@routes.Assets.versioned("bundles/vendor.min.js")" charset="utf-8"></script>
         }
         <link rel="shortcut icon" type="image/png" href="@routes.Assets.versioned("images/favicon.png")">
-    </head>
+        </head>
     <body>
-        <application>
-            <div class="load content">
-                <div class="ui active centered inline massive loader"></div>
+        <div class="ui middle aligned center aligned auth grid">
+            <div class="column left aligned">
+                @content
             </div>
-        </application>
+        </div>
     </body>
-    @if(environment.mode == Mode.Dev) {
-        <script type="application/javascript" src="bundles/bundle.js" charset="utf-8"></script>
-    } else {
-        <script type="application/javascript" src="@routes.Assets.versioned("bundles/bundle.min.js")" charset="utf-8"></script>
+    @if(environment.mode != Mode.Dev) {
         @if(analytics.isYandexAnalyticsAvailable) {
             @frontend.views.html.analytics.yandex(analytics.getYandexAnalyticsID)
         }

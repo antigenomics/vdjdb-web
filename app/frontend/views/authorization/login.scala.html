@@ -1,69 +1,26 @@
-@import play.api.{Environment, Mode}
+@import play.api.Environment
 @import backend.utils.analytics.Analytics
 @import helper._
 @import backend.models.authorization.forms.LoginForm
 @(form: Form[LoginForm])(implicit environment: Environment, analytics: Analytics, request: Request[_], messages: Messages)
-<html lang="en">
-    <head>
-        <link rel="manifest" href="assets/manifest.json" type="application/manifest+json">
-        <base href="/">
-        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <meta charset="utf-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-
-        <title>VDJdb: login</title>
-
-        @if(environment.mode == Mode.Dev) {
-            <link type="text/css" href="bundles/bundle.css" rel="stylesheet">
-        } else {
-            <link type="text/css" href="@routes.Assets.versioned("bundles/bundle.min.css")" rel="stylesheet">
-        }
-        <link rel="shortcut icon" type="image/png" href="@routes.Assets.versioned("images/favicon.png")">
-        </head>
-    <body>
-        <div class="ui middle aligned center aligned auth grid">
-            <div class="column left aligned">
-                <form class="ui form" method="POST" action="/authorization/login" id="login">
-                    <h3 class="ui top attached header">Login</h3>
-                    <div class="ui attached segment teal padded">
-                        @if(form.hasErrors){
-                            @for(error <- form.errors){
-                                <div class="ui message error" style="display: block">
-                                    <div class="header">@error.key.capitalize error</div>
-                                    @messages(error.message)
-                                </div>
-                            }
-                        }
-                        @CSRF.formField
-                        <div class="field">
-                            <div class="ui left icon input">
-                                <i class="user icon"></i>
-                                <input type="email" name="email" value="@form("email").value.getOrElse("")" placeholder="E-mail address">
-                            </div>
-                        </div>
-                        <div class="field">
-                            <div class="ui left icon input">
-                                <i class="lock icon"></i>
-                                <input type="password" name="password" placeholder="Password">
-                            </div>
-                        </div>
-                        <p class="cursor pointer"><a>Forgot password?</a></p>
-                        <button class="ui fluid large teal button" type="submit" form="login">Login</button>
-                        <div class="ui divider"></div>
-                        <p>Don't have an account? <a class="cursor pointer">Sign up now!</a></p>
-                        <p class="cursor pointer"><a href="/" rel="noopener">Back to home.</a></p>
-                    </div>
-                </form>
-            </div>
+@implicitField = @{
+    FieldConstructor(frontend.views.html.forms.input.f)
+}
+@frontend.views.html.authorization.main("VDJdb: login") {
+    @helper.form(action = backend.controllers.routes.Authorization.onLogin(), args = 'class -> "ui form", 'id -> "login") {
+        <h3 class="ui top attached header">Login</h3>
+        <div class="ui attached segment teal padded">
+            @if(form.hasGlobalErrors) {
+                @frontend.views.html.forms.formErrors(form.globalErrors)
+            }
+            @CSRF.formField
+            @inputText(form("email"), args = 'icon -> "user", 'placeholder -> "E-mail address", 'fieldType -> "email")
+            @inputText(form("password"), args = 'icon -> "lock", 'placeholder -> "Password", 'fieldType -> "password")
+            <p class="cursor pointer"><a>Forgot password?</a></p>
+            <button class="ui fluid large teal button" type="submit" form="login">Login</button>
+            <div class="ui divider"></div>
+            <p>Don't have an account? <a class="cursor pointer">Sign up now!</a></p>
+            <p class="cursor pointer"><a href="/" rel="noopener">Back to home.</a></p>
         </div>
-    </body>
-    @if(environment.mode != Mode.Dev) {
-        @if(analytics.isYandexAnalyticsAvailable) {
-            @frontend.views.html.analytics.yandex(analytics.getYandexAnalyticsID)
-        }
-        @if(analytics.isGoogleAnalyticsAvailable) {
-            @frontend.views.html.analytics.google(analytics.getGoogleAnalyticsID)
-        }
     }
-</html>
+}
