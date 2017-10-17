@@ -31,18 +31,20 @@ class ErrorsHandler @Inject()(env: Environment, config: Configuration,
     extends DefaultHttpErrorHandler(env, config, sourceMapper, router) {
 
     override def onProdServerError(request: RequestHeader, exception: UsefulException): Future[Result] = {
-        Future.successful(
+        Future.successful {
             InternalServerError("A server error occurred: " + exception.getMessage)
-        )
+        }
     }
 
     override def onForbidden(request: RequestHeader, message: String): Future[Result] = {
-        Future.successful(
+        Future.successful {
             Forbidden("You're not allowed to access this resource.")
-        )
+        }
     }
 
     override def onNotFound(request: RequestHeader, message: String): Future[Result] = {
-        Future.successful(Ok(frontend.views.html.notFound(env)))
+        Future.successful {
+            Ok(frontend.views.html.notFound(env))
+        }
     }
 }

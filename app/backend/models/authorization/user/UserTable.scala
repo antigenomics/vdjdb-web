@@ -1,4 +1,4 @@
-package backend.authorization.models.user
+package backend.models.authorization.user
 
 import slick.jdbc.H2Profile.api._
 import slick.lifted.Tag

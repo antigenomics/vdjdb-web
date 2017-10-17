@@ -27,15 +27,19 @@ import play.api._
 import play.api.libs.ws._
 import play.api.mvc._
 
-class Application @Inject()(ws: WSClient, assets: Assets, environment: Environment, configuration: Configuration, analytics: Analytics, cc: ControllerComponents)
-    extends AbstractController(cc) {
+import scala.concurrent.Future
+
+class Application @Inject()(ws: WSClient, assets: Assets, configuration: Configuration, cc: ControllerComponents)
+                           (implicit environment: Environment, analytics: Analytics) extends AbstractController(cc) {
     implicit val temporaryConfiguration: TemporaryConfiguration = configuration.get[TemporaryConfiguration]("application.temporary")
 
-    def index: Action[AnyContent] = Action {
-        Ok(frontend.views.html.main(environment, analytics))
+    def index: Action[AnyContent] = Action.async { implicit request =>
+        Future.successful {
+            Ok(frontend.views.html.main())
+        }
     }
 
-    def bundle(file: String): Action[AnyContent] = if (environment.mode == Mode.Dev) Action.async {
+    def bundle(file: String): Action[AnyContent] = if (environment.mode == Mode.Dev) Action.async { implicit request =>
         ws.url(s"http://localhost:8080/bundles/$file").get().map { response =>
             val contentType = response.headers.get("Content-Type").flatMap(_.headOption).getOrElse("application/octet-stream")
             val headers = response.headers
@@ -46,20 +50,22 @@ class Application @Inject()(ws: WSClient, assets: Assets, environment: Environme
         throw new RuntimeException("Application.bundle should not be used with Production Mode")
     }
 
-    def downloadTemporaryFile(path: String, guard: String, hash: String) = Action {
-        val link = TemporaryFileLink(path, guard, hash)
-        val temporary = TemporaryFile.find(link)
-        temporary match {
-            case Some(temporaryFile) =>
-                temporaryFile.getFile match {
-                    case Some(file) =>
-                        Ok.sendFile(content = file, fileName = _.getName, inline = false,
-                            onClose = () => {
-                                temporaryFile.delete()
-                            })
-                    case None => BadRequest("Invalid request")
-                }
-            case None => BadRequest("Invalid request")
+    def downloadTemporaryFile(path: String, guard: String, hash: String): Action[AnyContent] = Action.async { implicit request =>
+        Future.successful {
+            val link = TemporaryFileLink(path, guard, hash)
+            val temporary = TemporaryFile.find(link)
+            temporary match {
+                case Some(temporaryFile) =>
+                    temporaryFile.getFile match {
+                        case Some(file) =>
+                            Ok.sendFile(content = file, fileName = _.getName, inline = false,
+                                onClose = () => {
+                                    temporaryFile.delete()
+                                })
+                        case None => BadRequest("Invalid request")
+                    }
+                case None => BadRequest("Invalid request")
+            }
         }
     }
 }

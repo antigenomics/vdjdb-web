@@ -17,7 +17,8 @@ POST        /api/database/search                      backend.controllers.Databa
 GET         /api/database/connect                     backend.controllers.DatabaseAPI.connect
 
 # Authorization API
-GET         /authorization/login                       backend.controllers.Authorization.login
+GET         /authorization/login                      backend.controllers.Authorization.login
+POST        /authorization/login                    backend.controllers.Authorization.onLogin
 
 
 # Map static resources from the /public folder to the /assets URL path

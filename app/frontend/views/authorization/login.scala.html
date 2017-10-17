@@ -1,0 +1,69 @@
+@import play.api.{Environment, Mode}
+@import backend.utils.analytics.Analytics
+@import helper._
+@import backend.models.authorization.forms.LoginForm
+@(form: LoginForm)(implicit environment: Environment, analytics: Analytics, request: Request[_])
+<html lang="en">
+    <head>
+        <link rel="manifest" href="assets/manifest.json" type="application/manifest+json">
+        <base href="/">
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <title>VDJdb: login</title>
+
+        @if(environment.mode == Mode.Dev) {
+            <link type="text/css" href="bundles/bundle.css" rel="stylesheet">
+        } else {
+            <link type="text/css" href="@routes.Assets.versioned("bundles/bundle.min.css")" rel="stylesheet">
+        }
+        <link rel="shortcut icon" type="image/png" href="@routes.Assets.versioned("images/favicon.png")">
+        </head>
+    <body>
+        <div class="ui middle aligned center aligned auth grid">
+            <div class="column left aligned">
+                <form class="ui form" method="POST" action="/authorization/login" id="login">
+                    <h3 class="ui top attached header">Login</h3>
+                    <div class="ui attached segment teal padded">
+                        @CSRF.formField
+                        <div class="field">
+                            <div class="ui left icon input">
+                                <i class="user icon"></i>
+                                <input type="email" name="email" placeholder="E-mail address">
+                            </div>
+                        </div>
+                        <div class="field">
+                            <div class="ui left icon input">
+                                <i class="lock icon"></i>
+                                <input type="password" name="password" placeholder="Password">
+                            </div>
+                        </div>
+                        <p class="cursor pointer"><a>Forgot password?</a></p>
+                        <button class="ui fluid large teal button" type="submit" form="login">Login</button>
+                        <div class="ui divider"></div>
+                        <p>Don't have an account? <a class="cursor pointer">Sign up now!</a></p>
+                        <p class="cursor pointer"><a href="/" rel="noopener">Back to home.</a></p>
+                        @if(form.hasMessages){
+                            @for(message <- form.getMessages) {
+                                <div class="ui message @message.messageType">
+                                    <div class="header">@message.title</div>
+                                    @message.message
+                                </div>
+                            }
+                        }
+                    </div>
+                </form>
+            </div>
+        </div>
+    </body>
+    @if(environment.mode != Mode.Dev) {
+        @if(analytics.isYandexAnalyticsAvailable) {
+            @frontend.views.html.analytics.yandex(analytics.getYandexAnalyticsID)
+        }
+        @if(analytics.isGoogleAnalyticsAvailable) {
+            @frontend.views.html.analytics.google(analytics.getGoogleAnalyticsID)
+        }
+    }
+</html>

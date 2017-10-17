@@ -1,4 +1,4 @@
-package backend.authorization.models.user
+package backend.models.authorization.user
 
 import javax.inject.{Inject, Singleton}
 
