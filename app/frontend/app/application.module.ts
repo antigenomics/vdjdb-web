@@ -29,10 +29,11 @@ import { HomePageModule } from './pages/home/home.module';
 import { ClipboardService } from './utils/clipboard/clipboard.service';
 import { LoggerService } from './utils/logger/logger.service';
 import { NotificationService } from './utils/notification/notification.service';
+import { RouteDirective } from './common/navbar/route.directive';
 
 @NgModule({
     imports:      [ CommonModule, BrowserModule, HomePageModule, AboutPageModule, SearchPageModule, RouterModule.forRoot([]) ],
-    declarations: [ ApplicationComponent, NavigationBarComponent ],
+    declarations: [ ApplicationComponent, NavigationBarComponent, RouteDirective ],
     providers:    [ ConfigurationService, LoggerService, NotificationService, ClipboardService ],
     bootstrap:    [ ApplicationComponent ]
 })

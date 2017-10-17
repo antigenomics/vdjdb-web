@@ -2,19 +2,18 @@ package backend.controllers
 
 import javax.inject.Inject
 
-import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
-import play.api.mvc.{AbstractController, ControllerComponents}
-import slick.jdbc.JdbcProfile
+import backend.authorization.models.user.UserProvider
+import backend.utils.CommonUtils
+import play.api.mvc.{AbstractController, Action, AnyContent, ControllerComponents}
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
-class Authorization @Inject() (protected val dbConfigProvider: DatabaseConfigProvider, cc: ControllerComponents)(implicit ec: ExecutionContext)
-    extends AbstractController(cc) with HasDatabaseConfigProvider[JdbcProfile] {
-        import dbConfig.profile.api._
+class Authorization @Inject()(cc: ControllerComponents, userProvider: UserProvider)(implicit ec: ExecutionContext) extends AbstractController(cc) {
 
-        def testController = Action {
-
-            Ok(frontend.views.html.authorization.login())
-        }
-
+    def login: Action[AnyContent] = Action.async {
+        userProvider.getAll.map(_.toString()).onComplete(s => println(s))
+        userProvider.addUser(CommonUtils.randomAlphaNumericString(5), CommonUtils.randomAlphaNumericString(5)).onComplete(println)
+        Future.successful(Ok("priv"))
     }
+
+}

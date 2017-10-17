@@ -40,7 +40,7 @@
     "@angular/platform-browser-dynamic": "4.4.5",
     "google-closure-compiler": "^20170409.0.0",
     "glob": "^7.1.2",
-    "@types/angular": "1.6.32",
+    "@types/angular": "1.6.34",
     "@types/node": "8.0.20",
     "awesome-typescript-loader": "3.2.3",
     "angular2-template-loader": "0.6.2",
