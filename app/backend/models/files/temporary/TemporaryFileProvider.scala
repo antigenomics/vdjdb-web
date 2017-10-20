@@ -2,7 +2,7 @@ package backend.models.files.temporary
 
 import javax.inject.{Inject, Singleton}
 
-import backend.models.files.{FileMetadataLink, FileMetadataProvider}
+import backend.models.files.{FileMetadata, FileMetadataLink, FileMetadataProvider}
 import backend.utils.files.TemporaryConfiguration
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import play.db.NamedDatabase
@@ -20,16 +20,12 @@ class TemporaryFileProvider @Inject()(@NamedDatabase("default") protected val db
         db.run(TemporaryFileProvider.table.result)
     }
 
-    def getTemporaryFile(link: FileMetadataLink): Future[Option[TemporaryFile]] = {
-        for {
-            meta <- fileMetadataProvider.getFileMetadata(link)
-            if meta.nonEmpty
-            file <- db.run(TemporaryFileProvider.table.filter(_.metadataID === meta.get.id).result.headOption)
-        } yield file
+    def getTemporaryFile(link: FileMetadataLink): Future[Option[(TemporaryFile, FileMetadata)]] = {
+        db.run(TemporaryFileProvider.table.withMetadata.filter(file => file._2.hash === link.hash && file._2.guard === link.guard).result.headOption)
     }
 
 }
 
 object TemporaryFileProvider {
-    private final val table = TableQuery[TemporaryFileTable]
+    private[files] final val table = TableQuery[TemporaryFileTable]
 }
