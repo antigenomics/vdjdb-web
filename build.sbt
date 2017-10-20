@@ -73,3 +73,8 @@ val frontendDirectory = baseDirectory {
 }
 playRunHooks += frontendDirectory.map(WebpackServer(_)).value
 // Ends.
+
+// Test configurations
+
+javaOptions in Test ++= Seq("-Dslick.dbs.default.db.url=\"jdbc:h2:mem:play;DB_CLOSE_DELAY=-1\"")
+libraryDependencies ++= Seq("org.scalatestplus.play" % "scalatestplus-play_2.12" % "3.1.2" % "test")
