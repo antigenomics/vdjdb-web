@@ -25,6 +25,10 @@ class FileMetadataProvider @Inject()(@NamedDatabase("default") protected val dbC
     def insert(metadata: FileMetadata): Future[Long] = {
         db.run((FileMetadataProvider.table returning FileMetadataProvider.table.map(_.id)) += metadata)
     }
+
+    def insert(fileName: String, extension: String, folder: String): Future[Long] = {
+        insert(FileMetadata(0, fileName, extension, s"$folder/$fileName.$extension", folder))
+    }
 }
 
 object FileMetadataProvider {

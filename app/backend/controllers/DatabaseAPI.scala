@@ -38,7 +38,6 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class DatabaseAPI @Inject()(cc: ControllerComponents, database: Database, actorSystem: ActorSystem, limits: RequestLimits, configuration: Configuration)
                            (implicit system: ActorSystem, mat: Materializer, ec: ExecutionContext) extends AbstractController(cc) {
-    implicit val temporaryConfiguration: TemporaryConfiguration = configuration.get[TemporaryConfiguration]("application.temporary")
 
     def summary: Action[AnyContent] = Action.async {
         Future.successful {

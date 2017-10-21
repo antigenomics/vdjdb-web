@@ -31,7 +31,6 @@ import scala.concurrent.Future
 
 class Application @Inject()(ws: WSClient, assets: Assets, configuration: Configuration, cc: ControllerComponents)
                            (implicit environment: Environment, analytics: Analytics) extends AbstractController(cc) {
-    implicit val temporaryConfiguration: TemporaryConfiguration = configuration.get[TemporaryConfiguration]("application.temporary")
 
     def index: Action[AnyContent] = Action.async { implicit request =>
         Future.successful {
@@ -50,7 +49,7 @@ class Application @Inject()(ws: WSClient, assets: Assets, configuration: Configu
         throw new RuntimeException("Application.bundle should not be used with Production Mode")
     }
 
-    def downloadTemporaryFile(path: String, guard: String, hash: String): Action[AnyContent] = Action.async { implicit request =>
+    def downloadTemporaryFile(link: String): Action[AnyContent] = Action.async { implicit request =>
         Future.successful {
             val link = TemporaryFileLink(path, guard, hash)
             val temporary = TemporaryFile.find(link)

@@ -16,16 +16,19 @@
 
 package backend.server.table.search.export
 
+import java.util.concurrent.Future
+
+import backend.models.files.temporary.{TemporaryFileLink, TemporaryFileProvider}
 import backend.server.database.Database
 import backend.server.table.search.SearchTable
-import backend.utils.files.{TemporaryConfiguration, TemporaryFileLink}
 
 trait SearchTableConverter {
-    def convert(table: SearchTable, database: Database): Option[TemporaryFileLink]
+    def convert(table: SearchTable, database: Database): Future[TemporaryFileLink]
+    def getExtension: String
 }
 
 object SearchTableConverter {
-    def getConverter(converterType: String)(implicit temporaryConfiguration: TemporaryConfiguration): Option[SearchTableConverter] = {
+    def getConverter(converterType: String)(implicit temporaryFileProvider: TemporaryFileProvider): Option[SearchTableConverter] = {
         converterType match {
             case "tab-delimited-txt" => Some(SearchTableTabDelimitedConverter())
             case _ => None

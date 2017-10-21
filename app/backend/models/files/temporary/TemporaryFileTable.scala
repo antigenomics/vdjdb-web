@@ -10,11 +10,10 @@ import scala.language.higherKinds
 class TemporaryFileTable(tag: Tag) extends Table[TemporaryFile](tag, "TEMPORARY_FILE") {
     def id = column[Long]("ID", O.PrimaryKey, O.AutoInc)
     def link = column[String]("LINK", O.Length(32), O.Unique)
-    def locked = column[Boolean]("LOCKED")
     def expiredAt = column[Date]("EXPIRED_AT")
     def metadataID = column[Long]("METADATA_ID")
 
-    def * = (id, link, locked, expiredAt, metadataID) <> (TemporaryFile.tupled, TemporaryFile.unapply)
+    def * = (id, link, expiredAt, metadataID) <> (TemporaryFile.tupled, TemporaryFile.unapply)
     def metadata = foreignKey("METADATA_FK", metadataID, FileMetadataProvider.table)(_.id,
         onUpdate = ForeignKeyAction.Cascade, onDelete = ForeignKeyAction.Cascade)
 

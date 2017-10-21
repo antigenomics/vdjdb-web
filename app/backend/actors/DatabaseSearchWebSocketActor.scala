@@ -35,7 +35,7 @@ import scala.concurrent.ExecutionContext
 
 
 case class DatabaseSearchWebSocketActor(out: ActorRef, database: Database, actorSystem: ActorSystem, limit: IpLimit, requestLimits: RequestLimits)
-                                       (implicit ec: ExecutionContext, temporaryConfiguration: TemporaryConfiguration) extends Actor {
+                                       (implicit ec: ExecutionContext) extends Actor {
     private final val table: SearchTable = new SearchTable()
 
     override def receive: Receive = {
@@ -158,7 +158,7 @@ case class DatabaseSearchWebSocketActor(out: ActorRef, database: Database, actor
 
 object DatabaseSearchWebSocketActor {
     def props(out: ActorRef, database: Database, actorSystem: ActorSystem, limit: IpLimit, requestLimits: RequestLimits)
-             (implicit ec: ExecutionContext, temporaryConfiguration: TemporaryConfiguration): Props =
+             (implicit ec: ExecutionContext): Props =
         Props(new DatabaseSearchWebSocketActor(out, database, actorSystem, limit, requestLimits))
 }
 

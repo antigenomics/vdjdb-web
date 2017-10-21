@@ -36,13 +36,6 @@ object FileUtils {
         Files.copy(Paths.get(source), Paths.get(dest), REPLACE_EXISTING)
     }
 
-    def createDirectory(directory: String): Unit = {
-        val file = new File(directory)
-        if (!file.exists) {
-            file.mkdirs()
-        }
-    }
-
     // t is the type of checksum, i.e. MD5, or SHA-512 or whatever
     // path is the path to the file you want to get the hash of
     def fileContentHash(t: String, path: String): String = {
