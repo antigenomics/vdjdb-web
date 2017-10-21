@@ -18,8 +18,8 @@ class FileMetadataProvider @Inject()(@NamedDatabase("default") protected val dbC
         db.run(FileMetadataProvider.table.result)
     }
 
-    def getFileMetadata(link: FileMetadataLink): Future[Option[FileMetadata]] = {
-        db.run(FileMetadataProvider.table.filter(meta => meta.hash === link.hash && meta.guard === link.guard).result.headOption)
+    def getByID(id: Long): Future[Option[FileMetadata]] = {
+        db.run(FileMetadataProvider.table.filter(_.id === id).result.headOption)
     }
 }
 
