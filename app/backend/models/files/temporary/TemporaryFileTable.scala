@@ -9,7 +9,7 @@ import scala.language.higherKinds
 
 class TemporaryFileTable(tag: Tag) extends Table[TemporaryFile](tag, "TEMPORARY_FILE") {
     def id = column[Long]("ID", O.PrimaryKey, O.AutoInc)
-    def link = column[String]("LINK", O.Length(128), O.Unique)
+    def link = column[String]("LINK", O.Length(32), O.Unique)
     def locked = column[Boolean]("LOCKED")
     def expiredAt = column[Date]("EXPIRED_AT")
     def metadataID = column[Long]("METADATA_ID")

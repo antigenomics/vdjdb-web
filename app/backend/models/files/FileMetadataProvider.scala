@@ -21,6 +21,10 @@ class FileMetadataProvider @Inject()(@NamedDatabase("default") protected val dbC
     def getByID(id: Long): Future[Option[FileMetadata]] = {
         db.run(FileMetadataProvider.table.filter(_.id === id).result.headOption)
     }
+
+    def insert(metadata: FileMetadata): Future[Long] = {
+        db.run((FileMetadataProvider.table returning FileMetadataProvider.table.map(_.id)) += metadata)
+    }
 }
 
 object FileMetadataProvider {
