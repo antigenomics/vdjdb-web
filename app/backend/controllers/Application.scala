@@ -16,10 +16,11 @@
 
 package backend.controllers
 
+import java.io.File
 import javax.inject._
 
+import backend.models.files.temporary.TemporaryFileProvider
 import backend.utils.analytics.Analytics
-import backend.utils.files.{TemporaryConfiguration, TemporaryFile, TemporaryFileLink}
 import controllers._
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -29,7 +30,7 @@ import play.api.mvc._
 
 import scala.concurrent.Future
 
-class Application @Inject()(ws: WSClient, assets: Assets, configuration: Configuration, cc: ControllerComponents)
+class Application @Inject()(ws: WSClient, assets: Assets, configuration: Configuration, cc: ControllerComponents, temporaryFileProvider: TemporaryFileProvider)
                            (implicit environment: Environment, analytics: Analytics) extends AbstractController(cc) {
 
     def index: Action[AnyContent] = Action.async { implicit request =>
@@ -50,21 +51,15 @@ class Application @Inject()(ws: WSClient, assets: Assets, configuration: Configu
     }
 
     def downloadTemporaryFile(link: String): Action[AnyContent] = Action.async { implicit request =>
-        Future.successful {
-            val link = TemporaryFileLink(path, guard, hash)
-            val temporary = TemporaryFile.find(link)
-            temporary match {
-                case Some(temporaryFile) =>
-                    temporaryFile.getFile match {
-                        case Some(file) =>
-                            Ok.sendFile(content = file, fileName = _.getName, inline = false,
-                                onClose = () => {
-                                    temporaryFile.delete()
-                                })
-                        case None => BadRequest("Invalid request")
-                    }
-                case None => BadRequest("Invalid request")
-            }
+        temporaryFileProvider.getTemporaryFileWithMetadata(link).flatMap {
+            case Some((_, metadata)) =>
+                val file = new File(metadata.path)
+                Future.successful {
+                    Ok.sendFile(file, inline = false, _ => metadata.getNameWithExtension, () => {
+                        temporaryFileProvider.deleteTemporaryFile(link)
+                    })
+                }
+            case None => Future.failed(new Exception("File not found"))
         }
     }
 }

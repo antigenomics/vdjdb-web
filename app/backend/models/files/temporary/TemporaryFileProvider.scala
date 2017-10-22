@@ -1,3 +1,19 @@
+/*
+ *      Copyright 2017 Bagaev Dmitry
+ *
+ *      Licensed under the Apache License, Version 2.0 (the "License");
+ *      you may not use this file except in compliance with the License.
+ *      You may obtain a copy of the License at
+ *
+ *          http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *      Unless required by applicable law or agreed to in writing, software
+ *      distributed under the License is distributed on an "AS IS" BASIS,
+ *      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *      See the License for the specific language governing permissions and
+ *      limitations under the License.
+ */
+
 package backend.models.files.temporary
 
 import java.io.{File, PrintWriter}
@@ -6,7 +22,6 @@ import java.sql.Date
 import javax.inject.{Inject, Singleton}
 
 import akka.actor.ActorSystem
-import akka.actor.Status.Success
 import backend.models.files.{FileMetadata, FileMetadataProvider}
 import backend.utils.CommonUtils
 import org.slf4j.LoggerFactory
@@ -18,6 +33,7 @@ import slick.lifted.TableQuery
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._
+import scala.language.postfixOps
 import scala.util.Failure
 
 @Singleton
@@ -41,7 +57,12 @@ class TemporaryFileProvider @Inject()(@NamedDatabase("default") protected val db
 
     def deleteExpired(): Future[Int] = {
         val currentDate = new Date(new java.util.Date().getTime)
-        db.run(TemporaryFileProvider.table.filter(_.expiredAt < currentDate).delete)
+        db.run(TemporaryFileProvider.table.withMetadata.filter(_._1.expiredAt < currentDate).result).flatMap { files =>
+            files.foreach {
+                case (_, metadata) => metadata.deleteFile()
+            }
+            db.run(TemporaryFileProvider.table.filter(_.expiredAt < currentDate).delete)
+        }
     }
 
     def getTemporaryFile(link: String): Future[Option[TemporaryFile]] = {
@@ -52,21 +73,15 @@ class TemporaryFileProvider @Inject()(@NamedDatabase("default") protected val db
         db.run(TemporaryFileProvider.table.withMetadata.filter(_._1.link === link).result.headOption)
     }
 
-    // TODO !!! delete files from fs
     def deleteTemporaryFile(link: String): Future[Int] = {
-//        val future = for (result <- db.run(TemporaryFileProvider.table.withMetadata.filter(_._1.link === link).result.headOption)) yield {
-//            if (result.nonEmpty) {
-//                result.get._2.deleteFile()
-//            }
-//        }
-//
-//        future onComplete {
-//            case Success =>
-//        }
-//            if file.nonEmpty;
-//            file.get.dele
-//            //db.run(query.delete)
-//        )
+        db.run(TemporaryFileProvider.table.withMetadata.filter(_._1.link === link).result.headOption).flatMap { file =>
+            if (file.nonEmpty) {
+                file.get._2.deleteFile()
+                db.run(TemporaryFileProvider.table.filter(_.link === link).delete)
+            } else {
+                Future.successful(0)
+            }
+        }
     }
 
     def deleteTemporaryFile(file: TemporaryFile): Future[Int] = {
@@ -94,15 +109,15 @@ class TemporaryFileProvider @Inject()(@NamedDatabase("default") protected val db
             val expiredAt = new Date(currentDate.getTime + configuration.keep * 1000)
             for (
                 meta <- fileMetadataProvider.insert(fileName, extension, folderPath);
-                link <- insert(link, expiredAt, meta)
+                _ <- insert(link, expiredAt, meta)
             ) yield TemporaryFileLink(link)
         } else {
             Future.failed(new Exception(s"Cannot create temporary file in ${configuration.path}"))
         }
     }
 
-    private def insert(link: String, expiredAt: Date, metadataID: Long): Future[String] = {
-        db.run(TemporaryFileProvider.table returning TemporaryFileProvider.table.map(_.link) += TemporaryFile(0, link, expiredAt, metadataID))
+    private def insert(link: String, expiredAt: Date, metadataID: Long): Future[Int] = {
+        db.run(TemporaryFileProvider.table += TemporaryFile(0, link, expiredAt, metadataID))
     }
 }
 

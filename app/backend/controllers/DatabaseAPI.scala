@@ -21,13 +21,13 @@ import javax.inject._
 import akka.actor.ActorSystem
 import akka.stream.Materializer
 import backend.actors.DatabaseSearchWebSocketActor
+import backend.models.files.temporary.TemporaryFileProvider
 import backend.server.database.api.metadata.{DatabaseColumnInfoResponse, DatabaseMetadataResponse}
 import backend.server.table.search.api.search.{SearchDataRequest, SearchDataResponse}
 import backend.server.database.{Database, DatabaseColumnInfo}
 import backend.server.database.filters.DatabaseFilters
 import backend.server.limit.RequestLimits
 import backend.server.table.search.SearchTable
-import backend.utils.files.TemporaryConfiguration
 import play.api.Configuration
 import play.api.libs.json.Json.toJson
 import play.api.libs.json._
@@ -37,7 +37,8 @@ import play.api.mvc._
 import scala.concurrent.{ExecutionContext, Future}
 
 class DatabaseAPI @Inject()(cc: ControllerComponents, database: Database, actorSystem: ActorSystem, limits: RequestLimits, configuration: Configuration)
-                           (implicit system: ActorSystem, mat: Materializer, ec: ExecutionContext) extends AbstractController(cc) {
+                           (implicit system: ActorSystem, mat: Materializer, ec: ExecutionContext, temporaryFileProvider: TemporaryFileProvider)
+    extends AbstractController(cc) {
 
     def summary: Action[AnyContent] = Action.async {
         Future.successful {

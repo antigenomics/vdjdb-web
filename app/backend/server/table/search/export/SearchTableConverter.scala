@@ -16,11 +16,10 @@
 
 package backend.server.table.search.export
 
-import java.util.concurrent.Future
-
 import backend.models.files.temporary.{TemporaryFileLink, TemporaryFileProvider}
 import backend.server.database.Database
 import backend.server.table.search.SearchTable
+import scala.concurrent.Future
 
 trait SearchTableConverter {
     def convert(table: SearchTable, database: Database): Future[TemporaryFileLink]

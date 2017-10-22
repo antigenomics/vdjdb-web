@@ -25,7 +25,7 @@ import { Filter, FiltersOptions, IFilter } from '../../filters/filters';
 import { FiltersService } from '../../filters/filters.service';
 import { WebSocketRequestData } from '../../websocket/websocket-request';
 import { WebSocketResponseData } from '../../websocket/websocket-response';
-import { WebSocketService } from '../../websocket/websocket.service';
+import { WebSocketResponseStatus, WebSocketService } from '../../websocket/websocket.service';
 import { ExportFormat } from './export/search-table-export.component';
 import { SearchTableRow } from './row/search-table-row';
 
@@ -186,7 +186,11 @@ export class SearchTableService {
                     .unpack()
         });
         this.logger.debug('Export', response);
-        Utils.File.download(response.get('link'));
+        if (response.get('status') === WebSocketResponseStatus.SUCCESS) {
+            Utils.File.download(response.get('link'));
+        } else {
+            this.notifications.warn('Export', response.get('message'));
+        }
     }
 
     // noinspection JSMethodCanBeStatic

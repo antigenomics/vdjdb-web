@@ -19,7 +19,6 @@ package backend.server.table.search.export
 import backend.models.files.temporary.{TemporaryFileLink, TemporaryFileProvider}
 import backend.server.database.Database
 import backend.server.table.search.SearchTable
-
 import scala.concurrent.Future
 
 case class SearchTableTabDelimitedConverter()(implicit temporaryFileProvider: TemporaryFileProvider) extends SearchTableConverter {
