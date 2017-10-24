@@ -42,14 +42,21 @@ class TemporaryFileProvider @Inject()(@NamedDatabase("default") protected val db
     private val logger = LoggerFactory.getLogger(this.getClass)
     private final val configuration = conf.get[TemporaryFileConfiguration]("application.temporary")
     import dbConfig.profile.api._
-
-    system.scheduler.schedule(configuration.interval seconds, configuration.interval seconds) {
+    private final val scheduler = system.scheduler.schedule(configuration.interval seconds, configuration.interval seconds) {
         deleteExpired onComplete {
             case Failure(ex) =>
                 logger.error("Cannot delete temporary files", ex)
             case _ =>
         }
     }
+
+    def getTemporaryFilesDirectoryPath: String = configuration.path
+
+    def getTemporaryFilesKeep: Int = configuration.keep
+
+    def getTemporaryFilesDeleteInterval: Int = configuration.interval
+
+    def cancelDeleteScheduler(): Unit = scheduler.cancel()
 
     def getAll: Future[Seq[TemporaryFile]] = {
         db.run(TemporaryFileProvider.table.result)
@@ -62,6 +69,15 @@ class TemporaryFileProvider @Inject()(@NamedDatabase("default") protected val db
                 case (_, metadata) => metadata.deleteFile()
             }
             db.run(TemporaryFileProvider.table.filter(_.expiredAt < currentDate).delete)
+        }
+    }
+
+    def deleteAll(): Future[Int] = {
+        db.run(TemporaryFileProvider.table.withMetadata.result) flatMap { files =>
+            files.foreach {
+                case (_, metadata) => metadata.deleteFile()
+            }
+            db.run(TemporaryFileProvider.table.delete)
         }
     }
 
