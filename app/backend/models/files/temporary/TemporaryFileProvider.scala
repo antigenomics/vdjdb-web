@@ -17,8 +17,7 @@
 package backend.models.files.temporary
 
 import java.io.{File, PrintWriter}
-import java.text.SimpleDateFormat
-import java.sql.Date
+import java.sql.Timestamp
 import javax.inject.{Inject, Singleton}
 
 import akka.actor.ActorSystem
@@ -62,41 +61,35 @@ class TemporaryFileProvider @Inject()(@NamedDatabase("default") protected val db
         db.run(TemporaryFileProvider.table.result)
     }
 
+    def getAllWithMetadata: Future[Seq[(TemporaryFile, FileMetadata)]] = {
+        db.run(TemporaryFileProvider.table.withMetadata.result)
+    }
+
     def deleteExpired(): Future[Int] = {
-        val currentDate = new Date(new java.util.Date().getTime)
+        val currentDate = new Timestamp(new java.util.Date().getTime)
         db.run(TemporaryFileProvider.table.withMetadata.filter(_._1.expiredAt < currentDate).result).flatMap { files =>
-            files.foreach {
-                case (_, metadata) => metadata.deleteFile()
-            }
-            db.run(TemporaryFileProvider.table.filter(_.expiredAt < currentDate).delete)
+            fileMetadataProvider.delete(files.map(_._2))
         }
     }
 
     def deleteAll(): Future[Int] = {
         db.run(TemporaryFileProvider.table.withMetadata.result) flatMap { files =>
-            files.foreach {
-                case (_, metadata) => metadata.deleteFile()
-            }
-            db.run(TemporaryFileProvider.table.delete)
+            fileMetadataProvider.delete(files.map(_._2))
         }
     }
 
-    def getTemporaryFile(link: String): Future[Option[TemporaryFile]] = {
+    def get(link: String): Future[Option[TemporaryFile]] = {
         db.run(TemporaryFileProvider.table.filter(_.link === link).result.headOption)
     }
 
-    def getTemporaryFileWithMetadata(link: String): Future[Option[(TemporaryFile, FileMetadata)]] = {
+    def getWithMetadata(link: String): Future[Option[(TemporaryFile, FileMetadata)]] = {
         db.run(TemporaryFileProvider.table.withMetadata.filter(_._1.link === link).result.headOption)
     }
 
     def deleteTemporaryFile(link: String): Future[Int] = {
-        db.run(TemporaryFileProvider.table.withMetadata.filter(_._1.link === link).result.headOption).flatMap { file =>
-            if (file.nonEmpty) {
-                file.get._2.deleteFile()
-                db.run(TemporaryFileProvider.table.filter(_.link === link).delete)
-            } else {
-                Future.successful(0)
-            }
+        db.run(TemporaryFileProvider.table.withMetadata.filter(_._1.link === link).result.headOption) flatMap {
+            case Some(file) => fileMetadataProvider.delete(file._2)
+            case None => Future.failed(new Exception("No such temporary file"))
         }
     }
 
@@ -110,11 +103,8 @@ class TemporaryFileProvider @Inject()(@NamedDatabase("default") protected val db
 
         val folder = new File(folderPath)
         if (folder.mkdirs()) {
-            val dateFormat: SimpleDateFormat = new SimpleDateFormat("HH:mm-dd-MM-yyyy")
             val currentDate = new java.util.Date()
-            val currentDateString: String = dateFormat.format(currentDate)
-            val fileName = s"${name}_$currentDateString"
-            val filePath = s"$folderPath/$fileName.$extension"
+            val filePath = s"$folderPath/$name.$extension"
 
             val contentFile = new File(filePath)
             contentFile.createNewFile()
@@ -122,9 +112,9 @@ class TemporaryFileProvider @Inject()(@NamedDatabase("default") protected val db
             printWriter.write(content)
             printWriter.close()
 
-            val expiredAt = new Date(currentDate.getTime + configuration.keep * 1000)
+            val expiredAt = new Timestamp(currentDate.getTime + configuration.keep * 1000)
             for (
-                meta <- fileMetadataProvider.insert(fileName, extension, folderPath);
+                meta <- fileMetadataProvider.insert(name, extension, folderPath);
                 _ <- insert(link, expiredAt, meta)
             ) yield TemporaryFileLink(link)
         } else {
@@ -132,7 +122,7 @@ class TemporaryFileProvider @Inject()(@NamedDatabase("default") protected val db
         }
     }
 
-    private def insert(link: String, expiredAt: Date, metadataID: Long): Future[Int] = {
+    private def insert(link: String, expiredAt: Timestamp, metadataID: Long): Future[Int] = {
         db.run(TemporaryFileProvider.table += TemporaryFile(0, link, expiredAt, metadataID))
     }
 }

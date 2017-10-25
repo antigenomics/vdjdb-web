@@ -34,7 +34,7 @@ class FileMetadataProvider @Inject()(@NamedDatabase("default") protected val dbC
         db.run(FileMetadataProvider.table.result)
     }
 
-    def getByID(id: Long): Future[Option[FileMetadata]] = {
+    def get(id: Long): Future[Option[FileMetadata]] = {
         db.run(FileMetadataProvider.table.filter(_.id === id).result.headOption)
     }
 
@@ -44,6 +44,19 @@ class FileMetadataProvider @Inject()(@NamedDatabase("default") protected val dbC
 
     def insert(fileName: String, extension: String, folder: String): Future[Long] = {
         insert(FileMetadata(0, fileName, extension, s"$folder/$fileName.$extension", folder))
+    }
+
+    def delete(metadata: FileMetadata): Future[Int] = {
+        db.run(FileMetadataProvider.table.filter(_.id === metadata.id).delete) andThen { case _ =>
+            metadata.deleteFile()
+        }
+    }
+
+    def delete(metadatas: Seq[FileMetadata]): Future[Int] = {
+        val ids = metadatas.map(_.id)
+        db.run(FileMetadataProvider.table.filter(fm => fm.id inSet ids).delete) andThen { case _ =>
+            metadatas.foreach(_.deleteFile())
+        }
     }
 }
 

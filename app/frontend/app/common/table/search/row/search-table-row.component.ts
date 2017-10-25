@@ -19,7 +19,6 @@ import {
     ViewChild, ViewContainerRef
 } from '@angular/core';
 import { BooleanConverter, InputConverter } from '../../../../utils/input-converter.decorator';
-import { LoggerService } from '../../../../utils/logger/logger.service';
 import { SearchTableEntryCdrComponent } from '../entry/cdr/search-table-entry-cdr.component';
 import { SearchTableEntryGeneComponent } from '../entry/gene/search-table-entry-gene.component';
 import { SearchTableEntryJsonComponent } from '../entry/json/search-table-entry-json.component';

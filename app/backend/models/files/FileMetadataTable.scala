@@ -16,7 +16,7 @@
 
 package backend.models.files
 
-import java.sql.Date
+import java.sql.Timestamp
 
 import slick.jdbc.H2Profile.api._
 import slick.lifted.Tag
@@ -27,7 +27,7 @@ class FileMetadataTable(tag: Tag) extends Table[FileMetadata](tag, "FILE_METADAT
     def extension = column[String]("EXTENSION", O.Length(16))
     def path = column[String]("PATH", O.Length(512))
     def folder = column[String]("FOLDER", O.Length(512))
-    def createdAt = column[Date]("CREATED_AT")
+    def createdAt = column[Timestamp]("CREATED_AT")
 
     def * = (id, fileName, extension, path, folder, createdAt) <> (FileMetadata.tupled, FileMetadata.unapply)
 }
