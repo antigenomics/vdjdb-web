@@ -51,11 +51,11 @@ class Application @Inject()(ws: WSClient, assets: Assets, configuration: Configu
     }
 
     def downloadTemporaryFile(link: String): Action[AnyContent] = Action.async { implicit request =>
-        temporaryFileProvider.getTemporaryFileWithMetadata(link).flatMap {
+        temporaryFileProvider.getWithMetadata(link).flatMap {
             case Some((_, metadata)) =>
                 val file = new File(metadata.path)
                 Future.successful {
-                    Ok.sendFile(file, inline = false, _ => metadata.getNameWithExtension, () => {
+                    Ok.sendFile(file, inline = false, _ => metadata.getNameWithDateAndExtension, () => {
                         temporaryFileProvider.deleteTemporaryFile(link)
                     })
                 }

@@ -17,12 +17,16 @@
 package backend.models.files
 
 import java.io.File
-import java.sql.Date
+import java.sql.Timestamp
 
-case class FileMetadata(id: Long, fileName: String, extension: String, path: String, folder: String, createdAt: Date = new Date(new java.util.Date().getTime)) {
+case class FileMetadata(id: Long, fileName: String, extension: String, path: String,
+                        folder: String, createdAt: Timestamp = new Timestamp(new java.util.Date().getTime)) {
+
     def getNameWithExtension: String = s"$fileName.$extension"
 
-    def deleteFile(): Unit = {
+    def getNameWithDateAndExtension: String = s"$fileName-$createdAt.$extension"
+
+    private[files] def deleteFile(): Unit = {
         val directory = new File(folder)
         val file = new File(path)
 

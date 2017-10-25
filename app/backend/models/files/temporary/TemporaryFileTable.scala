@@ -16,17 +16,18 @@
 
 package backend.models.files.temporary
 
-import java.sql.Date
+import java.sql.Timestamp
 
 import backend.models.files.FileMetadataProvider
 import slick.jdbc.H2Profile.api._
 import slick.lifted.Tag
+
 import scala.language.higherKinds
 
 class TemporaryFileTable(tag: Tag) extends Table[TemporaryFile](tag, "TEMPORARY_FILE") {
     def id = column[Long]("ID", O.PrimaryKey, O.AutoInc)
     def link = column[String]("LINK", O.Length(32), O.Unique)
-    def expiredAt = column[Date]("EXPIRED_AT")
+    def expiredAt = column[Timestamp]("EXPIRED_AT")
     def metadataID = column[Long]("METADATA_ID")
 
     def * = (id, link, expiredAt, metadataID) <> (TemporaryFile.tupled, TemporaryFile.unapply)

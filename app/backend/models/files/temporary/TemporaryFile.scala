@@ -16,6 +16,6 @@
 
 package backend.models.files.temporary
 
-import java.sql.Date
+import java.sql.Timestamp
 
-case class TemporaryFile(id: Long, link: String, expiredAt: Date, metadataID: Long)
+case class TemporaryFile(id: Long, link: String, expiredAt: Timestamp, metadataID: Long)

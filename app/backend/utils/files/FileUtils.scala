@@ -20,6 +20,9 @@ import java.io.File
 import java.nio.file.StandardCopyOption.REPLACE_EXISTING
 import java.nio.file.{Files, Paths}
 import java.security.MessageDigest
+import java.nio.charset.Charset
+import java.nio.file.Files
+import java.nio.file.Paths
 
 object FileUtils {
 
