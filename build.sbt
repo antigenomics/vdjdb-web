@@ -79,6 +79,8 @@ playRunHooks += frontendDirectory.map(WebpackServer(_)).value
 javaOptions in Test ++= Seq(
     "-Dslick.dbs.default.db.url=jdbc:h2:mem:play;DB_CLOSE_DELAY=-1",
     "-Dslick.dbs.default.profile=slick.jdbc.H2Profile$",
-    "-Dslick.dbs.default.db.profile=org.h2.Driver"
+    "-Dslick.dbs.default.db.profile=org.h2.Driver",
+    "-Dapplication.temporary.interval=0",
+    "-Dlogger.resource=logback.test.xml"
 )
 libraryDependencies ++= Seq("org.scalatestplus.play" % "scalatestplus-play_2.12" % "3.1.2" % "test")

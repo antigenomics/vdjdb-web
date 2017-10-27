@@ -11,7 +11,7 @@ class DatabaseFiltersSpec extends BaseTestSpecWithApplication {
 
     "DatabaseFilters" should {
 
-        "be able to create filters of from request" in {
+        "be able to create filters from request" in {
             val request: List[DatabaseFilterRequest] = List(
                 DatabaseFilterRequest("gene", DatabaseFilterType.Exact, negative = false, "TRA"),
                 DatabaseFilterRequest("v.segm", DatabaseFilterType.ExactSet, negative = false, "TRBV9,TRBV10"),
