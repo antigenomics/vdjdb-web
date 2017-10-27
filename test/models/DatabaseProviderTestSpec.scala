@@ -16,16 +16,13 @@
 
 package models
 
-import base.BaseTestSpec
+import base.BaseTestSpecWithApplication
 import org.scalatest.BeforeAndAfterAll
-import play.api.{Application, Mode}
 import play.api.db.{DBApi, Database}
-import play.api.inject.guice.GuiceApplicationBuilder
 
 import scala.concurrent.ExecutionContext
 
-abstract class DatabaseProviderTestSpec(databaseName: String = "database") extends BaseTestSpec with BeforeAndAfterAll {
-  lazy implicit val app: Application = new GuiceApplicationBuilder().in(Mode.Test).build()
+abstract class DatabaseProviderTestSpec(databaseName: String = "database") extends BaseTestSpecWithApplication with BeforeAndAfterAll {
   lazy implicit val database: Database = app.injector.instanceOf[DBApi].database(databaseName)
   lazy implicit val ec: ExecutionContext = app.injector.instanceOf[ExecutionContext]
 }
