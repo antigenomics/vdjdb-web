@@ -14,7 +14,8 @@
  *    limitations under the License.
  */
 
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { Subscription } from 'rxjs/Subscription';
 import { FiltersService } from '../../common/filters/filters.service';
 import { SearchTableService } from '../../common/table/search/search-table.service';
 
@@ -23,8 +24,16 @@ import { SearchTableService } from '../../common/table/search/search-table.servi
     templateUrl:     './search.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class SearchPageComponent {
-    constructor(private table: SearchTableService, private filters: FiltersService) {}
+export class SearchPageComponent implements OnInit, OnDestroy {
+    private _updateEventSubscription: Subscription;
+
+    constructor(private table: SearchTableService, private filters: FiltersService, private changeDetector: ChangeDetectorRef) {}
+
+    public ngOnInit(): void {
+        this._updateEventSubscription = this.table.updateEvent.subscribe(() => {
+            this.changeDetector.detectChanges();
+        });
+    }
 
     public search(): void {
         this.table.update();
@@ -36,5 +45,9 @@ export class SearchPageComponent {
 
     public isLoading(): boolean {
         return this.table.loading || !this.table.dirty;
+    }
+
+    public ngOnDestroy(): void {
+        this._updateEventSubscription.unsubscribe();
     }
 }
