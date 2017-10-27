@@ -169,11 +169,6 @@ class TemporaryFileProviderSpec extends DatabaseProviderTestSpec {
         }
     }
 
-
-    override protected def beforeAll(): Unit = {
-        temporaryFileProvider.cancelDeleteScheduler()
-    }
-
     override protected def afterAll(): Unit = {
         temporaryFileProvider.deleteAll()
     }
