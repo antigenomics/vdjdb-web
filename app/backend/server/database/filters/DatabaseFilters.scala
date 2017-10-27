@@ -52,7 +52,7 @@ object DatabaseFilters {
                             val insertions = values(2).toInt
                             val deletions = values(3).toInt
                             val total = substitutions + insertions + deletions
-                            val preset: SequenceSearcherPreset = new SequenceSearcherPreset(new TreeSearchParameters(substitutions, insertions, deletions, total), DummyAlignmentScoring.INSTANCE)
+                            val preset: SequenceSearcherPreset = new SequenceSearcherPreset(new TreeSearchParameters(substitutions, deletions, insertions, total), DummyAlignmentScoring.INSTANCE)
                             sequence.add(new SequenceFilter(filter.column, query, preset))
                         } else {
                             warnings += "Sequence filters can only be applied to 'cdr3' or 'antigen.epitope'"

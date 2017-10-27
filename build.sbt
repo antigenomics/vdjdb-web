@@ -17,6 +17,9 @@ libraryDependencies ++= Seq(
     "com.antigenomics" % "vdjdb" % "1.1.6",
     "ch.qos.logback" % "logback-classic" % "1.2.3",
     "com.typesafe.scala-logging" %% "scala-logging" % "3.7.2",
+    "com.typesafe.play" %% "play-slick" % "3.0.2",
+    "com.typesafe.play" %% "play-slick-evolutions" % "3.0.2",
+    "com.h2database" % "h2" % "1.4.196",
     guice,
     ws,
     filters
@@ -70,3 +73,14 @@ val frontendDirectory = baseDirectory {
 }
 playRunHooks += frontendDirectory.map(WebpackServer(_)).value
 // Ends.
+
+// Test configurations
+
+javaOptions in Test ++= Seq(
+    "-Dslick.dbs.default.db.url=jdbc:h2:mem:play;DB_CLOSE_DELAY=-1",
+    "-Dslick.dbs.default.profile=slick.jdbc.H2Profile$",
+    "-Dslick.dbs.default.db.profile=org.h2.Driver",
+    "-Dapplication.temporary.interval=0",
+    "-Dlogger.resource=logback.test.xml"
+)
+libraryDependencies ++= Seq("org.scalatestplus.play" % "scalatestplus-play_2.12" % "3.1.2" % "test")

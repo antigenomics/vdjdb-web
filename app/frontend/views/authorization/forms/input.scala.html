@@ -1,0 +1,11 @@
+@(elements: helper.FieldElements)
+
+<div class="field @if(elements.hasErrors) {error}">
+    @if(elements.hasErrors){
+        <label>@elements.errors</label>
+    }
+    <div class="ui left icon input">
+        <i class="@elements.args('icon) icon"></i>
+        <input type="@elements.args('fieldType)" name="@elements.field.name" value="@elements.field.value.getOrElse("")" placeholder="@elements.args('placeholder)">
+    </div>
+</div>

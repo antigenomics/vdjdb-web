@@ -7,7 +7,7 @@ GET         /                                         backend.controllers.Applic
 GET         /search                                   backend.controllers.Application.index
 GET         /about                                    backend.controllers.Application.index
 
-GET         /temporary/:path/:guard/:hash             backend.controllers.Application.downloadTemporaryFile(path, guard, hash)
+GET         /temporary/:link                          backend.controllers.Application.downloadTemporaryFile(link)
 
 # Database API
 GET         /api/database/summary                     backend.controllers.DatabaseAPI.summary
@@ -15,6 +15,10 @@ GET         /api/database/meta                        backend.controllers.Databa
 GET         /api/database/meta/columns/:column        backend.controllers.DatabaseAPI.columnInfo(column: String)
 POST        /api/database/search                      backend.controllers.DatabaseAPI.search
 GET         /api/database/connect                     backend.controllers.DatabaseAPI.connect
+
+# Authorization API
+GET         /authorization/login                      backend.controllers.Authorization.login
+POST        /authorization/login                      backend.controllers.Authorization.onLogin
 
 
 # Map static resources from the /public folder to the /assets URL path

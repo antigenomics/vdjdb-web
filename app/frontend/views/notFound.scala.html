@@ -1,54 +1,22 @@
-@import play.api.{Environment, Mode}
-@(environment: Environment)
+@import play.api.Environment
+@import backend.utils.analytics.Analytics
+@()(implicit environment: Environment, analytics: Analytics)
 
-<html lang="en">
-    <head>
-        <link rel="manifest" href="assets/manifest.json" type="application/manifest+json">
-        <base href="/">
-        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <meta charset="utf-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-
-        <title>VDJdb</title>
-
-        @if(environment.mode == Mode.Dev) {
-            <link type="text/css" href="bundles/bundle.css" rel="stylesheet">
-        } else {
-            <link type="text/css" href="@routes.Assets.versioned("bundles/bundle.min.css")" rel="stylesheet">
-        }
-        <link rel="shortcut icon" type="image/png" href="@routes.Assets.versioned("images/favicon.png")">
-        <style>
-            body > .grid {
-                height: 100%;
-            }
-
-            .grid > .column {
-                max-width: 45%;
-            }
-
-            .error-header {
-                font-size: 86px;
-                color: #2185d0;
-            }
-        </style>
-    </head>
-    <body>
-        <div class="ui middle aligned center aligned grid">
-            <div class="column">
-                <div class="ui raised segment very padded">
-                    <div class="ui grid">
-                        <div class="five wide column">
-                            <h1 class="error-header">404</h1>
-                        </div>
-                        <div class="eleven wide column left aligned">
-                            <h2>Oops! Page not found.</h2>
-                            <h4>We could not find the page you were looking for.</h4>
-                            <a href="/" class="ui button">Back to home</a>
-                        </div>
+@frontend.views.html.main("VDJdb: not found") {
+    <div class="ui middle aligned center aligned notfound grid">
+        <div class="column">
+            <div class="ui raised segment very padded">
+                <div class="ui grid">
+                    <div class="five wide column">
+                        <h1 class="error-header">404</h1>
+                    </div>
+                    <div class="eleven wide column left aligned">
+                        <h2>Oops! Page not found.</h2>
+                        <h4>We could not find the page you were looking for.</h4>
+                        <a href="@backend.controllers.routes.Application.index()" class="ui button">Back to home</a>
                     </div>
                 </div>
             </div>
         </div>
-    </body>
-</html>
+    </div>
+}

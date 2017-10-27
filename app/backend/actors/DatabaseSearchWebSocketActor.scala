@@ -17,6 +17,7 @@
 package backend.actors
 
 import akka.actor.{Actor, ActorRef, ActorSystem, PoisonPill, Props}
+import backend.models.files.temporary.TemporaryFileProvider
 import backend.server.api.ClientRequest
 import backend.server.table.search.api.export.{ExportDataRequest, ExportDataResponse}
 import backend.server.table.search.api.paired.{PairedDataRequest, PairedDataResponse}
@@ -28,14 +29,14 @@ import backend.server.database.filters.{DatabaseFilterRequest, DatabaseFilterTyp
 import backend.server.limit.{IpLimit, RequestLimits}
 import backend.server.table.search.SearchTable
 import backend.server.table.search.export.SearchTableConverter
-import backend.utils.files.TemporaryConfiguration
 import play.api.libs.json._
 
 import scala.concurrent.ExecutionContext
+import scala.util.{Failure, Success}
 
 
 case class DatabaseSearchWebSocketActor(out: ActorRef, database: Database, actorSystem: ActorSystem, limit: IpLimit, requestLimits: RequestLimits)
-                                       (implicit ec: ExecutionContext, temporaryConfiguration: TemporaryConfiguration) extends Actor {
+                                       (implicit ec: ExecutionContext, temporaryFileProvider: TemporaryFileProvider) extends Actor {
     private final val table: SearchTable = new SearchTable()
 
     override def receive: Receive = {
@@ -127,10 +128,12 @@ case class DatabaseSearchWebSocketActor(out: ActorRef, database: Database, actor
                 validateData(out, data, (exportRequest: ExportDataRequest) => {
                     val converter = SearchTableConverter.getConverter(exportRequest.format)
                     if (converter.nonEmpty) {
-                        val temporaryFileLink = converter.get.convert(table, database)
-                        if (temporaryFileLink.nonEmpty) {
-                            temporaryFileLink.get.autoremove(actorSystem)
-                            out.success(ExportDataResponse(temporaryFileLink.get.getDownloadLink))
+                        converter.get.convert(table, database) onComplete {
+                            case Success(link) =>
+                                out.success(ExportDataResponse(link.getDownloadLink))
+                            case Failure(ex) =>
+                                println(ex)
+                                out.warningMessage("Unable to export")
                         }
                     }
                 })
@@ -158,7 +161,7 @@ case class DatabaseSearchWebSocketActor(out: ActorRef, database: Database, actor
 
 object DatabaseSearchWebSocketActor {
     def props(out: ActorRef, database: Database, actorSystem: ActorSystem, limit: IpLimit, requestLimits: RequestLimits)
-             (implicit ec: ExecutionContext, temporaryConfiguration: TemporaryConfiguration): Props =
+             (implicit ec: ExecutionContext, temporaryFileProvider: TemporaryFileProvider): Props =
         Props(new DatabaseSearchWebSocketActor(out, database, actorSystem, limit, requestLimits))
 }
 
