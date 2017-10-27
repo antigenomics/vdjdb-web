@@ -18,24 +18,26 @@ class Authorization @Inject()(cc: ControllerComponents, userProvider: UserProvid
 
     def login: Action[AnyContent] = Action.async { implicit request =>
         Future.successful {
-            Ok(frontend.views.html.authorization.login(LoginForm.loginFormMapping))
+            Redirect("/")
+            // Ok(frontend.views.html.authorization.login(LoginForm.loginFormMapping))
         }
     }
 
     def onLogin: Action[AnyContent] = Action.async { implicit request =>
         Future.successful {
-            LoginForm.loginFormMapping.bindFromRequest.fold(
-                formWithErrors => {
-                    BadRequest(frontend.views.html.authorization.login(formWithErrors))
-                },
-                form => {
-                    println("Ok!")
-                    /* binding success, you get the actual value. */
-                    //                    val newUser = models.User(userData.name, userData.age)
-                    //                    val id = models.User.create(newUser)
-                    BadRequest(frontend.views.html.authorization.login(LoginForm.loginFailedFormMapping))
-                }
-            )
+            Redirect("/")
+//            LoginForm.loginFormMapping.bindFromRequest.fold(
+//                formWithErrors => {
+//                    BadRequest(frontend.views.html.authorization.login(formWithErrors))
+//                },
+//                form => {
+//                    println("Ok!")
+//                    /* binding success, you get the actual value. */
+//                    //                    val newUser = models.User(userData.name, userData.age)
+//                    //                    val id = models.User.create(newUser)
+//                    BadRequest(frontend.views.html.authorization.login(LoginForm.loginFailedFormMapping))
+//                }
+//            )
         }
     }
 
