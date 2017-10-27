@@ -17,11 +17,13 @@
 package models.files
 
 import java.io.File
+import java.sql.Timestamp
 import java.util.Date
 
 import backend.models.files.FileMetadataProvider
 import backend.models.files.temporary.{TemporaryFileLink, TemporaryFileProvider}
 import models.{DatabaseProviderTestSpec, DatabaseTestTag}
+
 import scala.io.Source
 
 
@@ -77,14 +79,14 @@ class TemporaryFileProviderSpec extends DatabaseProviderTestSpec {
             }
         }
 
-        "get non-empty list" in {
+        "get non-empty list" taggedAs DatabaseTestTag in {
             temporaryFileProvider.getAll map { files =>
                 files should not be empty
                 files.size shouldEqual 1
             }
         }
 
-        "be able to delete temporary files" in {
+        "be able to delete temporary files" taggedAs DatabaseTestTag in {
             temporaryFileProvider.getAllWithMetadata flatMap { files =>
                 files.map(f => {
                     val file = f._1
@@ -104,19 +106,66 @@ class TemporaryFileProviderSpec extends DatabaseProviderTestSpec {
                         tmpDirectory should exist
                         tmpDirectory should be a 'directory
 
-
-                        val f1 = temporaryFileProvider.get(file.link) map { file =>
-                            file shouldEqual None
-                        }
-
-                        val f2 = fileMetadataProvider.get(metadata.id) map { metadata =>
-                            metadata shouldEqual None
-                        }
+                        val f1 = temporaryFileProvider.get(file.link) map { _ shouldEqual None }
+                        val f2 = fileMetadataProvider.get(metadata.id) map { _ shouldEqual None }
 
                         Seq(f1, f2).collectFutures
                     }
                 }).collectFutures
             }
+        }
+
+        "be able to delete expired files" taggedAs DatabaseTestTag in {
+            val fakeExpiredAt = new Timestamp(new java.util.Date().getTime - 1)
+            temporaryFileProvider.createTemporaryFile("test", "txt", "Hello", fakeExpiredAt) flatMap { case TemporaryFileLink(link) =>
+                temporaryFileProvider.deleteExpired() flatMap { _ =>
+                    temporaryFileProvider.get(link) flatMap { file =>
+                        file shouldEqual None
+                    }
+                }
+            }
+        }
+
+        "be able to delete all files" taggedAs DatabaseTestTag in {
+            val file1 = temporaryFileProvider.createTemporaryFile("test1", "txt", "Hello")
+            val file2 = temporaryFileProvider.createTemporaryFile("test2", "txt", "World")
+            val file3 = temporaryFileProvider.createTemporaryFile("test3", "txt", "!")
+            val files = for {
+                f1 <- file1
+                f2 <- file2
+                f3 <- file3
+            } yield (f1, f2, f3)
+
+            files flatMap { links =>
+                temporaryFileProvider.getAll flatMap { files =>
+                    files.size shouldEqual 3
+
+                    val fileLinks = files.map(_.link)
+
+                    fileLinks should contain (links._1.link)
+                    fileLinks should contain (links._2.link)
+                    fileLinks should contain (links._3.link)
+
+                    temporaryFileProvider.deleteAll() flatMap { deleteCount =>
+                        deleteCount shouldEqual 3
+
+                        val checkFile1 = temporaryFileProvider.get(files.head.link) map { _ shouldEqual None }
+                        val checkFile2 = temporaryFileProvider.get(files(1).link) map { _ shouldEqual None }
+                        val checkFile3 = temporaryFileProvider.get(files(2).link) map { _ shouldEqual None }
+
+                        Seq(checkFile1, checkFile2, checkFile3).collectFutures
+                    }
+                }
+            }
+        }
+
+        "throw an exception when trying to delete a nonexistent file" taggedAs DatabaseTestTag in {
+            for {
+                exception <- recoverToExceptionIf[Exception] {
+                    temporaryFileProvider.deleteTemporaryFile("invalid link")
+                }
+                assertion <- exception.getMessage shouldEqual "No such temporary file"
+            } yield assertion
         }
     }
 

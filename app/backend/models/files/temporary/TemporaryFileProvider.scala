@@ -97,13 +97,13 @@ class TemporaryFileProvider @Inject()(@NamedDatabase("default") protected val db
         deleteTemporaryFile(file.link)
     }
 
-    def createTemporaryFile(name: String, extension: String, content: String): Future[TemporaryFileLink] = {
+    def createTemporaryFile(name: String, extension: String, content: String,
+                            expiredAt: Timestamp = new Timestamp(new java.util.Date().getTime + configuration.keep * 1000)): Future[TemporaryFileLink] = {
         val link = CommonUtils.randomAlphaNumericString(32)
         val folderPath = s"${configuration.path}/$link"
 
         val folder = new File(folderPath)
         if (folder.mkdirs()) {
-            val currentDate = new java.util.Date()
             val filePath = s"$folderPath/$name.$extension"
 
             val contentFile = new File(filePath)
@@ -112,11 +112,11 @@ class TemporaryFileProvider @Inject()(@NamedDatabase("default") protected val db
             printWriter.write(content)
             printWriter.close()
 
-            val expiredAt = new Timestamp(currentDate.getTime + configuration.keep * 1000)
-            for (
-                meta <- fileMetadataProvider.insert(name, extension, folderPath);
-                _ <- insert(link, expiredAt, meta)
-            ) yield TemporaryFileLink(link)
+            fileMetadataProvider.insert(name, extension, folderPath) flatMap { metadataID =>
+                insert(link, expiredAt, metadataID)
+            } flatMap  { _ =>
+                Future.successful(TemporaryFileLink(link))
+            }
         } else {
             Future.failed(new Exception(s"Cannot create temporary file in ${configuration.path}"))
         }
