@@ -1,11 +1,14 @@
 <div class="ui top fixed borderless inverted menu large">
     <div class="ui container">
-        <a (click)="route('/')" class="item">
+        <a route="/" class="item">
             <!--<img src="assets/images/logo_large.png">-->
             <h1>VDJdb</h1>
         </a>
-        <a (click)="route('/')" class="item">Home</a>
-        <a (click)="route('/search')" class="item">Browse</a>
-        <a (click)="route('/about')" class="item right">About</a>
+        <a route="/" class="item">Home</a>
+        <a route="/search" class="item">Browse</a>
+        <a route="/about" class="item">About</a>
+        <div class="right menu">
+            <a route="/authorization/login" external="true" class="item">Login</a>
+        </div>
     </div>
 </div>

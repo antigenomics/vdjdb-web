@@ -17,22 +17,20 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
-
-import { ApplicationComponent } from './application.component';
-import { NavigationBarComponent } from './common/navbar/navbar.component';
-import { SearchPageModule } from './pages/search/search.module';
-
 import { RouterModule } from '@angular/router';
+import { ApplicationComponent } from './application.component';
+import { NavigationBarModule } from './common/navbar/navbar.module';
 import { ConfigurationService } from './configuration.service';
 import { AboutPageModule } from './pages/about/about.module';
 import { HomePageModule } from './pages/home/home.module';
+import { SearchPageModule } from './pages/search/search.module';
 import { ClipboardService } from './utils/clipboard/clipboard.service';
 import { LoggerService } from './utils/logger/logger.service';
 import { NotificationService } from './utils/notification/notification.service';
 
 @NgModule({
-    imports:      [ CommonModule, BrowserModule, HomePageModule, AboutPageModule, SearchPageModule, RouterModule.forRoot([]) ],
-    declarations: [ ApplicationComponent, NavigationBarComponent ],
+    imports:      [ CommonModule, BrowserModule, HomePageModule, AboutPageModule, SearchPageModule, NavigationBarModule, RouterModule.forRoot([]) ],
+    declarations: [ ApplicationComponent ],
     providers:    [ ConfigurationService, LoggerService, NotificationService, ClipboardService ],
     bootstrap:    [ ApplicationComponent ]
 })

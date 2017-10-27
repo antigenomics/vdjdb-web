@@ -1,6 +1,6 @@
-@import play.api.{Environment, Mode}
+@import play.api.Environment
 @import backend.utils.analytics.Analytics
-@(environment: Environment, analytics: Analytics)
+@(title: String, styles: Boolean = true, vendor: Boolean = false)(content: Html)(implicit environment: Environment, analytics: Analytics)
 <!DOCTYPE html>
 
 <html lang="en">
@@ -12,34 +12,17 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        <title>VDJdb</title>
-
-        @if(environment.mode == Mode.Dev) {
-            <script type="application/javascript" src="assets/bundles/polyfills.dll.js" charset="utf-8"></script>
-            <script type="application/javascript" src="assets/bundles/vendor.dll.js" charset="utf-8"></script>
-            <link type="text/css" href="bundles/bundle.css" rel="stylesheet">
-        } else {
-            <link type="text/css" href="@routes.Assets.versioned("bundles/bundle.min.css")" rel="stylesheet">
-            <script type="application/javascript" src="@routes.Assets.versioned("bundles/vendor.min.js")" charset="utf-8"></script>
-        }
+        <title>@title</title>
         <link rel="shortcut icon" type="image/png" href="@routes.Assets.versioned("images/favicon.png")">
+        @if(styles) {
+            @frontend.views.html.assets.styles()
+        }
+        @if(vendor) {
+            @frontend.views.html.assets.vendor()
+        }
     </head>
     <body>
-        <application>
-            <div class="load content">
-                <div class="ui active centered inline massive loader"></div>
-            </div>
-        </application>
+    @content
     </body>
-    @if(environment.mode == Mode.Dev) {
-        <script type="application/javascript" src="bundles/bundle.js" charset="utf-8"></script>
-    } else {
-        <script type="application/javascript" src="@routes.Assets.versioned("bundles/bundle.min.js")" charset="utf-8"></script>
-        @if(analytics.isYandexAnalyticsAvailable) {
-            @frontend.views.html.analytics.yandex(analytics.getYandexAnalyticsID)
-        }
-        @if(analytics.isGoogleAnalyticsAvailable) {
-            @frontend.views.html.analytics.google(analytics.getGoogleAnalyticsID)
-        }
-    }
+    @frontend.views.html.analytics.analytics()
 </html>

@@ -1,0 +1,31 @@
+@import play.api.Environment
+@import backend.utils.analytics.Analytics
+@import helper._
+@import backend.models.authorization.forms.LoginForm
+@(form: Form[LoginForm])(implicit environment: Environment, analytics: Analytics, request: Request[_], messages: Messages)
+@implicitField = @{
+    FieldConstructor(frontend.views.html.authorization.forms.input.f)
+}
+
+@frontend.views.html.main("VDJdb: login") {
+    <div class="ui middle aligned center aligned auth grid">
+        <div class="column left aligned">
+        @helper.form(action = backend.controllers.routes.Authorization.onLogin(), args = 'class -> "ui form", 'id -> "login") {
+            <h3 class="ui top attached header">Login</h3>
+            <div class="ui attached segment teal padded">
+                @if(form.hasGlobalErrors) {
+                    @frontend.views.html.authorization.forms.formErrors(form.globalErrors)
+                }
+                @CSRF.formField
+                @inputText(form("email"), args = 'icon -> "user", 'placeholder -> "E-mail address", 'fieldType -> "email")
+                @inputText(form("password"), args = 'icon -> "lock", 'placeholder -> "Password", 'fieldType -> "password")
+                <p class="cursor pointer"><a>Forgot password?</a></p>
+                <button class="ui fluid large teal button" type="submit" form="login">Login</button>
+                <div class="ui divider"></div>
+                <p>Don't have an account? <a class="cursor pointer">Sign up now!</a></p>
+                <p class="cursor pointer"><a href="@backend.controllers.routes.Application.index()" rel="noopener">Back to home.</a></p>
+            </div>
+        }
+        </div>
+    </div>
+}

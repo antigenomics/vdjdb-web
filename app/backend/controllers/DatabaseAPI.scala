@@ -21,13 +21,13 @@ import javax.inject._
 import akka.actor.ActorSystem
 import akka.stream.Materializer
 import backend.actors.DatabaseSearchWebSocketActor
+import backend.models.files.temporary.TemporaryFileProvider
 import backend.server.database.api.metadata.{DatabaseColumnInfoResponse, DatabaseMetadataResponse}
 import backend.server.table.search.api.search.{SearchDataRequest, SearchDataResponse}
 import backend.server.database.{Database, DatabaseColumnInfo}
 import backend.server.database.filters.DatabaseFilters
 import backend.server.limit.RequestLimits
 import backend.server.table.search.SearchTable
-import backend.utils.files.TemporaryConfiguration
 import play.api.Configuration
 import play.api.libs.json.Json.toJson
 import play.api.libs.json._
@@ -37,57 +37,65 @@ import play.api.mvc._
 import scala.concurrent.{ExecutionContext, Future}
 
 class DatabaseAPI @Inject()(cc: ControllerComponents, database: Database, actorSystem: ActorSystem, limits: RequestLimits, configuration: Configuration)
-                           (implicit system: ActorSystem, mat: Materializer, ec: ExecutionContext) extends AbstractController(cc) {
-    implicit val temporaryConfiguration: TemporaryConfiguration = configuration.get[TemporaryConfiguration]("application.temporary")
+                           (implicit system: ActorSystem, mat: Materializer, ec: ExecutionContext, temporaryFileProvider: TemporaryFileProvider)
+    extends AbstractController(cc) {
 
-    def summary = Action {
-        database.getSummaryFile match {
-            case Some(file) =>
-                Ok.sendFile(content = file, fileName = _.getName, inline = true)
-            case None =>
-                BadRequest("No summary")
+    def summary: Action[AnyContent] = Action.async {
+        Future.successful {
+            database.getSummaryFile match {
+                case Some(file) =>
+                    Ok.sendFile(content = file, fileName = _.getName, inline = true)
+                case None =>
+                    BadRequest("No summary")
+            }
         }
     }
 
-    def meta = Action {
-        Ok(toJson(DatabaseMetadataResponse(database.getMetadata)))
-    }
-
-    def columnInfo(columnName: String) = Action {
-        val column = database.getMetadata.columns.find((i: DatabaseColumnInfo) => i.name == columnName)
-        if (column.nonEmpty) {
-            Ok(toJson(DatabaseColumnInfoResponse(column.get)))
-        } else {
-            BadRequest("Invalid request")
+    def meta: Action[AnyContent] = Action.async {
+        Future.successful {
+            Ok(toJson(DatabaseMetadataResponse(database.getMetadata)))
         }
     }
 
-    def search: Action[JsValue] = Action(parse.json) { implicit request =>
-        request.body.validate[SearchDataRequest] match {
-            case data: JsSuccess[SearchDataRequest] =>
-                if (data.get.filters.nonEmpty) {
-                    val table = new SearchTable()
-                    val filters = DatabaseFilters.createFromRequest(data.get.filters.get, database)
-                    table.update(filters, database)
-                    if (data.get.sort.nonEmpty) {
-                        val sorting = data.get.sort.get.split(":")
-                        val columnName = sorting(0)
-                        val sortType = sorting(1)
-                        table.sort(database.getMetadata.getColumnIndex(columnName), sortType)
-                    }
-                    if (data.get.page.nonEmpty) {
-                        val pageSize: Int = data.get.pageSize.getOrElse(100)
-                        val page = data.get.page.get
-                        table.setPageSize(pageSize)
-                        Ok(toJson(SearchDataResponse(page, pageSize, table.getPageCount, table.getRecordsFound, table.getPage(page))))
-                    } else {
-                        Ok(toJson(SearchDataResponse(-1, -1, table.getPageCount, table.getRecordsFound, table.getRows)))
-                    }
-                } else {
-                    BadRequest("Invalid request")
-                }
-            case _: JsError =>
+    def columnInfo(columnName: String): Action[AnyContent] = Action.async {
+        Future.successful {
+            val column = database.getMetadata.columns.find((i: DatabaseColumnInfo) => i.name == columnName)
+            if (column.nonEmpty) {
+                Ok(toJson(DatabaseColumnInfoResponse(column.get)))
+            } else {
                 BadRequest("Invalid request")
+            }
+        }
+    }
+
+    def search: Action[JsValue] = Action(parse.json).async { implicit request =>
+        Future.successful {
+            request.body.validate[SearchDataRequest] match {
+                case data: JsSuccess[SearchDataRequest] =>
+                    if (data.get.filters.nonEmpty) {
+                        val table = new SearchTable()
+                        val filters = DatabaseFilters.createFromRequest(data.get.filters.get, database)
+                        table.update(filters, database)
+                        if (data.get.sort.nonEmpty) {
+                            val sorting = data.get.sort.get.split(":")
+                            val columnName = sorting(0)
+                            val sortType = sorting(1)
+                            table.sort(database.getMetadata.getColumnIndex(columnName), sortType)
+                        }
+                        if (data.get.page.nonEmpty) {
+                            val pageSize: Int = data.get.pageSize.getOrElse(100)
+                            val page = data.get.page.get
+                            table.setPageSize(pageSize)
+                            Ok(toJson(SearchDataResponse(page, pageSize, table.getPageCount, table.getRecordsFound, table.getPage(page))))
+                        } else {
+                            Ok(toJson(SearchDataResponse(-1, -1, table.getPageCount, table.getRecordsFound, table.getRows)))
+                        }
+                    } else {
+                        BadRequest("Invalid request")
+                    }
+                case _: JsError =>
+                    BadRequest("Invalid request")
+            }
         }
     }
 

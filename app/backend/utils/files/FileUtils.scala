@@ -20,6 +20,9 @@ import java.io.File
 import java.nio.file.StandardCopyOption.REPLACE_EXISTING
 import java.nio.file.{Files, Paths}
 import java.security.MessageDigest
+import java.nio.charset.Charset
+import java.nio.file.Files
+import java.nio.file.Paths
 
 object FileUtils {
 
@@ -34,13 +37,6 @@ object FileUtils {
 
     def copyFile(source: String, dest: String): Unit = {
         Files.copy(Paths.get(source), Paths.get(dest), REPLACE_EXISTING)
-    }
-
-    def createDirectory(directory: String): Unit = {
-        val file = new File(directory)
-        if (!file.exists) {
-            file.mkdirs()
-        }
     }
 
     // t is the type of checksum, i.e. MD5, or SHA-512 or whatever

@@ -20,6 +20,7 @@ const fs = require('fs');
 const ajaxObservableSourceFilePath = path.resolve(__dirname, '../node_modules/rxjs/src/observable/dom/AjaxObservable.ts');
 const generateObservableSourceFilePath = path.resolve(__dirname, '../node_modules/rxjs/src/observable/GenerateObservable.ts');
 const fromEventObservableSourceFilePath = path.resolve(__dirname, '../node_modules/rxjs/src/observable/FromEventObservable.ts');
+const publishReplaySourceFilePath = path.resolve(__dirname, '../node_modules/rxjs/src/operator/publishReplay.ts');
 
 if (fs.existsSync(ajaxObservableSourceFilePath)) {
     // XMLHttpRequestResponseType
@@ -53,5 +54,18 @@ if (fs.existsSync(fromEventObservableSourceFilePath)) {
         const replaceString = '// static create<T>(target: EventTargetLike, eventName: string, selector: SelectorMethodSignature<T>): Observable<T>;';
         content = content.replace(regexp, replaceString);
         fs.writeFileSync(fromEventObservableSourceFilePath, content, 'utf8');
+    }
+}
+
+if (fs.existsSync(publishReplaySourceFilePath)) {
+    // return higherOrder(bufferSize, windowTime, selectorOrScheduler as any, scheduler)(this);
+    // as Observable<R> | ConnectableObservable<R>
+    let content = fs.readFileSync(publishReplaySourceFilePath, 'utf8');
+    if (content) {
+        console.log('Patching ' + publishReplaySourceFilePath);
+        const regexp = /return higherOrder\(bufferSize, windowTime, selectorOrScheduler as any, scheduler\)\(this\);/g;
+        const replaceString = 'return higherOrder(bufferSize, windowTime, selectorOrScheduler as any, scheduler)(this) as Observable<R> | ConnectableObservable<R>;'
+        content = content.replace(regexp, replaceString);
+        fs.writeFileSync(publishReplaySourceFilePath, content, 'utf8');
     }
 }

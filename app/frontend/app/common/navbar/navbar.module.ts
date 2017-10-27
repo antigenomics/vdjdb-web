@@ -14,16 +14,12 @@
  *    limitations under the License.
  */
 
-package backend.utils.files
+import { NgModule } from '@angular/core';
+import { NavigationBarComponent } from './navbar.component';
+import { RouteDirective } from './route.directive';
 
-import com.typesafe.config.Config
-import play.api.ConfigLoader
-
-case class TemporaryConfiguration(path: String)
-
-object TemporaryConfiguration {
-    implicit val analyticsConfigurationLoader: ConfigLoader[TemporaryConfiguration] = (rootConfig: Config, path: String) => {
-        val config = rootConfig.getConfig(path)
-        TemporaryConfiguration(path = config.getString("path"))
-    }
-}
+@NgModule({
+    declarations:    [  NavigationBarComponent, RouteDirective ],
+    exports:         [  NavigationBarComponent, RouteDirective]
+})
+export class NavigationBarModule {}
