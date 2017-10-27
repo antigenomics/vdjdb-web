@@ -17,6 +17,7 @@
 import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
+import { FiltersService } from '../../filters/filters.service';
 import { ModalsModule } from '../../modals/modals.module';
 import { WebSocketService } from '../../websocket/websocket.service';
 import { SearchTableEntryCdrComponent } from './entry/cdr/search-table-entry-cdr.component';
@@ -62,6 +63,6 @@ import { SearchTableService } from './search-table.service';
                         SearchTableEntryUrlComponent,
                         SearchTableEntryGeneComponent,
                         SearchTableEntryCdrComponent ],
-    providers:       [ SearchTableService, WebSocketService ]
+    providers:       [ SearchTableService, FiltersService, WebSocketService ]
 })
 export class SearchTableModule {}
