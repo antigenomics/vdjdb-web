@@ -32,7 +32,7 @@ case class SearchTable(private var pageSize: Int = SearchTable.DEFAULT_PAGE_SIZE
 
     def getPageSize: Int = pageSize
 
-    def getPageCount: Int = getRecordsFound / pageSize
+    def getPageCount: Int = getRecordsFound / pageSize + 1
 
     def getRows: List[SearchTableRow] = rows
 
@@ -61,7 +61,7 @@ case class SearchTable(private var pageSize: Int = SearchTable.DEFAULT_PAGE_SIZE
                 val v2 = e2.entries(columnIndex)
                 sortType match {
                     case "desc" => String.gt(v1, v2)
-                    case "asc" => String.lteq(v1, v2)
+                    case "asc" => String.lt(v1, v2)
                 }
             })
         }
