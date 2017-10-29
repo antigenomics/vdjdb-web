@@ -34,19 +34,11 @@ export class SearchTablePaginationComponent implements OnInit {
         this.calculatePageNumbers();
     }
 
-    public get page() {
-        return this._page;
-    }
-
     @Input()
     @InputConverter(NumberConverter)
     public set pageCount(newPageCount: number) {
         this._pageCount = newPageCount;
         this.calculatePageNumbers();
-    }
-
-    public get pageCount() {
-        return this._pageCount;
     }
 
     @Output()
@@ -63,13 +55,13 @@ export class SearchTablePaginationComponent implements OnInit {
     }
 
     public isCurrent(page: number): boolean {
-        return this.page === page;
+        return this._page === page;
     }
 
     public selectPage(page: number): void {
-        if (page >= 0 && page <= this.pageCount && this.page !== page) {
-            this.page = page;
-            this.pageChange.emit(this.page);
+        if (page >= 0 && page < this._pageCount && this._page !== page) {
+            this._page = page;
+            this.pageChange.emit(this._page);
             this.calculatePageNumbers();
         }
     }
@@ -79,15 +71,15 @@ export class SearchTablePaginationComponent implements OnInit {
     }
 
     public previous(): void {
-        this.selectPage(this.page - 1);
+        this.selectPage(this._page - 1);
     }
 
     public next(): void {
-        this.selectPage(this.page + 1);
+        this.selectPage(this._page + 1);
     }
 
     public last(): void {
-        this.selectPage(this.pageCount);
+        this.selectPage(this._pageCount - 1);
     }
 
     private calculatePageNumbers(): void {
@@ -99,22 +91,22 @@ export class SearchTablePaginationComponent implements OnInit {
     }
 
     private calculateRange(): { min: number, max: number } {
-        if (this.range * 2 >= this.pageCount) {
+        if (this.range * 2 >= this._pageCount) {
             return {
                 min: 0,
-                max: this.pageCount
+                max: this._pageCount - 1
             };
         }
 
-        let min = this.page - this.range;
-        let max = this.page + this.range;
+        let min = this._page - this.range;
+        let max = this._page + this.range;
 
         if (min < 0) {
             max -= min;
             min = 0;
-        } else if (max > this.pageCount) {
-            min -= (max - this.pageCount);
-            max = this.pageCount;
+        } else if (max > (this._pageCount - 1)) {
+            min -= (max - (this._pageCount - 1));
+            max = this._pageCount - 1;
         }
 
         return { min, max };

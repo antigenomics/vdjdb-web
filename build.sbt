@@ -1,16 +1,15 @@
 import play.sbt.PlayImport.PlayKeys.playRunHooks
+import NativePackagerHelper._
 
 name := """VDJdb-server"""
 
 version := "2.0.1"
-scalaVersion := "2.12.3"
+scalaVersion := "2.12.4"
 
 resolvers += "Local Maven Repository" at Path.userHome.asFile.toURI.toURL + ".m2/repository"
 resolvers += Resolver.sonatypeRepo("releases")
 
-lazy val root = (project in file("."))
-    .enablePlugins(PlayScala, LauncherJarPlugin, SbtWeb)
-
+lazy val root = (project in file(".")).enablePlugins(PlayScala, LauncherJarPlugin, SbtWeb)
 pipelineStages := Seq(digest)
 
 libraryDependencies ++= Seq(
@@ -30,18 +29,20 @@ scalacOptions ++= Seq(
     "-feature",
     "–optimise",
     "-deprecation",
-    "-Ywarn-dead-code"
+    "-Ywarn-dead-code",
+    "-Xfatal-warnings"
 )
 
 // Starts: Prevent documentation of API for production bundles
 sources in(Compile, doc) := Seq.empty
+mappings in (Compile, packageDoc) := Seq.empty
 publishArtifact in(Compile, packageDoc) := false
 // Ends.
 
 lazy val isWindows = System.getProperty("os.name").toUpperCase().contains("WIN")
-lazy val buildFrontend = taskKey[Unit]("Build frontend Angular")
-val frontendApplicationPath = if (isWindows) "app\\frontend" else "./app/frontend"
+lazy val frontendApplicationPath = if (isWindows) "app\\frontend" else "./app/frontend"
 
+lazy val buildFrontend = taskKey[Unit]("Build frontend Angular")
 buildFrontend := {
     val logger: TaskStreams = streams.value
     val npm: String = if (isWindows) "cmd /c npm " else "npm "
@@ -61,11 +62,18 @@ buildFrontend := {
     logger.log.info("Frontend bundle built successfully")
 }
 
-(packageBin in Universal) := {
-    ((packageBin in Universal) dependsOn buildFrontend).value
+lazy val buildBackend = taskKey[Unit]("Build backend")
+buildBackend := {
+    val logger: TaskStreams = streams.value
+    logger.log.info("Building backend")
+    (packageBin in Universal).value
+    logger.log.info("Backend build successfully")
 }
 
-// Ends.
+lazy val build = taskKey[Unit]("Build application")
+build := {
+    (buildBackend dependsOn buildFrontend).value
+}
 
 // Starts: Webpack server process when running locally and build actions for production bundle
 val frontendDirectory = baseDirectory {
@@ -74,8 +82,8 @@ val frontendDirectory = baseDirectory {
 playRunHooks += frontendDirectory.map(WebpackServer(_)).value
 // Ends.
 
-// Test configurations
 
+// Starts: Test configurations
 javaOptions in Test ++= Seq(
     "-Dslick.dbs.default.db.url=jdbc:h2:mem:play;DB_CLOSE_DELAY=-1",
     "-Dslick.dbs.default.profile=slick.jdbc.H2Profile$",
@@ -84,3 +92,4 @@ javaOptions in Test ++= Seq(
     "-Dlogger.resource=logback.test.xml"
 )
 libraryDependencies ++= Seq("org.scalatestplus.play" % "scalatestplus-play_2.12" % "3.1.2" % "test")
+// Ends.
