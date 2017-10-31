@@ -13,42 +13,42 @@
  *     See the License for the specific language governing permissions and
  *     limitations under the License.
  */
+
 'use strict';
 
-module.exports = function (config) {
+module.exports = config => {
     config.set({
-        basePath: '',
+        files: [ 'dll/polyfills.dll.js', 'dll/vendor.dll.js', 'karma.entry.js' ],
 
-        frameworks: ['jasmine'],
+        frameworks: [ 'jasmine' ],
 
         plugins: [
             require('../../app/frontend/node_modules/karma-jasmine'),
             require('../../app/frontend/node_modules/karma-chrome-launcher'),
-            require('../../app/frontend/node_modules/karma-ie-launcher'),
-            require('../../app/frontend/node_modules/karma-safari-launcher'),
-            require('../../app/frontend/node_modules/karma-firefox-launcher'),
-            require('../../app/frontend/node_modules/karma-opera-launcher'),
             require('../../app/frontend/node_modules/karma-jasmine-html-reporter'),
-            require('../../app/frontend/node_modules/karma-coverage-istanbul-reporter')
+            require('../../app/frontend/node_modules/karma-coverage-istanbul-reporter'),
+            require('../../app/frontend/node_modules/karma-webpack'),
+            require('../../app/frontend/node_modules/karma-sourcemap-loader')
         ],
 
-        exclude: [
-            '../../app/frontend/node_modules/**/*spec.js'
-        ],
+        phantomJsLauncher: {
+            exitOnResourceError: true
+        },
 
-        client:{
+        preprocessors: {
+            'karma.entry.js': [ 'webpack', 'sourcemap' ]
+        },
+
+        client: {
             clearContext: false // leave Jasmine Spec Runner output visible in browser
         },
 
         coverageIstanbulReporter: {
-
             reports: [ 'html', 'lcovonly' ],
-
             fixWebpackSourcePaths: true
-
         },
 
-        reporters: ['progress', 'kjhtml'],
+        reporters: [ 'progress', 'kjhtml' ],
 
         port: 9876,
 
@@ -58,18 +58,13 @@ module.exports = function (config) {
 
         autoWatch: true,
 
-        // browsers: ['Chrome', 'IE', 'Safari', 'Firefox', 'Opera'],
         browsers: [ 'Chrome' ],
 
-        coverageReporter: {
-            dir: 'coverage/',
-            reporters: [
-                { type: 'text-summary' },
-                { type: 'json', subdir: '.', file: 'coverage-final.json' },
-                { type: 'html' }
-            ]
-        },
+        singleRun: false,
 
-        singleRun: false
+        webpack: require('./webpack.test.js'),
+        webpackServer: {
+            noInfo: true
+        }
     });
 };
