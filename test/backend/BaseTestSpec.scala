@@ -14,7 +14,7 @@
  *     limitations under the License.
  */
 
-package base
+package backend
 
 import org.scalatest.{Assertion, Assertions}
 

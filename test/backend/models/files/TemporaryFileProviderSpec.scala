@@ -14,15 +14,14 @@
  *     limitations under the License.
  */
 
-package models.files
+package backend.models.files
 
 import java.io.File
 import java.sql.Timestamp
 import java.util.Date
 
-import backend.models.files.FileMetadataProvider
 import backend.models.files.temporary.{TemporaryFileLink, TemporaryFileProvider}
-import models.{DatabaseProviderTestSpec, DatabaseTestTag}
+import backend.models.{DatabaseProviderTestSpec, DatabaseTestTag}
 
 import scala.io.Source
 

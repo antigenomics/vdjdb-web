@@ -14,15 +14,11 @@
  *     limitations under the License.
  */
 
-package models
+package backend
 
-import base.BaseTestSpecWithApplication
-import org.scalatest.BeforeAndAfterAll
-import play.api.db.{DBApi, Database}
+import play.api.inject.guice.GuiceApplicationBuilder
+import play.api.{Application, Mode}
 
-import scala.concurrent.ExecutionContext
-
-abstract class DatabaseProviderTestSpec(databaseName: String = "database") extends BaseTestSpecWithApplication with BeforeAndAfterAll {
-  lazy implicit val database: Database = app.injector.instanceOf[DBApi].database(databaseName)
-  lazy implicit val ec: ExecutionContext = app.injector.instanceOf[ExecutionContext]
+abstract class BaseTestSpecWithApplication extends BaseTestSpec {
+    lazy implicit val app: Application = new GuiceApplicationBuilder().in(Mode.Test).build()
 }

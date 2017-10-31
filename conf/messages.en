@@ -9,3 +9,7 @@ authorization.forms.login.placeholder.password = Password
 authorization.failed.message = Please check that you have entered your login and password correctly.
 authorization.failed.workaround.1 = Is the Caps Lock turned off?
 authorization.failed.workaround.2 = Maybe you are using the wrong input language?
+
+notfound.message = Oops! Page not found.
+notfound.hint = We could not find the page you were looking for.
+notfound.back = Back to home.
