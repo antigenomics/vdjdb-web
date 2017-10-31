@@ -14,10 +14,19 @@
  *     limitations under the License.
  */
 
+import { ConfigurationService } from '../../../app/frontend/app/configuration.service';
 import {} from '../../../app/frontend/node_modules/@types/jasmine';
 
-describe('asd', () => {
-    it('true', () => {
-        expect(true).toEqual(true);
+describe('Configuration service', () => {
+
+    it('should be able to enable production mode', () => {
+        expect(ConfigurationService.buildMode()).toBe('development');
+        expect(ConfigurationService.isProductionMode()).toBe(false);
+        expect(ConfigurationService.isDevelopmentMode()).toBe(true);
+        ConfigurationService.enableProductionMode();
+        expect(ConfigurationService.buildMode()).toBe('production');
+        expect(ConfigurationService.isProductionMode()).toBe(true);
+        expect(ConfigurationService.isDevelopmentMode()).toBe(false);
     });
+
 });
