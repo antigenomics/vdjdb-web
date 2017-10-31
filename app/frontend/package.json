@@ -17,7 +17,9 @@
     "bundle:stats": "node ./scripts/stats.prod.js",
     "bundle:clean:build": "rimraf app/build && rimraf lib",
     "lint": "tslint --project tsconfig.ngfactory.json --config tslint.json --type-check --exclude ./app/main.prod.ts --force ./app/**/*",
-    "postinstall": "node ./styles/semantic-fix.js && node ./scripts/rxjs-patch.install.js && node ./scripts/purify-patch.install.js"
+    "postinstall": "node ./styles/semantic-fix.js && node ./scripts/rxjs-patch.install.js && node ./scripts/purify-patch.install.js",
+    "test": "npm run test:karma",
+    "test:karma": "karma start ../../test/frontend/karma.conf.js"
   },
   "author": "Dmitry Bagaev",
   "homepage": "https://github.com/antigenomics/vdjdb-web-private",
@@ -67,7 +69,19 @@
     "rimraf": "2.6.2",
     "console.table": "0.9.1",
     "gzip-size": "4.0.0",
-    "md5-file": "3.2.3"
+    "md5-file": "3.2.3",
+    "jasmine-core": "2.8.0",
+    "jasmine-spec-reporter": "4.2.1",
+    "karma": "~1.7.0",
+    "karma-chrome-launcher": "2.2.0",
+    "karma-ie-launcher": "1.0.0",
+    "karma-safari-launcher": "1.0.0",
+    "karma-opera-launcher": "1.0.0",
+    "karma-firefox-launcher": "1.0.1",
+    "karma-cli": "1.0.1",
+    "karma-coverage-istanbul-reporter": "1.2.1",
+    "karma-jasmine": "1.1.0",
+    "karma-jasmine-html-reporter": "0.2.2"
   },
   "engines": {
     "node": ">= 8",
