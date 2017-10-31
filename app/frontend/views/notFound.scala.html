@@ -1,6 +1,6 @@
 @import play.api.Environment
 @import backend.utils.analytics.Analytics
-@()(implicit environment: Environment, analytics: Analytics)
+@()(implicit environment: Environment, analytics: Analytics, messages: Messages)
 
 @frontend.views.html.main("VDJdb: not found") {
     <div class="ui middle aligned center aligned notfound grid">
@@ -11,9 +11,9 @@
                         <h1 class="error-header">404</h1>
                     </div>
                     <div class="eleven wide column left aligned">
-                        <h2>Oops! Page not found.</h2>
-                        <h4>We could not find the page you were looking for.</h4>
-                        <a href="@backend.controllers.routes.Application.index()" class="ui button">Back to home</a>
+                        <h2>@messages("notfound.message")</h2>
+                        <h4>@messages("notfound.hint")</h4>
+                        <a href="@backend.controllers.routes.Application.index()" class="ui button">@messages("notfound.back")</a>
                     </div>
                 </div>
             </div>

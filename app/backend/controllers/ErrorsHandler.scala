@@ -21,6 +21,7 @@ import javax.inject._
 import backend.utils.analytics.Analytics
 import play.api.http.DefaultHttpErrorHandler
 import play.api._
+import play.api.i18n.{Lang, Messages, MessagesApi}
 import play.api.mvc._
 import play.api.mvc.Results._
 import play.api.routing.Router
@@ -28,9 +29,10 @@ import play.api.routing.Router
 import scala.concurrent._
 
 @Singleton
-class ErrorsHandler @Inject()(config: Configuration, sourceMapper: OptionalSourceMapper, router: Provider[Router])
+class ErrorsHandler @Inject()(config: Configuration, sourceMapper: OptionalSourceMapper, router: Provider[Router], messagesApi: MessagesApi)
                              (implicit environment: Environment, analytics: Analytics)
     extends DefaultHttpErrorHandler(environment, config, sourceMapper, router) {
+    implicit val messages: Messages = messagesApi.preferred(Seq(Lang.defaultLang))
 
     override def onProdServerError(request: RequestHeader, exception: UsefulException): Future[Result] = {
         Future.successful {

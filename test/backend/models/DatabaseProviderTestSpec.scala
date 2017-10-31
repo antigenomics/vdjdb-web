@@ -14,8 +14,15 @@
  *     limitations under the License.
  */
 
-package models
+package backend.models
 
-import org.scalatest.Tag
+import backend.BaseTestSpecWithApplication
+import org.scalatest.BeforeAndAfterAll
+import play.api.db.{DBApi, Database}
 
-object DatabaseTestTag extends Tag("DatabaseTestTag")
+import scala.concurrent.ExecutionContext
+
+abstract class DatabaseProviderTestSpec(databaseName: String = "database") extends BaseTestSpecWithApplication with BeforeAndAfterAll {
+  lazy implicit val database: Database = app.injector.instanceOf[DBApi].database(databaseName)
+  lazy implicit val ec: ExecutionContext = app.injector.instanceOf[ExecutionContext]
+}
