@@ -34,11 +34,12 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._
 import scala.language.postfixOps
 import scala.util.Failure
+import scala.async.Async.{async, await}
 
 @Singleton
 class TemporaryFileProvider @Inject()(@NamedDatabase("default") protected val dbConfigProvider: DatabaseConfigProvider, fileMetadataProvider: FileMetadataProvider)
                                     (implicit ec: ExecutionContext, conf: Configuration, system: ActorSystem) extends HasDatabaseConfigProvider[JdbcProfile] {
-    private val logger = LoggerFactory.getLogger(this.getClass)
+    private final val logger = LoggerFactory.getLogger(this.getClass)
     private final val configuration = conf.get[TemporaryFileConfiguration]("application.temporary")
     import dbConfig.profile.api._
 
@@ -66,17 +67,15 @@ class TemporaryFileProvider @Inject()(@NamedDatabase("default") protected val db
         db.run(TemporaryFileProvider.table.withMetadata.result)
     }
 
-    def deleteExpired(): Future[Int] = {
+    def deleteExpired(): Future[Int] = async {
         val currentDate = new Timestamp(new java.util.Date().getTime)
-        db.run(TemporaryFileProvider.table.withMetadata.filter(_._1.expiredAt < currentDate).result).flatMap { files =>
-            fileMetadataProvider.delete(files.map(_._2))
-        }
+        val files = await(db.run(TemporaryFileProvider.table.withMetadata.filter(_._1.expiredAt < currentDate).result))
+        await(fileMetadataProvider.delete(files.map(_._2)))
     }
 
-    def deleteAll(): Future[Int] = {
-        db.run(TemporaryFileProvider.table.withMetadata.result) flatMap { files =>
-            fileMetadataProvider.delete(files.map(_._2))
-        }
+    def deleteAll(): Future[Int] = async {
+        val files = await(db.run(TemporaryFileProvider.table.withMetadata.result))
+        await(fileMetadataProvider.delete(files.map(_._2)))
     }
 
     def get(link: String): Future[Option[TemporaryFile]] = {
@@ -99,7 +98,7 @@ class TemporaryFileProvider @Inject()(@NamedDatabase("default") protected val db
     }
 
     def createTemporaryFile(name: String, extension: String, content: String,
-                            expiredAt: Timestamp = new Timestamp(new java.util.Date().getTime + configuration.keep * 1000)): Future[TemporaryFileLink] = {
+                            expiredAt: Timestamp = new Timestamp(new java.util.Date().getTime + configuration.keep * 1000)): Future[TemporaryFileLink] = async {
         val link = CommonUtils.randomAlphaNumericString(32)
         val folderPath = s"${configuration.path}/$link"
 
@@ -113,14 +112,15 @@ class TemporaryFileProvider @Inject()(@NamedDatabase("default") protected val db
             printWriter.write(content)
             printWriter.close()
 
-            fileMetadataProvider.insert(name, extension, folderPath) flatMap { metadataID =>
-                insert(link, expiredAt, metadataID)
-            } flatMap  { _ =>
-                Future.successful(TemporaryFileLink(link))
-            }
+            val _ = await(insert(name, extension, folderPath, link, expiredAt))
+            TemporaryFileLink(link)
         } else {
-            Future.failed(new Exception(s"Cannot create temporary file in ${configuration.path}"))
+            throw new Exception(s"Cannot create temporary file in ${configuration.path}")
         }
+    }
+
+    private def insert(name: String, extension: String, folderPath: String, link: String, expiredAt: Timestamp): Future[Int] = {
+        fileMetadataProvider.insert(name, extension, folderPath).flatMap(insert(link, expiredAt, _))
     }
 
     private def insert(link: String, expiredAt: Timestamp, metadataID: Long): Future[Int] = {

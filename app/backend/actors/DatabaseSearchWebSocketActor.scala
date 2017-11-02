@@ -131,8 +131,7 @@ case class DatabaseSearchWebSocketActor(out: ActorRef, database: Database, actor
                         converter.get.convert(table, database) onComplete {
                             case Success(link) =>
                                 out.success(ExportDataResponse(link.getDownloadLink))
-                            case Failure(ex) =>
-                                println(ex)
+                            case Failure(_) =>
                                 out.warningMessage("Unable to export")
                         }
                     }

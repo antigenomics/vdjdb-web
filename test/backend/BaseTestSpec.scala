@@ -18,8 +18,9 @@ package backend
 
 import org.scalatest.{Assertion, Assertions}
 
-import scala.concurrent.Future
+import scala.concurrent.{Await, Future}
 import scala.async.Async.{async, await}
+import scala.concurrent.duration.Duration
 
 abstract class BaseTestSpec extends org.scalatest.AsyncWordSpec with org.scalatest.Matchers with org.scalatest.OptionValues
     with org.scalatestplus.play.WsScalaTestClient {
@@ -31,6 +32,8 @@ abstract class BaseTestSpec extends org.scalatest.AsyncWordSpec with org.scalate
                     Assertions.assert(await(futureAssertLeft) == Assertions.succeed && await(futureAssertRight) == Assertions.succeed)
                 }
         }
+
+        def assertAllAndAwait: Assertion = Await.result(f.assertAll, Duration.Inf)
     }
 
 }
