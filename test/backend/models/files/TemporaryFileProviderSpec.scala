@@ -20,7 +20,7 @@ import java.io.File
 import java.sql.Timestamp
 import java.util.Date
 
-import backend.models.files.temporary.{TemporaryFileLink, TemporaryFileProvider}
+import backend.models.files.temporary.TemporaryFileProvider
 import backend.models.{DatabaseProviderTestSpec, DatabaseTestTag}
 
 import scala.io.Source
@@ -92,26 +92,24 @@ class TemporaryFileProviderSpec extends DatabaseProviderTestSpec {
         "be able to delete temporary files" taggedAs DatabaseTestTag in {
             async {
                 val files = await(temporaryFileProvider.getAllWithMetadata)
-                await(files.map { case (file, metadata) =>
-                    async {
-                        val deleteCount = await(temporaryFileProvider.deleteTemporaryFile(file))
-                        deleteCount shouldEqual 1
+                files.map { case (file, metadata) => async {
+                    val deleteCount = await(temporaryFileProvider.deleteTemporaryFile(file))
+                    deleteCount shouldEqual 1
 
-                        val deletedFile = new File(metadata.path)
-                        deletedFile should not(exist)
+                    val deletedFile = new File(metadata.path)
+                    deletedFile should not(exist)
 
-                        val deletedFileDirectory = new File(metadata.folder)
-                        deletedFileDirectory should not(exist)
+                    val deletedFileDirectory = new File(metadata.folder)
+                    deletedFileDirectory should not(exist)
 
-                        val tmpDirectoryPath = temporaryFileProvider.getTemporaryFilesDirectoryPath
-                        val tmpDirectory = new File(tmpDirectoryPath)
-                        tmpDirectory should exist
-                        tmpDirectory should be a 'directory
+                    val tmpDirectoryPath = temporaryFileProvider.getTemporaryFilesDirectoryPath
+                    val tmpDirectory = new File(tmpDirectoryPath)
+                    tmpDirectory should exist
+                    tmpDirectory should be a 'directory
 
-                        await(temporaryFileProvider.get(file.link)) shouldBe empty
-                        await(fileMetadataProvider.get(metadata.id)) shouldBe empty
-                    }
-                }.assertAll)
+                    await(temporaryFileProvider.get(file.link)) shouldBe empty
+                    await(fileMetadataProvider.get(metadata.id)) shouldBe empty
+                }}.assertAllAndAwait
             }
         }
 
@@ -141,11 +139,9 @@ class TemporaryFileProviderSpec extends DatabaseProviderTestSpec {
                 val deleteCount = await(temporaryFileProvider.deleteAll())
                 deleteCount shouldEqual 3
 
-                await(fileLinks.map { link =>
-                    async {
-                        await(temporaryFileProvider.get(link)) shouldBe empty
-                    }
-                }.assertAll)
+                fileLinks.map(link => async {
+                    await(temporaryFileProvider.get(link)) shouldBe empty
+                }).assertAllAndAwait
             }
         }
 
