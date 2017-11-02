@@ -19,16 +19,18 @@ package backend
 import org.scalatest.{Assertion, Assertions}
 
 import scala.concurrent.Future
+import scala.async.Async.{async, await}
 
 abstract class BaseTestSpec extends org.scalatest.AsyncWordSpec with org.scalatest.Matchers with org.scalatest.OptionValues
     with org.scalatestplus.play.WsScalaTestClient {
 
     implicit class SeqFutureAssertionsExtension(f: Seq[Future[Assertion]]) {
-        def collectFutures: Future[Assertion] = f.foldLeft[Future[Assertion]](Future.successful(Assertions.succeed)) {
-            case (fa1, fa2) => for {
-                fa1Res <- fa1
-                fa2Res <- fa2
-            } yield Assertions.assert(fa1Res == Assertions.succeed && fa2Res == Assertions.succeed)
+        def assertAll: Future[Assertion] = f.foldLeft[Future[Assertion]](Future.successful(Assertions.succeed)) {
+            case (futureAssertLeft, futureAssertRight) =>
+                async {
+                    Assertions.assert(await(futureAssertLeft) == Assertions.succeed && await(futureAssertRight) == Assertions.succeed)
+                }
         }
     }
+
 }

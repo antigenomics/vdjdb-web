@@ -24,6 +24,7 @@ import backend.models.files.temporary.{TemporaryFileLink, TemporaryFileProvider}
 import backend.models.{DatabaseProviderTestSpec, DatabaseTestTag}
 
 import scala.io.Source
+import scala.async.Async.{async, await}
 
 
 class TemporaryFileProviderSpec extends DatabaseProviderTestSpec {
@@ -33,13 +34,15 @@ class TemporaryFileProviderSpec extends DatabaseProviderTestSpec {
     "TemporaryFileProvider" should {
 
         "get empty list" taggedAs DatabaseTestTag in {
-            temporaryFileProvider.getAll map { files =>
+            async {
+                val files = await(temporaryFileProvider.getAll)
                 files shouldBe empty
             }
         }
 
         "be able to create temporary file" taggedAs DatabaseTestTag in {
-            temporaryFileProvider.createTemporaryFile("test-file", "txt", "HelloWorld") flatMap { case TemporaryFileLink(link) =>
+            async {
+                val link = await(temporaryFileProvider.createTemporaryFile("test-file", "txt", "HelloWorld")).link
                 val tmpDirectoryPath = temporaryFileProvider.getTemporaryFilesDirectoryPath
                 val tmpDirectory = new File(tmpDirectoryPath)
                 tmpDirectory should exist
@@ -50,48 +53,48 @@ class TemporaryFileProviderSpec extends DatabaseProviderTestSpec {
                 tmpFileDirectory should exist
                 tmpFileDirectory should be a 'directory
 
-                temporaryFileProvider.getWithMetadata(link) flatMap {
-                    case Some((file, metadata)) =>
-                        file.link shouldEqual link
-                        file.metadataID shouldEqual metadata.id
-                        file.expiredAt.after(metadata.createdAt) shouldBe true
+                val fileWithMetadata = await(temporaryFileProvider.getWithMetadata(link))
+                fileWithMetadata should not be empty
 
-                        metadata.folder shouldEqual tmpFileDirectoryPath
-                        metadata.createdAt.before(new Date()) shouldBe true
-                        metadata.extension shouldEqual "txt"
-                        metadata.fileName shouldEqual "test-file"
-                        metadata.getNameWithExtension shouldEqual "test-file.txt"
-                        metadata.getNameWithDateAndExtension shouldEqual s"test-file-${metadata.createdAt}.txt"
+                val file = fileWithMetadata.get._1
+                val metadata = fileWithMetadata.get._2
+                file.link shouldEqual link
+                file.metadataID shouldEqual metadata.id
+                file.expiredAt.after(metadata.createdAt) shouldBe true
 
-                        val fileAbsolutePath = s"$tmpFileDirectoryPath/${metadata.fileName}.${metadata.extension}"
-                        metadata.path shouldEqual fileAbsolutePath
+                metadata.folder shouldEqual tmpFileDirectoryPath
+                metadata.createdAt.before(new Date()) shouldBe true
+                metadata.extension shouldEqual "txt"
+                metadata.fileName shouldEqual "test-file"
+                metadata.getNameWithExtension shouldEqual "test-file.txt"
+                metadata.getNameWithDateAndExtension shouldEqual s"test-file-${metadata.createdAt}.txt"
 
-                        val createdFile = new File(fileAbsolutePath)
-                        createdFile should exist
-                        createdFile should be a 'file
+                val fileAbsolutePath = s"$tmpFileDirectoryPath/${metadata.fileName}.${metadata.extension}"
+                metadata.path shouldEqual fileAbsolutePath
 
-                        val lines = Source.fromFile(fileAbsolutePath).mkString
-                        lines shouldEqual "HelloWorld"
-                    case None =>
-                        fail("Cannot get created temporary file")
-                }
+                val createdFile = new File(fileAbsolutePath)
+                createdFile should exist
+                createdFile should be a 'file
+
+                val lines = Source.fromFile(fileAbsolutePath).mkString
+                lines shouldEqual "HelloWorld"
             }
         }
 
         "get non-empty list" taggedAs DatabaseTestTag in {
-            temporaryFileProvider.getAll map { files =>
+            async {
+                val files = await(temporaryFileProvider.getAll)
                 files should not be empty
                 files.size shouldEqual 1
             }
         }
 
         "be able to delete temporary files" taggedAs DatabaseTestTag in {
-            temporaryFileProvider.getAllWithMetadata flatMap { files =>
-                files.map(f => {
-                    val file = f._1
-                    val metadata = f._2
-
-                    temporaryFileProvider.deleteTemporaryFile(file) flatMap { deleteCount =>
+            async {
+                val files = await(temporaryFileProvider.getAllWithMetadata)
+                await(files.map { case (file, metadata) =>
+                    async {
+                        val deleteCount = await(temporaryFileProvider.deleteTemporaryFile(file))
                         deleteCount shouldEqual 1
 
                         val deletedFile = new File(metadata.path)
@@ -105,66 +108,54 @@ class TemporaryFileProviderSpec extends DatabaseProviderTestSpec {
                         tmpDirectory should exist
                         tmpDirectory should be a 'directory
 
-                        val f1 = temporaryFileProvider.get(file.link) map { _ shouldEqual None }
-                        val f2 = fileMetadataProvider.get(metadata.id) map { _ shouldEqual None }
-
-                        Seq(f1, f2).collectFutures
+                        await(temporaryFileProvider.get(file.link)) shouldBe empty
+                        await(fileMetadataProvider.get(metadata.id)) shouldBe empty
                     }
-                }).collectFutures
+                }.assertAll)
             }
         }
 
         "be able to delete expired files" taggedAs DatabaseTestTag in {
-            val fakeExpiredAt = new Timestamp(new java.util.Date().getTime - 1)
-            temporaryFileProvider.createTemporaryFile("test", "txt", "Hello", fakeExpiredAt) flatMap { case TemporaryFileLink(link) =>
-                temporaryFileProvider.deleteExpired() flatMap { _ =>
-                    temporaryFileProvider.get(link) flatMap { file =>
-                        file shouldEqual None
-                    }
-                }
+            async {
+                val fakeExpiredAt = new Timestamp(new java.util.Date().getTime - 1)
+                val link = await(temporaryFileProvider.createTemporaryFile("test", "txt", "Hello", fakeExpiredAt)).link
+                await(temporaryFileProvider.deleteExpired()) shouldBe 1
+                await(temporaryFileProvider.get(link)) shouldBe empty
             }
         }
 
         "be able to delete all files" taggedAs DatabaseTestTag in {
-            val file1 = temporaryFileProvider.createTemporaryFile("test1", "txt", "Hello")
-            val file2 = temporaryFileProvider.createTemporaryFile("test2", "txt", "World")
-            val file3 = temporaryFileProvider.createTemporaryFile("test3", "txt", "!")
-            val files = for {
-                f1 <- file1
-                f2 <- file2
-                f3 <- file3
-            } yield (f1, f2, f3)
+            async {
+                val file1Link = await(temporaryFileProvider.createTemporaryFile("test1", "txt", "Hello")).link
+                val file2Link = await(temporaryFileProvider.createTemporaryFile("test2", "txt", "World")).link
+                val file3Link = await(temporaryFileProvider.createTemporaryFile("test3", "txt", "!")).link
 
-            files flatMap { links =>
-                temporaryFileProvider.getAll flatMap { files =>
-                    files.size shouldEqual 3
+                val files = await(temporaryFileProvider.getAll)
+                files should have size 3
 
-                    val fileLinks = files.map(_.link)
+                val fileLinks = files.map(_.link)
+                fileLinks should contain(file1Link)
+                fileLinks should contain(file2Link)
+                fileLinks should contain(file3Link)
 
-                    fileLinks should contain (links._1.link)
-                    fileLinks should contain (links._2.link)
-                    fileLinks should contain (links._3.link)
+                val deleteCount = await(temporaryFileProvider.deleteAll())
+                deleteCount shouldEqual 3
 
-                    temporaryFileProvider.deleteAll() flatMap { deleteCount =>
-                        deleteCount shouldEqual 3
-
-                        val checkFile1 = temporaryFileProvider.get(files.head.link) map { _ shouldEqual None }
-                        val checkFile2 = temporaryFileProvider.get(files(1).link) map { _ shouldEqual None }
-                        val checkFile3 = temporaryFileProvider.get(files(2).link) map { _ shouldEqual None }
-
-                        Seq(checkFile1, checkFile2, checkFile3).collectFutures
+                await(fileLinks.map { link =>
+                    async {
+                        await(temporaryFileProvider.get(link)) shouldBe empty
                     }
-                }
+                }.assertAll)
             }
         }
 
         "throw an exception when trying to delete a nonexistent file" taggedAs DatabaseTestTag in {
-            for {
-                exception <- recoverToExceptionIf[Exception] {
+            async {
+                val exception = await(recoverToExceptionIf[Exception] {
                     temporaryFileProvider.deleteTemporaryFile("invalid link")
-                }
-                assertion <- exception.getMessage shouldEqual "No such temporary file"
-            } yield assertion
+                })
+                exception.getMessage shouldEqual "No such temporary file"
+            }
         }
     }
 

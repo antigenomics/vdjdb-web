@@ -36,7 +36,6 @@ export class SliderRangeModel {
 
 export class SliderItem {
     private _parent: SliderComponent;
-    private _element: HTMLElement;
     private _value: number = 0;
 
     private _downListener: () => void;
@@ -44,9 +43,8 @@ export class SliderItem {
     private _screenX: number = 0;
     private _downProtect: boolean = false;
 
-    constructor(parent: SliderComponent, element: HTMLElement, value: number) {
+    constructor(parent: SliderComponent, value: number) {
         this._parent = parent;
-        this._element = element;
         this._value = value;
         this.updateScreenX();
     }
@@ -148,12 +146,6 @@ export class SliderComponent implements OnInit {
     @InputConverter(NumberConverter)
     public max: number;
 
-    @ViewChild('leftSliderItemElement')
-    public leftSliderItemElement: ElementRef;
-
-    @ViewChild('rightSliderItemElement')
-    public rightSliderItemElement: ElementRef;
-
     @ViewChild('sliderElement')
     public sliderElement: ElementRef;
 
@@ -176,8 +168,8 @@ export class SliderComponent implements OnInit {
     public ngOnInit(): void {
         this.recalculateOffsets();
 
-        this.left = new SliderItem(this, this.leftSliderItemElement.nativeElement, this._model.min);
-        this.right = new SliderItem(this, this.rightSliderItemElement.nativeElement, this._model.max);
+        this.left = new SliderItem(this, this._model.min);
+        this.right = new SliderItem(this, this._model.max);
         this.changeDetector.detectChanges();
     }
 
