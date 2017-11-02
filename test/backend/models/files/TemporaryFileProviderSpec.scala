@@ -35,8 +35,7 @@ class TemporaryFileProviderSpec extends DatabaseProviderTestSpec {
 
         "get empty list" taggedAs DatabaseTestTag in {
             async {
-                val files = await(temporaryFileProvider.getAll)
-                files shouldBe empty
+                await(temporaryFileProvider.getAll) shouldBe empty
             }
         }
 
@@ -83,9 +82,7 @@ class TemporaryFileProviderSpec extends DatabaseProviderTestSpec {
 
         "get non-empty list" taggedAs DatabaseTestTag in {
             async {
-                val files = await(temporaryFileProvider.getAll)
-                files should not be empty
-                files.size shouldEqual 1
+                await(temporaryFileProvider.getAll) should (not be empty and have size 1)
             }
         }
 
@@ -109,7 +106,8 @@ class TemporaryFileProviderSpec extends DatabaseProviderTestSpec {
 
                     await(temporaryFileProvider.get(file.link)) shouldBe empty
                     await(fileMetadataProvider.get(metadata.id)) shouldBe empty
-                }}.assertAllAndAwait
+                }
+                }.assertAllAndAwait
             }
         }
 
@@ -150,7 +148,7 @@ class TemporaryFileProviderSpec extends DatabaseProviderTestSpec {
                 val exception = await(recoverToExceptionIf[Exception] {
                     temporaryFileProvider.deleteTemporaryFile("invalid link")
                 })
-                exception.getMessage shouldEqual "No such temporary file"
+                exception should have message "No such temporary file"
             }
         }
     }
