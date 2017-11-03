@@ -15,15 +15,15 @@
  *       limitations under the License.
  */
 
-package backend.models.authorization.forms
+package backend.models.authorization.permissions
 
-import play.api.data._
-import play.api.data.Forms._
+import slick.jdbc.H2Profile.api._
+import slick.lifted.Tag
 
-case class ResetForm(email: String)
+class UserPermissionsTable(tag: Tag) extends Table[UserPermissions](tag, "USER_PERMISSIONS") {
+    def id = column[Long]("ID", O.PrimaryKey, O.AutoInc)
+    def maxFilesCount = column[Int]("MAX_FILES_COUNT")
+    def maxFileSize = column[Int]("MAX_FILE_SIZE")
 
-object ResetForm {
-    implicit val resetFormMapping: Form[ResetForm] = Form(mapping(
-        "email" -> email
-    )(ResetForm.apply)(ResetForm.unapply))
+    def * = (id, maxFilesCount, maxFileSize) <> (UserPermissions.tupled, UserPermissions.unapply)
 }

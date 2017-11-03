@@ -15,15 +15,6 @@
  *       limitations under the License.
  */
 
-package backend.models.authorization.forms
+package backend.models.authorization.permissions
 
-import play.api.data._
-import play.api.data.Forms._
-
-case class ResetForm(email: String)
-
-object ResetForm {
-    implicit val resetFormMapping: Form[ResetForm] = Form(mapping(
-        "email" -> email
-    )(ResetForm.apply)(ResetForm.unapply))
-}
+case class UserPermissions(id: Long, maxFilesCount: Int, maxFileSize: Int)

@@ -151,6 +151,21 @@ class TemporaryFileProviderSpec extends DatabaseProviderTestSpec {
                 exception should have message "No such temporary file"
             }
         }
+
+        "get the same metadata in 'getMetadata' and 'withMetadata' methods" taggedAs DatabaseTestTag in {
+            async {
+                val fileLink = await(temporaryFileProvider.createTemporaryFile("bla", "bla", "bla")).link
+
+                val fileWithMetadata = await(temporaryFileProvider.getWithMetadata(fileLink))
+                fileWithMetadata should not be empty
+
+                val fileOnly = await(temporaryFileProvider.get(fileLink))
+                fileOnly should not be empty
+
+                val fileMetadata = await(fileOnly.get.getMetadata)
+                fileWithMetadata.get._2 shouldEqual fileMetadata
+            }
+        }
     }
 
     override protected def afterAll(): Unit = {
