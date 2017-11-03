@@ -42,7 +42,7 @@ class UserPermissionsProvider @Inject()(@NamedDatabase("default") protected val 
 }
 
 object UserPermissionsProvider {
-    private[permissions] final val table = TableQuery[UserPermissionsTable]
+    private[authorization] final val table = TableQuery[UserPermissionsTable]
 
     final val UNLIMITED_ID: Long = 0L
     final val DEFAULT_ID: Long = 1L

@@ -18,4 +18,4 @@ package backend.models
 
 import org.scalatest.Tag
 
-object DatabaseTestTag extends Tag("DatabaseTestTag")
+object SQLDatabaseTestTag extends Tag("SQLDatabaseTestTag")

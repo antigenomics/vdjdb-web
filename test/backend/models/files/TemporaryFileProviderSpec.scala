@@ -21,7 +21,7 @@ import java.sql.Timestamp
 import java.util.Date
 
 import backend.models.files.temporary.TemporaryFileProvider
-import backend.models.{DatabaseProviderTestSpec, DatabaseTestTag}
+import backend.models.{DatabaseProviderTestSpec, SQLDatabaseTestTag}
 
 import scala.io.Source
 import scala.async.Async.{async, await}
@@ -33,13 +33,13 @@ class TemporaryFileProviderSpec extends DatabaseProviderTestSpec {
 
     "TemporaryFileProvider" should {
 
-        "get empty list" taggedAs DatabaseTestTag in {
+        "get empty list" taggedAs SQLDatabaseTestTag in {
             async {
                 await(temporaryFileProvider.getAll) shouldBe empty
             }
         }
 
-        "be able to create temporary file" taggedAs DatabaseTestTag in {
+        "be able to create temporary file" taggedAs SQLDatabaseTestTag in {
             async {
                 val link = await(temporaryFileProvider.createTemporaryFile("test-file", "txt", "HelloWorld")).link
                 val tmpDirectoryPath = temporaryFileProvider.getTemporaryFilesDirectoryPath
@@ -80,13 +80,13 @@ class TemporaryFileProviderSpec extends DatabaseProviderTestSpec {
             }
         }
 
-        "get non-empty list" taggedAs DatabaseTestTag in {
+        "get non-empty list" taggedAs SQLDatabaseTestTag in {
             async {
                 await(temporaryFileProvider.getAll) should (not be empty and have size 1)
             }
         }
 
-        "be able to delete temporary files" taggedAs DatabaseTestTag in {
+        "be able to delete temporary files" taggedAs SQLDatabaseTestTag in {
             async {
                 val files = await(temporaryFileProvider.getAllWithMetadata)
                 files.map { case (file, metadata) => async {
@@ -111,7 +111,7 @@ class TemporaryFileProviderSpec extends DatabaseProviderTestSpec {
             }
         }
 
-        "be able to delete expired files" taggedAs DatabaseTestTag in {
+        "be able to delete expired files" taggedAs SQLDatabaseTestTag in {
             async {
                 val fakeExpiredAt = new Timestamp(new java.util.Date().getTime - 1)
                 val link = await(temporaryFileProvider.createTemporaryFile("test", "txt", "Hello", fakeExpiredAt)).link
@@ -120,7 +120,7 @@ class TemporaryFileProviderSpec extends DatabaseProviderTestSpec {
             }
         }
 
-        "be able to delete all files" taggedAs DatabaseTestTag in {
+        "be able to delete all files" taggedAs SQLDatabaseTestTag in {
             async {
                 val file1Link = await(temporaryFileProvider.createTemporaryFile("test1", "txt", "Hello")).link
                 val file2Link = await(temporaryFileProvider.createTemporaryFile("test2", "txt", "World")).link
@@ -143,7 +143,7 @@ class TemporaryFileProviderSpec extends DatabaseProviderTestSpec {
             }
         }
 
-        "throw an exception when trying to delete a nonexistent file" taggedAs DatabaseTestTag in {
+        "throw an exception when trying to delete a nonexistent file" taggedAs SQLDatabaseTestTag in {
             async {
                 val exception = await(recoverToExceptionIf[Exception] {
                     temporaryFileProvider.deleteTemporaryFile("invalid link")
@@ -152,7 +152,7 @@ class TemporaryFileProviderSpec extends DatabaseProviderTestSpec {
             }
         }
 
-        "get the same metadata in 'getMetadata' and 'withMetadata' methods" taggedAs DatabaseTestTag in {
+        "get the same metadata in 'getMetadata' and 'withMetadata' methods" taggedAs SQLDatabaseTestTag in {
             async {
                 val fileLink = await(temporaryFileProvider.createTemporaryFile("bla", "bla", "bla")).link
 

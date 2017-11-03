@@ -19,7 +19,7 @@ package backend.models.authorization.user
 
 import javax.inject.{Inject, Singleton}
 
-import backend.models.authorization.permissions.UserPermissionsProvider
+import backend.models.authorization.permissions.{UserPermissions, UserPermissionsProvider}
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import play.db.NamedDatabase
 import slick.jdbc.JdbcProfile
@@ -36,11 +36,19 @@ class UserProvider @Inject()(@NamedDatabase("default") protected val dbConfigPro
         db.run(UserProvider.table.result)
     }
 
+    def get(email: String): Future[Option[User]] = {
+        db.run(UserProvider.table.filter(_.email === email).result.headOption)
+    }
+
+    def getWithPermissions(email: String): Future[Option[(User, UserPermissions)]] = {
+        db.run(UserProvider.table.withPermissions.filter(_._1.email === email).result.headOption)
+    }
+
     def addUser(login: String, email: String, password: String): Future[Int] = {
         db.run(UserProvider.table += User(0, login, email, password, UserPermissionsProvider.DEFAULT_ID))
     }
 }
 
 object UserProvider {
-    private[user] final val table = TableQuery[UserTable]
+    private[authorization] final val table = TableQuery[UserTable]
 }
