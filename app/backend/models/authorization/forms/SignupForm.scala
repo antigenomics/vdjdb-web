@@ -24,10 +24,10 @@ case class SignupForm(login: String, email: String, password: String, repeatPass
 
 object SignupForm {
     implicit val signupFormMapping: Form[SignupForm] = Form(mapping(
-        "login" -> nonEmptyText,
+        "login" -> nonEmptyText(maxLength = 64),
         "email" -> email,
-        "password" -> nonEmptyText,
-        "repeatPassword" -> nonEmptyText
+        "password" -> nonEmptyText(minLength = 6),
+        "repeatPassword" -> nonEmptyText(minLength = 6)
     )(SignupForm.apply)(SignupForm.unapply))
 
     implicit val signupFailedFormMapping: Form[SignupForm] =

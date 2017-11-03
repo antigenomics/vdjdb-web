@@ -15,16 +15,18 @@
  *       limitations under the License.
  */
 
-package backend.models.authorization.user
+package backend.models.authorization
 
-import backend.models.authorization.permissions.{UserPermissions, UserPermissionsProvider}
+import backend.models.DatabaseProviderTestSpec
+import backend.models.authorization.permissions.UserPermissionsProvider
+import backend.models.authorization.user.UserProvider
 
-import scala.concurrent.{ExecutionContext, Future}
+class UserProviderSpec extends DatabaseProviderTestSpec {
+    lazy implicit val userProvider: UserProvider = app.injector.instanceOf[UserProvider]
+    lazy implicit val userPermissionsProvider: UserPermissionsProvider = app.injector.instanceOf[UserPermissionsProvider]
 
-case class User(id: Long, login: String, email: String, private val password: String, private val permissionID: Long) {
-    def getPermissions(implicit userPermissionsProvider: UserPermissionsProvider, ex: ExecutionContext): Future[UserPermissions] = {
-        userPermissionsProvider.getByID(permissionID).map(_.get)
+    "UserProvider" should {
+
     }
+
 }
-
-

@@ -17,21 +17,27 @@
 
 package backend.models.authorization.user
 
+import backend.models.authorization.permissions.UserPermissionsProvider
 import slick.jdbc.H2Profile.api._
 import slick.lifted.Tag
+import scala.language.higherKinds
 
 class UserTable(tag: Tag) extends Table[User](tag, "USER") {
     def id = column[Long]("ID", O.PrimaryKey, O.AutoInc)
-    def login = column[String]("LOGIN")
-    def email = column[String]("EMAIL")
-    def password = column[String]("PASSWORD")
+    def login = column[String]("LOGIN", O.Length(64))
+    def email = column[String]("EMAIL", O.Unique, O.Length(128))
+    def password = column[String]("PASSWORD", O.Length(256))
     def permissionID = column[Long]("PERMISSION_ID")
 
     def * = (id, login, email, password, permissionID) <> (User.tupled, User.unapply)
+    def permissions = foreignKey("PERMISSIONS_FK", permissionID, UserPermissionsProvider.table)(_.id,
+        onUpdate = ForeignKeyAction.Cascade, onDelete = ForeignKeyAction.NoAction)
+
+    def email_idx = index("EMAIL_IDX", email, unique = true)
 }
 
 object UserTable {
     implicit class UserExtension[C[_]](q: Query[UserTable, User, C]) {
-        def withPermissions = q.join(UserProvider.table).on(_.permissionID === _.id)
+        def withPermissions = q.join(UserPermissionsProvider.table).on(_.permissionID === _.id)
     }
 }
