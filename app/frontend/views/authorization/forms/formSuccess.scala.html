@@ -1,0 +1,8 @@
+@(strings: Seq[String])(implicit messages: Messages)
+<div class="ui message success" style="display: block;">
+    <div class="ui bulleted list">
+        @for(str <- strings) {
+            <div class="item">@messages(str)</div>
+        }
+    </div>
+</div>

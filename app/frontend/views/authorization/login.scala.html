@@ -17,16 +17,20 @@
                     @frontend.views.html.authorization.forms.formErrors(form.globalErrors)
                 }
                 @CSRF.formField
-                @inputText(form("email"), args = 'icon -> "user",
+                @inputText(form("email"), args = 'icon -> "mail",
                     'placeholder -> messages("authorization.forms.login.placeholder.email"),
                     'fieldType -> "email")
                 @inputText(form("password"), args = 'icon -> "lock",
                     'placeholder -> messages("authorization.forms.login.placeholder.password"),
                     'fieldType -> "password")
-                <p class="cursor pointer"><a>@messages("authorization.forms.login.forgot")</a></p>
+                <p class="cursor pointer">
+                    <a href="@backend.controllers.routes.Authorization.reset()">@messages("authorization.forms.login.forgot")</a>
+                </p>
                 <button class="ui fluid large teal button" type="submit" form="login">@messages("authorization.forms.login.login")</button>
                 <div class="ui divider"></div>
-                <p>@messages("authorization.forms.login.signup.question") <a class="cursor pointer">@messages("authorization.forms.login.signup")</a></p>
+                <p>@messages("authorization.forms.login.signup.question")
+                    <a class="cursor pointer" href="@backend.controllers.routes.Authorization.signup()" rel="noopener">@messages("authorization.forms.login.signup")</a>
+                </p>
                 <p class="cursor pointer">
                     <a href="@backend.controllers.routes.Application.index()" rel="noopener">
                         @messages("authorization.forms.login.back")
