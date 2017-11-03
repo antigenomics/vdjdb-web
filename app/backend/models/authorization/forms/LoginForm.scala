@@ -12,7 +12,7 @@ object LoginForm {
     )(LoginForm.apply)(LoginForm.unapply))
 
     implicit val loginFailedFormMapping: Form[LoginForm] =
-        loginFormMapping.withGlobalError("authorization.failed.message")
-            .withGlobalError("authorization.failed.workaround.1")
-            .withGlobalError("authorization.failed.workaround.2")
+        loginFormMapping.withGlobalError("authorization.forms.login.failed.message")
+            .withGlobalError("authorization.forms.login.failed.workaround.1")
+            .withGlobalError("authorization.forms.login.failed.workaround.2")
 }

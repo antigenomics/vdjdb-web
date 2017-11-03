@@ -2,7 +2,7 @@ package backend.controllers
 
 import javax.inject.Inject
 
-import backend.models.authorization.forms.LoginForm
+import backend.models.authorization.forms.{LoginForm, ResetForm, SignupForm}
 import backend.models.authorization.user.UserProvider
 import backend.utils.analytics.Analytics
 import play.api.Environment
@@ -34,6 +34,44 @@ class Authorization @Inject()(cc: ControllerComponents, userProvider: UserProvid
                     //                    val newUser = models.User(userData.name, userData.age)
                     //                    val id = models.User.create(newUser)
                     BadRequest(frontend.views.html.authorization.login(LoginForm.loginFailedFormMapping))
+                }
+            )
+        }
+    }
+
+    def signup: Action[AnyContent] = Action.async { implicit request =>
+        Future.successful {
+            Ok(frontend.views.html.authorization.signup(SignupForm.signupFormMapping))
+        }
+    }
+
+    def onSignup: Action[AnyContent] = Action.async { implicit request =>
+        Future.successful {
+            SignupForm.signupFormMapping.bindFromRequest.fold(
+                formWithErrors => {
+                    BadRequest(frontend.views.html.authorization.signup(formWithErrors))
+                },
+                form => {
+                    BadRequest(frontend.views.html.authorization.signup(SignupForm.signupFailedFormMapping))
+                }
+            )
+        }
+    }
+
+    def reset: Action[AnyContent] = Action.async { implicit request =>
+        Future.successful {
+            Ok(frontend.views.html.authorization.reset(ResetForm.resetFormMapping))
+        }
+    }
+
+    def onReset: Action[AnyContent] = Action.async { implicit request =>
+        Future.successful {
+            ResetForm.resetFormMapping.bindFromRequest.fold(
+                formWithErrors => {
+                    BadRequest(frontend.views.html.authorization.reset(formWithErrors))
+                },
+                form => {
+                    Redirect(backend.controllers.routes.Authorization.reset()).flashing("message" -> "authorization.forms.reset.flashing.message")
                 }
             )
         }

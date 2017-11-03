@@ -1,0 +1,37 @@
+@import play.api.Environment
+@import backend.utils.analytics.Analytics
+@import helper._
+@import backend.models.authorization.forms.ResetForm
+@(form: Form[ResetForm])(implicit environment: Environment, analytics: Analytics, request: Request[_], messages: Messages, flash: Flash)
+@implicitField = @{
+    FieldConstructor(frontend.views.html.authorization.forms.input.f)
+}
+
+@frontend.views.html.main("VDJdb: reset") {
+    <div class="ui middle aligned center aligned auth grid">
+        <div class="column left aligned">
+        @helper.form(action = backend.controllers.routes.Authorization.onReset(), args = 'class -> "ui form", 'id -> "reset") {
+            <h3 class="ui top attached header">@messages("authorization.forms.reset.reset")</h3>
+            <div class="ui attached segment teal padded">
+                @if(form.hasGlobalErrors) {
+                    @frontend.views.html.authorization.forms.formErrors(form.globalErrors)
+                }
+                @if(flash.get("message").nonEmpty) {
+                    @frontend.views.html.authorization.forms.formSuccess(Seq(flash.get("message").get))
+                }
+                @CSRF.formField
+                @inputText(form("email"), args = 'icon -> "mail",
+                    'placeholder -> messages("authorization.forms.reset.placeholder.email"),
+                    'fieldType -> "email")
+                <button class="ui fluid large teal button" type="submit" form="reset">@messages("authorization.forms.reset.reset")</button>
+                <div class="ui divider"></div>
+                <p class="cursor pointer">
+                    <a href="@backend.controllers.routes.Application.index()" rel="noopener">
+                    @messages("authorization.forms.reset.back")
+                    </a>
+                </p>
+            </div>
+        }
+        </div>
+    </div>
+}
