@@ -15,11 +15,11 @@
  *       limitations under the License.
  */
 
-package backend.models.authorization.user
+package backend.models.authorization.permissions
 
-import javax.inject.{Inject, Singleton}
+import javax.inject.Inject
 
-import backend.models.authorization.permissions.UserPermissionsProvider
+import groovy.lang.Singleton
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import play.db.NamedDatabase
 import slick.jdbc.JdbcProfile
@@ -28,19 +28,22 @@ import slick.lifted.TableQuery
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class UserProvider @Inject()(@NamedDatabase("default") protected val dbConfigProvider: DatabaseConfigProvider)
-                            (implicit ec: ExecutionContext) extends HasDatabaseConfigProvider[JdbcProfile] {
+class UserPermissionsProvider @Inject()(@NamedDatabase("default") protected val dbConfigProvider: DatabaseConfigProvider)
+                                       (implicit ec: ExecutionContext) extends HasDatabaseConfigProvider[JdbcProfile] {
     import dbConfig.profile.api._
 
-    def getAll: Future[Seq[User]] = {
-        db.run(UserProvider.table.result)
+    def getAll: Future[Seq[UserPermissions]] = {
+        db.run(UserPermissionsProvider.table.result)
     }
 
-    def addUser(login: String, email: String, password: String): Future[Int] = {
-        db.run(UserProvider.table += User(0, login, email, password, UserPermissionsProvider.DEFAULT_ID))
+    def getByID(id: Long): Future[Option[UserPermissions]] = {
+        db.run(UserPermissionsProvider.table.filter(_.id === id).result.headOption)
     }
 }
 
-object UserProvider {
-    private[user] final val table = TableQuery[UserTable]
+object UserPermissionsProvider {
+    private[permissions] final val table = TableQuery[UserPermissionsTable]
+
+    final val UNLIMITED_ID: Long = 0L
+    final val DEFAULT_ID: Long = 1L
 }

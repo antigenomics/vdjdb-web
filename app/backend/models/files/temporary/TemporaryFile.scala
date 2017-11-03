@@ -17,5 +17,11 @@
 package backend.models.files.temporary
 
 import java.sql.Timestamp
+import backend.models.files.{FileMetadata, FileMetadataProvider}
+import scala.concurrent.{ExecutionContext, Future}
 
-case class TemporaryFile(id: Long, link: String, expiredAt: Timestamp, metadataID: Long)
+case class TemporaryFile(id: Long, link: String, expiredAt: Timestamp, metadataID: Long) {
+    def getMetadata(implicit fileMetadataProvider: FileMetadataProvider, ex: ExecutionContext): Future[FileMetadata] = {
+        fileMetadataProvider.get(metadataID).map(_.get)
+    }
+}
