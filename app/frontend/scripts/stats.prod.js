@@ -21,7 +21,6 @@ const fs = require("fs");
 const path = require('path');
 const pathToBundle = path.resolve(__dirname, '../../../public/bundles/');
 const gzipSize = require('gzip-size');
-const md5File = require('md5-file');
 
 function getStats(fileName) {
     const stats = fs.statSync(pathToBundle + '/' + fileName);
@@ -35,13 +34,6 @@ function getStats(fileName) {
     }
 }
 
-function hashFile(fileName) {
-    const hash = md5File.sync(pathToBundle + '/' + fileName);
-    const hashedName = hash + '.' + fileName;
-    fs.renameSync(pathToBundle + '/' + fileName, pathToBundle + '/' + hashedName);
-    return hashedName;
-}
-
 if (fs.existsSync(pathToBundle + '/bundle.css')) {
     fs.unlinkSync(pathToBundle + '/bundle.css');
 }
@@ -52,7 +44,7 @@ const bundleFiles = [
     'bundle.min.css'
 ];
 
-var total = {
+let total = {
     size: 0,
     gzip: 0
 };
@@ -85,10 +77,3 @@ const bundleStats = bundleFiles
     ]);
 
 console.table('Fronted bundle statistics', bundleStats);
-//
-// var mapNames = {};
-// bundleFiles.forEach(function(fileName) {
-//    mapNames[fileName] = hashFile(fileName);
-// });
-//
-// fs.writeFile(pathToBundle + '/' + 'bundle-info.json', JSON.stringify(mapNames));
