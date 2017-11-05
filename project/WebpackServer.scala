@@ -16,32 +16,28 @@
 
 import java.io.File
 import java.net.InetSocketAddress
-
+import scala.sys.process._
 import play.sbt.PlayRunHook
-import sbt._
 
 object WebpackServer {
     def apply(base: File): PlayRunHook = {
-
         object WebpackServerScript extends PlayRunHook {
-
-            var process: Option[Process] = None // This is really ugly, how can I do this functionally?
-
-            override def afterStarted(addr: InetSocketAddress): Unit = {
-                process = if (System.getProperty("os.name").toUpperCase().contains("WIN"))
-                    Option(Process("cmd /c npm start", base).run)
+            val processBuilder: ProcessBuilder =
+                if (System.getProperty("os.name").toUpperCase().contains("WIN"))
+                    Process("cmd /c npm start --prefix " + base.getAbsolutePath)
                 else
-                    Option(Process("npm start", base).run)
+                    Process("npm start --prefix " + base.getAbsolutePath)
+
+            var process: Process = _
+
+            override def afterStarted(address: InetSocketAddress): Unit = {
+                process = processBuilder.run()
             }
 
             override def afterStopped(): Unit = {
-                process.foreach(p => {
-                    p.destroy()
-                })
-                process = None
+                process.destroy()
             }
         }
-
         WebpackServerScript
     }
 }

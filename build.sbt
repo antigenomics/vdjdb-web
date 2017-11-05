@@ -1,5 +1,5 @@
+import scala.sys.process._
 import play.sbt.PlayImport.PlayKeys.playRunHooks
-import NativePackagerHelper._
 
 name := """VDJdb-server"""
 
@@ -42,38 +42,40 @@ publishArtifact in(Compile, packageDoc) := false
 
 lazy val isWindows = System.getProperty("os.name").toUpperCase().contains("WIN")
 lazy val frontendApplicationPath = if (isWindows) "app\\frontend" else "./app/frontend"
+lazy val npm: String = if (isWindows) "cmd /c npm " else "npm "
 
-lazy val buildFrontend = taskKey[Unit]("Build frontend Angular")
+lazy val buildFrontend = taskKey[Unit]("Build frontend application")
 buildFrontend := {
     val logger: TaskStreams = streams.value
-    val npm: String = if (isWindows) "cmd /c npm " else "npm "
-
     logger.log.info("Installing frontend dependencies")
-    val install = Process(npm + "install", file(frontendApplicationPath)).run
+    val install = Process(npm + "install --prefix " + frontendApplicationPath).run()
     if (install.exitValue != 0) {
         throw new IllegalStateException("Installing fronted dependencies failed!")
     }
     logger.log.info("Frontend dependencies installed successfully")
 
     logger.log.info("Building frontend bundle")
-    val build = Process(npm + "run bundle", file(frontendApplicationPath)).run
+    val build = Process(npm + "run bundle --prefix " + frontendApplicationPath).run()
     if (build.exitValue != 0) {
         throw new IllegalStateException("Building frontend bundle failed!")
     }
     logger.log.info("Frontend bundle built successfully")
 }
 
-lazy val buildBackend = taskKey[Unit]("Build backend")
-buildBackend := {
+lazy val testFrontend = taskKey[Unit]("Test frontend application")
+testFrontend := {
     val logger: TaskStreams = streams.value
-    logger.log.info("Building backend")
-    (packageBin in Universal).value
-    logger.log.info("Backend build successfully")
+    logger.log.info("Testing frontend application")
+    val test = Process(npm + "run test:karma:once --prefix " + frontendApplicationPath).run()
+    logger.log.info(s"Test completed (exit code: ${test.exitValue()})")
 }
+
+addCommandAlias("buildBackend", "dist")
+addCommandAlias("testBackend", "test")
 
 lazy val build = taskKey[Unit]("Build application")
 build := {
-    (buildBackend dependsOn buildFrontend).value
+    ((packageBin in Universal) dependsOn buildFrontend).value
 }
 
 // Starts: Webpack server process when running locally and build actions for production bundle
