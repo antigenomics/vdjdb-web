@@ -1,9 +1,10 @@
 package backend.controllers
 
 import javax.inject.Inject
-
+import scala.async.Async.{async, await}
 import backend.models.authorization.forms.{LoginForm, ResetForm, SignupForm}
 import backend.models.authorization.user.UserProvider
+import backend.models.authorization.verification.VerificationTokenProvider
 import backend.utils.analytics.Analytics
 import play.api.Environment
 import play.api.i18n.{Lang, Messages, MessagesApi}
@@ -11,7 +12,7 @@ import play.api.mvc.{AbstractController, Action, AnyContent, ControllerComponent
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class Authorization @Inject()(cc: ControllerComponents, userProvider: UserProvider, messagesApi: MessagesApi)
+class Authorization @Inject()(cc: ControllerComponents, userProvider: UserProvider, vtp: VerificationTokenProvider, messagesApi: MessagesApi)
                              (implicit ec: ExecutionContext, environment: Environment, analytics: Analytics)
     extends AbstractController(cc) {
     implicit val messages: Messages = messagesApi.preferred(Seq(Lang.defaultLang))
@@ -74,6 +75,22 @@ class Authorization @Inject()(cc: ControllerComponents, userProvider: UserProvid
                     Redirect(backend.controllers.routes.Authorization.reset()).flashing("message" -> "authorization.forms.reset.flashing.message")
                 }
             )
+        }
+    }
+
+    def verification(token: String): Action[AnyContent] = Action.async {
+        async {
+            val verificationToken = await(vtp.get(token))
+            if (verificationToken.isEmpty) {
+                BadRequest("Invalid verification token")
+            } else {
+                val success = await(vtp.verify(verificationToken.get.token))
+                if (success == 1) {
+                    Redirect(backend.controllers.routes.Authorization.login()).flashing("message" -> "authorization.forms.login.flashing.verified")
+                } else {
+                    BadRequest("")
+                }
+            }
         }
     }
 

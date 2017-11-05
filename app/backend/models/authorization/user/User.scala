@@ -21,8 +21,9 @@ import backend.models.authorization.permissions.{UserPermissions, UserPermission
 
 import scala.concurrent.{ExecutionContext, Future}
 
-case class User(id: Long, login: String, email: String, private val password: String, private val permissionID: Long) {
-    def getPermissions(implicit userPermissionsProvider: UserPermissionsProvider, ex: ExecutionContext): Future[UserPermissions] = {
+case class User(id: Long, login: String, email: String, verified: Boolean,
+                private[authorization] val password: String, private[authorization] val permissionID: Long) {
+    def getPermissions(implicit userPermissionsProvider: UserPermissionsProvider, ec: ExecutionContext): Future[UserPermissions] = {
         userPermissionsProvider.getByID(permissionID).map(_.get)
     }
 }
