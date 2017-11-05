@@ -22,7 +22,7 @@ import javax.inject.{Inject, Singleton}
 
 import akka.actor.ActorSystem
 import backend.models.files.{FileMetadata, FileMetadataProvider}
-import backend.utils.CommonUtils
+import backend.utils.{CommonUtils, TimeUtils}
 import org.slf4j.LoggerFactory
 import play.api.Configuration
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
@@ -98,7 +98,7 @@ class TemporaryFileProvider @Inject()(@NamedDatabase("default") protected val db
     }
 
     def createTemporaryFile(name: String, extension: String, content: String,
-                            expiredAt: Timestamp = new Timestamp(new java.util.Date().getTime + configuration.keep * 1000)): Future[TemporaryFileLink] = async {
+                            expiredAt: Timestamp = TimeUtils.getExpiredAt(configuration.keep)): Future[TemporaryFileLink] = async {
         val link = CommonUtils.randomAlphaNumericString(32)
         val folderPath = s"${configuration.path}/$link"
 

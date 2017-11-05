@@ -2,7 +2,7 @@
 @import backend.utils.analytics.Analytics
 @import helper._
 @import backend.models.authorization.forms.LoginForm
-@(form: Form[LoginForm])(implicit environment: Environment, analytics: Analytics, request: Request[_], messages: Messages)
+@(form: Form[LoginForm])(implicit environment: Environment, analytics: Analytics, request: Request[_], messages: Messages, flash: Flash)
 @implicitField = @{
     FieldConstructor(frontend.views.html.authorization.forms.input.f)
 }
@@ -15,6 +15,9 @@
             <div class="ui attached segment teal padded">
                 @if(form.hasGlobalErrors) {
                     @frontend.views.html.authorization.forms.formErrors(form.globalErrors)
+                }
+                @if(flash.get("verified").nonEmpty) {
+                    @frontend.views.html.authorization.forms.formSuccess(Seq(flash.get("verified").get))
                 }
                 @CSRF.formField
                 @inputText(form("email"), args = 'icon -> "mail",

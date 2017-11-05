@@ -26,10 +26,11 @@ class UserTable(tag: Tag) extends Table[User](tag, "USER") {
     def id = column[Long]("ID", O.PrimaryKey, O.AutoInc)
     def login = column[String]("LOGIN", O.Length(64))
     def email = column[String]("EMAIL", O.Unique, O.Length(128))
-    def password = column[String]("PASSWORD", O.Length(256))
+    def verified = column[Boolean]("VERIFIED")
+    def password = column[String]("PASSWORD", O.Length(255))
     def permissionID = column[Long]("PERMISSION_ID")
 
-    def * = (id, login, email, password, permissionID) <> (User.tupled, User.unapply)
+    def * = (id, login, email, verified, password, permissionID) <> (User.tupled, User.unapply)
     def permissions = foreignKey("PERMISSIONS_FK", permissionID, UserPermissionsProvider.table)(_.id,
         onUpdate = ForeignKeyAction.Cascade, onDelete = ForeignKeyAction.NoAction)
 

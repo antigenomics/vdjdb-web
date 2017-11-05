@@ -26,8 +26,8 @@ object SignupForm {
     implicit val signupFormMapping: Form[SignupForm] = Form(mapping(
         "login" -> nonEmptyText(maxLength = 64),
         "email" -> email,
-        "password" -> nonEmptyText(minLength = 6),
-        "repeatPassword" -> nonEmptyText(minLength = 6)
+        "password" -> nonEmptyText(minLength = 6, maxLength = 50),
+        "repeatPassword" -> nonEmptyText(minLength = 6, maxLength = 50)
     )(SignupForm.apply)(SignupForm.unapply))
 
     implicit val signupFailedFormMapping: Form[SignupForm] =
