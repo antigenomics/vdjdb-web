@@ -48,14 +48,14 @@ lazy val buildFrontend = taskKey[Unit]("Build frontend application")
 buildFrontend := {
     val logger: TaskStreams = streams.value
     logger.log.info("Installing frontend dependencies")
-    val install = Process(npm + "install --prefix " + frontendApplicationPath).run()
+    val install = Process(npm + "install", file(frontendApplicationPath)).run()
     if (install.exitValue != 0) {
         throw new IllegalStateException("Installing fronted dependencies failed!")
     }
     logger.log.info("Frontend dependencies installed successfully")
 
     logger.log.info("Building frontend bundle")
-    val build = Process(npm + "run bundle --prefix " + frontendApplicationPath).run()
+    val build = Process(npm + "run bundle", file(frontendApplicationPath)).run()
     if (build.exitValue != 0) {
         throw new IllegalStateException("Building frontend bundle failed!")
     }
@@ -66,7 +66,7 @@ lazy val testFrontend = taskKey[Unit]("Test frontend application")
 testFrontend := {
     val logger: TaskStreams = streams.value
     logger.log.info("Testing frontend application")
-    val test = Process(npm + "run test:karma:once --prefix " + frontendApplicationPath).run()
+    val test = Process(npm + "run test:karma:once", file(frontendApplicationPath)).run()
     logger.log.info(s"Test completed (exit code: ${test.exitValue()})")
 }
 
