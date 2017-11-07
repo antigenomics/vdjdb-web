@@ -21,6 +21,7 @@ import backend.models.{DatabaseProviderTestSpec, SQLDatabaseTestTag}
 import backend.models.authorization.permissions.UserPermissionsProvider
 import backend.models.authorization.user.UserProvider
 import backend.models.authorization.verification.VerificationTokenProvider
+import backend.utils.TimeUtils
 
 import scala.async.Async.{async, await}
 
@@ -64,30 +65,64 @@ class UserProviderSpec extends DatabaseProviderTestSpec {
                 tokens should have size 1
 
                 val token = tokens.head
-                val success = await(tokenProvider.verify(token.token))
-                success shouldEqual 1
-
                 val user = await(userProvider.get(token.userID))
                 user should not be empty
 
-                user.get.id shouldEqual token.userID
-                user.get.verified shouldEqual true
+                val verifiedUser = await(userProvider.verifyUser(token.token))
+                verifiedUser should not be empty
+
+                verifiedUser.get.login shouldEqual user.get.login
+                verifiedUser.get.email shouldEqual user.get.email
+                verifiedUser.get.id shouldEqual user.get.id
+                verifiedUser.get.id shouldEqual token.userID
+                verifiedUser.get.verified shouldEqual true
 
                 val deleteToken = await(tokenProvider.get(token.token))
                 deleteToken shouldBe empty
             }
         }
 
-        "be able to delete expired tokens and user associated to these tokens" taggedAs SQLDatabaseTestTag in {
+        "be able to create users with the same login" taggedAs SQLDatabaseTestTag in {
             async {
-                val token1 = await(userProvider.createUser("user1", "user1@mail.ru", "user1password"))
-                val token2 = await(userProvider.createUser("user2", "user2@mail.ru", "user2password"))
+                val token1 = await(userProvider.createUser("onelogin", "testlogin1@mail.com", "password"))
+                val token2 = await(userProvider.createUser("onelogin", "testlogin2@mail.com", "password"))
 
+                val user1 = await(userProvider.get(token1.userID))
+                val user2 = await(userProvider.get(token2.userID))
 
-                succeed
+                user1 should not be empty
+                user2 should not be empty
+
+                user1.get.login shouldEqual "onelogin"
+                user1.get.login shouldEqual user2.get.login
             }
         }
 
+        "be able to delete non-verified users and associated tokens" taggedAs SQLDatabaseTestTag in {
+            async {
+                val fakeExpiredAt = TimeUtils.getExpiredAt(-1)
+                val token1 = await(userProvider.createUser("user1", "user1@mail.ru", "user1password", fakeExpiredAt))
+                val token2 = await(userProvider.createUser("user2", "user2@mail.ru", "user2password", fakeExpiredAt))
+
+                val deleted = await(userProvider.deleteUnverified())
+                deleted shouldEqual 2
+
+                val token1Check = tokenProvider.get(token1.token)
+                val token2Check = tokenProvider.get(token2.token)
+                val user1Check = userProvider.get(token1.userID)
+                val user2Check = userProvider.get(token2.userID)
+
+                await(token1Check) shouldBe empty
+                await(token2Check) shouldBe empty
+                await(user1Check) shouldBe empty
+                await(user2Check) shouldBe empty
+            }
+        }
+    }
+
+    override protected def afterAll(): Unit = async {
+        val all = await(userProvider.getAll)
+        userProvider.delete(all.map(_.id))
     }
 
 }

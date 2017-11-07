@@ -20,4 +20,6 @@ import java.sql.Timestamp
 
 object TimeUtils {
     def getExpiredAt(keep: Int): Timestamp = new Timestamp(new java.util.Date().getTime + keep * 1000)
+
+    def getCurrentTimestamp: Timestamp = new Timestamp(new java.util.Date().getTime)
 }

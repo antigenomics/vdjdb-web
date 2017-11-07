@@ -24,20 +24,17 @@ class Authorization @Inject()(cc: ControllerComponents, userProvider: UserProvid
     }
 
     def onLogin: Action[AnyContent] = Action.async { implicit request =>
-        Future.successful {
-            LoginForm.loginFormMapping.bindFromRequest.fold(
-                formWithErrors => {
-                    BadRequest(frontend.views.html.authorization.login(formWithErrors))
-                },
-                form => {
-                    println("Ok!")
-                    /* binding success, you get the actual value. */
-                    //                    val newUser = models.User(userData.name, userData.age)
-                    //                    val id = models.User.create(newUser)
-                    BadRequest(frontend.views.html.authorization.login(LoginForm.loginFailedFormMapping))
+        LoginForm.loginFormMapping.bindFromRequest.fold(
+            formWithErrors => {
+                Future.successful(BadRequest(frontend.views.html.authorization.login(formWithErrors)))
+            },
+            form => {
+                userProvider.get(form.email) map {
+                    case Some(user) => Ok("")
+                    case None => BadRequest(frontend.views.html.authorization.login(LoginForm.loginFailedFormMapping))
                 }
-            )
-        }
+            }
+        )
     }
 
     def signup: Action[AnyContent] = Action.async { implicit request =>
@@ -78,15 +75,16 @@ class Authorization @Inject()(cc: ControllerComponents, userProvider: UserProvid
         }
     }
 
-    def verification(token: String): Action[AnyContent] = Action.async {
+    def verify(token: String): Action[AnyContent] = Action.async {
         async {
             val verificationToken = await(vtp.get(token))
             if (verificationToken.isEmpty) {
                 BadRequest("Invalid verification token")
             } else {
-                val success = await(vtp.verify(verificationToken.get.token))
-                if (success == 1) {
-                    Redirect(backend.controllers.routes.Authorization.login()).flashing("message" -> "authorization.forms.login.flashing.verified")
+                val user = await(userProvider.verifyUser(verificationToken.get.token))
+                if (user.nonEmpty) {
+                    Redirect(backend.controllers.routes.Authorization.login())
+                        .flashing("message" -> "authorization.forms.login.flashing.verified")
                 } else {
                     BadRequest("")
                 }

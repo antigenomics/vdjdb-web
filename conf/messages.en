@@ -5,6 +5,7 @@ authorization.forms.login.signup = Sign up now!
 authorization.forms.login.signup.question = Don't have an account?
 authorization.forms.login.placeholder.email = E-mail address
 authorization.forms.login.placeholder.password = Password
+authorization.forms.login.failed.unverified = Please verify your account
 authorization.forms.login.failed.message = Please check that you have entered your login and password correctly.
 authorization.forms.login.failed.workaround.1 = Is the Caps Lock turned off?
 authorization.forms.login.failed.workaround.2 = Maybe you are using the wrong input language?
