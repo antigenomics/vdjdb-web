@@ -17,22 +17,44 @@
 
 package backend.models.authorization.user
 
+import java.sql.Timestamp
 import javax.inject.{Inject, Singleton}
 
+import akka.actor.ActorSystem
 import backend.models.authorization.permissions.{UserPermissions, UserPermissionsProvider}
-import backend.models.authorization.verification.{VerificationToken, VerificationTokenProvider}
+import backend.models.authorization.verification.{VerificationToken, VerificationTokenConfiguration, VerificationTokenProvider}
+import backend.utils.TimeUtils
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import play.db.NamedDatabase
 import slick.jdbc.JdbcProfile
 import slick.lifted.TableQuery
 import org.mindrot.jbcrypt.BCrypt
+import org.slf4j.LoggerFactory
+import play.api.Configuration
+
 import scala.async.Async.{async, await}
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.Failure
+import scala.language.postfixOps
+import scala.concurrent.duration._
 
 @Singleton
 class UserProvider @Inject()(@NamedDatabase("default") protected val dbConfigProvider: DatabaseConfigProvider, vtp: VerificationTokenProvider)
-                            (implicit ec: ExecutionContext) extends HasDatabaseConfigProvider[JdbcProfile] {
+                            (implicit ec: ExecutionContext, conf: Configuration, system: ActorSystem) extends HasDatabaseConfigProvider[JdbcProfile] {
+    private final val logger = LoggerFactory.getLogger(this.getClass)
+    private final val configuration = conf.get[VerificationTokenConfiguration]("application.auth.verification")
+
     import dbConfig.profile.api._
+
+    if (configuration.interval != 0) {
+        system.scheduler.schedule(configuration.interval seconds, configuration.interval seconds) {
+            deleteUnverified onComplete {
+                case Failure(ex) =>
+                    logger.error("Cannot delete unverified users", ex)
+                case _ =>
+            }
+        }
+    }
 
     def getAll: Future[Seq[User]] = db.run(UserProvider.table.result)
 
@@ -56,20 +78,44 @@ class UserProvider @Inject()(@NamedDatabase("default") protected val dbConfigPro
         delete(user.id)
     }
 
-    def delete(users: Seq[User]): Future[Int] = {
-        val ids = users.map(_.id)
+    def delete(ids: Seq[Long]): Future[Int] = {
         db.run(UserProvider.table.filter(fm => fm.id inSet ids).delete)
     }
 
-    def createUser(login: String, email: String, password: String): Future[VerificationToken] = async {
-        val check = await(get(email))
-        if (check.nonEmpty) {
-            throw new RuntimeException("User already exists")
+    def deleteUnverified(): Future[Int] = async {
+        val currentTimestamp = TimeUtils.getCurrentTimestamp
+        val expiredTokens = await(vtp.getExpired(currentTimestamp))
+        val userIDs = expiredTokens.map(_.userID)
+        await(delete(userIDs).flatMap(_ => {
+            vtp.delete(expiredTokens)
+        }))
+    }
+
+    def createUser(login: String, email: String, password: String, verifyUntil: Timestamp = TimeUtils.getExpiredAt(configuration.keep)): Future[VerificationToken] =
+        async {
+            val check = await(get(email))
+            if (check.nonEmpty) {
+                throw new RuntimeException("User already exists")
+            }
+            val hash = BCrypt.hashpw(password, BCrypt.gensalt())
+            val user = User(0, login, email, verified = false, hash, UserPermissionsProvider.DEFAULT_ID)
+            val userID: Long = await(insert(user))
+            await(vtp.createVerificationToken(userID, verifyUntil))
         }
-        val hash = BCrypt.hashpw(password, BCrypt.gensalt())
-        val user = User(0, login, email, verified = false, hash, UserPermissionsProvider.DEFAULT_ID)
-        val userID: Long = await(insert(user))
-        await(vtp.createVerificationToken(userID))
+
+    def verifyUser(token: String): Future[Option[User]] = async {
+        val verificationToken = await(vtp.get(token))
+        if (verificationToken.isEmpty) {
+            throw new RuntimeException("Invalid token")
+        }
+        val success = await(db.run(UserProvider.table.filter(_.id === verificationToken.get.userID).map(_.verified).update(true)))
+        if (success == 1) {
+            await(vtp.delete(verificationToken.get).flatMap(_ => {
+                get(verificationToken.get.userID)
+            }))
+        } else {
+            None
+        }
     }
 
     private def insert(user: User): Future[Long] = {

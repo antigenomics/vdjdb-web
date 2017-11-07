@@ -19,41 +19,24 @@ package backend.models.authorization.verification
 import java.sql.Timestamp
 import javax.inject.{Inject, Singleton}
 
-import akka.actor.ActorSystem
-import backend.models.authorization.user.{User, UserProvider}
-import backend.utils.{CommonUtils, TimeUtils}
-import org.slf4j.LoggerFactory
-import play.api.Configuration
+import backend.utils.CommonUtils
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import play.db.NamedDatabase
 import slick.jdbc.JdbcProfile
 import slick.lifted.TableQuery
-
-import scala.concurrent.duration._
-import scala.language.postfixOps
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.Failure
 import scala.async.Async.{async, await}
 
 @Singleton
 class VerificationTokenProvider @Inject()(@NamedDatabase("default") protected val dbConfigProvider: DatabaseConfigProvider)
-                                         (implicit ec: ExecutionContext, conf: Configuration, system: ActorSystem) extends HasDatabaseConfigProvider[JdbcProfile] {
-    private final val logger = LoggerFactory.getLogger(this.getClass)
-    private final val configuration = conf.get[VerificationTokenConfiguration]("application.auth.verification")
-
+                                         (implicit ec: ExecutionContext) extends HasDatabaseConfigProvider[JdbcProfile] {
     import dbConfig.profile.api._
 
-    if (configuration.interval != 0) {
-        system.scheduler.schedule(configuration.interval seconds, configuration.interval seconds) {
-            deleteExpired onComplete {
-                case Failure(ex) =>
-                    logger.error("Cannot delete expired tokens", ex)
-                case _ =>
-            }
-        }
-    }
-
     def getAll: Future[Seq[VerificationToken]] = db.run(VerificationTokenProvider.table.result)
+
+    def getExpired(date: Timestamp): Future[Seq[VerificationToken]] = {
+        db.run(VerificationTokenProvider.table.filter(_.expiredAt < date).result)
+    }
 
     def get(token: String): Future[Option[VerificationToken]] = {
         db.run(VerificationTokenProvider.table.filter(_.token === token).result.headOption)
@@ -72,15 +55,7 @@ class VerificationTokenProvider @Inject()(@NamedDatabase("default") protected va
         db.run(VerificationTokenProvider.table.filter(fm => fm.id inSet ids).delete)
     }
 
-    def deleteExpired(): Future[Int] = async {
-        val currentDate = new Timestamp(new java.util.Date().getTime)
-        val expired = await(db.run(VerificationTokenProvider.table.join(UserProvider.table).on(_.userID === _.id).filter(_._1.expiredAt < currentDate).result))
-        val userIDs = expired.map(_._2).map(_.id)
-        val _ = await(db.run(UserProvider.table.filter(fm => fm.id inSet userIDs).delete))
-        await(delete(expired.map(_._1)))
-    }
-
-    def createVerificationToken(userID: Long, expiredAt: Timestamp = TimeUtils.getExpiredAt(configuration.keep)): Future[VerificationToken] = async {
+    def createVerificationToken(userID: Long, expiredAt: Timestamp): Future[VerificationToken] = async {
         val random = CommonUtils.randomAlphaNumericString(128)
         val token = VerificationToken(0, random, userID, expiredAt)
         val success = await(insert(token))
@@ -88,23 +63,6 @@ class VerificationTokenProvider @Inject()(@NamedDatabase("default") protected va
             token
         } else {
             throw new RuntimeException("Cannot create verification token")
-        }
-    }
-
-    def verify(token: String): Future[Int] = async {
-        val verificationToken = await(get(token))
-        if (verificationToken.nonEmpty) {
-            val userOpt = await(db.run(UserProvider.table.filter(_.id === verificationToken.get.userID).result.headOption))
-            if (userOpt.nonEmpty) {
-                val user = userOpt.get
-                await(db.run(UserProvider.table.filter(_.id === user.id).update(
-                    User(user.id, user.login, user.email, verified = true, user.password, user.permissionID))
-                ).flatMap(_ => delete(verificationToken.get)))
-            } else {
-                0
-            }
-        } else {
-            0
         }
     }
 
