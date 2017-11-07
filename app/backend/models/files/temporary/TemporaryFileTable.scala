@@ -24,7 +24,7 @@ import slick.lifted.Tag
 
 import scala.language.higherKinds
 
-class TemporaryFileTable(tag: Tag) extends Table[TemporaryFile](tag, "TEMPORARY_FILE") {
+class TemporaryFileTable(tag: Tag) extends Table[TemporaryFile](tag, TemporaryFileTable.TABLE_NAME) {
     def id = column[Long]("ID", O.PrimaryKey, O.AutoInc)
     def link = column[String]("LINK", O.Length(32), O.Unique)
     def expiredAt = column[Timestamp]("EXPIRED_AT")
@@ -38,6 +38,8 @@ class TemporaryFileTable(tag: Tag) extends Table[TemporaryFile](tag, "TEMPORARY_
 }
 
 object TemporaryFileTable {
+    final val TABLE_NAME = "TEMPORARY_FILE"
+
     implicit class TemporaryFileExtension[C[_]](q: Query[TemporaryFileTable, TemporaryFile, C]) {
         def withMetadata = q.join(FileMetadataProvider.table).on(_.metadataID === _.id)
     }

@@ -18,9 +18,9 @@
 package backend.controllers
 
 import backend.models.authorization.forms.SignupForm
-import play.api.mvc._
-import play.api.data._
-import play.api.libs.json._
+import backend.models.authorization.session.SessionTokenProvider
+import backend.models.authorization.user.UserProvider
+import backend.models.authorization.verification.VerificationTokenProvider
 import play.api.test._
 import play.api.test.Helpers._
 import play.api.test.CSRFTokenHelper._
@@ -28,7 +28,10 @@ import play.api.test.CSRFTokenHelper._
 import scala.async.Async.{async, await}
 
 class AuthorizationSpec extends ControllersTestSpec {
-    implicit val controller: Authorization = app.injector.instanceOf[Authorization]
+    implicit lazy val controller: Authorization = app.injector.instanceOf[Authorization]
+    implicit lazy val userProvider: UserProvider = app.injector.instanceOf[UserProvider]
+    implicit lazy val verificationTokenProvider: VerificationTokenProvider = app.injector.instanceOf[VerificationTokenProvider]
+    implicit lazy val sessionTokenProvider: SessionTokenProvider = app.injector.instanceOf[SessionTokenProvider]
 
     "Authorization#login" should {
         "render login page" taggedAs ControllersTestTag in {
@@ -38,6 +41,23 @@ class AuthorizationSpec extends ControllersTestSpec {
             status(result) shouldEqual OK
             body should include ("csrf")
             body should include (messages("authorization.forms.login.login"))
+        }
+
+        "redirect user if logged in" taggedAs ControllersTestTag in {
+            //TODO use fixtures
+            async {
+                val verificationToken = await(userProvider.createUser("hello", "login@mail.com", "password"))
+                val user = await(userProvider.verifyUser(verificationToken.token))
+                user should not be empty
+
+                val sessionToken = await(sessionTokenProvider.createSessionToken(user.get))
+
+                val request = FakeRequest().withSession(controller.getAuthTokenSessionName -> sessionToken).withCSRFToken
+                val result = controller.login.apply(request)
+
+                status(result) shouldEqual SEE_OTHER
+                redirectLocation(result) shouldEqual Some(backend.controllers.routes.Application.index().url)
+            }
         }
     }
 
@@ -85,6 +105,48 @@ class AuthorizationSpec extends ControllersTestSpec {
             body should include (messages("authorization.forms.login.failed.workaround.1"))
             body should include (messages("authorization.forms.login.failed.workaround.2"))
         }
+
+        "forbid to login for an unverified users" taggedAs ControllersTestTag in {
+            async {
+                val _ = await(userProvider.createUser("login", "test@mail.com", "password"))
+                val newUserRequest = FakeRequest()
+                    .withFormUrlEncodedBody("email" -> "test@mail.com", "password" -> "password")
+                    .withCSRFToken
+                val result = controller.onLogin(newUserRequest)
+
+                status(result) shouldEqual BAD_REQUEST
+                contentAsString(result) should include (messages("authorization.forms.login.failed.unverified"))
+            }
+        }
+
+        "able to create session for verified user" taggedAs ControllersTestTag in {
+            async {
+                val verificationToken = await(userProvider.createUser("login", "test1@mail.com", "password"))
+                val verifiedUser = await(userProvider.verifyUser(verificationToken.token))
+                verifiedUser should not be empty
+
+                val verificationTokenAgain = await(verificationTokenProvider.get(verificationToken.token))
+                verificationTokenAgain shouldBe empty
+
+                val verifiedUserRequest = FakeRequest()
+                    .withFormUrlEncodedBody("email" -> "test1@mail.com", "password" -> "password")
+
+                val result = controller.onLogin(verifiedUserRequest)
+
+                status(result) shouldEqual SEE_OTHER
+                redirectLocation(result) should not be empty
+                redirectLocation(result).get shouldEqual backend.controllers.routes.Application.index().url
+                session(result).data should contain key controller.getAuthTokenSessionName
+
+                val jwtSessionToken = session(result).data(controller.getAuthTokenSessionName)
+                val sessionToken = await(sessionTokenProvider.get(jwtSessionToken))
+
+                sessionToken should not be empty
+
+                sessionToken.get.token shouldEqual jwtSessionToken
+                sessionToken.get.userID shouldEqual verifiedUser.get.id
+            }
+        }
     }
 
     "Authorization#signup" should {
@@ -95,6 +157,23 @@ class AuthorizationSpec extends ControllersTestSpec {
             status(result) shouldEqual OK
             body should include ("csrf")
             body should include (messages("authorization.forms.signup.signup"))
+        }
+
+        "redirect user if logged in" taggedAs ControllersTestTag in {
+            //TODO use fixtures
+            async {
+                val verificationToken = await(userProvider.createUser("hello", "signup@mail.com", "password"))
+                val user = await(userProvider.verifyUser(verificationToken.token))
+                user should not be empty
+
+                val sessionToken = await(sessionTokenProvider.createSessionToken(user.get))
+
+                val request = FakeRequest().withSession(controller.getAuthTokenSessionName -> sessionToken).withCSRFToken
+                val result = controller.login.apply(request)
+
+                status(result) shouldEqual SEE_OTHER
+                redirectLocation(result) shouldEqual Some(backend.controllers.routes.Application.index().url)
+            }
         }
     }
 
@@ -163,4 +242,29 @@ class AuthorizationSpec extends ControllersTestSpec {
         }
     }
 
+    "Authorization#verify" should {
+        "verify user with valid token" taggedAs ControllersTestTag in {
+            async {
+                val verificationToken = await(userProvider.createUser("login", "verifyme@mail.com", "password"))
+                val result = controller.verify(verificationToken.token).apply(FakeRequest())
+                status(result) shouldEqual SEE_OTHER
+                redirectLocation(result) should not be empty
+                redirectLocation(result).get shouldEqual backend.controllers.routes.Authorization.login().url
+                flash(result).get("verified") shouldBe Some("authorization.forms.login.flashing.verified")
+
+                val user = await(userProvider.get(verificationToken.userID))
+                user should not be empty
+                user.get.verified shouldEqual true
+
+                val verificationTokenAgain = await(verificationTokenProvider.get(verificationToken.token))
+                verificationTokenAgain shouldBe empty
+            }
+        }
+
+        "redirect with an invalid token" taggedAs ControllersTestTag in {
+            val result = controller.verify("dummy").apply(FakeRequest())
+            status(result) shouldEqual BAD_REQUEST
+            contentAsString(result) should include (messages("authorization.verification.invalidToken"))
+        }
+    }
 }

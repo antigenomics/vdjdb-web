@@ -22,7 +22,7 @@ import slick.jdbc.H2Profile.api._
 import slick.lifted.Tag
 import scala.language.higherKinds
 
-class UserTable(tag: Tag) extends Table[User](tag, "USER") {
+class UserTable(tag: Tag) extends Table[User](tag, UserTable.TABLE_NAME) {
     def id = column[Long]("ID", O.PrimaryKey, O.AutoInc)
     def login = column[String]("LOGIN", O.Length(64))
     def email = column[String]("EMAIL", O.Unique, O.Length(128))
@@ -38,6 +38,8 @@ class UserTable(tag: Tag) extends Table[User](tag, "USER") {
 }
 
 object UserTable {
+    final val TABLE_NAME = "USER"
+
     implicit class UserExtension[C[_]](q: Query[UserTable, User, C]) {
         def withPermissions = q.join(UserPermissionsProvider.table).on(_.permissionID === _.id)
     }
