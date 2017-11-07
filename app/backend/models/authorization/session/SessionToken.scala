@@ -19,4 +19,4 @@ package backend.models.authorization.session
 
 import java.sql.Timestamp
 
-case class SessionToken(id: Long, token: String, lastLoggedIn: Timestamp, userID: Long)
+case class SessionToken(id: Long, token: String, lastUsage: Timestamp, userID: Long)

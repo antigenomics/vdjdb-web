@@ -20,10 +20,14 @@ package backend.models.authorization.permissions
 import slick.jdbc.H2Profile.api._
 import slick.lifted.Tag
 
-class UserPermissionsTable(tag: Tag) extends Table[UserPermissions](tag, "USER_PERMISSIONS") {
+class UserPermissionsTable(tag: Tag) extends Table[UserPermissions](tag, UserPermissionsTable.TABLE_NAME) {
     def id = column[Long]("ID", O.PrimaryKey, O.AutoInc)
     def maxFilesCount = column[Int]("MAX_FILES_COUNT")
     def maxFileSize = column[Int]("MAX_FILE_SIZE")
 
     def * = (id, maxFilesCount, maxFileSize) <> (UserPermissions.tupled, UserPermissions.unapply)
+}
+
+object UserPermissionsTable {
+    final val TABLE_NAME = "USER_PERMISSIONS"
 }

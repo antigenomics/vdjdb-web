@@ -21,7 +21,7 @@ import java.sql.Timestamp
 import slick.jdbc.H2Profile.api._
 import slick.lifted.Tag
 
-class VerificationTokenTable(tag: Tag) extends Table[VerificationToken](tag, "VERIFICATION_TOKEN") {
+class VerificationTokenTable(tag: Tag) extends Table[VerificationToken](tag, VerificationTokenTable.TABLE_NAME) {
     def id = column[Long]("ID", O.PrimaryKey, O.AutoInc)
     def token = column[String]("TOKEN", O.Unique, O.Length(128))
     def userID = column[Long]("USER_ID")
@@ -30,4 +30,8 @@ class VerificationTokenTable(tag: Tag) extends Table[VerificationToken](tag, "VE
     def * = (id, token, userID, expiredAt) <> (VerificationToken.tupled, VerificationToken.unapply)
 
     def token_idx = index("TOKEN_IDX", token, unique = true)
+}
+
+object VerificationTokenTable {
+    final val TABLE_NAME = "VERIFICATION_TOKEN"
 }

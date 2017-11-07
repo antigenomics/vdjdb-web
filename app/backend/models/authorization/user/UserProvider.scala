@@ -31,6 +31,7 @@ import slick.lifted.TableQuery
 import org.mindrot.jbcrypt.BCrypt
 import org.slf4j.LoggerFactory
 import play.api.Configuration
+import slick.jdbc.meta.MTable
 
 import scala.async.Async.{async, await}
 import scala.concurrent.{ExecutionContext, Future}
@@ -82,13 +83,19 @@ class UserProvider @Inject()(@NamedDatabase("default") protected val dbConfigPro
         db.run(UserProvider.table.filter(fm => fm.id inSet ids).delete)
     }
 
-    def deleteUnverified(): Future[Int] = async {
-        val currentTimestamp = TimeUtils.getCurrentTimestamp
-        val expiredTokens = await(vtp.getExpired(currentTimestamp))
-        val userIDs = expiredTokens.map(_.userID)
-        await(delete(userIDs).flatMap(_ => {
-            vtp.delete(expiredTokens)
-        }))
+    def deleteUnverified(): Future[Int] = {
+        db.run(MTable.getTables).flatMap(tables => async {
+            if (tables.exists(_.name.name == UserTable.TABLE_NAME)) {
+                val currentTimestamp = TimeUtils.getCurrentTimestamp
+                val expiredTokens = await(vtp.getExpired(currentTimestamp))
+                val userIDs = expiredTokens.map(_.userID)
+                await(delete(userIDs).flatMap(_ => {
+                    vtp.delete(expiredTokens)
+                }))
+            } else {
+                0
+            }
+        })
     }
 
     def createUser(login: String, email: String, password: String, verifyUntil: Timestamp = TimeUtils.getExpiredAt(configuration.keep)): Future[VerificationToken] =

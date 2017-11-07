@@ -28,6 +28,7 @@ import play.api.Configuration
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import play.db.NamedDatabase
 import slick.jdbc.JdbcProfile
+import slick.jdbc.meta.MTable
 import slick.lifted.TableQuery
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -67,10 +68,16 @@ class TemporaryFileProvider @Inject()(@NamedDatabase("default") protected val db
         db.run(TemporaryFileProvider.table.withMetadata.result)
     }
 
-    def deleteExpired(): Future[Int] = async {
-        val currentDate = new Timestamp(new java.util.Date().getTime)
-        val files = await(db.run(TemporaryFileProvider.table.withMetadata.filter(_._1.expiredAt < currentDate).result))
-        await(fileMetadataProvider.delete(files.map(_._2)))
+    def deleteExpired(): Future[Int] = {
+        db.run(MTable.getTables).flatMap(tables => async {
+            if (tables.exists(_.name.name == TemporaryFileTable.TABLE_NAME)) {
+                val currentDate = new Timestamp(new java.util.Date().getTime)
+                val files = await(db.run(TemporaryFileProvider.table.withMetadata.filter(_._1.expiredAt < currentDate).result))
+                await(fileMetadataProvider.delete(files.map(_._2)))
+            } else {
+                0
+            }
+        })
     }
 
     def deleteAll(): Future[Int] = async {
