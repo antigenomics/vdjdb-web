@@ -79,7 +79,6 @@ class RequestLimits @Inject()(configuration: Configuration, actorSystem: ActorSy
         } else {
             Future.successful(Results.Forbidden)
         }
-
     }
 
     def getIp(request: RequestHeader): String = {

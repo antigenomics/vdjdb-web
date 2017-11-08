@@ -93,7 +93,8 @@ javaOptions in Test ++= Seq(
     "-Dslick.dbs.default.profile=slick.jdbc.H2Profile$",
     "-Dslick.dbs.default.db.profile=org.h2.Driver",
     "-Dapplication.temporary.interval=0",
-    "-Dlogger.resource=logback.test.xml"
+    "-Dlogger.resource=logback.test.xml",
+    "-Dapplication.auth.init.skip=true"
 )
 libraryDependencies ++= Seq("org.scalatestplus.play" % "scalatestplus-play_2.12" % "3.1.2" % "test")
 // Ends.

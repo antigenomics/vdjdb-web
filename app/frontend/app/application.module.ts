@@ -27,11 +27,12 @@ import { SearchPageModule } from './pages/search/search.module';
 import { ClipboardService } from './utils/clipboard/clipboard.service';
 import { LoggerService } from './utils/logger/logger.service';
 import { NotificationService } from './utils/notification/notification.service';
+import { UserService } from './common/user/user.service';
 
 @NgModule({
     imports:      [ CommonModule, BrowserModule, HomePageModule, AboutPageModule, SearchPageModule, NavigationBarModule, RouterModule.forRoot([]) ],
     declarations: [ ApplicationComponent ],
-    providers:    [ ConfigurationService, LoggerService, NotificationService, ClipboardService ],
+    providers:    [ ConfigurationService, UserService, LoggerService, NotificationService, ClipboardService ],
     bootstrap:    [ ApplicationComponent ]
 })
 export class ApplicationModule {}

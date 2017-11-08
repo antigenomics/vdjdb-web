@@ -19,6 +19,7 @@ package backend.controllers
 import java.io.File
 import javax.inject._
 
+import backend.models.authorization.user.UserProvider
 import backend.models.files.temporary.TemporaryFileProvider
 import backend.utils.analytics.Analytics
 import controllers._
@@ -30,7 +31,8 @@ import play.api.mvc._
 
 import scala.concurrent.Future
 
-class Application @Inject()(ws: WSClient, assets: Assets, configuration: Configuration, cc: ControllerComponents, temporaryFileProvider: TemporaryFileProvider)
+class Application @Inject()(ws: WSClient, assets: Assets, configuration: Configuration, cc: ControllerComponents,
+                            temporaryFileProvider: TemporaryFileProvider, userProvider: UserProvider)
                            (implicit environment: Environment, analytics: Analytics) extends AbstractController(cc) {
 
     def index: Action[AnyContent] = Action.async { implicit request =>

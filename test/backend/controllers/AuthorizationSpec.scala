@@ -89,8 +89,7 @@ class AuthorizationSpec extends ControllersTestSpec {
         "redirect user if logged in" taggedAs ControllersTestTag in {
             async {
                 val f = fixtures
-                val f2 = fixtures
-                val request = FakeRequest().withSession(controller.getAuthTokenSessionName -> f.loggedUser.loggedUserSessionToken).withCSRFToken
+                val request = FakeRequest().withSession(sessionTokenProvider.getAuthTokenSessionName -> f.loggedUser.loggedUserSessionToken).withCSRFToken
                 val result = controller.login.apply(request)
 
                 status(result) shouldEqual SEE_OTHER
@@ -174,9 +173,9 @@ class AuthorizationSpec extends ControllersTestSpec {
                 status(result) shouldEqual SEE_OTHER
                 redirectLocation(result) should not be empty
                 redirectLocation(result).get shouldEqual backend.controllers.routes.Application.index().url
-                session(result).data should contain key controller.getAuthTokenSessionName
+                session(result).data should contain key sessionTokenProvider.getAuthTokenSessionName
 
-                val jwtSessionToken = session(result).data(controller.getAuthTokenSessionName)
+                val jwtSessionToken = session(result).data(sessionTokenProvider.getAuthTokenSessionName)
                 val sessionToken = await(sessionTokenProvider.get(jwtSessionToken))
 
                 sessionToken should not be empty
@@ -206,7 +205,7 @@ class AuthorizationSpec extends ControllersTestSpec {
 
                 val sessionToken = await(sessionTokenProvider.createSessionToken(user.get))
 
-                val request = FakeRequest().withSession(controller.getAuthTokenSessionName -> sessionToken).withCSRFToken
+                val request = FakeRequest().withSession(sessionTokenProvider.getAuthTokenSessionName -> sessionToken).withCSRFToken
                 val result = controller.login.apply(request)
 
                 status(result) shouldEqual SEE_OTHER

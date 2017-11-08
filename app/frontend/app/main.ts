@@ -24,5 +24,15 @@ import { ConfigurationService } from './configuration.service';
 import { LoggerService } from './utils/logger/logger.service';
 
 const logger = new LoggerService();
+
+logger.debug('Session', sessionStorage);
+
+function getCookie(name: string) {
+    let matches = document.cookie.match(new RegExp(
+        "(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"
+    ));
+    return matches ? decodeURIComponent(matches[1]) : undefined;
+}
+
 platformBrowserDynamic().bootstrapModule(ApplicationModule)
                         .then(() => logger.info(`Application loaded`, ConfigurationService.buildMode()));

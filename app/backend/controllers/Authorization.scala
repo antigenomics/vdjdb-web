@@ -12,37 +12,19 @@ import org.slf4j.LoggerFactory
 import play.api.Environment
 import play.api.i18n.{Lang, Messages, MessagesApi}
 import play.api.mvc._
+import backend.actions.UnauthorizedOnlyAction
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class Authorization @Inject()(cc: ControllerComponents, userProvider: UserProvider, vtp: VerificationTokenProvider,
-                              sessionTokenProvider: SessionTokenProvider, messagesApi: MessagesApi)
+                              sessionTokenProvider: SessionTokenProvider, messagesApi: MessagesApi, unauthorizedOnly: UnauthorizedOnlyAction)
                              (implicit ec: ExecutionContext, environment: Environment, analytics: Analytics)
     extends AbstractController(cc) {
-    private final val AUTH_TOKEN_SESSION_NAME = "auth_token"
     private final val logger = LoggerFactory.getLogger(this.getClass)
     implicit val messages: Messages = messagesApi.preferred(Seq(Lang.defaultLang))
 
-    def getAuthTokenSessionName: String = AUTH_TOKEN_SESSION_NAME
-
-    def allowIfNotLogged(fallback : Result)(implicit request: Request[AnyContent]): Future[Result] = async {
-        val sessionToken = await(sessionTokenProvider.get(request.session.get(AUTH_TOKEN_SESSION_NAME).getOrElse("")))
-        if (sessionToken.nonEmpty) {
-            val user = await(userProvider.get(sessionToken.get.userID))
-            if (user.nonEmpty) {
-                Redirect(backend.controllers.routes.Application.index())
-            } else {
-                fallback
-            }
-        } else {
-            fallback
-        }
-    }
-
-    def login: Action[AnyContent] = Action.async { implicit request =>
-        allowIfNotLogged {
-            Ok(frontend.views.html.authorization.login(LoginForm.loginFormMapping))
-        }
+    def login: Action[AnyContent] = unauthorizedOnly { implicit request =>
+        Ok(frontend.views.html.authorization.login(LoginForm.loginFormMapping))
     }
 
     def onLogin: Action[AnyContent] = Action.async { implicit request =>
@@ -54,8 +36,9 @@ class Authorization @Inject()(cc: ControllerComponents, userProvider: UserProvid
                 userProvider.get(form.email).flatMap {
                     case Some(user) => async {
                         if (user.verified) {
-                            val token = await(sessionTokenProvider.createSessionToken(user))
-                            Redirect(backend.controllers.routes.Application.index()).withSession(request.session + (AUTH_TOKEN_SESSION_NAME, token))
+                            val sessionToken = await(sessionTokenProvider.createSessionToken(user))
+                            Redirect(backend.controllers.routes.Application.index())
+                                .withSession(request.session + (sessionTokenProvider.getAuthTokenSessionName, sessionToken))
                         } else {
                             BadRequest(frontend.views.html.authorization.login(LoginForm.loginUnverified))
                         }
@@ -66,10 +49,8 @@ class Authorization @Inject()(cc: ControllerComponents, userProvider: UserProvid
         )
     }
 
-    def signup: Action[AnyContent] = Action.async { implicit request =>
-        allowIfNotLogged {
-            Ok(frontend.views.html.authorization.signup(SignupForm.signupFormMapping))
-        }
+    def signup: Action[AnyContent] = unauthorizedOnly { implicit request =>
+        Ok(frontend.views.html.authorization.signup(SignupForm.signupFormMapping))
     }
 
     def onSignup: Action[AnyContent] = Action.async { implicit request =>
@@ -96,10 +77,8 @@ class Authorization @Inject()(cc: ControllerComponents, userProvider: UserProvid
         )
     }
 
-    def reset: Action[AnyContent] = Action.async { implicit request =>
-        allowIfNotLogged {
-            Ok(frontend.views.html.authorization.reset(ResetForm.resetFormMapping))
-        }
+    def reset: Action[AnyContent] = unauthorizedOnly { implicit request =>
+        Ok(frontend.views.html.authorization.reset(ResetForm.resetFormMapping))
     }
 
     def onReset: Action[AnyContent] = Action.async { implicit request =>

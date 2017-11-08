@@ -51,10 +51,9 @@ class SessionTokenProviderSpec extends DatabaseProviderTestSpec {
                 val token = await(userProvider.createUser("login1", "mail2@mail.com", "123456"))
                 val unverifiedUser = await(userProvider.get(token.userID))
                 unverifiedUser should not be empty
-                val exception = await(recoverToExceptionIf[RuntimeException] {
+                the [Exception] thrownBy {
                     sessionTokenProvider.createSessionToken(unverifiedUser.get)
-                })
-                exception should have message "Cannot create session for unverified user"
+                } should have message "Cannot create session for unverified user"
             }
         }
     }
