@@ -64,8 +64,8 @@ class UserProvider @Inject()(@NamedDatabase("default") protected val dbConfigPro
         })
     }
 
-    if (configuration.interval != 0) {
-        system.scheduler.schedule(configuration.interval seconds, configuration.interval seconds) {
+    if (configuration.interval.getSeconds != 0) {
+        system.scheduler.schedule(configuration.interval.getSeconds seconds, configuration.interval.getSeconds seconds) {
             deleteUnverified onComplete {
                 case Failure(ex) =>
                     logger.error("Cannot delete unverified users", ex)
