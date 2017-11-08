@@ -26,12 +26,55 @@ import play.api.test.Helpers._
 import play.api.test.CSRFTokenHelper._
 
 import scala.async.Async.{async, await}
+import scala.concurrent.Await
+import scala.concurrent.duration.Duration
+import scala.language.reflectiveCalls
 
 class AuthorizationSpec extends ControllersTestSpec {
     implicit lazy val controller: Authorization = app.injector.instanceOf[Authorization]
     implicit lazy val userProvider: UserProvider = app.injector.instanceOf[UserProvider]
     implicit lazy val verificationTokenProvider: VerificationTokenProvider = app.injector.instanceOf[VerificationTokenProvider]
     implicit lazy val sessionTokenProvider: SessionTokenProvider = app.injector.instanceOf[SessionTokenProvider]
+
+    trait UnverifiedUser {
+        private final val _verificationToken = Await.result(userProvider.createUser("unverifieduser", "unverifieduser@mail.com", "unverifieduser"), Duration.Inf)
+        private final val _unverifiedUser = Await.result(userProvider.get(_verificationToken.userID), Duration.Inf)
+
+        _unverifiedUser should not be empty
+
+        final val user = _unverifiedUser.get
+    }
+
+    trait VerifiedUser {
+        private final val _verificationToken = Await.result(userProvider.createUser("vefifieduser", "verifieduser@mail.com", "verifieduser"), Duration.Inf)
+        private final val _verifiedUser = Await.result(userProvider.verifyUser(_verificationToken), Duration.Inf)
+
+        _verifiedUser should not be empty
+        _verifiedUser.get.verified shouldEqual true
+
+        final val user = _verifiedUser.get
+    }
+
+    trait LoggedUser {
+        private final val _verificationToken = Await.result(userProvider.createUser("vefifieduser", "loggeduser@mail.com", "verifieduser"), Duration.Inf)
+        private final val _loggedUser = Await.result(userProvider.verifyUser(_verificationToken), Duration.Inf)
+
+        _loggedUser should not be empty
+        _loggedUser.get.verified shouldEqual true
+
+        final val user = _loggedUser.get
+        final val loggedUserSessionToken = Await.result(sessionTokenProvider.createSessionToken(user), Duration.Inf)
+
+        loggedUserSessionToken should have length 255
+    }
+
+    //noinspection TypeAnnotation
+    def fixtures =
+        new {
+            lazy val unverifiedUser: UnverifiedUser = new UnverifiedUser {}
+            lazy val verifiedUser: VerifiedUser = new VerifiedUser {}
+            lazy val loggedUser: LoggedUser = new LoggedUser {}
+        }
 
     "Authorization#login" should {
         "render login page" taggedAs ControllersTestTag in {
@@ -44,15 +87,10 @@ class AuthorizationSpec extends ControllersTestSpec {
         }
 
         "redirect user if logged in" taggedAs ControllersTestTag in {
-            //TODO use fixtures
             async {
-                val verificationToken = await(userProvider.createUser("hello", "login@mail.com", "password"))
-                val user = await(userProvider.verifyUser(verificationToken.token))
-                user should not be empty
-
-                val sessionToken = await(sessionTokenProvider.createSessionToken(user.get))
-
-                val request = FakeRequest().withSession(controller.getAuthTokenSessionName -> sessionToken).withCSRFToken
+                val f = fixtures
+                val f2 = fixtures
+                val request = FakeRequest().withSession(controller.getAuthTokenSessionName -> f.loggedUser.loggedUserSessionToken).withCSRFToken
                 val result = controller.login.apply(request)
 
                 status(result) shouldEqual SEE_OTHER
@@ -239,6 +277,48 @@ class AuthorizationSpec extends ControllersTestSpec {
             val tooSmallPasswordResult = controller.onSignup(tooSmallPasswordRequest)
             status(tooSmallPasswordResult) shouldEqual BAD_REQUEST
             contentAsString(tooSmallPasswordResult) should include (messages("error.minLength", SignupForm.PASSWORD_MIN_LENGTH))
+        }
+
+        "forbid to signup with the same email" in {
+            async {
+                val f = fixtures
+                val verifiedUser = f.verifiedUser.user
+
+                val sameEmailRequest = FakeRequest()
+                    .withFormUrlEncodedBody("email" -> verifiedUser.email, "login" -> "login", "password" -> "12345678", "repeatPassword" -> "12345678")
+                    .withCSRFToken
+
+                val sameEmailResult = controller.onSignup(sameEmailRequest)
+                status(sameEmailResult) shouldEqual BAD_REQUEST
+                contentAsString(sameEmailResult) should include (messages("authorization.forms.signup.failed.alreadyExists"))
+            }
+        }
+
+        "be able to create new user" in {
+            async {
+                val validRequest = FakeRequest()
+                    .withFormUrlEncodedBody("email" -> "validemail@mail.com", "login" -> "login", "password" -> "password", "repeatPassword" -> "password")
+                    .withCSRFToken
+
+                val validResult = controller.onSignup(validRequest)
+
+                status(validResult) shouldEqual SEE_OTHER
+                flash(validResult).data should contain key "created"
+
+                val user = await(userProvider.get("validemail@mail.com"))
+
+                user should not be empty
+                user.get.email shouldEqual "validemail@mail.com"
+                user.get.login shouldEqual "login"
+
+                if (userProvider.isVerificationRequired) {
+                    user.get.verified shouldEqual false
+                    flash(validResult).get("created").get should include ("authorization.forms.signup.success.created")
+                } else {
+                    user.get.verified shouldEqual true
+                    flash(validResult).get("created").get should include ("authorization.forms.signup.success.createdAndVerified")
+                }
+            }
         }
     }
 

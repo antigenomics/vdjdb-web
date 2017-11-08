@@ -19,6 +19,9 @@
                 @if(flash.get("verified").nonEmpty) {
                     @frontend.views.html.authorization.forms.formSuccess(Seq(flash.get("verified").get))
                 }
+                @if(flash.get("created").nonEmpty) {
+                    @frontend.views.html.authorization.forms.formSuccess(Seq(flash.get("created").get))
+                }
                 @CSRF.formField
                 @inputText(form("email"), args = 'icon -> "mail",
                     'placeholder -> messages("authorization.forms.login.placeholder.email"),

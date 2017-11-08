@@ -8,6 +8,7 @@ import backend.models.authorization.session.SessionTokenProvider
 import backend.models.authorization.user.UserProvider
 import backend.models.authorization.verification.VerificationTokenProvider
 import backend.utils.analytics.Analytics
+import org.slf4j.LoggerFactory
 import play.api.Environment
 import play.api.i18n.{Lang, Messages, MessagesApi}
 import play.api.mvc._
@@ -19,6 +20,7 @@ class Authorization @Inject()(cc: ControllerComponents, userProvider: UserProvid
                              (implicit ec: ExecutionContext, environment: Environment, analytics: Analytics)
     extends AbstractController(cc) {
     private final val AUTH_TOKEN_SESSION_NAME = "auth_token"
+    private final val logger = LoggerFactory.getLogger(this.getClass)
     implicit val messages: Messages = messagesApi.preferred(Seq(Lang.defaultLang))
 
     def getAuthTokenSessionName: String = AUTH_TOKEN_SESSION_NAME
@@ -45,8 +47,8 @@ class Authorization @Inject()(cc: ControllerComponents, userProvider: UserProvid
 
     def onLogin: Action[AnyContent] = Action.async { implicit request =>
         LoginForm.loginFormMapping.bindFromRequest.fold(
-            formWithErrors => {
-                Future.successful(BadRequest(frontend.views.html.authorization.login(formWithErrors)))
+            formWithErrors => async {
+                BadRequest(frontend.views.html.authorization.login(formWithErrors))
             },
             form => {
                 userProvider.get(form.email).flatMap {
@@ -71,16 +73,27 @@ class Authorization @Inject()(cc: ControllerComponents, userProvider: UserProvid
     }
 
     def onSignup: Action[AnyContent] = Action.async { implicit request =>
-        Future.successful {
-            SignupForm.signupFormMapping.bindFromRequest.fold(
-                formWithErrors => {
-                    BadRequest(frontend.views.html.authorization.signup(formWithErrors))
-                },
-                form => {
-                    BadRequest(frontend.views.html.authorization.signup(SignupForm.signupFailedFormMapping))
+        SignupForm.signupFormMapping.bindFromRequest.fold(
+            formWithErrors => async {
+                BadRequest(frontend.views.html.authorization.signup(formWithErrors))
+            },
+            form => async {
+                val check = await(userProvider.get(form.email))
+                if (check.nonEmpty) {
+                    BadRequest(frontend.views.html.authorization.signup(SignupForm.userAlreadyExistsFormMapping))
+                } else {
+                    val verificationToken = await(userProvider.createUser(form))
+                    if (userProvider.isVerificationRequired) {
+                        //TODO verification email
+                        logger.info(s"Verification token for ${form.email}: ${verificationToken.token}")
+                        Redirect(backend.controllers.routes.Authorization.login()).flashing("created" -> "authorization.forms.signup.success.created")
+                    } else {
+                        val _ = await(userProvider.verifyUser(verificationToken))
+                        Redirect(backend.controllers.routes.Authorization.login()).flashing("created" -> "authorization.forms.signup.success.createdAndVerified")
+                    }
                 }
-            )
-        }
+            }
+        )
     }
 
     def reset: Action[AnyContent] = Action.async { implicit request =>
