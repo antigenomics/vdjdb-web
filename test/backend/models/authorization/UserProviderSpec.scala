@@ -34,12 +34,12 @@ class UserProviderSpec extends DatabaseProviderTestSpec {
 
         "be able to create not-verified user" taggedAs SQLDatabaseTestTag in {
             async {
-                val token = await(userProvider.createUser("testlogin", "test@mail.com", "password"))
+                val token = await(userProvider.createUser("unverified", "unverified@mail.com", "password"))
                 val user = await(userProvider.get(token.userID))
                 user should not be empty
 
-                user.get.login shouldEqual "testlogin"
-                user.get.email shouldEqual "test@mail.com"
+                user.get.login shouldEqual "unverified"
+                user.get.email shouldEqual "unverified@mail.com"
                 user.get.verified shouldEqual false
                 user.get.password shouldNot equal ("password")
                 user.get.permissionID shouldEqual UserPermissionsProvider.DEFAULT_ID
@@ -52,8 +52,9 @@ class UserProviderSpec extends DatabaseProviderTestSpec {
 
         "not be able to create user with the same email" taggedAs SQLDatabaseTestTag in {
             async {
+                val _ = await(userProvider.createUser("alreadycreated", "alreadycreated@mail.com", "password"))
                 val exception = await(recoverToExceptionIf[Exception] {
-                    userProvider.createUser("testlogin", "test@mail.com", "password")
+                    userProvider.createUser("alreadycreated", "alreadycreated@mail.com", "password")
                 })
                 exception should have message "User already exists"
             }
@@ -62,8 +63,6 @@ class UserProviderSpec extends DatabaseProviderTestSpec {
         "be able to verify user" taggedAs SQLDatabaseTestTag in {
             async {
                 val tokens = await(tokenProvider.getAll)
-                tokens should have size 1
-
                 val token = tokens.head
                 val user = await(userProvider.get(token.userID))
                 user should not be empty

@@ -23,6 +23,7 @@ import javax.inject.{Inject, Singleton}
 import akka.actor.ActorSystem
 import backend.models.authorization.forms.SignupForm
 import backend.models.authorization.permissions.{UserPermissions, UserPermissionsProvider}
+import backend.models.authorization.session.SessionTokenProvider
 import backend.models.authorization.verification.{VerificationToken, VerificationTokenConfiguration, VerificationTokenProvider}
 import backend.utils.TimeUtils
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
@@ -41,12 +42,27 @@ import scala.language.postfixOps
 import scala.concurrent.duration._
 
 @Singleton
-class UserProvider @Inject()(@NamedDatabase("default") protected val dbConfigProvider: DatabaseConfigProvider, vtp: VerificationTokenProvider)
+class UserProvider @Inject()(@NamedDatabase("default") protected val dbConfigProvider: DatabaseConfigProvider,
+                             vtp: VerificationTokenProvider, stp: SessionTokenProvider)
                             (implicit ec: ExecutionContext, conf: Configuration, system: ActorSystem) extends HasDatabaseConfigProvider[JdbcProfile] {
     private final val logger = LoggerFactory.getLogger(this.getClass)
     private final val configuration = conf.get[VerificationTokenConfiguration]("application.auth.verification")
+    private final val initialUsersConfiguration = conf.get[UserCreateConfiguration]("application.auth.init")
 
     import dbConfig.profile.api._
+
+    if (!initialUsersConfiguration.skip && initialUsersConfiguration.users.nonEmpty) {
+        logger.info("Initial users: ")
+        initialUsersConfiguration.users.foreach(user => async {
+            val check = await(get(user._2))
+            if (check.isEmpty) {
+                logger.info(s"User ${user._2} has been created")
+                verifyUser(await(createUser(user._1, user._2, user._3)))
+            } else {
+                logger.info(s"User ${user._2} already created")
+            }
+        })
+    }
 
     if (configuration.interval != 0) {
         system.scheduler.schedule(configuration.interval seconds, configuration.interval seconds) {
@@ -58,6 +74,8 @@ class UserProvider @Inject()(@NamedDatabase("default") protected val dbConfigPro
         }
     }
 
+    def getAuthTokenSessionName: String = stp.getAuthTokenSessionName
+
     def isVerificationRequired: Boolean = configuration.required
 
     def getAll: Future[Seq[User]] = db.run(UserProvider.table.result)
@@ -68,6 +86,15 @@ class UserProvider @Inject()(@NamedDatabase("default") protected val dbConfigPro
 
     def get(email: String): Future[Option[User]] = {
         db.run(UserProvider.table.filter(_.email === email).result.headOption)
+    }
+
+    def getBySessionToken(sessionToken: String): Future[Option[User]] = async {
+        val token = await(stp.get(sessionToken))
+        if (token.nonEmpty) {
+            await(get(token.get.userID))
+        } else {
+            None
+        }
     }
 
     def getWithPermissions(email: String): Future[Option[(User, UserPermissions)]] = {

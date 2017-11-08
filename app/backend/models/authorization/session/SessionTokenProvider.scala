@@ -41,6 +41,7 @@ class SessionTokenProvider @Inject()(@NamedDatabase("default") protected val dbC
                            (implicit ec: ExecutionContext, conf: Configuration, system: ActorSystem) extends HasDatabaseConfigProvider[JdbcProfile] {
     private final val logger = LoggerFactory.getLogger(this.getClass)
     private final val configuration = conf.get[SessionTokenConfiguration]("application.auth.session")
+    private final val AUTH_TOKEN_SESSION_NAME = "auth_token"
 
     import dbConfig.profile.api._
 
@@ -53,6 +54,8 @@ class SessionTokenProvider @Inject()(@NamedDatabase("default") protected val dbC
             }
         }
     }
+
+    def getAuthTokenSessionName: String = AUTH_TOKEN_SESSION_NAME
 
     def getAll: Future[Seq[SessionToken]] = db.run(SessionTokenProvider.table.result)
 
@@ -109,7 +112,7 @@ class SessionTokenProvider @Inject()(@NamedDatabase("default") protected val dbC
     }
 
     def createSessionToken(user: User): Future[String] = {
-        if (!user.verified) throw new RuntimeException("Cannot create session for unverified user")
+        if (!user.verified) throw new Exception("Cannot create session for unverified user")
         val token = CommonUtils.randomAlphaNumericString(255)
         db.run(SessionTokenProvider.table += SessionToken(0, token, TimeUtils.getCurrentTimestamp, user.id)).map(_ => token)
     }

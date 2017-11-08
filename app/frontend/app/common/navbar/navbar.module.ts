@@ -17,9 +17,12 @@
 import { NgModule } from '@angular/core';
 import { NavigationBarComponent } from './navbar.component';
 import { RouteDirective } from './route.directive';
+import { BrowserModule } from '@angular/platform-browser';
 
 @NgModule({
-    declarations:    [  NavigationBarComponent, RouteDirective ],
-    exports:         [  NavigationBarComponent, RouteDirective]
+    imports:      [ BrowserModule ],
+    declarations: [ NavigationBarComponent, RouteDirective ],
+    exports:      [ NavigationBarComponent, RouteDirective ]
 })
-export class NavigationBarModule {}
+export class NavigationBarModule {
+}

@@ -15,10 +15,13 @@
  */
 
 import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { UserService } from '../user/user.service';
 
 @Component({
     selector:    'navbar',
     templateUrl: './navbar.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class NavigationBarComponent {}
+export class NavigationBarComponent {
+    constructor(public userService: UserService) {}
+}
