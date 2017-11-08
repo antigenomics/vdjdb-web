@@ -20,44 +20,53 @@ package backend.server.session
 import javax.inject.{Inject, Singleton}
 
 import akka.stream.Materializer
-import backend.models.authorization.session.SessionTokenProvider
+import backend.models.authorization.session.{SessionTokenConfiguration, SessionTokenProvider}
 import backend.models.authorization.user.UserProvider
+import play.api.Configuration
 import play.api.mvc._
 
 import scala.async.Async.{async, await}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class SessionGuard @Inject()(up: UserProvider, stp: SessionTokenProvider)(implicit val mat: Materializer, ec: ExecutionContext) extends Filter {
+class SessionGuard @Inject()(up: UserProvider, stp: SessionTokenProvider, conf: Configuration)
+                            (implicit val mat: Materializer, ec: ExecutionContext) extends Filter {
+    private final val configuration = conf.get[SessionTokenConfiguration]("application.auth.session")
+
     override def apply(nextFilter: (RequestHeader) => Future[Result])(request: RequestHeader): Future[Result] = async {
-        val jwtToken = request.session.get(stp.getAuthTokenSessionName)
-        if (jwtToken.nonEmpty) {
-            val sessionToken = await(stp.get(jwtToken.get))
-            if (sessionToken.nonEmpty) {
-                val user = await(up.get(sessionToken.get.userID))
-                await(nextFilter(request).map { result =>
-                    result
-                        .withSession(request.session + (stp.getAuthTokenSessionName, sessionToken.get.token))
-                        .withCookies(
-                            Cookie("logged", "true", httpOnly = false),
-                            Cookie("email", user.get.email, httpOnly = false),
-                            Cookie("login", user.get.login, httpOnly = false))
-                })
+        val rawRequestURI = request.headers.get("Raw-Request-URI").getOrElse("")
+        val whitelisted = configuration.whitelist.exists(rawRequestURI.matches)
+        if (!whitelisted) {
+            val jwtToken = request.session.get(stp.getAuthTokenSessionName)
+            if (jwtToken.nonEmpty) {
+                val sessionToken = await(stp.get(jwtToken.get))
+                if (sessionToken.nonEmpty) {
+                    val user = await(up.get(sessionToken.get.userID))
+                    await(nextFilter(request).map { result =>
+                        result
+                            .withSession(request.session + (stp.getAuthTokenSessionName, sessionToken.get.token))
+                            .withCookies(
+                                Cookie("logged", "true", httpOnly = false),
+                                Cookie("email", user.get.email, httpOnly = false),
+                                Cookie("login", user.get.login, httpOnly = false))
+                    })
+                } else {
+                    await(nextFilter(request).map { result =>
+                        SessionGuard.discardCookies(result, request)
+                    })
+                }
             } else {
                 await(nextFilter(request).map { result =>
                     SessionGuard.discardCookies(result, request)
                 })
             }
         } else {
-            await(nextFilter(request).map { result =>
-                SessionGuard.discardCookies(result, request)
-            })
+            await(nextFilter(request))
         }
     }
 }
 
 object SessionGuard {
-
 
     def discardCookies(result: Result, request: RequestHeader): Result = {
         result

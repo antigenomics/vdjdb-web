@@ -19,15 +19,17 @@ package backend.models.authorization.session
 
 import com.typesafe.config.Config
 import play.api.ConfigLoader
+import scala.collection.JavaConverters._
 
-case class SessionTokenConfiguration(keep: Int, interval: Int)
+case class SessionTokenConfiguration(keep: Int, interval: Int, whitelist: Seq[String])
 
 object SessionTokenConfiguration {
     implicit val sessionTokenConfigurationLoader: ConfigLoader[SessionTokenConfiguration] = (rootConfig: Config, path: String) => {
         val config = rootConfig.getConfig(path)
         SessionTokenConfiguration(
             keep = config.getInt("keep"),
-            interval = config.getInt("interval")
+            interval = config.getInt("interval"),
+            whitelist = config.getStringList("whitelist").asScala
         )
     }
 }
