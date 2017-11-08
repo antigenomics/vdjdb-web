@@ -21,6 +21,7 @@ import java.sql.Timestamp
 import javax.inject.{Inject, Singleton}
 
 import akka.actor.ActorSystem
+import backend.models.authorization.forms.SignupForm
 import backend.models.authorization.permissions.{UserPermissions, UserPermissionsProvider}
 import backend.models.authorization.verification.{VerificationToken, VerificationTokenConfiguration, VerificationTokenProvider}
 import backend.utils.TimeUtils
@@ -56,6 +57,8 @@ class UserProvider @Inject()(@NamedDatabase("default") protected val dbConfigPro
             }
         }
     }
+
+    def isVerificationRequired: Boolean = configuration.required
 
     def getAll: Future[Seq[User]] = db.run(UserProvider.table.result)
 
@@ -109,6 +112,14 @@ class UserProvider @Inject()(@NamedDatabase("default") protected val dbConfigPro
             val userID: Long = await(insert(user))
             await(vtp.createVerificationToken(userID, verifyUntil))
         }
+
+    def createUser(form: SignupForm): Future[VerificationToken] = {
+        createUser(form.login, form.email, form.password)
+    }
+
+    def verifyUser(token: VerificationToken): Future[Option[User]] = {
+        verifyUser(token.token)
+    }
 
     def verifyUser(token: String): Future[Option[User]] = async {
         val verificationToken = await(vtp.get(token))

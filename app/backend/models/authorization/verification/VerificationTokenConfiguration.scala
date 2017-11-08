@@ -19,12 +19,13 @@ package backend.models.authorization.verification
 import com.typesafe.config.Config
 import play.api.ConfigLoader
 
-case class VerificationTokenConfiguration(keep: Int, interval: Int)
+case class VerificationTokenConfiguration(required: Boolean, keep: Int, interval: Int)
 
 object VerificationTokenConfiguration {
     implicit val verificationTokenConfigurationLoader: ConfigLoader[VerificationTokenConfiguration] = (rootConfig: Config, path: String) => {
         val config = rootConfig.getConfig(path)
         VerificationTokenConfiguration(
+            required = config.getBoolean("required"),
             keep = config.getInt("keep"),
             interval = config.getInt("interval")
         )

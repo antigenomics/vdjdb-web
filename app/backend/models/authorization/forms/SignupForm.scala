@@ -32,13 +32,18 @@ object SignupForm {
         "email" -> email,
         "password" -> nonEmptyText(minLength = PASSWORD_MIN_LENGTH, maxLength = PASSWORD_MAX_LENGTH),
         "repeatPassword" -> nonEmptyText(minLength = PASSWORD_MIN_LENGTH, maxLength = PASSWORD_MAX_LENGTH)
-    )(SignupForm.apply)(SignupForm.unapply))
+    )(SignupForm.apply)(SignupForm.unapply) verifying("authorization.forms.signup.failed.workaround.3", fields => fields match {
+        case signupForm => signupForm.password == signupForm.repeatPassword
+    }))
 
     implicit val signupFailedFormMapping: Form[SignupForm] =
         signupFormMapping.withGlobalError("authorization.forms.signup.failed.message")
             .withGlobalError("authorization.forms.signup.failed.workaround.1")
             .withGlobalError("authorization.forms.signup.failed.workaround.2")
             .withGlobalError("authorization.forms.signup.failed.workaround.3")
+
+    implicit val userAlreadyExistsFormMapping: Form[SignupForm] =
+        signupFormMapping.withGlobalError("authorization.forms.signup.failed.alreadyExists")
 }
 
 

@@ -19,10 +19,13 @@ authorization.forms.signup.placeholder.login = Login
 authorization.forms.signup.placeholder.email = E-mail address
 authorization.forms.signup.placeholder.password = Password
 authorization.forms.signup.placeholder.repeatPassword = Repeat password
-authorization.forms.signup.failed.message = Please check that you have entered your credentials correctly.
+authorization.forms.signup.success.created = Your account has been created. Please follow verification link in email to complete registration
+authorization.forms.signup.success.createdAndVerified = Your account has been created and verified
+authorization.forms.signup.failed.message = Please check that you have entered your credentials correctly
 authorization.forms.signup.failed.workaround.1 = Login text field should not be empty
 authorization.forms.signup.failed.workaround.2 = E-mail address field should be a valid email
 authorization.forms.signup.failed.workaround.3 = Passwords should be equal
+authorization.forms.signup.failed.alreadyExists = User already exists. Click forgot password link if it is your account
 
 authorization.forms.reset.reset = Reset
 authorization.forms.reset.back = Back to home

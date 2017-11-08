@@ -109,6 +109,7 @@ class SessionTokenProvider @Inject()(@NamedDatabase("default") protected val dbC
     }
 
     def createSessionToken(user: User): Future[String] = {
+        if (!user.verified) throw new RuntimeException("Cannot create session for unverified user")
         val token = CommonUtils.randomAlphaNumericString(255)
         db.run(SessionTokenProvider.table += SessionToken(0, token, TimeUtils.getCurrentTimestamp, user.id)).map(_ => token)
     }
