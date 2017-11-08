@@ -16,19 +16,21 @@
 
 package backend.server.limit
 
+import java.time.Duration
+
 import com.typesafe.config.Config
 import play.api.ConfigLoader
 
-case class RequestLimitsConfiguration(maxRequestsCount: Int, countClearInterval: Int, maxRequestsTime: Long, timeClearInterval: Int)
+case class RequestLimitsConfiguration(maxRequestsCount: Int, countClearInterval: Duration, maxRequestsTime: Long, timeClearInterval: Duration)
 
 object RequestLimitsConfiguration {
     implicit val configLoader: ConfigLoader[RequestLimitsConfiguration] = (rootConfig: Config, path: String) => {
         val config = rootConfig.getConfig(path)
         RequestLimitsConfiguration(
             maxRequestsCount = config.getInt("maxRequestsCount"),
-            countClearInterval = config.getInt("countClearInterval"),
+            countClearInterval = config.getDuration("countClearInterval"),
             maxRequestsTime = config.getLong("maxRequestsTime"),
-            timeClearInterval = config.getInt("timeClearInterval")
+            timeClearInterval = config.getDuration("timeClearInterval")
         )
     }
 }

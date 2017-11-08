@@ -18,6 +18,7 @@ package backend.models.files.temporary
 
 import java.io.{File, PrintWriter}
 import java.sql.Timestamp
+import java.time.Duration
 import javax.inject.{Inject, Singleton}
 
 import akka.actor.ActorSystem
@@ -44,8 +45,8 @@ class TemporaryFileProvider @Inject()(@NamedDatabase("default") protected val db
     private final val configuration = conf.get[TemporaryFileConfiguration]("application.temporary")
     import dbConfig.profile.api._
 
-    if (configuration.interval != 0) {
-        system.scheduler.schedule(configuration.interval seconds, configuration.interval seconds) {
+    if (configuration.interval.getSeconds != 0) {
+        system.scheduler.schedule(configuration.interval.getSeconds seconds, configuration.interval.getSeconds seconds) {
             deleteExpired onComplete {
                 case Failure(ex) =>
                     logger.error("Cannot delete temporary files", ex)
@@ -56,9 +57,9 @@ class TemporaryFileProvider @Inject()(@NamedDatabase("default") protected val db
 
     def getTemporaryFilesDirectoryPath: String = configuration.path
 
-    def getTemporaryFilesKeep: Int = configuration.keep
+    def getTemporaryFilesKeep: Duration = configuration.keep
 
-    def getTemporaryFilesDeleteInterval: Int = configuration.interval
+    def getTemporaryFilesDeleteInterval: Duration = configuration.interval
 
     def getAll: Future[Seq[TemporaryFile]] = {
         db.run(TemporaryFileProvider.table.result)

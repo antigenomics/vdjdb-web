@@ -45,8 +45,8 @@ class SessionTokenProvider @Inject()(@NamedDatabase("default") protected val dbC
 
     import dbConfig.profile.api._
 
-    if (configuration.interval != 0) {
-        system.scheduler.schedule(configuration.interval seconds, configuration.interval seconds) {
+    if (configuration.interval.getSeconds != 0) {
+        system.scheduler.schedule(configuration.interval.getSeconds seconds, configuration.interval.getSeconds seconds) {
             deleteExpired onComplete {
                 case Failure(ex) =>
                     logger.error("Cannot delete expired session tokens", ex)
@@ -102,7 +102,7 @@ class SessionTokenProvider @Inject()(@NamedDatabase("default") protected val dbC
     def deleteExpired(): Future[Int] = {
         db.run(MTable.getTables).flatMap(tables => {
             if (tables.exists(_.name.name == SessionTokenTable.TABLE_NAME)) {
-                val checkDate = new Timestamp(new java.util.Date().getTime - configuration.keep * 1000)
+                val checkDate = new Timestamp(new java.util.Date().getTime - configuration.keep.getSeconds * 1000)
                 db.run(SessionTokenProvider.table.filter(_.lastUsage < checkDate).delete)
             } else {
                 Future.successful(0)

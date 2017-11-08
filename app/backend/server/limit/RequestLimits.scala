@@ -27,6 +27,7 @@ import play.api.mvc.{Filter, RequestHeader, Result, Results}
 import scala.collection.mutable
 import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._
+import scala.language.postfixOps
 
 @Singleton
 class RequestLimits @Inject()(configuration: Configuration, actorSystem: ActorSystem)
@@ -36,7 +37,8 @@ class RequestLimits @Inject()(configuration: Configuration, actorSystem: ActorSy
     private val limitConfiguration = configuration.get[RequestLimitsConfiguration]("play.filters.limits")
     private val bucket = mutable.LinkedHashMap.empty[String, IpLimit]
 
-    actorSystem.scheduler.schedule(initialDelay = limitConfiguration.countClearInterval.seconds, interval = limitConfiguration.countClearInterval.seconds) {
+    actorSystem.scheduler.schedule(initialDelay = limitConfiguration.countClearInterval.getSeconds seconds,
+        interval = limitConfiguration.countClearInterval.getSeconds seconds) {
         var maxCount = 0
         var blocked = 0
         bucket.values.foreach((limit) => {
@@ -51,7 +53,8 @@ class RequestLimits @Inject()(configuration: Configuration, actorSystem: ActorSy
         logger.info(s"Clearing requests count limit [max: $maxCount, blocked: $blocked, interval: ${limitConfiguration.countClearInterval}]")
     }
 
-    actorSystem.scheduler.schedule(initialDelay = limitConfiguration.timeClearInterval.seconds, interval = limitConfiguration.timeClearInterval.seconds) {
+    actorSystem.scheduler.schedule(initialDelay = limitConfiguration.timeClearInterval.getSeconds seconds,
+        interval = limitConfiguration.timeClearInterval.getSeconds seconds) {
         var maxTime = 0L
         var blocked = 0
         bucket.values.foreach((limit) => {

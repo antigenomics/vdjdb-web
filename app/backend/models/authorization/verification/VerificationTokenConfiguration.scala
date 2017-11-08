@@ -16,18 +16,20 @@
 
 package backend.models.authorization.verification
 
+import java.time.Duration
+
 import com.typesafe.config.Config
 import play.api.ConfigLoader
 
-case class VerificationTokenConfiguration(required: Boolean, keep: Int, interval: Int)
+case class VerificationTokenConfiguration(required: Boolean, keep: Duration, interval: Duration)
 
 object VerificationTokenConfiguration {
     implicit val verificationTokenConfigurationLoader: ConfigLoader[VerificationTokenConfiguration] = (rootConfig: Config, path: String) => {
         val config = rootConfig.getConfig(path)
         VerificationTokenConfiguration(
             required = config.getBoolean("required"),
-            keep = config.getInt("keep"),
-            interval = config.getInt("interval")
+            keep = config.getDuration("keep"),
+            interval = config.getDuration("interval")
         )
     }
 }
