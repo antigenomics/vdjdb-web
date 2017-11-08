@@ -10,7 +10,14 @@
             <a route="/authorization/login" external="true" class="item">Login</a>
         </div>
         <div class="right menu" *ngIf="userService.isLogged()">
-            <a class="item">Logged as: {{ userService.getUser().getEmail() }}</a>
+            <div class="ui simple dropdown item">
+                Logged as: {{ userService.getUser().getEmail() }}
+                <i class="dropdown icon"></i>
+                <div class="menu">
+                    <a class="item">Settings</a>
+                    <a route="/authorization/logout" external="true" class="item">Logout</a>
+                </div>
+            </div>
         </div>
     </div>
 </div>

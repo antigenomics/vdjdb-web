@@ -12,12 +12,15 @@ import org.slf4j.LoggerFactory
 import play.api.Environment
 import play.api.i18n.{Lang, Messages, MessagesApi}
 import play.api.mvc._
-import backend.actions.UnauthorizedOnlyAction
+import backend.actions.{AuthorizedOnlyAction, UnauthorizedOnlyAction}
+import backend.server.session.SessionGuard
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, ExecutionContext, Future}
 
-class Authorization @Inject()(cc: ControllerComponents, userProvider: UserProvider, vtp: VerificationTokenProvider,
-                              sessionTokenProvider: SessionTokenProvider, messagesApi: MessagesApi, unauthorizedOnly: UnauthorizedOnlyAction)
+class Authorization @Inject()(cc: ControllerComponents, messagesApi: MessagesApi,
+                              up: UserProvider, vtp: VerificationTokenProvider, stp: SessionTokenProvider,
+                              authorizedOnly: AuthorizedOnlyAction, unauthorizedOnly: UnauthorizedOnlyAction)
                              (implicit ec: ExecutionContext, environment: Environment, analytics: Analytics)
     extends AbstractController(cc) {
     private final val logger = LoggerFactory.getLogger(this.getClass)
@@ -33,12 +36,16 @@ class Authorization @Inject()(cc: ControllerComponents, userProvider: UserProvid
                 BadRequest(frontend.views.html.authorization.login(formWithErrors))
             },
             form => {
-                userProvider.get(form.email).flatMap {
+                up.get(form.email).flatMap {
                     case Some(user) => async {
                         if (user.verified) {
-                            val sessionToken = await(sessionTokenProvider.createSessionToken(user))
-                            Redirect(backend.controllers.routes.Application.index())
-                                .withSession(request.session + (sessionTokenProvider.getAuthTokenSessionName, sessionToken))
+                            if (user.checkPassword(form.password)) {
+                                val sessionToken = await(stp.createSessionToken(user))
+                                Redirect(backend.controllers.routes.Application.index())
+                                    .withSession(request.session + (stp.getAuthTokenSessionName, sessionToken))
+                            } else {
+                                BadRequest(frontend.views.html.authorization.login(LoginForm.loginFailedFormMapping))
+                            }
                         } else {
                             BadRequest(frontend.views.html.authorization.login(LoginForm.loginUnverified))
                         }
@@ -59,17 +66,17 @@ class Authorization @Inject()(cc: ControllerComponents, userProvider: UserProvid
                 BadRequest(frontend.views.html.authorization.signup(formWithErrors))
             },
             form => async {
-                val check = await(userProvider.get(form.email))
+                val check = await(up.get(form.email))
                 if (check.nonEmpty) {
                     BadRequest(frontend.views.html.authorization.signup(SignupForm.userAlreadyExistsFormMapping))
                 } else {
-                    val verificationToken = await(userProvider.createUser(form))
-                    if (userProvider.isVerificationRequired) {
+                    val verificationToken = await(up.createUser(form))
+                    if (up.isVerificationRequired) {
                         //TODO verification email
                         logger.info(s"Verification token for ${form.email}: ${verificationToken.token}")
                         Redirect(backend.controllers.routes.Authorization.login()).flashing("created" -> "authorization.forms.signup.success.created")
                     } else {
-                        val _ = await(userProvider.verifyUser(verificationToken))
+                        val _ = await(up.verifyUser(verificationToken))
                         Redirect(backend.controllers.routes.Authorization.login()).flashing("created" -> "authorization.forms.signup.success.createdAndVerified")
                     }
                 }
@@ -100,7 +107,7 @@ class Authorization @Inject()(cc: ControllerComponents, userProvider: UserProvid
             if (verificationToken.isEmpty) {
                 BadRequest(messages("authorization.verification.invalidToken"))
             } else {
-                val user = await(userProvider.verifyUser(verificationToken.get.token))
+                val user = await(up.verifyUser(verificationToken.get.token))
                 if (user.nonEmpty) {
                     Redirect(backend.controllers.routes.Authorization.login()).flashing("verified" -> "authorization.forms.login.flashing.verified")
                 } else {
@@ -108,5 +115,14 @@ class Authorization @Inject()(cc: ControllerComponents, userProvider: UserProvid
                 }
             }
         }
+    }
+
+    def logout: Action[AnyContent] = authorizedOnly { implicit request =>
+        //todo wait?
+        val token = Await.result(stp.get(request.session.get(stp.getAuthTokenSessionName).getOrElse("")), Duration.Inf)
+        if (token.nonEmpty) {
+            Await.ready(stp.delete(token.get.token), Duration.Inf)
+        }
+        SessionGuard.clearSessionAndDiscardCookies(Redirect(backend.controllers.routes.Application.index()), request)
     }
 }

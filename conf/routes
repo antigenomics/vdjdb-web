@@ -24,6 +24,7 @@ POST        /authorization/signup                     backend.controllers.Author
 GET         /authorization/reset                      backend.controllers.Authorization.reset
 POST        /authorization/reset                      backend.controllers.Authorization.onReset
 GET         /authorization/verify/:token              backend.controllers.Authorization.verify(token)
+GET         /authorization/logout                      backend.controllers.Authorization.logout
 
 # Map static resources from the /public folder to the /assets URL path
 GET         /assets/*file                             controllers.Assets.versioned(path="/public", file: Asset)

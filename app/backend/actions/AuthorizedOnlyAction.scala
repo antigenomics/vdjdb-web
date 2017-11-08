@@ -16,6 +16,7 @@
  */
 
 package backend.actions
+
 import javax.inject.Inject
 
 import backend.models.authorization.user.UserProvider
@@ -23,20 +24,14 @@ import play.api.mvc._
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class UnauthorizedOnlyAction @Inject()(parser: BodyParsers.Default)(implicit ec: ExecutionContext, up: UserProvider) extends ActionBuilderImpl(parser) {
+class AuthorizedOnlyAction @Inject()(parser: BodyParsers.Default)(implicit ec: ExecutionContext, up: UserProvider) extends ActionBuilderImpl(parser) {
     override def invokeBlock[A](request: Request[A], block: Request[A] => Future[Result]): Future[Result] = {
-        val checkSession = request.session.get(up.getAuthTokenSessionName)
-        if (checkSession.isEmpty) {
-            block(request)
-        } else {
-            up.getBySessionToken(checkSession.get) flatMap { user =>
-                if (user.nonEmpty) {
-                    Future.successful(Results.Redirect(backend.controllers.routes.Application.index()))
-                } else {
-                    block(request)
-                }
+        up.getBySessionToken(request.session.get(up.getAuthTokenSessionName).getOrElse("")) flatMap { user =>
+            if (user.nonEmpty) {
+                block(request)
+            } else {
+                Future.successful(Results.Redirect(backend.controllers.routes.Application.index()))
             }
         }
     }
 }
-

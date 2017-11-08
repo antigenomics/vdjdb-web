@@ -32,7 +32,7 @@ import play.api.mvc._
 import scala.concurrent.Future
 
 class Application @Inject()(ws: WSClient, assets: Assets, configuration: Configuration, cc: ControllerComponents,
-                            temporaryFileProvider: TemporaryFileProvider, userProvider: UserProvider)
+                            tfp: TemporaryFileProvider, up: UserProvider)
                            (implicit environment: Environment, analytics: Analytics) extends AbstractController(cc) {
 
     def index: Action[AnyContent] = Action.async { implicit request =>
@@ -53,12 +53,12 @@ class Application @Inject()(ws: WSClient, assets: Assets, configuration: Configu
     }
 
     def downloadTemporaryFile(link: String): Action[AnyContent] = Action.async { implicit request =>
-        temporaryFileProvider.getWithMetadata(link).flatMap {
+        tfp.getWithMetadata(link).flatMap {
             case Some((_, metadata)) =>
                 val file = new File(metadata.path)
                 Future.successful {
                     Ok.sendFile(file, inline = false, _ => metadata.getNameWithDateAndExtension, () => {
-                        temporaryFileProvider.deleteTemporaryFile(link)
+                        tfp.deleteTemporaryFile(link)
                     })
                 }
             case None => Future.failed(new Exception("File not found"))

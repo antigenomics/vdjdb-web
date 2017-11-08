@@ -28,27 +28,45 @@ import scala.async.Async.{async, await}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class SessionGuard @Inject()(userProvider: UserProvider, sessionTokenProvider: SessionTokenProvider)
-                            (implicit val mat: Materializer, ec: ExecutionContext) extends Filter {
+class SessionGuard @Inject()(up: UserProvider, stp: SessionTokenProvider)(implicit val mat: Materializer, ec: ExecutionContext) extends Filter {
     override def apply(nextFilter: (RequestHeader) => Future[Result])(request: RequestHeader): Future[Result] = async {
-        val sessionToken = await(sessionTokenProvider.get(request.session.get(sessionTokenProvider.getAuthTokenSessionName).getOrElse("")))
-        if (sessionToken.nonEmpty) {
-            val user = await(userProvider.get(sessionToken.get.userID))
-            await(nextFilter(request).map { result =>
-                result
-                    .withSession(request.session + (sessionTokenProvider.getAuthTokenSessionName, sessionToken.get.token))
-                    .withCookies(
-                        Cookie("logged", "true", httpOnly = false),
-                        Cookie("email", user.get.email, httpOnly = false),
-                        Cookie("login", user.get.login, httpOnly = false))
-            })
+        val jwtToken = request.session.get(stp.getAuthTokenSessionName)
+        if (jwtToken.nonEmpty) {
+            val sessionToken = await(stp.get(jwtToken.get))
+            if (sessionToken.nonEmpty) {
+                val user = await(up.get(sessionToken.get.userID))
+                await(nextFilter(request).map { result =>
+                    result
+                        .withSession(request.session + (stp.getAuthTokenSessionName, sessionToken.get.token))
+                        .withCookies(
+                            Cookie("logged", "true", httpOnly = false),
+                            Cookie("email", user.get.email, httpOnly = false),
+                            Cookie("login", user.get.login, httpOnly = false))
+                })
+            } else {
+                await(nextFilter(request).map { result =>
+                    SessionGuard.discardCookies(result, request)
+                })
+            }
         } else {
             await(nextFilter(request).map { result =>
-                result
-                    .discardingCookies(DiscardingCookie("logged"))
-                    .discardingCookies(DiscardingCookie("email"))
-                    .discardingCookies(DiscardingCookie("login"))
+                SessionGuard.discardCookies(result, request)
             })
         }
+    }
+}
+
+object SessionGuard {
+
+
+    def discardCookies(result: Result, request: RequestHeader): Result = {
+        result
+            .discardingCookies(DiscardingCookie("logged"))
+            .discardingCookies(DiscardingCookie("email"))
+            .discardingCookies(DiscardingCookie("login"))
+    }
+
+    def clearSessionAndDiscardCookies(result: Result, request: RequestHeader): Result = {
+        discardCookies(result, request).withNewSession
     }
 }
