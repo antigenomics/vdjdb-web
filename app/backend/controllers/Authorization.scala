@@ -12,25 +12,22 @@ import org.slf4j.LoggerFactory
 import play.api.Environment
 import play.api.i18n.{Lang, Messages, MessagesApi}
 import play.api.mvc._
-import backend.actions.{AuthorizedOnlyAction, UnauthorizedOnlyAction}
-import backend.server.session.SessionGuard
+import backend.actions.{SessionAction, UserRequestAction}
 
-import scala.concurrent.duration.Duration
-import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.concurrent.{ExecutionContext, Future}
 
 class Authorization @Inject()(cc: ControllerComponents, messagesApi: MessagesApi,
-                              up: UserProvider, vtp: VerificationTokenProvider, stp: SessionTokenProvider,
-                              authorizedOnly: AuthorizedOnlyAction, unauthorizedOnly: UnauthorizedOnlyAction)
+                              up: UserProvider, vtp: VerificationTokenProvider, stp: SessionTokenProvider, userRequestAction: UserRequestAction)
                              (implicit ec: ExecutionContext, environment: Environment, analytics: Analytics)
     extends AbstractController(cc) {
     private final val logger = LoggerFactory.getLogger(this.getClass)
     implicit val messages: Messages = messagesApi.preferred(Seq(Lang.defaultLang))
 
-    def login: Action[AnyContent] = unauthorizedOnly { implicit request =>
+    def login: Action[AnyContent] = (userRequestAction andThen SessionAction.unauthorizedOnly) { implicit request =>
         Ok(frontend.views.html.authorization.login(LoginForm.loginFormMapping))
     }
 
-    def onLogin: Action[AnyContent] = Action.async { implicit request =>
+    def onLogin: Action[AnyContent] = (userRequestAction andThen SessionAction.unauthorizedOnly).async { implicit request =>
         LoginForm.loginFormMapping.bindFromRequest.fold(
             formWithErrors => async {
                 BadRequest(frontend.views.html.authorization.login(formWithErrors))
@@ -56,11 +53,11 @@ class Authorization @Inject()(cc: ControllerComponents, messagesApi: MessagesApi
         )
     }
 
-    def signup: Action[AnyContent] = unauthorizedOnly { implicit request =>
+    def signup: Action[AnyContent] = (userRequestAction andThen SessionAction.unauthorizedOnly) { implicit request =>
         Ok(frontend.views.html.authorization.signup(SignupForm.signupFormMapping))
     }
 
-    def onSignup: Action[AnyContent] = Action.async { implicit request =>
+    def onSignup: Action[AnyContent] = (userRequestAction andThen SessionAction.unauthorizedOnly).async { implicit request =>
         SignupForm.signupFormMapping.bindFromRequest.fold(
             formWithErrors => async {
                 BadRequest(frontend.views.html.authorization.signup(formWithErrors))
@@ -84,11 +81,11 @@ class Authorization @Inject()(cc: ControllerComponents, messagesApi: MessagesApi
         )
     }
 
-    def reset: Action[AnyContent] = unauthorizedOnly { implicit request =>
+    def reset: Action[AnyContent] = (userRequestAction andThen SessionAction.unauthorizedOnly) { implicit request =>
         Ok(frontend.views.html.authorization.reset(ResetForm.resetFormMapping))
     }
 
-    def onReset: Action[AnyContent] = Action.async { implicit request =>
+    def onReset: Action[AnyContent] = (userRequestAction andThen SessionAction.unauthorizedOnly).async { implicit request =>
         Future.successful {
             ResetForm.resetFormMapping.bindFromRequest.fold(
                 formWithErrors => {
@@ -101,8 +98,7 @@ class Authorization @Inject()(cc: ControllerComponents, messagesApi: MessagesApi
         }
     }
 
-    def verify(token: String): Action[AnyContent] = Action.async {
-        async {
+    def verify(token: String): Action[AnyContent] = Action.async { async {
             val verificationToken = await(vtp.get(token))
             if (verificationToken.isEmpty) {
                 BadRequest(messages("authorization.verification.invalidToken"))
@@ -117,12 +113,9 @@ class Authorization @Inject()(cc: ControllerComponents, messagesApi: MessagesApi
         }
     }
 
-    def logout: Action[AnyContent] = authorizedOnly { implicit request =>
-        //todo wait?
-        val token = Await.result(stp.get(request.session.get(stp.getAuthTokenSessionName).getOrElse("")), Duration.Inf)
-        if (token.nonEmpty) {
-            Await.ready(stp.delete(token.get.token), Duration.Inf)
+    def logout: Action[AnyContent] = (userRequestAction andThen SessionAction.authorizedOnly).async { implicit request =>
+        stp.delete(request.token.get.token) map { _ =>
+            SessionAction.clearSessionAndDiscardCookies(Redirect(backend.controllers.routes.Application.index()))
         }
-        SessionGuard.clearSessionAndDiscardCookies(Redirect(backend.controllers.routes.Application.index()), request)
     }
 }

@@ -23,15 +23,14 @@ import play.api.ConfigLoader
 
 import scala.collection.JavaConverters._
 
-case class SessionTokenConfiguration(keep: Duration, interval: Duration, whitelist: Seq[String])
+case class SessionTokenConfiguration(keep: Duration, interval: Duration)
 
 object SessionTokenConfiguration {
     implicit val sessionTokenConfigurationLoader: ConfigLoader[SessionTokenConfiguration] = (rootConfig: Config, path: String) => {
         val config = rootConfig.getConfig(path)
         SessionTokenConfiguration(
             keep = config.getDuration("keep"),
-            interval = config.getDuration("interval"),
-            whitelist = config.getStringList("whitelist").asScala
+            interval = config.getDuration("interval")
         )
     }
 }

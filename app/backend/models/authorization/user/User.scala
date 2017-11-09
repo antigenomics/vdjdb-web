@@ -24,8 +24,8 @@ import scala.concurrent.{ExecutionContext, Future}
 
 case class User(id: Long, login: String, email: String, verified: Boolean,
                 private[authorization] val password: String, private[authorization] val permissionID: Long) {
-    def getPermissions(implicit userPermissionsProvider: UserPermissionsProvider, ec: ExecutionContext): Future[UserPermissions] = {
-        userPermissionsProvider.getByID(permissionID).map(_.get)
+    def getPermissions(implicit upp: UserPermissionsProvider, ec: ExecutionContext): Future[UserPermissions] = {
+        upp.getByID(permissionID).map(_.get)
     }
 
     def checkPassword(plain: String): Boolean = {

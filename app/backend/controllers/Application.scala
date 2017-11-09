@@ -19,6 +19,8 @@ package backend.controllers
 import java.io.File
 import javax.inject._
 
+import backend.actions.{SessionAction, UserRequestAction}
+import backend.models.authorization.session.SessionTokenProvider
 import backend.models.authorization.user.UserProvider
 import backend.models.files.temporary.TemporaryFileProvider
 import backend.utils.analytics.Analytics
@@ -32,13 +34,11 @@ import play.api.mvc._
 import scala.concurrent.Future
 
 class Application @Inject()(ws: WSClient, assets: Assets, configuration: Configuration, cc: ControllerComponents,
-                            tfp: TemporaryFileProvider, up: UserProvider)
-                           (implicit environment: Environment, analytics: Analytics) extends AbstractController(cc) {
+                            userRequestAction: UserRequestAction, tfp: TemporaryFileProvider, up: UserProvider)
+                           (implicit environment: Environment, analytics: Analytics, stp: SessionTokenProvider) extends AbstractController(cc) {
 
-    def index: Action[AnyContent] = Action.async { implicit request =>
-        Future.successful {
-            Ok(frontend.views.html.index())
-        }
+    def index: Action[AnyContent] = userRequestAction { implicit request =>
+        SessionAction.updateCookies(Ok(frontend.views.html.index()))
     }
 
     def bundle(file: String): Action[AnyContent] = if (environment.mode == Mode.Dev) Action.async { implicit request =>
