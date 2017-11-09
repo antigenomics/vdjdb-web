@@ -1,19 +1,33 @@
 <div class="ui top fixed borderless inverted menu large">
     <div class="ui container">
-        <a route="/" class="item">
-            <h1>VDJdb</h1>
-        </a>
+        <a route="/" class="item"><h1>VDJdb</h1></a>
         <a route="/" class="item">Home</a>
         <a route="/search" class="item">Browse</a>
+
+        <a class="ui dropdown item" dropdown [content]="content" *ngIf="!userService.isLogged()">
+            Intersection
+            <div class="menu fade element slow padded" tabindex="-1" #content>
+                <div class="ui error message">
+                    <div class="header">Error</div>
+                    <p>You must log-in to access this page</p>
+                </div>
+            </div>
+        </a>
+
+        <a route="/intersection" class="item" *ngIf="userService.isLogged()">
+            Intersection
+        </a>
+
         <a route="/about" class="item">About</a>
+
         <div class="right menu" *ngIf="!userService.isLogged()">
             <a route="/authorization/login" external="true" class="item">Login</a>
         </div>
         <div class="right menu" *ngIf="userService.isLogged()">
-            <div class="ui simple dropdown item">
+            <div class="ui dropdown item" dropdown [content]="content">
                 Logged as: {{ userService.getUser().getEmail() }}
                 <i class="dropdown icon"></i>
-                <div class="menu">
+                <div class="menu fade element slow padded" tabindex="-1" #content>
                     <a class="item">Settings</a>
                     <a route="/authorization/logout" external="true" class="item">Logout</a>
                 </div>
