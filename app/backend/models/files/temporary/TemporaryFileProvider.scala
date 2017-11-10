@@ -30,7 +30,6 @@ import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import play.db.NamedDatabase
 import slick.jdbc.JdbcProfile
 import slick.jdbc.meta.MTable
-import slick.lifted.TableQuery
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._
@@ -39,21 +38,25 @@ import scala.util.Failure
 import scala.async.Async.{async, await}
 
 @Singleton
-class TemporaryFileProvider @Inject()(@NamedDatabase("default") protected val dbConfigProvider: DatabaseConfigProvider, fileMetadataProvider: FileMetadataProvider)
-                                    (implicit ec: ExecutionContext, conf: Configuration, system: ActorSystem) extends HasDatabaseConfigProvider[JdbcProfile] {
+class TemporaryFileProvider @Inject()(@NamedDatabase("default") protected val dbConfigProvider: DatabaseConfigProvider)
+                                    (implicit ec: ExecutionContext, conf: Configuration, system: ActorSystem, fmp: FileMetadataProvider)
+    extends HasDatabaseConfigProvider[JdbcProfile] {
     private final val logger = LoggerFactory.getLogger(this.getClass)
     private final val configuration = conf.get[TemporaryFileConfiguration]("application.temporary")
     import dbConfig.profile.api._
+    private final val table = TableQuery[TemporaryFileTable]
 
     if (configuration.interval.getSeconds != 0) {
         system.scheduler.schedule(configuration.interval.getSeconds seconds, configuration.interval.getSeconds seconds) {
             deleteExpired onComplete {
                 case Failure(ex) =>
-                    logger.error("Cannot delete temporary files", ex)
+                    logger.warn("Cannot delete temporary files", ex)
                 case _ =>
             }
         }
     }
+
+    def getTable: TableQuery[TemporaryFileTable] = table
 
     def getTemporaryFilesDirectoryPath: String = configuration.path
 
@@ -62,19 +65,19 @@ class TemporaryFileProvider @Inject()(@NamedDatabase("default") protected val db
     def getTemporaryFilesDeleteInterval: Duration = configuration.interval
 
     def getAll: Future[Seq[TemporaryFile]] = {
-        db.run(TemporaryFileProvider.table.result)
+        db.run(table.result)
     }
 
     def getAllWithMetadata: Future[Seq[(TemporaryFile, FileMetadata)]] = {
-        db.run(TemporaryFileProvider.table.withMetadata.result)
+        db.run(table.withMetadata.result)
     }
 
     def deleteExpired(): Future[Int] = {
         db.run(MTable.getTables).flatMap(tables => async {
             if (tables.exists(_.name.name == TemporaryFileTable.TABLE_NAME)) {
                 val currentDate = new Timestamp(new java.util.Date().getTime)
-                val files = await(db.run(TemporaryFileProvider.table.withMetadata.filter(_._1.expiredAt < currentDate).result))
-                await(fileMetadataProvider.delete(files.map(_._2)))
+                val files = await(db.run(table.withMetadata.filter(_._1.expiredAt < currentDate).result))
+                await(fmp.delete(files.map(_._2)))
             } else {
                 0
             }
@@ -82,21 +85,21 @@ class TemporaryFileProvider @Inject()(@NamedDatabase("default") protected val db
     }
 
     def deleteAll(): Future[Int] = async {
-        val files = await(db.run(TemporaryFileProvider.table.withMetadata.result))
-        await(fileMetadataProvider.delete(files.map(_._2)))
+        val files = await(db.run(table.withMetadata.result))
+        await(fmp.delete(files.map(_._2)))
     }
 
     def get(link: String): Future[Option[TemporaryFile]] = {
-        db.run(TemporaryFileProvider.table.filter(_.link === link).result.headOption)
+        db.run(table.filter(_.link === link).result.headOption)
     }
 
     def getWithMetadata(link: String): Future[Option[(TemporaryFile, FileMetadata)]] = {
-        db.run(TemporaryFileProvider.table.withMetadata.filter(_._1.link === link).result.headOption)
+        db.run(table.withMetadata.filter(_._1.link === link).result.headOption)
     }
 
     def deleteTemporaryFile(link: String): Future[Int] = {
-        db.run(TemporaryFileProvider.table.withMetadata.filter(_._1.link === link).result.headOption) flatMap {
-            case Some(file) => fileMetadataProvider.delete(file._2)
+        db.run(table.withMetadata.filter(_._1.link === link).result.headOption) flatMap {
+            case Some(file) => fmp.delete(file._2)
             case None => Future.failed(new Exception("No such temporary file"))
         }
     }
@@ -128,14 +131,10 @@ class TemporaryFileProvider @Inject()(@NamedDatabase("default") protected val db
     }
 
     private def insert(name: String, extension: String, folderPath: String, link: String, expiredAt: Timestamp): Future[Int] = {
-        fileMetadataProvider.insert(name, extension, folderPath).flatMap(insert(link, expiredAt, _))
+        fmp.insert(name, extension, folderPath).flatMap(insert(link, expiredAt, _))
     }
 
     private def insert(link: String, expiredAt: Timestamp, metadataID: Long): Future[Int] = {
-        db.run(TemporaryFileProvider.table += TemporaryFile(0, link, expiredAt, metadataID))
+        db.run(table += TemporaryFile(0, link, expiredAt, metadataID))
     }
-}
-
-object TemporaryFileProvider {
-    private[files] final val table = TableQuery[TemporaryFileTable]
 }

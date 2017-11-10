@@ -18,7 +18,7 @@
 package backend.models.authorization
 
 import backend.models.{DatabaseProviderTestSpec, SQLDatabaseTestTag}
-import backend.models.authorization.session.SessionTokenProvider
+import backend.models.authorization.tokens.session.SessionTokenProvider
 import backend.models.authorization.user.UserProvider
 
 import scala.async.Async.{async, await}
@@ -54,6 +54,29 @@ class SessionTokenProviderSpec extends DatabaseProviderTestSpec {
                 the [Exception] thrownBy {
                     sessionTokenProvider.createSessionToken(unverifiedUser.get)
                 } should have message "Cannot create session for unverified user"
+            }
+        }
+
+        "get the same user in 'withUser' method" taggedAs SQLDatabaseTestTag in {
+            async {
+                val token = await(userProvider.createUser("login2", "mail3@mail.com", "123456"))
+                val user = await(userProvider.verifyUser(token))
+                user should not be empty
+
+                val session = await(sessionTokenProvider.createSessionToken(user.get))
+                val sessionWithUser = await(sessionTokenProvider.getWithUser(session))
+
+                sessionWithUser should not be empty
+                sessionWithUser.get._1.token shouldEqual session
+                sessionWithUser.get._1.userID shouldEqual user.get.id
+                sessionWithUser.get._2 shouldEqual user.get
+
+                val sessionAgain = await(sessionTokenProvider.get(session))
+                sessionAgain should not be empty
+                val userAgain = await(userProvider.get(sessionAgain.get.userID))
+                userAgain should not be empty
+                userAgain.get shouldEqual user.get
+                userAgain.get shouldEqual sessionWithUser.get._2
             }
         }
     }

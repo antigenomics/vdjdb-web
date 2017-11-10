@@ -14,7 +14,7 @@
  *     limitations under the License.
  */
 
-package backend.models.authorization.verification
+package backend.models.authorization.tokens.verification
 
 import java.sql.Timestamp
 

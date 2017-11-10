@@ -16,7 +16,7 @@
 
 package backend.actions
 
-import backend.models.authorization.session.SessionTokenProvider
+import backend.models.authorization.tokens.session.SessionTokenProvider
 import play.api.mvc._
 
 import scala.concurrent.{ExecutionContext, Future}

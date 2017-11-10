@@ -15,8 +15,22 @@
  *       limitations under the License.
  */
 
-package backend.models.authorization.session
+package backend.models.authorization.tokens.session
 
-import java.sql.Timestamp
+import java.time.Duration
+import com.typesafe.config.Config
+import play.api.ConfigLoader
 
-case class SessionToken(id: Long, token: String, lastUsage: Timestamp, userID: Long)
+import scala.collection.JavaConverters._
+
+case class SessionTokenConfiguration(keep: Duration, interval: Duration)
+
+object SessionTokenConfiguration {
+    implicit val sessionTokenConfigurationLoader: ConfigLoader[SessionTokenConfiguration] = (rootConfig: Config, path: String) => {
+        val config = rootConfig.getConfig(path)
+        SessionTokenConfiguration(
+            keep = config.getDuration("keep"),
+            interval = config.getDuration("interval")
+        )
+    }
+}
