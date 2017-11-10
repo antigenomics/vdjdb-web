@@ -23,7 +23,6 @@ import groovy.lang.Singleton
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import play.db.NamedDatabase
 import slick.jdbc.JdbcProfile
-import slick.lifted.TableQuery
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -31,19 +30,20 @@ import scala.concurrent.{ExecutionContext, Future}
 class UserPermissionsProvider @Inject()(@NamedDatabase("default") protected val dbConfigProvider: DatabaseConfigProvider)
                                        (implicit ec: ExecutionContext) extends HasDatabaseConfigProvider[JdbcProfile] {
     import dbConfig.profile.api._
+    private final val table = TableQuery[UserPermissionsTable]
+
+    def getTable: TableQuery[UserPermissionsTable] = table
 
     def getAll: Future[Seq[UserPermissions]] = {
-        db.run(UserPermissionsProvider.table.result)
+        db.run(table.result)
     }
 
     def getByID(id: Long): Future[Option[UserPermissions]] = {
-        db.run(UserPermissionsProvider.table.filter(_.id === id).result.headOption)
+        db.run(table.filter(_.id === id).result.headOption)
     }
 }
 
 object UserPermissionsProvider {
-    private[authorization] final val table = TableQuery[UserPermissionsTable]
-
     final val UNLIMITED_ID: Long = 0L
     final val DEFAULT_ID: Long = 1L
 }

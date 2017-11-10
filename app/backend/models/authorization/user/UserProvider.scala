@@ -23,13 +23,12 @@ import javax.inject.{Inject, Singleton}
 import akka.actor.ActorSystem
 import backend.models.authorization.forms.SignupForm
 import backend.models.authorization.permissions.{UserPermissions, UserPermissionsProvider}
-import backend.models.authorization.session.SessionTokenProvider
-import backend.models.authorization.verification.{VerificationToken, VerificationTokenConfiguration, VerificationTokenProvider}
+import backend.models.authorization.tokens.session.SessionTokenProvider
+import backend.models.authorization.tokens.verification.{VerificationToken, VerificationTokenConfiguration, VerificationTokenProvider}
 import backend.utils.TimeUtils
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import play.db.NamedDatabase
 import slick.jdbc.JdbcProfile
-import slick.lifted.TableQuery
 import org.mindrot.jbcrypt.BCrypt
 import org.slf4j.LoggerFactory
 import play.api.Configuration
@@ -44,12 +43,14 @@ import scala.concurrent.duration._
 @Singleton
 class UserProvider @Inject()(@NamedDatabase("default") protected val dbConfigProvider: DatabaseConfigProvider,
                              vtp: VerificationTokenProvider, stp: SessionTokenProvider)
-                            (implicit ec: ExecutionContext, conf: Configuration, system: ActorSystem) extends HasDatabaseConfigProvider[JdbcProfile] {
+                            (implicit ec: ExecutionContext, conf: Configuration, system: ActorSystem, upp: UserPermissionsProvider)
+    extends HasDatabaseConfigProvider[JdbcProfile] {
     private final val logger = LoggerFactory.getLogger(this.getClass)
     private final val configuration = conf.get[VerificationTokenConfiguration]("application.auth.verification")
     private final val initialUsersConfiguration = conf.get[UserCreateConfiguration]("application.auth.init")
 
     import dbConfig.profile.api._
+    private final val table = TableQuery[UserTable]
 
     if (!initialUsersConfiguration.skip && initialUsersConfiguration.users.nonEmpty) {
         logger.info("Initial users: ")
@@ -68,24 +69,26 @@ class UserProvider @Inject()(@NamedDatabase("default") protected val dbConfigPro
         system.scheduler.schedule(configuration.interval.getSeconds seconds, configuration.interval.getSeconds seconds) {
             deleteUnverified onComplete {
                 case Failure(ex) =>
-                    logger.error("Cannot delete unverified users", ex)
+                    logger.warn("Cannot delete unverified users", ex)
                 case _ =>
             }
         }
     }
 
+    def getTable: TableQuery[UserTable] = table
+
     def getAuthTokenSessionName: String = stp.getAuthTokenSessionName
 
     def isVerificationRequired: Boolean = configuration.required
 
-    def getAll: Future[Seq[User]] = db.run(UserProvider.table.result)
+    def getAll: Future[Seq[User]] = db.run(table.result)
 
     def get(id: Long): Future[Option[User]] = {
-        db.run(UserProvider.table.filter(_.id === id).result.headOption)
+        db.run(table.filter(_.id === id).result.headOption)
     }
 
     def get(email: String): Future[Option[User]] = {
-        db.run(UserProvider.table.filter(_.email === email).result.headOption)
+        db.run(table.filter(_.email === email).result.headOption)
     }
 
     def getBySessionToken(sessionToken: String): Future[Option[User]] = async {
@@ -98,11 +101,11 @@ class UserProvider @Inject()(@NamedDatabase("default") protected val dbConfigPro
     }
 
     def getWithPermissions(email: String): Future[Option[(User, UserPermissions)]] = {
-        db.run(UserProvider.table.withPermissions.filter(_._1.email === email).result.headOption)
+        db.run(table.withPermissions.filter(_._1.email === email).result.headOption)
     }
 
     def delete(id: Long): Future[Int] = {
-        db.run(UserProvider.table.filter(_.id === id).delete)
+        db.run(table.filter(_.id === id).delete)
     }
 
     def delete(user: User): Future[Int] = {
@@ -110,7 +113,7 @@ class UserProvider @Inject()(@NamedDatabase("default") protected val dbConfigPro
     }
 
     def delete(ids: Seq[Long]): Future[Int] = {
-        db.run(UserProvider.table.filter(fm => fm.id inSet ids).delete)
+        db.run(table.filter(fm => fm.id inSet ids).delete)
     }
 
     def deleteUnverified(): Future[Int] = {
@@ -153,7 +156,7 @@ class UserProvider @Inject()(@NamedDatabase("default") protected val dbConfigPro
         if (verificationToken.isEmpty) {
             throw new RuntimeException("Invalid token")
         }
-        val success = await(db.run(UserProvider.table.filter(_.id === verificationToken.get.userID).map(_.verified).update(true)))
+        val success = await(db.run(table.filter(_.id === verificationToken.get.userID).map(_.verified).update(true)))
         if (success == 1) {
             await(vtp.delete(verificationToken.get).flatMap(_ => {
                 get(verificationToken.get.userID)
@@ -164,10 +167,6 @@ class UserProvider @Inject()(@NamedDatabase("default") protected val dbConfigPro
     }
 
     private def insert(user: User): Future[Long] = {
-        db.run(UserProvider.table returning UserProvider.table.map(_.id) += user)
+        db.run(table returning table.map(_.id) += user)
     }
-}
-
-object UserProvider {
-    private[authorization] final val table = TableQuery[UserTable]
 }

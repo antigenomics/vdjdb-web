@@ -20,7 +20,7 @@ package backend.models.authorization
 import backend.models.{DatabaseProviderTestSpec, SQLDatabaseTestTag}
 import backend.models.authorization.permissions.UserPermissionsProvider
 import backend.models.authorization.user.UserProvider
-import backend.models.authorization.verification.VerificationTokenProvider
+import backend.models.authorization.tokens.verification.VerificationTokenProvider
 import backend.utils.TimeUtils
 
 import scala.async.Async.{async, await}

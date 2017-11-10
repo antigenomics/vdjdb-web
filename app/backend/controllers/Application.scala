@@ -20,7 +20,7 @@ import java.io.File
 import javax.inject._
 
 import backend.actions.{SessionAction, UserRequestAction}
-import backend.models.authorization.session.SessionTokenProvider
+import backend.models.authorization.tokens.session.SessionTokenProvider
 import backend.models.authorization.user.UserProvider
 import backend.models.files.temporary.TemporaryFileProvider
 import backend.utils.analytics.Analytics

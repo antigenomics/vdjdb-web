@@ -18,7 +18,7 @@ package backend.actions
 
 import javax.inject.Inject
 
-import backend.models.authorization.session.{SessionToken, SessionTokenProvider}
+import backend.models.authorization.tokens.session.{SessionToken, SessionTokenProvider}
 import backend.models.authorization.user.{User, UserProvider}
 import play.api.mvc._
 
@@ -37,11 +37,11 @@ class UserRequestAction @Inject()(val parser: BodyParsers.Default)
         if (requestSessionToken.isEmpty) {
             new UserRequest(false, None, None, request)
         } else {
-            val token = await(stp.get(requestSessionToken.get))
-            if (token.isEmpty) {
+            val session = await(stp.getWithUser(requestSessionToken.get))
+            if (session.isEmpty) {
                 new UserRequest(false, None, None, request)
             } else {
-                new UserRequest(true, await(up.get(token.get.userID)), token, request)
+                new UserRequest(true, Some(session.get._2), Some(session.get._1), request)
             }
         }
     }

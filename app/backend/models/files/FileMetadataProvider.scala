@@ -21,7 +21,6 @@ import javax.inject.{Inject, Singleton}
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import play.db.NamedDatabase
 import slick.jdbc.JdbcProfile
-import slick.lifted.TableQuery
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -29,17 +28,20 @@ import scala.concurrent.{ExecutionContext, Future}
 class FileMetadataProvider @Inject()(@NamedDatabase("default") protected val dbConfigProvider: DatabaseConfigProvider)
                             (implicit ec: ExecutionContext) extends HasDatabaseConfigProvider[JdbcProfile] {
     import dbConfig.profile.api._
+    private final val table = TableQuery[FileMetadataTable]
+
+    def getTable: TableQuery[FileMetadataTable] = table
 
     def getAll: Future[Seq[FileMetadata]] = {
-        db.run(FileMetadataProvider.table.result)
+        db.run(table.result)
     }
 
     def get(id: Long): Future[Option[FileMetadata]] = {
-        db.run(FileMetadataProvider.table.filter(_.id === id).result.headOption)
+        db.run(table.filter(_.id === id).result.headOption)
     }
 
     def insert(metadata: FileMetadata): Future[Long] = {
-        db.run((FileMetadataProvider.table returning FileMetadataProvider.table.map(_.id)) += metadata)
+        db.run((table returning table.map(_.id)) += metadata)
     }
 
     def insert(fileName: String, extension: String, folder: String): Future[Long] = {
@@ -47,19 +49,15 @@ class FileMetadataProvider @Inject()(@NamedDatabase("default") protected val dbC
     }
 
     def delete(metadata: FileMetadata): Future[Int] = {
-        db.run(FileMetadataProvider.table.filter(_.id === metadata.id).delete) andThen { case _ =>
+        db.run(table.filter(_.id === metadata.id).delete) andThen { case _ =>
             metadata.deleteFile()
         }
     }
 
-    def delete(metadatas: Seq[FileMetadata]): Future[Int] = {
-        val ids = metadatas.map(_.id)
-        db.run(FileMetadataProvider.table.filter(fm => fm.id inSet ids).delete) andThen { case _ =>
-            metadatas.foreach(_.deleteFile())
+    def delete(metadata: Seq[FileMetadata]): Future[Int] = {
+        val ids = metadata.map(_.id)
+        db.run(table.filter(fm => fm.id inSet ids).delete) andThen { case _ =>
+            metadata.foreach(_.deleteFile())
         }
     }
-}
-
-object FileMetadataProvider {
-    private[files] final val table = TableQuery[FileMetadataTable]
 }

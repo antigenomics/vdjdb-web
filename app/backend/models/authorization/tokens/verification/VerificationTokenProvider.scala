@@ -14,7 +14,7 @@
  *     limitations under the License.
  */
 
-package backend.models.authorization.verification
+package backend.models.authorization.tokens.verification
 
 import java.sql.Timestamp
 import javax.inject.{Inject, Singleton}
@@ -23,7 +23,6 @@ import backend.utils.CommonUtils
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import play.db.NamedDatabase
 import slick.jdbc.JdbcProfile
-import slick.lifted.TableQuery
 import scala.concurrent.{ExecutionContext, Future}
 import scala.async.Async.{async, await}
 
@@ -31,19 +30,22 @@ import scala.async.Async.{async, await}
 class VerificationTokenProvider @Inject()(@NamedDatabase("default") protected val dbConfigProvider: DatabaseConfigProvider)
                                          (implicit ec: ExecutionContext) extends HasDatabaseConfigProvider[JdbcProfile] {
     import dbConfig.profile.api._
+    private final val table = TableQuery[VerificationTokenTable]
 
-    def getAll: Future[Seq[VerificationToken]] = db.run(VerificationTokenProvider.table.result)
+    def getTable: TableQuery[VerificationTokenTable] = table
+
+    def getAll: Future[Seq[VerificationToken]] = db.run(table.result)
 
     def getExpired(date: Timestamp): Future[Seq[VerificationToken]] = {
-        db.run(VerificationTokenProvider.table.filter(_.expiredAt < date).result)
+        db.run(table.filter(_.expiredAt < date).result)
     }
 
     def get(token: String): Future[Option[VerificationToken]] = {
-        db.run(VerificationTokenProvider.table.filter(_.token === token).result.headOption)
+        db.run(table.filter(_.token === token).result.headOption)
     }
 
     def delete(id: Long): Future[Int] = {
-        db.run(VerificationTokenProvider.table.filter(_.id === id).delete)
+        db.run(table.filter(_.id === id).delete)
     }
 
     def delete(token: VerificationToken): Future[Int] = {
@@ -52,7 +54,7 @@ class VerificationTokenProvider @Inject()(@NamedDatabase("default") protected va
 
     def delete(tokens: Seq[VerificationToken]): Future[Int] = {
         val ids = tokens.map(_.id)
-        db.run(VerificationTokenProvider.table.filter(fm => fm.id inSet ids).delete)
+        db.run(table.filter(fm => fm.id inSet ids).delete)
     }
 
     def createVerificationToken(userID: Long, expiredAt: Timestamp): Future[VerificationToken] = async {
@@ -67,10 +69,6 @@ class VerificationTokenProvider @Inject()(@NamedDatabase("default") protected va
     }
 
     private def insert(token: VerificationToken): Future[Int] = {
-        db.run(VerificationTokenProvider.table += token)
+        db.run(table += token)
     }
-}
-
-object VerificationTokenProvider {
-    private[authorization] final val table = TableQuery[VerificationTokenTable]
 }

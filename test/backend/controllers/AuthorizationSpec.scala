@@ -18,9 +18,9 @@
 package backend.controllers
 
 import backend.models.authorization.forms.SignupForm
-import backend.models.authorization.session.SessionTokenProvider
+import backend.models.authorization.tokens.session.SessionTokenProvider
 import backend.models.authorization.user.UserProvider
-import backend.models.authorization.verification.VerificationTokenProvider
+import backend.models.authorization.tokens.verification.VerificationTokenProvider
 import play.api.mvc.DiscardingCookie
 import play.api.test._
 import play.api.test.Helpers._

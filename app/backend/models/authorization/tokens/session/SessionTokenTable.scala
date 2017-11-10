@@ -15,7 +15,7 @@
  *       limitations under the License.
  */
 
-package backend.models.authorization.session
+package backend.models.authorization.tokens.session
 
 import java.sql.Timestamp
 
@@ -39,6 +39,6 @@ object SessionTokenTable {
     final val TABLE_NAME = "SESSION_TOKEN"
 
     implicit class SessionExtension[C[_]](q: Query[SessionTokenTable, SessionToken, C]) {
-        def withUser = q.join(UserProvider.table).on(_.userID === _.id)
+        def withUser(implicit up: UserProvider) = q.join(up.getTable).on(_.userID === _.id)
     }
 }
