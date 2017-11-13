@@ -111,7 +111,6 @@ class SessionTokenProvider @Inject()(@NamedDatabase("default") protected val dbC
                 Future.successful(0)
             }
         })
-
     }
 
     def createSessionToken(user: User): Future[String] = {

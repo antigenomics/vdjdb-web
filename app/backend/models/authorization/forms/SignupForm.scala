@@ -36,13 +36,13 @@ object SignupForm {
         case signupForm => signupForm.password == signupForm.repeatPassword
     }))
 
-    implicit val signupFailedFormMapping: Form[SignupForm] =
+    final val signupFailedFormMapping: Form[SignupForm] =
         signupFormMapping.withGlobalError("authorization.forms.signup.failed.message")
             .withGlobalError("authorization.forms.signup.failed.workaround.1")
             .withGlobalError("authorization.forms.signup.failed.workaround.2")
             .withGlobalError("authorization.forms.signup.failed.workaround.3")
 
-    implicit val userAlreadyExistsFormMapping: Form[SignupForm] =
+    final val userAlreadyExistsFormMapping: Form[SignupForm] =
         signupFormMapping.withGlobalError("authorization.forms.signup.failed.alreadyExists")
 }
 

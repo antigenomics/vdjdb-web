@@ -15,22 +15,15 @@
  *       limitations under the License.
  */
 
-package backend.actions
+package backend.models.authorization.forms
 
-import play.api.test.FakeRequest
+import play.api.data._
+import play.api.data.Forms._
 
-class SessionActionSpec extends ActionsTestSpec {
+case class ResetRequestForm(email: String)
 
-    "SessionActionSpec" should {
-
-        "filter non-authorized users" taggedAs ActionsTestTag in {
-            val request = FakeRequest()
-
-
-
-            succeed
-        }
-
-    }
-
+object ResetRequestForm {
+    implicit val resetFormMapping: Form[ResetRequestForm] = Form(mapping(
+        "email" -> email
+    )(ResetRequestForm.apply)(ResetRequestForm.unapply))
 }

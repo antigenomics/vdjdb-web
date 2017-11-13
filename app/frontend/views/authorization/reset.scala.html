@@ -1,8 +1,8 @@
 @import play.api.Environment
 @import backend.utils.analytics.Analytics
 @import helper._
-@import backend.models.authorization.forms.ResetForm
-@(form: Form[ResetForm])(implicit environment: Environment, analytics: Analytics, request: Request[_], messages: Messages, flash: Flash)
+@import backend.models.authorization.forms.ResetRequestForm
+@(form: Form[ResetRequestForm])(implicit environment: Environment, analytics: Analytics, request: Request[_], messages: Messages, flash: Flash)
 @implicitField = @{
     FieldConstructor(frontend.views.html.authorization.forms.input.f)
 }

@@ -28,11 +28,11 @@ object LoginForm {
         "password" -> nonEmptyText
     )(LoginForm.apply)(LoginForm.unapply))
 
-    implicit val loginFailedFormMapping: Form[LoginForm] =
+    final val loginFailedFormMapping: Form[LoginForm] =
         loginFormMapping.withGlobalError("authorization.forms.login.failed.message")
             .withGlobalError("authorization.forms.login.failed.workaround.1")
             .withGlobalError("authorization.forms.login.failed.workaround.2")
 
-    implicit val loginUnverified: Form[LoginForm] =
+    final val loginUnverified: Form[LoginForm] =
         loginFormMapping.withGlobalError("authorization.forms.login.failed.unverified")
 }

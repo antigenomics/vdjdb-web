@@ -348,7 +348,7 @@ class AuthorizationSpec extends ControllersTestSpec {
         "verify user with valid token" taggedAs ControllersTestTag in {
             async {
                 val verificationToken = await(up.createUser("login", "verifyme@mail.com", "password"))
-                val result = controller.verify(verificationToken.token).apply(FakeRequest())
+                val result = controller.verifyWithToken(verificationToken.token).apply(FakeRequest())
                 status(result) shouldEqual SEE_OTHER
                 redirectLocation(result) should not be empty
                 redirectLocation(result).get shouldEqual backend.controllers.routes.Authorization.login().url
@@ -364,7 +364,7 @@ class AuthorizationSpec extends ControllersTestSpec {
         }
 
         "redirect with an invalid token" taggedAs ControllersTestTag in {
-            val result = controller.verify("dummy").apply(FakeRequest())
+            val result = controller.verifyWithToken("dummy").apply(FakeRequest())
             status(result) shouldEqual BAD_REQUEST
             contentAsString(result) should include (messages("authorization.verification.invalidToken"))
         }

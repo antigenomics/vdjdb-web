@@ -3,7 +3,7 @@ package backend.controllers
 import javax.inject.Inject
 
 import scala.async.Async.{async, await}
-import backend.models.authorization.forms.{LoginForm, ResetForm, SignupForm}
+import backend.models.authorization.forms.{LoginForm, ResetRequestForm, SignupForm}
 import backend.models.authorization.tokens.session.SessionTokenProvider
 import backend.models.authorization.user.UserProvider
 import backend.models.authorization.tokens.verification.VerificationTokenProvider
@@ -82,12 +82,12 @@ class Authorization @Inject()(cc: ControllerComponents, messagesApi: MessagesApi
     }
 
     def reset: Action[AnyContent] = (userRequestAction andThen SessionAction.unauthorizedOnly) { implicit request =>
-        Ok(frontend.views.html.authorization.reset(ResetForm.resetFormMapping))
+        Ok(frontend.views.html.authorization.reset(ResetRequestForm.resetFormMapping))
     }
 
     def onReset: Action[AnyContent] = (userRequestAction andThen SessionAction.unauthorizedOnly).async { implicit request =>
         Future.successful {
-            ResetForm.resetFormMapping.bindFromRequest.fold(
+            ResetRequestForm.resetFormMapping.bindFromRequest.fold(
                 formWithErrors => {
                     BadRequest(frontend.views.html.authorization.reset(formWithErrors))
                 },
@@ -98,7 +98,12 @@ class Authorization @Inject()(cc: ControllerComponents, messagesApi: MessagesApi
         }
     }
 
-    def verify(token: String): Action[AnyContent] = Action.async { async {
+    def resetWithToken(token: String): Action[AnyContent] = Action {
+        NotImplemented("")
+    }
+
+    def verifyWithToken(token: String): Action[AnyContent] = Action.async {
+        async {
             val verificationToken = await(vtp.get(token))
             if (verificationToken.isEmpty) {
                 BadRequest(messages("authorization.verification.invalidToken"))
