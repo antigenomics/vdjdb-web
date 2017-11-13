@@ -15,7 +15,7 @@
  *       limitations under the License.
  */
 
-package backend.models.authorization.tokens.session
+package backend.models.authorization.tokens.reset
 
 import java.sql.Timestamp
 
@@ -25,20 +25,20 @@ import slick.lifted.Tag
 
 import scala.language.higherKinds
 
-class SessionTokenTable(tag: Tag) extends Table[SessionToken](tag, SessionTokenTable.TABLE_NAME) {
+class ResetTokenTable(tag: Tag) extends Table[ResetToken](tag, ResetTokenTable.TABLE_NAME){
     def id = column[Long]("ID", O.PrimaryKey, O.AutoInc)
     def token = column[String]("TOKEN", O.Length(255), O.Unique)
-    def lastUsage = column[Timestamp]("LAST_USAGE")
+    def expiredAt = column[Timestamp]("EXPIRED_AT")
     def userID = column[Long]("USER_ID")
 
-    def * = (id, token, lastUsage, userID) <> (SessionToken.tupled, SessionToken.unapply)
-    def token_idx = index("SESSION_TOKEN_IDX", token, unique = true)
+    def * = (id, token, expiredAt, userID) <> (ResetToken.tupled, ResetToken.unapply)
+    def token_idx = index("RESET_TOKEN_IDX", token, unique = true)
 }
 
-object SessionTokenTable {
-    final val TABLE_NAME = "SESSION_TOKEN"
+object ResetTokenTable {
+    final val TABLE_NAME = "RESET_TOKEN"
 
-    implicit class SessionExtension[C[_]](q: Query[SessionTokenTable, SessionToken, C]) {
+    implicit class ResetExtension[C[_]](q: Query[ResetTokenTable, ResetToken, C]) {
         def withUser(implicit up: UserProvider) = q.join(up.getTable).on(_.userID === _.id)
     }
 }

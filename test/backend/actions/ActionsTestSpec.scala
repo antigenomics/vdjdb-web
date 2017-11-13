@@ -17,8 +17,8 @@
 
 package backend.actions
 
-import backend.BaseTestSpec
+import backend.BaseTestSpecWithApplication
 
-abstract class ActionsTestSpec extends BaseTestSpec {
+abstract class ActionsTestSpec extends BaseTestSpecWithApplication {
 
 }

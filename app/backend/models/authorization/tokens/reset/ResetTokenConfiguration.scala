@@ -15,18 +15,19 @@
  *       limitations under the License.
  */
 
-package backend.models.authorization.tokens.session
+package backend.models.authorization.tokens.reset
 
 import java.time.Duration
+
 import com.typesafe.config.Config
 import play.api.ConfigLoader
 
-case class SessionTokenConfiguration(keep: Duration, interval: Duration)
+case class ResetTokenConfiguration(keep: Duration, interval: Duration)
 
-object SessionTokenConfiguration {
-    implicit val sessionTokenConfigurationLoader: ConfigLoader[SessionTokenConfiguration] = (rootConfig: Config, path: String) => {
-        val config = rootConfig.getConfig(path)
-        SessionTokenConfiguration(
+object ResetTokenConfiguration {
+    implicit val resetTokenConfigurationLoader: ConfigLoader[ResetTokenConfiguration] = (rootConfig: Config, path: String) => {
+        val config = rootConfig.getConfig("path")
+        ResetTokenConfiguration(
             keep = config.getDuration("keep"),
             interval = config.getDuration("interval")
         )

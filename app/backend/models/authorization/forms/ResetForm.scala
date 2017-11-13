@@ -17,13 +17,22 @@
 
 package backend.models.authorization.forms
 
+import backend.models.authorization.forms.SignupForm.{PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH}
 import play.api.data._
 import play.api.data.Forms._
 
-case class ResetForm(email: String)
+case class ResetForm(oldPassword: String, newPassword: String, newPasswordRepeat: String)
 
 object ResetForm {
     implicit val resetFormMapping: Form[ResetForm] = Form(mapping(
-        "email" -> email
-    )(ResetForm.apply)(ResetForm.unapply))
+        "oldPassword" -> nonEmptyText,
+        "newPassword" -> nonEmptyText(minLength = PASSWORD_MIN_LENGTH, maxLength = PASSWORD_MAX_LENGTH),
+        "newPasswordRepeat" -> nonEmptyText(minLength = PASSWORD_MIN_LENGTH, maxLength = PASSWORD_MAX_LENGTH)
+    )(ResetForm.apply)(ResetForm.unapply) verifying("authorization.forms.signup.failed.workaround.3", fields => fields match {
+        case signupForm => signupForm.newPassword == signupForm.newPasswordRepeat
+    }))
+
+    final val invalidOldPasswordResetFormMapping: Form[ResetForm] =
+        resetFormMapping.withGlobalError("authorization.forms.reset.error.invalidOldPassword")
 }
+
