@@ -28,7 +28,7 @@
                 Logged as: {{ userService.getUser().getEmail() }}
                 <i class="dropdown icon"></i>
                 <div class="menu fade element slow padded" tabindex="-1" #content>
-                    <a class="item">Settings</a>
+                    <a route="/account/details" external="true" class="item">Settings</a>
                     <a route="/authorization/logout" external="true" class="item">Logout</a>
                 </div>
             </div>

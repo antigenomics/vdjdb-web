@@ -27,7 +27,7 @@ object ResetForm {
     implicit val resetFormMapping: Form[ResetForm] = Form(mapping(
         "newPassword" -> nonEmptyText(minLength = PASSWORD_MIN_LENGTH, maxLength = PASSWORD_MAX_LENGTH),
         "newPasswordRepeat" -> nonEmptyText(minLength = PASSWORD_MIN_LENGTH, maxLength = PASSWORD_MAX_LENGTH)
-    )(ResetForm.apply)(ResetForm.unapply) verifying("authorization.forms.signup.failed.workaround.3", fields => fields match {
+    )(ResetForm.apply)(ResetForm.unapply) verifying("authorization.forms.signup.failed.zworkaround.3", fields => fields match {
         case resetForm => resetForm.newPassword == resetForm.newPasswordRepeat
     }))
 }
