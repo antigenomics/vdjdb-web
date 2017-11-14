@@ -23,6 +23,7 @@ import javax.inject.{Inject, Singleton}
 import akka.actor.ActorSystem
 import backend.models.authorization.forms.SignupForm
 import backend.models.authorization.permissions.{UserPermissions, UserPermissionsProvider}
+import backend.models.authorization.tokens.reset.ResetTokenProvider
 import backend.models.authorization.tokens.session.SessionTokenProvider
 import backend.models.authorization.tokens.verification.{VerificationToken, VerificationTokenConfiguration, VerificationTokenProvider}
 import backend.utils.TimeUtils

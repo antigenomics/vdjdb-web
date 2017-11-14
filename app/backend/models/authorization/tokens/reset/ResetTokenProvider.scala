@@ -73,6 +73,10 @@ class ResetTokenProvider @Inject()(@NamedDatabase("default") protected val dbCon
         db.run(table.withUser.filter(_._1.token === token).result.headOption)
     }
 
+    def getByUserID(userID: Long): Future[Option[ResetToken]] = {
+        db.run(table.filter(_.userID === userID).result.headOption)
+    }
+
     def delete(id: Long): Future[Int] = {
         db.run(table.filter(_.id === id).delete)
     }
