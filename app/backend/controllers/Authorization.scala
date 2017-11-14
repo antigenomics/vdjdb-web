@@ -118,9 +118,12 @@ class Authorization @Inject()(cc: ControllerComponents, messagesApi: MessagesApi
     def onReset(token: String): Action[AnyContent] = (userRequestAction andThen SessionAction.unauthorizedOnly).async { implicit request =>
         ResetForm.resetFormMapping.bindFromRequest.fold(
             formWithErrors => async {
+                println("formWithErrors")
+                print(formWithErrors.errors)
                 BadRequest(frontend.views.html.authorization.reset(token, formWithErrors))
             },
             form => async {
+                println("form")
                 val tokenWithUser = await(rtp.getWithUser(token))
                 if (tokenWithUser.nonEmpty) {
                     val _ = await(rtp.delete(tokenWithUser.get._1.id) flatMap { _ =>
