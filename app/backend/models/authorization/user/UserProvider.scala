@@ -166,6 +166,11 @@ class UserProvider @Inject()(@NamedDatabase("default") protected val dbConfigPro
         }
     }
 
+    def updatePassword(user: User, newPassword: String): Future[Int] = {
+        val newHash = BCrypt.hashpw(newPassword, BCrypt.gensalt())
+        db.run(table.filter(_.id === user.id).map(_.password).update(newHash))
+    }
+
     private def insert(user: User): Future[Long] = {
         db.run(table returning table.map(_.id) += user)
     }

@@ -21,9 +21,12 @@ GET         /authorization/login                      backend.controllers.Author
 POST        /authorization/login                      backend.controllers.Authorization.onLogin
 GET         /authorization/signup                     backend.controllers.Authorization.signup
 POST        /authorization/signup                     backend.controllers.Authorization.onSignup
-GET         /authorization/reset                      backend.controllers.Authorization.reset
-POST        /authorization/reset                      backend.controllers.Authorization.onReset
-GET         /authorization/reset/:token               backend.controllers.Authorization.resetWithToken(token)
+GET         /authorization/reset                      backend.controllers.Authorization.resetRequest
+POST        /authorization/reset                      backend.controllers.Authorization.onResetRequest
+
+GET         /authorization/reset/:token               backend.controllers.Authorization.reset(token)
+POST        /authorization/reset/:token               backend.controllers.Authorization.onReset(token)
+
 GET         /authorization/verify/:token              backend.controllers.Authorization.verifyWithToken(token)
 GET         /authorization/logout                     backend.controllers.Authorization.logout
 

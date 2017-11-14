@@ -22,6 +22,9 @@
                 @if(flash.get("created").nonEmpty) {
                     @frontend.views.html.authorization.forms.formSuccess(Seq(flash.get("created").get))
                 }
+                @if(flash.get("reset").nonEmpty) {
+                    @frontend.views.html.authorization.forms.formSuccess(Seq(flash.get("reset").get))
+                }
                 @CSRF.formField
                 @inputText(form("email"), args = 'icon -> "mail",
                     'placeholder -> messages("authorization.forms.login.placeholder.email"),
@@ -30,7 +33,7 @@
                     'placeholder -> messages("authorization.forms.login.placeholder.password"),
                     'fieldType -> "password")
                 <p class="cursor pointer">
-                    <a href="@backend.controllers.routes.Authorization.reset()">@messages("authorization.forms.login.forgot")</a>
+                    <a href="@backend.controllers.routes.Authorization.resetRequest()">@messages("authorization.forms.login.forgot")</a>
                 </p>
                 <button class="ui fluid large teal button" type="submit" form="login">@messages("authorization.forms.login.login")</button>
                 <div class="ui divider"></div>
