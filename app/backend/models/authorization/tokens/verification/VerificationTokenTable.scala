@@ -18,8 +18,10 @@ package backend.models.authorization.tokens.verification
 
 import java.sql.Timestamp
 
+import backend.models.authorization.user.UserProvider
 import slick.jdbc.H2Profile.api._
 import slick.lifted.Tag
+import scala.language.higherKinds
 
 class VerificationTokenTable(tag: Tag) extends Table[VerificationToken](tag, VerificationTokenTable.TABLE_NAME) {
     def id = column[Long]("ID", O.PrimaryKey, O.AutoInc)
@@ -34,4 +36,8 @@ class VerificationTokenTable(tag: Tag) extends Table[VerificationToken](tag, Ver
 
 object VerificationTokenTable {
     final val TABLE_NAME = "VERIFICATION_TOKEN"
+
+    implicit class ResetExtension[C[_]](q: Query[VerificationTokenTable, VerificationToken, C]) {
+        def withUser(implicit up: UserProvider) = q.join(up.getTable).on(_.userID === _.id)
+    }
 }

@@ -220,13 +220,10 @@ class AuthorizationSpec extends ControllersTestSpec {
         }
 
         "redirect user if logged in" taggedAs ControllersTestTag in {
-            //TODO use fixtures
             async {
-                val verificationToken = await(up.createUser("hello", "signup@mail.com", "password"))
-                val user = await(up.verifyUser(verificationToken.token))
-                user should not be empty
-
-                val sessionToken = await(stp.createSessionToken(user.get))
+                val f = fixtures
+                val verifiedUser = f.verifiedUser
+                val sessionToken = await(stp.createSessionToken(verifiedUser.user))
 
                 val request = FakeRequest().withSession(stp.getAuthTokenSessionName -> sessionToken).withCSRFToken
                 val result = controller.login.apply(request)
@@ -344,7 +341,7 @@ class AuthorizationSpec extends ControllersTestSpec {
         }
     }
 
-    "Authorization#verify" should {
+    "Authorization#verifyWithToken" should {
         "verify user with valid token" taggedAs ControllersTestTag in {
             async {
                 val verificationToken = await(up.createUser("login", "verifyme@mail.com", "password"))

@@ -19,10 +19,12 @@ package backend.models.authorization.tokens.verification
 import java.sql.Timestamp
 import javax.inject.{Inject, Singleton}
 
+import backend.models.authorization.user.{User, UserProvider}
 import backend.utils.CommonUtils
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import play.db.NamedDatabase
 import slick.jdbc.JdbcProfile
+
 import scala.concurrent.{ExecutionContext, Future}
 import scala.async.Async.{async, await}
 
@@ -40,8 +42,20 @@ class VerificationTokenProvider @Inject()(@NamedDatabase("default") protected va
         db.run(table.filter(_.expiredAt < date).result)
     }
 
+    def get(id: Long): Future[Option[VerificationToken]] = {
+        db.run(table.filter(_.id === id).result.headOption)
+    }
+
     def get(token: String): Future[Option[VerificationToken]] = {
         db.run(table.filter(_.token === token).result.headOption)
+    }
+
+    def getWithUser(id: Long)(implicit up: UserProvider): Future[Option[(VerificationToken, User)]] = {
+        db.run(table.withUser.filter(_._1.id === id).result.headOption)
+    }
+
+    def getWithUser(token: String)(implicit up: UserProvider): Future[Option[(VerificationToken, User)]] = {
+        db.run(table.withUser.filter(_._1.token === token).result.headOption)
     }
 
     def delete(id: Long): Future[Int] = {

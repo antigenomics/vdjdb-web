@@ -3,7 +3,7 @@ package backend.controllers
 import javax.inject.Inject
 
 import scala.async.Async.{async, await}
-import backend.models.authorization.forms.{LoginForm, ResetRequestForm, SignupForm}
+import backend.models.authorization.forms.{LoginForm, ResetForm, ResetRequestForm, SignupForm}
 import backend.models.authorization.tokens.session.SessionTokenProvider
 import backend.models.authorization.user.UserProvider
 import backend.models.authorization.tokens.verification.VerificationTokenProvider
@@ -13,12 +13,14 @@ import play.api.Environment
 import play.api.i18n.{Lang, Messages, MessagesApi}
 import play.api.mvc._
 import backend.actions.{SessionAction, UserRequestAction}
+import backend.models.authorization.tokens.reset.ResetTokenProvider
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class Authorization @Inject()(cc: ControllerComponents, messagesApi: MessagesApi,
-                              up: UserProvider, vtp: VerificationTokenProvider, stp: SessionTokenProvider, userRequestAction: UserRequestAction)
-                             (implicit ec: ExecutionContext, environment: Environment, analytics: Analytics)
+class Authorization @Inject()(cc: ControllerComponents, messagesApi: MessagesApi, userRequestAction: UserRequestAction)
+                             (implicit ec: ExecutionContext,
+                              up: UserProvider, vtp: VerificationTokenProvider, stp: SessionTokenProvider, rtp: ResetTokenProvider,
+                              environment: Environment, analytics: Analytics)
     extends AbstractController(cc) {
     private final val logger = LoggerFactory.getLogger(this.getClass)
     implicit val messages: Messages = messagesApi.preferred(Seq(Lang.defaultLang))
@@ -81,28 +83,56 @@ class Authorization @Inject()(cc: ControllerComponents, messagesApi: MessagesApi
         )
     }
 
-    def reset: Action[AnyContent] = (userRequestAction andThen SessionAction.unauthorizedOnly) { implicit request =>
-        Ok(frontend.views.html.authorization.reset(ResetRequestForm.resetFormMapping))
+    def resetRequest: Action[AnyContent] = (userRequestAction andThen SessionAction.unauthorizedOnly) { implicit request =>
+        Ok(frontend.views.html.authorization.reset_request(ResetRequestForm.resetRequestFormMapping))
     }
 
-    def onReset: Action[AnyContent] = (userRequestAction andThen SessionAction.unauthorizedOnly).async { implicit request =>
-        Future.successful {
-            ResetRequestForm.resetFormMapping.bindFromRequest.fold(
-                formWithErrors => {
-                    BadRequest(frontend.views.html.authorization.reset(formWithErrors))
-                },
-                form => {
-                    Redirect(backend.controllers.routes.Authorization.reset()).flashing("message" -> "authorization.forms.reset.flashing.message")
+    def onResetRequest: Action[AnyContent] = (userRequestAction andThen SessionAction.unauthorizedOnly).async { implicit request =>
+        ResetRequestForm.resetRequestFormMapping.bindFromRequest.fold(
+            formWithErrors => async {
+                BadRequest(frontend.views.html.authorization.reset_request(formWithErrors))
+            },
+            form => async {
+                val user = await(up.get(form.email))
+                if (user.nonEmpty) {
+                    //TODO Reset email
+                    val resetTokenStr = await(rtp.createResetToken(user.get))
+                    logger.info(s"Reset token for ${form.email}: $resetTokenStr")
                 }
-            )
+                Redirect(backend.controllers.routes.Authorization.resetRequest()).flashing("message" -> "authorization.forms.reset.flashing.message")
+            }
+        )
+    }
+
+    def reset(token: String): Action[AnyContent] = (userRequestAction andThen SessionAction.unauthorizedOnly).async { implicit request =>
+        async {
+            val resetToken = await(rtp.getWithUser(token))
+            if (resetToken.nonEmpty) {
+                Ok(frontend.views.html.authorization.reset(token, ResetForm.resetFormMapping))
+            } else {
+                Redirect(backend.controllers.routes.Application.index())
+            }
         }
     }
 
-    def resetWithToken(token: String): Action[AnyContent] = Action {
-        NotImplemented("")
+    def onReset(token: String): Action[AnyContent] = (userRequestAction andThen SessionAction.unauthorizedOnly).async { implicit request =>
+        ResetForm.resetFormMapping.bindFromRequest.fold(
+            formWithErrors => async {
+                BadRequest(frontend.views.html.authorization.reset(token, formWithErrors))
+            },
+            form => async {
+                val tokenWithUser = await(rtp.getWithUser(token))
+                if (tokenWithUser.nonEmpty) {
+                    val _ = await(up.updatePassword(tokenWithUser.get._2, form.newPassword))
+                    Redirect(backend.controllers.routes.Authorization.login()).flashing("reset" -> "authorization.forms.login.flashing.reset")
+                } else {
+                    BadRequest(frontend.views.html.authorization.login(LoginForm.loginFormMapping.withGlobalError("internal.error")))
+                }
+            }
+        )
     }
 
-    def verifyWithToken(token: String): Action[AnyContent] = Action.async {
+    def verifyWithToken(token: String): Action[AnyContent] = Action.async { implicit request =>
         async {
             val verificationToken = await(vtp.get(token))
             if (verificationToken.isEmpty) {
@@ -112,7 +142,7 @@ class Authorization @Inject()(cc: ControllerComponents, messagesApi: MessagesApi
                 if (user.nonEmpty) {
                     Redirect(backend.controllers.routes.Authorization.login()).flashing("verified" -> "authorization.forms.login.flashing.verified")
                 } else {
-                    BadRequest("")
+                    BadRequest(frontend.views.html.authorization.login(LoginForm.loginFormMapping.withGlobalError("internal.error")))
                 }
             }
         }

@@ -23,7 +23,7 @@ import play.api.data.Forms._
 case class ResetRequestForm(email: String)
 
 object ResetRequestForm {
-    implicit val resetFormMapping: Form[ResetRequestForm] = Form(mapping(
+    implicit val resetRequestFormMapping: Form[ResetRequestForm] = Form(mapping(
         "email" -> email
     )(ResetRequestForm.apply)(ResetRequestForm.unapply))
 }
