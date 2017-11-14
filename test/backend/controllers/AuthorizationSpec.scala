@@ -18,6 +18,7 @@
 package backend.controllers
 
 import backend.models.authorization.forms.SignupForm
+import backend.models.authorization.tokens.reset.ResetTokenProvider
 import backend.models.authorization.tokens.session.SessionTokenProvider
 import backend.models.authorization.user.UserProvider
 import backend.models.authorization.tokens.verification.VerificationTokenProvider
@@ -36,6 +37,7 @@ class AuthorizationSpec extends ControllersTestSpec {
     implicit lazy val up: UserProvider = app.injector.instanceOf[UserProvider]
     implicit lazy val vtp: VerificationTokenProvider = app.injector.instanceOf[VerificationTokenProvider]
     implicit lazy val stp: SessionTokenProvider = app.injector.instanceOf[SessionTokenProvider]
+    implicit lazy val rtp: ResetTokenProvider = app.injector.instanceOf[ResetTokenProvider]
 
     trait UnverifiedUser {
         private final val _verificationToken = Await.result(up.createUser("unverifieduser", "unverifieduser@mail.com", "unverifieduser"), Duration.Inf)
@@ -90,14 +92,12 @@ class AuthorizationSpec extends ControllersTestSpec {
         }
 
         "redirect user if logged in" taggedAs ControllersTestTag in {
-            async {
-                val f = fixtures
-                val request = FakeRequest().withSession(stp.getAuthTokenSessionName -> f.loggedUser.loggedUserSessionToken).withCSRFToken
-                val result = controller.login.apply(request)
+            val f = fixtures
+            val request = FakeRequest().withSession(stp.getAuthTokenSessionName -> f.loggedUser.loggedUserSessionToken).withCSRFToken
+            val result = controller.login.apply(request)
 
-                status(result) shouldEqual SEE_OTHER
-                redirectLocation(result) shouldEqual Some(backend.controllers.routes.Application.index().url)
-            }
+            status(result) shouldEqual SEE_OTHER
+            redirectLocation(result) shouldEqual Some(backend.controllers.routes.Application.index().url)
         }
     }
 
@@ -220,17 +220,12 @@ class AuthorizationSpec extends ControllersTestSpec {
         }
 
         "redirect user if logged in" taggedAs ControllersTestTag in {
-            async {
-                val f = fixtures
-                val verifiedUser = f.verifiedUser
-                val sessionToken = await(stp.createSessionToken(verifiedUser.user))
+            val f = fixtures
+            val request = FakeRequest().withSession(stp.getAuthTokenSessionName -> f.loggedUser.loggedUserSessionToken).withCSRFToken
+            val result = controller.login.apply(request)
 
-                val request = FakeRequest().withSession(stp.getAuthTokenSessionName -> sessionToken).withCSRFToken
-                val result = controller.login.apply(request)
-
-                status(result) shouldEqual SEE_OTHER
-                redirectLocation(result) shouldEqual Some(backend.controllers.routes.Application.index().url)
-            }
+            status(result) shouldEqual SEE_OTHER
+            redirectLocation(result) shouldEqual Some(backend.controllers.routes.Application.index().url)
         }
     }
 
@@ -337,6 +332,177 @@ class AuthorizationSpec extends ControllersTestSpec {
                     user.get.verified shouldEqual true
                     flash(validResult).get("created").get should include ("authorization.forms.signup.success.createdAndVerified")
                 }
+            }
+        }
+    }
+
+    "Authorization#resetRequest" should {
+        "render resetRequest page" taggedAs ControllersTestTag in {
+            val result = controller.resetRequest(FakeRequest().withCSRFToken)
+            val body = contentAsString(result)
+
+            status(result) shouldEqual OK
+            body should include ("csrf")
+            body should include (messages("authorization.forms.reset.reset"))
+        }
+
+        "redirect user if logged in" taggedAs ControllersTestTag in {
+            val f = fixtures
+            val request = FakeRequest().withSession(stp.getAuthTokenSessionName -> f.loggedUser.loggedUserSessionToken).withCSRFToken
+            val result = controller.login.apply(request)
+
+            status(result) shouldEqual SEE_OTHER
+            redirectLocation(result) shouldEqual Some(backend.controllers.routes.Application.index().url)
+        }
+    }
+
+    "Authorization#onResetRequest" should {
+        "redirect with message after request for invalid email" taggedAs ControllersTestTag in {
+            val resetRequest = FakeRequest()
+                .withFormUrlEncodedBody("email" -> "dummy@mail.com")
+                .withCSRFToken
+
+            val result = controller.onResetRequest.apply(resetRequest)
+
+            status(result) shouldEqual SEE_OTHER
+            redirectLocation(result) shouldEqual Some(backend.controllers.routes.Authorization.login().url)
+            flash(result).data should contain key "reset_request"
+            flash(result).data("reset_request") shouldEqual "authorization.forms.reset.flashing.message"
+        }
+
+        "redirect with message and create reset token for verified email" taggedAs ControllersTestTag in {
+            async {
+                val f = fixtures
+                val user = f.verifiedUser.user
+
+                val resetToken = await(rtp.getByUserID(user.id))
+                resetToken should be(empty)
+
+                val resetRequest = FakeRequest()
+                    .withFormUrlEncodedBody("email" -> user.email)
+                    .withCSRFToken
+
+                val result = controller.onResetRequest.apply(resetRequest)
+
+                status(result) shouldEqual SEE_OTHER
+                redirectLocation(result) shouldEqual Some(backend.controllers.routes.Authorization.login().url)
+                flash(result).data should contain key "reset_request"
+                flash(result).data("reset_request") shouldEqual "authorization.forms.reset.flashing.message"
+
+                val resetTokenAgain = await(rtp.getByUserID(user.id))
+                resetTokenAgain should not be empty
+
+                val tokenWithUser = await(rtp.getWithUser(resetTokenAgain.get.token))
+
+                tokenWithUser should not be empty
+                tokenWithUser.get._1.token shouldEqual resetTokenAgain.get.token
+                tokenWithUser.get._2.email shouldEqual user.email
+                tokenWithUser.get._2.login shouldEqual user.login
+            }
+        }
+
+        "redirect with message and create reset token for unverified email" taggedAs ControllersTestTag in {
+            async {
+                val f = fixtures
+                val user = f.unverifiedUser.user
+
+                val resetToken = await(rtp.getByUserID(user.id))
+                resetToken should be(empty)
+
+                val resetRequest = FakeRequest()
+                    .withFormUrlEncodedBody("email" -> user.email)
+                    .withCSRFToken
+
+                val result = controller.onResetRequest.apply(resetRequest)
+
+                status(result) shouldEqual SEE_OTHER
+                redirectLocation(result) shouldEqual Some(backend.controllers.routes.Authorization.login().url)
+                flash(result).data should contain key "reset_request"
+                flash(result).data("reset_request") shouldEqual "authorization.forms.reset.flashing.message"
+
+                val resetTokenAgain = await(rtp.getByUserID(user.id))
+                resetTokenAgain should not be empty
+
+                val tokenWithUser = await(rtp.getWithUser(resetTokenAgain.get.token))
+
+                tokenWithUser should not be empty
+                tokenWithUser.get._1.token shouldEqual resetTokenAgain.get.token
+                tokenWithUser.get._2.email shouldEqual user.email
+                tokenWithUser.get._2.login shouldEqual user.login
+            }
+        }
+    }
+
+    "Authorization#reset" should {
+        "render page only for valid token" taggedAs ControllersTestTag in {
+            async {
+                val f = fixtures
+                val user = f.verifiedUser.user
+
+                val tokenStr = await(rtp.createResetToken(user))
+                val request = FakeRequest().withCSRFToken
+                val result = controller.reset(tokenStr).apply(request)
+
+                status(result) shouldEqual OK
+                contentAsString(result) should include (messages("authorization.forms.reset.reset"))
+            }
+        }
+
+        "redirect user if token is invalid" taggedAs ControllersTestTag in {
+            val request = FakeRequest().withCSRFToken
+            val result = controller.reset("dummy").apply(request)
+
+            status(result) shouldEqual SEE_OTHER
+            redirectLocation(result) shouldEqual Some(backend.controllers.routes.Application.index().url)
+        }
+
+        "redirect user if logged in" taggedAs ControllersTestTag in {
+            val f = fixtures
+            val request = FakeRequest().withSession(stp.getAuthTokenSessionName -> f.loggedUser.loggedUserSessionToken).withCSRFToken
+            val result = controller.reset("dummy").apply(request)
+
+            status(result) shouldEqual SEE_OTHER
+            redirectLocation(result) shouldEqual Some(backend.controllers.routes.Application.index().url)
+        }
+    }
+
+    "Authorization#onReset" should {
+        "forbid to reset with non-equal passwords" taggedAs ControllersTestTag in {
+            async {
+                val f = fixtures
+                val user = f.verifiedUser.user
+
+                val tokenStr = await(rtp.createResetToken(user))
+                val request = FakeRequest().withFormUrlEncodedBody("newPassword" -> "12345678", "newPasswordRepeat" -> "123456789").withCSRFToken
+                val result = controller.onReset(tokenStr).apply(request)
+
+                status(result) shouldEqual BAD_REQUEST
+                contentAsString(result) should include (messages("authorization.forms.signup.failed.workaround.3"))
+            }
+        }
+
+        "be able to reset password with valid token" taggedAs ControllersTestTag in {
+            async {
+                val verificationToken = await(up.createUser("onReset", "onReset@mail.com", "12345678"))
+                val user = await(up.verifyUser(verificationToken))
+                user should not be empty
+                user.get.checkPassword("12345678") shouldEqual true
+
+                val tokenStr = await(rtp.createResetToken(user.get))
+                val request = FakeRequest().withFormUrlEncodedBody("newPassword" -> "87654321", "newPasswordRepeat" -> "87654321").withCSRFToken
+
+                val result = controller.onReset(tokenStr).apply(request)
+
+                status(result) shouldEqual SEE_OTHER
+                flash(result).data should contain key "reset"
+                flash(result).data("reset") shouldEqual "authorization.forms.login.flashing.reset"
+
+                val tokenAfterUsage = await(rtp.get(tokenStr))
+                tokenAfterUsage should be (empty)
+
+                val userAfterReset = await(up.get(user.get.email))
+                userAfterReset should not be empty
+                userAfterReset.get.checkPassword("87654321") shouldEqual true
             }
         }
     }

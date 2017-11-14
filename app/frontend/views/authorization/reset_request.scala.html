@@ -16,9 +16,6 @@
                 @if(form.hasGlobalErrors) {
                     @frontend.views.html.authorization.forms.formErrors(form.globalErrors)
                 }
-                @if(flash.get("message").nonEmpty) {
-                    @frontend.views.html.authorization.forms.formSuccess(Seq(flash.get("message").get))
-                }
                 @CSRF.formField
                 @inputText(form("email"), args = 'icon -> "mail",
                     'placeholder -> messages("authorization.forms.reset.placeholder.email"),

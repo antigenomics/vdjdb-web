@@ -22,6 +22,9 @@
                 @if(flash.get("created").nonEmpty) {
                     @frontend.views.html.authorization.forms.formSuccess(Seq(flash.get("created").get))
                 }
+                @if(flash.get("reset_request").nonEmpty) {
+                    @frontend.views.html.authorization.forms.formSuccess(Seq(flash.get("reset_request").get))
+                }
                 @if(flash.get("reset").nonEmpty) {
                     @frontend.views.html.authorization.forms.formSuccess(Seq(flash.get("reset").get))
                 }

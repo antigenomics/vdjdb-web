@@ -99,7 +99,7 @@ class Authorization @Inject()(cc: ControllerComponents, messagesApi: MessagesApi
                     val resetTokenStr = await(rtp.createResetToken(user.get))
                     logger.info(s"Reset token for ${form.email}: $resetTokenStr")
                 }
-                Redirect(backend.controllers.routes.Authorization.resetRequest()).flashing("message" -> "authorization.forms.reset.flashing.message")
+                Redirect(backend.controllers.routes.Authorization.login()).flashing("reset_request" -> "authorization.forms.reset.flashing.message")
             }
         )
     }
@@ -123,7 +123,9 @@ class Authorization @Inject()(cc: ControllerComponents, messagesApi: MessagesApi
             form => async {
                 val tokenWithUser = await(rtp.getWithUser(token))
                 if (tokenWithUser.nonEmpty) {
-                    val _ = await(up.updatePassword(tokenWithUser.get._2, form.newPassword))
+                    val _ = await(rtp.delete(tokenWithUser.get._1.id) flatMap { _ =>
+                        up.updatePassword(tokenWithUser.get._2, form.newPassword)
+                    })
                     Redirect(backend.controllers.routes.Authorization.login()).flashing("reset" -> "authorization.forms.login.flashing.reset")
                 } else {
                     BadRequest(frontend.views.html.authorization.login(LoginForm.loginFormMapping.withGlobalError("internal.error")))

@@ -30,8 +30,5 @@ object ResetForm {
     )(ResetForm.apply)(ResetForm.unapply) verifying("authorization.forms.signup.failed.workaround.3", fields => fields match {
         case signupForm => signupForm.newPassword == signupForm.newPasswordRepeat
     }))
-
-    final val invalidOldPasswordResetFormMapping: Form[ResetForm] =
-        resetFormMapping.withGlobalError("authorization.forms.reset.error.invalidOldPassword")
 }
 
