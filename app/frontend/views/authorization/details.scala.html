@@ -1,0 +1,64 @@
+@import play.api.Environment
+@import backend.utils.analytics.Analytics
+@import helper._
+@import backend.models.authorization.forms.ChangeForm
+@import backend.models.authorization.user.UserDetails
+@(form: Form[ChangeForm], userDetails: UserDetails)(implicit environment: Environment, analytics: Analytics, request: Request[_], messages: Messages, flash: Flash)
+@implicitField = @{
+    FieldConstructor(frontend.views.html.authorization.forms.input.f)
+}
+
+@frontend.views.html.main("VDJdb: settings") {
+    <div class="ui middle aligned center aligned account grid">
+        <div class="column left aligned">
+            <h3 class="ui top attached header">@messages("account.details.header")</h3>
+            <div class="ui attached segment teal padded">
+                <div class="ui grid">
+                    <div class="ten wide column">
+                        <h2 class="ui header">
+                            <i class="user icon"></i>
+                            <div class="content">
+                                @userDetails.login
+                                <div class="sub header">@userDetails.email</div>
+                            </div>
+                        </h2>
+                        <table class="ui definition table">
+                            <tbody>
+                                <tr>
+                                    <td class="five wide column">Uploaded files</td>
+                                    <td>0</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="six wide column">
+                        <h3 class="ui header">@messages("account.change.password.header")</h3>
+                        @helper.form(action = backend.controllers.routes.Account.changePassword(), args = 'class -> "ui form", 'id -> "change") {
+                            @if(form.hasGlobalErrors) {
+                                @frontend.views.html.authorization.forms.formErrors(form.globalErrors)
+                            }
+                            @CSRF.formField
+                            @inputText(form("oldPassword"), args = 'icon -> "lock",
+                                'placeholder -> messages("account.change.password.oldPasswordPlaceholder"),
+                                'fieldType -> "password")
+                            @inputText(form("newPassword"), args = 'icon -> "lock",
+                                'placeholder -> messages("account.change.password.newPasswordPlaceholder"),
+                                'fieldType -> "password")
+                            @inputText(form("newPasswordRepeat"), args = 'icon -> "lock",
+                                'placeholder -> messages("account.change.password.newPasswordRepeatPlaceholder"),
+                                'fieldType -> "password")
+                            <button class="ui fluid large teal button" type="submit" form="change">@messages("account.change.password.button")</button>
+                        }
+                    </div>
+                </div>
+                <div class="ui divider"></div>
+                <button class="ui button tiny orange right floated">@messages("account.delete.button")</button>
+                <p class="cursor pointer">
+                    <a href="@backend.controllers.routes.Application.index()" rel="noopener">
+                    @messages("authorization.forms.login.back")
+                    </a>
+                </p>
+            </div>
+        </div>
+    </div>
+}

@@ -31,6 +31,10 @@ case class User(id: Long, login: String, email: String, verified: Boolean,
     def checkPassword(plain: String): Boolean = {
         BCrypt.checkpw(plain, password)
     }
+
+    def getDetails: UserDetails = {
+        UserDetails(email, login)
+    }
 }
 
 

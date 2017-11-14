@@ -31,11 +31,20 @@ authorization.forms.signup.failed.alreadyExists = User already exists. Click for
 authorization.forms.reset.reset = Reset
 authorization.forms.reset.back = Back to home
 authorization.forms.reset.placeholder.email = E-mail address
-authorization.forms.reset.error.invalidOldPassword = Invalid old password
 authorization.forms.reset.flashing.message = You request was accepted. If there any account with this email, you will receive a message with \
   reset password instructions
 
 authorization.verification.invalidToken = Invalid verification token
+
+account.details.header = Account details
+account.change.password.header = Change password
+account.change.password.oldPasswordPlaceholder = Old password
+account.change.password.newPasswordPlaceholder = New password
+account.change.password.newPasswordRepeatPlaceholder = Repeat new password
+account.change.password.button = Change
+
+account.change.password.error.invalidOldPassword = Invalid old password
+account.delete.button = Delete account
 
 notfound.message = Oops! Page not found.
 notfound.hint = We could not find the page you were looking for.
