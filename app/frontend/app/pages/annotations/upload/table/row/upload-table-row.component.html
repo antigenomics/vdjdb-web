@@ -1,0 +1,16 @@
+<td>
+    <div class="ui fluid input" [ngClass]="{'error':!item.isNameValid()}">
+        <input placeholder="Enter file name" [(ngModel)]="item.name">
+    </div>
+</td>
+<td>Software</td>
+<td>
+    {{ item.status }}
+    <div class="ui bottom attached indicating progress" #progress>
+        <div class="bar" #progressBar></div>
+    </div>
+</td>
+<td>
+    <button class="ui button" (click)="upload()">Upload</button>
+</td>
+
