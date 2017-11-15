@@ -28,11 +28,14 @@ import { ClipboardService } from './utils/clipboard/clipboard.service';
 import { LoggerService } from './utils/logger/logger.service';
 import { NotificationService } from './utils/notification/notification.service';
 import { UserService } from './common/user/user.service';
+import { AnnotationsPageModule } from './pages/annotations/annotations.module';
 
 @NgModule({
-    imports:      [ CommonModule, BrowserModule, HomePageModule, AboutPageModule, SearchPageModule, NavigationBarModule, RouterModule.forRoot([]) ],
+    imports:      [ CommonModule, BrowserModule, HomePageModule, AboutPageModule, SearchPageModule, AnnotationsPageModule,
+        NavigationBarModule, RouterModule.forRoot([]) ],
     declarations: [ ApplicationComponent ],
     providers:    [ ConfigurationService, UserService, LoggerService, NotificationService, ClipboardService ],
     bootstrap:    [ ApplicationComponent ]
 })
-export class ApplicationModule {}
+export class ApplicationModule {
+}

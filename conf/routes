@@ -7,6 +7,9 @@ GET         /                                         backend.controllers.Applic
 GET         /search                                   backend.controllers.Application.index
 GET         /about                                    backend.controllers.Application.index
 
+GET         /annotations                              backend.controllers.Application.authorizedIndex
+GET         /annotations/upload                       backend.controllers.Application.authorizedIndex
+
 GET         /temporary/:link                          backend.controllers.Application.downloadTemporaryFile(link)
 
 # Database API
@@ -31,8 +34,12 @@ GET         /authorization/verify/:token              backend.controllers.Author
 GET         /authorization/logout                     backend.controllers.Authorization.logout
 
 #Account API
-GET         /account/details                         backend.controllers.Account.details
-POST        /account/details/changePassword          backend.controllers.Account.changePassword
+GET         /account/details                          backend.controllers.Account.details
+POST        /account/details/changePassword           backend.controllers.Account.changePassword
+
+#Annotations API
++ nocsrf
+POST        /annotations/upload                       backend.controllers.AnnotationsAPI.uploadFile
 
 # Map static resources from the /public folder to the /assets URL path
 GET         /assets/*file                             controllers.Assets.versioned(path="/public", file: Asset)

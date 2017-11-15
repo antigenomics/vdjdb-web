@@ -1,0 +1,25 @@
+<div *ngIf="!uploadService.isItemsEmpty()">
+    <table class="ui very compact very basic single line table">
+        <thead>
+        <tr>
+            <th class="four wide">Name</th>
+            <th class="four wide">Software</th>
+            <th class="six wide">Progress</th>
+            <th class="two wide"></th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr *ngFor="let item of uploadService.getItems()" upload-table-row [item]="item"></tr>
+        </tbody>
+    </table>
+</div>
+<div *ngIf="uploadService.isItemsEmpty()">
+    <h2 class="ui center aligned icon header">
+        <i class="file text outline icon"></i>
+        <div class="content">
+            Click "Add" button to proceed
+            <div class="sub header">You can drag and drop your files here</div>
+            <div class="sub header">Supported extensions: txt, gz</div>
+        </div>
+    </h2>
+</div>

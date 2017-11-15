@@ -5,7 +5,7 @@
         <a route="/search" class="item">Browse</a>
 
         <a class="ui dropdown item" dropdown [content]="content" *ngIf="!userService.isLogged()">
-            Intersection
+            Annotations
             <div class="menu fade element slow padded" tabindex="-1" #content>
                 <div class="ui error message">
                     <div class="header">Error</div>
@@ -14,8 +14,8 @@
             </div>
         </a>
 
-        <a route="/intersection" class="item" *ngIf="userService.isLogged()">
-            Intersection
+        <a route="/annotations" class="item" *ngIf="userService.isLogged()">
+            Annotations
         </a>
 
         <a route="/about" class="item">About</a>

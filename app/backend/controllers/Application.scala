@@ -41,6 +41,10 @@ class Application @Inject()(ws: WSClient, assets: Assets, configuration: Configu
         SessionAction.updateCookies(Ok(frontend.views.html.index()))
     }
 
+    def authorizedIndex: Action[AnyContent] = (userRequestAction andThen SessionAction.authorizedOnly) { implicit request =>
+        SessionAction.updateCookies(Ok(frontend.views.html.index()))
+    }
+
     def bundle(file: String): Action[AnyContent] = if (environment.mode == Mode.Dev) Action.async { implicit request =>
         ws.url(s"http://localhost:8080/bundles/$file").get().map { response =>
             val contentType = response.headers.get("Content-Type").flatMap(_.headOption).getOrElse("application/octet-stream")
