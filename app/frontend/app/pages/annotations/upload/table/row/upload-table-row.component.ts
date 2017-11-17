@@ -34,7 +34,7 @@ export class UploadTableRowComponent implements AfterViewInit {
     @ViewChild('progressBar')
     public progressBar: ElementRef;
 
-    constructor(private renderer: Renderer2, private changeDetector: ChangeDetectorRef, private uploadService: UploadService) {}
+    constructor(private renderer: Renderer2, private uploadService: UploadService) {}
 
     public ngAfterViewInit(): void {
         this.updateProgressBar(0);
@@ -47,6 +47,10 @@ export class UploadTableRowComponent implements AfterViewInit {
         this.uploadService.upload(this.item);
     }
 
+    public remove(): void {
+        this.uploadService.remove(this.item);
+    }
+
     private updateProgressBar(value: number) {
         if (value === 0) {
             this.renderer.setStyle(this.progressBar.nativeElement, 'visibility', 'hidden');
@@ -55,6 +59,5 @@ export class UploadTableRowComponent implements AfterViewInit {
         }
         this.renderer.setAttribute(this.progress.nativeElement, 'data-percent', value.toString());
         this.renderer.setStyle(this.progressBar.nativeElement, 'width', value.toString() + '%');
-        this.changeDetector.detectChanges();
     }
 }

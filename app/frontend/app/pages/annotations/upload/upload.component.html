@@ -8,9 +8,6 @@
     <div class="ui attached secondary clearing segment">
         <input type="file" id="fileHandler" name="files[]" multiple (change)="handleNewFiles($event)" style="display: none" />
         <label for="fileHandler" class="ui teal button left floated">Add</label>
-        <button class="ui blue button left floated" *ngIf="uploadService.inQueueExist()">Upload all</button>
-        <!--<label for="fileHandler">Add</label>-->
-        <!--<button class="ui blue button right floated" (click)="reset()">Reset filters</button>-->
-        <!--<button class="ui teal button left floated" [ngClass]="{'loading':isLoading()}" (click)="search()">Refresh table</button>-->
+        <button class="ui blue button left floated" *ngIf="uploadService.isWaitingExist()">Upload all</button>
     </div>
 </div>
