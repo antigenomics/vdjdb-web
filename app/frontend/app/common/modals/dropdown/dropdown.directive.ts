@@ -45,6 +45,7 @@ export class DropdownDirective implements AfterViewInit, OnDestroy {
 
     private show(): void {
         this.renderer2.addClass(this.elementRef.nativeElement, 'active');
+        this.renderer2.addClass(this.elementRef.nativeElement, 'visible');
         this.renderer2.addClass(this.content, 'visible');
         this.renderer2.setStyle(this.content, 'display', 'block');
         this._visible = true;
@@ -59,6 +60,7 @@ export class DropdownDirective implements AfterViewInit, OnDestroy {
 
     private hide(): void {
         this.renderer2.removeClass(this.elementRef.nativeElement, 'active');
+        this.renderer2.removeClass(this.elementRef.nativeElement, 'visible');
         this.renderer2.removeClass(this.content, 'visible');
         this.renderer2.removeStyle(this.content, 'display');
         this._visible = false;

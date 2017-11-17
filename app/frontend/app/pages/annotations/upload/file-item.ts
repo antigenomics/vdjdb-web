@@ -26,30 +26,43 @@ export namespace FileItemSoftwareType {
 export type FileItemStatus = string;
 
 export namespace FileItemStatus {
-    export const IN_QUEUE: string = 'In queue';
+    export const WAITING: string = 'In queue';
     export const LOADING: string = 'Loading';
     export const UPLOADED: string = 'Uploaded';
 }
 
 export class FileItem {
-    private _file: File;
+    public native: File;
 
     public name: string = '';
     public software: FileItemSoftwareType = FileItemSoftwareType.VDJTOOLS;
     public progress: Subject<number> = new Subject();
-    public status: FileItemStatus = FileItemStatus.IN_QUEUE;
+    public status: FileItemStatus = FileItemStatus.WAITING;
 
     constructor(file: File) {
-        this._file = file;
+        this.native = file;
         this.name = file.name;
     }
 
+    public setSoftware(software: FileItemSoftwareType): void {
+        this.software = software;
+    }
+
     public getNativeFile(): File {
-        return this._file;
+        return this.native;
     }
 
     public isNameValid(): boolean {
         let regexp = /^[a-zA-Z0-9_.+-]{1,40}$/;
         return regexp.test(this.name);
+    }
+
+    public isWaiting(): boolean {
+        return this.status === FileItemStatus.WAITING;
+    }
+
+    // noinspection JSMethodCanBeStatic
+    public getAvailableSoftwareTypes(): string[] {
+        return [ FileItemSoftwareType.VDJTOOLS ];
     }
 }

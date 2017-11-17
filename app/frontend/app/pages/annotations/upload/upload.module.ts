@@ -22,9 +22,10 @@ import { UploadComponent } from './upload.component';
 import { UploadTableComponent } from './table/upload-table.component';
 import { UploadService } from './upload.service';
 import { UploadTableRowComponent } from './table/row/upload-table-row.component';
+import { ModalsModule } from '../../../common/modals/modals.module';
 
 @NgModule({
-    imports:      [ BrowserModule, FormsModule ],
+    imports:      [ BrowserModule, FormsModule, ModalsModule ],
     declarations: [ UploadComponent, UploadTableComponent, UploadTableRowComponent ],
     providers:    [ UploadService ]
 })

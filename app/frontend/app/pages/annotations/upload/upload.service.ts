@@ -52,8 +52,15 @@ export class UploadService {
         return this._items.length === 0;
     }
 
-    public inQueueExist(): boolean {
-        return this._items.filter(item => item.status === FileItemStatus.IN_QUEUE).length !== 0;
+    public isWaitingExist(): boolean {
+        return this._items.filter(item => item.status === FileItemStatus.WAITING).length !== 0;
+    }
+
+    public remove(item: FileItem): void {
+        const index = this._items.indexOf(item);
+        if (index > -1) {
+            this._items.splice(index, 1);
+        }
     }
 
     public upload(file: FileItem): void {
@@ -62,6 +69,9 @@ export class UploadService {
             const uploader = this.createUploader(file);
             uploader.subscribe(status => {
                 file.progress.next(status.progress);
+                if (status.progress === 100) {
+                    file.status = FileItemStatus.UPLOADED;
+                }
                 this.logger.debug('Upload: ', status);
             })
         }

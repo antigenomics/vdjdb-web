@@ -1,9 +1,25 @@
 <td>
-    <div class="ui fluid input" [ngClass]="{'error':!item.isNameValid()}">
+    <div class="ui fluid input" [ngClass]="{'error':!item.isNameValid()}" *ngIf="item.isWaiting()">
         <input placeholder="Enter file name" [(ngModel)]="item.name">
     </div>
+    <div *ngIf="!item.isWaiting()">
+        {{ item.name }}
+    </div>
 </td>
-<td>Software</td>
+<td>
+    <div class="ui selection dropdown" dropdown [content]="content" *ngIf="item.isWaiting()">
+        <i class="dropdown icon"></i>
+        <div class="text">{{ item.software }}</div>
+        <div class="menu fast fade element" #content>
+            <div class="item" *ngFor="let software of item.getAvailableSoftwareTypes()" (click)="item.setSoftware(software)">
+                {{ software }}
+            </div>
+        </div>
+    </div>
+    <div *ngIf="!item.isWaiting()">
+        {{ item.software }}
+    </div>
+</td>
 <td>
     {{ item.status }}
     <div class="ui bottom attached indicating progress" #progress>
@@ -11,6 +27,11 @@
     </div>
 </td>
 <td>
-    <button class="ui button" (click)="upload()">Upload</button>
+    <div *ngIf="item.isWaiting()">
+        <button class="ui button" (click)="upload()">Upload</button>
+        <button class="ui icon button" (click)="remove()">
+            <i class="remove icon"></i>
+        </button>
+    </div>
 </td>
 
