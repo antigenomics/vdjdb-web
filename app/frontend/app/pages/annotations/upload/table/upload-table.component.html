@@ -1,15 +1,15 @@
 <div *ngIf="!uploadService.isItemsEmpty()">
-    <table class="ui very compact very basic single line table">
+    <table class="ui very basic single line table">
         <thead>
         <tr>
             <th class="four wide">Name</th>
             <th class="four wide">Software</th>
-            <th class="six wide">Progress</th>
+            <th class="six wide">Status</th>
             <th class="two wide"></th>
         </tr>
         </thead>
         <tbody>
-        <tr *ngFor="let item of uploadService.getItems()" upload-table-row [item]="item"></tr>
+        <tr *ngFor="let item of uploadService.getItems()" upload-table-row [item]="item" [ngClass]="{'disabled':item.status.isRemoved()}"></tr>
         </tbody>
     </table>
 </div>

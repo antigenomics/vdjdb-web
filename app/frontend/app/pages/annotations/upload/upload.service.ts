@@ -16,7 +16,7 @@
  */
 
 import { Injectable } from '@angular/core';
-import { FileItem, FileItemStatus } from './file-item';
+import { FileItem } from './item/file-item';
 import { Observable } from 'rxjs/Observable'
 import { Observer } from 'rxjs/Observer'
 import { LoggerService } from '../../../utils/logger/logger.service';
@@ -52,26 +52,43 @@ export class UploadService {
         return this._items.length === 0;
     }
 
-    public isWaitingExist(): boolean {
-        return this._items.filter(item => item.status === FileItemStatus.WAITING).length !== 0;
+    public isReadyForUploadExist(): boolean {
+        return this._items.some(item => item.status.isReadyForUpload());
     }
 
-    public remove(item: FileItem): void {
-        const index = this._items.indexOf(item);
-        if (index > -1) {
-            this._items.splice(index, 1);
+    public handleItemName(item: FileItem, name: string): void {
+        item.status.validName();
+        item.status.uniqueName();
+
+        const regexp = /^[a-zA-Z0-9_.+-]{1,40}$/;
+        const test = regexp.test(name);
+        if (!test) {
+            item.status.invalidName();
         }
+
+        const isSameNameExist = this._items.some(item => item.name === name);
+        if (isSameNameExist) {
+            item.status.duplicaingName();
+        }
+
+        item.name = name;
+    }
+
+    public uploadAll(): void {
+        this._items
+            .filter(item => !item.status.isError())
+            .forEach(item => this.upload(item));
     }
 
     public upload(file: FileItem): void {
-        if (file.status !== FileItemStatus.UPLOADED) {
-            file.status = FileItemStatus.LOADING;
+        if (file.status.isReadyForUpload()) {
+            file.status.startLoading();
             const uploader = this.createUploader(file);
             uploader.subscribe(status => {
-                file.progress.next(status.progress);
                 if (status.progress === 100) {
-                    file.status = FileItemStatus.UPLOADED;
+                    file.status.uploaded();
                 }
+                file.progress.next(status.progress);
                 this.logger.debug('Upload: ', status);
             })
         }

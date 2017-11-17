@@ -15,36 +15,24 @@
  *       limitations under the License.
  */
 
-import { Subject } from 'rxjs/Subject';
-
-export type FileItemSoftwareType = string;
-
-export namespace FileItemSoftwareType {
-    export const VDJTOOLS: string = 'VDJtools';
-}
-
-export type FileItemStatus = string;
-
-export namespace FileItemStatus {
-    export const WAITING: string = 'In queue';
-    export const LOADING: string = 'Loading';
-    export const UPLOADED: string = 'Uploaded';
-}
+import { ReplaySubject } from 'rxjs/ReplaySubject';
+import { FileItemStatus } from './file-item-status';
+import { FileItemSoftware, FileItemSoftwareTypes } from './file-item-software';
 
 export class FileItem {
     public native: File;
 
     public name: string = '';
-    public software: FileItemSoftwareType = FileItemSoftwareType.VDJTOOLS;
-    public progress: Subject<number> = new Subject();
-    public status: FileItemStatus = FileItemStatus.WAITING;
+    public software: FileItemSoftware = FileItemSoftwareTypes.VDJTOOLS;
+    public progress: ReplaySubject<number> = new ReplaySubject(1);
+    public status: FileItemStatus = new FileItemStatus();
 
     constructor(file: File) {
         this.native = file;
         this.name = file.name;
     }
 
-    public setSoftware(software: FileItemSoftwareType): void {
+    public setSoftware(software: FileItemSoftware): void {
         this.software = software;
     }
 
@@ -52,17 +40,8 @@ export class FileItem {
         return this.native;
     }
 
-    public isNameValid(): boolean {
-        let regexp = /^[a-zA-Z0-9_.+-]{1,40}$/;
-        return regexp.test(this.name);
-    }
-
-    public isWaiting(): boolean {
-        return this.status === FileItemStatus.WAITING;
-    }
-
     // noinspection JSMethodCanBeStatic
-    public getAvailableSoftwareTypes(): string[] {
-        return [ FileItemSoftwareType.VDJTOOLS ];
+    public getAvailableSoftwareTypes(): FileItemSoftware[] {
+        return [ FileItemSoftwareTypes.VDJTOOLS ];
     }
 }

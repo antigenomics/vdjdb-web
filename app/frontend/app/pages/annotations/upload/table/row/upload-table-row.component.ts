@@ -16,13 +16,13 @@
  */
 
 import { Component, Input, ChangeDetectionStrategy, ViewChild, ElementRef, AfterViewInit, Renderer2, ChangeDetectorRef } from '@angular/core';
-import { FileItem } from '../../file-item';
+import { FileItem } from '../../item/file-item';
 import { UploadService } from '../../upload.service';
 
 @Component({
     selector:        'tr[upload-table-row]',
     templateUrl:     './upload-table-row.component.html',
-    changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.Default
 })
 export class UploadTableRowComponent implements AfterViewInit {
     @Input('item')
@@ -34,7 +34,7 @@ export class UploadTableRowComponent implements AfterViewInit {
     @ViewChild('progressBar')
     public progressBar: ElementRef;
 
-    constructor(private renderer: Renderer2, private uploadService: UploadService) {}
+    constructor(private renderer: Renderer2, private changeDetector: ChangeDetectorRef, private uploadService: UploadService) {}
 
     public ngAfterViewInit(): void {
         this.updateProgressBar(0);
@@ -48,7 +48,7 @@ export class UploadTableRowComponent implements AfterViewInit {
     }
 
     public remove(): void {
-        this.uploadService.remove(this.item);
+        this.item.status.remove();
     }
 
     private updateProgressBar(value: number) {
@@ -59,5 +59,6 @@ export class UploadTableRowComponent implements AfterViewInit {
         }
         this.renderer.setAttribute(this.progress.nativeElement, 'data-percent', value.toString());
         this.renderer.setStyle(this.progressBar.nativeElement, 'width', value.toString() + '%');
+        this.changeDetector.detectChanges();
     }
 }

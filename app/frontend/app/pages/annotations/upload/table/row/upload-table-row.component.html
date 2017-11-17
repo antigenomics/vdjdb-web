@@ -1,35 +1,36 @@
 <td>
-    <div class="ui fluid input" [ngClass]="{'error':!item.isNameValid()}" *ngIf="item.isWaiting()">
-        <input placeholder="Enter file name" [(ngModel)]="item.name">
+    <div class="ui fluid transparent left icon input" [ngClass]="{'error':!item.status.isNameValid()}" *ngIf="item.status.isWaiting()">
+        <input placeholder="Enter sample name" [ngModel]="item.name" (ngModelChange)="uploadService.handleItemName(item, $event)">
+        <i class="write icon"></i>
     </div>
-    <div *ngIf="!item.isWaiting()">
+    <div *ngIf="!item.status.isWaiting()">
         {{ item.name }}
     </div>
 </td>
 <td>
-    <div class="ui selection dropdown" dropdown [content]="content" *ngIf="item.isWaiting()">
+    <div class="ui fluid dropdown" dropdown [content]="content" *ngIf="item.status.isWaiting()">
+        <span class="text">{{ item.software.title }}</span>
         <i class="dropdown icon"></i>
-        <div class="text">{{ item.software }}</div>
         <div class="menu fast fade element" #content>
             <div class="item" *ngFor="let software of item.getAvailableSoftwareTypes()" (click)="item.setSoftware(software)">
-                {{ software }}
+                {{ software.title }}
             </div>
         </div>
     </div>
-    <div *ngIf="!item.isWaiting()">
-        {{ item.software }}
+    <div *ngIf="!item.status.isWaiting()">
+        {{ item.software.title }}
     </div>
 </td>
 <td>
-    {{ item.status }}
+    {{ item.status.getStatusString() }}
     <div class="ui bottom attached indicating progress" #progress>
         <div class="bar" #progressBar></div>
     </div>
 </td>
 <td>
-    <div *ngIf="item.isWaiting()">
-        <button class="ui button" (click)="upload()">Upload</button>
-        <button class="ui icon button" (click)="remove()">
+    <div *ngIf="item.status.isWaiting()">
+        <button class="ui tiny button" (click)="upload()">Upload</button>
+        <button class="ui tiny icon button" (click)="remove()">
             <i class="remove icon"></i>
         </button>
     </div>

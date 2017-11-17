@@ -18,10 +18,6 @@
 import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { UploadService } from './upload.service';
 
-interface HTMLInputEvent extends Event {
-    target: HTMLInputElement & EventTarget;
-}
-
 @Component({
     selector:        'upload',
     templateUrl:     './upload.component.html',
@@ -31,8 +27,8 @@ export class UploadComponent {
 
     constructor(public uploadService: UploadService) {}
 
-    public handleNewFiles(event: HTMLInputEvent): void {
-        this.uploadService.addItems(event.target.files);
+    public handleNewFiles(event: Event): void {
+        this.uploadService.addItems((event.target as HTMLInputElement).files);
     }
 
 }
