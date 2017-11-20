@@ -15,16 +15,19 @@
  *       limitations under the License.
  */
 
-import { Component, Input, ChangeDetectionStrategy, ViewChild, ElementRef, AfterViewInit, Renderer2, ChangeDetectorRef } from '@angular/core';
+import { Component, Input, ChangeDetectionStrategy, ViewChild, ElementRef, AfterViewInit, Renderer2, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { FileItem } from '../../item/file-item';
 import { UploadService } from '../../upload.service';
+import { Subscription } from 'rxjs/Subscription';
 
 @Component({
     selector:        'tr[upload-table-row]',
     templateUrl:     './upload-table-row.component.html',
     changeDetection: ChangeDetectionStrategy.Default
 })
-export class UploadTableRowComponent implements AfterViewInit {
+export class UploadTableRowComponent implements AfterViewInit, OnDestroy {
+    private _progressSubscription: Subscription;
+
     @Input('item')
     public item: FileItem;
 
@@ -38,7 +41,7 @@ export class UploadTableRowComponent implements AfterViewInit {
 
     public ngAfterViewInit(): void {
         this.updateProgressBar(0);
-        this.item.progress.subscribe((value: number) => {
+        this._progressSubscription = this.item.progress.subscribe((value: number) => {
             this.updateProgressBar(value);
         });
     }
@@ -49,6 +52,10 @@ export class UploadTableRowComponent implements AfterViewInit {
 
     public remove(): void {
         this.item.status.remove();
+    }
+
+    public ngOnDestroy(): void {
+        this._progressSubscription.unsubscribe();
     }
 
     private updateProgressBar(value: number) {

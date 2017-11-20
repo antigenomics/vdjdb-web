@@ -29,10 +29,13 @@
 </td>
 <td>
     <div *ngIf="item.status.isWaiting()">
-        <button class="ui tiny button" (click)="upload()">Upload</button>
+        <button class="ui tiny button" (click)="upload()" [ngClass]="{'disabled':item.status.beforeUploadError()}">Upload</button>
         <button class="ui tiny icon button" (click)="remove()">
             <i class="remove icon"></i>
         </button>
+    </div>
+    <div *ngIf="item.status.isLoading()">
+        <div class="ui active small inline loader"></div>
     </div>
 </td>
 

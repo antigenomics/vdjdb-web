@@ -15,12 +15,37 @@
  *       limitations under the License.
  */
 
-import { Component } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { UploadService, UploadServiceEvent } from '../upload/upload.service';
+import { Subscription } from 'rxjs/Subscription';
 
 @Component({
     selector:        'sidebar',
-    templateUrl:     './sidebar.component.html'
+    templateUrl:     './sidebar.component.html',
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class SidebarComponent {
+export class SidebarComponent implements OnInit, OnDestroy {
+    private _loadingLabel: boolean = false;
+    private _uploadServiceEventsSubscriber: Subscription;
 
+    constructor(private uploadService: UploadService, private changeDetector: ChangeDetectorRef) {}
+
+    public ngOnInit(): void {
+        this._uploadServiceEventsSubscriber = this.uploadService.getEvents().subscribe(event => {
+            if (event === UploadServiceEvent.UPLOADING_STARTED) {
+                this._loadingLabel = true;
+            } else if (event == UploadServiceEvent.UPLOADING_ENDED) {
+                this._loadingLabel = false;
+            }
+            this.changeDetector.detectChanges();
+        })
+    }
+
+    public ngOnDestroy(): void {
+        this._uploadServiceEventsSubscriber.unsubscribe();
+    }
+
+    public isLoading(): boolean {
+        return this._loadingLabel;
+    }
 }

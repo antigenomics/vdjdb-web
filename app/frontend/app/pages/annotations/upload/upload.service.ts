@@ -17,31 +17,52 @@
 
 import { Injectable } from '@angular/core';
 import { FileItem } from './item/file-item';
-import { Observable } from 'rxjs/Observable'
-import { Observer } from 'rxjs/Observer'
+import { Observable } from 'rxjs/Observable';
+import { Observer } from 'rxjs/Observer';
 import { LoggerService } from '../../../utils/logger/logger.service';
+import { ReplaySubject } from 'rxjs/ReplaySubject';
 
 export class UploadStatus {
     fileName: string;
     progress: number;
+    loading: boolean;
+    error: string;
 
-    constructor(fileName: string, progress: number) {
+    constructor(fileName: string, progress: number, loading: boolean = true, error?: string) {
         this.fileName = fileName;
         this.progress = progress;
+        this.loading = loading;
+        this.error = error;
     }
+}
+
+export type UploadServiceEvent = number;
+
+export namespace UploadServiceEvent {
+    export const UPLOADING_STARTED = 1;
+    export const UPLOADING_ENDED = 2;
 }
 
 
 @Injectable()
 export class UploadService {
+    private _uploadingCount: number = 0;
+    private _events: ReplaySubject<UploadServiceEvent> = new ReplaySubject(1);
     private _items: FileItem[] = [];
 
-    constructor(private logger: LoggerService) {}
+    constructor(private logger: LoggerService) {
+    }
 
     public addItems(files: FileList): void {
         for (let i = 0; i < files.length; ++i) {
-            this._items.push(new FileItem(files.item(i)))
+            const fileItem = new FileItem(files[ i ]);
+            this.handleItemName(fileItem, fileItem.name);
+            this._items.push(fileItem);
         }
+    }
+
+    public getEvents(): Observable<UploadServiceEvent> {
+        return this._events;
     }
 
     public getItems(): FileItem[] {
@@ -50,6 +71,10 @@ export class UploadService {
 
     public isItemsEmpty(): boolean {
         return this._items.length === 0;
+    }
+
+    public isLoadingExist(): boolean {
+        return this._items.some(item => item.status.isLoading());
     }
 
     public isReadyForUploadExist(): boolean {
@@ -76,51 +101,94 @@ export class UploadService {
 
     public uploadAll(): void {
         this._items
-            .filter(item => !item.status.isError())
+            .filter(item => !item.status.beforeUploadError())
             .forEach(item => this.upload(item));
     }
 
     public upload(file: FileItem): void {
         if (file.status.isReadyForUpload()) {
             file.status.startLoading();
+
+            this.fireUploadingStartEvent();
             const uploader = this.createUploader(file);
-            uploader.subscribe(status => {
-                if (status.progress === 100) {
-                    file.status.uploaded();
+            uploader.subscribe({
+                next: status => {
+                    if (status.loading === false) {
+                        if (status.progress === 100 && status.error === undefined) {
+                            file.status.uploaded();
+                        } else if (status.error !== undefined) {
+                            file.status.error(status.error);
+                        }
+                        this.fireUploadingEndedEvent();
+                    }
+                    file.progress.next(status.progress);
+                },
+                error: (err: UploadStatus) => {
+                    file.status.error(err.error);
+                    file.progress.next(err.progress);
+                    this.fireUploadingEndedEvent();
                 }
-                file.progress.next(status.progress);
-                this.logger.debug('Upload: ', status);
-            })
+            });
+
+        }
+    }
+
+    private fireUploadingStartEvent(): void {
+        this._uploadingCount += 1;
+        this._events.next(UploadServiceEvent.UPLOADING_STARTED);
+    }
+
+    private fireUploadingEndedEvent(): void {
+        this._uploadingCount -= 1;
+        if (this._uploadingCount === 0) {
+            this._events.next(UploadServiceEvent.UPLOADING_ENDED);
         }
     }
 
     private createUploader(file: FileItem): Observable<UploadStatus> {
-        this.logger.debug('FileUploaderService: uploading file', file);
-
-        let formData: FormData = new FormData();
-        formData.append('file', file.getNativeFile());
+        this.logger.debug('FileUploaderService: uploading file', `${file.name} (size: ${file.getNativeFile().size})`);
 
         return Observable.create((observer: Observer<UploadStatus>) => {
+            const formData: FormData = new FormData();
+            formData.append('file', file.getNativeFile());
             const xhr = new XMLHttpRequest();
 
-            xhr.addEventListener('progress', progress => {
-                this.logger.debug('FileUploaderService: progress', progress);
+            xhr.upload.addEventListener('progress', progress => {
                 if (progress.lengthComputable) {
-                    // progress.loaded is a number between 0 and 1, so we'll multiple it by 100
                     const completed = Math.round(progress.loaded / progress.total * 100);
-                    observer.next(new UploadStatus(file.name, completed));
+                    observer.next(new UploadStatus(file.name, completed, true));
                 }
             });
 
             xhr.addEventListener('error', error => {
+                const request = error.target as XMLHttpRequest;
                 this.logger.debug('FileUploaderService: error', error);
+                observer.error(new UploadStatus(file.name, 0, false, request.responseText));
             });
 
-            xhr.open('POST', '/annotations/upload');
+            xhr.addEventListener('load', event => {
+                const request = event.target as XMLHttpRequest;
+                const status = request.status;
+                console.log(event);
+                this.logger.debug('FileUploaderService: load with status', status);
+                if (status === 200) {
+                    observer.next(new UploadStatus(file.name, 100, false));
+                    observer.complete();
+                } else {
+                    const errorResponse = request.responseText;
+                    observer.error(new UploadStatus(file.name, 0, false, errorResponse));
+                }
+            });
+
+            xhr.addEventListener('abort', () => {
+                observer.error(new UploadStatus(file.name, 0, false, 'Aborted'));
+            });
+
+            xhr.open('POST', '/annotations/upload', true);
             xhr.send(formData);
 
             return () => xhr.abort();
-        })
+        });
 
     }
 }

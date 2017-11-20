@@ -17,6 +17,7 @@
 
 package backend.controllers
 
+import java.nio.file.Paths
 import javax.inject.Inject
 
 import backend.actions.{SessionAction, UserRequestAction}
@@ -37,15 +38,14 @@ class AnnotationsAPI @Inject()(cc: ControllerComponents, userRequestAction: User
         (userRequestAction(parse.multipartFormData(1024 * 1024 * 1024)) andThen SessionAction.authorizedOnly) {
             implicit request =>
                 request.body.file("file").map { file =>
-                    logger.info(s"File uploaded ${file.filename} from user ${request.user.get.login} and size")
-
+                    logger.info(s"File uploaded ${file.filename} from user ${request.user.get.login}")
+                    file.ref.moveTo(Paths.get(s"/tmp/play/${file.filename}"), replace = true)
                     // only get the last part of the filename
                     // otherwise someone can send a path like ../../home/foo/bar.txt to write to other files on the system
                     // val filename = Paths.get(picture.filename).getFileName
 
                     // picture.ref.moveTo(Paths.get(s"/tmp/picture/$filename"), replace = true)
-
-                    Ok("File uploaded")
+                    BadRequest("Error privet")
                 }.getOrElse {
                     logger.info(s"Failed to upload file")
                     BadRequest("Internal server error")
