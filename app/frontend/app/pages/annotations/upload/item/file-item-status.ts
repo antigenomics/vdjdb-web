@@ -24,9 +24,12 @@ export namespace FileItemStatusFlags {
     export const DUPLICATE_FILE_NAME: number = 1 << 3;
     export const LOADING: number = 1 << 4;
     export const UPLOADED: number = 1 << 5;
+    export const ERROR: number = 1 << 6;
 }
 
 export class FileItemStatus {
+    private _errorStatus: string = '';
+
     public status: FileItemStatusFlags = FileItemStatusFlags.WAITING;
 
     public isWaiting(): boolean {
@@ -37,13 +40,21 @@ export class FileItemStatus {
         return this.checkStatusFlag(FileItemStatusFlags.REMOVED);
     }
 
-    public isError(): boolean {
+    public beforeUploadError(): boolean {
         return this.checkStatusFlag(FileItemStatusFlags.INVALID_FILE_NAME) === true
             || this.checkStatusFlag(FileItemStatusFlags.DUPLICATE_FILE_NAME) === true;
     }
 
+    public isLoading(): boolean {
+        return this.checkStatusFlag(FileItemStatusFlags.LOADING);
+    }
+
+    public isError(): boolean {
+        return this.checkStatusFlag(FileItemStatusFlags.ERROR);
+    }
+
     public isReadyForUpload(): boolean {
-        return this.isError() === false && this.checkStatusFlag(FileItemStatusFlags.WAITING);
+        return this.beforeUploadError() === false && this.checkStatusFlag(FileItemStatusFlags.WAITING);
     }
 
     public isNameValid(): boolean {
@@ -59,6 +70,12 @@ export class FileItemStatus {
     public uploaded(): void {
         this.unsetStatusFlag(FileItemStatusFlags.LOADING);
         this.setStatusFlag(FileItemStatusFlags.UPLOADED);
+    }
+
+    public error(errorStatus: string): void {
+        this.unsetStatusFlag(FileItemStatusFlags.LOADING);
+        this.setStatusFlag(FileItemStatusFlags.ERROR);
+        this._errorStatus = errorStatus;
     }
 
     public invalidName(): void {
@@ -95,6 +112,8 @@ export class FileItemStatus {
             return 'Loading';
         } else if (this.checkStatusFlag(FileItemStatusFlags.UPLOADED)) {
             return 'Uploaded successfully';
+        } else if (this.checkStatusFlag(FileItemStatusFlags.ERROR)) {
+            return this._errorStatus;
         }
         return '';
     }

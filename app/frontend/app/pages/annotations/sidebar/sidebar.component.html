@@ -4,7 +4,7 @@
         <div class="menu">
             <a [routerLink]="['upload']" class="item">
                 Upload
-                <div class="ui teal left label">
+                <div class="ui teal left label" *ngIf="isLoading()">
                     <div class="ui active mini inverted inline loader"></div>
                 </div>
             </a>
