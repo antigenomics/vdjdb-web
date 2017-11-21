@@ -26,9 +26,11 @@ import backend.actions.{SessionAction, UserRequest, UserRequestAction}
 import backend.actors.AnnotationsWebSocketActor
 import backend.models.authorization.permissions.UserPermissionsProvider
 import backend.models.authorization.user.UserProvider
+import backend.models.files.sample.SampleFileProvider
 import backend.server.limit.RequestLimits
 import backend.utils.analytics.Analytics
 import com.typesafe.config.ConfigMemorySize
+import org.apache.commons.io.FilenameUtils
 import org.slf4j.LoggerFactory
 import play.api.{Configuration, Environment}
 import play.api.libs.Files
@@ -40,7 +42,7 @@ import scala.async.Async.{async, await}
 import scala.concurrent.{ExecutionContext, Future}
 
 class AnnotationsAPI @Inject()(cc: ControllerComponents, userRequestAction: UserRequestAction, conf: Configuration)
-                              (implicit upp: UserPermissionsProvider, up: UserProvider,
+                              (implicit upp: UserPermissionsProvider, up: UserProvider, sfp: SampleFileProvider,
                                as: ActorSystem, mat: Materializer, ec: ExecutionContext, limits: RequestLimits,
                                environment: Environment, analytics: Analytics)
     extends AbstractController(cc) {
@@ -65,14 +67,20 @@ class AnnotationsAPI @Inject()(cc: ControllerComponents, userRequestAction: User
         (userRequestAction(parse.multipartFormData(maxUploadFileSize.toBytes)) andThen SessionAction.authorizedOnly andThen checkUploadAllowed) {
             implicit request =>
                 request.body.file("file").map { file =>
-                    logger.info(s"File uploaded ${file.filename} from user ${request.user.get.login}")
-                    try {
-                        file.ref.moveTo(Paths.get(s"/tmp/play/${file.filename}"), replace = true)
-                        Ok("Uploaded")
-                    } catch {
-                        case ex: Throwable =>
-                            logger.error(s"Upload error: ${ex.toString}")
-                            BadRequest("Internal server error")
+                    request.body.asFormUrlEncoded("name").headOption match {
+                        case Some(nameWithExtension) =>
+                            val name = FilenameUtils.getBaseName(nameWithExtension)
+                            val extension = FilenameUtils.getExtension(nameWithExtension)
+                            logger.info(s"File uploaded $name ($extension) from user ${request.user.get.login}")
+                            try {
+                                file.ref.moveTo(Paths.get(s"/tmp/play/${file.filename}"), replace = true)
+                                Ok("Uploaded")
+                            } catch {
+                                case ex: Throwable =>
+                                    logger.error(s"Upload error: ${ex.toString}")
+                                    BadRequest("Internal server error")
+                            }
+                        case None => BadRequest("Empty file name")
                     }
                 }.getOrElse {
                     BadRequest("Internal server error")

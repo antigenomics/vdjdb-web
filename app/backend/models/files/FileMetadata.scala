@@ -26,6 +26,13 @@ case class FileMetadata(id: Long, fileName: String, extension: String, path: Str
 
     def getNameWithDateAndExtension: String = s"$fileName-$createdAt.$extension"
 
+    def checkIfExist(): Boolean = {
+        val directory = new File(folder)
+        val file = new File(path)
+
+        directory.exists() && file.exists()
+    }
+
     private[files] def deleteFile(): Unit = {
         val directory = new File(folder)
         val file = new File(path)

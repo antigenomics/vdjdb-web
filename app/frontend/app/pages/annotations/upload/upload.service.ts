@@ -155,6 +155,7 @@ export class UploadService {
         return Observable.create((observer: Observer<UploadStatus>) => {
             const formData: FormData = new FormData();
             formData.append('file', file.getNativeFile());
+            formData.append('name', file.name);
             const xhr = new XMLHttpRequest();
 
             xhr.upload.addEventListener('progress', (progress) => {

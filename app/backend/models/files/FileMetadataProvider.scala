@@ -48,6 +48,15 @@ class FileMetadataProvider @Inject()(@NamedDatabase("default") protected val dbC
         insert(FileMetadata(0, fileName, extension, s"$folder/$fileName.$extension", folder))
     }
 
+    def delete(metadataID: Long): Future[Int] = {
+        get(metadataID) flatMap {
+            case Some(metadata) =>
+                delete(metadata)
+            case None =>
+                Future.successful(0)
+        }
+    }
+
     def delete(metadata: FileMetadata): Future[Int] = {
         db.run(table.filter(_.id === metadata.id).delete) andThen { case _ =>
             metadata.deleteFile()
