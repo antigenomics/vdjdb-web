@@ -63,6 +63,6 @@ import { SearchTableService } from './search-table.service';
                         SearchTableEntryUrlComponent,
                         SearchTableEntryGeneComponent,
                         SearchTableEntryCdrComponent ],
-    providers:       [ SearchTableService, FiltersService, WebSocketService ]
+    providers:       [ SearchTableService, FiltersService ]
 })
 export class SearchTableModule {}

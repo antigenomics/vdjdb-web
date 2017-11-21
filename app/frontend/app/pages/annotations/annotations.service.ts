@@ -27,8 +27,6 @@ export namespace AnnotationsServiceEvents {
     export const INITIALIZED: number = 0;
 }
 
-export type AnnotationsServiceWebSocketActions = string;
-
 export namespace AnnotationsServiceWebSocketActions {
     export const USER_DETAILS: string = 'details';
 }
@@ -39,7 +37,10 @@ export class AnnotationsService {
     private _initialized: boolean = false;
     private _user: User;
 
-    constructor(private connection: WebSocketService, private logger: LoggerService) {
+    private connection: WebSocketService;
+
+    constructor(private logger: LoggerService) {
+        this.connection = new WebSocketService(logger);
         this.connection.onOpen(async () => {
             const userDetailsRequest = this.connection.sendMessage({
                 action: AnnotationsServiceWebSocketActions.USER_DETAILS

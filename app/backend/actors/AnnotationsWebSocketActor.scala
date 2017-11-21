@@ -19,10 +19,7 @@ class AnnotationsWebSocketActor(out: ActorRef, limit: IpLimit, user: User)
     def handleMessage(out: WebSocketOutActorRef, data: Option[JsValue]): Unit = {
         out.getAction match {
             case UserDetailsResponse.Action => async {
-                val details = UserDetailsResponse(await(user.getDetails))
-                println(s"Privet, ${details}")
-                out.success(details)
-                println("Privet")
+                out.success(UserDetailsResponse(await(user.getDetails)))
             }
             case _ =>
                 out.errorMessage("Invalid action")

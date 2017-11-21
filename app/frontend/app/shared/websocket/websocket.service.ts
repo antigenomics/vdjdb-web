@@ -64,8 +64,7 @@ export class WebSocketService {
     private _onErrorCallback: (event: Event) => void;
     private _onCloseCallback: (event: CloseEvent) => void;
 
-    constructor(private logger: LoggerService) {
-    }
+    constructor(private logger: LoggerService) {}
 
     public isDisconnected(): boolean {
         return this._connectionStatus === WebSocketConnectionStatus.CLOSED;
@@ -77,6 +76,9 @@ export class WebSocketService {
 
     public connect(url: string): void {
         if (this._connection) {
+            if (this._lastConnectedUrl !== url) {
+                this.logger.debug('WebSocketService WARNING!: attempt to reconnect', `Last connected url: ${this._lastConnectedUrl}, Attempt: ${url}`);
+            }
             return;
         }
 

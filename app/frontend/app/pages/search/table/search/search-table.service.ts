@@ -61,11 +61,13 @@ export class SearchTableService {
     private _sortRule = new SortRule();
     private _recordsFound: number = 0;
     private _numberOfRecords: number = 0;
-
     private _updateEvent = new EventEmitter();
 
-    constructor(private connection: WebSocketService, private filters: FiltersService,
+    private connection: WebSocketService;
+
+    constructor(private filters: FiltersService,
                 private logger: LoggerService, private notifications: NotificationService) {
+        this.connection = new WebSocketService(logger);
         this.connection.onOpen(async () => {
             const metadataRequest = this.connection.sendMessage({
                 action: SearchTableWebSocketActions.METADATA
