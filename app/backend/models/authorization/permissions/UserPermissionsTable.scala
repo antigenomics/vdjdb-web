@@ -23,7 +23,7 @@ import slick.lifted.Tag
 class UserPermissionsTable(tag: Tag) extends Table[UserPermissions](tag, UserPermissionsTable.TABLE_NAME) {
     def id = column[Long]("ID", O.PrimaryKey, O.AutoInc)
     def maxFilesCount = column[Int]("MAX_FILES_COUNT")
-    def maxFileSize = column[Int]("MAX_FILE_SIZE")
+    def maxFileSize = column[Long]("MAX_FILE_SIZE")
     def isUploadAllowed = column[Boolean]("IS_UPLOAD_ALLOWED")
     def isDeleteAllowed = column[Boolean]("IS_DELETE_ALLOWED")
 

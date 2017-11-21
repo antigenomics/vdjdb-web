@@ -12,12 +12,22 @@
  *     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *     See the License for the specific language governing permissions and
  *     limitations under the License.
+ *
  */
 
-package backend.models.authorization.user
+package backend.models.files.sample
 
-import backend.models.authorization.permissions.UserPermissions
-import backend.models.files.sample.SampleFile
+import backend.models.authorization.user.{User, UserProvider}
+import backend.models.files.{FileMetadata, FileMetadataProvider}
 
-// TODO add information about files etc
-case class UserDetails(email: String, login: String, files: Seq[SampleFile], permissions: UserPermissions)
+import scala.concurrent.{ExecutionContext, Future}
+
+case class SampleFile(id: Long, metadataID: Long, userID: Long) {
+    def getMetadata(implicit fmp: FileMetadataProvider, ec: ExecutionContext): Future[FileMetadata] = {
+        fmp.get(metadataID).map(_.get)
+    }
+
+    def getUser(implicit up: UserProvider, ec: ExecutionContext): Future[User] = {
+        up.get(userID).map(_.get)
+    }
+}

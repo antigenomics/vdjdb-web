@@ -16,9 +16,8 @@
 
 package backend.actors
 
-import akka.actor.{Actor, ActorRef, ActorSystem, PoisonPill, Props}
+import akka.actor.{ActorRef, ActorSystem, Props}
 import backend.models.files.temporary.TemporaryFileProvider
-import backend.server.api.ClientRequest
 import backend.server.search.api.export.{ExportDataRequest, ExportDataResponse}
 import backend.server.search.api.paired.{PairedDataRequest, PairedDataResponse}
 import backend.server.search.api.search.{SearchDataRequest, SearchDataResponse}

@@ -44,7 +44,6 @@ export class AnnotationsService {
             const userDetailsRequest = this.connection.sendMessage({
                 action: AnnotationsServiceWebSocketActions.USER_DETAILS
             });
-
             const userDetailsResponse = await userDetailsRequest;
             this._user = User.deserialize(userDetailsResponse.get('details'));
             this.logger.debug('AnnotationsService: user', this._user);

@@ -7,7 +7,7 @@ GET         /                                         backend.controllers.Applic
 GET         /search                                   backend.controllers.Application.index
 GET         /about                                    backend.controllers.Application.index
 
-GET         /annotations                              controllers.Default.redirect("/annotations/info")
+GET         /annotations                              controllers.Default.redirect(to = "/annotations/info")
 GET         /annotations/info                         backend.controllers.Application.authorizedIndex
 GET         /annotations/upload                       backend.controllers.Application.authorizedIndex
 

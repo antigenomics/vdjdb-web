@@ -21,7 +21,7 @@ import backend.models.files.{FileMetadata, FileMetadataProvider}
 import scala.concurrent.{ExecutionContext, Future}
 
 case class TemporaryFile(id: Long, link: String, expiredAt: Timestamp, metadataID: Long) {
-    def getMetadata(implicit fileMetadataProvider: FileMetadataProvider, ex: ExecutionContext): Future[FileMetadata] = {
-        fileMetadataProvider.get(metadataID).map(_.get)
+    def getMetadata(implicit fmp: FileMetadataProvider, ec: ExecutionContext): Future[FileMetadata] = {
+        fmp.get(metadataID).map(_.get)
     }
 }

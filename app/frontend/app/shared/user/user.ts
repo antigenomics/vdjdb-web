@@ -18,18 +18,21 @@
 export class User {
     public login: string;
     public email: string;
+    // TODO
+    public files: any[];
     public permissions: UserPermissions;
 
-    constructor(login: string, email: string, permissions: UserPermissions) {
+    constructor(login: string, email: string, files: any[], permissions: UserPermissions) {
         this.login = login;
         this.email = email;
+        this.files = files;
         this.permissions = permissions;
     }
 
     public static deserialize(input: any): User {
         /* Disable tslint to prevent ClosureCompiler mangling */
         /* tslint:disable:no-string-literal */
-        return new User(input['login'], input['email'], UserPermissions.deserialize(input['permissions']));
+        return new User(input['login'], input['email'], input['files'], UserPermissions.deserialize(input['permissions']));
         /* tslint:enable:no-string-literal */
     }
 }

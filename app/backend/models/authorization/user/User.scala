@@ -18,7 +18,11 @@
 package backend.models.authorization.user
 
 import backend.models.authorization.permissions.{UserPermissions, UserPermissionsProvider}
+import backend.models.files.FileMetadata
+import backend.models.files.sample.{SampleFile, SampleFileProvider}
 import org.mindrot.jbcrypt.BCrypt
+import play.api.libs.Files
+
 import scala.async.Async.{async, await}
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -28,9 +32,43 @@ case class User(id: Long, login: String, email: String, verified: Boolean,
         upp.getByID(permissionID).map(_.get)
     }
 
-    def getDetails(implicit upp: UserPermissionsProvider, ec: ExecutionContext): Future[UserDetails] = async {
-        val permissions = await(getPermissions)
-        UserDetails(email, login, permissions)
+    def getSampleFiles(implicit sfp: SampleFileProvider, ec: ExecutionContext): Future[Seq[SampleFile]] = {
+        sfp.getByUserID(id)
+    }
+
+    def getSampleFilesWithMetadata(implicit sfp: SampleFileProvider, ec: ExecutionContext): Future[Seq[(SampleFile, FileMetadata)]] = {
+        sfp.getByUserIDWithMetadata(id)
+    }
+
+    def getDetails(implicit upp: UserPermissionsProvider, sfp: SampleFileProvider, ec: ExecutionContext): Future[UserDetails] = async {
+        val permissions = getPermissions
+        val files = getSampleFiles
+        UserDetails(email, login, await(files), await(permissions))
+    }
+
+    def getFolder: String = throw new RuntimeException("Not implemented")
+
+    def addSampleFile(name: String, extension: String, file: Files.TemporaryFile)
+                     (implicit sfp: SampleFileProvider, upp: UserPermissionsProvider, ec: ExecutionContext): Future[Either[Long, String]] = async {
+        val files = await(getSampleFilesWithMetadata)
+        if (files.exists(_._2.fileName == name)) {
+            Right(s"Sample file $name already exist")
+        } else {
+            val permissions = await(getPermissions)
+            if (!permissions.isUploadAllowed) {
+                Right("Upload is not allowed for this account")
+            } else {
+                if (permissions.maxFilesCount <= files.length) {
+                    Right("You have exceeded files count limit")
+                } else {
+                    if (permissions.getMaxFileSizeInBytes <= file.getAbsoluteFile.length()) {
+                        Right("You have exceeded file size limit")
+                    } else {
+                        Left(0)
+                    }
+                }
+            }
+        }
     }
 
     def checkPassword(plain: String): Boolean = {
