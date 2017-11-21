@@ -23,7 +23,7 @@ import { UploadService } from './upload.service';
     templateUrl:     './upload.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class UploadComponent {
+export class AnnotationsUploadComponent {
 
     constructor(public uploadService: UploadService) {}
 

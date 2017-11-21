@@ -21,12 +21,13 @@ import { BrowserModule } from '@angular/platform-browser';
 import { ModalsModule } from '../../../shared/modals/modals.module';
 import { UploadTableRowComponent } from './table/row/upload-table-row.component';
 import { UploadTableComponent } from './table/upload-table.component';
-import { UploadComponent } from './upload.component';
+import { AnnotationsUploadComponent } from './upload.component';
 import { UploadService } from './upload.service';
 
 @NgModule({
     imports:      [ BrowserModule, FormsModule, ModalsModule ],
-    declarations: [ UploadComponent, UploadTableComponent, UploadTableRowComponent ],
+    declarations: [ AnnotationsUploadComponent, UploadTableComponent, UploadTableRowComponent ],
+    exports:      [ AnnotationsUploadComponent, UploadTableComponent, UploadTableRowComponent ],
     providers:    [ UploadService ]
 })
 export class UploadModule {}

@@ -16,6 +16,7 @@
 
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { Utils } from '../../utils/utils';
+import { LoggerService } from '../../utils/logger/logger.service';
 
 @Component({
     selector:    'navbar',
@@ -26,9 +27,10 @@ export class NavigationBarComponent {
     private _isLogged: boolean = false;
     private _userEmail: string = '';
 
-    constructor() {
+    constructor(logger: LoggerService) {
         this._isLogged = Utils.Cookies.getCookie('logged') === 'true';
         this._userEmail = Utils.Cookies.getCookie('email');
+        logger.debug('Navbar: user email', this._userEmail);
     }
 
     public isLogged(): boolean {
