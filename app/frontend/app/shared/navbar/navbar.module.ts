@@ -25,5 +25,4 @@ import { RouteDirective } from './route.directive';
     declarations: [ NavigationBarComponent, RouteDirective ],
     exports:      [ NavigationBarComponent, RouteDirective ]
 })
-export class NavigationBarModule {
-}
+export class NavigationBarModule {}

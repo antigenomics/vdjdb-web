@@ -14,15 +14,14 @@
  *    limitations under the License.
  */
 
-package backend.server.table.search.api.search
+package backend.server.search.api.export
 
-import backend.server.table.search.SearchTableRow
 import play.api.libs.json.{Json, Writes}
 
-case class SearchDataResponse(page: Int, pageSize: Int, pageCount: Int, recordsFound: Int, rows: List[SearchTableRow])
+case class ExportDataResponse(link: String)
 
-object SearchDataResponse {
-    final val Action: String = "search"
+object ExportDataResponse {
+    final val Action: String = "export"
 
-    implicit val searchTableResultsFilterResponseWrites: Writes[SearchDataResponse] = Json.writes[SearchDataResponse]
+    implicit val exportDataResponseWrites: Writes[ExportDataResponse] = Json.writes[ExportDataResponse]
 }

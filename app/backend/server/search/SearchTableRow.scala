@@ -14,22 +14,21 @@
  *    limitations under the License.
  */
 
-package backend.server.table.search
+package backend.server.search
 
 import com.antigenomics.vdjdb.db.Row
 import play.api.libs.json.{Json, OWrites}
 
-case class SearchTableRowMetadata(pairedID: String, cdr3vEnd: Int, cdr3jStart: Int)
+case class SearchTableRow(entries: Seq[String], metadata: SearchTableRowMetadata)
 
-object SearchTableRowMetadata {
-    implicit val searchTableRowMetadataWrites: OWrites[SearchTableRowMetadata] = Json.writes[SearchTableRowMetadata]
+object SearchTableRow {
+    implicit val searchTableRowWrites: OWrites[SearchTableRow] = Json.writes[SearchTableRow]
 
-    def createFromRow(r: Row) : SearchTableRowMetadata = {
-        val cdr3fix = Json.parse(r.getAt("cdr3fix").getValue)
-
-        val cdr3vEnd = (cdr3fix \ "vEnd").validate[Int].asOpt.getOrElse(-1)
-        val cdr3jStart = (cdr3fix \ "jStart").validate[Int].asOpt.getOrElse(-1)
-
-        SearchTableRowMetadata(r.getAt("complex.id").getValue, cdr3vEnd, cdr3jStart)
+    def createFromRow(r: Row): SearchTableRow = {
+        val entries = r.getEntries
+            .filter(_.getColumn.getMetadata.get("visible") == "1")
+            .map(_.getValue)
+        val metadata = SearchTableRowMetadata.createFromRow(r)
+        SearchTableRow(entries, metadata)
     }
 }

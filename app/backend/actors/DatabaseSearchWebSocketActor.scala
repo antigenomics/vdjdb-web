@@ -19,16 +19,16 @@ package backend.actors
 import akka.actor.{Actor, ActorRef, ActorSystem, PoisonPill, Props}
 import backend.models.files.temporary.TemporaryFileProvider
 import backend.server.api.ClientRequest
-import backend.server.table.search.api.export.{ExportDataRequest, ExportDataResponse}
-import backend.server.table.search.api.paired.{PairedDataRequest, PairedDataResponse}
-import backend.server.table.search.api.search.{SearchDataRequest, SearchDataResponse}
+import backend.server.search.api.export.{ExportDataRequest, ExportDataResponse}
+import backend.server.search.api.paired.{PairedDataRequest, PairedDataResponse}
+import backend.server.search.api.search.{SearchDataRequest, SearchDataResponse}
 import backend.server.database.Database
 import backend.server.database.api.metadata.DatabaseMetadataResponse
 import backend.server.database.api.suggestions.{DatabaseColumnSuggestionsRequest, DatabaseColumnSuggestionsResponse}
 import backend.server.database.filters.{DatabaseFilterRequest, DatabaseFilterType, DatabaseFilters}
 import backend.server.limit.{IpLimit, RequestLimits}
-import backend.server.table.search.SearchTable
-import backend.server.table.search.export.SearchTableConverter
+import backend.server.search.SearchTable
+import backend.server.search.export.SearchTableConverter
 import play.api.libs.json._
 
 import scala.concurrent.ExecutionContext

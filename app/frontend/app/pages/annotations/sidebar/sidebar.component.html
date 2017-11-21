@@ -1,10 +1,11 @@
-<div class="ui visible sidebar vertical menu with navbar">
+<div class="ui fade element sidebar vertical menu with navbar" [ngClass]="{'visible':isVisible()}">
     <div class="item">
         <div class="header">Notebook</div>
         <div class="menu">
+            <a [routerLink]="['info']" class="item">Info</a>
             <a [routerLink]="['upload']" class="item">
                 Upload
-                <div class="ui teal left label" *ngIf="isLoading()">
+                <div class="ui teal left label" *ngIf="isFilesUploading()">
                     <div class="ui active mini inverted inline loader"></div>
                 </div>
             </a>

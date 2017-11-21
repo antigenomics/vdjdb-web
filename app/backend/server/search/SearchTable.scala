@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package backend.server.table.search
+package backend.server.search
 
 
 import backend.server.database.Database

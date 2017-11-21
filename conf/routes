@@ -7,7 +7,7 @@ GET         /                                         backend.controllers.Applic
 GET         /search                                   backend.controllers.Application.index
 GET         /about                                    backend.controllers.Application.index
 
-GET         /annotations                              backend.controllers.Application.authorizedIndex
+GET         /annotations/info                         backend.controllers.Application.authorizedIndex
 GET         /annotations/upload                       backend.controllers.Application.authorizedIndex
 
 GET         /temporary/:link                          backend.controllers.Application.downloadTemporaryFile(link)
@@ -39,7 +39,8 @@ POST        /account/details/changePassword           backend.controllers.Accoun
 
 #Annotations API
 + nocsrf
-POST        /annotations/upload                       backend.controllers.AnnotationsAPI.uploadFile
+POST        /api/annotations/upload                   backend.controllers.AnnotationsAPI.uploadFile
+GET         /api/annotations/connect                  backend.controllers.AnnotationsAPI.connect
 
 # Map static resources from the /public folder to the /assets URL path
 GET         /assets/*file                             controllers.Assets.versioned(path="/public", file: Asset)

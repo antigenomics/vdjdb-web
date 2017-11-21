@@ -187,7 +187,7 @@ export class UploadService {
                 observer.error(new UploadStatus(file.name, -1, false, 'Aborted'));
             });
 
-            xhr.open('POST', '/annotations/upload', true);
+            xhr.open('POST', '/api/annotations/upload', true);
             xhr.send(formData);
 
             return () => xhr.abort();

@@ -14,23 +14,27 @@
  *    limitations under the License.
  */
 
-package backend.server.table.search.export
+package backend.server.search.export
 
 import backend.models.files.temporary.{TemporaryFileLink, TemporaryFileProvider}
 import backend.server.database.Database
-import backend.server.table.search.SearchTable
+import backend.server.search.SearchTable
 import scala.concurrent.Future
 
-trait SearchTableConverter {
-    def convert(table: SearchTable, database: Database): Future[TemporaryFileLink]
-    def getExtension: String
-}
+case class SearchTableTabDelimitedConverter()(implicit temporaryFileProvider: TemporaryFileProvider) extends SearchTableConverter {
 
-object SearchTableConverter {
-    def getConverter(converterType: String)(implicit temporaryFileProvider: TemporaryFileProvider): Option[SearchTableConverter] = {
-        converterType match {
-            case "tab-delimited-txt" => Some(SearchTableTabDelimitedConverter())
-            case _ => None
-        }
+    override def convert(table: SearchTable, database: Database): Future[TemporaryFileLink] = {
+        val rows = table.getRows
+
+        val content = new StringBuilder()
+
+        val header = database.getMetadata.columns.map(column => column.title).mkString("", "\t", "\r\n")
+        content.append(header)
+
+        rows.foreach(row => content.append(row.entries.mkString("", "\t", "\r\n")))
+
+        temporaryFileProvider.createTemporaryFile("SearchTable", getExtension, content.toString())
     }
+
+    override def getExtension: String = "txt"
 }
