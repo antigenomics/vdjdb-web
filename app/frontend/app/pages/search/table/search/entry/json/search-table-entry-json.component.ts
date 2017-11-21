@@ -15,9 +15,9 @@
  */
 
 import { ChangeDetectionStrategy, Component, HostListener } from '@angular/core';
-import { DatabaseColumnInfo } from '../../../../../database/database-metadata';
-import { ClipboardService } from '../../../../../utils/clipboard/clipboard.service';
-import { NotificationService } from '../../../../../utils/notification/notification.service';
+import { ClipboardService } from '../../../../../../utils/clipboard/clipboard.service';
+import { NotificationService } from '../../../../../../utils/notification/notification.service';
+import { DatabaseColumnInfo } from '../../../../database/database-metadata';
 
 @Component({
     selector: 'td[search-table-entry-json]',
@@ -67,11 +67,13 @@ export class SearchTableEntryJsonComponent {
             // #fdae61 - orange
             // #d7191c - red
 
+            /* Disable tslint to prevent ClosureCompiler mangling */
+            /* tslint:disable:no-string-literal */
             if (column.name === 'cdr3fix') {
-                if (json.good === false) {
+                if (json['good'] === false) {
                     color = '#d7191c';
-                } else if (json.fixNeeded === true) {
-                    if (json.cdr3 === json.cdr3_old) {
+                } else if (json['fixNeeded'] === true) {
+                    if (json['cdr3'] === json['cdr3_old']) {
                         color = '#dde927';
                     } else {
                         color = '#fdae61';
@@ -80,6 +82,7 @@ export class SearchTableEntryJsonComponent {
                     color = '#1a9641';
                 }
             }
+            /* tslint:enable:no-string-literal */
 
             this._value = text;
             this._color = color;

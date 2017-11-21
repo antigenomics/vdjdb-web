@@ -15,10 +15,10 @@
  *       limitations under the License.
  */
 
-import { Component, Input, ChangeDetectionStrategy, ViewChild, ElementRef, AfterViewInit, Renderer2, ChangeDetectorRef, OnDestroy } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Input, OnDestroy, Renderer2, ViewChild } from '@angular/core';
+import { Subscription } from 'rxjs/Subscription';
 import { FileItem } from '../../item/file-item';
 import { UploadService } from '../../upload.service';
-import { Subscription } from 'rxjs/Subscription';
 
 @Component({
     selector:        'tr[upload-table-row]',
@@ -26,6 +26,7 @@ import { Subscription } from 'rxjs/Subscription';
     changeDetection: ChangeDetectionStrategy.Default
 })
 export class UploadTableRowComponent implements AfterViewInit, OnDestroy {
+    private static ONE_HUNDRED_PROGRESS: number = 100;
     private _progressSubscription: Subscription;
 
     @Input('item')
@@ -42,7 +43,7 @@ export class UploadTableRowComponent implements AfterViewInit, OnDestroy {
     public ngAfterViewInit(): void {
         this.updateProgressBar(0, 0);
         this._progressSubscription = this.item.progress.subscribe((value: number) => {
-            const progress = value < 0 ? 100: value;
+            const progress = value < 0 ? UploadTableRowComponent.ONE_HUNDRED_PROGRESS : value;
             const dataPercent = value < 0 ? 1 : value;
             this.updateProgressBar(progress, dataPercent);
         });

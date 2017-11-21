@@ -17,11 +17,11 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { RouterModule } from '@angular/router';
-import { FiltersModule } from '../../common/filters/filters.module';
-import { SearchTableModule } from '../../common/table/search/search-table.module';
+import { FiltersModule } from '../../shared/filters/filters.module';
 import { NotificationModule } from '../../utils/notification/notification.module';
 import { SearchInfoComponent } from './info/search-info.component';
 import { SearchPageComponent } from './search.component';
+import { SearchTableModule } from './table/search/search-table.module';
 
 @NgModule({
     imports:      [ BrowserModule, FiltersModule, SearchTableModule, NotificationModule,

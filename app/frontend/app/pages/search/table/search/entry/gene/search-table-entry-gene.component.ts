@@ -17,8 +17,7 @@
 import {
     ChangeDetectionStrategy, ChangeDetectorRef, Component, ComponentFactory, ComponentRef, HostListener, Renderer2, ViewContainerRef
 } from '@angular/core';
-import { NotificationService } from '../../../../../utils/notification/notification.service';
-import { WebSocketResponseData } from '../../../../websocket/websocket-response';
+import { NotificationService } from '../../../../../../utils/notification/notification.service';
 import { SearchTableRow } from '../../row/search-table-row';
 import { SearchTableService } from '../../search-table.service';
 

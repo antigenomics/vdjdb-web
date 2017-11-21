@@ -12,8 +12,6 @@ class AnnotationsWebSocketActor(out: ActorRef, limit: IpLimit)
 
     def handleMessage(out: WebSocketOutActorRef, data: Option[JsValue]): Unit = {
         out.getAction match {
-            case "ping" =>
-                out.handshake()
             case _ =>
                 out.errorMessage("Invalid action")
         }

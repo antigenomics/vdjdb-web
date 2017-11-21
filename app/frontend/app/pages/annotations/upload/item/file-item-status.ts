@@ -18,6 +18,7 @@
 export type FileItemStatusFlags = number;
 
 export namespace FileItemStatusFlags {
+    /*tslint:disable:no-bitwise no-magic-numbers */
     export const WAITING: number = 1 << 0;
     export const REMOVED: number = 1 << 1;
     export const INVALID_FILE_NAME: number = 1 << 2;
@@ -25,6 +26,7 @@ export namespace FileItemStatusFlags {
     export const LOADING: number = 1 << 4;
     export const UPLOADED: number = 1 << 5;
     export const ERROR: number = 1 << 6;
+    /*tslint:enable:no-bitwise no-magic-numbers*/
 }
 
 export class FileItemStatus {
@@ -105,7 +107,7 @@ export class FileItemStatus {
         } else if (this.checkStatusFlag(FileItemStatusFlags.INVALID_FILE_NAME)) {
             return 'Invalid sample name';
         } else if (this.checkStatusFlag(FileItemStatusFlags.DUPLICATE_FILE_NAME)) {
-            return 'Duplicating sample name'
+            return 'Duplicating sample name';
         } else if (this.checkStatusFlag(FileItemStatusFlags.WAITING)) {
             return 'In queue';
         } else if (this.checkStatusFlag(FileItemStatusFlags.LOADING)) {
@@ -118,6 +120,7 @@ export class FileItemStatus {
         return '';
     }
 
+    /*tslint:disable:no-bitwise */
     private checkStatusFlag(flag: FileItemStatusFlags): boolean {
         return (this.status & flag) === flag;
     }
@@ -133,4 +136,5 @@ export class FileItemStatus {
     private toggleStatusFlag(flag: FileItemStatusFlags): void {
         this.status ^= flag;
     }
+    /*tslint:enable:no-bitwise */
 }

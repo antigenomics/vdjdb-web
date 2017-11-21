@@ -16,17 +16,17 @@
  */
 
 import { Injectable } from '@angular/core';
-import { FileItem } from './item/file-item';
 import { Observable } from 'rxjs/Observable';
 import { Observer } from 'rxjs/Observer';
-import { LoggerService } from '../../../utils/logger/logger.service';
 import { ReplaySubject } from 'rxjs/ReplaySubject';
+import { LoggerService } from '../../../utils/logger/logger.service';
+import { FileItem } from './item/file-item';
 
 export class UploadStatus {
-    fileName: string;
-    progress: number;
-    loading: boolean;
-    error: string;
+    public fileName: string;
+    public progress: number;
+    public loading: boolean;
+    public error: string;
 
     constructor(fileName: string, progress: number, loading: boolean = true, error?: string) {
         this.fileName = fileName;
@@ -36,14 +36,12 @@ export class UploadStatus {
     }
 }
 
-
 export type UploadServiceEvent = number;
 
 export namespace UploadServiceEvent {
     export const UPLOADING_STARTED = 1;
     export const UPLOADING_ENDED = 2;
 }
-
 
 @Injectable()
 export class UploadService {
@@ -75,11 +73,11 @@ export class UploadService {
     }
 
     public isLoadingExist(): boolean {
-        return this._items.some(item => item.status.isLoading());
+        return this._items.some((item) => item.status.isLoading());
     }
 
     public isReadyForUploadExist(): boolean {
-        return this._items.some(item => item.status.isReadyForUpload());
+        return this._items.some((item) => item.status.isReadyForUpload());
     }
 
     public handleItemName(item: FileItem, name: string): void {
@@ -92,7 +90,7 @@ export class UploadService {
             item.status.invalidName();
         }
 
-        const isSameNameExist = this._items.some(item => item.name === name);
+        const isSameNameExist = this._items.some((_item) => _item.name === name);
         if (isSameNameExist) {
             item.status.duplicaingName();
         }
@@ -102,8 +100,8 @@ export class UploadService {
 
     public uploadAll(): void {
         this._items
-            .filter(item => !item.status.beforeUploadError())
-            .forEach(item => this.upload(item));
+            .filter((item) => !item.status.beforeUploadError())
+            .forEach((item) => this.upload(item));
     }
 
     public upload(file: FileItem): void {
@@ -113,7 +111,7 @@ export class UploadService {
             this.fireUploadingStartEvent();
             const uploader = this.createUploader(file);
             uploader.subscribe({
-                next: status => {
+                next: (status) => {
                     if (status.loading === false) {
                         if (status.progress === 100 && status.error === undefined) {
                             file.status.uploaded();
@@ -154,20 +152,20 @@ export class UploadService {
             formData.append('file', file.getNativeFile());
             const xhr = new XMLHttpRequest();
 
-            xhr.upload.addEventListener('progress', progress => {
+            xhr.upload.addEventListener('progress', (progress) => {
                 if (progress.lengthComputable) {
                     const completed = Math.round(progress.loaded / progress.total * 100);
                     observer.next(new UploadStatus(file.name, completed, true));
                 }
             });
 
-            xhr.addEventListener('error', error => {
+            xhr.addEventListener('error', (error) => {
                 const request = error.target as XMLHttpRequest;
                 this.logger.debug('FileUploaderService: error', error);
                 observer.error(new UploadStatus(file.name, -1, false, request.responseText));
             });
 
-            xhr.addEventListener('load', event => {
+            xhr.addEventListener('load', (event) => {
                 const request = event.target as XMLHttpRequest;
                 const status = request.status;
                 console.log(event);

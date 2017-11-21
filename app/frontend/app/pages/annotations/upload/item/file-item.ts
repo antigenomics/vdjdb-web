@@ -16,8 +16,8 @@
  */
 
 import { ReplaySubject } from 'rxjs/ReplaySubject';
-import { FileItemStatus } from './file-item-status';
 import { FileItemSoftware, FileItemSoftwareTypes } from './file-item-software';
+import { FileItemStatus } from './file-item-status';
 
 export class FileItem {
     public native: File;

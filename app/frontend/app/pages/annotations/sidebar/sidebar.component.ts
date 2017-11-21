@@ -16,8 +16,8 @@
  */
 
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
-import { UploadService, UploadServiceEvent } from '../upload/upload.service';
 import { Subscription } from 'rxjs/Subscription';
+import { UploadService, UploadServiceEvent } from '../upload/upload.service';
 
 @Component({
     selector:        'sidebar',
@@ -31,14 +31,14 @@ export class SidebarComponent implements OnInit, OnDestroy {
     constructor(private uploadService: UploadService, private changeDetector: ChangeDetectorRef) {}
 
     public ngOnInit(): void {
-        this._uploadServiceEventsSubscriber = this.uploadService.getEvents().subscribe(event => {
+        this._uploadServiceEventsSubscriber = this.uploadService.getEvents().subscribe((event) => {
             if (event === UploadServiceEvent.UPLOADING_STARTED) {
                 this._loadingLabel = true;
-            } else if (event == UploadServiceEvent.UPLOADING_ENDED) {
+            } else if (event === UploadServiceEvent.UPLOADING_ENDED) {
                 this._loadingLabel = false;
             }
             this.changeDetector.detectChanges();
-        })
+        });
     }
 
     public ngOnDestroy(): void {

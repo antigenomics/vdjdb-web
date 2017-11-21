@@ -17,15 +17,15 @@
 import { EventEmitter, Injectable } from '@angular/core';
 import { ReplaySubject } from 'rxjs/ReplaySubject';
 import { Subject } from 'rxjs/Subject';
-import { DatabaseColumnInfo, DatabaseMetadata } from '../../../database/database-metadata';
-import { LoggerService } from '../../../utils/logger/logger.service';
-import { NotificationService } from '../../../utils/notification/notification.service';
-import { Utils } from '../../../utils/utils';
-import { Filter, FiltersOptions, IFilter } from '../../filters/filters';
-import { FiltersService } from '../../filters/filters.service';
-import { WebSocketRequestData } from '../../websocket/websocket-request';
-import { WebSocketResponseData } from '../../websocket/websocket-response';
-import { WebSocketResponseStatus, WebSocketService } from '../../websocket/websocket.service';
+import { Filter, FiltersOptions, IFilter } from '../../../../shared/filters/filters';
+import { FiltersService } from '../../../../shared/filters/filters.service';
+import { WebSocketRequestData } from '../../../../shared/websocket/websocket-request';
+import { WebSocketResponseData } from '../../../../shared/websocket/websocket-response';
+import { WebSocketResponseStatus, WebSocketService } from '../../../../shared/websocket/websocket.service';
+import { LoggerService } from '../../../../utils/logger/logger.service';
+import { NotificationService } from '../../../../utils/notification/notification.service';
+import { Utils } from '../../../../utils/utils';
+import { DatabaseColumnInfo, DatabaseMetadata } from '../../database/database-metadata';
 import { ExportFormat } from './export/search-table-export.component';
 import { SearchTableRow } from './row/search-table-row';
 
