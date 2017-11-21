@@ -132,9 +132,5 @@ export class FileItemStatus {
     private unsetStatusFlag(flag: FileItemStatusFlags): void {
         this.status &= (~flag);
     }
-
-    private toggleStatusFlag(flag: FileItemStatusFlags): void {
-        this.status ^= flag;
-    }
     /*tslint:enable:no-bitwise */
 }

@@ -18,6 +18,7 @@ import {
     ChangeDetectionStrategy, Component, ComponentFactoryResolver, ComponentRef, HostBinding, Input, OnDestroy, OnInit,
     ViewChild, ViewContainerRef
 } from '@angular/core';
+import { BooleanConverter, InputConverter } from '../../../../../utils/input-converter.decorator';
 import { SearchTableEntryCdrComponent } from '../entry/cdr/search-table-entry-cdr.component';
 import { SearchTableEntryGeneComponent } from '../entry/gene/search-table-entry-gene.component';
 import { SearchTableEntryJsonComponent } from '../entry/json/search-table-entry-json.component';
@@ -25,7 +26,6 @@ import { SearchTableEntryOriginalComponent } from '../entry/original/search-tabl
 import { SearchTableEntryUrlComponent } from '../entry/url/search-table-entry-url.component';
 import { SearchTableService } from '../search-table.service';
 import { SearchTableRow } from './search-table-row';
-import { BooleanConverter, InputConverter } from "../../../../../utils/input-converter.decorator";
 
 @Component({
     selector:        'tr[search-table-row]',

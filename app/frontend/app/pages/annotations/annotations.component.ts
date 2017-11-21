@@ -25,8 +25,4 @@ import { UserService } from '../../shared/user/user.service';
 })
 export class AnnotationsPageComponent {
 
-    constructor(private userService: UserService) {
-
-    }
-
 }

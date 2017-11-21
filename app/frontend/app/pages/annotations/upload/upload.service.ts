@@ -168,7 +168,6 @@ export class UploadService {
             xhr.addEventListener('load', (event) => {
                 const request = event.target as XMLHttpRequest;
                 const status = request.status;
-                console.log(event);
                 this.logger.debug('FileUploaderService: load with status', status);
                 if (status === 200) {
                     observer.next(new UploadStatus(file.name, 100, false));
