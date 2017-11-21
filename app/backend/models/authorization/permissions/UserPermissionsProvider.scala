@@ -46,4 +46,5 @@ class UserPermissionsProvider @Inject()(@NamedDatabase("default") protected val 
 object UserPermissionsProvider {
     final val UNLIMITED_ID: Long = 0L
     final val DEFAULT_ID: Long = 1L
+    final val DEMO_ID: Long = 2L
 }

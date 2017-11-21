@@ -36,6 +36,7 @@ export class UploadStatus {
     }
 }
 
+
 export type UploadServiceEvent = number;
 
 export namespace UploadServiceEvent {
@@ -163,7 +164,7 @@ export class UploadService {
             xhr.addEventListener('error', error => {
                 const request = error.target as XMLHttpRequest;
                 this.logger.debug('FileUploaderService: error', error);
-                observer.error(new UploadStatus(file.name, 0, false, request.responseText));
+                observer.error(new UploadStatus(file.name, -1, false, request.responseText));
             });
 
             xhr.addEventListener('load', event => {
@@ -176,12 +177,12 @@ export class UploadService {
                     observer.complete();
                 } else {
                     const errorResponse = request.responseText;
-                    observer.error(new UploadStatus(file.name, 0, false, errorResponse));
+                    observer.error(new UploadStatus(file.name, -1, false, errorResponse));
                 }
             });
 
             xhr.addEventListener('abort', () => {
-                observer.error(new UploadStatus(file.name, 0, false, 'Aborted'));
+                observer.error(new UploadStatus(file.name, -1, false, 'Aborted'));
             });
 
             xhr.open('POST', '/annotations/upload', true);

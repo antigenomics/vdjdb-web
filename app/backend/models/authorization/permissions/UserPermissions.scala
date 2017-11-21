@@ -17,4 +17,4 @@
 
 package backend.models.authorization.permissions
 
-case class UserPermissions(id: Long, maxFilesCount: Int, maxFileSize: Int)
+case class UserPermissions(id: Long, maxFilesCount: Int, maxFileSize: Int, isUploadAllowed: Boolean, isDeleteAllowed: Boolean)

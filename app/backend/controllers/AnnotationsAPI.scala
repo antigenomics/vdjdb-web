@@ -20,34 +20,50 @@ package backend.controllers
 import java.nio.file.Paths
 import javax.inject.Inject
 
-import backend.actions.{SessionAction, UserRequestAction}
+import backend.actions.{SessionAction, UserRequest, UserRequestAction}
+import backend.models.authorization.permissions.UserPermissionsProvider
 import backend.utils.analytics.Analytics
+import com.typesafe.config.ConfigMemorySize
 import org.slf4j.LoggerFactory
-import play.api.Environment
+import play.api.{Configuration, Environment}
 import play.api.libs.Files
-import play.api.mvc.{AbstractController, Action, ControllerComponents, MultipartFormData}
+import play.api.mvc._
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
-class AnnotationsAPI @Inject()(cc: ControllerComponents, userRequestAction: UserRequestAction)
-                              (implicit ec: ExecutionContext, environment: Environment, analytics: Analytics)
+class AnnotationsAPI @Inject()(cc: ControllerComponents, userRequestAction: UserRequestAction, conf: Configuration)
+                              (implicit upp: UserPermissionsProvider,
+                               ec: ExecutionContext, environment: Environment, analytics: Analytics)
     extends AbstractController(cc) {
+    private final val maxUploadFileSize = conf.get[ConfigMemorySize]("application.annotations.upload.maxFileSize")
     private final val logger = LoggerFactory.getLogger(this.getClass)
 
+    def checkUploadAllowed(implicit ec: ExecutionContext): ActionFilter[UserRequest] = new ActionFilter[UserRequest] {
+        override protected def executionContext: ExecutionContext = ec
+        override protected def filter[A](request: UserRequest[A]): Future[Option[Result]] = {
+            request.user.get.getDetails.map { details =>
+                if (!details.permissions.isUploadAllowed) {
+                    Some(BadRequest("Upload is not allowed for this account"))
+                } else {
+                    None
+                }
+            }
+        }
+    }
+
     def uploadFile: Action[MultipartFormData[Files.TemporaryFile]] =
-        (userRequestAction(parse.multipartFormData(1024 * 1024 * 1024)) andThen SessionAction.authorizedOnly) {
+        (userRequestAction(parse.multipartFormData(maxUploadFileSize.toBytes)) andThen SessionAction.authorizedOnly andThen checkUploadAllowed) {
             implicit request =>
                 request.body.file("file").map { file =>
                     logger.info(s"File uploaded ${file.filename} from user ${request.user.get.login}")
-                    file.ref.moveTo(Paths.get(s"/tmp/play/${file.filename}"), replace = true)
-                    // only get the last part of the filename
-                    // otherwise someone can send a path like ../../home/foo/bar.txt to write to other files on the system
-                    // val filename = Paths.get(picture.filename).getFileName
-
-                    // picture.ref.moveTo(Paths.get(s"/tmp/picture/$filename"), replace = true)
-                    BadRequest("Error privet")
+                    try {
+                        file.ref.moveTo(Paths.get(s"/tmp/play/${file.filename}"), replace = true)
+                        Ok("Uploaded")
+                    } catch { case ex: Throwable =>
+                        logger.error(s"Upload error: ${ex.toString}")
+                        BadRequest("Internal server error")
+                    }
                 }.getOrElse {
-                    logger.info(s"Failed to upload file")
                     BadRequest("Internal server error")
                 }
         }

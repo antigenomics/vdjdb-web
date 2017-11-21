@@ -9,8 +9,7 @@
         </tr>
         </thead>
         <tbody>
-        <tr *ngFor="let item of uploadService.getItems()" upload-table-row [item]="item"
-            [ngClass]="{'disabled':item.status.isRemoved(), 'error':item.status.isError()}">
+        <tr *ngFor="let item of uploadService.getItems()" upload-table-row [item]="item" [ngClass]="{'disabled':item.status.isRemoved()}">
         </tr>
         </tbody>
     </table>

@@ -19,7 +19,7 @@ package backend.models.authorization.user
 
 import backend.models.authorization.permissions.{UserPermissions, UserPermissionsProvider}
 import org.mindrot.jbcrypt.BCrypt
-
+import scala.async.Async.{async, await}
 import scala.concurrent.{ExecutionContext, Future}
 
 case class User(id: Long, login: String, email: String, verified: Boolean,
@@ -28,12 +28,13 @@ case class User(id: Long, login: String, email: String, verified: Boolean,
         upp.getByID(permissionID).map(_.get)
     }
 
-    def checkPassword(plain: String): Boolean = {
-        BCrypt.checkpw(plain, password)
+    def getDetails(implicit upp: UserPermissionsProvider, ec: ExecutionContext): Future[UserDetails] = async {
+        val permissions = await(getPermissions)
+        UserDetails(email, login, permissions)
     }
 
-    def getDetails: UserDetails = {
-        UserDetails(email, login)
+    def checkPassword(plain: String): Boolean = {
+        BCrypt.checkpw(plain, password)
     }
 }
 
