@@ -1,6 +1,6 @@
 <td>
     <div class="ui fluid transparent left icon input" [ngClass]="{'error':!item.status.isNameValid()}" *ngIf="item.status.isWaiting()">
-        <input placeholder="Enter sample name" [ngModel]="item.name" (ngModelChange)="uploadService.handleItemName(item, $event)">
+        <input placeholder="Enter sample name" [ngModel]="item.name" (ngModelChange)="checkName($event)">
         <i class="write icon"></i>
     </div>
     <div *ngIf="!item.status.isWaiting()">

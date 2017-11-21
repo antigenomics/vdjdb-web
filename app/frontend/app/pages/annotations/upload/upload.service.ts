@@ -92,7 +92,7 @@ export class UploadService {
 
         const isSameNameExist = this._items.some((_item) => _item.name === name);
         if (isSameNameExist) {
-            item.status.duplicaingName();
+            item.status.duplicatingName();
         }
 
         item.name = name;

@@ -88,7 +88,7 @@ export class FileItemStatus {
         this.unsetStatusFlag(FileItemStatusFlags.INVALID_FILE_NAME);
     }
 
-    public duplicaingName(): void {
+    public duplicatingName(): void {
         this.setStatusFlag(FileItemStatusFlags.DUPLICATE_FILE_NAME);
     }
 
