@@ -29,7 +29,7 @@ export class UploadTableRowComponent implements AfterViewInit, OnDestroy {
     private static FULL_PROGRESS: number = 100;
     private _progressSubscription: Subscription;
 
-    @Input('upload-table-row')
+    @Input('file-item')
     public item: FileItem;
 
     @ViewChild('progress')
@@ -38,7 +38,7 @@ export class UploadTableRowComponent implements AfterViewInit, OnDestroy {
     @ViewChild('progressBar')
     public progressBar: ElementRef;
 
-    constructor(public uploadService: UploadService, private renderer: Renderer2, private changeDetector: ChangeDetectorRef) {}
+    constructor(private uploadService: UploadService, private renderer: Renderer2, private changeDetector: ChangeDetectorRef) {}
 
     public ngAfterViewInit(): void {
         this.updateProgressBar(0, 0);
@@ -58,7 +58,14 @@ export class UploadTableRowComponent implements AfterViewInit, OnDestroy {
     }
 
     public ngOnDestroy(): void {
-        this._progressSubscription.unsubscribe();
+        if (this._progressSubscription !== undefined) {
+            this._progressSubscription.unsubscribe();
+            this._progressSubscription = undefined;
+        }
+    }
+
+    public checkName(newName: string): void {
+        this.uploadService.handleItemName(this.item, newName);
     }
 
     private updateProgressBar(progress: number, dataPercent: number) {
