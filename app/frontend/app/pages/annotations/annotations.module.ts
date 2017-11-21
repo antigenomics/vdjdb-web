@@ -40,6 +40,6 @@ const routes = [
     imports:      [ BrowserModule, UploadModule, RouterModule.forChild(routes) ],
     declarations: [ AnnotationsPageComponent, SidebarComponent, AnnotationsInfoComponent ],
     exports:      [ AnnotationsPageComponent, SidebarComponent, AnnotationsInfoComponent ],
-    providers:    [ AnnotationsService, WebSocketService ]
+    providers:    [ AnnotationsService ]
 })
 export class AnnotationsPageModule {}
