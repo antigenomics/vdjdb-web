@@ -18,6 +18,7 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs/Subscription';
 import { UploadService, UploadServiceEvent } from '../upload/upload.service';
+import { AnnotationsService, AnnotationsServiceEvents } from '../annotations.service';
 
 @Component({
     selector:        'sidebar',
@@ -25,27 +26,41 @@ import { UploadService, UploadServiceEvent } from '../upload/upload.service';
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SidebarComponent implements OnInit, OnDestroy {
-    private _loadingLabel: boolean = false;
-    private _uploadServiceEventsSubscriber: Subscription;
+    private _filesUploadingLabel: boolean = false;
+    private _uploadServiceEventsSubscription: Subscription;
+    private _annotationsServiceEventsSubscription: Subscription;
 
-    constructor(private uploadService: UploadService, private changeDetector: ChangeDetectorRef) {}
+    constructor(private uploadService: UploadService, private annotationsService: AnnotationsService, private changeDetector: ChangeDetectorRef) {}
 
     public ngOnInit(): void {
-        this._uploadServiceEventsSubscriber = this.uploadService.getEvents().subscribe((event) => {
+        this._uploadServiceEventsSubscription = this.uploadService.getEvents().subscribe((event) => {
             if (event === UploadServiceEvent.UPLOADING_STARTED) {
-                this._loadingLabel = true;
+                this._filesUploadingLabel = true;
             } else if (event === UploadServiceEvent.UPLOADING_ENDED) {
-                this._loadingLabel = false;
+                this._filesUploadingLabel = false;
             }
             this.changeDetector.detectChanges();
         });
+        this._annotationsServiceEventsSubscription = this.annotationsService.getEvents().subscribe((event) => {
+            switch (event) {
+                case AnnotationsServiceEvents.INITIALIZED:
+                    this.changeDetector.detectChanges();
+                    break;
+                default:
+            }
+        });
+    }
+
+    public isVisible(): boolean {
+        return this.annotationsService.isInitialized();
+    }
+
+    public isFilesUploading(): boolean {
+        return this._filesUploadingLabel;
     }
 
     public ngOnDestroy(): void {
-        this._uploadServiceEventsSubscriber.unsubscribe();
-    }
-
-    public isLoading(): boolean {
-        return this._loadingLabel;
+        this._uploadServiceEventsSubscription.unsubscribe();
+        this._annotationsServiceEventsSubscription.unsubscribe();
     }
 }

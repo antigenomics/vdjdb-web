@@ -14,21 +14,15 @@
  *    limitations under the License.
  */
 
-package backend.server.table.search
+package backend.server.search.api.search
 
-import com.antigenomics.vdjdb.db.Row
-import play.api.libs.json.{Json, OWrites}
+import backend.server.search.SearchTableRow
+import play.api.libs.json.{Json, Writes}
 
-case class SearchTableRow(entries: Seq[String], metadata: SearchTableRowMetadata)
+case class SearchDataResponse(page: Int, pageSize: Int, pageCount: Int, recordsFound: Int, rows: List[SearchTableRow])
 
-object SearchTableRow {
-    implicit val searchTableRowWrites: OWrites[SearchTableRow] = Json.writes[SearchTableRow]
+object SearchDataResponse {
+    final val Action: String = "search"
 
-    def createFromRow(r: Row): SearchTableRow = {
-        val entries = r.getEntries
-            .filter(_.getColumn.getMetadata.get("visible") == "1")
-            .map(_.getValue)
-        val metadata = SearchTableRowMetadata.createFromRow(r)
-        SearchTableRow(entries, metadata)
-    }
+    implicit val searchTableResultsFilterResponseWrites: Writes[SearchDataResponse] = Json.writes[SearchDataResponse]
 }

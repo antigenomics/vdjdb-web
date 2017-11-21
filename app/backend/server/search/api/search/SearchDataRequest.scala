@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package backend.server.table.search.api.search
+package backend.server.search.api.search
 
 import backend.server.database.filters.DatabaseFilterRequest
 import play.api.libs.json.{JsSuccess, JsValue, Reads}

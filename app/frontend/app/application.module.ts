@@ -25,7 +25,6 @@ import { AnnotationsPageModule } from './pages/annotations/annotations.module';
 import { HomePageModule } from './pages/home/home.module';
 import { SearchPageModule } from './pages/search/search.module';
 import { NavigationBarModule } from './shared/navbar/navbar.module';
-import { UserService } from './shared/user/user.service';
 import { ClipboardService } from './utils/clipboard/clipboard.service';
 import { LoggerService } from './utils/logger/logger.service';
 import { NotificationService } from './utils/notification/notification.service';
@@ -34,7 +33,7 @@ import { NotificationService } from './utils/notification/notification.service';
     imports:      [ CommonModule, BrowserModule, HomePageModule, AboutPageModule, SearchPageModule, AnnotationsPageModule,
         NavigationBarModule, RouterModule.forRoot([]) ],
     declarations: [ ApplicationComponent ],
-    providers:    [ ConfigurationService, UserService, LoggerService, NotificationService, ClipboardService ],
+    providers:    [ ConfigurationService, LoggerService, NotificationService, ClipboardService ],
     bootstrap:    [ ApplicationComponent ]
 })
 export class ApplicationModule {

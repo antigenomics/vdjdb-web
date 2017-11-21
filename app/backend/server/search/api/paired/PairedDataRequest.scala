@@ -14,12 +14,12 @@
  *    limitations under the License.
  */
 
-package backend.server.table.search.api.export
+package backend.server.search.api.paired
 
 import play.api.libs.json.{Json, Reads}
 
-case class ExportDataRequest(format: String)
+case class PairedDataRequest(pairedID: String, gene: String)
 
-object ExportDataRequest {
-    implicit val exportDataRequestReads: Reads[ExportDataRequest] = Json.reads[ExportDataRequest]
+object PairedDataRequest {
+    implicit val pairedDataRequestReads: Reads[PairedDataRequest] = Json.reads[PairedDataRequest]
 }

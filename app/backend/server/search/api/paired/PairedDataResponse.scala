@@ -14,14 +14,15 @@
  *    limitations under the License.
  */
 
-package backend.server.table.search.api.export
+package backend.server.search.api.paired
 
+import backend.server.search.SearchTableRow
 import play.api.libs.json.{Json, Writes}
 
-case class ExportDataResponse(link: String)
+case class PairedDataResponse(paired: Option[SearchTableRow], found: Boolean)
 
-object ExportDataResponse {
-    final val Action: String = "export"
+object PairedDataResponse {
+    final val Action: String = "paired"
 
-    implicit val exportDataResponseWrites: Writes[ExportDataResponse] = Json.writes[ExportDataResponse]
+    implicit val pairedDataResponseWrites: Writes[PairedDataResponse] = Json.writes[PairedDataResponse]
 }

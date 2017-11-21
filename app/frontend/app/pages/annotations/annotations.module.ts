@@ -22,17 +22,24 @@ import { AnnotationsPageComponent } from './annotations.component';
 import { SidebarComponent } from './sidebar/sidebar.component';
 import { UploadComponent } from './upload/upload.component';
 import { UploadModule } from './upload/upload.module';
+import { WebSocketService } from '../../shared/websocket/websocket.service';
+import { AnnotationsInfoComponent } from './info/annotations-info.component';
+import { AnnotationsService } from './annotations.service';
 
 const routes = [
     {
         path:     'annotations', component: AnnotationsPageComponent,
-        children: [ { path: 'upload', component: UploadComponent } ]
+        children: [
+            { path: 'info', component: AnnotationsInfoComponent },
+            { path: 'upload', component: UploadComponent }
+        ]
     }
 ];
 
 @NgModule({
     imports:      [ BrowserModule, UploadModule, RouterModule.forChild(routes) ],
-    declarations: [ AnnotationsPageComponent, SidebarComponent ],
-    exports:      [ AnnotationsPageComponent ]
+    declarations: [ AnnotationsPageComponent, SidebarComponent, AnnotationsInfoComponent],
+    exports:      [ AnnotationsPageComponent ],
+    providers:    [ WebSocketService, AnnotationsService ]
 })
 export class AnnotationsPageModule {}

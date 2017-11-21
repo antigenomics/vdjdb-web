@@ -15,7 +15,7 @@
  */
 
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { UserService } from '../user/user.service';
+import { Utils } from '../../utils/utils';
 
 @Component({
     selector:    'navbar',
@@ -23,5 +23,19 @@ import { UserService } from '../user/user.service';
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class NavigationBarComponent {
-    constructor(public userService: UserService) {}
+    private _isLogged: boolean = false;
+    private _userEmail: string = '';
+
+    constructor() {
+        this._isLogged = Utils.Cookies.getCookie('logged') === 'true';
+        this._userEmail = Utils.Cookies.getCookie('email');
+    }
+
+    public isLogged(): boolean {
+        return this._isLogged;
+    }
+
+    public getUserEmail(): string {
+        return this._userEmail;
+    }
 }

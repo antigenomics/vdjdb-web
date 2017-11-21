@@ -19,7 +19,7 @@ package backend.server.table
 import backend.BaseTestSpecWithApplication
 import backend.server.database.Database
 import backend.server.database.filters.{DatabaseFilterRequest, DatabaseFilterType, DatabaseFilters}
-import backend.server.table.search.SearchTable
+import backend.server.search.SearchTable
 
 class SearchTableSpec extends BaseTestSpecWithApplication {
     val database: Database = app.injector.instanceOf[Database]

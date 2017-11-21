@@ -20,26 +20,36 @@ package backend.controllers
 import java.nio.file.Paths
 import javax.inject.Inject
 
+import akka.actor.ActorSystem
+import akka.stream.Materializer
 import backend.actions.{SessionAction, UserRequest, UserRequestAction}
+import backend.actors.AnnotationsWebSocketActor
 import backend.models.authorization.permissions.UserPermissionsProvider
+import backend.models.authorization.user.UserProvider
+import backend.server.limit.RequestLimits
 import backend.utils.analytics.Analytics
 import com.typesafe.config.ConfigMemorySize
 import org.slf4j.LoggerFactory
 import play.api.{Configuration, Environment}
 import play.api.libs.Files
+import play.api.libs.json.JsValue
+import play.api.libs.streams.ActorFlow
 import play.api.mvc._
 
+import scala.async.Async.{async, await}
 import scala.concurrent.{ExecutionContext, Future}
 
 class AnnotationsAPI @Inject()(cc: ControllerComponents, userRequestAction: UserRequestAction, conf: Configuration)
-                              (implicit upp: UserPermissionsProvider,
-                               ec: ExecutionContext, environment: Environment, analytics: Analytics)
+                              (implicit upp: UserPermissionsProvider, up: UserProvider,
+                               as: ActorSystem, mat: Materializer, ec: ExecutionContext, limits: RequestLimits,
+                               environment: Environment, analytics: Analytics)
     extends AbstractController(cc) {
     private final val maxUploadFileSize = conf.get[ConfigMemorySize]("application.annotations.upload.maxFileSize")
     private final val logger = LoggerFactory.getLogger(this.getClass)
 
     def checkUploadAllowed(implicit ec: ExecutionContext): ActionFilter[UserRequest] = new ActionFilter[UserRequest] {
         override protected def executionContext: ExecutionContext = ec
+
         override protected def filter[A](request: UserRequest[A]): Future[Option[Result]] = {
             request.user.get.getDetails.map { details =>
                 if (!details.permissions.isUploadAllowed) {
@@ -59,13 +69,34 @@ class AnnotationsAPI @Inject()(cc: ControllerComponents, userRequestAction: User
                     try {
                         file.ref.moveTo(Paths.get(s"/tmp/play/${file.filename}"), replace = true)
                         Ok("Uploaded")
-                    } catch { case ex: Throwable =>
-                        logger.error(s"Upload error: ${ex.toString}")
-                        BadRequest("Internal server error")
+                    } catch {
+                        case ex: Throwable =>
+                            logger.error(s"Upload error: ${ex.toString}")
+                            BadRequest("Internal server error")
                     }
                 }.getOrElse {
                     BadRequest("Internal server error")
                 }
         }
 
+    def connect: WebSocket = WebSocket.acceptOrResult[JsValue, JsValue] { implicit request =>
+        async {
+            if (limits.allowConnection(request)) {
+                request.session.get(up.getAuthTokenSessionName) match {
+                    case None => Left(Forbidden)
+                    case Some(token) =>
+                        val user = await(up.getBySessionToken(token))
+                        if (user.nonEmpty) {
+                            Right(ActorFlow.actorRef { out =>
+                                AnnotationsWebSocketActor.props(out, limits.getLimit(request), user.get)
+                            })
+                        } else {
+                            Left(Forbidden)
+                        }
+                }
+            } else {
+                Left(Forbidden)
+            }
+        }
+    }
 }

@@ -23,11 +23,11 @@ import akka.stream.Materializer
 import backend.actors.DatabaseSearchWebSocketActor
 import backend.models.files.temporary.TemporaryFileProvider
 import backend.server.database.api.metadata.{DatabaseColumnInfoResponse, DatabaseMetadataResponse}
-import backend.server.table.search.api.search.{SearchDataRequest, SearchDataResponse}
+import backend.server.search.api.search.{SearchDataRequest, SearchDataResponse}
 import backend.server.database.{Database, DatabaseColumnInfo}
 import backend.server.database.filters.DatabaseFilters
 import backend.server.limit.RequestLimits
-import backend.server.table.search.SearchTable
+import backend.server.search.SearchTable
 import play.api.Configuration
 import play.api.libs.json.Json.toJson
 import play.api.libs.json._

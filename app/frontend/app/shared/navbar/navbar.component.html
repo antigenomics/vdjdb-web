@@ -4,7 +4,7 @@
         <a route="/" class="item">Home</a>
         <a route="/search" class="item">Browse</a>
 
-        <a class="ui dropdown item" dropdown [content]="content" *ngIf="!userService.isLogged()">
+        <a class="ui dropdown item" dropdown [content]="content" *ngIf="!isLogged()">
             Annotations
             <div class="menu fade element slow padded" tabindex="-1" #content>
                 <div class="ui error message">
@@ -14,18 +14,18 @@
             </div>
         </a>
 
-        <a route="/annotations" class="item" *ngIf="userService.isLogged()">
+        <a route="/annotations/info" class="item" *ngIf="isLogged()">
             Annotations
         </a>
 
         <a route="/about" class="item">About</a>
 
-        <div class="right menu" *ngIf="!userService.isLogged()">
+        <div class="right menu" *ngIf="!isLogged()">
             <a route="/authorization/login" external="true" class="item">Login</a>
         </div>
-        <div class="right menu" *ngIf="userService.isLogged()">
+        <div class="right menu" *ngIf="isLogged()">
             <div class="ui dropdown item" dropdown [content]="content">
-                Logged as: {{ userService.getUser().getEmail() }}
+                Logged as: {{ getUserEmail() }}
                 <i class="dropdown icon"></i>
                 <div class="menu fade element slow padded" tabindex="-1" #content>
                     <a route="/account/details" external="true" class="item">Settings</a>
