@@ -16,7 +16,6 @@
  */
 
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { UserService } from '../../shared/user/user.service';
 
 @Component({
     selector:        'annotations',

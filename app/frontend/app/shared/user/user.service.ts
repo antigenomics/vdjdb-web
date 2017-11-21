@@ -25,7 +25,7 @@ export class UserService {
     private _isLogged: boolean = false;
     private _user: User = undefined;
 
-    constructor(private logger: LoggerService) {
+    constructor(logger: LoggerService) {
         this._isLogged = Utils.Cookies.getCookie('logged') === 'true';
         if (this._isLogged) {
             const email = Utils.Cookies.getCookie('email');

@@ -45,6 +45,9 @@ export namespace UploadServiceEvent {
 
 @Injectable()
 export class UploadService {
+    private static FULL_PROGRESS: number = 100;
+    private static SUCCESS_HTTP_CODE: number = 200;
+
     private _uploadingCount: number = 0;
     private _events: ReplaySubject<UploadServiceEvent> = new ReplaySubject(1);
     private _items: FileItem[] = [];
@@ -53,11 +56,13 @@ export class UploadService {
     }
 
     public addItems(files: FileList): void {
+        /*tslint:disable:prefer-for-of */
         for (let i = 0; i < files.length; ++i) {
             const fileItem = new FileItem(files[ i ]);
             this.handleItemName(fileItem, fileItem.name);
             this._items.push(fileItem);
         }
+        /*tslint:enable:prefer-for-of */
     }
 
     public getEvents(): Observable<UploadServiceEvent> {
@@ -113,7 +118,7 @@ export class UploadService {
             uploader.subscribe({
                 next: (status) => {
                     if (status.loading === false) {
-                        if (status.progress === 100 && status.error === undefined) {
+                        if (status.progress === UploadService.FULL_PROGRESS && status.error === undefined) {
                             file.status.uploaded();
                         } else if (status.error !== undefined) {
                             file.status.error(status.error);
@@ -154,7 +159,7 @@ export class UploadService {
 
             xhr.upload.addEventListener('progress', (progress) => {
                 if (progress.lengthComputable) {
-                    const completed = Math.round(progress.loaded / progress.total * 100);
+                    const completed = Math.round(progress.loaded / progress.total * UploadService.FULL_PROGRESS);
                     observer.next(new UploadStatus(file.name, completed, true));
                 }
             });
@@ -169,8 +174,8 @@ export class UploadService {
                 const request = event.target as XMLHttpRequest;
                 const status = request.status;
                 this.logger.debug('FileUploaderService: load with status', status);
-                if (status === 200) {
-                    observer.next(new UploadStatus(file.name, 100, false));
+                if (status === UploadService.SUCCESS_HTTP_CODE) {
+                    observer.next(new UploadStatus(file.name, UploadService.FULL_PROGRESS, false));
                     observer.complete();
                 } else {
                     const errorResponse = request.responseText;
