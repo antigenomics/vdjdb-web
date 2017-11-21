@@ -16,5 +16,7 @@
 
 package backend.models.authorization.user
 
+import backend.models.authorization.permissions.UserPermissions
+
 // TODO add information about files etc
-case class UserDetails(email: String, login: String)
+case class UserDetails(email: String, login: String, permissions: UserPermissions)

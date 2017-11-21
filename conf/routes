@@ -34,7 +34,7 @@ GET         /authorization/verify/:token              backend.controllers.Author
 GET         /authorization/logout                     backend.controllers.Authorization.logout
 
 #Account API
-GET         /account/details                          backend.controllers.Account.details
+GET         /account/details                          backend.controllers.Account.detailsPage
 POST        /account/details/changePassword           backend.controllers.Account.changePassword
 
 #Annotations API

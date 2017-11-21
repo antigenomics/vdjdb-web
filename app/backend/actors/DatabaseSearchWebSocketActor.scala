@@ -35,35 +35,10 @@ import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success}
 
 
-case class DatabaseSearchWebSocketActor(out: ActorRef, database: Database, actorSystem: ActorSystem, limit: IpLimit, requestLimits: RequestLimits)
-                                       (implicit ec: ExecutionContext, temporaryFileProvider: TemporaryFileProvider) extends Actor {
+class DatabaseSearchWebSocketActor(out: ActorRef, limit: IpLimit, database: Database)
+                                  (implicit ec: ExecutionContext, as: ActorSystem, limits: RequestLimits, tfp: TemporaryFileProvider)
+    extends WebSocketActor(out, limit) {
     private final val table: SearchTable = new SearchTable()
-
-    override def receive: Receive = {
-        case request: JsValue =>
-            if (requestLimits.allowConnection(limit)) {
-                val timeStart: Long = System.currentTimeMillis
-                val validation: JsResult[ClientRequest] = request.validate[ClientRequest]
-                validation match {
-                    case clientRequest: JsSuccess[ClientRequest] =>
-                        val request = clientRequest.get
-                        request.action match {
-                            case Some(action) =>
-                                handleMessage(WebSocketOutActorRef(request.id, action, out), request.data)
-                            case None =>
-                        }
-                    case _: JsError =>
-                        out ! Json.toJson("Invalid request")
-                }
-                val timeEnd: Long = System.currentTimeMillis
-                val timeSpent = timeEnd - timeStart
-                requestLimits.updateLimits(limit, 1, timeSpent)
-            } else {
-                out ! PoisonPill
-            }
-        case _ =>
-            out ! PoisonPill
-    }
 
     def handleMessage(out: WebSocketOutActorRef, data: Option[JsValue]): Unit = {
         out.getAction match {
@@ -142,25 +117,11 @@ case class DatabaseSearchWebSocketActor(out: ActorRef, database: Database, actor
                 out.errorMessage("Invalid action")
         }
     }
-
-    def validateData[T](out: WebSocketOutActorRef, data: Option[JsValue], callback: T => Unit)(implicit tr: Reads[T]): Unit = {
-        if (data.nonEmpty) {
-            val dataValidation: JsResult[T] = data.get.validate[T]
-            dataValidation match {
-                case success: JsSuccess[T] =>
-                    callback(success.get)
-                case _: JsError =>
-                    out.errorMessage("Invalid request")
-            }
-        } else {
-            out.errorMessage("Empty data field")
-        }
-    }
 }
 
 object DatabaseSearchWebSocketActor {
-    def props(out: ActorRef, database: Database, actorSystem: ActorSystem, limit: IpLimit, requestLimits: RequestLimits)
-             (implicit ec: ExecutionContext, temporaryFileProvider: TemporaryFileProvider): Props =
-        Props(new DatabaseSearchWebSocketActor(out, database, actorSystem, limit, requestLimits))
+    def props(out: ActorRef, limit: IpLimit, database: Database)
+             (implicit ec: ExecutionContext, as: ActorSystem, limits: RequestLimits, tfp: TemporaryFileProvider): Props =
+        Props(new DatabaseSearchWebSocketActor(out, limit, database))
 }
 

@@ -29,16 +29,25 @@ class UserPermissionsProviderSpec extends DatabaseProviderTestSpec {
         "create default entries" taggedAs SQLDatabaseTestTag in {
             async {
                 val permissions = await(userPermissionsProvider.getAll)
-                permissions should have size 2
+                permissions should have size 3
 
                 permissions.map(permission => async {
                     permission.id match {
                         case 0 =>
                             permission.maxFilesCount shouldEqual -1
                             permission.maxFileSize shouldEqual -1
+                            permission.isUploadAllowed shouldEqual true
+                            permission.isDeleteAllowed shouldEqual true
                         case 1 =>
                             permission.maxFilesCount shouldEqual 10
                             permission.maxFileSize shouldEqual 16
+                            permission.isUploadAllowed shouldEqual true
+                            permission.isDeleteAllowed shouldEqual true
+                        case 2 =>
+                            permission.maxFilesCount shouldEqual 0
+                            permission.maxFileSize shouldEqual 0
+                            permission.isUploadAllowed shouldEqual false
+                            permission.isDeleteAllowed shouldEqual false
                         case _ =>
                             fail("Non default user permission in database detected")
                     }

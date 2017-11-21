@@ -40,9 +40,11 @@ export class UploadTableRowComponent implements AfterViewInit, OnDestroy {
     constructor(private renderer: Renderer2, private changeDetector: ChangeDetectorRef, private uploadService: UploadService) {}
 
     public ngAfterViewInit(): void {
-        this.updateProgressBar(0);
+        this.updateProgressBar(0, 0);
         this._progressSubscription = this.item.progress.subscribe((value: number) => {
-            this.updateProgressBar(value);
+            const progress = value < 0 ? 100: value;
+            const dataPercent = value < 0 ? 1 : value;
+            this.updateProgressBar(progress, dataPercent);
         });
     }
 
@@ -58,14 +60,14 @@ export class UploadTableRowComponent implements AfterViewInit, OnDestroy {
         this._progressSubscription.unsubscribe();
     }
 
-    private updateProgressBar(value: number) {
-        if (value === 0) {
+    private updateProgressBar(progress: number, dataPercent: number) {
+        if (progress === 0) {
             this.renderer.setStyle(this.progressBar.nativeElement, 'visibility', 'hidden');
         }  else {
             this.renderer.setStyle(this.progressBar.nativeElement, 'visibility', 'visible');
         }
-        this.renderer.setAttribute(this.progress.nativeElement, 'data-percent', value.toString());
-        this.renderer.setStyle(this.progressBar.nativeElement, 'width', value.toString() + '%');
+        this.renderer.setAttribute(this.progress.nativeElement, 'data-percent', dataPercent.toString());
+        this.renderer.setStyle(this.progressBar.nativeElement, 'width', progress.toString() + '%');
         this.changeDetector.detectChanges();
     }
 }

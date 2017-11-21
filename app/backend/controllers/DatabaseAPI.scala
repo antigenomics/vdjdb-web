@@ -36,8 +36,8 @@ import play.api.mvc._
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class DatabaseAPI @Inject()(cc: ControllerComponents, database: Database, actorSystem: ActorSystem, limits: RequestLimits, configuration: Configuration)
-                           (implicit system: ActorSystem, mat: Materializer, ec: ExecutionContext, temporaryFileProvider: TemporaryFileProvider)
+class DatabaseAPI @Inject()(cc: ControllerComponents, database: Database, configuration: Configuration)
+                           (implicit as: ActorSystem, mat: Materializer, ec: ExecutionContext, limits: RequestLimits, tfp: TemporaryFileProvider)
     extends AbstractController(cc) {
 
     def summary: Action[AnyContent] = Action.async {
@@ -99,10 +99,10 @@ class DatabaseAPI @Inject()(cc: ControllerComponents, database: Database, actorS
         }
     }
 
-    def connect: WebSocket = WebSocket.acceptOrResult[JsValue, JsValue] { request =>
+    def connect: WebSocket = WebSocket.acceptOrResult[JsValue, JsValue] { implicit request =>
         Future.successful(if (limits.allowConnection(request)) {
             Right(ActorFlow.actorRef { out =>
-                DatabaseSearchWebSocketActor.props(out, database, actorSystem, limits.getLimit(request), limits)
+                DatabaseSearchWebSocketActor.props(out, limits.getLimit(request), database)
             })
         } else {
             Left(Forbidden)

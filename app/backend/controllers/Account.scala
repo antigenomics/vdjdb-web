@@ -20,23 +20,26 @@ import javax.inject.Inject
 
 import backend.actions.{SessionAction, UserRequestAction}
 import backend.models.authorization.forms.ChangeForm
+import backend.models.authorization.permissions.UserPermissionsProvider
 import backend.utils.analytics.Analytics
 import org.slf4j.LoggerFactory
 import play.api.Environment
 import play.api.i18n.{Lang, Messages, MessagesApi}
 import play.api.mvc.{AbstractController, Action, AnyContent, ControllerComponents}
 
+import scala.async.Async.{async, await}
 import scala.concurrent.ExecutionContext
 
 class Account @Inject()(cc: ControllerComponents, messagesApi: MessagesApi, userRequestAction: UserRequestAction)
-                       (implicit ec: ExecutionContext, environment: Environment, analytics: Analytics)
+                       (implicit upp: UserPermissionsProvider, ec: ExecutionContext, environment: Environment, analytics: Analytics)
     extends AbstractController(cc) {
     private final val logger = LoggerFactory.getLogger(this.getClass)
     implicit val messages: Messages = messagesApi.preferred(Seq(Lang.defaultLang))
 
-
-    def details: Action[AnyContent] = (userRequestAction andThen SessionAction.authorizedOnly) { implicit request =>
-        Ok(frontend.views.html.authorization.details(ChangeForm.changeFormMapping, request.user.get.getDetails))
+    def detailsPage: Action[AnyContent] = (userRequestAction andThen SessionAction.authorizedOnly).async { implicit request =>
+        async {
+            Ok(frontend.views.html.authorization.details(ChangeForm.changeFormMapping, await(request.user.get.getDetails)))
+        }
     }
 
     def changePassword: Action[AnyContent] = (userRequestAction andThen SessionAction.authorizedOnly) { implicit request =>
