@@ -17,8 +17,8 @@
 
 import { Injectable } from '@angular/core';
 import { LoggerService } from '../../utils/logger/logger.service';
-import { User } from './user';
 import { Utils } from '../../utils/utils';
+import { User } from './user';
 
 @Injectable()
 export class UserService {
@@ -43,4 +43,3 @@ export class UserService {
         return this._user;
     }
 }
-

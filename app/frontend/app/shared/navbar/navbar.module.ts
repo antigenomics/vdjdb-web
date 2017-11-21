@@ -15,10 +15,10 @@
  */
 
 import { NgModule } from '@angular/core';
-import { NavigationBarComponent } from './navbar.component';
-import { RouteDirective } from './route.directive';
 import { BrowserModule } from '@angular/platform-browser';
 import { ModalsModule } from '../modals/modals.module';
+import { NavigationBarComponent } from './navbar.component';
+import { RouteDirective } from './route.directive';
 
 @NgModule({
     imports:      [ BrowserModule, ModalsModule ],

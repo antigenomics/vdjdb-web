@@ -24,7 +24,8 @@ import { UploadComponent } from './upload/upload.component';
 import { UploadModule } from './upload/upload.module';
 
 const routes = [
-    { path: 'annotations', component: AnnotationsPageComponent,
+    {
+        path:     'annotations', component: AnnotationsPageComponent,
         children: [ { path: 'upload', component: UploadComponent } ]
     }
 ];
