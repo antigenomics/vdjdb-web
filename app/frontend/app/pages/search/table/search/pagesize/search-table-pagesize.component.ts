@@ -14,20 +14,27 @@
  *    limitations under the License.
  */
 
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { InputConverter, NumberConverter } from '../../../../utils/input-converter.decorator';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
+import { InputConverter, NumberConverter } from '../../../../../utils/input-converter.decorator';
 
 @Component({
-    selector:        'search-table-info',
-    templateUrl:     './search-table-info.component.html',
+    selector:        'search-table-pagesize',
+    templateUrl:     './search-table-pagesize.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class SearchTableInfoComponent {
+export class SearchTablePagesizeComponent {
     @Input()
     @InputConverter(NumberConverter)
-    public found: number;
+    public pageSize: number;
 
     @Input()
-    @InputConverter(NumberConverter)
-    public total: number;
+    public sizes: number[];
+
+    @Output()
+    public changePageSize = new EventEmitter();
+
+    public changeSize(size: number): void {
+        this.pageSize = size;
+        this.changePageSize.emit(size);
+    }
 }

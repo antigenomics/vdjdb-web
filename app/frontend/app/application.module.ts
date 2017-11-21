@@ -19,16 +19,16 @@ import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { RouterModule } from '@angular/router';
 import { ApplicationComponent } from './application.component';
-import { NavigationBarModule } from './common/navbar/navbar.module';
 import { ConfigurationService } from './configuration.service';
 import { AboutPageModule } from './pages/about/about.module';
+import { AnnotationsPageModule } from './pages/annotations/annotations.module';
 import { HomePageModule } from './pages/home/home.module';
 import { SearchPageModule } from './pages/search/search.module';
+import { NavigationBarModule } from './shared/navbar/navbar.module';
+import { UserService } from './shared/user/user.service';
 import { ClipboardService } from './utils/clipboard/clipboard.service';
 import { LoggerService } from './utils/logger/logger.service';
 import { NotificationService } from './utils/notification/notification.service';
-import { UserService } from './common/user/user.service';
-import { AnnotationsPageModule } from './pages/annotations/annotations.module';
 
 @NgModule({
     imports:      [ CommonModule, BrowserModule, HomePageModule, AboutPageModule, SearchPageModule, AnnotationsPageModule,

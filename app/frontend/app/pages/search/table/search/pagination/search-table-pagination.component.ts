@@ -15,8 +15,8 @@
  */
 
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { InputConverter, NumberConverter } from '../../../../utils/input-converter.decorator';
-import { Utils } from '../../../../utils/utils';
+import { InputConverter, NumberConverter } from '../../../../../utils/input-converter.decorator';
+import { Utils } from '../../../../../utils/utils';
 
 @Component({
     selector:        'search-table-pagination',

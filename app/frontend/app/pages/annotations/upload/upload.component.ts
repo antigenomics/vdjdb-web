@@ -15,7 +15,7 @@
  *       limitations under the License.
  */
 
-import { Component, ChangeDetectionStrategy } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { UploadService } from './upload.service';
 
 @Component({

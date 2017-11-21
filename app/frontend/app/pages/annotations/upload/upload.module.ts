@@ -18,11 +18,11 @@
 import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
-import { UploadComponent } from './upload.component';
-import { UploadTableComponent } from './table/upload-table.component';
-import { UploadService } from './upload.service';
+import { ModalsModule } from '../../../shared/modals/modals.module';
 import { UploadTableRowComponent } from './table/row/upload-table-row.component';
-import { ModalsModule } from '../../../common/modals/modals.module';
+import { UploadTableComponent } from './table/upload-table.component';
+import { UploadComponent } from './upload.component';
+import { UploadService } from './upload.service';
 
 @NgModule({
     imports:      [ BrowserModule, FormsModule, ModalsModule ],

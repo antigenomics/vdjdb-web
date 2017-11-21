@@ -111,8 +111,6 @@ class DatabaseSearchWebSocketActor(out: ActorRef, limit: IpLimit, database: Data
                         }
                     }
                 })
-            case "ping" =>
-                out.handshake()
             case _ =>
                 out.errorMessage("Invalid action")
         }

@@ -15,8 +15,8 @@
  *       limitations under the License.
  */
 
-import { Component, ChangeDetectionStrategy } from '@angular/core';
-import { UserService } from '../../common/user/user.service';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { UserService } from '../../shared/user/user.service';
 
 @Component({
     selector:        'annotations',

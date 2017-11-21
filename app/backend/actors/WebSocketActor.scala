@@ -19,7 +19,11 @@ abstract class WebSocketActor(out: ActorRef, limit: IpLimit)(implicit as: ActorS
                         val request = clientRequest.get
                         request.action match {
                             case Some(action) =>
-                                handleMessage(WebSocketOutActorRef(request.id, action, out), request.data)
+                                val webSocketOutActorRef = WebSocketOutActorRef(request.id, action, out)
+                                action match {
+                                    case "ping" => webSocketOutActorRef.handshake()
+                                    case _ => handleMessage(webSocketOutActorRef, request.data)
+                                }
                             case None =>
                         }
                     case _: JsError =>
