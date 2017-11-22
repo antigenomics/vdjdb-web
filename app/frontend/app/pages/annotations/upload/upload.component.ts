@@ -33,6 +33,7 @@ export class AnnotationsUploadComponent implements OnDestroy {
 
     public ngOnDestroy(): void {
         this.uploadService.clearRemoved();
+        this.uploadService.clearErrored();
     }
 
 }

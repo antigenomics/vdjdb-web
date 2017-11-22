@@ -59,7 +59,7 @@ class AnnotationsAPI @Inject()(cc: ControllerComponents, userRequestAction: User
                     Some(BadRequest("Upload is not allowed for this account"))
                     val filesCount = details.files.length
                     if (details.permissions.maxFilesCount >= 0 && filesCount >= details.permissions.maxFilesCount) {
-                        Some(BadRequest("You have exceeded files count limit"))
+                        Some(BadRequest("Max files count limit have been exceeded"))
                     } else {
                         None
                     }
@@ -81,7 +81,6 @@ class AnnotationsAPI @Inject()(cc: ControllerComponents, userRequestAction: User
                             val uploadResult = await(request.user.get.addSampleFile(name, extension, file.ref))
                             uploadResult match {
                                 case Left(sampleFileID) =>
-                                    logger.debug(s"File uploaded $name ($extension) from user ${request.user.get.login} (sampleID: $sampleFileID)")
                                     Ok(s"$sampleFileID")
                                 case Right(error) =>
                                     file.ref.delete()

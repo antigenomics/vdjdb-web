@@ -57,6 +57,10 @@ export class SidebarComponent implements OnInit, OnDestroy {
         return this.annotationsService.getSamples();
     }
 
+    public isSamplesEmpty(): boolean {
+        return this.getSamples().length === 0;
+    }
+
     public isVisible(): boolean {
         return this.annotationsService.isInitialized();
     }

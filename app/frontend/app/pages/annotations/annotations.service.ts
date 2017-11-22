@@ -17,7 +17,7 @@
 
 import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs/Subject';
-import { User } from '../../shared/user/user';
+import { User, UserPermissions } from '../../shared/user/user';
 import { WebSocketService } from '../../shared/websocket/websocket.service';
 import { LoggerService } from '../../utils/logger/logger.service';
 import { SampleItem } from '../../shared/sample/sample-item';
@@ -72,6 +72,10 @@ export class AnnotationsService {
             return [];
         }
         return this._user.samples;
+    }
+
+    public getUserPermissions(): UserPermissions {
+        return this._user.permissions;
     }
 
     public async addSample(sampleName: string): Promise<boolean> {

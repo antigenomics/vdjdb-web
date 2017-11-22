@@ -39,6 +39,9 @@ export class User {
 }
 
 export class UserPermissions {
+    private static bytesInKiB: number = 1024;
+    private static kibInMiB: number = 1024;
+
     public maxFilesCount: number;
     public maxFileSize: number;
     public isUploadAllowed: boolean;
@@ -49,6 +52,10 @@ export class UserPermissions {
         this.maxFileSize = maxFileSize;
         this.isUploadAllowed = isUploadAllowed;
         this.isDeleteAllowed = isDeleteAllowed;
+    }
+
+    public getMaxFileSizeInBytes(): number {
+        return this.maxFileSize * UserPermissions.bytesInKiB * UserPermissions.kibInMiB;
     }
 
     public static deserialize(input: any): UserPermissions {
