@@ -43,7 +43,7 @@
   <logger name="play" level="INFO" />
   <logger name="application" level="DEBUG" />
 
-  <root level="DEBUG">
+  <root level="INFO">
     <appender-ref ref="ASYNCSTDOUT" />
     <appender-ref ref="ASYNCFILE"/>
   </root>

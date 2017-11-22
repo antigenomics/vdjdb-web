@@ -15,17 +15,18 @@
  *
  */
 
+import { SampleItem } from '../sample/sample-item';
+
 export class User {
     public login: string;
     public email: string;
-    // TODO
-    public files: any[];
+    public samples: SampleItem[];
     public permissions: UserPermissions;
 
-    constructor(login: string, email: string, files: any[], permissions: UserPermissions) {
+    constructor(login: string, email: string, samples: string[], permissions: UserPermissions) {
         this.login = login;
         this.email = email;
-        this.files = files;
+        this.samples = samples.map((name) => new SampleItem(name));
         this.permissions = permissions;
     }
 

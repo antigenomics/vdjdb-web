@@ -19,6 +19,7 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnIni
 import { Subscription } from 'rxjs/Subscription';
 import { UploadService, UploadServiceEvent } from '../upload/upload.service';
 import { AnnotationsService, AnnotationsServiceEvents } from '../annotations.service';
+import { SampleItem } from '../../../shared/sample/sample-item';
 
 @Component({
     selector:        'sidebar',
@@ -47,8 +48,13 @@ export class SidebarComponent implements OnInit, OnDestroy {
                     this.changeDetector.detectChanges();
                     break;
                 default:
+                    this.changeDetector.detectChanges();
             }
         });
+    }
+
+    public getSamples(): SampleItem[] {
+        return this.annotationsService.getSamples();
     }
 
     public isVisible(): boolean {

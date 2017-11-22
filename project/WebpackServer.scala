@@ -24,9 +24,9 @@ object WebpackServer {
         object WebpackServerScript extends PlayRunHook {
             val processBuilder: ProcessBuilder =
                 if (System.getProperty("os.name").toUpperCase().contains("WIN"))
-                    Process("cmd /c npm start", base)
+                    Process("cmd /c npm run server:hot", base)
                 else
-                    Process("npm start", base)
+                    Process("npm run server:hot", base)
 
             var process: Process = _
 

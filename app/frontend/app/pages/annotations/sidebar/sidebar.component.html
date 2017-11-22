@@ -14,8 +14,7 @@
     <div class="item">
         <div class="header">Samples</div>
         <div class="menu">
-            <a class="selected item">Test sample 1</a>
-            <a class="item">Test sample 2</a>
+            <a class="item" *ngFor="let sample of getSamples()" [ngClass]="{'disabled':sample.loading}">{{ sample.name }}</a>
         </div>
     </div>
 </div>

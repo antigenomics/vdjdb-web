@@ -28,14 +28,14 @@ compiler.plugin('done', function () {
 });
 
 var server = new webpackDevServer(compiler, {
-
     // We need to tell Webpack to serve our bundled application
     // from the build path.
     publicPath: '/bundles/',
 
     // Configure hot replacement
     hot: true,
-
+    compress: true,
+    inline: true,
     // The rest is terminal configurations
     quiet: false,
     noInfo: true,

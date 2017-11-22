@@ -17,12 +17,17 @@
 
 package backend.models.authorization
 
+import java.io.File
+import java.nio.file.Paths
+
 import backend.models.{DatabaseProviderTestSpec, SQLDatabaseTestTag}
 import backend.models.authorization.permissions.UserPermissionsProvider
 import backend.models.authorization.user.UserProvider
 import backend.models.authorization.tokens.verification.VerificationTokenProvider
+import backend.models.files.FileMetadataProvider
 import backend.models.files.sample.SampleFileProvider
 import backend.utils.TimeUtils
+import play.api.libs.Files
 
 import scala.async.Async.{async, await}
 
@@ -30,6 +35,7 @@ class UserProviderSpec extends DatabaseProviderTestSpec {
     lazy implicit val userProvider: UserProvider = app.injector.instanceOf[UserProvider]
     lazy implicit val tokenProvider: VerificationTokenProvider = app.injector.instanceOf[VerificationTokenProvider]
     lazy implicit val userPermissionsProvider: UserPermissionsProvider = app.injector.instanceOf[UserPermissionsProvider]
+    lazy implicit val fileMetadataProvider: FileMetadataProvider = app.injector.instanceOf[FileMetadataProvider]
     lazy implicit val sampleFileProvider: SampleFileProvider = app.injector.instanceOf[SampleFileProvider]
 
     "UserProvider" should {
@@ -43,7 +49,7 @@ class UserProviderSpec extends DatabaseProviderTestSpec {
                 user.get.login shouldEqual "unverified"
                 user.get.email shouldEqual "unverified@mail.com"
                 user.get.verified shouldEqual false
-                user.get.password shouldNot equal ("password")
+                user.get.password shouldNot equal("password")
                 user.get.permissionID shouldEqual UserPermissionsProvider.DEFAULT_ID
 
                 val verificationToken = await(tokenProvider.get(token.token))
@@ -102,8 +108,8 @@ class UserProviderSpec extends DatabaseProviderTestSpec {
         "be able to delete non-verified users and associated tokens" taggedAs SQLDatabaseTestTag in {
             async {
                 val fakeExpiredAt = TimeUtils.getExpiredAt(-1)
-                val token1 = await(userProvider.createUser("user1", "user1@mail.ru", "user1password", fakeExpiredAt))
-                val token2 = await(userProvider.createUser("user2", "user2@mail.ru", "user2password", fakeExpiredAt))
+                val token1 = await(userProvider.createUser("user1", "user1@mail.ru", "user1password", UserPermissionsProvider.DEFAULT_ID, fakeExpiredAt))
+                val token2 = await(userProvider.createUser("user2", "user2@mail.ru", "user2password", UserPermissionsProvider.DEFAULT_ID, fakeExpiredAt))
 
                 val deleted = await(userProvider.deleteUnverified)
                 deleted shouldEqual 2
@@ -117,6 +123,52 @@ class UserProviderSpec extends DatabaseProviderTestSpec {
                 await(token2Check) shouldBe empty
                 await(user1Check) shouldBe empty
                 await(user2Check) shouldBe empty
+            }
+        }
+
+        "be able to delete all sample files when deleting user" taggedAs SQLDatabaseTestTag in {
+            async {
+                val token = await(userProvider.createUser("user1", "user3@mail.ru", "user3password"))
+                val user = await(userProvider.verifyUser(token))
+                user should not be empty
+
+                val file = new File("/tmp/dummy.txt")
+                file.createNewFile()
+                val tmpFile = Files.SingletonTemporaryFileCreator.create(Paths.get(file.getPath))
+                val sampleFileID = await(user.get.addSampleFile("sample", "txt", tmpFile))
+                sampleFileID should be('left)
+                sampleFileID.left.get shouldNot equal(0)
+
+                val sample = await(sampleFileProvider.get(sampleFileID.left.get))
+                sample should not be empty
+                sample.get.userID shouldEqual user.get.id
+                sample.get.sampleName shouldEqual "sample"
+
+                val sampleMetadata = await(fileMetadataProvider.get(sample.get.metadataID))
+                sampleMetadata should not be empty
+                sampleMetadata.get.extension shouldEqual "txt"
+
+                await(userProvider.delete(user.get) flatMap { success =>
+                    success shouldEqual 1
+                    async {
+                        val deletedSample = await(sampleFileProvider.get(sampleFileID.left.get))
+                        deletedSample shouldBe empty
+
+                        val deletedUser = await(userProvider.get(user.get.id))
+                        deletedUser shouldBe empty
+
+                        val deletedSampleMetadata = await(fileMetadataProvider.get(sample.get.metadataID))
+                        deletedSampleMetadata shouldBe empty
+
+                        val deletedSampleFile = new File(sampleMetadata.get.path)
+                        deletedSampleFile shouldNot exist
+
+                        val deletedSampleFolder = new File(sampleMetadata.get.folder)
+                        deletedSampleFolder shouldNot exist
+
+                        succeed
+                    }
+                })
             }
         }
     }

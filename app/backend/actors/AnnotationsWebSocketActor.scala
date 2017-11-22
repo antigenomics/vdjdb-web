@@ -4,11 +4,13 @@ import akka.actor.{ActorRef, ActorSystem, Props}
 import backend.models.authorization.permissions.UserPermissionsProvider
 import backend.models.authorization.user.{User, UserDetails}
 import backend.models.files.sample.SampleFileProvider
+import backend.server.annotations.api.sample.{ValidateSampleRequest, ValidateSampleResponse}
 import backend.server.annotations.api.user.UserDetailsResponse
 import backend.server.limit.{IpLimit, RequestLimits}
 import play.api.libs.json._
 
 import scala.concurrent.ExecutionContext
+import scala.util.{Failure, Success}
 
 class AnnotationsWebSocketActor(out: ActorRef, limit: IpLimit, user: User, details: UserDetails)
                                (implicit ec: ExecutionContext, as: ActorSystem, limits: RequestLimits,
@@ -19,6 +21,15 @@ class AnnotationsWebSocketActor(out: ActorRef, limit: IpLimit, user: User, detai
         out.getAction match {
             case UserDetailsResponse.Action =>
                 out.success(UserDetailsResponse(details))
+            case ValidateSampleResponse.Action =>
+                validateData(out, data, (validateRequest: ValidateSampleRequest) => {
+                    user.getSampleFileByName(validateRequest.name) onComplete {
+                        case Success(Some(_)) =>
+                            out.success(ValidateSampleResponse(true))
+                        case Success(None) | Failure(_) =>
+                            out.success(ValidateSampleResponse(false))
+                    }
+                })
             case _ =>
                 out.errorMessage("Invalid action")
         }

@@ -15,7 +15,7 @@
  *       limitations under the License.
  */
 
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import { UploadService } from './upload.service';
 
 @Component({
@@ -23,12 +23,16 @@ import { UploadService } from './upload.service';
     templateUrl:     './upload.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class AnnotationsUploadComponent {
+export class AnnotationsUploadComponent implements OnDestroy {
 
     constructor(public uploadService: UploadService) {}
 
     public handleNewFiles(event: Event): void {
         this.uploadService.addItems((event.target as HTMLInputElement).files);
+    }
+
+    public ngOnDestroy(): void {
+        this.uploadService.clearRemoved();
     }
 
 }

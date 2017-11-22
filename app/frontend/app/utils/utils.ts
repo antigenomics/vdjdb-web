@@ -185,6 +185,18 @@ export namespace Utils {
             document.body.removeChild(link);
         }
 
+        export function baseName(name: string) {
+            let base = name.substring(name.lastIndexOf('/') + 1);
+            if (base.lastIndexOf('.') !== -1) {
+                base = base.substring(0, base.lastIndexOf('.'));
+            }
+            return base;
+        }
+
+        export function extension(name: string) {
+            return name.split('.').pop();
+        }
+
     }
 
     export namespace HTTP {

@@ -40,6 +40,10 @@ case class User(id: Long, login: String, email: String, verified: Boolean, folde
         sfp.getByUserID(id)
     }
 
+    def getSampleFileByName(name: String)(implicit sfp: SampleFileProvider, ec: ExecutionContext): Future[Option[SampleFile]] = {
+        sfp.getByUserIDAndName(id, name)
+    }
+
     def getSampleFilesWithMetadata(implicit sfp: SampleFileProvider, ec: ExecutionContext): Future[Seq[(SampleFile, FileMetadata)]] = {
         sfp.getByUserIDWithMetadata(id)
     }
@@ -47,7 +51,7 @@ case class User(id: Long, login: String, email: String, verified: Boolean, folde
     def getDetails(implicit upp: UserPermissionsProvider, sfp: SampleFileProvider, ec: ExecutionContext): Future[UserDetails] = async {
         val permissions = getPermissions
         val files = getSampleFiles
-        UserDetails(email, login, await(files), await(permissions))
+        UserDetails(email, login, await(files).map(_.sampleName), await(permissions))
     }
 
     def addSampleFile(name: String, extension: String, file: Files.TemporaryFile)
@@ -61,10 +65,10 @@ case class User(id: Long, login: String, email: String, verified: Boolean, folde
             if (!permissions.isUploadAllowed) {
                 Right("Upload is not allowed for this account")
             } else {
-                if (permissions.maxFilesCount <= files.length) {
+                if (permissions.maxFilesCount >= 0 && permissions.maxFilesCount <= files.length) {
                     Right("You have exceeded files count limit")
                 } else {
-                    if (permissions.getMaxFileSizeInBytes <= file.getAbsoluteFile.length()) {
+                    if (permissions.getMaxFileSizeInBytes >= 0 && permissions.getMaxFileSizeInBytes <= file.getAbsoluteFile.length()) {
                         Right("You have exceeded file size limit")
                     } else {
                         val sampleFolderPath = s"$folderPath/${CommonUtils.randomAlphaString(8)}-$name"
@@ -84,7 +88,11 @@ case class User(id: Long, login: String, email: String, verified: Boolean, folde
         }
     }
 
-    def delete(implicit sfp: SampleFileProvider, ec: ExecutionContext): Future[AnyVal] = async {
+    def checkPassword(plain: String): Boolean = {
+        BCrypt.checkpw(plain, password)
+    }
+
+    private[authorization] def delete(implicit sfp: SampleFileProvider, ec: ExecutionContext): Future[AnyVal] = async {
         val samples = await(getSampleFiles)
         samples.foreach { sample => sfp.delete(sample) }
         val folder = new File(folderPath)
@@ -92,10 +100,7 @@ case class User(id: Long, login: String, email: String, verified: Boolean, folde
             folder.delete()
         }
     }
-
-    def checkPassword(plain: String): Boolean = {
-        BCrypt.checkpw(plain, password)
-    }
 }
+
 
 

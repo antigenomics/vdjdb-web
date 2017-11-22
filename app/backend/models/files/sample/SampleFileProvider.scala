@@ -45,8 +45,20 @@ class SampleFileProvider @Inject()(@NamedDatabase("default") protected val dbCon
         db.run(table.result)
     }
 
+    def get(id: Long): Future[Option[SampleFile]] = {
+        db.run(table.filter(_.id === id).result.headOption)
+    }
+
     def getByUserID(id: Long): Future[Seq[SampleFile]] = {
         db.run(table.filter(_.userID === id).result)
+    }
+
+    def getByUserIDAndName(id: Long, name: String): Future[Option[SampleFile]] = {
+        db.run(table.filter(_.userID === id).filter(_.sampleName === name).result.headOption)
+    }
+
+    def getByUserAndName(user: User, name: String): Future[Option[SampleFile]] = {
+        getByUserIDAndName(user.id, name)
     }
 
     def getByUser(user: User): Future[Seq[SampleFile]] = {

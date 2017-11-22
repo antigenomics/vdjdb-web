@@ -57,6 +57,12 @@ class AnnotationsAPI @Inject()(cc: ControllerComponents, userRequestAction: User
             request.user.get.getDetails.map { details =>
                 if (!details.permissions.isUploadAllowed) {
                     Some(BadRequest("Upload is not allowed for this account"))
+                    val filesCount = details.files.length
+                    if (details.permissions.maxFilesCount >= 0 && filesCount >= details.permissions.maxFilesCount) {
+                        Some(BadRequest("You have exceeded files count limit"))
+                    } else {
+                        None
+                    }
                 } else {
                     None
                 }
@@ -72,9 +78,15 @@ class AnnotationsAPI @Inject()(cc: ControllerComponents, userRequestAction: User
                         case Some(nameWithExtension) => async {
                             val name = FilenameUtils.getBaseName(nameWithExtension)
                             val extension = FilenameUtils.getExtension(nameWithExtension)
-                            val sampleFileID = await(request.user.get.addSampleFile(name, extension, file.ref))
-                            logger.debug(s"File uploaded $name ($extension) from user ${request.user.get.login} (sampleID: $sampleFileID)")
-                            Ok(s"$sampleFileID")
+                            val uploadResult = await(request.user.get.addSampleFile(name, extension, file.ref))
+                            uploadResult match {
+                                case Left(sampleFileID) =>
+                                    logger.debug(s"File uploaded $name ($extension) from user ${request.user.get.login} (sampleID: $sampleFileID)")
+                                    Ok(s"$sampleFileID")
+                                case Right(error) =>
+                                    file.ref.delete()
+                                    BadRequest(error)
+                            }
                         }
                         case None => async {
                             BadRequest("Empty file name")

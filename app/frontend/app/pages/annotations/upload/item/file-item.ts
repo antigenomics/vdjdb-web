@@ -18,18 +18,22 @@
 import { ReplaySubject } from 'rxjs/ReplaySubject';
 import { FileItemSoftware, FileItemSoftwareTypes } from './file-item-software';
 import { FileItemStatus } from './file-item-status';
+import { Utils } from '../../../../utils/utils';
+import baseName = Utils.File.baseName;
 
 export class FileItem {
     public native: File;
 
-    public name: string = '';
+    public baseName: string = '';
+    public extension: string = '';
     public software: FileItemSoftware = FileItemSoftwareTypes.VDJTOOLS;
     public progress: ReplaySubject<number> = new ReplaySubject(1);
     public status: FileItemStatus = new FileItemStatus();
 
     constructor(file: File) {
         this.native = file;
-        this.name = file.name;
+        this.baseName = Utils.File.baseName(file.name);
+        this.extension = Utils.File.extension(file.name);
     }
 
     public setSoftware(software: FileItemSoftware): void {
@@ -38,6 +42,10 @@ export class FileItem {
 
     public getNativeFile(): File {
         return this.native;
+    }
+
+    public getNameWithExtension(): string {
+        return `${this.baseName}.${this.extension}`;
     }
 
     // noinspection JSMethodCanBeStatic

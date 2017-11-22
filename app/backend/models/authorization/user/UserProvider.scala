@@ -61,7 +61,7 @@ class UserProvider @Inject()(@NamedDatabase("default") protected val dbConfigPro
             val check = await(get(user._2))
             if (check.isEmpty) {
                 logger.info(s"User ${user._2} has been created")
-                verifyUser(await(createUser(user._1, user._2, user._3)))
+                verifyUser(await(createUser(user._1, user._2, user._3, user._4.toLong)))
             } else {
                 logger.info(s"User ${user._2} already created")
             }
@@ -131,9 +131,8 @@ class UserProvider @Inject()(@NamedDatabase("default") protected val dbConfigPro
     }
 
     def delete(user: User)(implicit sfp: SampleFileProvider): Future[Int] = {
-        db.run(table.filter(_.id === user.id).delete) andThen {
-            case Success(_) => user.delete
-            case Failure(ex) => logger.error(s"Cannot delete user ${user.email}", ex)
+        user.delete flatMap { _ =>
+            db.run(table.filter(_.id === user.id).delete)
         }
     }
 
@@ -157,7 +156,9 @@ class UserProvider @Inject()(@NamedDatabase("default") protected val dbConfigPro
         })
     }
 
-    def createUser(login: String, email: String, password: String, verifyUntil: Timestamp = TimeUtils.getExpiredAt(configuration.keep)): Future[VerificationToken] =
+    def createUser(login: String, email: String, password: String,
+                   permissionsID: Long = UserPermissionsProvider.DEFAULT_ID,
+                   verifyUntil: Timestamp = TimeUtils.getExpiredAt(configuration.keep)): Future[VerificationToken] =
         async {
             val check = await(get(email))
             if (check.nonEmpty) {
@@ -167,7 +168,7 @@ class UserProvider @Inject()(@NamedDatabase("default") protected val dbConfigPro
             val folderPath = s"${initialUsersConfiguration.folder}/$email"
             val folder = new File(folderPath)
             folder.mkdirs()
-            val user = User(0, login, email, verified = false, folderPath, hash, UserPermissionsProvider.DEFAULT_ID)
+            val user = User(0, login, email, verified = false, folderPath, hash, permissionsID)
             val userID: Long = await(insert(user))
             await(vtp.createVerificationToken(userID, verifyUntil))
         }

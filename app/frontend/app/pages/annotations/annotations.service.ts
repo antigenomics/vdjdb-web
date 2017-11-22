@@ -20,15 +20,19 @@ import { Subject } from 'rxjs/Subject';
 import { User } from '../../shared/user/user';
 import { WebSocketService } from '../../shared/websocket/websocket.service';
 import { LoggerService } from '../../utils/logger/logger.service';
+import { SampleItem } from '../../shared/sample/sample-item';
+import { WebSocketRequestData } from '../../shared/websocket/websocket-request';
 
 export type AnnotationsServiceEvents = number;
 
 export namespace AnnotationsServiceEvents {
     export const INITIALIZED: number = 0;
+    export const SAMPLE_ADDED: number = 1;
 }
 
 export namespace AnnotationsServiceWebSocketActions {
     export const USER_DETAILS: string = 'details';
+    export const VALIDATE_SAMPLE: string = 'validate_sample';
 }
 
 @Injectable()
@@ -61,5 +65,29 @@ export class AnnotationsService {
 
     public getEvents(): Subject<AnnotationsServiceEvents> {
         return this._events;
+    }
+
+    public getSamples(): SampleItem[] {
+        if (this._user === undefined) {
+            return [];
+        }
+        return this._user.samples;
+    }
+
+    public async addSample(sampleName: string): Promise<boolean> {
+        const message = await this.connection.sendMessage({
+            action: AnnotationsServiceWebSocketActions.VALIDATE_SAMPLE,
+            data:   new WebSocketRequestData()
+                    .add('name', sampleName)
+                    .unpack()
+        });
+        const valid = message.get('valid');
+        if (valid) {
+            if (!this._user.samples.some((sample) => sample.name === sampleName)) {
+                this._user.samples.push(new SampleItem(sampleName));
+            }
+        }
+        this._events.next(AnnotationsServiceEvents.SAMPLE_ADDED);
+        return valid;
     }
 }
