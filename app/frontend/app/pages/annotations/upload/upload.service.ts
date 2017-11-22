@@ -21,7 +21,7 @@ import { Observer } from 'rxjs/Observer';
 import { ReplaySubject } from 'rxjs/ReplaySubject';
 import { SampleItem } from '../../../shared/sample/sample-item';
 import { LoggerService } from '../../../utils/logger/logger.service';
-import { AnnotationsService } from '../annotations.service';
+import { AnnotationsService, AnnotationsServiceEvents } from '../annotations.service';
 import { FileItem } from './item/file-item';
 
 export class UploadStatus {
@@ -41,6 +41,7 @@ export type UploadServiceEvent = number;
 export namespace UploadServiceEvent {
     export const UPLOADING_STARTED = 1;
     export const UPLOADING_ENDED = 2;
+    export const STATE_REFRESHED = 3;
 }
 
 @Injectable()
@@ -53,7 +54,18 @@ export class UploadService {
     private _events: ReplaySubject<UploadServiceEvent> = new ReplaySubject(1);
     private _items: FileItem[] = [];
 
-    constructor(private logger: LoggerService, private annotationsService: AnnotationsService) {}
+    constructor(private logger: LoggerService, private annotationsService: AnnotationsService) {
+        this.annotationsService.getEvents().subscribe((event: AnnotationsServiceEvents) => {
+           switch (event) {
+               case AnnotationsServiceEvents.SAMPLE_DELETED:
+                   this._items = this._items.filter((item) => !item.status.isUploaded());
+                   this._items.forEach((item) => this.handleErrors(item, true));
+                   this._events.next(UploadServiceEvent.STATE_REFRESHED);
+                   break;
+               default:
+           }
+        });
+    }
 
     public addItems(files: FileList): void {
         /*tslint:disable:prefer-for-of */
@@ -85,15 +97,19 @@ export class UploadService {
         return this._items.some((item) => item.status.isReadyForUpload());
     }
 
-    public handleErrors(item: FileItem): void {
+    public handleErrors(item: FileItem, excludeSelf?: boolean, from?: FileItem[]): void {
+        item.clearErrors();
         if (!this.handleExtensionErrors(item)) {
             if (!this.handlePermissionsErrors(item)) {
-                this.handleItemNameErrors(item, item.baseName)
+                this.handleItemNameErrors(item, item.baseName, excludeSelf, from);
             }
         }
     }
 
-    public handleItemNameErrors(item: FileItem, baseName: string): boolean {
+    public handleItemNameErrors(item: FileItem, baseName: string, excludeSelf?: boolean, from?: FileItem[]): boolean {
+        const wasDuplicate = item.status.isDuplicate();
+        const oldName = item.baseName;
+
         item.status.validName();
         item.status.uniqueName();
 
@@ -106,7 +122,11 @@ export class UploadService {
             error = true;
         }
 
-        const isSameNameExist = this._items.some((_item) => _item.baseName === baseName);
+        let items = from ? from : this._items;
+        if (excludeSelf) {
+            items = items.filter((_item) => _item !== item);
+        }
+        const isSameNameExist = items.some((_item) => _item.baseName === baseName);
         if (isSameNameExist) {
             item.status.duplicatingName();
             error = true;
@@ -119,6 +139,13 @@ export class UploadService {
         }
 
         item.baseName = baseName;
+
+        if (wasDuplicate) {
+
+            const duplicateItems = items.filter((_item) => _item.baseName === oldName);
+            duplicateItems.forEach((_item) => this.handleErrors(_item, true, items));
+        }
+
         return error;
     }
 
@@ -216,20 +243,23 @@ export class UploadService {
             formData.append('name', file.getNameWithExtension());
             const xhr = new XMLHttpRequest();
 
-            xhr.upload.addEventListener('progress', (progress) => {
+            const progressEventListener = (progress: ProgressEvent) => {
                 if (progress.lengthComputable) {
                     const completed = Math.round(progress.loaded / progress.total * UploadService.FULL_PROGRESS);
                     observer.next(new UploadStatus(completed, true));
                 }
-            });
+            };
+            xhr.upload.addEventListener('progress', progressEventListener);
 
-            xhr.addEventListener('error', (error) => {
+            const errorEventListener = (error: ErrorEvent) => {
                 const request = error.target as XMLHttpRequest;
                 this.logger.debug('FileUploaderService: error', error);
                 observer.error(new UploadStatus(-1, false, request.responseText));
-            });
+            };
+            xhr.addEventListener('error', errorEventListener);
+            xhr.upload.addEventListener('error', errorEventListener);
 
-            xhr.addEventListener('load', (event) => {
+            const loadEventListener = (event: Event) => {
                 const request = event.target as XMLHttpRequest;
                 const status = request.status;
                 this.logger.debug('FileUploaderService: load with status', status);
@@ -240,11 +270,20 @@ export class UploadService {
                     const errorResponse = request.responseText;
                     observer.error(new UploadStatus(-1, false, errorResponse));
                 }
-            });
+            };
+            xhr.addEventListener('load', loadEventListener);
 
-            xhr.addEventListener('abort', () => {
+            const abortEventListener = () => {
                 observer.error(new UploadStatus(-1, false, 'Aborted'));
-            });
+            };
+            xhr.addEventListener('abort', abortEventListener);
+            xhr.upload.addEventListener('abort', abortEventListener);
+
+            const timeoutEventListener = () => {
+                observer.error(new UploadStatus(-1, false, 'Timeout'));
+            };
+            xhr.addEventListener('timeout', timeoutEventListener);
+            xhr.upload.addEventListener('timeout', timeoutEventListener);
 
             xhr.open('POST', '/api/annotations/upload', true);
             xhr.send(formData);
