@@ -15,13 +15,29 @@
  *       limitations under the License.
  */
 
-import { Component } from '@angular/core';
-import { UploadService } from '../upload.service';
+import { ChangeDetectorRef, Component, OnDestroy } from '@angular/core';
+import { UploadService, UploadServiceEvent } from '../upload.service';
+import { Subscription } from 'rxjs/Subscription';
 
 @Component({
     selector:        'upload-table',
     templateUrl:     './upload-table.component.html'
 })
-export class UploadTableComponent {
-    constructor(public uploadService: UploadService) {}
+export class UploadTableComponent implements OnDestroy {
+    private _stateSubscription: Subscription;
+
+    constructor(public uploadService: UploadService, private changeDetector: ChangeDetectorRef) {
+        this._stateSubscription = uploadService.getEvents().subscribe((event) => {
+            if (event === UploadServiceEvent.STATE_REFRESHED) {
+                this.changeDetector.detectChanges();
+            }
+        });
+    }
+
+    public ngOnDestroy(): void {
+        if (this._stateSubscription !== undefined) {
+            this._stateSubscription.unsubscribe();
+            this._stateSubscription = undefined;
+        }
+    }
 }

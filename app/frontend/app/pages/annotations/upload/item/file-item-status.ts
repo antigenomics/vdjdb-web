@@ -59,9 +59,17 @@ export class FileItemStatus {
         return this.beforeUploadError() === false && this.checkStatusFlag(FileItemStatusFlags.WAITING);
     }
 
+    public isUploaded(): boolean {
+        return this.checkStatusFlag(FileItemStatusFlags.UPLOADED);
+    }
+
     public isNameValid(): boolean {
         return this.checkStatusFlag(FileItemStatusFlags.INVALID_FILE_NAME) === false
             && this.checkStatusFlag(FileItemStatusFlags.DUPLICATE_FILE_NAME) === false;
+    }
+
+    public isDuplicate(): boolean {
+        return this.checkStatusFlag(FileItemStatusFlags.DUPLICATE_FILE_NAME);
     }
 
     public startLoading(): void {
@@ -100,6 +108,12 @@ export class FileItemStatus {
     public remove(): void {
         this.unsetStatusFlag(FileItemStatusFlags.WAITING);
         this.setStatusFlag(FileItemStatusFlags.REMOVED);
+    }
+
+    public clearErrors(): void {
+        this.unsetStatusFlag(FileItemStatusFlags.ERROR);
+        this._errorStatus = '';
+        this.setStatusFlag(FileItemStatusFlags.WAITING);
     }
 
     public getLabelStatusClass(): string {

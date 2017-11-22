@@ -18,7 +18,7 @@
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Input, OnDestroy, Renderer2, ViewChild } from '@angular/core';
 import { Subscription } from 'rxjs/Subscription';
 import { FileItem } from '../../item/file-item';
-import { UploadService } from '../../upload.service';
+import { UploadService, UploadServiceEvent } from '../../upload.service';
 
 @Component({
     selector:        'tr[upload-table-row]',
@@ -27,6 +27,7 @@ import { UploadService } from '../../upload.service';
 })
 export class UploadTableRowComponent implements AfterViewInit, OnDestroy {
     private static FULL_PROGRESS: number = 100;
+    private _stateSubscription: Subscription;
     private _progressSubscription: Subscription;
 
     @Input('file-item')
@@ -38,7 +39,15 @@ export class UploadTableRowComponent implements AfterViewInit, OnDestroy {
     @ViewChild('progressBar')
     public progressBar: ElementRef;
 
-    constructor(private uploadService: UploadService, private renderer: Renderer2, private changeDetector: ChangeDetectorRef) {}
+    constructor(private uploadService: UploadService, private renderer: Renderer2, private changeDetector: ChangeDetectorRef) {
+        this._stateSubscription = uploadService.getEvents().subscribe((event) => {
+            if (event === UploadServiceEvent.STATE_REFRESHED) {
+                if (this.item) {
+                    this.changeDetector.detectChanges();
+                }
+            }
+        });
+    }
 
     public ngAfterViewInit(): void {
         this.updateProgressBar(0, 0);
@@ -61,6 +70,10 @@ export class UploadTableRowComponent implements AfterViewInit, OnDestroy {
         if (this._progressSubscription !== undefined) {
             this._progressSubscription.unsubscribe();
             this._progressSubscription = undefined;
+        }
+        if (this._stateSubscription !== undefined) {
+            this._stateSubscription.unsubscribe();
+            this._stateSubscription = undefined;
         }
     }
 

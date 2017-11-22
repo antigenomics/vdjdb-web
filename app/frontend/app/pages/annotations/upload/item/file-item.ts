@@ -22,6 +22,8 @@ import { Utils } from '../../../../utils/utils';
 import baseName = Utils.File.baseName;
 
 export class FileItem {
+    private static FULL_PROGRESS: number = 100;
+
     public native: File;
 
     public baseName: string = '';
@@ -38,12 +40,17 @@ export class FileItem {
 
     public uploaded(): void {
         this.status.uploaded();
-        this.progress.next(100);
+        this.progress.next(FileItem.FULL_PROGRESS);
     }
 
     public setError(error: string): void {
         this.status.error(error);
         this.progress.next(-1);
+    }
+
+    public clearErrors(): void {
+        this.status.clearErrors();
+        this.progress.next(0);
     }
 
     public setSoftware(software: FileItemSoftware): void {
