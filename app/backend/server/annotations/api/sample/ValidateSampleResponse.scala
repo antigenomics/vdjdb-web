@@ -12,12 +12,17 @@
  *     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *     See the License for the specific language governing permissions and
  *     limitations under the License.
+ *
  */
 
-package backend.models.authorization.user
+package backend.server.annotations.api.sample
 
-import backend.models.authorization.permissions.UserPermissions
-import backend.models.files.sample.SampleFile
+import play.api.libs.json.{Json, Writes}
 
-// TODO add information about files etc
-case class UserDetails(email: String, login: String, files: Seq[String], permissions: UserPermissions)
+case class ValidateSampleResponse(valid: Boolean)
+
+object ValidateSampleResponse {
+    final val Action: String = "validate_sample"
+
+    implicit val validateSampleResponseWrites: Writes[ValidateSampleResponse] = Json.writes[ValidateSampleResponse]
+}

@@ -64,8 +64,8 @@ export class UploadTableRowComponent implements AfterViewInit, OnDestroy {
         }
     }
 
-    public checkName(newName: string): void {
-        this.uploadService.handleItemName(this.item, newName);
+    public checkName(newBaseName: string): void {
+        this.uploadService.handleItemName(this.item, newBaseName);
     }
 
     private updateProgressBar(progress: number, dataPercent: number) {

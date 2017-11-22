@@ -39,7 +39,7 @@ const routes = [
 @NgModule({
     imports:      [ BrowserModule, UploadModule, RouterModule.forChild(routes) ],
     declarations: [ AnnotationsPageComponent, SidebarComponent, AnnotationsInfoComponent ],
-    exports:      [ AnnotationsPageComponent, SidebarComponent, AnnotationsInfoComponent ],
+    exports:      [ AnnotationsPageComponent ],
     providers:    [ AnnotationsService ]
 })
 export class AnnotationsPageModule {}

@@ -12,12 +12,13 @@
  *     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *     See the License for the specific language governing permissions and
  *     limitations under the License.
+ *
  */
 
-package backend.models.authorization.user
+export class SampleItem {
+    public name: string;
 
-import backend.models.authorization.permissions.UserPermissions
-import backend.models.files.sample.SampleFile
-
-// TODO add information about files etc
-case class UserDetails(email: String, login: String, files: Seq[String], permissions: UserPermissions)
+    constructor(name: string) {
+        this.name = name;
+    }
+}

@@ -1,11 +1,14 @@
 <td>
     <div class="ui fluid transparent left icon input" [ngClass]="{'error':!item.status.isNameValid()}" *ngIf="item.status.isWaiting()">
-        <input placeholder="Enter sample name" [ngModel]="item.name" (ngModelChange)="checkName($event)">
+        <input placeholder="Enter sample name" [ngModel]="item.baseName" (ngModelChange)="checkName($event)">
         <i class="write icon"></i>
     </div>
     <div *ngIf="!item.status.isWaiting()">
-        {{ item.name }}
+        {{ item.baseName }}
     </div>
+</td>
+<td>
+    {{ item.extension }}
 </td>
 <td>
     <div class="ui fluid dropdown" dropdown [content]="content" *ngIf="item.status.isWaiting()">

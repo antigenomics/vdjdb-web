@@ -4,7 +4,7 @@
   "description": "Webpack configuration for VDJdb-server",
   "private": true,
   "scripts": {
-    "start": "node ./webpack/webpack.dev.server",
+    "server:hot": "node ./webpack/webpack.dev.server",
     "bundle": "npm run bundle:clean:all && npm run bundle:aot && npm run bundle:webpack && npm run bundle:stats && npm run bundle:clean:build",
     "bundle:clean:all": "npm run bundle:clean:public && npm run bundle:clean:build",
     "bundle:clean:public": "rimraf ../../public/bundles/*",

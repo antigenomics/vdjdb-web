@@ -19,17 +19,17 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs/Observable';
 import { Observer } from 'rxjs/Observer';
 import { ReplaySubject } from 'rxjs/ReplaySubject';
+import { SampleItem } from '../../../shared/sample/sample-item';
 import { LoggerService } from '../../../utils/logger/logger.service';
+import { AnnotationsService } from '../annotations.service';
 import { FileItem } from './item/file-item';
 
 export class UploadStatus {
-    public fileName: string;
     public progress: number;
     public loading: boolean;
     public error: string;
 
-    constructor(fileName: string, progress: number, loading: boolean = true, error?: string) {
-        this.fileName = fileName;
+    constructor(progress: number, loading: boolean = true, error?: string) {
         this.progress = progress;
         this.loading = loading;
         this.error = error;
@@ -52,14 +52,13 @@ export class UploadService {
     private _events: ReplaySubject<UploadServiceEvent> = new ReplaySubject(1);
     private _items: FileItem[] = [];
 
-    constructor(private logger: LoggerService) {
-    }
+    constructor(private logger: LoggerService, private annotationsService: AnnotationsService) {}
 
     public addItems(files: FileList): void {
         /*tslint:disable:prefer-for-of */
         for (let i = 0; i < files.length; ++i) {
             const fileItem = new FileItem(files[ i ]);
-            this.handleItemName(fileItem, fileItem.name);
+            this.handleItemName(fileItem, fileItem.baseName);
             this._items.push(fileItem);
         }
         /*tslint:enable:prefer-for-of */
@@ -85,22 +84,28 @@ export class UploadService {
         return this._items.some((item) => item.status.isReadyForUpload());
     }
 
-    public handleItemName(item: FileItem, name: string): void {
+    public handleItemName(item: FileItem, baseName: string): void {
         item.status.validName();
         item.status.uniqueName();
 
         const regexp = /^[a-zA-Z0-9_.+-]{1,40}$/;
-        const test = regexp.test(name);
-        if (!test) {
+        const testBaseName = regexp.test(baseName);
+        const testBaseNameWithExtension = regexp.test(`${baseName}.${item.extension}`);
+        if (!testBaseName || !testBaseNameWithExtension) {
             item.status.invalidName();
         }
 
-        const isSameNameExist = this._items.some((_item) => _item.name === name);
+        const isSameNameExist = this._items.some((_item) => _item.baseName === baseName);
         if (isSameNameExist) {
             item.status.duplicatingName();
         }
 
-        item.name = name;
+        const isSameNameExistInUploaded = this.annotationsService.getSamples().some((_sample) => _sample.name === baseName);
+        if (isSameNameExistInUploaded) {
+            item.status.duplicatingName();
+        }
+
+        item.baseName = baseName;
     }
 
     public uploadAll(): void {
@@ -116,10 +121,16 @@ export class UploadService {
             this.fireUploadingStartEvent();
             const uploader = this.createUploader(file);
             uploader.subscribe({
-                next: (status) => {
+                next: async (status) => {
                     if (status.loading === false) {
                         if (status.progress === UploadService.FULL_PROGRESS && status.error === undefined) {
-                            file.status.uploaded();
+                            const added = await this.annotationsService.addSample(file.baseName);
+                            if (added) {
+                                file.status.uploaded();
+                            } else {
+                                file.status.error('Validating failed');
+                                status.progress = -1;
+                            }
                         } else if (status.error !== undefined) {
                             file.status.error(status.error);
                         }
@@ -137,6 +148,10 @@ export class UploadService {
         }
     }
 
+    public clearRemoved(): void {
+        this._items = this._items.filter((item) => !item.status.isRemoved());
+    }
+
     private fireUploadingStartEvent(): void {
         this._uploadingCount += 1;
         this._events.next(UploadServiceEvent.UPLOADING_STARTED);
@@ -150,25 +165,25 @@ export class UploadService {
     }
 
     private createUploader(file: FileItem): Observable<UploadStatus> {
-        this.logger.debug('FileUploaderService: uploading file', `${file.name} (size: ${file.getNativeFile().size})`);
+        this.logger.debug('FileUploaderService: uploading file', `${file.baseName} (size: ${file.getNativeFile().size})`);
 
         return Observable.create((observer: Observer<UploadStatus>) => {
             const formData: FormData = new FormData();
             formData.append('file', file.getNativeFile());
-            formData.append('name', file.name);
+            formData.append('name', file.getNameWithExtension());
             const xhr = new XMLHttpRequest();
 
             xhr.upload.addEventListener('progress', (progress) => {
                 if (progress.lengthComputable) {
                     const completed = Math.round(progress.loaded / progress.total * UploadService.FULL_PROGRESS);
-                    observer.next(new UploadStatus(file.name, completed, true));
+                    observer.next(new UploadStatus(completed, true));
                 }
             });
 
             xhr.addEventListener('error', (error) => {
                 const request = error.target as XMLHttpRequest;
                 this.logger.debug('FileUploaderService: error', error);
-                observer.error(new UploadStatus(file.name, -1, false, request.responseText));
+                observer.error(new UploadStatus(-1, false, request.responseText));
             });
 
             xhr.addEventListener('load', (event) => {
@@ -176,16 +191,16 @@ export class UploadService {
                 const status = request.status;
                 this.logger.debug('FileUploaderService: load with status', status);
                 if (status === UploadService.SUCCESS_HTTP_CODE) {
-                    observer.next(new UploadStatus(file.name, UploadService.FULL_PROGRESS, false));
+                    observer.next(new UploadStatus(UploadService.FULL_PROGRESS, false));
                     observer.complete();
                 } else {
                     const errorResponse = request.responseText;
-                    observer.error(new UploadStatus(file.name, -1, false, errorResponse));
+                    observer.error(new UploadStatus(-1, false, errorResponse));
                 }
             });
 
             xhr.addEventListener('abort', () => {
-                observer.error(new UploadStatus(file.name, -1, false, 'Aborted'));
+                observer.error(new UploadStatus(-1, false, 'Aborted'));
             });
 
             xhr.open('POST', '/api/annotations/upload', true);
