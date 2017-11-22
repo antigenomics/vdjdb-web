@@ -38,7 +38,7 @@ export class LoggerService {
 
     public debug(title: any, content?: any) {
         if (ConfigurationService.isDevelopmentMode()) {
-            this.info('Debug: ' + title, content);
+            this.info('[Debug] ' + title, content);
         }
     }
 }

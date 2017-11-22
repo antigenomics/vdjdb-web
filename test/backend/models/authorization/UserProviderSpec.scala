@@ -21,6 +21,7 @@ import backend.models.{DatabaseProviderTestSpec, SQLDatabaseTestTag}
 import backend.models.authorization.permissions.UserPermissionsProvider
 import backend.models.authorization.user.UserProvider
 import backend.models.authorization.tokens.verification.VerificationTokenProvider
+import backend.models.files.sample.SampleFileProvider
 import backend.utils.TimeUtils
 
 import scala.async.Async.{async, await}
@@ -29,6 +30,7 @@ class UserProviderSpec extends DatabaseProviderTestSpec {
     lazy implicit val userProvider: UserProvider = app.injector.instanceOf[UserProvider]
     lazy implicit val tokenProvider: VerificationTokenProvider = app.injector.instanceOf[VerificationTokenProvider]
     lazy implicit val userPermissionsProvider: UserPermissionsProvider = app.injector.instanceOf[UserPermissionsProvider]
+    lazy implicit val sampleFileProvider: SampleFileProvider = app.injector.instanceOf[SampleFileProvider]
 
     "UserProvider" should {
 
@@ -103,7 +105,7 @@ class UserProviderSpec extends DatabaseProviderTestSpec {
                 val token1 = await(userProvider.createUser("user1", "user1@mail.ru", "user1password", fakeExpiredAt))
                 val token2 = await(userProvider.createUser("user2", "user2@mail.ru", "user2password", fakeExpiredAt))
 
-                val deleted = await(userProvider.deleteUnverified())
+                val deleted = await(userProvider.deleteUnverified)
                 deleted shouldEqual 2
 
                 val token1Check = tokenProvider.get(token1.token)
@@ -117,11 +119,6 @@ class UserProviderSpec extends DatabaseProviderTestSpec {
                 await(user2Check) shouldBe empty
             }
         }
-    }
-
-    override protected def afterAll(): Unit = async {
-        val all = await(userProvider.getAll)
-        userProvider.delete(all.map(_.id))
     }
 
 }

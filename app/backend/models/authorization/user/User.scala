@@ -17,16 +17,20 @@
 
 package backend.models.authorization.user
 
+import java.io.File
+import java.nio.file.Paths
+
 import backend.models.authorization.permissions.{UserPermissions, UserPermissionsProvider}
-import backend.models.files.FileMetadata
+import backend.models.files.{FileMetadata, FileMetadataProvider}
 import backend.models.files.sample.{SampleFile, SampleFileProvider}
+import backend.utils.CommonUtils
 import org.mindrot.jbcrypt.BCrypt
 import play.api.libs.Files
 
 import scala.async.Async.{async, await}
 import scala.concurrent.{ExecutionContext, Future}
 
-case class User(id: Long, login: String, email: String, verified: Boolean,
+case class User(id: Long, login: String, email: String, verified: Boolean, folderPath: String,
                 private[authorization] val password: String, private[authorization] val permissionID: Long) {
     def getPermissions(implicit upp: UserPermissionsProvider, ec: ExecutionContext): Future[UserPermissions] = {
         upp.getByID(permissionID).map(_.get)
@@ -46,12 +50,11 @@ case class User(id: Long, login: String, email: String, verified: Boolean,
         UserDetails(email, login, await(files), await(permissions))
     }
 
-    def getFolder: String = throw new RuntimeException("Not implemented")
-
     def addSampleFile(name: String, extension: String, file: Files.TemporaryFile)
-                     (implicit sfp: SampleFileProvider, upp: UserPermissionsProvider, ec: ExecutionContext): Future[Either[Long, String]] = async {
-        val files = await(getSampleFilesWithMetadata)
-        if (files.exists(_._2.fileName == name)) {
+                     (implicit sfp: SampleFileProvider, upp: UserPermissionsProvider, fmp: FileMetadataProvider,
+                      ec: ExecutionContext): Future[Either[Long, String]] = async {
+        val files = await(getSampleFiles)
+        if (files.exists(_.sampleName == name)) {
             Right(s"Sample file $name already exist")
         } else {
             val permissions = await(getPermissions)
@@ -64,10 +67,29 @@ case class User(id: Long, login: String, email: String, verified: Boolean,
                     if (permissions.getMaxFileSizeInBytes <= file.getAbsoluteFile.length()) {
                         Right("You have exceeded file size limit")
                     } else {
-                        Left(0)
+                        val sampleFolderPath = s"$folderPath/${CommonUtils.randomAlphaString(8)}-$name"
+                        val sampleFolder = new File(sampleFolderPath)
+                        val success = sampleFolder.mkdirs()
+                        if (success) {
+                            val metadataID = await(fmp.insert(name, extension, sampleFolderPath))
+                            file.moveTo(Paths.get(s"$sampleFolderPath/$name.$extension"), replace = true)
+                            val sampleFileID = await(sfp.insert(SampleFile(0, name, metadataID, id)))
+                            Left(sampleFileID)
+                        } else {
+                            Right("Unable to create sample file (internal server error)")
+                        }
                     }
                 }
             }
+        }
+    }
+
+    def delete(implicit sfp: SampleFileProvider, ec: ExecutionContext): Future[AnyVal] = async {
+        val samples = await(getSampleFiles)
+        samples.foreach { sample => sfp.delete(sample) }
+        val folder = new File(folderPath)
+        if (folder.exists()) {
+            folder.delete()
         }
     }
 

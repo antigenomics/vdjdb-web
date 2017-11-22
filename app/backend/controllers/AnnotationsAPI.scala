@@ -26,6 +26,7 @@ import backend.actions.{SessionAction, UserRequest, UserRequestAction}
 import backend.actors.AnnotationsWebSocketActor
 import backend.models.authorization.permissions.UserPermissionsProvider
 import backend.models.authorization.user.UserProvider
+import backend.models.files.FileMetadataProvider
 import backend.models.files.sample.SampleFileProvider
 import backend.server.limit.RequestLimits
 import backend.utils.analytics.Analytics
@@ -42,7 +43,7 @@ import scala.async.Async.{async, await}
 import scala.concurrent.{ExecutionContext, Future}
 
 class AnnotationsAPI @Inject()(cc: ControllerComponents, userRequestAction: UserRequestAction, conf: Configuration)
-                              (implicit upp: UserPermissionsProvider, up: UserProvider, sfp: SampleFileProvider,
+                              (implicit upp: UserPermissionsProvider, up: UserProvider, sfp: SampleFileProvider, fmp: FileMetadataProvider,
                                as: ActorSystem, mat: Materializer, ec: ExecutionContext, limits: RequestLimits,
                                environment: Environment, analytics: Analytics)
     extends AbstractController(cc) {
@@ -64,26 +65,25 @@ class AnnotationsAPI @Inject()(cc: ControllerComponents, userRequestAction: User
     }
 
     def uploadFile: Action[MultipartFormData[Files.TemporaryFile]] =
-        (userRequestAction(parse.multipartFormData(maxUploadFileSize.toBytes)) andThen SessionAction.authorizedOnly andThen checkUploadAllowed) {
+        (userRequestAction(parse.multipartFormData(maxUploadFileSize.toBytes)) andThen SessionAction.authorizedOnly andThen checkUploadAllowed).async {
             implicit request =>
                 request.body.file("file").map { file =>
                     request.body.asFormUrlEncoded("name").headOption match {
-                        case Some(nameWithExtension) =>
+                        case Some(nameWithExtension) => async {
                             val name = FilenameUtils.getBaseName(nameWithExtension)
                             val extension = FilenameUtils.getExtension(nameWithExtension)
-                            logger.info(s"File uploaded $name ($extension) from user ${request.user.get.login}")
-                            try {
-                                file.ref.moveTo(Paths.get(s"/tmp/play/${file.filename}"), replace = true)
-                                Ok("Uploaded")
-                            } catch {
-                                case ex: Throwable =>
-                                    logger.error(s"Upload error: ${ex.toString}")
-                                    BadRequest("Internal server error")
-                            }
-                        case None => BadRequest("Empty file name")
+                            val sampleFileID = await(request.user.get.addSampleFile(name, extension, file.ref))
+                            logger.debug(s"File uploaded $name ($extension) from user ${request.user.get.login} (sampleID: $sampleFileID)")
+                            Ok(s"$sampleFileID")
+                        }
+                        case None => async {
+                            BadRequest("Empty file name")
+                        }
                     }
                 }.getOrElse {
-                    BadRequest("Internal server error")
+                    async {
+                        BadRequest("Internal server error")
+                    }
                 }
         }
 
@@ -95,8 +95,9 @@ class AnnotationsAPI @Inject()(cc: ControllerComponents, userRequestAction: User
                     case Some(token) =>
                         val user = await(up.getBySessionToken(token))
                         if (user.nonEmpty) {
+                            val details = await(user.get.getDetails)
                             Right(ActorFlow.actorRef { out =>
-                                AnnotationsWebSocketActor.props(out, limits.getLimit(request), user.get)
+                                AnnotationsWebSocketActor.props(out, limits.getLimit(request), user.get, details)
                             })
                         } else {
                             Left(Forbidden)

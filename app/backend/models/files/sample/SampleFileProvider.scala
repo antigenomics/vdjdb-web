@@ -33,8 +33,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class SampleFileProvider @Inject()(@NamedDatabase("default") protected val dbConfigProvider: DatabaseConfigProvider)
-                                  (implicit ec: ExecutionContext, conf: Configuration, system: ActorSystem,
-                                   fmp: FileMetadataProvider, up: UserProvider)
+                                  (implicit ec: ExecutionContext, conf: Configuration, system: ActorSystem, fmp: FileMetadataProvider)
     extends HasDatabaseConfigProvider[JdbcProfile] {
     private final val logger = LoggerFactory.getLogger(this.getClass)
     import dbConfig.profile.api._
@@ -84,11 +83,7 @@ class SampleFileProvider @Inject()(@NamedDatabase("default") protected val dbCon
         throw new RuntimeException("Not implemented")
     }
 
-    private def insert(user: User, name: String, extension: String): Future[Int] = {
-        fmp.insert(name, extension, user.getFolder).flatMap(insert(_, user.id))
-    }
-
-    private def insert(metadataID: Long, userID: Long): Future[Int] = {
-        db.run(table += SampleFile(0, metadataID, userID))
+    def insert(sample: SampleFile): Future[Long] = {
+        db.run(table returning table.map(_.id) += sample)
     }
 }
