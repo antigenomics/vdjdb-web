@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="75.752357mm"
+   height="47.302658mm"
+   viewBox="0 0 75.752357 47.302658"
+   version="1.1"
+   id="svg6204"
+   inkscape:version="0.92.0 unknown"
+   sodipodi:docname="logo_large.svg">
+  <defs
+     id="defs6198" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.98994949"
+     inkscape:cx="193.50168"
+     inkscape:cy="-24.849698"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:window-width="1855"
+     inkscape:window-height="1056"
+     inkscape:window-x="1985"
+     inkscape:window-y="24"
+     inkscape:window-maximized="1" />
+  <metadata
+     id="metadata6201">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-31.68189,-85.891479)">
+    <rect
+       style="fill:#3e3e3e;fill-opacity:1;stroke-width:0.11746078"
+       id="rect6206"
+       width="75.752357"
+       height="47.302658"
+       x="31.68189"
+       y="85.891479" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:35.27777863px;line-height:27.65819168px;font-family:FreeMono;-inkscape-font-specification:'FreeMono, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1.10632753"
+       x="34.773285"
+       y="123.51849"
+       id="text20-4"
+       transform="scale(0.9986565,1.0013453)"><tspan
+         sodipodi:role="line"
+         id="tspan18-9"
+         x="34.773285"
+         y="123.51849"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:condensed;font-size:35.27777863px;font-family:'Gillius ADF No2 Cd';-inkscape-font-specification:'Gillius ADF No2 Cd, Condensed';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;fill:#ffffff;fill-opacity:1;stroke-width:1.10632753">VDJ<tspan
+   style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:condensed;font-size:28.22222137px;font-family:'Gillius ADF No2 Cd';-inkscape-font-specification:'Gillius ADF No2 Cd, Condensed';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start"
+   id="tspan6808">db</tspan></tspan></text>
+    <path
+       sodipodi:type="star"
+       style="fill:#d73027;fill-opacity:1;stroke-width:0.26458332"
+       id="path4529-6-8"
+       sodipodi:sides="3"
+       sodipodi:cx="46.33316"
+       sodipodi:cy="95.935303"
+       sodipodi:r1="11.074767"
+       sodipodi:r2="5.5373836"
+       sodipodi:arg1="-0.34464732"
+       sodipodi:arg2="0.70255024"
+       inkscape:flatsided="true"
+       inkscape:rounded="0"
+       inkscape:randomized="0"
+       d="M 56.756672,92.193529 44.361875,106.83322 37.880934,88.779163 Z"
+       inkscape:transform-center-x="-0.98564133"
+       inkscape:transform-center-y="1.8708853" />
+  </g>
+</svg>
