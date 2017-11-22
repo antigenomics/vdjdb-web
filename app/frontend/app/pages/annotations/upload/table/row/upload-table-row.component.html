@@ -25,7 +25,9 @@
     </div>
 </td>
 <td>
-    {{ item.status.getStatusString() }}
+    <div class="ui progress {{ item.status.getLabelStatusClass() }}">
+        <div class="label">{{ item.status.getStatusString() }}</div>
+    </div>
     <div class="ui bottom attached indicating progress" #progress>
         <div class="bar" #progressBar></div>
     </div>

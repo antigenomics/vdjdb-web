@@ -102,6 +102,16 @@ export class FileItemStatus {
         this.setStatusFlag(FileItemStatusFlags.REMOVED);
     }
 
+    public getLabelStatusClass(): string {
+        if (this.isError()) {
+            return 'error';
+        } else if (this.isWaiting() || !this.isNameValid()) {
+            return 'warning';
+        } else {
+            return 'success';
+        }
+    }
+
     public getStatusString(): string {
         if (this.checkStatusFlag(FileItemStatusFlags.REMOVED)) {
             return 'Removed';

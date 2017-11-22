@@ -36,6 +36,16 @@ export class FileItem {
         this.extension = Utils.File.extension(file.name);
     }
 
+    public uploaded(): void {
+        this.status.uploaded();
+        this.progress.next(100);
+    }
+
+    public setError(error: string): void {
+        this.status.error(error);
+        this.progress.next(-1);
+    }
+
     public setSoftware(software: FileItemSoftware): void {
         this.software = software;
     }

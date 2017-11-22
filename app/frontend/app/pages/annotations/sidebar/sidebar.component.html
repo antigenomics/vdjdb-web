@@ -21,4 +21,10 @@
             <a class="item" [routerLink]="['upload']">Click 'upload' button to proceed</a>
         </div>
     </div>
+    <div class="item">
+        <div class="header">Settings</div>
+        <div class="menu" *ngIf="!isSamplesEmpty()">
+            <a class="item">Delete all</a>
+        </div>
+    </div>
 </div>
