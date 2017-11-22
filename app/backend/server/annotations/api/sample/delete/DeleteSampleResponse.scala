@@ -15,12 +15,14 @@
  *
  */
 
-package backend.server.annotations.api.sample
+package backend.server.annotations.api.sample.delete
 
-import play.api.libs.json.{Json, Reads}
+import play.api.libs.json.{Json, Writes}
 
-case class ValidateSampleRequest(name: String)
+case class DeleteSampleResponse(valid: Boolean)
 
-object ValidateSampleRequest {
-    implicit val validateSampleRequestReads: Reads[ValidateSampleRequest] = Json.reads[ValidateSampleRequest]
+object DeleteSampleResponse {
+    final val Action: String = "delete_sample"
+
+    implicit val deleteSampleResponseWrites: Writes[DeleteSampleResponse] = Json.writes[DeleteSampleResponse]
 }

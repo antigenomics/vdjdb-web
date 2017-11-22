@@ -1,0 +1,19 @@
+<div class="ui fade element dimmer modals page visible active" style="display: block !important; " #dimmer>
+    <div class="ui fade element {{ size }} test modal visible active" style="margin-top: -93.5px; display: block !important;" #modal>
+        <div class="header">
+            {{ header }}
+        </div>
+        <div class="content">
+            <p>{{ content }}</p>
+        </div>
+        <div class="actions">
+            <div class="ui negative button" (click)="no()" *ngIf="!isLoading()">
+                No
+            </div>
+            <div class="ui positive right labeled icon button" [ngClass]="{'loading':isLoading()}" (click)="yes()">
+                Yes
+                <i class="checkmark icon"></i>
+            </div>
+        </div>
+    </div>
+</div>

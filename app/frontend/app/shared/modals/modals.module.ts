@@ -20,11 +20,12 @@ import { BrowserModule } from '@angular/platform-browser';
 import { DropdownDirective } from './dropdown/dropdown.directive';
 import { PopupContentComponent } from './popup/popup-content.component';
 import { PopupDirective } from './popup/popup.directive';
+import { ModalComponent } from './modal/modal.component';
 
 @NgModule({
     imports:         [ BrowserModule, FormsModule ],
-    declarations:    [ PopupDirective, PopupContentComponent, DropdownDirective ],
-    exports:         [ PopupDirective, PopupContentComponent, DropdownDirective ],
-    entryComponents: [ PopupContentComponent ]
+    declarations:    [ PopupDirective, PopupContentComponent, ModalComponent, DropdownDirective ],
+    exports:         [ PopupDirective, PopupContentComponent, ModalComponent, DropdownDirective ],
+    entryComponents: [ PopupContentComponent, ModalComponent ]
 })
 export class ModalsModule {}

@@ -25,6 +25,8 @@ import { AnnotationsInfoComponent } from './info/annotations-info.component';
 import { SidebarComponent } from './sidebar/sidebar.component';
 import { AnnotationsUploadComponent } from './upload/upload.component';
 import { UploadModule } from './upload/upload.module';
+import { ModalsModule } from '../../shared/modals/modals.module';
+import { NotificationModule } from '../../utils/notification/notification.module';
 
 const routes = [
     {
@@ -37,7 +39,7 @@ const routes = [
 ];
 
 @NgModule({
-    imports:      [ BrowserModule, UploadModule, RouterModule.forChild(routes) ],
+    imports:      [ BrowserModule, UploadModule, RouterModule.forChild(routes), ModalsModule, NotificationModule ],
     declarations: [ AnnotationsPageComponent, SidebarComponent, AnnotationsInfoComponent ],
     exports:      [ AnnotationsPageComponent ],
     providers:    [ AnnotationsService ]

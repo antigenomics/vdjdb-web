@@ -4,7 +4,8 @@ import akka.actor.{ActorRef, ActorSystem, Props}
 import backend.models.authorization.permissions.UserPermissionsProvider
 import backend.models.authorization.user.{User, UserDetails}
 import backend.models.files.sample.SampleFileProvider
-import backend.server.annotations.api.sample.{ValidateSampleRequest, ValidateSampleResponse}
+import backend.server.annotations.api.sample.delete.{DeleteSampleRequest, DeleteSampleResponse}
+import backend.server.annotations.api.sample.validate.{ValidateSampleRequest, ValidateSampleResponse}
 import backend.server.annotations.api.user.UserDetailsResponse
 import backend.server.limit.{IpLimit, RequestLimits}
 import play.api.libs.json._
@@ -24,10 +25,20 @@ class AnnotationsWebSocketActor(out: ActorRef, limit: IpLimit, user: User, detai
             case ValidateSampleResponse.Action =>
                 validateData(out, data, (validateRequest: ValidateSampleRequest) => {
                     user.getSampleFileByName(validateRequest.name) onComplete {
+                        case Success(None) | Failure(_) =>
+                            out.error(ValidateSampleResponse(false))
                         case Success(Some(_)) =>
                             out.success(ValidateSampleResponse(true))
-                        case Success(None) | Failure(_) =>
-                            out.success(ValidateSampleResponse(false))
+                    }
+                })
+            case DeleteSampleResponse.Action =>
+                validateData(out, data, (deleteRequest: DeleteSampleRequest) => {
+                    val deleteFuture = if (deleteRequest.all) sfp.deleteAllForUser(user) else sfp.deleteForUser(user, deleteRequest.name)
+                    deleteFuture onComplete {
+                        case Success(0) | Failure(_) =>
+                            out.error(DeleteSampleResponse(false))
+                        case Success(_) =>
+                            out.success(DeleteSampleResponse(true))
                     }
                 })
             case _ =>
