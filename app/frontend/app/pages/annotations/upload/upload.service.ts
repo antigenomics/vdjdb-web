@@ -45,6 +45,7 @@ export namespace UploadServiceEvent {
 
 @Injectable()
 export class UploadService {
+    private static AVAILABLE_EXTENSIONS: string[] = [ 'txt', 'gz' ];
     private static FULL_PROGRESS: number = 100;
     private static SUCCESS_HTTP_CODE: number = 200;
 
@@ -85,8 +86,10 @@ export class UploadService {
     }
 
     public handleErrors(item: FileItem): void {
-        if (!this.handlePermissionsErrors(item)) {
-            this.handleItemNameErrors(item, item.baseName);
+        if (!this.handleExtensionErrors(item)) {
+            if (!this.handlePermissionsErrors(item)) {
+                this.handleItemNameErrors(item, item.baseName)
+            }
         }
     }
 
@@ -121,25 +124,30 @@ export class UploadService {
 
     public handlePermissionsErrors(item: FileItem): boolean {
         const permissions = this.annotationsService.getUserPermissions();
-        let error = false;
         if (!permissions.isUploadAllowed) {
-            item.status.error('Upload is not allowed for this account');
-            error = true;
+            item.setError('Upload is not allowed for this account');
+            return true;
         } else if (permissions.maxFilesCount >= 0) {
             const waitingFilesLength = this._items.filter((_item) => _item.status.isWaiting()).length;
             const sampleFilesLength = this.annotationsService.getSamples().length;
             if ((waitingFilesLength + sampleFilesLength) >= permissions.maxFilesCount) {
-                item.status.error('Max files count limit have been exceeded');
-                error = true;
+                item.setError('Max files count limit have been exceeded');
+                return true;
             }
         } else if (permissions.maxFileSize >= 0 && item.getNativeFile().size >= permissions.getMaxFileSizeInBytes()) {
-            item.status.error('Max file size limit have been exceeded');
-            error = true;
+            item.setError('Max file size limit have been exceeded');
+            return true;
         }
-        if (error) {
-            item.progress.next(-1);
+        return false;
+    }
+
+    // noinspection JSMethodCanBeStatic
+    public handleExtensionErrors(item: FileItem): boolean {
+        if (UploadService.AVAILABLE_EXTENSIONS.indexOf(item.extension) === -1) {
+            item.setError('Invalid file extension');
+            return true;
         }
-        return error;
+        return false;
     }
 
     public uploadAll(): void {
@@ -160,21 +168,18 @@ export class UploadService {
                         if (status.progress === UploadService.FULL_PROGRESS && status.error === undefined) {
                             const added = await this.annotationsService.addSample(file.baseName);
                             if (added) {
-                                file.status.uploaded();
+                                file.uploaded();
                             } else {
-                                file.status.error('Validating failed');
-                                status.progress = -1;
+                                file.setError('Validating failed');
                             }
                         } else if (status.error !== undefined) {
-                            file.status.error(status.error);
+                            file.setError(status.error);
                         }
                         this.fireUploadingEndedEvent();
                     }
-                    file.progress.next(status.progress);
                 },
                 error: (err: UploadStatus) => {
-                    file.status.error(err.error);
-                    file.progress.next(err.progress);
+                    file.setError(err.error);
                     this.fireUploadingEndedEvent();
                 }
             });
