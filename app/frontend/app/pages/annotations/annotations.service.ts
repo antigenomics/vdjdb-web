@@ -28,11 +28,13 @@ export type AnnotationsServiceEvents = number;
 export namespace AnnotationsServiceEvents {
     export const INITIALIZED: number = 0;
     export const SAMPLE_ADDED: number = 1;
+    export const SAMPLE_DELETED: number = 2;
 }
 
 export namespace AnnotationsServiceWebSocketActions {
     export const USER_DETAILS: string = 'details';
     export const VALIDATE_SAMPLE: string = 'validate_sample';
+    export const DELETE_SAMPLE: string = 'delete_sample';
 }
 
 @Injectable()
@@ -79,19 +81,50 @@ export class AnnotationsService {
     }
 
     public async addSample(sampleName: string): Promise<boolean> {
-        const message = await this.connection.sendMessage({
+        const response = await this.connection.sendMessage({
             action: AnnotationsServiceWebSocketActions.VALIDATE_SAMPLE,
             data:   new WebSocketRequestData()
                     .add('name', sampleName)
                     .unpack()
         });
-        const valid = message.get('valid');
+        const valid = response.isSuccess() && response.get('valid');
         if (valid) {
             if (!this._user.samples.some((sample) => sample.name === sampleName)) {
                 this._user.samples.push(new SampleItem(sampleName));
+                this._events.next(AnnotationsServiceEvents.SAMPLE_ADDED);
             }
         }
-        this._events.next(AnnotationsServiceEvents.SAMPLE_ADDED);
+        return valid;
+    }
+
+    public async deleteSample(sample: SampleItem): Promise<boolean> {
+        return await this.deleteAction(false, sample);
+    }
+
+    public async deleteAllSamples(): Promise<boolean> {
+        return await this.deleteAction(true);
+    }
+
+    private async deleteAction(all: boolean, sample?: SampleItem): Promise<boolean> {
+        const response = await this.connection.sendMessage({
+            action: AnnotationsServiceWebSocketActions.DELETE_SAMPLE,
+            data:   new WebSocketRequestData()
+                    .add('name', sample === undefined ? '' : sample.name)
+                    .add('all', all)
+                    .unpack()
+        });
+        const valid = response.isSuccess() && response.get('valid');
+        if (valid) {
+            if (sample !== undefined) {
+                const index = this._user.samples.indexOf(sample);
+                if (index !== -1) {
+                    this._user.samples.splice(index, 1);
+                }
+            } else if (all) {
+                this._user.samples.splice(0, this._user.samples.length);
+            }
+            this._events.next(AnnotationsServiceEvents.SAMPLE_DELETED);
+        }
         return valid;
     }
 }

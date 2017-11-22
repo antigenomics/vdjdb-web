@@ -12,29 +12,17 @@
  *     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *     See the License for the specific language governing permissions and
  *     limitations under the License.
+ *
  */
 
-.ui.menu .dropdown.item .menu.padded {
-  margin-top: 10px !important;
-}
+package backend.server.annotations.api.sample.validate
 
-.ui.sidebar.with.navbar {
-  top: 51px !important;
-}
+import play.api.libs.json.{Json, Writes}
 
-.ui.sidebar.menu .item .menu .selected.item {
-  font-weight: bold;
-  color: black;
-}
+case class ValidateSampleResponse(valid: Boolean)
 
-.ui.sidebar.menu .item .menu .item .trash.icon {
-  display: none;
-}
+object ValidateSampleResponse {
+    final val Action: String = "validate_sample"
 
-.ui.sidebar.menu .item .menu .item:hover .trash.icon {
-  display: block;
-}
-
-.pusher.annotations {
-  margin-left: 210px !important;
+    implicit val validateSampleResponseWrites: Writes[ValidateSampleResponse] = Json.writes[ValidateSampleResponse]
 }

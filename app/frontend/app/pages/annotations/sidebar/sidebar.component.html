@@ -14,17 +14,19 @@
     <div class="item">
         <div class="header">Samples</div>
         <div class="menu" *ngIf="!isSamplesEmpty()">
-            <a class="item" *ngFor="let sample of getSamples()" [ngClass]="{'disabled':sample.loading}">{{ sample.name }}</a>
+            <a class="item" *ngFor="let sample of getSamples()" [ngClass]="{'disabled':sample.loading}">
+                <i class="trash icon" (click)="deleteSample(sample)"></i>{{ sample.name }}
+            </a>
         </div>
         <div class="menu" *ngIf="isSamplesEmpty()">
             <a class="item" [routerLink]="['upload']">There are no uploaded samples</a>
             <a class="item" [routerLink]="['upload']">Click 'upload' button to proceed</a>
         </div>
     </div>
-    <div class="item">
+    <div class="item" *ngIf="!isSamplesEmpty()">
         <div class="header">Settings</div>
         <div class="menu" *ngIf="!isSamplesEmpty()">
-            <a class="item">Delete all</a>
+            <a class="item" (click)="deleteAllSamples()">Delete all</a>
         </div>
     </div>
 </div>

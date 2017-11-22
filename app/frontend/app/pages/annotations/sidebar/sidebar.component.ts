@@ -15,11 +15,17 @@
  *       limitations under the License.
  */
 
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import {
+    ChangeDetectionStrategy, ChangeDetectorRef, Component, ComponentFactoryResolver, ComponentRef, OnDestroy, OnInit,
+    ViewContainerRef
+} from '@angular/core';
 import { Subscription } from 'rxjs/Subscription';
 import { UploadService, UploadServiceEvent } from '../upload/upload.service';
 import { AnnotationsService, AnnotationsServiceEvents } from '../annotations.service';
 import { SampleItem } from '../../../shared/sample/sample-item';
+import { ModalComponent } from '../../../shared/modals/modal/modal.component';
+import { LoggerService } from '../../../utils/logger/logger.service';
+import { NotificationService } from '../../../utils/notification/notification.service';
 
 @Component({
     selector:        'sidebar',
@@ -27,11 +33,14 @@ import { SampleItem } from '../../../shared/sample/sample-item';
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SidebarComponent implements OnInit, OnDestroy {
+    private _confirmDeletingModalComponent: ComponentRef<ModalComponent>;
     private _filesUploadingLabel: boolean = false;
     private _uploadServiceEventsSubscription: Subscription;
     private _annotationsServiceEventsSubscription: Subscription;
 
-    constructor(private uploadService: UploadService, private annotationsService: AnnotationsService, private changeDetector: ChangeDetectorRef) {}
+    constructor(private uploadService: UploadService, private annotationsService: AnnotationsService,
+                private hostViewContainer: ViewContainerRef, private resolver: ComponentFactoryResolver,
+                private changeDetector: ChangeDetectorRef, private logger: LoggerService, private notifications: NotificationService) {}
 
     public ngOnInit(): void {
         this._uploadServiceEventsSubscription = this.uploadService.getEvents().subscribe((event) => {
@@ -69,8 +78,54 @@ export class SidebarComponent implements OnInit, OnDestroy {
         return this._filesUploadingLabel;
     }
 
+    public deleteSample(sample: SampleItem): void {
+        const modalComponentResolver = this.resolver.resolveComponentFactory<ModalComponent>(ModalComponent);
+        this._confirmDeletingModalComponent = this.hostViewContainer.createComponent<ModalComponent>(modalComponentResolver);
+        this._confirmDeletingModalComponent.instance.header = sample.name;
+        this._confirmDeletingModalComponent.instance.content = `Are you sure you want to delete your sample?`;
+        this._confirmDeletingModalComponent.instance.yesCallback = async () => {
+            this.logger.debug('Sidebar', `Deleting sample ${sample.name}`);
+            const deleted = await this.annotationsService.deleteSample(sample);
+            if (deleted) {
+                this.notifications.info('Delete', `Sample ${sample.name} have been deleted`);
+            } else {
+                this.notifications.error('Delete', `Unable to delete ${sample.name} sample`);
+            }
+        };
+        this._confirmDeletingModalComponent.instance.hideCallback = async () => {
+            this.destroyConfirmDeletingModalComponent();
+        };
+    }
+
+    public deleteAllSamples(): void {
+        const modalComponentResolver = this.resolver.resolveComponentFactory<ModalComponent>(ModalComponent);
+        this._confirmDeletingModalComponent = this.hostViewContainer.createComponent<ModalComponent>(modalComponentResolver);
+        this._confirmDeletingModalComponent.instance.header = 'Delete all samples';
+        this._confirmDeletingModalComponent.instance.content = `Are you sure you want to delete all your samples?`;
+        this._confirmDeletingModalComponent.instance.yesCallback = async () => {
+            this.logger.debug('Sidebar', `Deleting all samples`);
+            const deleted = await this.annotationsService.deleteAllSamples();
+            if (deleted) {
+                this.notifications.info('Delete', `All samples have been deleted`);
+            } else {
+                this.notifications.error('Delete', `Unable to delete samples`);
+            }
+        };
+        this._confirmDeletingModalComponent.instance.hideCallback = async () => {
+            this.destroyConfirmDeletingModalComponent();
+        };
+    }
+
     public ngOnDestroy(): void {
         this._uploadServiceEventsSubscription.unsubscribe();
         this._annotationsServiceEventsSubscription.unsubscribe();
+        this.destroyConfirmDeletingModalComponent();
+    }
+
+    private destroyConfirmDeletingModalComponent(): void {
+        if (this._confirmDeletingModalComponent !== undefined) {
+            this._confirmDeletingModalComponent.destroy();
+            this._confirmDeletingModalComponent = undefined;
+        }
     }
 }

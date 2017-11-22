@@ -57,8 +57,16 @@ class SampleFileProvider @Inject()(@NamedDatabase("default") protected val dbCon
         db.run(table.filter(_.userID === id).filter(_.sampleName === name).result.headOption)
     }
 
+    def getByUserIDAndNameWithMetadata(id: Long, name: String): Future[Option[(SampleFile, FileMetadata)]] = {
+        db.run(table.withMetadata.filter(_._1.userID === id).filter(_._1.sampleName === name).result.headOption)
+    }
+
     def getByUserAndName(user: User, name: String): Future[Option[SampleFile]] = {
         getByUserIDAndName(user.id, name)
+    }
+
+    def getByUserAndNameWithMetadata(user: User, name: String): Future[Option[(SampleFile, FileMetadata)]] = {
+        db.run(table.withMetadata.filter(_._1.userID === user.id).filter(_._1.sampleName === name).result.headOption)
     }
 
     def getByUser(user: User): Future[Seq[SampleFile]] = {
@@ -73,12 +81,19 @@ class SampleFileProvider @Inject()(@NamedDatabase("default") protected val dbCon
         getByUserIDWithMetadata(user.id)
     }
 
-    def deleteByID(id: Long): Future[Int] = {
-        db.run(table.filter(_.id === id).delete)
-    }
-
     def delete(file: SampleFile): Future[Int] = {
         fmp.delete(file.metadataID)
+    }
+
+    def deleteForUserID(id: Long, name: String): Future[Int] = {
+        getByUserIDAndNameWithMetadata(id, name) flatMap  {
+            case Some(file) => fmp.delete(file._2)
+            case None => Future.successful(0)
+        }
+    }
+
+    def deleteForUser(user: User, name: String): Future[Int] = {
+        deleteForUserID(user.id, name)
     }
 
     def deleteAllForUserID(id: Long): Future[Int] = {
