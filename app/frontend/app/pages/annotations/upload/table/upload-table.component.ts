@@ -15,7 +15,7 @@
  *       limitations under the License.
  */
 
-import { ChangeDetectorRef, Component, OnDestroy } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { UploadService, UploadServiceEvent } from '../upload.service';
 import { Subscription } from 'rxjs/Subscription';
 
@@ -23,11 +23,13 @@ import { Subscription } from 'rxjs/Subscription';
     selector:        'upload-table',
     templateUrl:     './upload-table.component.html'
 })
-export class UploadTableComponent implements OnDestroy {
+export class UploadTableComponent implements OnInit, OnDestroy {
     private _stateSubscription: Subscription;
 
-    constructor(public uploadService: UploadService, private changeDetector: ChangeDetectorRef) {
-        this._stateSubscription = uploadService.getEvents().subscribe((event) => {
+    constructor(public uploadService: UploadService, private changeDetector: ChangeDetectorRef) {}
+
+    public ngOnInit(): void {
+        this._stateSubscription = this.uploadService.getEvents().subscribe((event) => {
             if (event === UploadServiceEvent.STATE_REFRESHED) {
                 this.changeDetector.detectChanges();
             }

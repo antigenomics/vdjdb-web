@@ -15,7 +15,10 @@
  *       limitations under the License.
  */
 
-import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Input, OnDestroy, Renderer2, ViewChild } from '@angular/core';
+import {
+    AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Input, OnDestroy, OnInit, Renderer2,
+    ViewChild
+} from '@angular/core';
 import { Subscription } from 'rxjs/Subscription';
 import { FileItem } from '../../item/file-item';
 import { UploadService, UploadServiceEvent } from '../../upload.service';
@@ -25,7 +28,7 @@ import { UploadService, UploadServiceEvent } from '../../upload.service';
     templateUrl:     './upload-table-row.component.html',
     changeDetection: ChangeDetectionStrategy.Default
 })
-export class UploadTableRowComponent implements AfterViewInit, OnDestroy {
+export class UploadTableRowComponent implements AfterViewInit, OnInit, OnDestroy {
     private static FULL_PROGRESS: number = 100;
     private _stateSubscription: Subscription;
     private _progressSubscription: Subscription;
@@ -39,8 +42,10 @@ export class UploadTableRowComponent implements AfterViewInit, OnDestroy {
     @ViewChild('progressBar')
     public progressBar: ElementRef;
 
-    constructor(private uploadService: UploadService, private renderer: Renderer2, private changeDetector: ChangeDetectorRef) {
-        this._stateSubscription = uploadService.getEvents().subscribe((event) => {
+    constructor(private uploadService: UploadService, private renderer: Renderer2, private changeDetector: ChangeDetectorRef) {}
+
+    public ngOnInit(): void {
+        this._stateSubscription = this.uploadService.getEvents().subscribe((event) => {
             if (event === UploadServiceEvent.STATE_REFRESHED) {
                 if (this.item) {
                     this.changeDetector.detectChanges();
@@ -63,7 +68,7 @@ export class UploadTableRowComponent implements AfterViewInit, OnDestroy {
     }
 
     public remove(): void {
-        this.item.status.remove();
+        this.uploadService.remove(this.item);
     }
 
     public ngOnDestroy(): void {

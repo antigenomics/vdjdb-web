@@ -58,7 +58,7 @@ export class UploadService {
         this.annotationsService.getEvents().subscribe((event: AnnotationsServiceEvents) => {
            switch (event) {
                case AnnotationsServiceEvents.SAMPLE_DELETED:
-                   this._items = this._items.filter((item) => !item.status.isUploaded());
+                   this._items = this._items.filter((item) => item.status.isWaiting());
                    this._items.forEach((item) => this.handleErrors(item, true));
                    this._events.next(UploadServiceEvent.STATE_REFRESHED);
                    break;
@@ -98,8 +98,10 @@ export class UploadService {
     }
 
     public handleErrors(item: FileItem, excludeSelf?: boolean, from?: FileItem[]): void {
-        item.clearErrors();
-        if (!this.handleExtensionErrors(item)) {
+        if (item.status.isRemoved()) {
+            return;
+        } else if (!this.handleExtensionErrors(item)) {
+            item.clearErrors();
             if (!this.handlePermissionsErrors(item)) {
                 this.handleItemNameErrors(item, item.baseName, excludeSelf, from);
             }
@@ -122,9 +124,9 @@ export class UploadService {
             error = true;
         }
 
-        let items = from ? from : this._items;
+        let items = from ? from : this._items.filter((_item) => _item.status.isWaiting());
         if (excludeSelf) {
-            items = items.filter((_item) => _item !== item);
+            items = items.filter((_item) => _item.status.isWaiting()).filter((_item) => _item !== item);
         }
         const isSameNameExist = items.some((_item) => _item.baseName === baseName);
         if (isSameNameExist) {
@@ -175,6 +177,17 @@ export class UploadService {
             return true;
         }
         return false;
+    }
+
+    public remove(item: FileItem): void {
+        const wasDuplicate = item.status.isDuplicate();
+        item.status.remove();
+        if (wasDuplicate) {
+            this._items
+                .filter((_item) => _item.status.isWaiting())
+                .forEach((_item) => this.handleErrors(_item, true));
+        }
+        this._events.next(UploadServiceEvent.STATE_REFRESHED);
     }
 
     public uploadAll(): void {
