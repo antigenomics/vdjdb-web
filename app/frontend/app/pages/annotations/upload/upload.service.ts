@@ -58,7 +58,7 @@ export class UploadService {
         /*tslint:disable:prefer-for-of */
         for (let i = 0; i < files.length; ++i) {
             const fileItem = new FileItem(files[ i ]);
-            this.handleItemName(fileItem, fileItem.baseName);
+            this.handleErrors(fileItem);
             this._items.push(fileItem);
         }
         /*tslint:enable:prefer-for-of */
@@ -84,28 +84,62 @@ export class UploadService {
         return this._items.some((item) => item.status.isReadyForUpload());
     }
 
-    public handleItemName(item: FileItem, baseName: string): void {
+    public handleErrors(item: FileItem): void {
+        if (!this.handlePermissionsErrors(item)) {
+            this.handleItemNameErrors(item, item.baseName);
+        }
+    }
+
+    public handleItemNameErrors(item: FileItem, baseName: string): boolean {
         item.status.validName();
         item.status.uniqueName();
 
+        let error = false;
         const regexp = /^[a-zA-Z0-9_.+-]{1,40}$/;
         const testBaseName = regexp.test(baseName);
         const testBaseNameWithExtension = regexp.test(`${baseName}.${item.extension}`);
         if (!testBaseName || !testBaseNameWithExtension) {
             item.status.invalidName();
+            error = true;
         }
 
         const isSameNameExist = this._items.some((_item) => _item.baseName === baseName);
         if (isSameNameExist) {
             item.status.duplicatingName();
+            error = true;
         }
 
         const isSameNameExistInUploaded = this.annotationsService.getSamples().some((_sample) => _sample.name === baseName);
         if (isSameNameExistInUploaded) {
             item.status.duplicatingName();
+            error = true;
         }
 
         item.baseName = baseName;
+        return error;
+    }
+
+    public handlePermissionsErrors(item: FileItem): boolean {
+        const permissions = this.annotationsService.getUserPermissions();
+        let error = false;
+        if (!permissions.isUploadAllowed) {
+            item.status.error('Upload is not allowed for this account');
+            error = true;
+        } else if (permissions.maxFilesCount >= 0) {
+            const waitingFilesLength = this._items.filter((_item) => _item.status.isWaiting()).length;
+            const sampleFilesLength = this.annotationsService.getSamples().length;
+            if ((waitingFilesLength + sampleFilesLength) >= permissions.maxFilesCount) {
+                item.status.error('Max files count limit have been exceeded');
+                error = true;
+            }
+        } else if (permissions.maxFileSize >= 0 && item.getNativeFile().size >= permissions.getMaxFileSizeInBytes()) {
+            item.status.error('Max file size limit have been exceeded');
+            error = true;
+        }
+        if (error) {
+            item.progress.next(-1);
+        }
+        return error;
     }
 
     public uploadAll(): void {
@@ -150,6 +184,10 @@ export class UploadService {
 
     public clearRemoved(): void {
         this._items = this._items.filter((item) => !item.status.isRemoved());
+    }
+
+    public clearErrored(): void {
+        this._items = this._items.filter((item) => !item.status.isError());
     }
 
     private fireUploadingStartEvent(): void {

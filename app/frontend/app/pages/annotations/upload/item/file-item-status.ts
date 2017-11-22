@@ -75,6 +75,7 @@ export class FileItemStatus {
     }
 
     public error(errorStatus: string): void {
+        this.unsetStatusFlag(FileItemStatusFlags.WAITING);
         this.unsetStatusFlag(FileItemStatusFlags.LOADING);
         this.setStatusFlag(FileItemStatusFlags.ERROR);
         this._errorStatus = errorStatus;

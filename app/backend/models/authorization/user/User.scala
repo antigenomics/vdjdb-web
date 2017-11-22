@@ -66,10 +66,10 @@ case class User(id: Long, login: String, email: String, verified: Boolean, folde
                 Right("Upload is not allowed for this account")
             } else {
                 if (permissions.maxFilesCount >= 0 && permissions.maxFilesCount <= files.length) {
-                    Right("You have exceeded files count limit")
+                    Right("Max files count limit have been exceeded")
                 } else {
                     if (permissions.getMaxFileSizeInBytes >= 0 && permissions.getMaxFileSizeInBytes <= file.getAbsoluteFile.length()) {
-                        Right("You have exceeded file size limit")
+                        Right("Max file size limit have been exceeded")
                     } else {
                         val sampleFolderPath = s"$folderPath/${CommonUtils.randomAlphaString(8)}-$name"
                         val sampleFolder = new File(sampleFolderPath)

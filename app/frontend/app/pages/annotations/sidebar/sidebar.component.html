@@ -13,8 +13,12 @@
     </div>
     <div class="item">
         <div class="header">Samples</div>
-        <div class="menu">
+        <div class="menu" *ngIf="!isSamplesEmpty()">
             <a class="item" *ngFor="let sample of getSamples()" [ngClass]="{'disabled':sample.loading}">{{ sample.name }}</a>
+        </div>
+        <div class="menu" *ngIf="isSamplesEmpty()">
+            <a class="item" [routerLink]="['upload']">There are no uploaded samples</a>
+            <a class="item" [routerLink]="['upload']">Click 'upload' button to proceed</a>
         </div>
     </div>
 </div>
