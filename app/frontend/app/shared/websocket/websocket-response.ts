@@ -14,8 +14,6 @@
  *    limitations under the License.
  */
 
-import { WebSocketResponseStatus } from './websocket.service';
-
 export interface IWebSocketResponseData {
     [index: string]: any;
 }
@@ -38,14 +36,14 @@ export class WebSocketResponseData {
     }
 
     public isSuccess(): boolean {
-        return this.status() === WebSocketResponseStatus.SUCCESS;
+        return this.status() === 'success';
     }
 
     public isWarning(): boolean {
-        return this.status() === WebSocketResponseStatus.WARNING;
+        return this.status() === 'warning';
     }
 
     public isError(): boolean {
-        return this.status() === WebSocketResponseStatus.ERROR;
+        return this.status() === 'error';
     }
 }
