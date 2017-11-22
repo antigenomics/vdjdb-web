@@ -27,10 +27,11 @@ class UserTable(tag: Tag)(implicit upp: UserPermissionsProvider) extends Table[U
     def login = column[String]("LOGIN", O.Length(64))
     def email = column[String]("EMAIL", O.Unique, O.Length(128))
     def verified = column[Boolean]("VERIFIED")
+    def folderPath = column[String]("FOLDER_PATH", O.Length(255))
     def password = column[String]("PASSWORD", O.Length(255))
     def permissionID = column[Long]("PERMISSION_ID")
 
-    def * = (id, login, email, verified, password, permissionID) <> (User.tupled, User.unapply)
+    def * = (id, login, email, verified, folderPath, password, permissionID) <> (User.tupled, User.unapply)
     def permissions = foreignKey("PERMISSIONS_FK", permissionID, upp.getTable)(_.id,
         onUpdate = ForeignKeyAction.Cascade, onDelete = ForeignKeyAction.NoAction)
 

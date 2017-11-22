@@ -24,15 +24,14 @@ import slick.lifted.Tag
 
 import scala.language.higherKinds
 
-class SampleFileTable(tag: Tag)(implicit fmp: FileMetadataProvider, up: UserProvider) extends Table[SampleFile](tag, SampleFileTable.TABLE_NAME){
+class SampleFileTable(tag: Tag)(implicit fmp: FileMetadataProvider) extends Table[SampleFile](tag, SampleFileTable.TABLE_NAME){
     def id = column[Long]("ID", O.PrimaryKey, O.AutoInc)
+    def sampleName = column[String]("SAMPLE_NAME", O.Length(64))
     def metadataID = column[Long]("METADATA_ID")
     def userID = column[Long]("USER_ID")
 
-    def * = (id, metadataID, userID) <> (SampleFile.tupled, SampleFile.unapply)
+    def * = (id, sampleName, metadataID, userID) <> (SampleFile.tupled, SampleFile.unapply)
     def metadata = foreignKey("METADATA_FK", metadataID, fmp.getTable)(_.id,
-        onUpdate = ForeignKeyAction.Cascade, onDelete = ForeignKeyAction.Cascade)
-    def user = foreignKey("USER_FK", userID, up.getTable)(_.id,
         onUpdate = ForeignKeyAction.Cascade, onDelete = ForeignKeyAction.Cascade)
 }
 

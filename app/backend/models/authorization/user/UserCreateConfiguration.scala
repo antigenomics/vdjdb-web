@@ -20,7 +20,7 @@ package backend.models.authorization.user
 import com.typesafe.config.Config
 import play.api.ConfigLoader
 
-case class UserCreateConfiguration(skip: Boolean, users: Seq[(String, String, String)])
+case class UserCreateConfiguration(skip: Boolean, users: Seq[(String, String, String)], folder: String)
 
 object UserCreateConfiguration {
     implicit val userCreateConfigurationLoader: ConfigLoader[UserCreateConfiguration] = (rootConfig: Config, path: String) => {
@@ -30,7 +30,8 @@ object UserCreateConfiguration {
             users = config.getConfigList("create").toArray.map(p => {
                 val user = p.asInstanceOf[Config]
                 (user.getString("login"), user.getString("email"), user.getString("password"))
-            })
+            }),
+            folder = config.getString("folder")
         )
     }
 }

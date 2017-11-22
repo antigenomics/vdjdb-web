@@ -17,16 +17,17 @@
 
 package backend.models.authorization.user
 
+import java.io.File
 import java.sql.Timestamp
 import javax.inject.{Inject, Singleton}
 
 import akka.actor.ActorSystem
 import backend.models.authorization.forms.SignupForm
 import backend.models.authorization.permissions.{UserPermissions, UserPermissionsProvider}
-import backend.models.authorization.tokens.reset.ResetTokenProvider
 import backend.models.authorization.tokens.session.SessionTokenProvider
 import backend.models.authorization.tokens.verification.{VerificationToken, VerificationTokenConfiguration, VerificationTokenProvider}
-import backend.utils.TimeUtils
+import backend.models.files.sample.SampleFileProvider
+import backend.utils.{CommonUtils, TimeUtils}
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import play.db.NamedDatabase
 import slick.jdbc.JdbcProfile
@@ -37,20 +38,21 @@ import slick.jdbc.meta.MTable
 
 import scala.async.Async.{async, await}
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.Failure
+import scala.util.{Failure, Success}
 import scala.language.postfixOps
 import scala.concurrent.duration._
 
 @Singleton
 class UserProvider @Inject()(@NamedDatabase("default") protected val dbConfigProvider: DatabaseConfigProvider,
                              vtp: VerificationTokenProvider, stp: SessionTokenProvider)
-                            (implicit ec: ExecutionContext, conf: Configuration, system: ActorSystem, upp: UserPermissionsProvider)
+                            (implicit ec: ExecutionContext, conf: Configuration, system: ActorSystem, upp: UserPermissionsProvider, sfp: SampleFileProvider)
     extends HasDatabaseConfigProvider[JdbcProfile] {
     private final val logger = LoggerFactory.getLogger(this.getClass)
     private final val configuration = conf.get[VerificationTokenConfiguration]("application.auth.verification")
     private final val initialUsersConfiguration = conf.get[UserCreateConfiguration]("application.auth.init")
 
     import dbConfig.profile.api._
+
     private final val table = TableQuery[UserTable]
 
     if (!initialUsersConfiguration.skip && initialUsersConfiguration.users.nonEmpty) {
@@ -76,6 +78,20 @@ class UserProvider @Inject()(@NamedDatabase("default") protected val dbConfigPro
         }
     }
 
+    getAll onComplete {
+        case Success(users) =>
+            users.foreach(user => {
+                if (user.folderPath == "<default>") {
+                    val folderPath = s"${initialUsersConfiguration.folder}/${user.email}"
+                    val folder = new File(folderPath)
+                    folder.mkdirs()
+                    db.run(table.filter(_.id === user.id).map(_.folderPath).update(folderPath))
+                }
+            })
+        case Failure(ex) =>
+            logger.warn("Cannot initialize default columns in user table after evolutions", ex)
+    }
+
     def getTable: TableQuery[UserTable] = table
 
     def getAuthTokenSessionName: String = stp.getAuthTokenSessionName
@@ -92,12 +108,14 @@ class UserProvider @Inject()(@NamedDatabase("default") protected val dbConfigPro
         db.run(table.filter(_.email === email).result.headOption)
     }
 
-    def getBySessionToken(sessionToken: String): Future[Option[User]] = async {
-        val token = await(stp.get(sessionToken))
-        if (token.nonEmpty) {
-            await(get(token.get.userID))
-        } else {
-            None
+    def get(ids: Seq[Long]): Future[Seq[User]] = {
+        db.run(table.filter(fm => fm.id inSet ids).result)
+    }
+
+    def getBySessionToken(sessionToken: String): Future[Option[User]] = {
+        stp.get(sessionToken) flatMap {
+            case Some(token) => get(token.userID)
+            case None => Future.successful(None)
         }
     }
 
@@ -105,26 +123,33 @@ class UserProvider @Inject()(@NamedDatabase("default") protected val dbConfigPro
         db.run(table.withPermissions.filter(_._1.email === email).result.headOption)
     }
 
-    def delete(id: Long): Future[Int] = {
-        db.run(table.filter(_.id === id).delete)
+    def delete(id: Long)(implicit sfp: SampleFileProvider): Future[Int] = {
+        get(id) flatMap {
+            case Some(user) => delete(user)
+            case None => Future.successful(0)
+        }
     }
 
-    def delete(user: User): Future[Int] = {
-        delete(user.id)
+    def delete(user: User)(implicit sfp: SampleFileProvider): Future[Int] = {
+        db.run(table.filter(_.id === user.id).delete) andThen {
+            case Success(_) => user.delete
+            case Failure(ex) => logger.error(s"Cannot delete user ${user.email}", ex)
+        }
     }
 
-    def delete(ids: Seq[Long]): Future[Int] = {
-        db.run(table.filter(fm => fm.id inSet ids).delete)
-    }
-
-    def deleteUnverified(): Future[Int] = {
+    def deleteUnverified(implicit sfp: SampleFileProvider): Future[Int] = {
         db.run(MTable.getTables).flatMap(tables => async {
             if (tables.exists(_.name.name == UserTable.TABLE_NAME)) {
                 val currentTimestamp = TimeUtils.getCurrentTimestamp
                 val expiredTokens = await(vtp.getExpired(currentTimestamp))
                 val userIDs = expiredTokens.map(_.userID)
-                await(delete(userIDs).flatMap(_ => {
-                    vtp.delete(expiredTokens)
+                await(get(userIDs).flatMap(users => {
+                    users.foreach(user => {
+                        user.delete
+                    })
+                    deleteByIDS(userIDs).flatMap(_ => {
+                        vtp.delete(expiredTokens)
+                    })
                 }))
             } else {
                 0
@@ -139,7 +164,10 @@ class UserProvider @Inject()(@NamedDatabase("default") protected val dbConfigPro
                 throw new RuntimeException("User already exists")
             }
             val hash = BCrypt.hashpw(password, BCrypt.gensalt())
-            val user = User(0, login, email, verified = false, hash, UserPermissionsProvider.DEFAULT_ID)
+            val folderPath = s"${initialUsersConfiguration.folder}/$email"
+            val folder = new File(folderPath)
+            folder.mkdirs()
+            val user = User(0, login, email, verified = false, folderPath, hash, UserPermissionsProvider.DEFAULT_ID)
             val userID: Long = await(insert(user))
             await(vtp.createVerificationToken(userID, verifyUntil))
         }
@@ -174,5 +202,9 @@ class UserProvider @Inject()(@NamedDatabase("default") protected val dbConfigPro
 
     private def insert(user: User): Future[Long] = {
         db.run(table returning table.map(_.id) += user)
+    }
+
+    private def deleteByIDS(ids: Seq[Long]): Future[Int] = {
+        db.run(table.filter(fm => fm.id inSet ids).delete)
     }
 }

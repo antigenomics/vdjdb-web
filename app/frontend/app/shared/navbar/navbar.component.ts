@@ -30,7 +30,9 @@ export class NavigationBarComponent {
     constructor(logger: LoggerService) {
         this._isLogged = Utils.Cookies.getCookie('logged') === 'true';
         this._userEmail = Utils.Cookies.getCookie('email');
-        logger.debug('Navbar: user email', this._userEmail);
+        if (this._userEmail !== undefined) {
+            logger.debug('Navbar email', this._userEmail);
+        }
     }
 
     public isLogged(): boolean {

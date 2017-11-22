@@ -22,7 +22,7 @@ import backend.models.files.{FileMetadata, FileMetadataProvider}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-case class SampleFile(id: Long, metadataID: Long, userID: Long) {
+case class SampleFile(id: Long, sampleName: String, metadataID: Long, userID: Long) {
     def getMetadata(implicit fmp: FileMetadataProvider, ec: ExecutionContext): Future[FileMetadata] = {
         fmp.get(metadataID).map(_.get)
     }
