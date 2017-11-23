@@ -61,7 +61,7 @@ export class UserPermissions {
     public static deserialize(input: any): UserPermissions {
         /* Disable tslint to prevent ClosureCompiler mangling */
         /* tslint:disable:no-string-literal */
-        return new UserPermissions(input['maxFilesCount'], input['maxFileSize'], input['isUploadAllowed'], input['isDeleteAllowed'])
+        return new UserPermissions(input['maxFilesCount'], input['maxFileSize'], input['isUploadAllowed'], input['isDeleteAllowed']);
         /* tslint:enable:no-string-literal */
     }
 }

@@ -17,11 +17,11 @@
 
 import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs/Subject';
+import { SampleItem } from '../../shared/sample/sample-item';
 import { User, UserPermissions } from '../../shared/user/user';
+import { WebSocketRequestData } from '../../shared/websocket/websocket-request';
 import { WebSocketService } from '../../shared/websocket/websocket.service';
 import { LoggerService } from '../../utils/logger/logger.service';
-import { SampleItem } from '../../shared/sample/sample-item';
-import { WebSocketRequestData } from '../../shared/websocket/websocket-request';
 
 export type AnnotationsServiceEvents = number;
 

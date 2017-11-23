@@ -19,7 +19,6 @@ import { FormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
 import { FiltersService } from '../../../../shared/filters/filters.service';
 import { ModalsModule } from '../../../../shared/modals/modals.module';
-import { WebSocketService } from '../../../../shared/websocket/websocket.service';
 import { SearchTableEntryCdrComponent } from './entry/cdr/search-table-entry-cdr.component';
 import { SearchTableEntryGeneComponent } from './entry/gene/search-table-entry-gene.component';
 import { SearchTableEntryJsonComponent } from './entry/json/search-table-entry-json.component';

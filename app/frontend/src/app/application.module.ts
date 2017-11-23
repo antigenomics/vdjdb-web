@@ -19,7 +19,6 @@ import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { RouterModule } from '@angular/router';
 import { ApplicationComponent } from './application.component';
-import { ConfigurationService } from './configuration.service';
 import { AboutPageModule } from './pages/about/about.module';
 import { AnnotationsPageModule } from './pages/annotations/annotations.module';
 import { HomePageModule } from './pages/home/home.module';
@@ -33,7 +32,7 @@ import { NotificationService } from './utils/notification/notification.service';
     imports:      [ CommonModule, BrowserModule, HomePageModule, AboutPageModule, SearchPageModule, AnnotationsPageModule,
         NavigationBarModule, RouterModule.forRoot([]) ],
     declarations: [ ApplicationComponent ],
-    providers:    [ ConfigurationService, LoggerService, NotificationService, ClipboardService ],
+    providers:    [ LoggerService, NotificationService, ClipboardService ],
     bootstrap:    [ ApplicationComponent ]
 })
 export class ApplicationModule {

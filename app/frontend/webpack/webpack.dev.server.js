@@ -50,7 +50,7 @@ var server = new webpackDevServer(compiler, {
     publicPath: '/bundles/',
 
     // Configure hot replacement
-    hot: true,
+    hot: false,
     compress: true,
     inline: true,
     // The rest is terminal configurations

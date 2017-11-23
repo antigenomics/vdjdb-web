@@ -16,8 +16,8 @@
  */
 
 import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
-import { UploadService, UploadServiceEvent } from '../upload.service';
 import { Subscription } from 'rxjs/Subscription';
+import { UploadService, UploadServiceEvent } from '../upload.service';
 
 @Component({
     selector:        'upload-table',

@@ -18,7 +18,7 @@ import { Injectable } from '@angular/core';
 import 'rxjs/add/operator/filter';
 import 'rxjs/add/operator/take';
 import { Subject } from 'rxjs/Subject';
-import { ConfigurationService } from '../../configuration.service';
+import { environment } from '../../../environments/environment';
 import { LoggerService } from '../../utils/logger/logger.service';
 import { IWebSocketRequestData } from './websocket-request';
 import { WebSocketResponseData } from './websocket-response';
@@ -83,7 +83,7 @@ export class WebSocketService {
         }
 
         this._currentReconnectAttempt = 0;
-        this._lastConnectedUrl = ConfigurationService.webSocketPrefix() + url;
+        this._lastConnectedUrl = WebSocketService.getWebSocketPrefix() + url;
         this._connectionStatus = WebSocketConnectionStatus.CONNECTING;
         this._connection = new WebSocket(this._lastConnectedUrl);
 
@@ -181,12 +181,28 @@ export class WebSocketService {
             });
         }, WebSocketService.pingConnectionTimeout);
 
-        if (ConfigurationService.isDevelopmentMode()) {
+        if (!environment.production) {
             this._messages.subscribe((message: any) => {
                 if (message.status === WebSocketResponseStatus.ERROR) {
                     this.logger.debug('WebSocket error message: ', message);
                 }
             });
         }
+    }
+
+    private static getWebSocketProtocol(): string {
+        if (location.protocol === 'https:') {
+            return 'wss://';
+        } else {
+            return 'ws://';
+        }
+    }
+
+    private static getWebSocketLocation(): string {
+        return location.host;
+    }
+
+    private static getWebSocketPrefix(): string {
+        return WebSocketService.getWebSocketProtocol() + WebSocketService.getWebSocketLocation();
     }
 }
