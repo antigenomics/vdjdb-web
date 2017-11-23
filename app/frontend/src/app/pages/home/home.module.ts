@@ -19,11 +19,14 @@ import { RouterModule } from '@angular/router';
 import { HomePageComponent } from './home.component';
 import { SummaryComponent } from './summary/summary.component';
 import { SummaryService } from './summary/summary.service';
+import { LoggerService } from '../../utils/logger/logger.service';
 
 @NgModule({
     imports:      [ RouterModule.forChild([ { path: '', component: HomePageComponent } ]) ],
     declarations: [ HomePageComponent, SummaryComponent ],
     exports:      [ HomePageComponent, SummaryComponent ],
-    providers:    [ SummaryService ]
+    providers:    [
+        { provide: SummaryService, useClass: SummaryService, deps: [ LoggerService ] }
+    ]
 })
 export class HomePageModule {}

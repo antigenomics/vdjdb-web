@@ -23,11 +23,15 @@ import { UploadTableRowComponent } from './table/row/upload-table-row.component'
 import { UploadTableComponent } from './table/upload-table.component';
 import { AnnotationsUploadComponent } from './upload.component';
 import { UploadService } from './upload.service';
+import { LoggerService } from '../../../utils/logger/logger.service';
+import { AnnotationsService } from '../annotations.service';
 
 @NgModule({
     imports:      [ BrowserModule, FormsModule, ModalsModule ],
     declarations: [ AnnotationsUploadComponent, UploadTableComponent, UploadTableRowComponent ],
     exports:      [ AnnotationsUploadComponent, UploadTableComponent, UploadTableRowComponent ],
-    providers:    [ UploadService ]
+    providers:    [
+        { provide: UploadService, useClass: UploadService, deps: [ LoggerService, AnnotationsService ] }
+    ]
 })
 export class UploadModule {}

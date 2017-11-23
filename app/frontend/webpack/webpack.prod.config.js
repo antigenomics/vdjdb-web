@@ -37,7 +37,8 @@ defaultConfiguration.plugins.push(
         purifyOptions: {
             info: true,
             minify: true,
-            output: path.join(__dirname, '../../../public/bundles/bundle.min.css')
+            output: path.join(__dirname, '../../../public/bundles/bundle.min.css'),
+            whitelist: [ 'success', 'warning', 'error' ]
         }
     })
 );

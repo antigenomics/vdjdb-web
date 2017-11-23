@@ -23,6 +23,6 @@ import { NotificationService } from './notification.service';
     imports:      [ BrowserModule ],
     declarations: [ NotificationComponent ],
     exports:      [ NotificationComponent ],
-    providers:    [ NotificationService ]
+    providers:    [ { provide: NotificationService, useClass: NotificationService, deps: [] } ]
 })
 export class NotificationModule {}

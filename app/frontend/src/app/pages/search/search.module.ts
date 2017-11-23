@@ -24,8 +24,8 @@ import { SearchPageComponent } from './search.component';
 import { SearchTableModule } from './table/search/search-table.module';
 
 @NgModule({
-    imports:      [ BrowserModule, FiltersModule, SearchTableModule, NotificationModule,
-                    RouterModule.forChild([ { path: 'search', component: SearchPageComponent } ]) ],
+    imports:      [ BrowserModule, SearchTableModule, NotificationModule, FiltersModule,
+        RouterModule.forChild([ { path: 'search', component: SearchPageComponent } ]) ],
     declarations: [ SearchPageComponent, SearchInfoComponent ],
     exports:      [ SearchPageComponent, SearchInfoComponent ]
 })
