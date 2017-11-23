@@ -13,7 +13,7 @@
     "bundle:stats": "node ./scripts/stats.prod.js",
     "bundle:clean:index": "rimraf ../../public/bundles/index.html",
     "bundle:clean:public": "rimraf ../../public/bundles/*",
-    "lint": "ng lint --type-check --force",
+    "lint": "ng lint --type-check --force --format stylish",
     "help": "ng help",
     "help:serve": "ng help serve",
     "help:build": "ng help build",
