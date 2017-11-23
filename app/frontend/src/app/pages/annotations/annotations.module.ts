@@ -41,6 +41,8 @@ const routes = [
     imports:      [ BrowserModule, UploadModule, RouterModule.forChild(routes), ModalsModule, NotificationModule ],
     declarations: [ AnnotationsPageComponent, SidebarComponent, AnnotationsInfoComponent ],
     exports:      [ AnnotationsPageComponent ],
-    providers:    [ AnnotationsService ]
+    providers:    [
+        { provide: AnnotationsService, useClass: AnnotationsService, deps: [] }
+    ]
 })
 export class AnnotationsPageModule {}

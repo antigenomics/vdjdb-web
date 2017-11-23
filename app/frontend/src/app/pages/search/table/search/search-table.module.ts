@@ -17,7 +17,7 @@
 import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
-import { FiltersService } from '../../../../shared/filters/filters.service';
+import { FiltersModule } from '../../../../shared/filters/filters.module';
 import { ModalsModule } from '../../../../shared/modals/modals.module';
 import { SearchTableEntryCdrComponent } from './entry/cdr/search-table-entry-cdr.component';
 import { SearchTableEntryGeneComponent } from './entry/gene/search-table-entry-gene.component';
@@ -33,7 +33,7 @@ import { SearchTableComponent } from './search-table.component';
 import { SearchTableService } from './search-table.service';
 
 @NgModule({
-    imports:         [ BrowserModule, FormsModule, ModalsModule ],
+    imports:         [ BrowserModule, FormsModule, ModalsModule, FiltersModule ],
     declarations:    [  SearchTableComponent,
                         SearchTablePaginationComponent,
                         SearchTableInfoComponent,
@@ -62,6 +62,8 @@ import { SearchTableService } from './search-table.service';
                         SearchTableEntryUrlComponent,
                         SearchTableEntryGeneComponent,
                         SearchTableEntryCdrComponent ],
-    providers:       [ SearchTableService, FiltersService ]
+    providers:       [
+        SearchTableService
+    ]
 })
 export class SearchTableModule {}

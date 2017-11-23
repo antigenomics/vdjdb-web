@@ -45,6 +45,12 @@ import { TCRSegmentsFilterComponent } from './filters_tcr/tcr_segments_filter/tc
         AGOriginFilterComponent, AGEpitopeFilterComponent,
         MHCGeneralFilterComponent, MHCHaplotypeFilterComponent,
         MetaGeneralFilterComponent, MetaReliabilityFilterComponent ],
-    providers:    [ FiltersService, TCRFiltersService, AGFiltersService, MHCFiltersService, MetaFiltersService ]
+    providers:    [
+        { provide: TCRFiltersService, useClass: TCRFiltersService, deps: [] },
+        { provide: AGFiltersService, useClass: AGFiltersService, deps: [] },
+        { provide: MHCFiltersService, useClass: MHCFiltersService, deps: [] },
+        { provide: MetaFiltersService, useClass: MetaFiltersService, deps: [] },
+        { provide: FiltersService, useClass: FiltersService, deps: [ TCRFiltersService, AGFiltersService, MHCFiltersService, MetaFiltersService ] }
+    ]
 })
 export class FiltersModule {}

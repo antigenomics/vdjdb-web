@@ -13,7 +13,7 @@ const logger = new LoggerService();
 platformBrowserDynamic().bootstrapModule(ApplicationModule, { preserveWhitespaces: false })
     .then(() => {
         const mode = environment.production ? 'production' : 'development';
-        logger.info(`Application loaded (${mode})`);
+        logger.info('Application loaded',  `(${mode})`);
     })
     .catch((error) => {
         logger.error('Bootstrap error', error);
