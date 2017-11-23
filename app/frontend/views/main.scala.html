@@ -14,12 +14,12 @@
 
         <title>@title</title>
         <link rel="shortcut icon" type="image/png" href="@routes.Assets.versioned("images/favicon.png")">
-        @if(styles) {
-            @frontend.views.html.assets.styles()
-        }
-        @if(vendor) {
-            @frontend.views.html.assets.vendor()
-        }
+            @if(styles) {
+                @frontend.views.html.assets.styles()
+            }
+            @if(vendor) {
+                @frontend.views.html.assets.vendor()
+            }
     </head>
     <body>
     @content

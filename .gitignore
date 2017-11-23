@@ -1,8 +1,13 @@
 # Front end
 /app/frontend/node_modules
 /app/frontend/app/build
-/app/frontend/app-generated
-/app/frontend/lib
+/app/frontend_old
+/app/frontend/dist
+/app/frontend/tmp
+/app/frontend/out-tsc
+/app/frontend/e2e/*.js
+/app/frontend/e2e/*.map
+/app/frontend/coverage
 
 # Front end build artifacts
 /public/bundles
