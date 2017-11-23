@@ -5,17 +5,27 @@
   "license": "Apache 2.0",
   "private": true,
   "scripts": {
-    "ng": "ng",
-    "start": "ng serve",
-    "build": "npm run build:aot && npm run build:webpack && npm run build:stats",
-    "build:aot": "ng build --aot --prod --extract-licenses --vendor-chunk --output-hashing=none --build-optimizer",
-    "build:webpack": "webpack -p --config ./webpack/webpack.prod.config.js",
-    "build:stats": "node ./scripts/stats.prod.js",
+    "develop:angular": "ng serve -dev --aot --vendor-chunk --watch --port 4200 --host localhost --live-reload=false --delete-output-path=false",
+    "develop:webpack": "node ./webpack/webpack.dev.server",
+
+    "bundle": "npm run bundle:aot && npm run bundle:webpack && npm run bundle:stats && npm run bundle:clean:index",
+    "bundle:aot": "ng build --aot -prod --extract-licenses --vendor-chunk --output-hashing=none --build-optimizer",
+    "bundle:webpack": "webpack -p --config ./webpack/webpack.prod.config.js",
+    "bundle:stats": "node ./scripts/stats.prod.js",
+    "bundle:clean:index": "rimraf ../../public/bundles/index.html",
+    "bundle:clean:public": "rimraf ../../public/bundles/*",
+    "lint": "ng lint --type-check --force",
+
+    "help": "ng help",
+    "help:serve": "ng help serve",
     "help:build": "ng help build",
+    "help:test": "ng help test",
+    "help:lint": "ng help lint",
+    "help:e2e": "hg help e2e",
+    "postinstall": "node ./styles/semantic-fix.js && node ./scripts/purify-patch.install.js",
+
     "test": "ng test",
-    "lint": "ng lint",
-    "e2e": "ng e2e",
-    "postinstall": "node ./styles/semantic-fix.js && node ./scripts/purify-patch.install.js"
+    "e2e": "ng e2e"
   },
   "author": "Dmitry Bagaev",
   "homepage": "https://github.com/antigenomics/vdjdb-web-private",

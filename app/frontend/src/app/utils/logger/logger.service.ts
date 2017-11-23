@@ -16,7 +16,7 @@
 
 /* tslint:disable:no-console */
 import { Injectable } from '@angular/core';
-import { ConfigurationService } from '../../configuration.service';
+import { environment } from '../../../environments/environment';
 
 @Injectable()
 export class LoggerService {
@@ -37,7 +37,7 @@ export class LoggerService {
     }
 
     public debug(title: any, content?: any) {
-        if (ConfigurationService.isDevelopmentMode()) {
+        if (!environment.production) {
             this.info('[Debug] ' + title, content);
         }
     }

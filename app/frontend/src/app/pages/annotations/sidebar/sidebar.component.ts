@@ -20,12 +20,12 @@ import {
     ViewContainerRef
 } from '@angular/core';
 import { Subscription } from 'rxjs/Subscription';
-import { UploadService, UploadServiceEvent } from '../upload/upload.service';
-import { AnnotationsService, AnnotationsServiceEvents } from '../annotations.service';
-import { SampleItem } from '../../../shared/sample/sample-item';
 import { ModalComponent } from '../../../shared/modals/modal/modal.component';
+import { SampleItem } from '../../../shared/sample/sample-item';
 import { LoggerService } from '../../../utils/logger/logger.service';
 import { NotificationService } from '../../../utils/notification/notification.service';
+import { AnnotationsService, AnnotationsServiceEvents } from '../annotations.service';
+import { UploadService, UploadServiceEvent } from '../upload/upload.service';
 
 @Component({
     selector:        'sidebar',

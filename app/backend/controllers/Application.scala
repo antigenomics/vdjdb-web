@@ -36,6 +36,7 @@ import scala.concurrent.Future
 class Application @Inject()(ws: WSClient, assets: Assets, configuration: Configuration, cc: ControllerComponents,
                             userRequestAction: UserRequestAction, tfp: TemporaryFileProvider, up: UserProvider)
                            (implicit environment: Environment, analytics: Analytics, stp: SessionTokenProvider) extends AbstractController(cc) {
+    private final val cacheControlTimeout: Int = 3600 //seconds
 
     def index: Action[AnyContent] = userRequestAction { implicit request =>
         SessionAction.updateCookies(Ok(frontend.views.html.index()))
@@ -45,15 +46,27 @@ class Application @Inject()(ws: WSClient, assets: Assets, configuration: Configu
         SessionAction.updateCookies(Ok(frontend.views.html.index()))
     }
 
-    def bundle(file: String): Action[AnyContent] = if (environment.mode == Mode.Dev) Action.async { implicit request =>
-        ws.url(s"http://localhost:8080/bundles/$file").get().map { response =>
+    def webpack(file: String, cache: Boolean): Action[AnyContent] = externalServer(file, cache, "8080/bundles/")
+
+    def angular(file: String, cache: Boolean): Action[AnyContent] = externalServer(file, cache, "4200")
+
+    def externalServer(file: String, cache: Boolean, path: String): Action[AnyContent] = if (environment.mode == Mode.Dev) Action.async { implicit request =>
+        ws.url(s"http://localhost:$path/$file").get().map { response =>
             val contentType = response.headers.get("Content-Type").flatMap(_.headOption).getOrElse("application/octet-stream")
-            val headers = response.headers
-                .toSeq.filter(p => List("Content-Type", "Content-Length").indexOf(p._1) < 0).map(p => (p._1, p._2.mkString))
+            var headers = response.headers
+                .toSeq.filter(p =>
+                List("Content-Type", "Content-Length")
+                    .indexOf(p._1) < 0)
+                .map(p => (p._1, p._2.mkString))
+            if (cache) {
+                headers = headers ++: Seq(("Cache-Control", s"private, max-age=$cacheControlTimeout"))
+            } else {
+                headers = headers ++: Seq(("Cache-Control", s"no-cache, no-store, must-revalidate"))
+            }
             Ok(response.body).withHeaders(headers: _*).as(contentType)
         }
     } else {
-        throw new RuntimeException("Application.bundle should not be used with Production Mode")
+        throw new RuntimeException("Application.externalServer should not be used in production")
     }
 
     def downloadTemporaryFile(link: String): Action[AnyContent] = Action.async { implicit request =>

@@ -16,10 +16,9 @@
  */
 
 import { ReplaySubject } from 'rxjs/ReplaySubject';
+import { Utils } from '../../../../utils/utils';
 import { FileItemSoftware, FileItemSoftwareTypes } from './file-item-software';
 import { FileItemStatus } from './file-item-status';
-import { Utils } from '../../../../utils/utils';
-import baseName = Utils.File.baseName;
 
 export class FileItem {
     private static FULL_PROGRESS: number = 100;

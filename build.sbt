@@ -83,7 +83,7 @@ build := {
 val frontendDirectory = baseDirectory {
     _ / frontendApplicationPath
 }
-// playRunHooks += frontendDirectory.map(WebpackServer(_)).value
+playRunHooks += frontendDirectory.map(WebpackServer(_)).value
 // Ends.
 
 

@@ -18,15 +18,14 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { RouterModule } from '@angular/router';
-import { WebSocketService } from '../../shared/websocket/websocket.service';
+import { ModalsModule } from '../../shared/modals/modals.module';
+import { NotificationModule } from '../../utils/notification/notification.module';
 import { AnnotationsPageComponent } from './annotations.component';
 import { AnnotationsService } from './annotations.service';
 import { AnnotationsInfoComponent } from './info/annotations-info.component';
 import { SidebarComponent } from './sidebar/sidebar.component';
 import { AnnotationsUploadComponent } from './upload/upload.component';
 import { UploadModule } from './upload/upload.module';
-import { ModalsModule } from '../../shared/modals/modals.module';
-import { NotificationModule } from '../../utils/notification/notification.module';
 
 const routes = [
     {
