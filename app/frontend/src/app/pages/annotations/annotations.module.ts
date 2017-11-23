@@ -19,6 +19,7 @@ import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { RouterModule } from '@angular/router';
 import { ModalsModule } from '../../shared/modals/modals.module';
+import { LoggerService } from '../../utils/logger/logger.service';
 import { NotificationModule } from '../../utils/notification/notification.module';
 import { AnnotationsPageComponent } from './annotations.component';
 import { AnnotationsService } from './annotations.service';
@@ -42,7 +43,7 @@ const routes = [
     declarations: [ AnnotationsPageComponent, SidebarComponent, AnnotationsInfoComponent ],
     exports:      [ AnnotationsPageComponent ],
     providers:    [
-        { provide: AnnotationsService, useClass: AnnotationsService, deps: [] }
+        { provide: AnnotationsService, useClass: AnnotationsService, deps: [ LoggerService ] }
     ]
 })
 export class AnnotationsPageModule {}
