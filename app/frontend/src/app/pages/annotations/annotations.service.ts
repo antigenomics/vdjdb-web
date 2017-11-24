@@ -33,6 +33,7 @@ export namespace AnnotationsServiceEvents {
 
 export namespace AnnotationsServiceWebSocketActions {
     export const USER_DETAILS: string = 'details';
+    export const AVAILABLE_SOFTWARE: string = 'available_software';
     export const VALIDATE_SAMPLE: string = 'validate_sample';
     export const DELETE_SAMPLE: string = 'delete_sample';
 }
@@ -42,6 +43,7 @@ export class AnnotationsService {
     private _events: Subject<AnnotationsServiceEvents> = new Subject();
     private _initialized: boolean = false;
     private _user: User;
+    private _availableSoftwareTypes: string[];
 
     private connection: WebSocketService;
 
@@ -51,9 +53,18 @@ export class AnnotationsService {
             const userDetailsRequest = this.connection.sendMessage({
                 action: AnnotationsServiceWebSocketActions.USER_DETAILS
             });
+
+            const availableSoftwareTypesRequest = this.connection.sendMessage({
+                action: AnnotationsServiceWebSocketActions.AVAILABLE_SOFTWARE
+            });
+
             const userDetailsResponse = await userDetailsRequest;
             this._user = User.deserialize(userDetailsResponse.get('details'));
             this.logger.debug('AnnotationsService: user', this._user);
+
+            const availableSoftwareTypesResponse = await availableSoftwareTypesRequest;
+            this._availableSoftwareTypes = availableSoftwareTypesResponse.get('available');
+            this.logger.debug('AnnotationsService: available software', this._availableSoftwareTypes);
 
             this._initialized = true;
             this._events.next(AnnotationsServiceEvents.INITIALIZED);
@@ -78,6 +89,10 @@ export class AnnotationsService {
 
     public getUserPermissions(): UserPermissions {
         return this._user.permissions;
+    }
+
+    public getAvailableSoftwareTypes(): string[] {
+        return this._availableSoftwareTypes;
     }
 
     public async addSample(sampleName: string): Promise<boolean> {

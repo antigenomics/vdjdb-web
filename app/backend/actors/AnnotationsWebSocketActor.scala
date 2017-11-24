@@ -5,9 +5,11 @@ import backend.models.authorization.permissions.UserPermissionsProvider
 import backend.models.authorization.user.{User, UserDetails}
 import backend.models.files.sample.SampleFileProvider
 import backend.server.annotations.api.sample.delete.{DeleteSampleRequest, DeleteSampleResponse}
+import backend.server.annotations.api.sample.software.AvailableSoftwareResponse
 import backend.server.annotations.api.sample.validate.{ValidateSampleRequest, ValidateSampleResponse}
 import backend.server.annotations.api.user.UserDetailsResponse
 import backend.server.limit.{IpLimit, RequestLimits}
+import com.antigenomics.vdjtools.misc.Software
 import play.api.libs.json._
 
 import scala.concurrent.ExecutionContext
@@ -22,6 +24,8 @@ class AnnotationsWebSocketActor(out: ActorRef, limit: IpLimit, user: User, detai
         out.getAction match {
             case UserDetailsResponse.Action =>
                 out.success(UserDetailsResponse(details))
+            case AvailableSoftwareResponse.Action =>
+                out.success(AvailableSoftwareResponse(Software.values().map(_.toString)))
             case ValidateSampleResponse.Action =>
                 validateData(out, data, (validateRequest: ValidateSampleRequest) => {
                     user.getSampleFileByName(validateRequest.name) onComplete {

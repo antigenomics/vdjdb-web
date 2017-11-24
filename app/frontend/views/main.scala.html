@@ -15,7 +15,7 @@
         <title>@title</title>
         <link rel="shortcut icon" type="image/png" href="@routes.Assets.versioned("images/favicon.png")">
         @if(environment.mode == Mode.Dev) {
-            <link type="text/css" href="bundles/webpack/cache/bundle.css" rel="stylesheet">
+            <link type="text/css" href="bundles/webpack/bundle.css" rel="stylesheet">
         } else {
             <link type="text/css" href="@routes.Assets.versioned("bundles/bundle.min.css")" rel="stylesheet">
         }

@@ -38,6 +38,10 @@ export class UploadTableComponent implements OnInit, OnDestroy {
         });
     }
 
+    public onDragDrop(event: Event): void {
+        this.uploadService.addItems((event as any).dataTransfer.files);
+    }
+
     public ngOnDestroy(): void {
         if (this._stateSubscription !== undefined) {
             this._stateSubscription.unsubscribe();

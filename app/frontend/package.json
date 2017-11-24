@@ -5,7 +5,7 @@
   "license": "Apache 2.0",
   "private": true,
   "scripts": {
-    "develop:angular": "ng serve -dev --aot --vendor-chunk --watch --port 4200 --host localhost --live-reload=false --delete-output-path=false",
+    "develop:angular": "ng serve -dev --jit --vendor-chunk --watch --port 4200 --host localhost --live-reload=false --delete-output-path=false",
     "develop:webpack": "node ./webpack/webpack.dev.server",
     "bundle": "npm run bundle:aot && npm run bundle:webpack && npm run bundle:stats && npm run bundle:clean:index",
     "bundle:aot": "ng build --aot -prod --extract-licenses --vendor-chunk --output-hashing=none --build-optimizer",

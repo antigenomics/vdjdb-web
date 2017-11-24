@@ -75,6 +75,10 @@ export class UploadService {
         /*tslint:enable:prefer-for-of */
     }
 
+    public getAvailableSoftwareTypes(): string[] {
+        return this.annotationsService.getAvailableSoftwareTypes();
+    }
+
     public getEvents(): Observable<UploadServiceEvent> {
         return this._events;
     }
@@ -239,7 +243,12 @@ export class UploadService {
     public clearErrored(): void {
         this._files = this._files.filter((item) => !item.status.isError());
         this._events.next(UploadServiceEvent.STATE_REFRESHED);
+    }
 
+    public setDefaultSoftware(software: string): void {
+        this._files
+            .filter((item) => !(item.status.isError() || item.status.isRemoved() || item.status.isUploaded()))
+            .forEach((item) => item.setSoftware(software));
     }
 
     private fireUploadingStartEvent(): void {

@@ -12,16 +12,16 @@
 </td>
 <td>
     <div class="ui fluid dropdown" dropdown [content]="content" *ngIf="item.status.isWaiting()">
-        <span class="text">{{ item.software.title }}</span>
+        <span class="text">{{ item.software }}</span>
         <i class="dropdown icon"></i>
         <div class="menu fast fade element" #content>
-            <div class="item" *ngFor="let software of item.getAvailableSoftwareTypes()" (click)="item.setSoftware(software)">
-                {{ software.title }}
+            <div class="item" *ngFor="let software of uploadService.getAvailableSoftwareTypes()" (click)="item.setSoftware(software)">
+                {{ software }}
             </div>
         </div>
     </div>
     <div *ngIf="!item.status.isWaiting()">
-        {{ item.software.title }}
+        {{ item.software }}
     </div>
 </td>
 <td>

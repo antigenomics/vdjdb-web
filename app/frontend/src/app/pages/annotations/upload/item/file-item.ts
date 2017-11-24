@@ -17,7 +17,6 @@
 
 import { ReplaySubject } from 'rxjs/ReplaySubject';
 import { Utils } from '../../../../utils/utils';
-import { FileItemSoftware, FileItemSoftwareTypes } from './file-item-software';
 import { FileItemStatus } from './file-item-status';
 
 export class FileItem {
@@ -27,7 +26,7 @@ export class FileItem {
 
     public baseName: string = '';
     public extension: string = '';
-    public software: FileItemSoftware = FileItemSoftwareTypes.VDJTOOLS;
+    public software: string = 'VDJtools';
     public progress: ReplaySubject<number> = new ReplaySubject(1);
     public status: FileItemStatus = new FileItemStatus();
 
@@ -52,7 +51,7 @@ export class FileItem {
         this.progress.next(0);
     }
 
-    public setSoftware(software: FileItemSoftware): void {
+    public setSoftware(software: string): void {
         this.software = software;
     }
 
@@ -62,10 +61,5 @@ export class FileItem {
 
     public getNameWithExtension(): string {
         return `${this.baseName}.${this.extension}`;
-    }
-
-    // noinspection JSMethodCanBeStatic
-    public getAvailableSoftwareTypes(): FileItemSoftware[] {
-        return [ FileItemSoftwareTypes.VDJTOOLS ];
     }
 }
