@@ -1,4 +1,4 @@
-<div draggable="true" bind-draggable-event (onDragDrop)="onDragDrop($event)">
+<div draggable="true" draggable-event (onDragDrop)="onDragDrop($event)">
     <div *ngIf="!uploadService.isItemsEmpty()">
         <table class="ui compact very basic single line table">
             <thead>

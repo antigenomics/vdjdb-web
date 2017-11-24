@@ -18,7 +18,7 @@
 import { Directive, EventEmitter, HostBinding, HostListener, Output } from '@angular/core';
 
 @Directive({
-    selector: 'bind-draggable-event'
+    selector: 'draggable-event'
 })
 export class DraggableDirective {
     private _isDragging: boolean = false;
