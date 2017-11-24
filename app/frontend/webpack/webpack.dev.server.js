@@ -21,7 +21,7 @@
 
 var webpack = require('webpack');
 var webpackDevServer = require('webpack-dev-server');
-var webpackConfig = require('./webpack.base.config.js');
+var webpackConfig = require('./webpack.dev.config.js');
 
 //noinspection JSUnresolvedVariable
 // Notify about the path where the server is running

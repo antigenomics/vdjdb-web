@@ -41,6 +41,7 @@
   "devDependencies": {
     "@angular/cli": "1.5.0",
     "@angular/compiler-cli": "^5.0.0",
+    "reflect-metadata": "0.1.10",
     "@types/jasmine": "2.8.2",
     "@types/jasminewd2": "2.0.3",
     "@types/node": "8.0.53",
@@ -76,7 +77,11 @@
     "purifycss-webpack": "0.7.0",
     "semantic-ui-less": "2.2.12",
     "glob": "^7.1.2",
-    "glob-all": "3.1.0"
+    "glob-all": "3.1.0",
+    "uglifyjs-webpack-plugin": "1.1.1",
+    "webpack-dll-bundles-plugin": "1.0.0-beta.5",
+    "awesome-typescript-loader": "3.4.0",
+    "angular2-template-loader": "0.6.2"
   },
   "engines": {
     "node": ">= 8",
