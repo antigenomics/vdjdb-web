@@ -40,8 +40,8 @@ export class AnnotationsInfoComponent implements OnInit, OnDestroy {
         });
     }
 
-    public showInitializingLoader(): boolean {
-        return this.annotationsService.isInitialized() === false;
+    public isInitialized(): boolean {
+        return this.annotationsService.isInitialized();
     }
 
     public ngOnDestroy(): void {

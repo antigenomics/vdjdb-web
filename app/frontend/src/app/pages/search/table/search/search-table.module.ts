@@ -65,8 +65,6 @@ import { SearchTableService } from './search-table.service';
                         SearchTableEntryUrlComponent,
                         SearchTableEntryGeneComponent,
                         SearchTableEntryCdrComponent ],
-    providers:       [
-        { provide: SearchTableService, useClass: SearchTableService, deps: [ FiltersService, LoggerService, NotificationService ] }
-    ]
+    providers:       [ SearchTableService ]
 })
 export class SearchTableModule {}

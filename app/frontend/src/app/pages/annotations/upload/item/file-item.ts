@@ -37,13 +37,13 @@ export class FileItem {
         this.extension = Utils.File.extension(file.name);
     }
 
-    public uploaded(): void {
-        this.status.uploaded();
+    public setUploadedStatus(): void {
+        this.status.setUploadedStatus();
         this.progress.next(FileItem.FULL_PROGRESS);
     }
 
-    public setError(error: string): void {
-        this.status.error(error);
+    public setErrorStatus(error: string): void {
+        this.status.setErrorStatus(error);
         this.progress.next(-1);
     }
 

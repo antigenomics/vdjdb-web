@@ -24,7 +24,7 @@ import { ModalComponent } from '../../../shared/modals/modal/modal.component';
 import { SampleItem } from '../../../shared/sample/sample-item';
 import { LoggerService } from '../../../utils/logger/logger.service';
 import { NotificationService } from '../../../utils/notification/notification.service';
-import { AnnotationsService, AnnotationsServiceEvents } from '../annotations.service';
+import { AnnotationsService } from '../annotations.service';
 import { UploadService, UploadServiceEvent } from '../upload/upload.service';
 
 @Component({
@@ -51,14 +51,8 @@ export class SidebarComponent implements OnInit, OnDestroy {
             }
             this.changeDetector.detectChanges();
         });
-        this._annotationsServiceEventsSubscription = this.annotationsService.getEvents().subscribe((event) => {
-            switch (event) {
-                case AnnotationsServiceEvents.INITIALIZED:
-                    this.changeDetector.detectChanges();
-                    break;
-                default:
-                    this.changeDetector.detectChanges();
-            }
+        this._annotationsServiceEventsSubscription = this.annotationsService.getEvents().subscribe(() => {
+            this.changeDetector.detectChanges();
         });
     }
 

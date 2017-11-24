@@ -3,7 +3,7 @@
         Info
     </h3>
     <div class="ui attached segment teal padded">
-        <div class="ui active inverted dimmer" *ngIf="showInitializingLoader()">
+        <div class="ui active inverted dimmer" *ngIf="!isInitialized()">
             <div class="ui text loader">Connecting</div>
         </div>
         <p>Hello world</p>

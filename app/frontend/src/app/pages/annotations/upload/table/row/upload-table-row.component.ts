@@ -71,19 +71,17 @@ export class UploadTableRowComponent implements AfterViewInit, OnInit, OnDestroy
         this.uploadService.remove(this.item);
     }
 
+    public handleName(newBaseName: string): void {
+        this.uploadService.handleItemNameErrors(this.item, newBaseName);
+    }
+
     public ngOnDestroy(): void {
         if (this._progressSubscription !== undefined) {
             this._progressSubscription.unsubscribe();
-            this._progressSubscription = undefined;
         }
         if (this._stateSubscription !== undefined) {
             this._stateSubscription.unsubscribe();
-            this._stateSubscription = undefined;
         }
-    }
-
-    public checkName(newBaseName: string): void {
-        this.uploadService.handleItemNameErrors(this.item, newBaseName);
     }
 
     private updateProgressBar(progress: number, dataPercent: number) {

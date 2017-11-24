@@ -15,13 +15,15 @@
  *       limitations under the License.
  */
 
+import { ChangeDetectionStrategy } from '@angular/core';
 import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs/Subscription';
 import { UploadService, UploadServiceEvent } from '../upload.service';
 
 @Component({
     selector:        'upload-table',
-    templateUrl:     './upload-table.component.html'
+    templateUrl:     './upload-table.component.html',
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class UploadTableComponent implements OnInit, OnDestroy {
     private _stateSubscription: Subscription;
@@ -39,7 +41,6 @@ export class UploadTableComponent implements OnInit, OnDestroy {
     public ngOnDestroy(): void {
         if (this._stateSubscription !== undefined) {
             this._stateSubscription.unsubscribe();
-            this._stateSubscription = undefined;
         }
     }
 }
