@@ -15,16 +15,14 @@
  *
  */
 
-export class FileItemSoftware {
-    public id: string;
-    public title: string;
+package backend.server.annotations.api.sample.software
 
-    constructor(id: string, title: string) {
-        this.id = id;
-        this.title = title;
-    }
-}
+import play.api.libs.json.{Json, Writes}
 
-export namespace FileItemSoftwareTypes {
-    export const VDJTOOLS: FileItemSoftware = new FileItemSoftware('vdjtools', 'VDJtools');
+case class AvailableSoftwareResponse(available: Seq[String])
+
+object AvailableSoftwareResponse {
+    final val Action: String = "available_software"
+
+    implicit val availableSoftwareResponse: Writes[AvailableSoftwareResponse] = Json.writes[AvailableSoftwareResponse]
 }
