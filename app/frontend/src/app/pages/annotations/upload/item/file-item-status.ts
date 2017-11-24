@@ -30,9 +30,8 @@ export namespace FileItemStatusFlags {
 }
 
 export class FileItemStatus {
+    private _flags: FileItemStatusFlags = FileItemStatusFlags.WAITING;
     private _errorStatus: string = '';
-
-    public status: FileItemStatusFlags = FileItemStatusFlags.WAITING;
 
     public isWaiting(): boolean {
         return this.checkStatusFlag(FileItemStatusFlags.WAITING);
@@ -40,27 +39,6 @@ export class FileItemStatus {
 
     public isRemoved(): boolean {
         return this.checkStatusFlag(FileItemStatusFlags.REMOVED);
-    }
-
-    public beforeUploadError(): boolean {
-        return this.checkStatusFlag(FileItemStatusFlags.INVALID_FILE_NAME) === true
-            || this.checkStatusFlag(FileItemStatusFlags.DUPLICATE_FILE_NAME) === true;
-    }
-
-    public isLoading(): boolean {
-        return this.checkStatusFlag(FileItemStatusFlags.LOADING);
-    }
-
-    public isError(): boolean {
-        return this.checkStatusFlag(FileItemStatusFlags.ERROR);
-    }
-
-    public isReadyForUpload(): boolean {
-        return this.beforeUploadError() === false && this.checkStatusFlag(FileItemStatusFlags.WAITING);
-    }
-
-    public isUploaded(): boolean {
-        return this.checkStatusFlag(FileItemStatusFlags.UPLOADED);
     }
 
     public isNameValid(): boolean {
@@ -72,52 +50,70 @@ export class FileItemStatus {
         return this.checkStatusFlag(FileItemStatusFlags.DUPLICATE_FILE_NAME);
     }
 
-    public startLoading(): void {
-        this.unsetStatusFlag(FileItemStatusFlags.WAITING);
-        this.setStatusFlag(FileItemStatusFlags.LOADING);
+    public isLoading(): boolean {
+        return this.checkStatusFlag(FileItemStatusFlags.LOADING);
     }
 
-    public uploaded(): void {
-        this.unsetStatusFlag(FileItemStatusFlags.LOADING);
-        this.setStatusFlag(FileItemStatusFlags.UPLOADED);
+    public isUploaded(): boolean {
+        return this.checkStatusFlag(FileItemStatusFlags.UPLOADED);
     }
 
-    public error(errorStatus: string): void {
-        this.unsetStatusFlag(FileItemStatusFlags.WAITING);
-        this.unsetStatusFlag(FileItemStatusFlags.LOADING);
-        this.setStatusFlag(FileItemStatusFlags.ERROR);
+    public isError(): boolean {
+        return this.checkStatusFlag(FileItemStatusFlags.ERROR);
+    }
+
+    public isReadyForUpload(): boolean {
+        return this.beforeUploadError() === false && this.checkStatusFlag(FileItemStatusFlags.WAITING);
+    }
+
+    public beforeUploadError(): boolean {
+        return this.checkStatusFlag(FileItemStatusFlags.INVALID_FILE_NAME) === true
+            || this.checkStatusFlag(FileItemStatusFlags.DUPLICATE_FILE_NAME) === true;
+    }
+
+    public setLoadingStatus(): void {
+        this.setSingleStatusFlag(FileItemStatusFlags.LOADING);
+    }
+
+    public setUploadedStatus(): void {
+        this.setSingleStatusFlag(FileItemStatusFlags.UPLOADED);
+    }
+
+    public setErrorStatus(errorStatus: string): void {
+        this.setSingleStatusFlag(FileItemStatusFlags.ERROR);
         this._errorStatus = errorStatus;
     }
 
-    public invalidName(): void {
+    public setInvalidNameStatus(): void {
         this.setStatusFlag(FileItemStatusFlags.INVALID_FILE_NAME);
     }
 
-    public validName(): void {
+    public setValidNameStatus(): void {
         this.unsetStatusFlag(FileItemStatusFlags.INVALID_FILE_NAME);
     }
 
-    public duplicatingName(): void {
+    public setDuplicateNameStatus(): void {
         this.setStatusFlag(FileItemStatusFlags.DUPLICATE_FILE_NAME);
     }
 
-    public uniqueName(): void {
+    public setUniqueNameStatus(): void {
         this.unsetStatusFlag(FileItemStatusFlags.DUPLICATE_FILE_NAME);
     }
 
-    public remove(): void {
-        this.unsetStatusFlag(FileItemStatusFlags.WAITING);
-        this.setStatusFlag(FileItemStatusFlags.REMOVED);
+    public setRemovedStatus(): void {
+        this.setSingleStatusFlag(FileItemStatusFlags.REMOVED);
     }
 
     public clearErrors(): void {
         this.unsetStatusFlag(FileItemStatusFlags.ERROR);
-        this._errorStatus = '';
         this.setStatusFlag(FileItemStatusFlags.WAITING);
+        this._errorStatus = '';
     }
 
     public getLabelStatusClass(): string {
-        if (this.isError()) {
+        if (this.isRemoved()) {
+            return 'removed';
+        } else if (this.isError()) {
             return 'error';
         } else if (this.isWaiting() || !this.isNameValid()) {
             return 'warning';
@@ -147,15 +143,19 @@ export class FileItemStatus {
 
     /*tslint:disable:no-bitwise */
     private checkStatusFlag(flag: FileItemStatusFlags): boolean {
-        return (this.status & flag) === flag;
+        return (this._flags & flag) === flag;
     }
 
     private setStatusFlag(flag: FileItemStatusFlags): void {
-        this.status |= flag;
+        this._flags |= flag;
+    }
+
+    private setSingleStatusFlag(flag: FileItemStatusFlags): void {
+        this._flags = flag;
     }
 
     private unsetStatusFlag(flag: FileItemStatusFlags): void {
-        this.status &= (~flag);
+        this._flags &= (~flag);
     }
     /*tslint:enable:no-bitwise */
 }

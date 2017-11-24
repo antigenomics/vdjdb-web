@@ -15,25 +15,34 @@
  *       limitations under the License.
  */
 
-import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { UploadService } from './upload.service';
+import { Subscription } from 'rxjs/Subscription';
 
 @Component({
     selector:        'upload',
     templateUrl:     './upload.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class AnnotationsUploadComponent implements OnDestroy {
+export class AnnotationsUploadComponent implements OnInit, OnDestroy{
+    private _uploadServiceEventsSubscription: Subscription;
 
-    constructor(public uploadService: UploadService) {}
+    constructor(public uploadService: UploadService, private changeDetector: ChangeDetectorRef) {}
+
+    public ngOnInit(): void {
+        this._uploadServiceEventsSubscription = this.uploadService.getEvents().subscribe(() => {
+            this.changeDetector.detectChanges();
+        });
+    }
 
     public handleNewFiles(event: Event): void {
         this.uploadService.addItems((event.target as HTMLInputElement).files);
     }
 
     public ngOnDestroy(): void {
-        this.uploadService.clearRemoved();
-        this.uploadService.clearErrored();
+        if (this._uploadServiceEventsSubscription) {
+            this._uploadServiceEventsSubscription.unsubscribe();
+        }
     }
 
 }

@@ -30,8 +30,6 @@ import { UploadService } from './upload.service';
     imports:      [ BrowserModule, FormsModule, ModalsModule ],
     declarations: [ AnnotationsUploadComponent, UploadTableComponent, UploadTableRowComponent ],
     exports:      [ AnnotationsUploadComponent, UploadTableComponent, UploadTableRowComponent ],
-    providers:    [
-        { provide: UploadService, useClass: UploadService, deps: [ LoggerService, AnnotationsService ] }
-    ]
+    providers:    [ UploadService ]
 })
 export class UploadModule {}

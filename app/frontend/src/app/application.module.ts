@@ -31,9 +31,7 @@ import { LoggerService } from './utils/logger/logger.service';
     imports:      [ CommonModule, BrowserModule, HomePageModule, AboutPageModule, SearchPageModule, AnnotationsPageModule,
         NavigationBarModule, RouterModule.forRoot([]) ],
     declarations: [ ApplicationComponent ],
-    providers:    [
-        { provide: LoggerService, useClass: LoggerService, deps: [] },
-        { provide: ClipboardService, useClass: ClipboardService, deps: [ LoggerService ] } ],
+    providers:    [ LoggerService, ClipboardService ],
     bootstrap:    [ ApplicationComponent ]
 })
 export class ApplicationModule {

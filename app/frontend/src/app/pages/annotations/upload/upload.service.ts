@@ -49,30 +49,29 @@ export class UploadService {
     private static FULL_PROGRESS: number = 100;
     private static SUCCESS_HTTP_CODE: number = 200;
 
-    private _uploadingCount: number = 0;
     private _events: ReplaySubject<UploadServiceEvent> = new ReplaySubject(1);
-    private _items: FileItem[] = [];
+    private _uploadingCount: number = 0;
+    private _files: FileItem[] = [];
 
     constructor(private logger: LoggerService, private annotationsService: AnnotationsService) {
         this.annotationsService.getEvents().subscribe((event: AnnotationsServiceEvents) => {
-           switch (event) {
-               case AnnotationsServiceEvents.SAMPLE_DELETED:
-                   this._items = this._items.filter((item) => item.status.isWaiting());
-                   this._items.forEach((item) => this.handleErrors(item, true));
-                   this._events.next(UploadServiceEvent.STATE_REFRESHED);
-                   break;
-               default:
-           }
+            switch (event) {
+                case AnnotationsServiceEvents.SAMPLE_DELETED:
+                    // this._files = this._files.filter((item) => item.status.isWaiting());
+                    this.updateErrors();
+                    break;
+                default:
+            }
         });
     }
 
     public addItems(files: FileList): void {
         /*tslint:disable:prefer-for-of */
         for (let i = 0; i < files.length; ++i) {
-            const fileItem = new FileItem(files[ i ]);
-            this.handleErrors(fileItem);
-            this._items.push(fileItem);
+            const file = new FileItem(files[ i ]);
+            this._files.push(file);
         }
+        this.updateErrors();
         /*tslint:enable:prefer-for-of */
     }
 
@@ -81,89 +80,68 @@ export class UploadService {
     }
 
     public getItems(): FileItem[] {
-        return this._items;
+        return this._files;
     }
 
     public isItemsEmpty(): boolean {
-        return this._items.length === 0;
+        return this._files.length === 0;
     }
 
     public isLoadingExist(): boolean {
-        return this._items.some((item) => item.status.isLoading());
+        return this._files.some((item) => item.status.isLoading());
     }
 
     public isReadyForUploadExist(): boolean {
-        return this._items.some((item) => item.status.isReadyForUpload());
+        return this._files.some((item) => item.status.isReadyForUpload());
     }
 
-    public handleErrors(item: FileItem, excludeSelf?: boolean, from?: FileItem[]): void {
-        if (item.status.isRemoved()) {
-            return;
-        } else if (!this.handleExtensionErrors(item)) {
-            item.clearErrors();
-            if (!this.handlePermissionsErrors(item)) {
-                this.handleItemNameErrors(item, item.baseName, excludeSelf, from);
-            }
-        }
-    }
-
-    public handleItemNameErrors(item: FileItem, baseName: string, excludeSelf?: boolean, from?: FileItem[]): boolean {
-        const wasDuplicate = item.status.isDuplicate();
-        const oldName = item.baseName;
-
-        item.status.validName();
-        item.status.uniqueName();
+    public handleItemNameErrors(item: FileItem, baseName: string, from?: FileItem[]): boolean {
+        item.status.setValidNameStatus();
+        item.status.setUniqueNameStatus();
 
         let error = false;
         const regexp = /^[a-zA-Z0-9_.+-]{1,40}$/;
         const testBaseName = regexp.test(baseName);
         const testBaseNameWithExtension = regexp.test(`${baseName}.${item.extension}`);
         if (!testBaseName || !testBaseNameWithExtension) {
-            item.status.invalidName();
+            item.status.setInvalidNameStatus();
             error = true;
         }
 
-        let items = from ? from : this._items.filter((_item) => _item.status.isWaiting());
-        if (excludeSelf) {
-            items = items.filter((_item) => _item.status.isWaiting()).filter((_item) => _item !== item);
-        }
-        const isSameNameExist = items.some((_item) => _item.baseName === baseName);
+        const items = from ? from : this._files;
+        const isSameNameExist = items
+            .filter((f) => !(f.status.isRemoved() || f.status.isError()))
+            .some((f) => f.baseName === baseName);
         if (isSameNameExist) {
-            item.status.duplicatingName();
+            item.status.setDuplicateNameStatus();
             error = true;
         }
 
-        const isSameNameExistInUploaded = this.annotationsService.getSamples().some((_sample) => _sample.name === baseName);
+        const isSameNameExistInUploaded = this.annotationsService.getSamples()
+            .some((sample) => sample.name === baseName);
         if (isSameNameExistInUploaded) {
-            item.status.duplicatingName();
+            item.status.setDuplicateNameStatus();
             error = true;
         }
 
         item.baseName = baseName;
-
-        if (wasDuplicate) {
-
-            const duplicateItems = items.filter((_item) => _item.baseName === oldName);
-            duplicateItems.forEach((_item) => this.handleErrors(_item, true, items));
-        }
-
         return error;
     }
 
     public handlePermissionsErrors(item: FileItem): boolean {
         const permissions = this.annotationsService.getUserPermissions();
         if (!permissions.isUploadAllowed) {
-            item.setError('Upload is not allowed for this account');
+            item.setErrorStatus('Upload is not allowed for this account');
             return true;
         } else if (permissions.maxFilesCount >= 0) {
-            const waitingFilesLength = this._items.filter((_item) => _item.status.isWaiting()).length;
+            const waitingFilesLength = this._files.filter((_item) => _item.status.isWaiting()).length;
             const sampleFilesLength = this.annotationsService.getSamples().length;
             if ((waitingFilesLength + sampleFilesLength) >= permissions.maxFilesCount) {
-                item.setError('Max files count limit have been exceeded');
+                item.setErrorStatus('Max files count limit have been exceeded');
                 return true;
             }
         } else if (permissions.maxFileSize >= 0 && item.getNativeFile().size >= permissions.getMaxFileSizeInBytes()) {
-            item.setError('Max file size limit have been exceeded');
+            item.setErrorStatus('Max file size limit have been exceeded');
             return true;
         }
         return false;
@@ -172,53 +150,63 @@ export class UploadService {
     // noinspection JSMethodCanBeStatic
     public handleExtensionErrors(item: FileItem): boolean {
         if (UploadService.AVAILABLE_EXTENSIONS.indexOf(item.extension) === -1) {
-            item.setError('Invalid file extension');
+            item.setErrorStatus('Invalid file extension');
             return true;
         }
         return false;
     }
 
-    public remove(item: FileItem): void {
-        const wasDuplicate = item.status.isDuplicate();
-        item.status.remove();
-        if (wasDuplicate) {
-            this._items
-                .filter((_item) => _item.status.isWaiting())
-                .forEach((_item) => this.handleErrors(_item, true));
-        }
+    public updateErrors(): void {
+        const checked: FileItem[] = [];
+        this._files
+            .filter((item) => !(item.status.isRemoved() || item.status.isUploaded()))
+            .forEach((item) => {
+                item.clearErrors();
+                if (!this.handleExtensionErrors(item)) {
+                    if (!this.handlePermissionsErrors(item)) {
+                        this.handleItemNameErrors(item, item.baseName, checked);
+                    }
+                }
+                checked.push(item);
+            });
         this._events.next(UploadServiceEvent.STATE_REFRESHED);
     }
 
+    public remove(item: FileItem): void {
+        item.status.setRemovedStatus();
+        this.updateErrors();
+    }
+
     public uploadAll(): void {
-        this._items
+        this._files
             .filter((item) => !item.status.beforeUploadError())
             .forEach((item) => this.upload(item));
     }
 
     public upload(file: FileItem): void {
         if (file.status.isReadyForUpload()) {
-            file.status.startLoading();
+            file.status.setLoadingStatus();
 
             this.fireUploadingStartEvent();
             const uploader = this.createUploader(file);
             uploader.subscribe({
-                next: async (status) => {
+                next:     async (status) => {
                     if (status.loading === false) {
                         if (status.progress === UploadService.FULL_PROGRESS && status.error === undefined) {
                             const added = await this.annotationsService.addSample(file.baseName);
                             if (added) {
-                                file.uploaded();
+                                file.setUploadedStatus();
                             } else {
-                                file.setError('Validating failed');
+                                file.setErrorStatus('Validating failed');
                             }
                         } else if (status.error !== undefined) {
-                            file.setError(status.error);
+                            file.setErrorStatus(status.error);
                         }
                         this.fireUploadingEndedEvent();
                     }
                 },
-                error: (err: UploadStatus) => {
-                    file.setError(err.error);
+                error:    (err: UploadStatus) => {
+                    file.setErrorStatus(err.error);
                     this.fireUploadingEndedEvent();
                 }
             });
@@ -226,12 +214,32 @@ export class UploadService {
         }
     }
 
+    public isUploadedExist(): boolean {
+        return this._files.some((item) => item.status.isUploaded());
+    }
+
+    public clearUploaded(): void {
+        this._files = this._files.filter((item) => !item.status.isUploaded());
+        this._events.next(UploadServiceEvent.STATE_REFRESHED);
+    }
+
+    public isRemovedExist(): boolean {
+        return this._files.some((item) => item.status.isRemoved());
+    }
+
     public clearRemoved(): void {
-        this._items = this._items.filter((item) => !item.status.isRemoved());
+        this._files = this._files.filter((item) => !item.status.isRemoved());
+        this._events.next(UploadServiceEvent.STATE_REFRESHED);
+    }
+
+    public isErroredExist(): boolean {
+        return this._files.some((item) => item.status.isError());
     }
 
     public clearErrored(): void {
-        this._items = this._items.filter((item) => !item.status.isError());
+        this._files = this._files.filter((item) => !item.status.isError());
+        this._events.next(UploadServiceEvent.STATE_REFRESHED);
+
     }
 
     private fireUploadingStartEvent(): void {

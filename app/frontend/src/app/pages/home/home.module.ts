@@ -16,7 +16,6 @@
 
 import { NgModule } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { LoggerService } from '../../utils/logger/logger.service';
 import { HomePageComponent } from './home.component';
 import { SummaryComponent } from './summary/summary.component';
 import { SummaryService } from './summary/summary.service';
@@ -25,8 +24,6 @@ import { SummaryService } from './summary/summary.service';
     imports:      [ RouterModule.forChild([ { path: '', component: HomePageComponent } ]) ],
     declarations: [ HomePageComponent, SummaryComponent ],
     exports:      [ HomePageComponent, SummaryComponent ],
-    providers:    [
-        { provide: SummaryService, useClass: SummaryService, deps: [ LoggerService ] }
-    ]
+    providers:    [ SummaryService ]
 })
 export class HomePageModule {}
