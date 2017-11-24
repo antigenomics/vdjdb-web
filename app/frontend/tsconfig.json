@@ -20,5 +20,9 @@
     "noImplicitReturns": true,
     "noUnusedParameters": false,
     "lib": [ "es2017", "dom" ]
-  }
+  },
+  "exclude": [
+    "node_modules",
+    "e2e"
+  ]
 }

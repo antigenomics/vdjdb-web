@@ -9,10 +9,9 @@
         </div>
     </application>
     @if(environment.mode == Mode.Dev) {
-        <script type="application/javascript" src="bundles/angular/cache/inline.bundle.js" charset="utf-8"></script>
-        <script type="application/javascript" src="bundles/angular/cache/polyfills.bundle.js" charset="utf-8"></script>
-        <script type="application/javascript" src="bundles/angular/cache/vendor.bundle.js" charset="utf-8"></script>
-        <script type="application/javascript" src="bundles/angular/main.bundle.js" charset="utf-8"></script>
+        <script type="application/javascript" src="assets/bundles/polyfills.dll.js" charset="utf-8"></script>
+        <script type="application/javascript" src="assets/bundles/vendor.dll.js" charset="utf-8"></script>
+        <script type="application/javascript" src="bundles/webpack/bundle.js" charset="utf-8"></script>
     } else {
         <script type="application/javascript" src="@routes.Assets.versioned("bundles/inline.bundle.js")" charset="utf-8"></script>
         <script type="application/javascript" src="@routes.Assets.versioned("bundles/polyfills.bundle.js")" charset="utf-8"></script>
