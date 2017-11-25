@@ -6,8 +6,11 @@
     "module": "es2015",
     "types": []
   },
+  "files": [ "main.ts", "polyfills.ts" ],
+  "include": [ "main.ts", "polyfills.ts" ],
   "exclude": [
     "test.ts",
+    "main.dev.ts",
     "**/*.spec.ts"
   ]
 }
