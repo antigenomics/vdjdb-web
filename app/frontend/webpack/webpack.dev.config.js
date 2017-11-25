@@ -18,17 +18,14 @@
 console.log('Configuring frontend in development mode');
 
 const path = require('path');
-const buildPath = path.resolve(__dirname, '../../../public/bundles/');
 const webpackMerge = require('webpack-merge'); // used to merge webpack configs
-const webpack = require('webpack');
 const defaultConfiguration = Object.create(require('./webpack.base.config'));
 const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
 const DllBundlesPlugin = require('webpack-dll-bundles-plugin').DllBundlesPlugin;
 
 defaultConfiguration.entry[ 'bundle.js' ] = [
-    'webpack/hot/dev-server',
     'webpack-dev-server/client?http://localhost:8080',
-    './src/main.ts'
+    './src/main.dev.ts'
 ];
 
 defaultConfiguration.module.rules.push({
@@ -37,21 +34,16 @@ defaultConfiguration.module.rules.push({
     loaders: [ 'awesome-typescript-loader', 'angular2-template-loader' ]
 });
 
-defaultConfiguration.plugins.push(
-    new webpack.DefinePlugin({
-        buildMode: JSON.stringify('development')
-    }),
-    new webpack.HotModuleReplacementPlugin());
-
 defaultConfiguration.plugins.push(new DllBundlesPlugin({
     bundles: {
         polyfills: [
             'core-js',
-            'zone.js',
-            'reflect-metadata'
+            'reflect-metadata',
+            'zone.js'
         ],
         vendor: [
             '@angular/compiler',
+            '@angular/platform-browser',
             '@angular/platform-browser-dynamic',
             '@angular/core',
             '@angular/common',
@@ -60,7 +52,7 @@ defaultConfiguration.plugins.push(new DllBundlesPlugin({
             'rxjs'
         ]
     },
-    dllDir: buildPath,
+    dllDir: './webpack/dll/',
     webpackConfig: webpackMerge(defaultConfiguration, {
         devtool: false,
         plugins: [ new UglifyJSPlugin({

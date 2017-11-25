@@ -15,6 +15,10 @@
  *
  */
 
+import 'core-js';
+import 'reflect-metadata';
+import 'zone.js';
+
 import { enableProdMode } from '@angular/core';
 import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
 
@@ -28,10 +32,10 @@ if (environment.production) {
 
 const logger = new LoggerService();
 platformBrowserDynamic().bootstrapModule(ApplicationModule, { preserveWhitespaces: false })
-    .then(() => {
-        const mode = environment.production ? 'production' : 'development';
-        logger.info('Application loaded',  `(${mode})`);
-    })
-    .catch((error) => {
-        logger.error('Bootstrap error', error);
-    });
+                        .then(() => {
+                            const mode = environment.production ? 'production' : 'development';
+                            logger.info('Application loaded',  `(${mode})`);
+                        })
+                        .catch((error) => {
+                            logger.error('Bootstrap error', error);
+                        });
