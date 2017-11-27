@@ -51,3 +51,6 @@ notfound.hint = We could not find the page you were looking for.
 notfound.back = Back to home.
 
 internal.error = Internal server error. Please try later.
+
+sample.file.form.invalid.software = Invalid software type
+sample.file.form.invalid.name = Invalid sample name
