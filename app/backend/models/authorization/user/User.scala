@@ -54,7 +54,7 @@ case class User(id: Long, login: String, email: String, verified: Boolean, folde
         UserDetails(email, login, await(files).map(_.sampleName), await(permissions))
     }
 
-    def addSampleFile(name: String, extension: String, file: Files.TemporaryFile)
+    def addSampleFile(name: String, extension: String, softwareType: String, file: Files.TemporaryFile)
                      (implicit sfp: SampleFileProvider, upp: UserPermissionsProvider, fmp: FileMetadataProvider,
                       ec: ExecutionContext): Future[Either[Long, String]] = async {
         val files = await(getSampleFiles)
@@ -77,7 +77,7 @@ case class User(id: Long, login: String, email: String, verified: Boolean, folde
                         if (success) {
                             val metadataID = await(fmp.insert(name, extension, sampleFolderPath))
                             file.moveTo(Paths.get(s"$sampleFolderPath/$name.$extension"), replace = true)
-                            val sampleFileID = await(sfp.insert(SampleFile(0, name, metadataID, id)))
+                            val sampleFileID = await(sfp.insert(SampleFile(0, name, softwareType, metadataID, id)))
                             Left(sampleFileID)
                         } else {
                             Right("Unable to create sample file (internal server error)")

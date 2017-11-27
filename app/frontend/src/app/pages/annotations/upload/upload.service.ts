@@ -270,6 +270,7 @@ export class UploadService {
             const formData: FormData = new FormData();
             formData.append('file', file.getNativeFile());
             formData.append('name', file.getNameWithExtension());
+            formData.append('software', file.software);
             const xhr = new XMLHttpRequest();
 
             const progressEventListener = (progress: ProgressEvent) => {

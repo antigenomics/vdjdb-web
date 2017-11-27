@@ -17,7 +17,6 @@
 
 package backend.controllers
 
-import java.nio.file.Paths
 import javax.inject.Inject
 
 import akka.actor.ActorSystem
@@ -27,12 +26,13 @@ import backend.actors.AnnotationsWebSocketActor
 import backend.models.authorization.permissions.UserPermissionsProvider
 import backend.models.authorization.user.UserProvider
 import backend.models.files.FileMetadataProvider
-import backend.models.files.sample.SampleFileProvider
+import backend.models.files.sample.{SampleFileForm, SampleFileProvider}
 import backend.server.limit.RequestLimits
 import backend.utils.analytics.Analytics
 import com.typesafe.config.ConfigMemorySize
 import org.apache.commons.io.FilenameUtils
 import org.slf4j.LoggerFactory
+import play.api.i18n.{Lang, Messages, MessagesApi}
 import play.api.{Configuration, Environment}
 import play.api.libs.Files
 import play.api.libs.json.JsValue
@@ -42,13 +42,14 @@ import play.api.mvc._
 import scala.async.Async.{async, await}
 import scala.concurrent.{ExecutionContext, Future}
 
-class AnnotationsAPI @Inject()(cc: ControllerComponents, userRequestAction: UserRequestAction, conf: Configuration)
+class AnnotationsAPI @Inject()(cc: ControllerComponents, userRequestAction: UserRequestAction, conf: Configuration, messagesApi: MessagesApi)
                               (implicit upp: UserPermissionsProvider, up: UserProvider, sfp: SampleFileProvider, fmp: FileMetadataProvider,
                                as: ActorSystem, mat: Materializer, ec: ExecutionContext, limits: RequestLimits,
                                environment: Environment, analytics: Analytics)
     extends AbstractController(cc) {
     private final val maxUploadFileSize = conf.get[ConfigMemorySize]("application.annotations.upload.maxFileSize")
     private final val logger = LoggerFactory.getLogger(this.getClass)
+    implicit val messages: Messages = messagesApi.preferred(Seq(Lang.defaultLang))
 
     def checkUploadAllowed(implicit ec: ExecutionContext): ActionFilter[UserRequest] = new ActionFilter[UserRequest] {
         override protected def executionContext: ExecutionContext = ec
@@ -73,13 +74,22 @@ class AnnotationsAPI @Inject()(cc: ControllerComponents, userRequestAction: User
     def uploadFile: Action[MultipartFormData[Files.TemporaryFile]] =
         (userRequestAction(parse.multipartFormData(maxUploadFileSize.toBytes)) andThen SessionAction.authorizedOnly andThen checkUploadAllowed).async {
             implicit request =>
-                request.body.file("file").map { file =>
-                    request.body.asFormUrlEncoded("name").headOption match {
-                        case Some(nameWithExtension) => async {
-                            val name = FilenameUtils.getBaseName(nameWithExtension)
-                            val extension = FilenameUtils.getExtension(nameWithExtension)
-                            val uploadResult = await(request.user.get.addSampleFile(name, extension, file.ref))
-                            uploadResult match {
+                SampleFileForm.sampleFileFormMapping.bindFromRequest.fold(
+                    formWithErrors => async {
+                        val error = formWithErrors.errors.head
+                        val message = messages(error.message)
+                        if (message.contains("required")) {
+                            BadRequest(s"${error.key.capitalize} field is missing")
+                        } else {
+                            BadRequest(message)
+                        }
+                    },
+                    form => {
+                        request.body.file("file").fold(ifEmpty = Future.successful(BadRequest("File is empty"))) { file =>
+                            val name = FilenameUtils.getBaseName(form.name)
+                            val extension = FilenameUtils.getExtension(form.name)
+                            val software = form.software
+                            request.user.get.addSampleFile(name, extension, software, file.ref).map {
                                 case Left(sampleFileID) =>
                                     Ok(s"$sampleFileID")
                                 case Right(error) =>
@@ -87,15 +97,8 @@ class AnnotationsAPI @Inject()(cc: ControllerComponents, userRequestAction: User
                                     BadRequest(error)
                             }
                         }
-                        case None => async {
-                            BadRequest("Empty file name")
-                        }
                     }
-                }.getOrElse {
-                    async {
-                        BadRequest("Internal server error")
-                    }
-                }
+                )
         }
 
     def connect: WebSocket = WebSocket.acceptOrResult[JsValue, JsValue] { implicit request =>

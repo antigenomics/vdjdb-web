@@ -76,12 +76,12 @@ export class SidebarComponent implements OnInit, OnDestroy {
         const modalComponentResolver = this.resolver.resolveComponentFactory<ModalComponent>(ModalComponent);
         this._confirmDeletingModalComponent = this.hostViewContainer.createComponent<ModalComponent>(modalComponentResolver);
         this._confirmDeletingModalComponent.instance.header = sample.name;
-        this._confirmDeletingModalComponent.instance.content = `Are you sure you want to delete your sample?`;
+        this._confirmDeletingModalComponent.instance.content = `Are you sure you want to delete this sample (${sample.name})?`;
         this._confirmDeletingModalComponent.instance.yesCallback = async () => {
             this.logger.debug('Sidebar', `Deleting sample ${sample.name}`);
             const deleted = await this.annotationsService.deleteSample(sample);
             if (deleted) {
-                this.notifications.info('Delete', `Sample ${sample.name} have been deleted`);
+                this.notifications.info('Delete', `Sample ${sample.name} has been deleted`);
             } else {
                 this.notifications.error('Delete', `Unable to delete ${sample.name} sample`);
             }

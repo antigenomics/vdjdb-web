@@ -106,10 +106,6 @@ class SampleFileProvider @Inject()(@NamedDatabase("default") protected val dbCon
         deleteAllForUserID(user.id)
     }
 
-    def createSampleFile(user: User, name: String, extension: String, file: File): Future[Long] = {
-        throw new RuntimeException("Not implemented")
-    }
-
     def insert(sample: SampleFile): Future[Long] = {
         db.run(table returning table.map(_.id) += sample)
     }
