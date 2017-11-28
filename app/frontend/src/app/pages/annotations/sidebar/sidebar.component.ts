@@ -61,12 +61,12 @@ export class SidebarComponent implements OnInit, OnDestroy {
         this.router.navigate(['annotations', 'sample', sample.name]);
     }
 
-    public async getSamples(): Promise<SampleItem[]> {
-        return await this.annotationsService.getSamples();
+    public getSamples(): SampleItem[] {
+        return this.annotationsService.getSamples();
     }
 
-    public async isSamplesEmpty(): Promise<boolean> {
-        return (await this.getSamples()).length === 0;
+    public isSamplesEmpty(): boolean {
+        return this.getSamples().length === 0;
     }
 
     public isVisible(): boolean {
