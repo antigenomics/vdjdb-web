@@ -14,7 +14,7 @@
     <div class="item">
         <div class="header">Samples</div>
         <div class="menu" *ngIf="!isSamplesEmpty()">
-            <a class="item" *ngFor="let sample of getSamples()" [ngClass]="{'disabled':sample.loading}">
+            <a class="item" *ngFor="let sample of getSamples()" [ngClass]="{'disabled':sample.loading}" (click)="showSampleInfo(sample)">
                 <i class="trash icon" (click)="deleteSample(sample)"></i>{{ sample.name }}
             </a>
         </div>

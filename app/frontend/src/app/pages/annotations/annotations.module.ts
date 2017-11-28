@@ -22,6 +22,7 @@ import { ModalsModule } from '../../shared/modals/modals.module';
 import { AnnotationsPageComponent } from './annotations.component';
 import { AnnotationsService } from './annotations.service';
 import { AnnotationsInfoComponent } from './info/annotations-info.component';
+import { SampleInfoComponent } from './sample/sample-info.component';
 import { SidebarComponent } from './sidebar/sidebar.component';
 import { AnnotationsUploadComponent } from './upload/upload.component';
 import { UploadModule } from './upload/upload.module';
@@ -31,14 +32,15 @@ const routes = [
         path:     'annotations', component: AnnotationsPageComponent,
         children: [
             { path: 'info', component: AnnotationsInfoComponent },
-            { path: 'upload', component: AnnotationsUploadComponent }
+            { path: 'upload', component: AnnotationsUploadComponent },
+            { path: 'sample/:sample', component: SampleInfoComponent }
         ]
     }
 ];
 
 @NgModule({
     imports:      [ BrowserModule, UploadModule, RouterModule.forChild(routes), ModalsModule ],
-    declarations: [ AnnotationsPageComponent, SidebarComponent, AnnotationsInfoComponent ],
+    declarations: [ AnnotationsPageComponent, SidebarComponent, AnnotationsInfoComponent, SampleInfoComponent ],
     exports:      [ AnnotationsPageComponent ],
     providers:    [ AnnotationsService ]
 })

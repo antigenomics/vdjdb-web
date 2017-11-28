@@ -42,7 +42,7 @@ class Application @Inject()(ws: WSClient, assets: Assets, configuration: Configu
         SessionAction.updateCookies(Ok(frontend.views.html.index()))
     }
 
-    def authorizedIndex: Action[AnyContent] = (userRequestAction andThen SessionAction.authorizedOnly) { implicit request =>
+    def authorizedIndex(route: String): Action[AnyContent] = (userRequestAction andThen SessionAction.authorizedOnly) { implicit request =>
         SessionAction.updateCookies(Ok(frontend.views.html.index()))
     }
 

@@ -99,7 +99,7 @@ export class UploadService {
         return this._files.some((item) => item.status.isReadyForUpload());
     }
 
-    public handleItemNameErrors(item: FileItem, baseName: string, from?: FileItem[]): boolean {
+    public async handleItemNameErrors(item: FileItem, baseName: string, from?: FileItem[]): Promise<boolean> {
         item.status.setValidNameStatus();
         item.status.setUniqueNameStatus();
 
@@ -121,8 +121,8 @@ export class UploadService {
             error = true;
         }
 
-        const isSameNameExistInUploaded = this.annotationsService.getSamples()
-            .some((sample) => sample.name === baseName);
+        const userSamples = await this.annotationsService.getSamples();
+        const isSameNameExistInUploaded = userSamples.some((sample) => sample.name === baseName);
         if (isSameNameExistInUploaded) {
             item.status.setDuplicateNameStatus();
             error = true;
@@ -132,14 +132,14 @@ export class UploadService {
         return error;
     }
 
-    public handlePermissionsErrors(item: FileItem): boolean {
-        const permissions = this.annotationsService.getUserPermissions();
+    public async handlePermissionsErrors(item: FileItem): Promise<boolean> {
+        const permissions = await this.annotationsService.getUserPermissions();
         if (!permissions.isUploadAllowed) {
             item.setErrorStatus('Upload is not allowed for this account');
             return true;
         } else if (permissions.maxFilesCount >= 0) {
             const waitingFilesLength = this._files.filter((_item) => _item.status.isWaiting()).length;
-            const sampleFilesLength = this.annotationsService.getSamples().length;
+            const sampleFilesLength = (await this.annotationsService.getSamples()).length;
             if ((waitingFilesLength + sampleFilesLength) >= permissions.maxFilesCount) {
                 item.setErrorStatus('Max files count limit have been exceeded');
                 return true;
@@ -152,7 +152,7 @@ export class UploadService {
     }
 
     // noinspection JSMethodCanBeStatic
-    public handleExtensionErrors(item: FileItem): boolean {
+    public async handleExtensionErrors(item: FileItem): Promise<boolean> {
         if (UploadService.AVAILABLE_EXTENSIONS.indexOf(item.extension) === -1) {
             item.setErrorStatus('Invalid file extension');
             return true;
@@ -160,19 +160,20 @@ export class UploadService {
         return false;
     }
 
-    public updateErrors(): void {
+    public async updateErrors(): Promise<void> {
         const checked: FileItem[] = [];
-        this._files
-            .filter((item) => !(item.status.isRemoved() || item.status.isUploaded()))
-            .forEach((item) => {
-                item.clearErrors();
-                if (!this.handleExtensionErrors(item)) {
-                    if (!this.handlePermissionsErrors(item)) {
-                        this.handleItemNameErrors(item, item.baseName, checked);
-                    }
+        const items = this._files.filter((item) => !(item.status.isRemoved() || item.status.isUploaded()));
+        for (const item of items) {
+            item.clearErrors();
+            const extensionErrors = await this.handleExtensionErrors(item);
+            if (!extensionErrors) {
+                const permissionErrors = await this.handlePermissionsErrors(item);
+                if (!permissionErrors) {
+                    await this.handleItemNameErrors(item, item.baseName, checked);
                 }
-                checked.push(item);
-            });
+            }
+            checked.push(item);
+        }
         this._events.next(UploadServiceEvent.STATE_REFRESHED);
     }
 
