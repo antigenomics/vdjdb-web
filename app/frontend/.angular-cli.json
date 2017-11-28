@@ -9,9 +9,9 @@
       "outDir": "../../public/bundles",
       "main": "main.ts",
       "polyfills": "polyfills.ts",
-      "test": "test.ts",
+      "test": "../../../test/frontend/src/test.ts",
       "tsconfig": "tsconfig.app.json",
-      "testTsconfig": "tsconfig.spec.json",
+      "testTsconfig": "../../../test/frontend/src/tsconfig.spec.json",
       "prefix": "app",
       "scripts": [],
       "environmentSource": "environments/environment.ts",
@@ -22,13 +22,13 @@
     }
   ],
   "e2e": {
-    "protractor": { "config": "./protractor.conf.js" }
+    "protractor": { "config": "../../test/frontend/protractor.conf.js" }
   },
   "lint": [
     { "project": "src/tsconfig.app.json", "exclude": [ "**/node_modules/**" , "**/polyfills.ts" ] }
   ],
   "test": {
-    "karma": { "config": "./karma.conf.js" }
+    "karma": { "config": "../../test/frontend/karma.conf.js" }
   },
   "defaults": { "styleExt": "css", "component": {} }
 }
