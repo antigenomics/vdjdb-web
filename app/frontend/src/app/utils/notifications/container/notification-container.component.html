@@ -1,0 +1,3 @@
+<div class="notifier-container" *ngIf="isNotificationsExist()">
+    <notification-item *ngFor="let item of getNotifications()" [item]="item"></notification-item>
+</div>

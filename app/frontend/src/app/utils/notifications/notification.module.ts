@@ -16,13 +16,14 @@
 
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
-import { NotificationComponent } from './notification.component';
+import { NotificationContainerComponent } from './container/notification-container.component';
+import { NotificationItemComponent } from './item/notification-item.component';
 import { NotificationService } from './notification.service';
 
 @NgModule({
     imports:      [ BrowserModule ],
-    declarations: [ NotificationComponent ],
-    exports:      [ NotificationComponent ],
+    declarations: [ NotificationContainerComponent, NotificationItemComponent ],
+    exports:      [ NotificationContainerComponent, NotificationItemComponent ],
     providers:    [ NotificationService ]
 })
 export class NotificationModule {}

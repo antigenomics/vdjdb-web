@@ -22,6 +22,7 @@ import { User, UserPermissions } from '../../shared/user/user';
 import { WebSocketRequestData } from '../../shared/websocket/websocket-request';
 import { WebSocketService } from '../../shared/websocket/websocket.service';
 import { LoggerService } from '../../utils/logger/logger.service';
+import { NotificationService } from '../../utils/notifications/notification.service';
 
 export type AnnotationsServiceEvents = number;
 

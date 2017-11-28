@@ -23,7 +23,7 @@ import { Subscription } from 'rxjs/Subscription';
 import { ModalComponent } from '../../../shared/modals/modal/modal.component';
 import { SampleItem } from '../../../shared/sample/sample-item';
 import { LoggerService } from '../../../utils/logger/logger.service';
-import { NotificationService } from '../../../utils/notification/notification.service';
+import { NotificationService } from '../../../utils/notifications/notification.service';
 import { AnnotationsService } from '../annotations.service';
 import { UploadService, UploadServiceEvent } from '../upload/upload.service';
 

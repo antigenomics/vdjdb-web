@@ -23,7 +23,7 @@ import { WebSocketRequestData } from '../../../../shared/websocket/websocket-req
 import { WebSocketResponseData } from '../../../../shared/websocket/websocket-response';
 import { WebSocketResponseStatus, WebSocketService } from '../../../../shared/websocket/websocket.service';
 import { LoggerService } from '../../../../utils/logger/logger.service';
-import { NotificationService } from '../../../../utils/notification/notification.service';
+import { NotificationService } from '../../../../utils/notifications/notification.service';
 import { Utils } from '../../../../utils/utils';
 import { DatabaseColumnInfo, DatabaseMetadata } from '../../database/database-metadata';
 import { ExportFormat } from './export/search-table-export.component';

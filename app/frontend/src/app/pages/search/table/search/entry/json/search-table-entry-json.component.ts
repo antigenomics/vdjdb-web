@@ -16,7 +16,7 @@
 
 import { ChangeDetectionStrategy, Component, HostListener } from '@angular/core';
 import { ClipboardService } from '../../../../../../utils/clipboard/clipboard.service';
-import { NotificationService } from '../../../../../../utils/notification/notification.service';
+import { NotificationService } from '../../../../../../utils/notifications/notification.service';
 import { DatabaseColumnInfo } from '../../../../database/database-metadata';
 
 @Component({
@@ -38,7 +38,7 @@ export class SearchTableEntryJsonComponent {
             const copyContent = this._value.join('\n');
             const result = this.clipboard.copyFromContent(copyContent);
             if (result) {
-                this.notifications.info('Copy to clipboard', 'Copied successfully');
+                this.notifications.success('Copy to clipboard', 'Copied successfully');
             } else {
                 this.notifications.error('Copy to clipboard', 'Your browser is not supported');
             }
