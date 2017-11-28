@@ -26,6 +26,7 @@ import { LoggerService } from '../../../utils/logger/logger.service';
 import { NotificationService } from '../../../utils/notifications/notification.service';
 import { AnnotationsService } from '../annotations.service';
 import { UploadService, UploadServiceEvent } from '../upload/upload.service';
+import { Router } from '@angular/router';
 
 @Component({
     selector:        'sidebar',
@@ -39,7 +40,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
     private _annotationsServiceEventsSubscription: Subscription;
 
     constructor(private uploadService: UploadService, private annotationsService: AnnotationsService,
-                private hostViewContainer: ViewContainerRef, private resolver: ComponentFactoryResolver,
+                private hostViewContainer: ViewContainerRef, private resolver: ComponentFactoryResolver, private router: Router,
                 private changeDetector: ChangeDetectorRef, private logger: LoggerService, private notifications: NotificationService) {}
 
     public ngOnInit(): void {
@@ -56,12 +57,16 @@ export class SidebarComponent implements OnInit, OnDestroy {
         });
     }
 
-    public getSamples(): SampleItem[] {
-        return this.annotationsService.getSamples();
+    public showSampleInfo(sample: SampleItem): void {
+        this.router.navigate(['annotations', 'sample', sample.name]);
     }
 
-    public isSamplesEmpty(): boolean {
-        return this.getSamples().length === 0;
+    public async getSamples(): Promise<SampleItem[]> {
+        return await this.annotationsService.getSamples();
+    }
+
+    public async isSamplesEmpty(): Promise<boolean> {
+        return (await this.getSamples()).length === 0;
     }
 
     public isVisible(): boolean {

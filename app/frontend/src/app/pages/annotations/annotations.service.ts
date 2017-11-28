@@ -16,13 +16,15 @@
  */
 
 import { Injectable } from '@angular/core';
+import 'rxjs/add/operator/map';
+import 'rxjs/add/operator/take';
+import { ReplaySubject } from 'rxjs/ReplaySubject';
 import { Subject } from 'rxjs/Subject';
 import { SampleItem } from '../../shared/sample/sample-item';
 import { User, UserPermissions } from '../../shared/user/user';
 import { WebSocketRequestData } from '../../shared/websocket/websocket-request';
 import { WebSocketService } from '../../shared/websocket/websocket.service';
 import { LoggerService } from '../../utils/logger/logger.service';
-import { NotificationService } from '../../utils/notifications/notification.service';
 
 export type AnnotationsServiceEvents = number;
 
@@ -43,8 +45,8 @@ export namespace AnnotationsServiceWebSocketActions {
 export class AnnotationsService {
     private _events: Subject<AnnotationsServiceEvents> = new Subject();
     private _initialized: boolean = false;
-    private _user: User;
-    private _availableSoftwareTypes: string[];
+    private _user: ReplaySubject<User> = new ReplaySubject(1);
+    private _availableSoftwareTypes: string[] = [];
 
     private connection: WebSocketService;
 
@@ -60,7 +62,7 @@ export class AnnotationsService {
             });
 
             const userDetailsResponse = await userDetailsRequest;
-            this._user = User.deserialize(userDetailsResponse.get('details'));
+            this._user.next(User.deserialize(userDetailsResponse.get('details')));
             this.logger.debug('AnnotationsService: user', this._user);
 
             const availableSoftwareTypesResponse = await availableSoftwareTypesRequest;
@@ -81,15 +83,20 @@ export class AnnotationsService {
         return this._events;
     }
 
-    public getSamples(): SampleItem[] {
-        if (this._user === undefined) {
-            return [];
-        }
-        return this._user.samples;
+    public getSamples(): Promise<SampleItem[]> {
+        return this._user.map((user) => user.samples).take(1).toPromise();
     }
 
-    public getUserPermissions(): UserPermissions {
-        return this._user.permissions;
+    public getSample(name: string): Promise<SampleItem> {
+        return this._user.map((user) => user.samples.find((sample) => sample.name === name)).take(1).toPromise();
+    }
+
+    public getUserPermissions(): Promise<UserPermissions> {
+        return this._user.map((user) => user.permissions).take(1).toPromise();
+    }
+
+    public getUser(): Promise<User> {
+        return this._user.take(1).toPromise();
     }
 
     public getAvailableSoftwareTypes(): string[] {
@@ -105,8 +112,9 @@ export class AnnotationsService {
         });
         const valid = response.isSuccess() && response.get('valid');
         if (valid) {
-            if (!this._user.samples.some((sample) => sample.name === sampleName)) {
-                this._user.samples.push(new SampleItem(sampleName));
+            const user = await this.getUser();
+            if (!user.samples.some((sample) => sample.name === sampleName)) {
+                user.samples.push(new SampleItem(sampleName));
                 this._events.next(AnnotationsServiceEvents.SAMPLE_ADDED);
             }
         }
@@ -131,13 +139,14 @@ export class AnnotationsService {
         });
         const valid = response.isSuccess() && response.get('valid');
         if (valid) {
+            const user = await this.getUser();
             if (sample !== undefined) {
-                const index = this._user.samples.indexOf(sample);
+                const index = user.samples.indexOf(sample);
                 if (index !== -1) {
-                    this._user.samples.splice(index, 1);
+                    user.samples.splice(index, 1);
                 }
             } else if (all) {
-                this._user.samples.splice(0, this._user.samples.length);
+                user.samples.splice(0, user.samples.length);
             }
             this._events.next(AnnotationsServiceEvents.SAMPLE_DELETED);
         }
