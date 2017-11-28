@@ -26,9 +26,10 @@ import { SearchPageModule } from './pages/search/search.module';
 import { NavigationBarModule } from './shared/navbar/navbar.module';
 import { ClipboardService } from './utils/clipboard/clipboard.service';
 import { LoggerService } from './utils/logger/logger.service';
+import { NotificationModule } from './utils/notifications/notification.module';
 
 @NgModule({
-    imports:      [ CommonModule, BrowserModule, HomePageModule, AboutPageModule, SearchPageModule, AnnotationsPageModule,
+    imports:      [ CommonModule, BrowserModule, HomePageModule, AboutPageModule, SearchPageModule, AnnotationsPageModule, NotificationModule,
         NavigationBarModule, RouterModule.forRoot([]) ],
     declarations: [ ApplicationComponent ],
     providers:    [ LoggerService, ClipboardService ],

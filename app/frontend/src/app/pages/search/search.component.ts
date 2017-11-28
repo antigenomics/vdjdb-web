@@ -17,6 +17,7 @@
 import { Component } from '@angular/core';
 import { FiltersService } from '../../shared/filters/filters.service';
 import { SearchTableService } from './table/search/search-table.service';
+import { NotificationService } from '../../utils/notifications/notification.service';
 
 @Component({
     selector:        'search',
@@ -24,7 +25,7 @@ import { SearchTableService } from './table/search/search-table.service';
 })
 export class SearchPageComponent {
 
-    constructor(private table: SearchTableService, private filters: FiltersService) {}
+    constructor(private table: SearchTableService, private filters: FiltersService, private notifications: NotificationService) {}
 
     public search(): void {
         this.table.update();

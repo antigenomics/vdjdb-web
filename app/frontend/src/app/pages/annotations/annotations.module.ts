@@ -19,8 +19,6 @@ import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { RouterModule } from '@angular/router';
 import { ModalsModule } from '../../shared/modals/modals.module';
-import { LoggerService } from '../../utils/logger/logger.service';
-import { NotificationModule } from '../../utils/notification/notification.module';
 import { AnnotationsPageComponent } from './annotations.component';
 import { AnnotationsService } from './annotations.service';
 import { AnnotationsInfoComponent } from './info/annotations-info.component';
@@ -39,7 +37,7 @@ const routes = [
 ];
 
 @NgModule({
-    imports:      [ BrowserModule, UploadModule, RouterModule.forChild(routes), ModalsModule, NotificationModule ],
+    imports:      [ BrowserModule, UploadModule, RouterModule.forChild(routes), ModalsModule ],
     declarations: [ AnnotationsPageComponent, SidebarComponent, AnnotationsInfoComponent ],
     exports:      [ AnnotationsPageComponent ],
     providers:    [ AnnotationsService ]

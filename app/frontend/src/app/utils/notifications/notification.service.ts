@@ -16,36 +16,42 @@
 
 import { EventEmitter, Injectable } from '@angular/core';
 import { Utils } from '../utils';
-import { NotificationItem, NotificationItemType } from './notification-item';
+import { NotificationItem, NotificationItemType } from './item/notification-item';
 
 export type NotificationServiceEventType = number;
 
 export namespace NotificationServiceEventType {
     export const ADD: number = 0;
-    export const DELETE_FADE_OUT: number = 1;
-    export const DELETE: number = 2;
+    export const DELETE: number = 1;
 }
 
 @Injectable()
 export class NotificationService {
-    private static _notificationDeleteTimeout: number = 5000;
-    private static _notificationFadeOutTimeout: number = 1500;
     private _notifications: NotificationItem[] = [];
     private _notificationEvents: EventEmitter<NotificationServiceEventType> = new EventEmitter(true);
 
-    // noinspection JSMethodCanBeStatic
-    public info(title: string, content?: string): void {
-        this.addNotification(NotificationItemType.INFO, title, content);
+    public isNotificationsExist(): boolean {
+        return this._notifications.length !== 0;
     }
 
     // noinspection JSMethodCanBeStatic
-    public warn(title: string, content?: string): void {
-        this.addNotification(NotificationItemType.WARN, title, content);
+    public info(title: string, content?: string, timeout?: number): void {
+        this.addNotification(NotificationItemType.INFO, title, content, timeout);
     }
 
     // noinspection JSMethodCanBeStatic
-    public error(title: string, content?: string): void {
-        this.addNotification(NotificationItemType.ERROR, title, content);
+    public success(title: string, content?: string, timeout?: number): void {
+        this.addNotification(NotificationItemType.SUCCESS, title, content, timeout);
+    }
+
+    // noinspection JSMethodCanBeStatic
+    public warn(title: string, content?: string, timeout?: number): void {
+        this.addNotification(NotificationItemType.WARNING, title, content, timeout);
+    }
+
+    // noinspection JSMethodCanBeStatic
+    public error(title: string, content?: string, timeout?: number): void {
+        this.addNotification(NotificationItemType.ERROR, title, content, timeout);
     }
 
     public getNotifications(): NotificationItem[] {
@@ -56,17 +62,14 @@ export class NotificationService {
         return this._notificationEvents;
     }
 
-    private addNotification(type: NotificationItemType, title: string, content?: string): void {
-        const item: NotificationItem = new NotificationItem(type, title, content);
+    public deleteNotification(item: NotificationItem): void {
+        Utils.Array.deleteElement(this._notifications, item);
+        this._notificationEvents.emit(NotificationServiceEventType.DELETE);
+    }
+
+    private addNotification(type: NotificationItemType, title: string, content?: string, timeout?: number): void {
+        const item: NotificationItem = new NotificationItem(type, title, content, timeout);
         this._notifications.push(item);
         this._notificationEvents.emit(NotificationServiceEventType.ADD);
-        window.setTimeout(() => {
-            item.visible = 0;
-            this._notificationEvents.emit(NotificationServiceEventType.DELETE_FADE_OUT);
-            window.setTimeout(() => {
-                Utils.Array.deleteElement(this._notifications, item);
-                this._notificationEvents.emit(NotificationServiceEventType.DELETE);
-            }, NotificationService._notificationFadeOutTimeout);
-        }, NotificationService._notificationDeleteTimeout);
     }
 }

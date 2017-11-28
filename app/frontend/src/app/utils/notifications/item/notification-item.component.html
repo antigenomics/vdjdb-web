@@ -1,0 +1,8 @@
+<div class="notifier {{ item.type }}" #container>
+    <button class="notifier-close" type="button" (click)="hide()">×</button>
+    <div class="notifier-icon" style="height: 62px;">
+        <i class="{{ getIconType() }} icon" style="height: 62px"></i>
+    </div>
+    <h2 class="notifier-title">{{ item.title }}</h2>
+    <div class="notifier-body">{{ item.content }}</div>
+</div>
