@@ -32,9 +32,7 @@ export class UploadTableComponent implements OnInit, OnDestroy {
 
     public ngOnInit(): void {
         this._stateSubscription = this.uploadService.getEvents().subscribe((event) => {
-            if (event === UploadServiceEvent.STATE_REFRESHED) {
-                this.changeDetector.detectChanges();
-            }
+            this.changeDetector.detectChanges();
         });
     }
 

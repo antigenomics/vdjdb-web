@@ -16,54 +16,38 @@
  */
 
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
-import { ActivatedRoute, Params } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs/Subscription';
 import { SampleItem } from '../../../shared/sample/sample-item';
-import { AnnotationsService, AnnotationsServiceEvents } from '../annotations.service';
+import { AnnotationsService } from '../annotations.service';
 
 @Component({
     selector:        'sample-info',
     templateUrl:     './sample-info.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class SampleInfoComponent implements OnDestroy {
-    private _annotationsServiceInitializationSubscription: Subscription;
+export class SampleInfoComponent implements OnInit, OnDestroy {
     private _routeSampleSubscription: Subscription;
 
-    public route: string;
     public sample: SampleItem;
 
     constructor(private annotationService: AnnotationsService, private activatedRoute: ActivatedRoute,
                 private changeDetector: ChangeDetectorRef) {
-        this._routeSampleSubscription = this.activatedRoute.params.subscribe(async (params: Params) => {
-            /*tslint:disable:no-string-literal*/
-            this.route = params['sample'];
-            /*tslint:disable:no-string-literal*/
-            await this.updateSample();
+        /*tslint:disable:no-string-literal*/
+        this.sample = this.activatedRoute.snapshot.data['sample'];
+        /*tslint:disable:no-string-literal*/
+    }
+
+    public ngOnInit(): void {
+        this.activatedRoute.data.subscribe((data: { sample: SampleItem }) => {
+            this.sample = data.sample;
+            this.changeDetector.detectChanges();
         });
-        if (!this.annotationService.isInitialized()) {
-            this._annotationsServiceInitializationSubscription = this.annotationService.getEvents().subscribe(async (event) => {
-                if (event === AnnotationsServiceEvents.INITIALIZED) {
-                    await this.updateSample();
-                    this.changeDetector.detectChanges();
-                    this._annotationsServiceInitializationSubscription.unsubscribe();
-                    this._annotationsServiceInitializationSubscription = undefined;
-                }
-            });
-        }
     }
 
     public ngOnDestroy(): void {
         if (this._routeSampleSubscription) {
             this._routeSampleSubscription.unsubscribe();
         }
-        if (this._annotationsServiceInitializationSubscription) {
-            this._annotationsServiceInitializationSubscription.unsubscribe();
-        }
-    }
-
-    private async updateSample(): Promise<void> {
-        this.sample = await this.annotationService.getSample(this.route);
-        this.changeDetector.detectChanges();
     }
 }

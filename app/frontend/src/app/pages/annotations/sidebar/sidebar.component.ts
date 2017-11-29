@@ -19,6 +19,7 @@ import {
     ChangeDetectionStrategy, ChangeDetectorRef, Component, ComponentFactoryResolver, ComponentRef, OnDestroy, OnInit,
     ViewContainerRef
 } from '@angular/core';
+import { Router } from '@angular/router';
 import { Subscription } from 'rxjs/Subscription';
 import { ModalComponent } from '../../../shared/modals/modal/modal.component';
 import { SampleItem } from '../../../shared/sample/sample-item';
@@ -26,22 +27,48 @@ import { LoggerService } from '../../../utils/logger/logger.service';
 import { NotificationService } from '../../../utils/notifications/notification.service';
 import { AnnotationsService } from '../annotations.service';
 import { UploadService, UploadServiceEvent } from '../upload/upload.service';
-import { Router } from '@angular/router';
+
+export class AnnotationsSidebarState {
+    public path: string = '';
+    public metadata: Map<string, string> = new Map();
+
+    constructor(url: string) {
+        this.update(url);
+    }
+
+    public update(url: string): void {
+        this.path = url.substring('/annotations/'.length);
+        if (this.path.startsWith('sample')) {
+            this.metadata.set('sample', this.parseSampleName(this.path));
+        } else {
+            this.metadata.delete('sample');
+        }
+    }
+
+    private parseSampleName(url: string): string {
+        const sample = url.substring('sample/'.length);
+        const additionalRouteIndex = sample.indexOf('/');
+        return sample.substring(0, additionalRouteIndex === -1 ? sample.length : additionalRouteIndex);
+    }
+}
 
 @Component({
-    selector:        'sidebar',
+    selector:        'annotations-sidebar',
     templateUrl:     './sidebar.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class SidebarComponent implements OnInit, OnDestroy {
+export class AnnotationsSidebarComponent implements OnInit, OnDestroy {
     private _confirmDeletingModalComponent: ComponentRef<ModalComponent>;
     private _filesUploadingLabel: boolean = false;
     private _uploadServiceEventsSubscription: Subscription;
     private _annotationsServiceEventsSubscription: Subscription;
+    private _state: AnnotationsSidebarState;
 
     constructor(private uploadService: UploadService, private annotationsService: AnnotationsService,
                 private hostViewContainer: ViewContainerRef, private resolver: ComponentFactoryResolver, private router: Router,
-                private changeDetector: ChangeDetectorRef, private logger: LoggerService, private notifications: NotificationService) {}
+                private changeDetector: ChangeDetectorRef, private logger: LoggerService, private notifications: NotificationService) {
+        this._state = new AnnotationsSidebarState(this.router.url);
+    }
 
     public ngOnInit(): void {
         this._uploadServiceEventsSubscription = this.uploadService.getEvents().subscribe((event) => {
@@ -57,8 +84,15 @@ export class SidebarComponent implements OnInit, OnDestroy {
         });
     }
 
-    public showSampleInfo(sample: SampleItem): void {
-        this.router.navigate(['annotations', 'sample', sample.name]);
+    public async sidebarRoute(link: string, ...args: string[]): Promise<void> {
+        const routed = await this.router.navigate(['annotations', link].concat(args));
+        if (routed) {
+            this._state.update(this.router.url);
+        }
+    }
+
+    public isSampleSelected(sample: SampleItem) {
+        return this._state.metadata.get('sample') === sample.name;
     }
 
     public getSamples(): SampleItem[] {
@@ -67,10 +101,6 @@ export class SidebarComponent implements OnInit, OnDestroy {
 
     public isSamplesEmpty(): boolean {
         return this.getSamples().length === 0;
-    }
-
-    public isVisible(): boolean {
-        return this.annotationsService.isInitialized();
     }
 
     public isFilesUploading(): boolean {
@@ -87,6 +117,9 @@ export class SidebarComponent implements OnInit, OnDestroy {
             const deleted = await this.annotationsService.deleteSample(sample);
             if (deleted) {
                 this.notifications.info('Delete', `Sample ${sample.name} has been deleted`);
+                if (this.isSampleSelected(sample)) {
+                    this.router.navigate(['annotations', 'info']);
+                }
             } else {
                 this.notifications.error('Delete', `Unable to delete ${sample.name} sample`);
             }
@@ -106,6 +139,9 @@ export class SidebarComponent implements OnInit, OnDestroy {
             const deleted = await this.annotationsService.deleteAllSamples();
             if (deleted) {
                 this.notifications.info('Delete', `All samples have been deleted`);
+                if (this._state.path.startsWith('sample')) {
+                    this.router.navigate(['annotations', 'info']);
+                }
             } else {
                 this.notifications.error('Delete', `Unable to delete samples`);
             }
@@ -122,7 +158,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
     }
 
     private destroyConfirmDeletingModalComponent(): void {
-        if (this._confirmDeletingModalComponent !== undefined) {
+        if (this._confirmDeletingModalComponent) {
             this._confirmDeletingModalComponent.destroy();
             this._confirmDeletingModalComponent = undefined;
         }

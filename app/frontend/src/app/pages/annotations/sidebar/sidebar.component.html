@@ -1,9 +1,9 @@
-<div class="ui fade element sidebar vertical menu with navbar" [ngClass]="{'visible':isVisible()}">
+<div class="ui fade element sidebar vertical menu with navbar visible">
     <div class="item">
-        <div class="header">Notebook1</div>
+        <div class="header">Notebook</div>
         <div class="menu">
-            <a [routerLink]="['info']" class="item">Info</a>
-            <a [routerLink]="['upload']" class="item">
+            <a (click)="sidebarRoute('info')" class="item">Info</a>
+            <a (click)="sidebarRoute('upload')" class="item">
                 Upload
                 <div class="ui teal left label" *ngIf="isFilesUploading()">
                     <div class="ui active mini inverted inline loader"></div>
@@ -14,13 +14,14 @@
     <div class="item">
         <div class="header">Samples</div>
         <div class="menu" *ngIf="!isSamplesEmpty()">
-            <a class="item" *ngFor="let sample of getSamples()" [ngClass]="{'disabled':sample.loading}" (click)="showSampleInfo(sample)">
+            <a class="item" *ngFor="let sample of getSamples()" (click)="sidebarRoute('sample', sample.name)"
+               [ngClass]="{'disabled':sample.loading, 'selected':isSampleSelected(sample)}">
                 <i class="trash icon" (click)="deleteSample(sample)"></i>{{ sample.name }}
             </a>
         </div>
         <div class="menu" *ngIf="isSamplesEmpty()">
-            <a class="item" [routerLink]="['upload']">There are no uploaded samples</a>
-            <a class="item" [routerLink]="['upload']">Click 'upload' button to proceed</a>
+            <a class="item">There are no uploaded samples</a>
+            <a class="item">Click 'upload' button to proceed</a>
         </div>
     </div>
     <div class="item" *ngIf="!isSamplesEmpty()">

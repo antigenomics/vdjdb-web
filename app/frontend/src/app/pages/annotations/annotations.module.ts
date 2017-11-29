@@ -22,26 +22,29 @@ import { ModalsModule } from '../../shared/modals/modals.module';
 import { AnnotationsPageComponent } from './annotations.component';
 import { AnnotationsService } from './annotations.service';
 import { AnnotationsInfoComponent } from './info/annotations-info.component';
+import { SampleItemResolver } from './resolvers/sample.resolver';
+import { UserResolver } from './resolvers/user.resolver';
 import { SampleInfoComponent } from './sample/sample-info.component';
-import { SidebarComponent } from './sidebar/sidebar.component';
+import { AnnotationsSidebarComponent } from './sidebar/sidebar.component';
 import { AnnotationsUploadComponent } from './upload/upload.component';
 import { UploadModule } from './upload/upload.module';
 
 const routes = [
     {
-        path:     'annotations', component: AnnotationsPageComponent,
+        path:     'annotations', component: AnnotationsPageComponent, resolve: { user: UserResolver } ,
         children: [
             { path: 'info', component: AnnotationsInfoComponent },
             { path: 'upload', component: AnnotationsUploadComponent },
-            { path: 'sample/:sample', component: SampleInfoComponent }
+            { path: 'sample/:sample', component: SampleInfoComponent, resolve: { sample: SampleItemResolver } },
+            { path: '*', redirectTo: '/annotations/info' }
         ]
     }
 ];
 
 @NgModule({
     imports:      [ BrowserModule, UploadModule, RouterModule.forChild(routes), ModalsModule ],
-    declarations: [ AnnotationsPageComponent, SidebarComponent, AnnotationsInfoComponent, SampleInfoComponent ],
+    declarations: [ AnnotationsPageComponent, AnnotationsSidebarComponent, AnnotationsInfoComponent, SampleInfoComponent ],
     exports:      [ AnnotationsPageComponent ],
-    providers:    [ AnnotationsService ]
+    providers:    [ AnnotationsService, UserResolver, SampleItemResolver ]
 })
 export class AnnotationsPageModule {}
