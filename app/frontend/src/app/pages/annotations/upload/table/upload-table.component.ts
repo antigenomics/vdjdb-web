@@ -18,7 +18,7 @@
 import { ChangeDetectionStrategy, ElementRef, HostBinding, HostListener, Renderer2, ViewChild } from '@angular/core';
 import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs/Subscription';
-import { UploadService, UploadServiceEvent } from '../upload.service';
+import { UploadService } from '../upload.service';
 
 @Component({
     selector:        'upload-table',

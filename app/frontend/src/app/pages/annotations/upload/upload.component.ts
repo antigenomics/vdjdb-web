@@ -16,15 +16,15 @@
  */
 
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
-import { UploadService } from './upload.service';
 import { Subscription } from 'rxjs/Subscription';
+import { UploadService } from './upload.service';
 
 @Component({
     selector:        'upload',
     templateUrl:     './upload.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class AnnotationsUploadComponent implements OnInit, OnDestroy{
+export class AnnotationsUploadComponent implements OnInit, OnDestroy {
     private _uploadServiceEventsSubscription: Subscription;
 
     constructor(public uploadService: UploadService, private changeDetector: ChangeDetectorRef) {}

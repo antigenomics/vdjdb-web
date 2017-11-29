@@ -16,9 +16,8 @@
  */
 
 import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, Input, Renderer2, ViewChild } from '@angular/core';
-import { InputConverter, NumberConverter } from '../../input-converter.decorator';
-import { NotificationItem, NotificationItemType } from './notification-item';
 import { NotificationService } from '../notification.service';
+import { NotificationItem, NotificationItemType } from './notification-item';
 
 @Component({
     selector:        'notification-item',

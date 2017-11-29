@@ -20,6 +20,7 @@ import { Observable } from 'rxjs/Observable';
 import { Observer } from 'rxjs/Observer';
 import { ReplaySubject } from 'rxjs/ReplaySubject';
 import { LoggerService } from '../../../utils/logger/logger.service';
+import { NotificationService } from '../../../utils/notifications/notification.service';
 import { AnnotationsService, AnnotationsServiceEvents } from '../annotations.service';
 import { FileItem } from './item/file-item';
 
@@ -52,11 +53,10 @@ export class UploadService {
     private _uploadingCount: number = 0;
     private _files: FileItem[] = [];
 
-    constructor(private logger: LoggerService, private annotationsService: AnnotationsService) {
+    constructor(private logger: LoggerService, private annotationsService: AnnotationsService, private notifications: NotificationService) {
         this.annotationsService.getEvents().subscribe((event: AnnotationsServiceEvents) => {
             switch (event) {
                 case AnnotationsServiceEvents.SAMPLE_DELETED:
-                    // this._files = this._files.filter((item) => item.status.isWaiting());
                     this.updateErrors();
                     break;
                 default:
@@ -188,6 +188,10 @@ export class UploadService {
     }
 
     public upload(file: FileItem): void {
+        if (!this.annotationsService.getUserPermissions().isUploadAllowed) {
+            this.notifications.error('Upload', 'Uploading is not allowed for this account');
+            return;
+        }
         if (file.status.isReadyForUpload()) {
             file.status.setLoadingStatus();
 
