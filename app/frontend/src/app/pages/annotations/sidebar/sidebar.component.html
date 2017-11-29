@@ -16,7 +16,7 @@
         <div class="menu" *ngIf="!isSamplesEmpty()">
             <a class="item" *ngFor="let sample of getSamples()" (click)="sidebarRoute('sample', sample.name)"
                [ngClass]="{'disabled':sample.loading, 'selected':isSampleSelected(sample)}">
-                <i class="trash icon" (click)="deleteSample(sample)"></i>{{ sample.name }}
+                <i class="trash icon" (click)="deleteSample(sample); $event.stopPropagation()"></i>{{ sample.name }}
             </a>
         </div>
         <div class="menu" *ngIf="isSamplesEmpty()">
