@@ -45,7 +45,6 @@ export namespace UploadServiceEvent {
 
 @Injectable()
 export class UploadService {
-    private static AVAILABLE_EXTENSIONS: string[] = [ 'txt', 'gz' ];
     private static FULL_PROGRESS: number = 100;
     private static SUCCESS_HTTP_CODE: number = 200;
 
@@ -153,7 +152,7 @@ export class UploadService {
 
     // noinspection JSMethodCanBeStatic
     public handleExtensionErrors(item: FileItem): boolean {
-        if (UploadService.AVAILABLE_EXTENSIONS.indexOf(item.extension) === -1) {
+        if (FileItem.AVAILABLE_EXTENSIONS.indexOf(item.extension) === -1) {
             item.setErrorStatus('Invalid file extension');
             return true;
         }
