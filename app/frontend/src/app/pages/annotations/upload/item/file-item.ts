@@ -20,10 +20,10 @@ import { Utils } from '../../../../utils/utils';
 import { FileItemStatus } from './file-item-status';
 
 export class FileItem {
-    private static FULL_PROGRESS: number = 100;
+    public static FULL_PROGRESS: number = 100;
+    public static AVAILABLE_EXTENSIONS: string[] = [ 'txt', 'gz' ];
 
     public native: File;
-
     public baseName: string = '';
     public extension: string = '';
     public software: string = 'VDJtools';
@@ -34,6 +34,12 @@ export class FileItem {
         this.native = file;
         this.baseName = Utils.File.baseName(file.name);
         this.extension = Utils.File.extension(file.name);
+
+        let nextExt = Utils.File.extension(this.baseName);
+        while (FileItem.AVAILABLE_EXTENSIONS.indexOf(nextExt) !== -1) {
+            this.baseName = Utils.File.baseName(this.baseName);
+            nextExt = Utils.File.extension(this.baseName);
+        }
     }
 
     public setUploadedStatus(): void {

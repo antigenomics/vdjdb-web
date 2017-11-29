@@ -36,7 +36,7 @@ const routes = [
             { path: 'info', component: AnnotationsInfoComponent },
             { path: 'upload', component: AnnotationsUploadComponent },
             { path: 'sample/:sample', component: SampleInfoComponent, resolve: { sample: SampleItemResolver } },
-            { path: '*', redirectTo: '/annotations/info' }
+            { path: '**', redirectTo: 'info' }
         ]
     }
 ];

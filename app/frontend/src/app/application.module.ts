@@ -27,10 +27,13 @@ import { NavigationBarModule } from './shared/navbar/navbar.module';
 import { ClipboardService } from './utils/clipboard/clipboard.service';
 import { LoggerService } from './utils/logger/logger.service';
 import { NotificationModule } from './utils/notifications/notification.module';
+import { LoaderModule } from './utils/loader/loader.module';
 
 @NgModule({
-    imports:      [ CommonModule, BrowserModule, HomePageModule, AboutPageModule, SearchPageModule, AnnotationsPageModule, NotificationModule,
-        NavigationBarModule, RouterModule.forRoot([]) ],
+    imports:      [ CommonModule, BrowserModule,
+        HomePageModule, AboutPageModule, SearchPageModule, AnnotationsPageModule,
+        NotificationModule, NavigationBarModule, LoaderModule,
+        RouterModule.forRoot([]) ],
     declarations: [ ApplicationComponent ],
     providers:    [ LoggerService, ClipboardService ],
     bootstrap:    [ ApplicationComponent ]

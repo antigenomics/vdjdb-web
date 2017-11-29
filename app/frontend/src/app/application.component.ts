@@ -20,6 +20,7 @@ import { Component } from '@angular/core';
     selector: 'application',
     template: `<navbar></navbar>
                <notification-container></notification-container>
+               <loader></loader>
                <div class="content_wrapper">
                     <router-outlet></router-outlet>
                </div>`
