@@ -21,12 +21,11 @@ import { DropdownDirective } from './dropdown/dropdown.directive';
 import { ModalComponent } from './modal/modal.component';
 import { PopupContentComponent } from './popup/popup-content.component';
 import { PopupDirective } from './popup/popup.directive';
-import { DraggableDirective } from './draggable/draggable.directive';
 
 @NgModule({
     imports:         [ BrowserModule, FormsModule ],
-    declarations:    [ PopupDirective, PopupContentComponent, ModalComponent, DropdownDirective, DraggableDirective ],
-    exports:         [ PopupDirective, PopupContentComponent, ModalComponent, DropdownDirective, DraggableDirective ],
+    declarations:    [ PopupDirective, PopupContentComponent, ModalComponent, DropdownDirective ],
+    exports:         [ PopupDirective, PopupContentComponent, ModalComponent, DropdownDirective ],
     entryComponents: [ PopupContentComponent, ModalComponent ]
 })
 export class ModalsModule {}

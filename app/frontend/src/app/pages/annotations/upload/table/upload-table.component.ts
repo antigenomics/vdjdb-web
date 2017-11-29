@@ -15,7 +15,7 @@
  *       limitations under the License.
  */
 
-import { ChangeDetectionStrategy } from '@angular/core';
+import { ChangeDetectionStrategy, ElementRef, HostBinding, HostListener, Renderer2, ViewChild } from '@angular/core';
 import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs/Subscription';
 import { UploadService, UploadServiceEvent } from '../upload.service';
@@ -28,15 +28,45 @@ import { UploadService, UploadServiceEvent } from '../upload.service';
 export class UploadTableComponent implements OnInit, OnDestroy {
     private _stateSubscription: Subscription;
 
-    constructor(public uploadService: UploadService, private changeDetector: ChangeDetectorRef) {}
+    @ViewChild('dragArea')
+    public dragArea: ElementRef;
+
+    constructor(public uploadService: UploadService, private changeDetector: ChangeDetectorRef, private renderer: Renderer2) {}
 
     public ngOnInit(): void {
-        this._stateSubscription = this.uploadService.getEvents().subscribe((event) => {
+        this._stateSubscription = this.uploadService.getEvents().subscribe(() => {
             this.changeDetector.detectChanges();
         });
     }
 
-    public onDragDrop(event: Event): void {
+    @HostBinding('draggable') get getDraggable(): string {
+        return 'true';
+    }
+
+    @HostListener('dragover', ['$event'])
+    public onDragOver(event: Event) {
+        this.enableDragStyle(event);
+    }
+
+    @HostListener('dragenter', ['$event'])
+    public onDragEnter(event: Event) {
+        this.enableDragStyle(event);
+    }
+
+    @HostListener('dragend', ['$event'])
+    public onDragEnd(event: Event) {
+        this.disableDragStyle(event);
+    }
+
+    @HostListener('dragleave', ['$event'])
+    public onDragLeave(event: Event) {
+        this.disableDragStyle(event);
+    }
+
+    @HostListener('drop', ['$event'])
+    public onDrop(event: Event) {
+        this.disableDragStyle(event);
+        event.stopPropagation();
         this.uploadService.addItems((event as any).dataTransfer.files);
     }
 
@@ -44,5 +74,15 @@ export class UploadTableComponent implements OnInit, OnDestroy {
         if (this._stateSubscription !== undefined) {
             this._stateSubscription.unsubscribe();
         }
+    }
+
+    private enableDragStyle(event: Event): void {
+        event.preventDefault();
+        this.renderer.setStyle(this.dragArea.nativeElement, 'border', '1px dashed #bbb');
+    }
+
+    private disableDragStyle(event: Event): void {
+        event.preventDefault();
+        this.renderer.setStyle(this.dragArea.nativeElement, 'border', '1px dashed #fff');
     }
 }
