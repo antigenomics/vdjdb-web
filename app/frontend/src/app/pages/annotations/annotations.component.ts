@@ -22,6 +22,4 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
     templateUrl:     './annotations.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class AnnotationsPageComponent {
-
-}
+export class AnnotationsPageComponent {}
