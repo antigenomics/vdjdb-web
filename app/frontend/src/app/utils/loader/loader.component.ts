@@ -21,7 +21,7 @@ import { Subscription } from 'rxjs/Subscription';
 
 @Component({
     selector:        'loader',
-    templateUrl:     '/loader.component.html',
+    templateUrl:     './loader.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class LoaderComponent implements OnInit, OnDestroy {
