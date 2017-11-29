@@ -19,7 +19,6 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnIni
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs/Subscription';
 import { SampleItem } from '../../../shared/sample/sample-item';
-import { AnnotationsService } from '../annotations.service';
 
 @Component({
     selector:        'sample-info',
@@ -31,11 +30,8 @@ export class SampleInfoComponent implements OnInit, OnDestroy {
 
     public sample: SampleItem;
 
-    constructor(private annotationService: AnnotationsService, private activatedRoute: ActivatedRoute,
-                private changeDetector: ChangeDetectorRef) {
-        /*tslint:disable:no-string-literal*/
-        this.sample = this.activatedRoute.snapshot.data['sample'];
-        /*tslint:disable:no-string-literal*/
+    constructor(private activatedRoute: ActivatedRoute, private changeDetector: ChangeDetectorRef) {
+        this.sample = this.activatedRoute.snapshot.data.sample;
     }
 
     public ngOnInit(): void {

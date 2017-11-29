@@ -19,8 +19,6 @@ import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
 import { ModalsModule } from '../../../shared/modals/modals.module';
-import { LoggerService } from '../../../utils/logger/logger.service';
-import { AnnotationsService } from '../annotations.service';
 import { UploadTableRowComponent } from './table/row/upload-table-row.component';
 import { UploadTableComponent } from './table/upload-table.component';
 import { AnnotationsUploadComponent } from './upload.component';

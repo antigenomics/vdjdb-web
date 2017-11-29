@@ -16,9 +16,9 @@
  */
 
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
-import { NotificationService } from '../notification.service';
 import { Subscription } from 'rxjs/Subscription';
 import { NotificationItem } from '../item/notification-item';
+import { NotificationService } from '../notification.service';
 
 @Component({
     selector:        'notification-container',

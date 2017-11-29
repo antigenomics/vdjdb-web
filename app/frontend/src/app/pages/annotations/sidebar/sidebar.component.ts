@@ -108,6 +108,10 @@ export class AnnotationsSidebarComponent implements OnInit, OnDestroy {
     }
 
     public deleteSample(sample: SampleItem): void {
+        if (!this.annotationsService.getUserPermissions().isDeleteAllowed) {
+            this.notifications.error('Delete', 'Deleting is not allowed for this account');
+            return;
+        }
         const modalComponentResolver = this.resolver.resolveComponentFactory<ModalComponent>(ModalComponent);
         this._confirmDeletingModalComponent = this.hostViewContainer.createComponent<ModalComponent>(modalComponentResolver);
         this._confirmDeletingModalComponent.instance.header = sample.name;
@@ -130,6 +134,10 @@ export class AnnotationsSidebarComponent implements OnInit, OnDestroy {
     }
 
     public deleteAllSamples(): void {
+        if (!this.annotationsService.getUserPermissions().isDeleteAllowed) {
+            this.notifications.error('Delete', 'Deleting is not allowed for this account');
+            return;
+        }
         const modalComponentResolver = this.resolver.resolveComponentFactory<ModalComponent>(ModalComponent);
         this._confirmDeletingModalComponent = this.hostViewContainer.createComponent<ModalComponent>(modalComponentResolver);
         this._confirmDeletingModalComponent.instance.header = 'Delete all samples';
