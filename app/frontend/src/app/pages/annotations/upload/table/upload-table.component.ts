@@ -23,6 +23,7 @@ import { UploadService } from '../upload.service';
 @Component({
     selector:        'upload-table',
     templateUrl:     './upload-table.component.html',
+    styleUrls:       [ './upload-table.component.css' ],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class UploadTableComponent implements OnInit, OnDestroy {
@@ -31,7 +32,8 @@ export class UploadTableComponent implements OnInit, OnDestroy {
     @ViewChild('dragArea')
     public dragArea: ElementRef;
 
-    constructor(public uploadService: UploadService, private changeDetector: ChangeDetectorRef, private renderer: Renderer2) {}
+    constructor(public uploadService: UploadService, private changeDetector: ChangeDetectorRef, private renderer: Renderer2) {
+    }
 
     public ngOnInit(): void {
         this._stateSubscription = this.uploadService.getEvents().subscribe(() => {
@@ -39,31 +41,36 @@ export class UploadTableComponent implements OnInit, OnDestroy {
         });
     }
 
-    @HostBinding('draggable') get getDraggable(): string {
+    public showValidNameTooltip(): boolean {
+        return this.uploadService.getItems().some((item) => !item.status.isNameValid());
+    }
+
+    @HostBinding('draggable')
+    get getDraggable(): string {
         return 'true';
     }
 
-    @HostListener('dragover', ['$event'])
+    @HostListener('dragover', [ '$event' ])
     public onDragOver(event: Event) {
         this.enableDragStyle(event);
     }
 
-    @HostListener('dragenter', ['$event'])
+    @HostListener('dragenter', [ '$event' ])
     public onDragEnter(event: Event) {
         this.enableDragStyle(event);
     }
 
-    @HostListener('dragend', ['$event'])
+    @HostListener('dragend', [ '$event' ])
     public onDragEnd(event: Event) {
         this.disableDragStyle(event);
     }
 
-    @HostListener('dragleave', ['$event'])
+    @HostListener('dragleave', [ '$event' ])
     public onDragLeave(event: Event) {
         this.disableDragStyle(event);
     }
 
-    @HostListener('drop', ['$event'])
+    @HostListener('drop', [ '$event' ])
     public onDrop(event: Event) {
         this.disableDragStyle(event);
         event.stopPropagation();
