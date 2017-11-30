@@ -41,9 +41,13 @@ export class FileItemStatus {
         return this.checkStatusFlag(FileItemStatusFlags.REMOVED);
     }
 
-    public isNameValid(): boolean {
+    public isNameValidOrDuplicate(): boolean {
         return this.checkStatusFlag(FileItemStatusFlags.INVALID_FILE_NAME) === false
             && this.checkStatusFlag(FileItemStatusFlags.DUPLICATE_FILE_NAME) === false;
+    }
+
+    public isNameValid(): boolean {
+        return this.checkStatusFlag(FileItemStatusFlags.INVALID_FILE_NAME) === false;
     }
 
     public isDuplicate(): boolean {
@@ -115,7 +119,7 @@ export class FileItemStatus {
             return 'removed';
         } else if (this.isError()) {
             return 'error';
-        } else if (this.isWaiting() || !this.isNameValid()) {
+        } else if (this.isWaiting() || !this.isNameValidOrDuplicate()) {
             return 'warning';
         } else {
             return 'success';
