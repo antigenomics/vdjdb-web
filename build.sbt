@@ -21,6 +21,8 @@ libraryDependencies ++= Seq(
     "com.h2database" % "h2" % "1.4.196",
     "org.scala-lang.modules" %% "scala-async" % "0.9.7",
     "org.mindrot" % "jbcrypt" % "0.4",
+    "com.typesafe.play" %% "play-mailer" % "6.0.1",
+    "com.typesafe.play" %% "play-mailer-guice" % "6.0.1",
     guice,
     ws,
     filters

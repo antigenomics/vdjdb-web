@@ -9,6 +9,7 @@
     "develop:webpack": "node ./webpack/webpack.dev.server",
     "bundle": "npm run bundle:aot && npm run bundle:webpack && npm run bundle:stats && npm run bundle:clean:index",
     "bundle:aot": "ng build --aot -prod --extract-licenses --vendor-chunk --output-hashing=none --build-optimizer",
+    "bundle:aot:stats": "ng build --aot -prod --extract-licenses --vendor-chunk --output-hashing=none --build-optimizer --stats-json",
     "bundle:webpack": "webpack -p --config ./webpack/webpack.prod.config.js",
     "bundle:stats": "node ./scripts/stats.prod.js",
     "bundle:clean:index": "rimraf ../../public/bundles/index.html",
@@ -79,7 +80,7 @@
     "uglifyjs-webpack-plugin": "1.1.1",
     "url-loader": "0.6.2",
     "webpack": "3.8.1",
-    "webpack-dev-server": "2.9.4",
+    "webpack-dev-server": "2.9.5",
     "webpack-dll-bundles-plugin": "1.0.0-beta.5",
     "webpack-merge": "4.1.1"
   },

@@ -96,6 +96,12 @@ class UserProvider @Inject()(@NamedDatabase("default") protected val dbConfigPro
 
     def getAuthTokenSessionName: String = stp.getAuthTokenSessionName
 
+    def getVerificationConfiguration: VerificationTokenConfiguration = configuration
+
+    def getVerificationMethod: String = configuration.method
+
+    def getVerificationServer: String = configuration.server
+
     def isVerificationRequired: Boolean = configuration.required
 
     def getAll: Future[Seq[User]] = db.run(table.result)
@@ -198,7 +204,7 @@ class UserProvider @Inject()(@NamedDatabase("default") protected val dbConfigPro
 
     def updatePassword(user: User, newPassword: String): Future[Int] = {
         val newHash = BCrypt.hashpw(newPassword, BCrypt.gensalt())
-        db.run(table.filter(_.id === user.id).map(_.password).update(newHash))
+        db.run(table.filter(_.id === user.id).map(u => (u.password, u.verified)).update((newHash, true)))
     }
 
     private def insert(user: User): Future[Long] = {
