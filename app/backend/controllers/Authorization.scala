@@ -14,10 +14,11 @@ import play.api.i18n.{Lang, Messages, MessagesApi}
 import play.api.mvc._
 import backend.actions.{SessionAction, UserRequestAction}
 import backend.models.authorization.tokens.reset.ResetTokenProvider
+import backend.utils.emails.EmailsService
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class Authorization @Inject()(cc: ControllerComponents, messagesApi: MessagesApi, userRequestAction: UserRequestAction)
+class Authorization @Inject()(cc: ControllerComponents, messagesApi: MessagesApi, userRequestAction: UserRequestAction, emails: EmailsService)
                              (implicit ec: ExecutionContext,
                               up: UserProvider, vtp: VerificationTokenProvider, stp: SessionTokenProvider, rtp: ResetTokenProvider,
                               environment: Environment, analytics: Analytics)
@@ -71,8 +72,11 @@ class Authorization @Inject()(cc: ControllerComponents, messagesApi: MessagesApi
                 } else {
                     val verificationToken = await(up.createUser(form))
                     if (up.isVerificationRequired) {
-                        //TODO verification email
-                        logger.info(s"Verification token for ${form.email}: ${verificationToken.token}")
+                        up.getVerificationMethod match {
+                            case "console" => logger.info(s"Verification token for ${form.email}: ${up.getVerificationServer}/verify/${verificationToken.token}")
+                            case "email" => emails.sendVerificationTokenEmail(form.email, s"${up.getVerificationServer}/verify/${verificationToken.token}")
+                            case method => logger.error(s"Unknown verification method $method")
+                        }
                         Redirect(backend.controllers.routes.Authorization.login()).flashing("created" -> "authorization.forms.signup.success.created")
                     } else {
                         val _ = await(up.verifyUser(verificationToken))
@@ -95,9 +99,12 @@ class Authorization @Inject()(cc: ControllerComponents, messagesApi: MessagesApi
             form => async {
                 val user = await(up.get(form.email))
                 if (user.nonEmpty) {
-                    //TODO Reset email
                     val resetTokenStr = await(rtp.createResetToken(user.get))
-                    logger.info(s"Reset token for ${form.email}: $resetTokenStr")
+                    up.getVerificationMethod match {
+                        case "console" => logger.info(s"Reset token for ${form.email}: ${up.getVerificationServer}/reset/$resetTokenStr")
+                        case "email" => emails.sendVerificationTokenEmail(form.email, s"${up.getVerificationServer}/reset/$resetTokenStr")
+                        case method => logger.error(s"Unknown verification method $method")
+                    }
                 }
                 Redirect(backend.controllers.routes.Authorization.login()).flashing("reset_request" -> "authorization.forms.reset.flashing.message")
             }
@@ -154,5 +161,9 @@ class Authorization @Inject()(cc: ControllerComponents, messagesApi: MessagesApi
         stp.delete(request.token.get.token) map { _ =>
             SessionAction.clearSessionAndDiscardCookies(Redirect(backend.controllers.routes.Application.index()))
         }
+    }
+
+    def testVerifyEmail: Action[AnyContent] = Action {
+        Ok(frontend.views.html.authorization.emails.verify(s"${up.getVerificationServer}/blabla"))
     }
 }
