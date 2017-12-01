@@ -43,8 +43,8 @@ account.change.password.newPasswordPlaceholder = New password
 account.change.password.newPasswordRepeatPlaceholder = Repeat new password
 account.change.password.button = Change
 
-account.change.password.error.invalidOldPassword = Invalid old password
-account.delete.button = Delete account
+account.change.password.success = Your password has been updated successfully
+account.change.password.error.invalidOldPassword = Please check that you have entered your old password correctly
 
 notfound.message = Oops! Page not found.
 notfound.hint = We could not find the page you were looking for.

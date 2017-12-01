@@ -45,6 +45,9 @@
                             @if(form.hasGlobalErrors) {
                                 @frontend.views.html.authorization.forms.formErrors(form.globalErrors)
                             }
+                            @if(flash.get("changed").nonEmpty) {
+                                @frontend.views.html.authorization.forms.formSuccess(Seq(flash.get("changed").get))
+                            }
                             @CSRF.formField
                             @inputText(form("oldPassword"), args = 'icon -> "lock",
                                 'placeholder -> messages("account.change.password.oldPasswordPlaceholder"),
@@ -60,7 +63,6 @@
                     </div>
                 </div>
                 <div class="ui divider"></div>
-                <button class="ui button tiny orange right floated">@messages("account.delete.button")</button>
                 <p class="cursor pointer">
                     <a href="@backend.controllers.routes.Application.index()" rel="noopener">
                     @messages("authorization.forms.login.back")

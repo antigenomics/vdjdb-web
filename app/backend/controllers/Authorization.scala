@@ -102,7 +102,7 @@ class Authorization @Inject()(cc: ControllerComponents, messagesApi: MessagesApi
                     val resetTokenStr = await(rtp.createResetToken(user.get))
                     up.getVerificationMethod match {
                         case "console" => logger.info(s"Reset token for ${form.email}: ${up.getVerificationServer}/reset/$resetTokenStr")
-                        case "email" => emails.sendVerificationTokenEmail(form.email, s"${up.getVerificationServer}/reset/$resetTokenStr")
+                        case "email" => emails.sendResetTokenEmail(form.email, s"${up.getVerificationServer}/reset/$resetTokenStr")
                         case method => logger.error(s"Unknown verification method $method")
                     }
                 }
@@ -161,9 +161,5 @@ class Authorization @Inject()(cc: ControllerComponents, messagesApi: MessagesApi
         stp.delete(request.token.get.token) map { _ =>
             SessionAction.clearSessionAndDiscardCookies(Redirect(backend.controllers.routes.Application.index()))
         }
-    }
-
-    def testVerifyEmail: Action[AnyContent] = Action {
-        Ok(frontend.views.html.authorization.emails.verify(s"${up.getVerificationServer}/blabla"))
     }
 }
