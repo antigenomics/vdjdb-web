@@ -8,7 +8,7 @@ GET         /search                                   backend.controllers.Applic
 GET         /about                                    backend.controllers.Application.index
 
 GET         /annotations                              controllers.Default.redirect(to = "/annotations/info")
-GET         /annotations/*route                         backend.controllers.Application.authorizedIndex(route: String)
+GET         /annotations/*route                       backend.controllers.Application.authorizedIndex(route: String)
 
 GET         /temporary/:link                          backend.controllers.Application.downloadTemporaryFile(link)
 

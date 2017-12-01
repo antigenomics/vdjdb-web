@@ -25,7 +25,7 @@ import scala.language.higherKinds
 
 class VerificationTokenTable(tag: Tag) extends Table[VerificationToken](tag, VerificationTokenTable.TABLE_NAME) {
     def id = column[Long]("ID", O.PrimaryKey, O.AutoInc)
-    def token = column[String]("TOKEN", O.Unique, O.Length(128))
+    def token = column[String]("TOKEN", O.Unique, O.Length(32))
     def userID = column[Long]("USER_ID")
     def expiredAt = column[Timestamp]("EXPIRED_AT")
 

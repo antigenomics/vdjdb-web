@@ -100,7 +100,7 @@ class ResetTokenProvider @Inject()(@NamedDatabase("default") protected val dbCon
     }
 
     def createResetToken(user: User, expiredAt: Timestamp = TimeUtils.getExpiredAt(configuration.keep)): Future[String] = {
-        val token = CommonUtils.randomAlphaNumericString(255)
+        val token = CommonUtils.randomAlphaNumericString(32)
         db.run(table += ResetToken(0, token, expiredAt, user.id)).map(_ => token)
     }
 

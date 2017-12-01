@@ -32,8 +32,8 @@ object SignupForm {
         "email" -> email,
         "password" -> nonEmptyText(minLength = PASSWORD_MIN_LENGTH, maxLength = PASSWORD_MAX_LENGTH),
         "repeatPassword" -> nonEmptyText(minLength = PASSWORD_MIN_LENGTH, maxLength = PASSWORD_MAX_LENGTH)
-    )(SignupForm.apply)(SignupForm.unapply) verifying("authorization.forms.signup.failed.workaround.3", fields => fields match {
-        case signupForm => signupForm.password == signupForm.repeatPassword
+    )(SignupForm.apply)(SignupForm.unapply) verifying("authorization.forms.signup.failed.workaround.3", { signupForm =>
+        signupForm.password == signupForm.repeatPassword
     }))
 
     final val signupFailedFormMapping: Form[SignupForm] =
