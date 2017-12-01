@@ -27,7 +27,7 @@ import scala.language.higherKinds
 
 class ResetTokenTable(tag: Tag) extends Table[ResetToken](tag, ResetTokenTable.TABLE_NAME){
     def id = column[Long]("ID", O.PrimaryKey, O.AutoInc)
-    def token = column[String]("TOKEN", O.Length(255), O.Unique)
+    def token = column[String]("TOKEN", O.Length(32), O.Unique)
     def expiredAt = column[Timestamp]("EXPIRED_AT")
     def userID = column[Long]("USER_ID")
 

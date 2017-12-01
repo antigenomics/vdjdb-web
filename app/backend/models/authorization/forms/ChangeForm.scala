@@ -27,7 +27,10 @@ object ChangeForm {
         "oldPassword" -> nonEmptyText,
         "newPassword" -> nonEmptyText(minLength = PASSWORD_MIN_LENGTH, maxLength = PASSWORD_MAX_LENGTH),
         "newPasswordRepeat" -> nonEmptyText(minLength = PASSWORD_MIN_LENGTH, maxLength = PASSWORD_MAX_LENGTH)
-    )(ChangeForm.apply)(ChangeForm.unapply) verifying("authorization.forms.signup.failed.workaround.3", fields => fields match {
-        case changeForm => changeForm.newPassword == changeForm.newPasswordRepeat
+    )(ChangeForm.apply)(ChangeForm.unapply) verifying("authorization.forms.signup.failed.workaround.3", { changeForm =>
+        changeForm.newPassword == changeForm.newPasswordRepeat
     }))
+
+    implicit val invalidOldPasswordChangeFormMapping: Form[ChangeForm] = changeFormMapping
+        .withGlobalError("account.change.password.error.invalidOldPassword")
 }

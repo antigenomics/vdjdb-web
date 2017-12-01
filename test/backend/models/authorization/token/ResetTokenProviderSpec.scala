@@ -50,7 +50,7 @@ class ResetTokenProviderSpec extends DatabaseProviderTestSpec {
                 val f = fixtures
 
                 val tokenStr = await(resetTokenProvider.createResetToken(f.user.user))
-                tokenStr should have length 255
+                tokenStr should have length 32
 
                 val token = await(resetTokenProvider.get(tokenStr))
                 token should not be empty

@@ -48,25 +48,23 @@ class AnnotationsAPI @Inject()(cc: ControllerComponents, userRequestAction: User
                                environment: Environment, analytics: Analytics)
     extends AbstractController(cc) {
     private final val maxUploadFileSize = conf.get[ConfigMemorySize]("application.annotations.upload.maxFileSize")
-    private final val logger = LoggerFactory.getLogger(this.getClass)
     implicit val messages: Messages = messagesApi.preferred(Seq(Lang.defaultLang))
 
     def checkUploadAllowed(implicit ec: ExecutionContext): ActionFilter[UserRequest] = new ActionFilter[UserRequest] {
         override protected def executionContext: ExecutionContext = ec
 
-        override protected def filter[A](request: UserRequest[A]): Future[Option[Result]] = {
-            request.user.get.getDetails.map { details =>
-                if (!details.permissions.isUploadAllowed) {
-                    Some(BadRequest("Upload is not allowed for this account"))
-                    val filesCount = details.files.length
-                    if (details.permissions.maxFilesCount >= 0 && filesCount >= details.permissions.maxFilesCount) {
-                        Some(BadRequest("Max files count limit have been exceeded"))
-                    } else {
-                        None
-                    }
+        override protected def filter[A](request: UserRequest[A]): Future[Option[Result]] = Future.successful {
+            val details = request.details.get
+            if (!details.permissions.isUploadAllowed) {
+                Some(BadRequest("Upload is not allowed for this account"))
+                val filesCount = details.files.length
+                if (details.permissions.maxFilesCount >= 0 && filesCount >= details.permissions.maxFilesCount) {
+                    Some(BadRequest("Max files count limit have been exceeded"))
                 } else {
                     None
                 }
+            } else {
+                None
             }
         }
     }

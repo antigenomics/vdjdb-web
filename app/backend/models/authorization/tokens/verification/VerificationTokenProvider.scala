@@ -72,7 +72,7 @@ class VerificationTokenProvider @Inject()(@NamedDatabase("default") protected va
     }
 
     def createVerificationToken(userID: Long, expiredAt: Timestamp): Future[VerificationToken] = async {
-        val random = CommonUtils.randomAlphaNumericString(128)
+        val random = CommonUtils.randomAlphaNumericString(32)
         val token = VerificationToken(0, random, userID, expiredAt)
         val success = await(insert(token))
         if (success == 1) {
