@@ -42,10 +42,10 @@ class UserRequestAction @Inject()(val parser: BodyParsers.Default)
             new UserRequest(false, None, None, None, request)
         } else {
             val session = await(stp.getWithUser(requestSessionToken.get))
-            val details = await(session.get._2.getDetails)
             if (session.isEmpty) {
                 new UserRequest(false, None, None, None, request)
             } else {
+                val details = await(session.get._2.getDetails)
                 new UserRequest(true, Some(session.get._2), Some(details), Some(session.get._1), request)
             }
         }
