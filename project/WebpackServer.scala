@@ -21,35 +21,20 @@ import play.sbt.PlayRunHook
 
 object WebpackServer {
     private final val webpackTask: String = "develop:webpack"
-//    private final val angularTask: String = "develop:angular"
 
     def apply(base: File): PlayRunHook = {
         object WebpackServerScript extends PlayRunHook {
-            val webpackProcessBuilder: ProcessBuilder =
+            val webpackProcess: Process = createWebpackProcess().run()
+
+            override def afterStopped(): Unit = {
+                webpackProcess.destroy()
+            }
+
+            private def createWebpackProcess(): ProcessBuilder =
                 if (System.getProperty("os.name").toUpperCase().contains("WIN"))
                     Process(s"cmd /c npm run $webpackTask", base)
                 else
                     Process(s"npm run $webpackTask", base)
-
-//            val angularProcessBuilder: ProcessBuilder =
-//                if (System.getProperty("os.name").toUpperCase().contains("WIN"))
-//                    Process(s"cmd /c npm run $angularTask", base)
-//                else
-//                    Process(s"npm run $angularTask", base)
-
-            var webpackProcess: Process = _
-//            var angularProcess: Process = _
-
-
-            override def afterStarted(address: InetSocketAddress): Unit = {
-                webpackProcess = webpackProcessBuilder.run()
-//                angularProcess = angularProcessBuilder.run()
-            }
-
-            override def afterStopped(): Unit = {
-                webpackProcess.destroy()
-//                angularProcess.destroy()
-            }
         }
         WebpackServerScript
     }
