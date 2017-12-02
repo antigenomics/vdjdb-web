@@ -28,5 +28,9 @@
   ],
   "angularCompilerOptions": {
     "strictMetadataEmit" : true
+  },
+  "awesomeTypescriptLoaderOptions": {
+    "useCache": true,
+    "cacheDirectory": "node_modules/.cache/.awcache"
   }
 }

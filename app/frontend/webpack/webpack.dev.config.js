@@ -22,6 +22,8 @@ const webpackMerge = require('webpack-merge'); // used to merge webpack configs
 const defaultConfiguration = Object.create(require('./webpack.base.config'));
 const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
 const DllBundlesPlugin = require('webpack-dll-bundles-plugin').DllBundlesPlugin;
+const { CheckerPlugin } = require('awesome-typescript-loader');
+const HardSourceWebpackPlugin = require('hard-source-webpack-plugin');
 
 defaultConfiguration.entry[ 'bundle.js' ] = [
     'webpack-dev-server/client?http://localhost:8080',
@@ -34,6 +36,8 @@ defaultConfiguration.module.rules.push({
     loaders: [ 'awesome-typescript-loader', 'angular2-template-loader' ]
 });
 
+defaultConfiguration.plugins.push(new CheckerPlugin());
+defaultConfiguration.plugins.push(new HardSourceWebpackPlugin());
 defaultConfiguration.plugins.push(new DllBundlesPlugin({
     bundles: {
         polyfills: [
