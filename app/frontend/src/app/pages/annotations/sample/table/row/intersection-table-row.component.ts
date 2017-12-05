@@ -15,27 +15,15 @@
  *
  */
 
-import { SampleItem } from '../../../../shared/sample/sample-item';
-import { IntersectionTableRow } from './row/intersection-table-row';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { IntersectionTableRow } from './intersection-table-row';
 
-export class IntersectionTable {
-    private _sample: SampleItem;
-    private _rows: IntersectionTableRow[];
-
-    constructor(sample: SampleItem, rows: any[]) {
-        this._sample = sample;
-        this._rows = rows.map((r) => new IntersectionTableRow(r));
-    }
-
-    public getSample(): SampleItem {
-        return this._sample;
-    }
-
-    public isEmpty(): boolean {
-        return this._rows.length === 0;
-    }
-
-    public getRows(): IntersectionTableRow[] {
-        return this._rows;
-    }
+@Component({
+    selector:        'tr[intersection-table-row]',
+    templateUrl:     './intersection-table-row.component.html',
+    changeDetection: ChangeDetectionStrategy.OnPush
+})
+export class IntersectionTableRowComponent {
+    @Input('intersection-table-row')
+    public row: IntersectionTableRow;
 }

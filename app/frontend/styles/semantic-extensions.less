@@ -23,9 +23,35 @@
 }
 
 .ui.sidebar.menu .item .menu .selected.item {
+  font-size: 1.0em;
   font-weight: bolder;
   color: rgba(0, 0, 0, 0.87);
+  max-height: 100px;
+}
+
+.ui.sidebar.menu .item .menu .selected.border.item {
   border-left: 4px solid #48af75;
+}
+
+.ui.sidebar.menu .item .menu .padded.vertically.item {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.ui.sidebar.menu .item .menu .padded.horizontally.item {
+  margin-left: 15px;
+  margin-right: 15px;
+}
+
+.ui.sidebar.menu .item .menu .item {
+  font-size: 0.8em;
+  font-weight: normal;
+  border-left: 0px solid #ffffff;
+  max-height: 50px;
+  -webkit-transition: max-height 0.2s linear, border-left .6s ease;
+  -moz-transition: max-height 0.2s linear, border-left .6s ease;
+  -ms-transition: max-height 0.2s linear, border-left .6s ease;
+  transition: max-height 0.2s linear, border-left .6s ease;
 }
 
 .ui.sidebar.menu .item .menu .item .trash.icon {

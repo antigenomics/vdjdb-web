@@ -23,11 +23,11 @@ import { AnnotationsService } from '../annotations.service';
 import { IntersectionTableService, IntersectionTableServiceEvent, IntersectionTableServiceEventType } from './table/intersection-table.service';
 
 @Component({
-    selector:        'sample-info',
-    templateUrl:     './sample-info.component.html',
+    selector:        'sample-table',
+    templateUrl:     './sample-table.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class SampleInfoComponent implements OnInit, OnDestroy {
+export class SampleTableComponent implements OnInit, OnDestroy {
     private _routeSampleSubscription: Subscription;
 
     public sample: SampleItem;
