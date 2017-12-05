@@ -21,6 +21,7 @@ import backend.server.ResultsTable
 import backend.server.annotations.api.intersect.SampleIntersectionRequest
 import backend.server.database.Database
 import com.antigenomics.vdjtools.sample.Sample
+import scala.collection.JavaConverters._
 
 class IntersectionTable extends ResultsTable[IntersectionTableRow] {
     def sort(columnIndex: Int, sortType: String): Unit = ???
@@ -28,7 +29,8 @@ class IntersectionTable extends ResultsTable[IntersectionTableRow] {
     def update(request: SampleIntersectionRequest, sample: Sample, database: Database): IntersectionTable = {
         //TODO !! add more preprocessing parameters
         val instance = database.getInstance.asClonotypeDatabase(request.matchV, request.matchJ)
-        val entries = instance.search(sample)
+        val results = instance.search(sample)
+        this.rows = results.keySet().asScala.toList.map(clonotype => IntersectionTableRow.createFromClonotype(clonotype))
         this
     }
 }

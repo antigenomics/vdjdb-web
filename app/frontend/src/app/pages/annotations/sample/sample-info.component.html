@@ -4,6 +4,7 @@
     </h3>
     <div class="ui attached segment teal padded">
         <p>Sample {{ sample.name }}</p>
+        <intersection-table [sample]="sample"></intersection-table>
         <button class="ui button" (click)="intersect()">Intersect</button>
     </div>
 </div>

@@ -15,10 +15,13 @@
  *
  */
 
-export class SampleItem {
-    public readonly name: string;
+export class IntersectionTableRow {
+    public entries: string[];
 
-    constructor(name: string) {
-        this.name = name;
+    constructor(row: any) {
+        /* Disable tslint to prevent ClosureCompiler mangling */
+        /* tslint:disable:no-string-literal */
+        this.entries = row['entries'];
+        /* tslint:enable:no-string-literal */
     }
 }

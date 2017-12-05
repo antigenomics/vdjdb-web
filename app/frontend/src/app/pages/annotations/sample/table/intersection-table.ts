@@ -15,10 +15,23 @@
  *
  */
 
-export class SampleItem {
-    public readonly name: string;
+import { SampleItem } from '../../../../shared/sample/sample-item';
+import { IntersectionTableRow } from './row/intersection-table-row';
 
-    constructor(name: string) {
-        this.name = name;
+export class IntersectionTable {
+    private _sample: SampleItem;
+    private _rows: IntersectionTableRow[];
+
+    constructor(sample: SampleItem, rows: any[]) {
+        this._sample = sample;
+        this._rows = rows.map((r) => new IntersectionTableRow(r));
+    }
+
+    public getSample(): SampleItem {
+        return this._sample;
+    }
+
+    public getRows(): IntersectionTableRow[] {
+        return this._rows;
     }
 }
