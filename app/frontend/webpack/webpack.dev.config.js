@@ -36,8 +36,8 @@ defaultConfiguration.module.rules.push({
     loaders: [ 'awesome-typescript-loader', 'angular2-template-loader' ]
 });
 
-defaultConfiguration.plugins.push(new CheckerPlugin());
-defaultConfiguration.plugins.push(new HardSourceWebpackPlugin());
+// defaultConfiguration.plugins.push(new CheckerPlugin());
+// defaultConfiguration.plugins.push(new HardSourceWebpackPlugin());
 defaultConfiguration.plugins.push(new DllBundlesPlugin({
     bundles: {
         polyfills: [
