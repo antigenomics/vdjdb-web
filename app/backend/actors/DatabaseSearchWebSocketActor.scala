@@ -86,7 +86,7 @@ class DatabaseSearchWebSocketActor(out: ActorRef, limit: IpLimit, database: Data
                             DatabaseFilterRequest("gene", DatabaseFilterType.Exact, negative = true, pairedRequest.gene)
                         )
                         val pairedFilters: DatabaseFilters = DatabaseFilters.createFromRequest(pairedFilterRequest, database)
-                        val pairedTable: SearchTable = SearchTable()
+                        val pairedTable: SearchTable = new SearchTable()
                         pairedTable.update(pairedFilters, database)
 
                         if (pairedTable.getRecordsFound == 1) {

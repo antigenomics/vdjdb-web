@@ -36,6 +36,7 @@ export namespace AnnotationsServiceWebSocketActions {
     export const AVAILABLE_SOFTWARE: string = 'available_software';
     export const VALIDATE_SAMPLE: string = 'validate_sample';
     export const DELETE_SAMPLE: string = 'delete_sample';
+    export const INTERSECT: string = 'intersect';
 }
 
 @Injectable()
@@ -98,6 +99,19 @@ export class AnnotationsService {
 
     public getAvailableSoftwareTypes(): string[] {
         return this._availableSoftwareTypes;
+    }
+
+    public async intersect(sample: SampleItem): Promise<void> {
+        const response = await this.connection.sendMessage({
+            action: AnnotationsServiceWebSocketActions.INTERSECT,
+            data: new WebSocketRequestData()
+                      .add('sampleName', sample.name)
+                      .add('hammingDistance', 0)
+                      .add('matchV', false)
+                      .add('matchJ', false)
+                      .unpack()
+        });
+        console.log(response.get('rows'));
     }
 
     public async addSample(sampleName: string): Promise<boolean> {

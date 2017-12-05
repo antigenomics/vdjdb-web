@@ -31,7 +31,6 @@ import backend.server.limit.RequestLimits
 import backend.utils.analytics.Analytics
 import com.typesafe.config.ConfigMemorySize
 import org.apache.commons.io.FilenameUtils
-import org.slf4j.LoggerFactory
 import play.api.i18n.{Lang, Messages, MessagesApi}
 import play.api.{Configuration, Environment}
 import play.api.libs.Files
