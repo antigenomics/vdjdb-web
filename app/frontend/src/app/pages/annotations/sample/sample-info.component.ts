@@ -19,6 +19,7 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnIni
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs/Subscription';
 import { SampleItem } from '../../../shared/sample/sample-item';
+import { AnnotationsService } from '../annotations.service';
 
 @Component({
     selector:        'sample-info',
@@ -30,7 +31,7 @@ export class SampleInfoComponent implements OnInit, OnDestroy {
 
     public sample: SampleItem;
 
-    constructor(private activatedRoute: ActivatedRoute, private changeDetector: ChangeDetectorRef) {
+    constructor(private activatedRoute: ActivatedRoute, private changeDetector: ChangeDetectorRef, private annotationsService: AnnotationsService) {
         this.sample = this.activatedRoute.snapshot.data.sample;
     }
 
@@ -39,6 +40,10 @@ export class SampleInfoComponent implements OnInit, OnDestroy {
             this.sample = data.sample;
             this.changeDetector.detectChanges();
         });
+    }
+
+    public intersect(): void {
+        this.annotationsService.intersect(this.sample);
     }
 
     public ngOnDestroy(): void {

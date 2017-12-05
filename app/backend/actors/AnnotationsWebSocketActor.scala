@@ -4,6 +4,7 @@ import akka.actor.{ActorRef, ActorSystem, Props}
 import backend.models.authorization.permissions.UserPermissionsProvider
 import backend.models.authorization.user.{User, UserDetails}
 import backend.models.files.sample.SampleFileProvider
+import backend.server.annotations.api.intersect.{SampleIntersectionRequest, SampleIntersectionResponse}
 import backend.server.annotations.api.sample.delete.{DeleteSampleRequest, DeleteSampleResponse}
 import backend.server.annotations.api.sample.software.AvailableSoftwareResponse
 import backend.server.annotations.api.sample.validate.{ValidateSampleRequest, ValidateSampleResponse}
@@ -14,6 +15,7 @@ import play.api.libs.json._
 
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success}
+import scala.async.Async.{async, await}
 
 class AnnotationsWebSocketActor(out: ActorRef, limit: IpLimit, user: User, details: UserDetails)
                                (implicit ec: ExecutionContext, as: ActorSystem, limits: RequestLimits,
@@ -45,6 +47,18 @@ class AnnotationsWebSocketActor(out: ActorRef, limit: IpLimit, user: User, detai
                             out.success(DeleteSampleResponse(true))
                     }
                 })
+            case SampleIntersectionResponse.Action =>
+                validateData(out, data, (intersectRequest: SampleIntersectionRequest) => async {
+                    print("asd")
+                    val sampleFile = await(user.getSampleFileByName(intersectRequest.sampleName))
+                    print("asd2")
+                    sampleFile match {
+                        case Some(file) =>
+                            out.success(SampleIntersectionResponse(Seq()))
+                        case None =>
+                            out.errorMessage("Invalid file name")
+                    }
+                })
             case _ =>
                 out.errorMessage("Invalid action")
         }
@@ -54,6 +68,7 @@ class AnnotationsWebSocketActor(out: ActorRef, limit: IpLimit, user: User, detai
 
 object AnnotationsWebSocketActor {
     def props(out: ActorRef, limit: IpLimit, user: User, details: UserDetails)
-             (implicit ec: ExecutionContext, as: ActorSystem, limits: RequestLimits, upp: UserPermissionsProvider, sfp: SampleFileProvider): Props =
+             (implicit ec: ExecutionContext, as: ActorSystem, limits: RequestLimits,
+              upp: UserPermissionsProvider, sfp: SampleFileProvider): Props =
         Props(new AnnotationsWebSocketActor(out, limit, user, details))
 }
