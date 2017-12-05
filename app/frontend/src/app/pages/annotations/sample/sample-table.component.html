@@ -3,8 +3,9 @@
         Sample {{ sample.name }}
     </h3>
     <div class="ui attached segment teal padded">
-        <p>Sample {{ sample.name }}</p>
         <intersection-table [sample]="sample"></intersection-table>
-        <button class="ui button" (click)="intersect()">Intersect</button>
+    </div>
+    <div class="ui attached secondary clearing segment">
+        <button class="ui teal button left floated" (click)="intersect()">Intersect</button>
     </div>
 </div>

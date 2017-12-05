@@ -24,29 +24,28 @@ import { AnnotationsService } from './annotations.service';
 import { AnnotationsInfoComponent } from './info/annotations-info.component';
 import { SampleItemResolver } from './resolvers/sample.resolver';
 import { UserResolver } from './resolvers/user.resolver';
-import { SampleInfoComponent } from './sample/sample-info.component';
-import { IntersectionTableComponent } from './sample/table/intersection-table.component';
-import { IntersectionTableService } from './sample/table/intersection-table.service';
+import { SampleTableComponent } from './sample/sample-table.component';
+import { SampleTableModule } from './sample/sample-table.module';
 import { AnnotationsSidebarComponent } from './sidebar/sidebar.component';
 import { AnnotationsUploadComponent } from './upload/upload.component';
 import { UploadModule } from './upload/upload.module';
 
 const routes = [
     {
-        path:     'annotations', component: AnnotationsPageComponent, resolve: { user: UserResolver } ,
+        path:     'annotations', component: AnnotationsPageComponent, resolve: { user: UserResolver },
         children: [
             { path: 'info', component: AnnotationsInfoComponent },
             { path: 'upload', component: AnnotationsUploadComponent },
-            { path: 'sample/:sample', component: SampleInfoComponent, resolve: { sample: SampleItemResolver } },
+            { path: 'sample/:sample/table', component: SampleTableComponent, resolve: { sample: SampleItemResolver } },
             { path: '**', redirectTo: 'info' }
         ]
     }
 ];
 
 @NgModule({
-    imports:      [ BrowserModule, UploadModule, RouterModule.forChild(routes), ModalsModule ],
-    declarations: [ AnnotationsPageComponent, AnnotationsSidebarComponent, AnnotationsInfoComponent, SampleInfoComponent, IntersectionTableComponent ],
+    imports:      [ BrowserModule, UploadModule, RouterModule.forChild(routes), ModalsModule, SampleTableModule ],
+    declarations: [ AnnotationsPageComponent, AnnotationsSidebarComponent, AnnotationsInfoComponent ],
     exports:      [ AnnotationsPageComponent ],
-    providers:    [ AnnotationsService, UserResolver, SampleItemResolver, IntersectionTableService ]
+    providers:    [ AnnotationsService, UserResolver, SampleItemResolver ]
 })
 export class AnnotationsPageModule {}

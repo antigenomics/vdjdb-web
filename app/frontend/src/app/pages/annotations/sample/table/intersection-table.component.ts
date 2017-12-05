@@ -15,7 +15,7 @@
  *
  */
 
-import { ChangeDetectionStrategy, Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs/Subscription';
 import { SampleItem } from '../../../../shared/sample/sample-item';
 import { LoggerService } from '../../../../utils/logger/logger.service';
@@ -29,28 +29,36 @@ import { IntersectionTableService, IntersectionTableServiceEvent, IntersectionTa
 })
 export class IntersectionTableComponent implements OnInit, OnDestroy {
     private _intersectionTableServiceEventsSubscription: Subscription;
-
-    @Input('table')
     public table: IntersectionTable;
 
     @Input('sample')
     public sample: SampleItem;
 
-    constructor(private intersectionTableService: IntersectionTableService, private logger: LoggerService) {}
+    constructor(private intersectionTableService: IntersectionTableService,
+                private changeDetector: ChangeDetectorRef, private logger: LoggerService) {}
 
     public ngOnInit(): void {
+        if (this.intersectionTableService.isTableExist(this.sample)) {
+            this.table = this.intersectionTableService.getTable(this.sample);
+        }
         this._intersectionTableServiceEventsSubscription = this.intersectionTableService.getEvents()
             .subscribe((event: IntersectionTableServiceEvent) => {
                 switch (event.type) {
                     case IntersectionTableServiceEventType.TABLE_UPDATED:
                         if (event.name === this.sample.name) {
                             this.logger.debug('Intersection table update', this.intersectionTableService.getTable(this.sample));
+                            this.table = this.intersectionTableService.getTable(this.sample);
+                            this.changeDetector.detectChanges();
                         }
                         break;
                     default:
 
                 }
             });
+    }
+
+    public isTableInitialized(): boolean {
+        return this.table !== undefined;
     }
 
     public ngOnDestroy(): void {

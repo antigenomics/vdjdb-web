@@ -29,7 +29,9 @@ object IntersectionTableRow {
         IntersectionTableRow(
             Seq(clonotype.getFreq.toString,
                 clonotype.getCount.toString,
-                clonotype.getCdr3aa)
+                clonotype.getCdr3aa,
+                clonotype.getV,
+                clonotype.getJ)
         )
     }
 }
