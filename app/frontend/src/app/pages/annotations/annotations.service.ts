@@ -20,6 +20,7 @@ import { Subject } from 'rxjs/Subject';
 import { SampleItem } from '../../shared/sample/sample-item';
 import { User, UserPermissions } from '../../shared/user/user';
 import { WebSocketRequestData } from '../../shared/websocket/websocket-request';
+import { WebSocketResponseData } from '../../shared/websocket/websocket-response';
 import { WebSocketService } from '../../shared/websocket/websocket.service';
 import { LoggerService } from '../../utils/logger/logger.service';
 
@@ -101,17 +102,16 @@ export class AnnotationsService {
         return this._availableSoftwareTypes;
     }
 
-    public async intersect(sample: SampleItem): Promise<void> {
-        const response = await this.connection.sendMessage({
+    public async intersect(sample: SampleItem): Promise<WebSocketResponseData> {
+        return await this.connection.sendMessage({
             action: AnnotationsServiceWebSocketActions.INTERSECT,
-            data: new WebSocketRequestData()
-                      .add('sampleName', sample.name)
-                      .add('hammingDistance', 0)
-                      .add('matchV', false)
-                      .add('matchJ', false)
-                      .unpack()
+            data:   new WebSocketRequestData()
+                    .add('sampleName', sample.name)
+                    .add('hammingDistance', 0)
+                    .add('matchV', false)
+                    .add('matchJ', false)
+                    .unpack()
         });
-        console.log(response.get('rows'));
     }
 
     public async addSample(sampleName: string): Promise<boolean> {

@@ -44,6 +44,12 @@ case class User(id: Long, login: String, email: String, verified: Boolean, folde
         sfp.getByUserIDAndName(id, name)
     }
 
+    def getSampleFileByNameWithMetadata(name: String)(implicit sfp: SampleFileProvider,
+                                                      fmp: FileMetadataProvider,
+                                                      ec: ExecutionContext): Future[Option[(SampleFile, FileMetadata)]] = {
+        sfp.getByUserIDAndNameWithMetadata(id, name)
+    }
+
     def getSampleFilesWithMetadata(implicit sfp: SampleFileProvider, ec: ExecutionContext): Future[Seq[(SampleFile, FileMetadata)]] = {
         sfp.getByUserIDWithMetadata(id)
     }

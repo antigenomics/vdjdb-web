@@ -20,7 +20,7 @@ package backend.server.annotations.api.intersect
 import backend.server.annotations.IntersectionTableRow
 import play.api.libs.json.{Json, Writes}
 
-case class SampleIntersectionResponse(rows: Seq[IntersectionTableRow])
+case class SampleIntersectionResponse(rows: List[IntersectionTableRow])
 
 object SampleIntersectionResponse {
     final val Action: String = "intersect"

@@ -17,10 +17,19 @@
 
 package backend.server.annotations
 
+import com.antigenomics.vdjtools.sample.Clonotype
 import play.api.libs.json.{Json, Writes}
 
 case class IntersectionTableRow(entries: Seq[String])
 
 object IntersectionTableRow {
     implicit val intersectTableRowWrites: Writes[IntersectionTableRow] = Json.writes[IntersectionTableRow]
+
+    def createFromClonotype(clonotype: Clonotype): IntersectionTableRow = {
+        IntersectionTableRow(
+            Seq(clonotype.getFreq.toString,
+                clonotype.getCount.toString,
+                clonotype.getCdr3aa)
+        )
+    }
 }

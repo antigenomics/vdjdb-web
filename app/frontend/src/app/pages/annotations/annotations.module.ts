@@ -25,6 +25,8 @@ import { AnnotationsInfoComponent } from './info/annotations-info.component';
 import { SampleItemResolver } from './resolvers/sample.resolver';
 import { UserResolver } from './resolvers/user.resolver';
 import { SampleInfoComponent } from './sample/sample-info.component';
+import { IntersectionTableComponent } from './sample/table/intersection-table.component';
+import { IntersectionTableService } from './sample/table/intersection-table.service';
 import { AnnotationsSidebarComponent } from './sidebar/sidebar.component';
 import { AnnotationsUploadComponent } from './upload/upload.component';
 import { UploadModule } from './upload/upload.module';
@@ -43,8 +45,8 @@ const routes = [
 
 @NgModule({
     imports:      [ BrowserModule, UploadModule, RouterModule.forChild(routes), ModalsModule ],
-    declarations: [ AnnotationsPageComponent, AnnotationsSidebarComponent, AnnotationsInfoComponent, SampleInfoComponent ],
+    declarations: [ AnnotationsPageComponent, AnnotationsSidebarComponent, AnnotationsInfoComponent, SampleInfoComponent, IntersectionTableComponent ],
     exports:      [ AnnotationsPageComponent ],
-    providers:    [ AnnotationsService, UserResolver, SampleItemResolver ]
+    providers:    [ AnnotationsService, UserResolver, SampleItemResolver, IntersectionTableService ]
 })
 export class AnnotationsPageModule {}
