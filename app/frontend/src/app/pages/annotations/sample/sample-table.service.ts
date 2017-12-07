@@ -20,6 +20,7 @@ import { Subject } from 'rxjs/Subject';
 import { SampleItem } from '../../../shared/sample/sample-item';
 import { AnnotationsService } from '../annotations.service';
 import { IntersectionTableColumnInfo } from './table/column/intersection-table-column-info';
+import { IntersectionTableFilters } from './table/filters/intersection-table-filters';
 import { IntersectionTable } from './table/intersection-table';
 
 export type SampleTableServiceEventType = number;
@@ -44,6 +45,7 @@ export class SampleTableServiceEvent {
 @Injectable()
 export class SampleTableService {
     private _tables: Map<string, IntersectionTable> = new Map();
+    private _filters: Map<string, IntersectionTableFilters> = new Map();
     private _events: Subject<SampleTableServiceEvent> = new Subject();
 
     constructor(private annotationsService: AnnotationsService) {}
@@ -52,24 +54,41 @@ export class SampleTableService {
         return this._tables.get(sample.name);
     }
 
+    public getFilters(sample: SampleItem): IntersectionTableFilters {
+        return this._filters.get(sample.name);
+    }
+
     public getOrCreateTable(sample: SampleItem): IntersectionTable {
         const table = this.isTableExist(sample) ? this.getTable(sample) : new IntersectionTable(sample);
         this._tables.set(sample.name, table);
         return table;
     }
 
+    public getOrCreateFilters(sample: SampleItem): IntersectionTableFilters {
+        const filters = this.isFiltersExist(sample) ? this.getFilters(sample): new IntersectionTableFilters();
+        this._filters.set(sample.name, filters);
+        return filters;
+    }
+
     public async intersect(sample: SampleItem) {
         const table = this.getTable(sample);
+        const filters = this.getFilters(sample);
         table.loading();
+        filters.disable();
         this._events.next(new SampleTableServiceEvent(sample.name, SampleTableServiceEventType.TABLE_LOADING));
-        const response = await this.annotationsService.intersect(sample);
+        const response = await this.annotationsService.intersect(sample, filters);
         table.update(response.get('rows'));
+        filters.enable();
         this._tables.set(sample.name, table);
         this._events.next(new SampleTableServiceEvent(sample.name, SampleTableServiceEventType.TABLE_UPDATED));
     }
 
     public isTableExist(sample: SampleItem): boolean {
         return this._tables.has(sample.name);
+    }
+
+    public isFiltersExist(sample: SampleItem): boolean {
+        return this._filters.has(sample.name);
     }
 
     public getEvents(): Subject<SampleTableServiceEvent> {

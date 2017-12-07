@@ -22,6 +22,7 @@ import { SampleItem } from '../../../shared/sample/sample-item';
 import { LoggerService } from '../../../utils/logger/logger.service';
 import { SampleTableService, SampleTableServiceEvent, SampleTableServiceEventType } from './sample-table.service';
 import { IntersectionTableColumnInfo } from './table/column/intersection-table-column-info';
+import { IntersectionTableFilters } from './table/filters/intersection-table-filters';
 import { IntersectionTable } from './table/intersection-table';
 
 @Component({
@@ -35,17 +36,20 @@ export class SampleTableComponent implements OnInit, OnDestroy {
 
     public sample: SampleItem;
     public table: IntersectionTable;
+    public filters: IntersectionTableFilters;
 
     constructor(private activatedRoute: ActivatedRoute, private changeDetector: ChangeDetectorRef,
                 private sampleTableService: SampleTableService, private logger: LoggerService) {
         this.sample = this.activatedRoute.snapshot.data.sample;
         this.table = this.sampleTableService.getOrCreateTable(this.sample);
+        this.filters = this.sampleTableService.getOrCreateFilters(this.sample);
     }
 
     public ngOnInit(): void {
         this._routeSampleSubscription = this.activatedRoute.data.subscribe((data: { sample: SampleItem }) => {
             this.sample = data.sample;
             this.table = this.sampleTableService.getOrCreateTable(this.sample);
+            this.filters = this.sampleTableService.getOrCreateFilters(this.sample);
             this.changeDetector.detectChanges();
         });
 

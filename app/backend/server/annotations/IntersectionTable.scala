@@ -17,10 +17,15 @@
 
 package backend.server.annotations
 
+import java.util
+
 import backend.server.ResultsTable
 import backend.server.annotations.api.intersect.SampleIntersectionRequest
 import backend.server.database.Database
+import com.antigenomics.vdjdb.scoring.SequenceSearcherPreset
+import com.antigenomics.vdjdb.text.{ExactTextFilter, TextFilter}
 import com.antigenomics.vdjtools.sample.Sample
+import com.milaboratory.core.tree.TreeSearchParameters
 
 import scala.collection.JavaConverters._
 import scala.math.Ordering.String
@@ -41,8 +46,20 @@ class IntersectionTable extends ResultsTable[IntersectionTableRow] {
     }
 
     def update(request: SampleIntersectionRequest, sample: Sample, database: Database): IntersectionTable = {
-        //TODO !! add more preprocessing parameters
-        val instance = database.getInstance.asClonotypeDatabase(request.matchV, request.matchJ)
+        val treeSearchParameters = request.hammingDistance match {
+            case 0 => new TreeSearchParameters(0, 0, 0)
+            case 1 => TreeSearchParameters.ONE_MISMATCH
+            case 2 => TreeSearchParameters.TWO_MISMATCHES
+            case 3 => TreeSearchParameters.THREE_MISMATCHES
+            case _ => new TreeSearchParameters(0, 0, 0)
+        }
+        val searchParameters = new SequenceSearcherPreset(treeSearchParameters)
+        val filters = new util.ArrayList[TextFilter]()
+        filters.add(new ExactTextFilter("mhc.class", request.mhc, false))
+
+        val instance = database.getInstance.filter(filters)
+            .asClonotypeDatabase(request.matchV, request.matchJ, searchParameters, request.species, request.gene, request.confidenceThreshold)
+
         val results = instance.search(sample)
         this.rows = results
             .asScala.toList
