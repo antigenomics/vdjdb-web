@@ -16,19 +16,23 @@
  */
 
 import { NgModule } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
+import { ModalsModule } from '../../../shared/modals/modals.module';
 import { SampleTableComponent } from './sample-table.component';
 import { SampleTableService } from './sample-table.service';
 import { IntersectionTableEntryFrequencyComponent } from './table/entry/intersection-table-entry-frequency.component';
 import { IntersectionTableEntryOriginalComponent } from './table/entry/intersection-table-entry-original.component';
+import { IntersectionTableFiltersComponent } from './table/filters/intersection-table-filters.component';
 import { IntersectionTableComponent } from './table/intersection-table.component';
 import { IntersectionTableRowComponent } from './table/row/intersection-table-row.component';
 
 @NgModule({
-    imports:         [ BrowserModule ],
+    imports:         [ BrowserModule, ModalsModule, FormsModule ],
     declarations:    [
         SampleTableComponent,
         IntersectionTableComponent,
+        IntersectionTableFiltersComponent,
         IntersectionTableRowComponent,
         IntersectionTableEntryOriginalComponent,
         IntersectionTableEntryFrequencyComponent ],

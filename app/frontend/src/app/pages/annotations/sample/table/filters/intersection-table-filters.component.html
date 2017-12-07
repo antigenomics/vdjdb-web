@@ -1,0 +1,89 @@
+<div class="ui grid">
+    <div class="twelve column row middle aligned">
+        <div class="eight wide column">
+            <div class="ui horizontal divider">
+                Intersection parameters
+            </div>
+        </div>
+    </div>
+    <div class="twelve column row middle aligned">
+        <div class="column">
+            <b>Match V / J</b>
+        </div>
+        <div class="column">
+            <div class="ui checkbox">
+                <input [attr.disabled]="filters.isDisabled()?'':null" type="checkbox" [(ngModel)]="filters.matchV">
+                <label>Match V</label>
+            </div>
+            <br>
+            <div class="ui checkbox">
+                <input [attr.disabled]="filters.isDisabled()?'':null" type="checkbox" [(ngModel)]="filters.matchJ">
+                <label>Match J</label>
+            </div>
+        </div>
+        <div class="two wide column"></div>
+        <div class="column">
+            <b>Score confidence threshold</b>
+        </div>
+        <div class="two wide column">
+            <div class="ui input fluid">
+                <input [attr.disabled]="filters.isDisabled()?'':null" type="number" min="0" max="3" [ngModel]="filters.confidenceThreshold" (ngModelChange)="checkConfidenceThreshold($event)">
+            </div>
+        </div>
+    </div>
+    <div class="twelve column row middle aligned">
+        <div class="column">
+            <b>Species</b>
+        </div>
+        <div class="two wide column">
+            <div class="ui fluid selection dropdown" [ngClass]="{'disabled':filters.isDisabled()}" dropdown [content]="speciescontent">
+                <span class="text">{{ filters.species }}</span>
+                <i class="dropdown icon"></i>
+                <div class="menu fast fade element" #speciescontent>
+                    <div class="item" (click)="filters.species='HomoSapiens'">HomoSapiens</div>
+                    <div class="item" (click)="filters.species='MacacaMulatta'">MacacaMulatta</div>
+                    <div class="item" (click)="filters.species='MusMusculus'">MusMusculus</div>
+                </div>
+            </div>
+        </div>
+        <div class="column"></div>
+        <div class="column">
+            <b>Gene</b>
+        </div>
+        <div class="two wide column">
+            <div class="ui fluid selection dropdown" [ngClass]="{'disabled':filters.isDisabled()}" dropdown [content]="genecontent">
+                <span class="text">{{ filters.gene }}</span>
+                <i class="dropdown icon"></i>
+                <div class="menu fast fade element" #genecontent>
+                    <div class="item" (click)="filters.gene='TRA'">TRA</div>
+                    <div class="item" (click)="filters.gene='TRB'">TRB</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="twelve column row middle aligned">
+        <div class="column">
+            <b>MHC class</b>
+        </div>
+        <div class="two wide column">
+            <div class="ui fluid selection dropdown" [ngClass]="{'disabled':filters.isDisabled()}" dropdown [content]="mhccontent">
+                <span class="text">{{ filters.mhc }}</span>
+                <i class="dropdown icon"></i>
+                <div class="menu fast fade element" #mhccontent>
+                    <div class="item" (click)="filters.mhc='MHCI'">MHCI</div>
+                    <div class="item" (click)="filters.mhc='MHCII'">MHCII</div>
+                </div>
+            </div>
+        </div>
+        <div class="column"></div>
+        <div class="column">
+            <b>Hamming distance</b>
+        </div>
+        <div class="two wide column">
+            <div class="ui input fluid">
+                <input [attr.disabled]="filters.isDisabled()?'':null" type="number" min="0" max="3" [ngModel]="filters.hammingDistance" (ngModelChange)="checkHammingDistance($event)">
+            </div>
+        </div>
+    </div>
+</div>
+

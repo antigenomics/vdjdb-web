@@ -23,6 +23,7 @@ import { WebSocketRequestData } from '../../shared/websocket/websocket-request';
 import { WebSocketResponseData } from '../../shared/websocket/websocket-response';
 import { WebSocketService } from '../../shared/websocket/websocket.service';
 import { LoggerService } from '../../utils/logger/logger.service';
+import { IntersectionTableFilters } from './sample/table/filters/intersection-table-filters';
 
 export type AnnotationsServiceEvents = number;
 
@@ -102,14 +103,18 @@ export class AnnotationsService {
         return this._availableSoftwareTypes;
     }
 
-    public async intersect(sample: SampleItem): Promise<WebSocketResponseData> {
+    public async intersect(sample: SampleItem, filters: IntersectionTableFilters): Promise<WebSocketResponseData> {
         return await this.connection.sendMessage({
             action: AnnotationsServiceWebSocketActions.INTERSECT,
             data:   new WebSocketRequestData()
                     .add('sampleName', sample.name)
-                    .add('hammingDistance', 0)
-                    .add('matchV', false)
-                    .add('matchJ', false)
+                    .add('hammingDistance', filters.hammingDistance)
+                    .add('confidenceThreshold', filters.confidenceThreshold)
+                    .add('matchV', filters.matchV)
+                    .add('matchJ', filters.matchJ)
+                    .add('species', filters.species)
+                    .add('gene', filters.gene)
+                    .add('mhc', filters.mhc)
                     .unpack()
         });
     }

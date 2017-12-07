@@ -1,7 +1,7 @@
 <div class="ui fade slow element segments">
     <h3 class="ui top attached header">Sample {{ sample.name }}</h3>
     <div class="ui attached teal padded blurring segment">
-        blablabla
+        <intersection-table-filters [filters]="filters"></intersection-table-filters>
     </div>
     <div class="ui attached secondary clearing segment">
         <button class="ui teal button left floated" (click)="intersect()">Intersect</button>
