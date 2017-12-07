@@ -15,7 +15,6 @@
  */
 
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, Input } from '@angular/core';
-import { InputConverter, NumberConverter } from '../../../utils/input-converter.decorator';
 import { Utils } from '../../../utils/utils';
 import WindowViewport = Utils.Window.WindowViewport;
 
@@ -43,7 +42,6 @@ export class PopupContentComponent implements AfterViewInit {
     public hostElement: HTMLElement;
 
     @Input('width')
-    @InputConverter(NumberConverter)
     public width: number;
 
     @Input('position')

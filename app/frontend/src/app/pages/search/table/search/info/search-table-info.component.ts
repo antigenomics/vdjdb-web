@@ -15,7 +15,6 @@
  */
 
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { InputConverter, NumberConverter } from '../../../../../utils/input-converter.decorator';
 
 @Component({
     selector:        'search-table-info',
@@ -24,10 +23,8 @@ import { InputConverter, NumberConverter } from '../../../../../utils/input-conv
 })
 export class SearchTableInfoComponent {
     @Input()
-    @InputConverter(NumberConverter)
     public found: number;
 
     @Input()
-    @InputConverter(NumberConverter)
     public total: number;
 }

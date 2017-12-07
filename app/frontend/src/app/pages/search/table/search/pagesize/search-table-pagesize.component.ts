@@ -15,7 +15,6 @@
  */
 
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
-import { InputConverter, NumberConverter } from '../../../../../utils/input-converter.decorator';
 
 @Component({
     selector:        'search-table-pagesize',
@@ -24,7 +23,6 @@ import { InputConverter, NumberConverter } from '../../../../../utils/input-conv
 })
 export class SearchTablePagesizeComponent {
     @Input()
-    @InputConverter(NumberConverter)
     public pageSize: number;
 
     @Input()

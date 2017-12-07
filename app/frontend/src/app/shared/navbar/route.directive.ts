@@ -16,7 +16,6 @@
 
 import { Directive, HostListener, Input } from '@angular/core';
 import { Router } from '@angular/router';
-import { BooleanConverter, InputConverter } from '../../utils/input-converter.decorator';
 import { Utils } from '../../utils/utils';
 
 @Directive({
@@ -26,7 +25,6 @@ export class RouteDirective {
     @Input('route')
     public routeURL: string;
 
-    @InputConverter(BooleanConverter)
     @Input('external')
     public external: boolean = false;
 
