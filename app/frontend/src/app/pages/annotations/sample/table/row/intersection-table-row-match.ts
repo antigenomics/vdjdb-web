@@ -15,18 +15,14 @@
  *
  */
 
-import { Component, Input} from '@angular/core';
-import { IntersectionTableColumnInfo } from './column/intersection-table-column-info';
-import { IntersectionTable } from './intersection-table';
+import { SearchTableRow } from '../../../../search/table/search/row/search-table-row';
 
-@Component({
-    selector:        'intersection-table',
-    templateUrl:     './intersection-table.component.html'
-})
-export class IntersectionTableComponent {
-    @Input('columns')
-    public columns: IntersectionTableColumnInfo[];
+export class IntersectionTableRowMatch {
+    public readonly row: SearchTableRow;
 
-    @Input('table')
-    public table: IntersectionTable;
+    constructor(match: any) {
+        /* tslint:disable:no-string-literal */
+        this.row = new SearchTableRow(match['row']);
+        /* tslint:enable:no-string-literal */
+    }
 }

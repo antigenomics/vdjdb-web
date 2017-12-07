@@ -15,18 +15,21 @@
  *
  */
 
-import { Component, Input} from '@angular/core';
-import { IntersectionTableColumnInfo } from './column/intersection-table-column-info';
-import { IntersectionTable } from './intersection-table';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 
 @Component({
-    selector:        'intersection-table',
-    templateUrl:     './intersection-table.component.html'
+    selector: 'td[intersection-table-entry-original]',
+    template: '{{ value }}',
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class IntersectionTableComponent {
-    @Input('columns')
-    public columns: IntersectionTableColumnInfo[];
+export class IntersectionTableEntryOriginalComponent {
+    private _value: string;
 
-    @Input('table')
-    public table: IntersectionTable;
+    public generate(value: string) {
+        this._value = value;
+    }
+
+    get value() {
+        return this._value;
+    }
 }

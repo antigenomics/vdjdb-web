@@ -1,11 +1,18 @@
 <div class="ui fade slow element segments">
-    <h3 class="ui top attached header">
-        Sample {{ sample.name }}
-    </h3>
-    <div class="ui attached segment teal padded">
-        <intersection-table [sample]="sample"></intersection-table>
+    <h3 class="ui top attached header">Sample {{ sample.name }}</h3>
+    <div class="ui attached teal padded blurring segment">
+        blablabla
     </div>
     <div class="ui attached secondary clearing segment">
         <button class="ui teal button left floated" (click)="intersect()">Intersect</button>
+    </div>
+</div>
+<div class="ui fade slow element segments">
+    <h3 class="ui top attached header">Results</h3>
+    <div class="ui attached teal padded blurring segment" style="min-height: 200px;">
+        <div class="ui inverted dimmer" [ngClass]="{'active':table.isLoading()}">
+            <div class="ui large text loader top element">Updating</div>
+        </div>
+        <intersection-table [table]="table" [columns]="getColumns()"></intersection-table>
     </div>
 </div>

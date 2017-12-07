@@ -32,7 +32,7 @@ import { SearchTableRow } from './search-table-row';
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SearchTableRowComponent implements OnInit, OnDestroy {
-    private components: Array<ComponentRef<any>> = [];
+    private _components: Array<ComponentRef<any>> = [];
 
     @HostBinding('class.center')
     public centered: boolean = true;
@@ -54,12 +54,12 @@ export class SearchTableRowComponent implements OnInit, OnDestroy {
     }
 
     public ngOnInit(): void {
-        const cdrComponentResolver = this.resolver.resolveComponentFactory<SearchTableEntryCdrComponent>(SearchTableEntryCdrComponent);
-        const urlComponentResolver = this.resolver.resolveComponentFactory<SearchTableEntryUrlComponent>(SearchTableEntryUrlComponent);
-        const jsonComponentResolver = this.resolver.resolveComponentFactory<SearchTableEntryJsonComponent>(SearchTableEntryJsonComponent);
-        const originalComponentResolver = this.resolver.resolveComponentFactory<SearchTableEntryOriginalComponent>(SearchTableEntryOriginalComponent);
-        const geneComponentResolver = this.resolver.resolveComponentFactory<SearchTableEntryGeneComponent>(SearchTableEntryGeneComponent);
-        const rowComponentResolver = this.resolver.resolveComponentFactory<SearchTableRowComponent>(SearchTableRowComponent);
+        const cdrComponentResolver = this.resolver.resolveComponentFactory(SearchTableEntryCdrComponent);
+        const urlComponentResolver = this.resolver.resolveComponentFactory(SearchTableEntryUrlComponent);
+        const jsonComponentResolver = this.resolver.resolveComponentFactory(SearchTableEntryJsonComponent);
+        const originalComponentResolver = this.resolver.resolveComponentFactory(SearchTableEntryOriginalComponent);
+        const geneComponentResolver = this.resolver.resolveComponentFactory(SearchTableEntryGeneComponent);
+        const rowComponentResolver = this.resolver.resolveComponentFactory(SearchTableRowComponent);
 
         if (this.row.entries) {
             this.row.entries.forEach((entry: string, index: number) => {
@@ -68,38 +68,38 @@ export class SearchTableRowComponent implements OnInit, OnDestroy {
                 switch (column.name) {
                     case 'gene':
                         if (this.allowPaired) {
-                            component = this.rowViewContainer.createComponent<SearchTableEntryGeneComponent>(geneComponentResolver);
+                            component = this.rowViewContainer.createComponent(geneComponentResolver);
                             component.instance.generate(entry, this.row.metadata.pairedID, this.hostViewContainer, rowComponentResolver);
                         } else {
-                            component = this.rowViewContainer.createComponent<SearchTableEntryOriginalComponent>(originalComponentResolver);
+                            component = this.rowViewContainer.createComponent(originalComponentResolver);
                             component.instance.generate(`${entry}`);
                         }
                         break;
                     case 'cdr3':
-                        component = this.rowViewContainer.createComponent<SearchTableEntryCdrComponent>(cdrComponentResolver);
+                        component = this.rowViewContainer.createComponent(cdrComponentResolver);
                         component.instance.generate(entry, this.row);
                         break;
                     case 'reference.id':
-                        component = this.rowViewContainer.createComponent<SearchTableEntryUrlComponent>(urlComponentResolver);
+                        component = this.rowViewContainer.createComponent(urlComponentResolver);
                         component.instance.generate(entry);
                         break;
                     case 'method':
                     case 'meta':
                     case 'cdr3fix':
-                        component = this.rowViewContainer.createComponent<SearchTableEntryJsonComponent>(jsonComponentResolver);
+                        component = this.rowViewContainer.createComponent(jsonComponentResolver);
                         component.instance.generate(column.title, entry, column);
                         break;
                     default:
-                        component = this.rowViewContainer.createComponent<SearchTableEntryOriginalComponent>(originalComponentResolver);
+                        component = this.rowViewContainer.createComponent(originalComponentResolver);
                         component.instance.generate(entry);
                 }
-                this.components.push(component);
+                this._components.push(component);
             });
         }
     }
 
     public ngOnDestroy(): void {
-        this.components.forEach((component: ComponentRef<any>) => {
+        this._components.forEach((component: ComponentRef<any>) => {
             component.destroy();
         });
     }

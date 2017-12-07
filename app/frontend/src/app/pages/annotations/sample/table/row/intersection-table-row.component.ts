@@ -15,15 +15,59 @@
  *
  */
 
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import {
+    ChangeDetectionStrategy, Component, ComponentFactoryResolver, ComponentRef, HostBinding, Input, OnDestroy, OnInit, ViewChild,
+    ViewContainerRef
+} from '@angular/core';
+import { SampleTableService } from '../../sample-table.service';
+import { IntersectionTableEntryFrequencyComponent } from '../entry/intersection-table-entry-frequency.component';
+import { IntersectionTableEntryOriginalComponent } from '../entry/intersection-table-entry-original.component';
 import { IntersectionTableRow } from './intersection-table-row';
 
 @Component({
     selector:        'tr[intersection-table-row]',
-    templateUrl:     './intersection-table-row.component.html',
+    template:        '<ng-container #rowViewContainer></ng-container>',
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class IntersectionTableRowComponent {
+export class IntersectionTableRowComponent implements OnInit, OnDestroy {
+    private _components: Array<ComponentRef<any>> = [];
+
     @Input('intersection-table-row')
     public row: IntersectionTableRow;
+
+    @ViewChild('rowViewContainer', { read: ViewContainerRef })
+    public rowViewContainer: ViewContainerRef;
+
+    constructor(private resolver: ComponentFactoryResolver, private sampleTableService: SampleTableService) {
+    }
+
+    public ngOnInit(): void {
+        const originalComponentResolver = this.resolver.resolveComponentFactory(IntersectionTableEntryOriginalComponent);
+        const frequencyComponentResolver = this.resolver.resolveComponentFactory(IntersectionTableEntryFrequencyComponent);
+
+        if (this.row.entries) {
+            const columns = this.sampleTableService.getColumns();
+            this.row.entries.forEach((entry: string, index: number) => {
+                const column = columns[ index ];
+                let component: ComponentRef<any>;
+                switch (column.name) {
+                    case 'freq':
+                        component = this.rowViewContainer.createComponent(frequencyComponentResolver);
+                        component.instance.generate(entry);
+                        break;
+                    default:
+                        component = this.rowViewContainer.createComponent(originalComponentResolver);
+                        component.instance.generate(entry);
+                        break;
+                }
+                this._components.push(component);
+            });
+        }
+    }
+
+    public ngOnDestroy(): void {
+        this._components.forEach((component: ComponentRef<any>) => {
+            component.destroy();
+        });
+    }
 }

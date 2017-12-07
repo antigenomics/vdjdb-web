@@ -19,23 +19,44 @@ import { SampleItem } from '../../../../shared/sample/sample-item';
 import { IntersectionTableRow } from './row/intersection-table-row';
 
 export class IntersectionTable {
+    private _loading: boolean;
+    private _initialized: boolean;
     private _sample: SampleItem;
-    private _rows: IntersectionTableRow[];
+    private _rows: IntersectionTableRow[] = [];
 
-    constructor(sample: SampleItem, rows: any[]) {
+    constructor(sample: SampleItem) {
+        this._loading = false;
+        this._initialized = false;
         this._sample = sample;
-        this._rows = rows.map((r) => new IntersectionTableRow(r));
     }
 
-    public getSample(): SampleItem {
-        return this._sample;
+    public isLoading(): boolean {
+        return this._loading;
+    }
+
+    public isInitialized(): boolean {
+        return this._initialized;
     }
 
     public isEmpty(): boolean {
         return this._rows.length === 0;
     }
 
+    public getSample(): SampleItem {
+        return this._sample;
+    }
+
     public getRows(): IntersectionTableRow[] {
         return this._rows;
+    }
+
+    public loading(): void {
+        this._loading = true;
+    }
+
+    public update(rows: any[]): void {
+        this._rows = rows.map((r) => new IntersectionTableRow(r));
+        this._initialized = true;
+        this._loading = false;
     }
 }

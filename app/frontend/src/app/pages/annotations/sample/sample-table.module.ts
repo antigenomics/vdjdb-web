@@ -18,15 +18,25 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { SampleTableComponent } from './sample-table.component';
+import { SampleTableService } from './sample-table.service';
+import { IntersectionTableEntryFrequencyComponent } from './table/entry/intersection-table-entry-frequency.component';
+import { IntersectionTableEntryOriginalComponent } from './table/entry/intersection-table-entry-original.component';
 import { IntersectionTableComponent } from './table/intersection-table.component';
-import { IntersectionTableService } from './table/intersection-table.service';
 import { IntersectionTableRowComponent } from './table/row/intersection-table-row.component';
 
 @NgModule({
-    imports:      [ BrowserModule ],
-    declarations: [ SampleTableComponent, IntersectionTableComponent, IntersectionTableRowComponent ],
-    exports:      [ SampleTableComponent ],
-    providers:    [ IntersectionTableService ]
+    imports:         [ BrowserModule ],
+    declarations:    [
+        SampleTableComponent,
+        IntersectionTableComponent,
+        IntersectionTableRowComponent,
+        IntersectionTableEntryOriginalComponent,
+        IntersectionTableEntryFrequencyComponent ],
+    exports:         [ SampleTableComponent ],
+    entryComponents: [
+        IntersectionTableEntryOriginalComponent,
+        IntersectionTableEntryFrequencyComponent ],
+    providers:       [ SampleTableService ]
 })
 export class SampleTableModule {
 
