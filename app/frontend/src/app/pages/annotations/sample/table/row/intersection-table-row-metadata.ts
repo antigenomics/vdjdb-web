@@ -15,17 +15,16 @@
  *
  */
 
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+export class IntersectionTableRowMetadata {
+    public readonly vEnd: number;
+    public readonly jStart: number;
+    public readonly cdr3nt: string;
 
-@Component({
-    selector: 'td[intersection-table-entry-original]',
-    template: '{{ value }}',
-    changeDetection: ChangeDetectionStrategy.OnPush
-})
-export class IntersectionTableEntryOriginalComponent {
-    public value: string;
-
-    public generate(value: string) {
-        this.value = value;
+    constructor(meta: any) {
+        /* tslint:disable:no-string-literal */
+        this.vEnd = meta['vEnd'];
+        this.jStart = meta['jStart'];
+        this.cdr3nt = meta['cdr3nt'];
+        /* tslint:enable:no-string-literal */
     }
 }

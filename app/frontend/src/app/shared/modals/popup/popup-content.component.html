@@ -15,6 +15,9 @@
             <div class="item" *ngFor="let item of getPopupContent()">{{ item }}</div>
         </div>
     </div>
+    <div class="content" *ngIf="display === 'colored-text'">
+        <span *ngFor="let item of getPopupContent()" [style.color]="item.split('|')[1]">{{ item.split('|')[0] }}</span>
+    </div>
     <div class="content" *ngIf="isFooterExists()">
         <div class="ui divider"></div>
         <p>{{ getFooterContent() }}</p>

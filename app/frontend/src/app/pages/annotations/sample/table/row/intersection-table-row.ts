@@ -16,15 +16,18 @@
  */
 
 import { IntersectionTableRowMatch } from './intersection-table-row-match';
+import { IntersectionTableRowMetadata } from './intersection-table-row-metadata';
 
 export class IntersectionTableRow {
     public readonly entries: string[];
     public readonly matches: IntersectionTableRowMatch[];
+    public readonly metadata: IntersectionTableRowMetadata;
 
     constructor(row: any) {
         /* tslint:disable:no-string-literal */
         this.entries = row['entries'];
         this.matches = row['matches'].map((m: any) => new IntersectionTableRowMatch(m));
+        this.metadata = new IntersectionTableRowMetadata(row['metadata']);
         /* tslint:enable:no-string-literal */
     }
 }

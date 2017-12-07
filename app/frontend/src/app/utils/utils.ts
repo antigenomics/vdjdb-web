@@ -99,6 +99,45 @@ export namespace Utils {
             }
             return true;
         }
+
+        export class ColorizedPatternRegion {
+            public readonly part: string;
+            public readonly color: string;
+        }
+
+        export function colorizePattern(input: string, vEnd: number, jStart: number): ColorizedPatternRegion[] {
+            this.otherRegionColor = 'black';
+            if (vEnd > 0 && jStart <= 0) {
+                return [
+                    { part: input.substring(0, vEnd), color: '#4daf4a' },
+                    { part: input.substring(vEnd, input.length), color: 'black' }
+                ];
+            } else if (vEnd <= 0 && jStart > 0) {
+                return [
+                    { part: input.substring(0, jStart - 1), color: 'black' },
+                    { part: input.substring(jStart - 1, input.length), color: '#377eb8' }
+                ];
+            } else if (vEnd > 0 && jStart > 0 && jStart > vEnd) {
+                return [
+                    { part: input.substring(0, vEnd), color: '#4daf4a' },
+                    { part: input.substring(vEnd, jStart - 1), color: 'black' },
+                    { part: input.substring(jStart - 1, input.length), color: '#377eb8' }
+                ];
+            } else if (vEnd > 0 && jStart > 0 && jStart <= vEnd) {
+                return [
+                    { part: input.substring(0, jStart - 1), color: '#4daf4a' },
+                    { part: input.substring(jStart - 1, vEnd), color: '#ff5050' },
+                    { part: input.substring(vEnd, input.length), color: '#377eb8' }
+                ];
+            } else if (vEnd < 0 && jStart < 0) {
+                return [
+                    { part: input, color: 'black' }
+                ];
+            }
+            return [
+                { part: input, color: 'black' }
+            ];
+        }
     }
 
     export namespace Window {

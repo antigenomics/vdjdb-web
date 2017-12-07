@@ -1,0 +1,5 @@
+<div style="width: 100%; height: 20px" [popup]="ntRegions" header="CDR3nt" display="colored-text"
+     footer="Click on copy icon to save cdr3nt sequence to clipboard" position="top">
+    <span *ngFor="let region of aaRegions" [style.color]="region.color">{{ region.part }}</span>
+    <i style="float: right" class="copy icon cursor pointer" (click)="copyToClipboard()"></i>
+</div>

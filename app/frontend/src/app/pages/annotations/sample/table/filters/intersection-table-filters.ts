@@ -23,7 +23,7 @@ export class IntersectionTableFilters {
     public matchV: boolean = true;
     public matchJ: boolean = true;
     public species: string = 'HomoSapiens';
-    public gene: string = 'TRA';
+    public gene: string = 'TRB';
     public mhc: string = 'MHCI';
 
     public disable(): void {

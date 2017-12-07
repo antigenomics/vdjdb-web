@@ -48,7 +48,7 @@ export class PopupContentComponent implements AfterViewInit {
     public position: 'left' | 'right' | 'top' | 'bottom';
 
     @Input('display')
-    public display: 'paragraph' | 'list';
+    public display: 'paragraph' | 'list' | 'colored-text';
 
     @Input('content')
     set content(popupContent: string | string[]) {
