@@ -18,7 +18,6 @@ import {
     ChangeDetectionStrategy, Component, ComponentFactoryResolver, ComponentRef, HostBinding, Input, OnDestroy, OnInit,
     ViewChild, ViewContainerRef
 } from '@angular/core';
-import { BooleanConverter, InputConverter } from '../../../../../utils/input-converter.decorator';
 import { SearchTableEntryCdrComponent } from '../entry/cdr/search-table-entry-cdr.component';
 import { SearchTableEntryGeneComponent } from '../entry/gene/search-table-entry-gene.component';
 import { SearchTableEntryJsonComponent } from '../entry/json/search-table-entry-json.component';
@@ -42,7 +41,6 @@ export class SearchTableRowComponent implements OnInit, OnDestroy {
     public aligned: boolean = true;
 
     @Input('allowPaired')
-    @InputConverter(BooleanConverter)
     public allowPaired: boolean = true;
 
     @Input('search-table-row')

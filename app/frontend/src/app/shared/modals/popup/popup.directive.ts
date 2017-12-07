@@ -15,7 +15,6 @@
  */
 
 import { ComponentFactoryResolver, ComponentRef, Directive, HostListener, Input, ViewContainerRef } from '@angular/core';
-import { InputConverter, NumberConverter } from '../../../utils/input-converter.decorator';
 import { PopupContentComponent } from './popup-content.component';
 
 @Directive({
@@ -35,7 +34,6 @@ export class PopupDirective {
     public footerContent: string;
 
     @Input('width')
-    @InputConverter(NumberConverter)
     public width: number = 400;
 
     @Input('position')

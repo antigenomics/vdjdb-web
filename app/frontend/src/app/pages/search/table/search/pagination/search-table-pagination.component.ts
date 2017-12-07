@@ -15,7 +15,6 @@
  */
 
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { InputConverter, NumberConverter } from '../../../../../utils/input-converter.decorator';
 import { Utils } from '../../../../../utils/utils';
 
 @Component({
@@ -28,14 +27,12 @@ export class SearchTablePaginationComponent implements OnInit {
     private _pageCount: number = 0;
 
     @Input()
-    @InputConverter(NumberConverter)
     public set page(newPage: number) {
         this._page = newPage;
         this.calculatePageNumbers();
     }
 
     @Input()
-    @InputConverter(NumberConverter)
     public set pageCount(newPageCount: number) {
         this._pageCount = newPageCount;
         this.calculatePageNumbers();
@@ -45,7 +42,6 @@ export class SearchTablePaginationComponent implements OnInit {
     public pageChange = new EventEmitter();
 
     @Input()
-    @InputConverter(NumberConverter)
     public range: number;
 
     public pageNumbers: number[] = [];

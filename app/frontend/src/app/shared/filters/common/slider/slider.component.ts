@@ -18,7 +18,6 @@ import {
     ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, HostListener, Input, OnInit, Output, Renderer2,
     ViewChild
 } from '@angular/core';
-import { InputConverter, NumberConverter } from '../../../../utils/input-converter.decorator';
 
 export class SliderRangeModel {
     public min: number;
@@ -139,11 +138,9 @@ export class SliderComponent implements OnInit {
     public modelChange = new EventEmitter();
 
     @Input()
-    @InputConverter(NumberConverter)
     public min: number;
 
     @Input()
-    @InputConverter(NumberConverter)
     public max: number;
 
     @ViewChild('sliderElement')
