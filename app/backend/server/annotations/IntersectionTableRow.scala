@@ -21,7 +21,7 @@ import com.antigenomics.vdjdb.impl.ClonotypeSearchResult
 import com.antigenomics.vdjtools.sample.Clonotype
 import play.api.libs.json.{Json, Writes}
 
-case class IntersectionTableRow(entries: Seq[String], matches: Seq[IntersectionTableRowMatch])
+case class IntersectionTableRow(entries: Seq[String], matches: Seq[IntersectionTableRowMatch], metadata: IntersectionTableRowMetadata)
 
 object IntersectionTableRow {
     implicit val intersectTableRowWrites: Writes[IntersectionTableRow] = Json.writes[IntersectionTableRow]
@@ -34,6 +34,7 @@ object IntersectionTableRow {
             Seq(id.toString, results.size.toString,
                 clonotype.getFreq.toString, clonotype.getCount.toString,
                 clonotype.getCdr3aa, clonotype.getV, clonotype.getJ),
-            results.map(IntersectionTableRowMatch.createFromSearchResult))
+            results.map(IntersectionTableRowMatch.createFromSearchResult),
+            IntersectionTableRowMetadata(clonotype.getVEnd, clonotype.getJStart, clonotype.getCdr3nt))
     }
 }

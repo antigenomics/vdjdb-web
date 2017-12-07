@@ -24,13 +24,10 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 })
 export class IntersectionTableEntryFrequencyComponent {
     private static _maxFixedDigits: number = 3;
-    private _value: string;
+
+    public value: string;
 
     public generate(value: string) {
-        this._value = parseFloat(value).toExponential(IntersectionTableEntryFrequencyComponent._maxFixedDigits);
-    }
-
-    get value() {
-        return this._value;
+        this.value = parseFloat(value).toExponential(IntersectionTableEntryFrequencyComponent._maxFixedDigits);
     }
 }

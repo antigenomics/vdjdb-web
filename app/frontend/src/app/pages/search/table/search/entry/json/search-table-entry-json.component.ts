@@ -26,16 +26,16 @@ import { DatabaseColumnInfo } from '../../../../database/database-metadata';
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SearchTableEntryJsonComponent {
-    private _value: string[];
-    private _title: string;
-    private _color: string;
+    public value: string[];
+    public title: string;
+    public color: string;
 
     constructor(private clipboard: ClipboardService, private notifications: NotificationService) {}
 
     @HostListener('click')
     public copyToClipboard(): void {
-        if (this._value.length !== 0) {
-            const copyContent = this._value.join('\n');
+        if (this.value.length !== 0) {
+            const copyContent = this.value.join('\n');
             const result = this.clipboard.copyFromContent(copyContent);
             if (result) {
                 this.notifications.success('Copy to clipboard', 'Copied successfully');
@@ -48,7 +48,7 @@ export class SearchTableEntryJsonComponent {
     }
 
     public generate(title: string, jsonString: string, column: DatabaseColumnInfo): void {
-        this._title = title;
+        this.title = title;
         try {
             const json = JSON.parse(jsonString);
             let color = 'black';
@@ -84,23 +84,11 @@ export class SearchTableEntryJsonComponent {
             }
             /* tslint:enable:no-string-literal */
 
-            this._value = text;
-            this._color = color;
+            this.value = text;
+            this.color = color;
         } catch (e) {
-            this._value = [];
-            this._color = 'black';
+            this.value = [];
+            this.color = 'black';
         }
-    }
-
-    get value() {
-        return this._value;
-    }
-
-    get title() {
-        return this._title;
-    }
-
-    get color() {
-        return this._color;
     }
 }

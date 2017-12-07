@@ -40,7 +40,7 @@ export class PopupDirective {
     public position: 'left' | 'right' | 'top' | 'bottom' = 'left';
 
     @Input('display')
-    public display: 'paragraph' | 'list' = 'paragraph';
+    public display: 'paragraph' | 'list' | 'colored-text' = 'paragraph';
 
     constructor(private viewContainerRef: ViewContainerRef, private resolver: ComponentFactoryResolver) {}
 

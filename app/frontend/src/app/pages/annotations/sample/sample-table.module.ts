@@ -21,6 +21,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { ModalsModule } from '../../../shared/modals/modals.module';
 import { SampleTableComponent } from './sample-table.component';
 import { SampleTableService } from './sample-table.service';
+import { IntersectionTableEntryCdr3aaComponent } from './table/entry/intersection-table-entry-cdr3aa.component';
 import { IntersectionTableEntryFrequencyComponent } from './table/entry/intersection-table-entry-frequency.component';
 import { IntersectionTableEntryOriginalComponent } from './table/entry/intersection-table-entry-original.component';
 import { IntersectionTableFiltersComponent } from './table/filters/intersection-table-filters.component';
@@ -35,11 +36,13 @@ import { IntersectionTableRowComponent } from './table/row/intersection-table-ro
         IntersectionTableFiltersComponent,
         IntersectionTableRowComponent,
         IntersectionTableEntryOriginalComponent,
-        IntersectionTableEntryFrequencyComponent ],
+        IntersectionTableEntryFrequencyComponent,
+        IntersectionTableEntryCdr3aaComponent ],
     exports:         [ SampleTableComponent ],
     entryComponents: [
         IntersectionTableEntryOriginalComponent,
-        IntersectionTableEntryFrequencyComponent ],
+        IntersectionTableEntryFrequencyComponent,
+        IntersectionTableEntryCdr3aaComponent ],
     providers:       [ SampleTableService ]
 })
 export class SampleTableModule {

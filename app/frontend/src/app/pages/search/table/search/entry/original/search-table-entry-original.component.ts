@@ -22,13 +22,9 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SearchTableEntryOriginalComponent {
-    private _value: string;
+    public value: string;
 
     public generate(value: string) {
-        this._value = value;
-    }
-
-    get value() {
-        return this._value;
+        this.value = value;
     }
 }

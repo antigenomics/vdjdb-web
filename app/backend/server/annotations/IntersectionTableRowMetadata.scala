@@ -15,17 +15,12 @@
  *
  */
 
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+package backend.server.annotations
 
-@Component({
-    selector: 'td[intersection-table-entry-original]',
-    template: '{{ value }}',
-    changeDetection: ChangeDetectionStrategy.OnPush
-})
-export class IntersectionTableEntryOriginalComponent {
-    public value: string;
+import play.api.libs.json.{Json, Writes}
 
-    public generate(value: string) {
-        this.value = value;
-    }
+case class IntersectionTableRowMetadata(vEnd: Int, jStart: Int, cdr3nt: String)
+
+object IntersectionTableRowMetadata {
+    implicit val intersectionTableRowMetadataWrites: Writes[IntersectionTableRowMetadata] = Json.writes[IntersectionTableRowMetadata]
 }

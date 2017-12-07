@@ -20,6 +20,7 @@ import {
     ViewContainerRef
 } from '@angular/core';
 import { SampleTableService } from '../../sample-table.service';
+import { IntersectionTableEntryCdr3aaComponent } from '../entry/intersection-table-entry-cdr3aa.component';
 import { IntersectionTableEntryFrequencyComponent } from '../entry/intersection-table-entry-frequency.component';
 import { IntersectionTableEntryOriginalComponent } from '../entry/intersection-table-entry-original.component';
 import { IntersectionTableRow } from './intersection-table-row';
@@ -44,6 +45,7 @@ export class IntersectionTableRowComponent implements OnInit, OnDestroy {
     public ngOnInit(): void {
         const originalComponentResolver = this.resolver.resolveComponentFactory(IntersectionTableEntryOriginalComponent);
         const frequencyComponentResolver = this.resolver.resolveComponentFactory(IntersectionTableEntryFrequencyComponent);
+        const cdr3aaComponentResolver = this.resolver.resolveComponentFactory(IntersectionTableEntryCdr3aaComponent);
 
         if (this.row.entries) {
             const columns = this.sampleTableService.getColumns();
@@ -54,6 +56,10 @@ export class IntersectionTableRowComponent implements OnInit, OnDestroy {
                     case 'freq':
                         component = this.rowViewContainer.createComponent(frequencyComponentResolver);
                         component.instance.generate(entry);
+                        break;
+                    case 'cdr3aa':
+                        component = this.rowViewContainer.createComponent(cdr3aaComponentResolver);
+                        component.instance.generate(entry, this.row.metadata);
                         break;
                     default:
                         component = this.rowViewContainer.createComponent(originalComponentResolver);
