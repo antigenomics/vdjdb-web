@@ -1,5 +1,5 @@
 <div class="ui main content fade slow element soft-margin">
-    <div class="ui raised segments">
+    <div class="ui segments">
         <h3 class="ui top attached header">Database browser</h3>
         <div class="ui attached segment teal padded">
             <search-info></search-info>
@@ -9,7 +9,7 @@
             <button class="ui teal button left floated" [ngClass]="{'loading':isLoading()}" (click)="search()">Refresh table</button>
         </div>
     </div>
-    <div class="ui raised segments">
+    <div class="ui segments">
         <h3 class="ui top attached header">Results</h3>
         <div class="ui attached teal padded blurring segment">
             <div class="ui inverted dimmer" [ngClass]="{'active':isLoading()}">

@@ -15,18 +15,18 @@
  *
  */
 
-import { Component, Input} from '@angular/core';
-import { IntersectionTableColumnInfo } from './column/intersection-table-column-info';
-import { IntersectionTable } from './intersection-table';
+package backend.server.annotations
 
-@Component({
-    selector:        'intersection-table',
-    templateUrl:     './intersection-table.component.html'
-})
-export class IntersectionTableComponent {
-    @Input('columns')
-    public columns: IntersectionTableColumnInfo[];
+import backend.server.search.SearchTableRow
+import com.antigenomics.vdjdb.impl.ClonotypeSearchResult
+import play.api.libs.json.{Json, Writes}
 
-    @Input('table')
-    public table: IntersectionTable;
+case class IntersectionTableRowMatch(row: SearchTableRow)
+
+object IntersectionTableRowMatch {
+    implicit val intersectionTableRowMatchWrites: Writes[IntersectionTableRowMatch] = Json.writes[IntersectionTableRowMatch]
+
+    def createFromSearchResult(result: ClonotypeSearchResult): IntersectionTableRowMatch = {
+        IntersectionTableRowMatch(SearchTableRow.createFromRow(result.getRow))
+    }
 }

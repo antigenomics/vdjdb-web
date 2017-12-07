@@ -15,13 +15,16 @@
  *
  */
 
+import { IntersectionTableRowMatch } from './intersection-table-row-match';
+
 export class IntersectionTableRow {
-    public entries: string[];
+    public readonly entries: string[];
+    public readonly matches: IntersectionTableRowMatch[];
 
     constructor(row: any) {
-        /* Disable tslint to prevent ClosureCompiler mangling */
         /* tslint:disable:no-string-literal */
         this.entries = row['entries'];
+        this.matches = row['matches'].map((m: any) => new IntersectionTableRowMatch(m));
         /* tslint:enable:no-string-literal */
     }
 }

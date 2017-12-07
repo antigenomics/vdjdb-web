@@ -21,16 +21,34 @@ import backend.server.ResultsTable
 import backend.server.annotations.api.intersect.SampleIntersectionRequest
 import backend.server.database.Database
 import com.antigenomics.vdjtools.sample.Sample
+
 import scala.collection.JavaConverters._
+import scala.math.Ordering.String
 
 class IntersectionTable extends ResultsTable[IntersectionTableRow] {
-    def sort(columnIndex: Int, sortType: String): Unit = ???
+
+    def sort(columnIndex: Int, sortType: String): Unit = {
+        if ((sortType == "desc" || sortType == "asc") && (columnIndex >= 0)) {
+            rows = rows.sortWith((e1, e2) => {
+                val v1 = e1.entries(columnIndex)
+                val v2 = e2.entries(columnIndex)
+                sortType match {
+                    case "desc" => String.gt(v1, v2)
+                    case "asc" => String.lt(v1, v2)
+                }
+            })
+        }
+    }
 
     def update(request: SampleIntersectionRequest, sample: Sample, database: Database): IntersectionTable = {
         //TODO !! add more preprocessing parameters
         val instance = database.getInstance.asClonotypeDatabase(request.matchV, request.matchJ)
         val results = instance.search(sample)
-        this.rows = results.keySet().asScala.toList.map(clonotype => IntersectionTableRow.createFromClonotype(clonotype))
+        this.rows = results
+            .asScala.toList
+            .sortWith { case ((c1, _), (c2, _)) => c1.getFreq > c2.getFreq }
+            .map { case (c, l) => (c, l.asScala) }
+            .map(IntersectionTableRow.createFromSearchResult)
         this
     }
 }

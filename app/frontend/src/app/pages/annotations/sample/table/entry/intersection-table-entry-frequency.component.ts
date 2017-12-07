@@ -15,18 +15,22 @@
  *
  */
 
-import { Component, Input} from '@angular/core';
-import { IntersectionTableColumnInfo } from './column/intersection-table-column-info';
-import { IntersectionTable } from './intersection-table';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 
 @Component({
-    selector:        'intersection-table',
-    templateUrl:     './intersection-table.component.html'
+    selector: 'td[intersection-table-frequency-original]',
+    template: '{{ value }}',
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class IntersectionTableComponent {
-    @Input('columns')
-    public columns: IntersectionTableColumnInfo[];
+export class IntersectionTableEntryFrequencyComponent {
+    private static _maxFixedDigits: number = 3;
+    private _value: string;
 
-    @Input('table')
-    public table: IntersectionTable;
+    public generate(value: string) {
+        this._value = parseFloat(value).toExponential(IntersectionTableEntryFrequencyComponent._maxFixedDigits);
+    }
+
+    get value() {
+        return this._value;
+    }
 }

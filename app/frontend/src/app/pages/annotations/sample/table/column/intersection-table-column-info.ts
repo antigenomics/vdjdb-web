@@ -15,18 +15,14 @@
  *
  */
 
-import { Component, Input} from '@angular/core';
-import { IntersectionTableColumnInfo } from './column/intersection-table-column-info';
-import { IntersectionTable } from './intersection-table';
+export class IntersectionTableColumnInfo {
+    public readonly name: string;
+    public readonly title: string;
+    public readonly width: string;
 
-@Component({
-    selector:        'intersection-table',
-    templateUrl:     './intersection-table.component.html'
-})
-export class IntersectionTableComponent {
-    @Input('columns')
-    public columns: IntersectionTableColumnInfo[];
-
-    @Input('table')
-    public table: IntersectionTable;
+    constructor(name: string, title: string, width: string) {
+        this.name = name;
+        this.title = title;
+        this.width = width;
+    }
 }

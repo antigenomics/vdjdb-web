@@ -1,26 +1,19 @@
-<h2 class="ui center aligned icon header" *ngIf="!isTableInitialized()">
+<h2 class="ui center aligned icon header" *ngIf="!table.isInitialized() && !table.isLoading()">
     <i class="table icon"></i>
     <div class="content"> Click "Intersect" button to proceed</div>
     <div class="sub header">Sub header</div>
 </h2>
-
-<div class="ui grid" *ngIf="isTableInitialized()">
-    <div class="sixteen wide column">
-        <div style="width: 100%; min-height: 100px; overflow-x: auto" *ngIf="!table.isEmpty()">
-            <table class="ui unstackable single line celled stripped very compact small table">
-                <thead>
-                <tr>
-                    <th class="center aligned collapsing"><span class="header">Frequency</span></th>
-                    <th class="center aligned collapsing"><span class="header">Count</span></th>
-                    <th class="center aligned collapsing"><span class="header">CDR3aa</span></th>
-                    <th class="center aligned collapsing"><span class="header">V</span></th>
-                    <th class="center aligned collapsing"><span class="header">J</span></th>
-                </tr>
-                </thead>
-                <tbody>
-                    <tr *ngFor="let row of table.getRows()" [intersection-table-row]="row" class="center aligned"></tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
+<div style="width: 100%; overflow-x: auto" *ngIf="!table.isEmpty()">
+    <table class="ui unstackable compact celled stripped table">
+        <thead>
+        <tr>
+            <th class="{{ column.width }}" *ngFor="let column of columns">
+                <span class="header">{{ column.title }}</span>
+            </th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr *ngFor="let row of table.getRows()" [intersection-table-row]="row"></tr>
+        </tbody>
+    </table>
 </div>
