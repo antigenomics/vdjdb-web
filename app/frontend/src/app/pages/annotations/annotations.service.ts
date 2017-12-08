@@ -24,6 +24,7 @@ import { WebSocketResponseData } from '../../shared/websocket/websocket-response
 import { WebSocketService } from '../../shared/websocket/websocket.service';
 import { LoggerService } from '../../utils/logger/logger.service';
 import { IntersectionTableFilters } from './sample/table/filters/intersection-table-filters';
+import { FileItem } from './upload/item/file-item';
 
 export type AnnotationsServiceEvents = number;
 
@@ -119,18 +120,18 @@ export class AnnotationsService {
         });
     }
 
-    public async addSample(sampleName: string): Promise<boolean> {
+    public async addSample(file: FileItem): Promise<boolean> {
         const response = await this.connection.sendMessage({
             action: AnnotationsServiceWebSocketActions.VALIDATE_SAMPLE,
             data:   new WebSocketRequestData()
-                    .add('name', sampleName)
+                    .add('name', file.baseName)
                     .unpack()
         });
         const valid = response.isSuccess() && response.get('valid');
         if (valid) {
             const user = this.getUser();
-            if (!user.samples.some((sample) => sample.name === sampleName)) {
-                user.samples.push(new SampleItem(sampleName));
+            if (!user.samples.some((sample) => sample.name === file.baseName)) {
+                user.samples.push(new SampleItem(file.baseName, file.software));
                 this._events.next(AnnotationsServiceEvents.SAMPLE_ADDED);
             }
         }

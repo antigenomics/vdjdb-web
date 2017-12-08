@@ -19,15 +19,21 @@ import { SampleItem } from '../../../../shared/sample/sample-item';
 import { IntersectionTableRow } from './row/intersection-table-row';
 
 export class IntersectionTable {
+    private _error: boolean;
     private _loading: boolean;
     private _initialized: boolean;
     private _sample: SampleItem;
     private _rows: IntersectionTableRow[] = [];
 
     constructor(sample: SampleItem) {
+        this._error = false;
         this._loading = false;
         this._initialized = false;
         this._sample = sample;
+    }
+
+    public isError(): boolean {
+        return this._error;
     }
 
     public isLoading(): boolean {
@@ -58,5 +64,11 @@ export class IntersectionTable {
         this._rows = rows.map((r) => new IntersectionTableRow(r));
         this._initialized = true;
         this._loading = false;
+    }
+
+    public error(): void {
+        this._initialized = true;
+        this._loading = false;
+        this._error = true;
     }
 }

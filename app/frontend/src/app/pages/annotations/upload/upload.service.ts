@@ -201,7 +201,7 @@ export class UploadService {
                 next:     async (status) => {
                     if (status.loading === false) {
                         if (status.progress === UploadService.FULL_PROGRESS && status.error === undefined) {
-                            const added = await this.annotationsService.addSample(file.baseName);
+                            const added = await this.annotationsService.addSample(file);
                             if (added) {
                                 file.setUploadedStatus();
                             } else {

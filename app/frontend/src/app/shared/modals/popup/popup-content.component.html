@@ -1,6 +1,5 @@
 <div class="ui popup visible fade element"
-     [style.width]="boundingRect.width"
-     [style.max-width]="boundingRect.width"
+     [style.min-width]="boundingRect.width"
      [style.left]="boundingRect.left"
      [style.top]="boundingRect.top"
      [style.bottom]="boundingRect.bottom"
@@ -18,7 +17,29 @@
     <div class="content" *ngIf="display === 'colored-text'">
         <span *ngFor="let item of getPopupContent()" [style.color]="item.split('|')[1]">{{ item.split('|')[0] }}</span>
     </div>
-    <div class="content" *ngIf="isFooterExists()">
+    <div class="content" *ngIf="display === 'table'">
+        <div class="description">
+            <div class="ui grid">
+                <div class="one column row middle aligned">
+                    <div class="column">
+                        <div class="ui very basic fixed single line unstackable compact table">
+                            <thead>
+                            <tr>
+                                <th class="one wide" *ngFor="let header of getPopupContent().headers"><span class="header">{{ header }}</span></th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr *ngFor="let row of getPopupContent().rows">
+                                <td *ngFor="let entry of row">{{ entry }}</td>
+                            </tr>
+                            </tbody>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="content footer" *ngIf="isFooterExists()">
         <div class="ui divider"></div>
         <p>{{ getFooterContent() }}</p>
     </div>

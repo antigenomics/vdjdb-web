@@ -19,6 +19,7 @@ package backend.server.annotations.api.user
 
 import backend.models.authorization.permissions.UserPermissions
 import backend.models.authorization.user.UserDetails
+import backend.models.files.sample.SampleFileDetails
 import play.api.libs.json.{Json, Writes}
 
 case class UserDetailsResponse(details: UserDetails)
@@ -27,6 +28,7 @@ object UserDetailsResponse {
     final val Action: String = "details"
 
     implicit val userPermissionsWrites: Writes[UserPermissions] = Json.writes[UserPermissions]
+    implicit val sampleFileDetailsWrites: Writes[SampleFileDetails] = Json.writes[SampleFileDetails]
     implicit val userDetailWrites: Writes[UserDetails] = Json.writes[UserDetails]
     implicit val userDetailsResponseWrites: Writes[UserDetailsResponse] = Json.writes[UserDetailsResponse]
 }

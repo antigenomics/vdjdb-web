@@ -16,6 +16,7 @@
 
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, Input } from '@angular/core';
 import { Utils } from '../../../utils/utils';
+import { PopupContentTable } from './popup-content-table';
 import WindowViewport = Utils.Window.WindowViewport;
 
 export class PopupBoundingRect {
@@ -32,7 +33,7 @@ export class PopupBoundingRect {
 })
 export class PopupContentComponent implements AfterViewInit {
     private static _magicConstant: number = 20.0;
-    private _content: string[];
+    private _content: string[] | PopupContentTable;
     private _header: string;
     private _footer: string;
 
@@ -48,13 +49,22 @@ export class PopupContentComponent implements AfterViewInit {
     public position: 'left' | 'right' | 'top' | 'bottom';
 
     @Input('display')
-    public display: 'paragraph' | 'list' | 'colored-text';
+    public display: 'paragraph' | 'list' | 'colored-text' | 'table';
+
+    @Input('topShift')
+    public topShift: number = 0;
+
+    @Input('bottomShift')
+    public bottomShift: number = 0;
+
+    @Input('shiftStrategy')
+    public shiftStrategy: 'absolute' | 'per-item';
 
     @Input('content')
-    set content(popupContent: string | string[]) {
+    set content(popupContent: string | string[] | PopupContentTable) {
         if (typeof popupContent === 'string') {
             this._content = Utils.Text.splitParagraphs(popupContent);
-        } else if (Array.isArray(popupContent)) {
+        } else if (Array.isArray(popupContent) || popupContent instanceof PopupContentTable) {
             this._content = popupContent;
         }
     }
@@ -76,8 +86,13 @@ export class PopupContentComponent implements AfterViewInit {
         this.changeDetector.detectChanges();
     }
 
-    public getPopupContent(): string[] {
-        return this._content.length === 0 ? [ 'No content' ] : this._content;
+    public getPopupContent(): string[] | PopupContentTable {
+        if (this._content instanceof PopupContentTable) {
+            return this._content;
+        } else if (Array.isArray(this._content)) {
+            return this._content.length === 0 ? [ 'No content' ] : this._content;
+        }
+        return this._content;
     }
 
     public getHeaderContent(): string {
@@ -115,6 +130,36 @@ export class PopupContentComponent implements AfterViewInit {
         this.boundingRect.width = this.width + 'px';
     }
 
+    private getContentLength(): number {
+        if (this._content instanceof PopupContentTable) {
+            return (this._content as PopupContentTable).rows.length;
+        } else {
+            return (this._content as string[]).length;
+        }
+    }
+
+    private getTopShift(): number {
+        switch (this.shiftStrategy) {
+            case 'absolute':
+                return this.topShift;
+            case 'per-item':
+                return this.topShift * this.getContentLength();
+            default:
+                return this.topShift;
+        }
+    }
+
+    private getBottomShift(): number {
+        switch (this.shiftStrategy) {
+            case 'absolute':
+                return this.bottomShift;
+            case 'per-item':
+                return this.bottomShift * this.getContentLength();
+            default:
+                return this.bottomShift;
+        }
+    }
+
     private positionLeft(hostBoundingRectangle: ClientRect, _: WindowViewport): void {
         let left = hostBoundingRectangle.left - this.width - PopupContentComponent._magicConstant;
         const top = hostBoundingRectangle.top;
@@ -124,7 +169,7 @@ export class PopupContentComponent implements AfterViewInit {
         }
 
         this.boundingRect.left = left + 'px';
-        this.boundingRect.top = top + 'px';
+        this.boundingRect.top = `${top + this.getTopShift()}px`;
         this.boundingRect.bottom = 'auto';
     }
 
@@ -137,7 +182,7 @@ export class PopupContentComponent implements AfterViewInit {
         }
 
         this.boundingRect.left = left + 'px';
-        this.boundingRect.top = top + 'px';
+        this.boundingRect.top = `${top + this.getTopShift()}px`;
         this.boundingRect.bottom = 'auto';
     }
 
@@ -156,7 +201,7 @@ export class PopupContentComponent implements AfterViewInit {
 
         this.boundingRect.left = left + 'px';
         this.boundingRect.top = 'auto';
-        this.boundingRect.bottom = bottom + 'px';
+        this.boundingRect.bottom = `${bottom + this.getBottomShift()}px`;
     }
 
     private positionBottom(hostBoundingRectangle: ClientRect, windowViewport: WindowViewport): void {
@@ -173,7 +218,7 @@ export class PopupContentComponent implements AfterViewInit {
         }
 
         this.boundingRect.left = left + 'px';
-        this.boundingRect.top = top + 'px';
+        this.boundingRect.top = `${top + this.getTopShift()}px`;
         this.boundingRect.bottom = 'auto';
     }
 

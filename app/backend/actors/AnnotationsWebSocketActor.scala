@@ -61,12 +61,16 @@ class AnnotationsWebSocketActor(out: ActorRef, limit: IpLimit, user: User, detai
                     val sampleFile = await(user.getSampleFileByNameWithMetadata(intersectRequest.sampleName))
                     sampleFile match {
                         case Some(file) =>
-                            val sampleFileConnection = new SampleFileConnection(file._2.path, Software.valueOf(file._1.software))
-                            val sample = sampleFileConnection.getSample
-                            val table = new IntersectionTable()
-                            table.update(intersectRequest, sample, database)
-                            intersectionTableResults += (file._1.sampleName -> table)
-                            out.success(SampleIntersectionResponse(table.getPage(0)))
+                            try {
+                                val sampleFileConnection = new SampleFileConnection(file._2.path, Software.valueOf(file._1.software))
+                                val sample = sampleFileConnection.getSample
+                                val table = new IntersectionTable()
+                                table.update(intersectRequest, sample, database)
+                                intersectionTableResults += (file._1.sampleName -> table)
+                                out.success(SampleIntersectionResponse(table.getPage(0)))
+                            } catch {
+                                case _: Exception => out.errorMessage("Unable to intersect")
+                            }
                         case None =>
                             out.errorMessage("Invalid file name")
                     }
