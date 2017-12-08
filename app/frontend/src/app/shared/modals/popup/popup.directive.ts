@@ -15,6 +15,7 @@
  */
 
 import { ComponentFactoryResolver, ComponentRef, Directive, HostListener, Input, ViewContainerRef } from '@angular/core';
+import { PopupContentTable } from './popup-content-table';
 import { PopupContentComponent } from './popup-content.component';
 
 @Directive({
@@ -25,7 +26,7 @@ export class PopupDirective {
     private _tooltip: ComponentRef<PopupContentComponent>;
 
     @Input('popup')
-    public popupContent: string;
+    public popupContent: string | string[] | PopupContentTable;
 
     @Input('header')
     public headerContent: string;
@@ -40,7 +41,16 @@ export class PopupDirective {
     public position: 'left' | 'right' | 'top' | 'bottom' = 'left';
 
     @Input('display')
-    public display: 'paragraph' | 'list' | 'colored-text' = 'paragraph';
+    public display: 'paragraph' | 'list' | 'colored-text' | 'table' = 'paragraph';
+
+    @Input('topShift')
+    public topShift: number = 0;
+
+    @Input('bottomShift')
+    public bottomShift: number = 0;
+
+    @Input('shiftStrategy')
+    public shiftStrategy: 'absolute' | 'per-item' = 'absolute';
 
     constructor(private viewContainerRef: ViewContainerRef, private resolver: ComponentFactoryResolver) {}
 
@@ -57,6 +67,9 @@ export class PopupDirective {
             this._tooltip.instance.width = this.width;
             this._tooltip.instance.position = this.position;
             this._tooltip.instance.display = this.display;
+            this._tooltip.instance.topShift = this.topShift;
+            this._tooltip.instance.bottomShift = this.bottomShift;
+            this._tooltip.instance.shiftStrategy = this.shiftStrategy;
             this._visible = true;
         }
     }

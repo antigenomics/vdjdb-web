@@ -17,10 +17,17 @@
         </tbody>
     </table>
 </div>
-<div *ngIf="table.isInitialized() && table.isEmpty()">
+<div *ngIf="table.isInitialized() && table.isEmpty() && !table.isError()">
     <h2 class="ui center aligned icon header">
         <i class="search icon"></i>
         No results found
         <div class="sub header">Please change the intersection parameters</div>
+    </h2>
+</div>
+<div *ngIf="table.isInitialized() && table.isEmpty() && table.isError()">
+    <h2 class="ui center aligned icon header">
+        <i class="warning sign icon"></i>
+        Unable to parse sample file
+        <div class="sub header">Wrong software type</div>
     </h2>
 </div>

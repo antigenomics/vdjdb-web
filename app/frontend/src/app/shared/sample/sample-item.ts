@@ -17,8 +17,16 @@
 
 export class SampleItem {
     public readonly name: string;
+    public readonly software: string;
 
-    constructor(name: string) {
+    constructor(name: string, software: string) {
         this.name = name;
+        this.software = software;
+    }
+
+    public static deserialize(o: any): SampleItem {
+        /* tslint:disable:no-string-literal */
+        return new SampleItem(o['name'], o['software']);
+        /* tslint:enable:no-string-literal */
     }
 }

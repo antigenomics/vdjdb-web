@@ -30,4 +30,8 @@ case class SampleFile(id: Long, sampleName: String, software: String, metadataID
     def getUser(implicit up: UserProvider, ec: ExecutionContext): Future[User] = {
         up.get(userID).map(_.get)
     }
+
+    def getDetails: SampleFileDetails = {
+        SampleFileDetails(sampleName, software)
+    }
 }

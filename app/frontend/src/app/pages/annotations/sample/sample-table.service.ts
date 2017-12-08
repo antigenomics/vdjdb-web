@@ -18,6 +18,7 @@
 import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs/Subject';
 import { SampleItem } from '../../../shared/sample/sample-item';
+import { NotificationService } from '../../../utils/notifications/notification.service';
 import { AnnotationsService } from '../annotations.service';
 import { IntersectionTableColumnInfo } from './table/column/intersection-table-column-info';
 import { IntersectionTableFilters } from './table/filters/intersection-table-filters';
@@ -48,7 +49,7 @@ export class SampleTableService {
     private _filters: Map<string, IntersectionTableFilters> = new Map();
     private _events: Subject<SampleTableServiceEvent> = new Subject();
 
-    constructor(private annotationsService: AnnotationsService) {}
+    constructor(private annotationsService: AnnotationsService, private notifications: NotificationService) {}
 
     public getTable(sample: SampleItem): IntersectionTable {
         return this._tables.get(sample.name);
@@ -77,9 +78,14 @@ export class SampleTableService {
         filters.disable();
         this._events.next(new SampleTableServiceEvent(sample.name, SampleTableServiceEventType.TABLE_LOADING));
         const response = await this.annotationsService.intersect(sample, filters);
-        table.update(response.get('rows'));
-        filters.enable();
+        if (response.isSuccess()) {
+            table.update(response.get('rows'));
+        } else if (response.isError()) {
+            this.notifications.error('Annotations', 'Unable to annotate sample');
+            table.error();
+        }
         this._tables.set(sample.name, table);
+        filters.enable();
         this._events.next(new SampleTableServiceEvent(sample.name, SampleTableServiceEventType.TABLE_UPDATED));
     }
 
@@ -101,9 +107,10 @@ export class SampleTableService {
             new IntersectionTableColumnInfo('found', 'Found', 'one wide'),
             new IntersectionTableColumnInfo('freq', 'Frequency', 'one wide'),
             new IntersectionTableColumnInfo('count', 'Count', 'one wide'),
-            new IntersectionTableColumnInfo('cdr3aa', 'CDR3aa', 'eight wide'),
+            new IntersectionTableColumnInfo('cdr3aa', 'CDR3aa', 'six wide'),
             new IntersectionTableColumnInfo('v', 'V', 'two wide'),
-            new IntersectionTableColumnInfo('j', 'J', 'two wide')
+            new IntersectionTableColumnInfo('j', 'J', 'two wide'),
+            new IntersectionTableColumnInfo('quickview', 'Quick View', 'two wide')
         ];
     }
 

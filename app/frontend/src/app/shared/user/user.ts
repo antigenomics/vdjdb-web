@@ -23,10 +23,10 @@ export class User {
     public samples: SampleItem[];
     public permissions: UserPermissions;
 
-    constructor(login: string, email: string, samples: string[], permissions: UserPermissions) {
+    constructor(login: string, email: string, samples: any[], permissions: UserPermissions) {
         this.login = login;
         this.email = email;
-        this.samples = samples.map((name) => new SampleItem(name));
+        this.samples = samples.map((sample) => SampleItem.deserialize(sample));
         this.permissions = permissions;
     }
 

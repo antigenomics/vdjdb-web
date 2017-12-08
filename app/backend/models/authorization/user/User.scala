@@ -57,7 +57,7 @@ case class User(id: Long, login: String, email: String, verified: Boolean, folde
     def getDetails(implicit upp: UserPermissionsProvider, sfp: SampleFileProvider, ec: ExecutionContext): Future[UserDetails] = async {
         val permissions = getPermissions
         val files = getSampleFiles
-        UserDetails(email, login, await(files).map(_.sampleName), await(permissions))
+        UserDetails(email, login, await(files).map(_.getDetails), await(permissions))
     }
 
     def addSampleFile(name: String, extension: String, softwareType: String, file: Files.TemporaryFile)

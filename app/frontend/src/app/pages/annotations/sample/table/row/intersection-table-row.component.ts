@@ -23,6 +23,7 @@ import { SampleTableService } from '../../sample-table.service';
 import { IntersectionTableEntryCdr3aaComponent } from '../entry/intersection-table-entry-cdr3aa.component';
 import { IntersectionTableEntryFrequencyComponent } from '../entry/intersection-table-entry-frequency.component';
 import { IntersectionTableEntryOriginalComponent } from '../entry/intersection-table-entry-original.component';
+import { IntersectionTableEntryQuickviewComponent } from '../entry/intersection-table-entry-quickview.component';
 import { IntersectionTableRow } from './intersection-table-row';
 
 @Component({
@@ -69,6 +70,11 @@ export class IntersectionTableRowComponent implements OnInit, OnDestroy {
                 this._components.push(component);
             });
         }
+
+        const quickViewComponentResolver = this.resolver.resolveComponentFactory(IntersectionTableEntryQuickviewComponent);
+        const quickViewComponent = this.rowViewContainer.createComponent(quickViewComponentResolver);
+        quickViewComponent.instance.generate(this.row.matches, this.row.metadata);
+        this._components.push(quickViewComponent);
     }
 
     public ngOnDestroy(): void {
