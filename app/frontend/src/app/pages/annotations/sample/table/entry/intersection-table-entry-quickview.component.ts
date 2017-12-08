@@ -23,7 +23,7 @@ import { IntersectionTableRowMetadata } from '../row/intersection-table-row-meta
 @Component({
     selector:        'td[intersection-table-entry-quickview]',
     template:        `<i class="info circle icon cursor pointer" [popup]="quickView"
-                     display="table" header="Quick view" position="left" width="700" topShift="-35" 
+                     display="table" header="Quick view" position="right" width="700" topShift="-35" 
                      shiftStrategy="per-item" footer="Click on 'Detailed' icon to see more information"></i>`,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

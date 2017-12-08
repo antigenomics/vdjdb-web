@@ -25,11 +25,11 @@
                         <div class="ui very basic fixed single line unstackable compact table">
                             <thead>
                             <tr>
-                                <th class="one wide" *ngFor="let header of getPopupContent().headers"><span class="header">{{ header }}</span></th>
+                                <th class="one wide center aligned" *ngFor="let header of getPopupContent().headers"><span class="header">{{ header }}</span></th>
                             </tr>
                             </thead>
                             <tbody>
-                            <tr *ngFor="let row of getPopupContent().rows">
+                            <tr class="center aligned" *ngFor="let row of getPopupContent().rows">
                                 <td *ngFor="let entry of row">{{ entry }}</td>
                             </tr>
                             </tbody>

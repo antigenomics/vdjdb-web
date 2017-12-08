@@ -25,6 +25,7 @@ import { IntersectionTableEntryCdr3aaComponent } from './table/entry/intersectio
 import { IntersectionTableEntryFrequencyComponent } from './table/entry/intersection-table-entry-frequency.component';
 import { IntersectionTableEntryOriginalComponent } from './table/entry/intersection-table-entry-original.component';
 import { IntersectionTableEntryQuickviewComponent } from './table/entry/intersection-table-entry-quickview.component';
+import { IntersectionTableEntryTagsComponent } from './table/entry/intersection-table-entry-tags.component';
 import { IntersectionTableFiltersComponent } from './table/filters/intersection-table-filters.component';
 import { IntersectionTableComponent } from './table/intersection-table.component';
 import { IntersectionTableRowComponent } from './table/row/intersection-table-row.component';
@@ -39,13 +40,15 @@ import { IntersectionTableRowComponent } from './table/row/intersection-table-ro
         IntersectionTableEntryOriginalComponent,
         IntersectionTableEntryFrequencyComponent,
         IntersectionTableEntryCdr3aaComponent,
-        IntersectionTableEntryQuickviewComponent ],
+        IntersectionTableEntryQuickviewComponent,
+        IntersectionTableEntryTagsComponent ],
     exports:         [ SampleTableComponent ],
     entryComponents: [
         IntersectionTableEntryOriginalComponent,
         IntersectionTableEntryFrequencyComponent,
         IntersectionTableEntryCdr3aaComponent,
-        IntersectionTableEntryQuickviewComponent ],
+        IntersectionTableEntryQuickviewComponent,
+        IntersectionTableEntryTagsComponent ],
     providers:       [ SampleTableService ]
 })
 export class SampleTableModule {

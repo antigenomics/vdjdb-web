@@ -4,16 +4,16 @@
     <div class="sub header">Sub header</div>
 </h2>
 <div style="width: 100%; overflow-x: auto" *ngIf="!table.isEmpty()">
-    <table class="ui unstackable compact celled stripped table">
+    <table class="ui unstackable very compact celled stripped table">
         <thead>
         <tr>
-            <th class="{{ column.width }}" *ngFor="let column of columns">
+            <th class="{{ column.width }} center aligned" *ngFor="let column of columns">
                 <span class="header">{{ column.title }}</span>
             </th>
         </tr>
         </thead>
         <tbody>
-        <tr *ngFor="let row of table.getRows()" [intersection-table-row]="row"></tr>
+        <tr class="center aligned" *ngFor="let row of table.getRows()" [intersection-table-row]="row"></tr>
         </tbody>
     </table>
 </div>

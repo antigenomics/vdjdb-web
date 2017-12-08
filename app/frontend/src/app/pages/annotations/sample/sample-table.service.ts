@@ -103,14 +103,15 @@ export class SampleTableService {
 
     public getColumns(): IntersectionTableColumnInfo[] {
         return [
+            new IntersectionTableColumnInfo('details', 'Details', 'one wide selectable'),
             new IntersectionTableColumnInfo('id', 'ID', 'one wide'),
             new IntersectionTableColumnInfo('found', 'Found', 'one wide'),
             new IntersectionTableColumnInfo('freq', 'Frequency', 'one wide'),
             new IntersectionTableColumnInfo('count', 'Count', 'one wide'),
-            new IntersectionTableColumnInfo('cdr3aa', 'CDR3aa', 'six wide'),
-            new IntersectionTableColumnInfo('v', 'V', 'two wide'),
-            new IntersectionTableColumnInfo('j', 'J', 'two wide'),
-            new IntersectionTableColumnInfo('quickview', 'Quick View', 'two wide')
+            new IntersectionTableColumnInfo('cdr3aa', 'CDR3aa', 'three wide'),
+            new IntersectionTableColumnInfo('v', 'V', 'one wide'),
+            new IntersectionTableColumnInfo('j', 'J', 'one wide'),
+            new IntersectionTableColumnInfo('tags', 'Tags', 'six wide')
         ];
     }
 

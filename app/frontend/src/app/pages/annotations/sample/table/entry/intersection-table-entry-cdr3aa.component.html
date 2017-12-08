@@ -1,5 +1,4 @@
-<div style="width: 100%; height: 20px" [popup]="ntRegions" header="CDR3nt" display="colored-text"
-     footer="Click on copy icon to save cdr3nt sequence to clipboard" position="top" width="500">
+<div style="width: 100%; height: 20px" [popup]="ntRegions" header="CDR3nt" display="colored-text" class="cursor pointer"
+     footer="Click on amino-acid sequence to save nucleotide sequence to clipboard" position="top" width="500" (click)="copyToClipboard()">
     <span *ngFor="let region of aaRegions" [style.color]="region.color">{{ region.part }}</span>
-    <i style="float: right" class="copy icon cursor pointer" (click)="copyToClipboard()"></i>
 </div>
