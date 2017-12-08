@@ -23,7 +23,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class IntersectionTableEntryFrequencyComponent {
-    private static _maxFixedDigits: number = 4;
+    private static _maxFixedDigits: number = 2;
 
     public value: string;
 

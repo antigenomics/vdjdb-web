@@ -24,6 +24,7 @@ import { IntersectionTableEntryCdr3aaComponent } from '../entry/intersection-tab
 import { IntersectionTableEntryFrequencyComponent } from '../entry/intersection-table-entry-frequency.component';
 import { IntersectionTableEntryOriginalComponent } from '../entry/intersection-table-entry-original.component';
 import { IntersectionTableEntryQuickviewComponent } from '../entry/intersection-table-entry-quickview.component';
+import { IntersectionTableEntryTagsComponent } from '../entry/intersection-table-entry-tags.component';
 import { IntersectionTableRow } from './intersection-table-row';
 
 @Component({
@@ -48,10 +49,14 @@ export class IntersectionTableRowComponent implements OnInit, OnDestroy {
         const frequencyComponentResolver = this.resolver.resolveComponentFactory(IntersectionTableEntryFrequencyComponent);
         const cdr3aaComponentResolver = this.resolver.resolveComponentFactory(IntersectionTableEntryCdr3aaComponent);
 
+        const quickViewComponentResolver = this.resolver.resolveComponentFactory(IntersectionTableEntryQuickviewComponent);
+        const quickViewComponent = this.rowViewContainer.createComponent(quickViewComponentResolver);
+        quickViewComponent.instance.generate(this.row.matches, this.row.metadata);
+
         if (this.row.entries) {
             const columns = this.sampleTableService.getColumns();
             this.row.entries.forEach((entry: string, index: number) => {
-                const column = columns[ index ];
+                const column = columns[ index + 1 ];
                 let component: ComponentRef<any>;
                 switch (column.name) {
                     case 'freq':
@@ -71,10 +76,10 @@ export class IntersectionTableRowComponent implements OnInit, OnDestroy {
             });
         }
 
-        const quickViewComponentResolver = this.resolver.resolveComponentFactory(IntersectionTableEntryQuickviewComponent);
-        const quickViewComponent = this.rowViewContainer.createComponent(quickViewComponentResolver);
-        quickViewComponent.instance.generate(this.row.matches, this.row.metadata);
-        this._components.push(quickViewComponent);
+        const tagsComponentResolver = this.resolver.resolveComponentFactory(IntersectionTableEntryTagsComponent);
+        const tagsComponent = this.rowViewContainer.createComponent(tagsComponentResolver);
+        tagsComponent.instance.generate(this.row.matches);
+        this._components.push(tagsComponent);
     }
 
     public ngOnDestroy(): void {
