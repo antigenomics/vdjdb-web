@@ -22,9 +22,9 @@ import { ModalsModule } from '../../../shared/modals/modals.module';
 import { SampleTableComponent } from './sample-table.component';
 import { SampleTableService } from './sample-table.service';
 import { IntersectionTableEntryCdr3aaComponent } from './table/entry/intersection-table-entry-cdr3aa.component';
+import { IntersectionTableEntryDetailsComponent } from './table/entry/intersection-table-entry-details.component';
 import { IntersectionTableEntryFrequencyComponent } from './table/entry/intersection-table-entry-frequency.component';
 import { IntersectionTableEntryOriginalComponent } from './table/entry/intersection-table-entry-original.component';
-import { IntersectionTableEntryQuickviewComponent } from './table/entry/intersection-table-entry-quickview.component';
 import { IntersectionTableEntryTagsComponent } from './table/entry/intersection-table-entry-tags.component';
 import { IntersectionTableFiltersComponent } from './table/filters/intersection-table-filters.component';
 import { IntersectionTableComponent } from './table/intersection-table.component';
@@ -40,14 +40,14 @@ import { IntersectionTableRowComponent } from './table/row/intersection-table-ro
         IntersectionTableEntryOriginalComponent,
         IntersectionTableEntryFrequencyComponent,
         IntersectionTableEntryCdr3aaComponent,
-        IntersectionTableEntryQuickviewComponent,
+        IntersectionTableEntryDetailsComponent,
         IntersectionTableEntryTagsComponent ],
     exports:         [ SampleTableComponent ],
     entryComponents: [
         IntersectionTableEntryOriginalComponent,
         IntersectionTableEntryFrequencyComponent,
         IntersectionTableEntryCdr3aaComponent,
-        IntersectionTableEntryQuickviewComponent,
+        IntersectionTableEntryDetailsComponent,
         IntersectionTableEntryTagsComponent ],
     providers:       [ SampleTableService ]
 })

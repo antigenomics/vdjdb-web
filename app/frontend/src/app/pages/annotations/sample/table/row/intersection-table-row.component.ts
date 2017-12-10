@@ -16,14 +16,14 @@
  */
 
 import {
-    ChangeDetectionStrategy, Component, ComponentFactoryResolver, ComponentRef, HostBinding, Input, OnDestroy, OnInit, ViewChild,
+    ChangeDetectionStrategy, Component, ComponentFactoryResolver, ComponentRef, Input, OnDestroy, OnInit, ViewChild,
     ViewContainerRef
 } from '@angular/core';
 import { SampleTableService } from '../../sample-table.service';
 import { IntersectionTableEntryCdr3aaComponent } from '../entry/intersection-table-entry-cdr3aa.component';
+import { IntersectionTableEntryDetailsComponent } from '../entry/intersection-table-entry-details.component';
 import { IntersectionTableEntryFrequencyComponent } from '../entry/intersection-table-entry-frequency.component';
 import { IntersectionTableEntryOriginalComponent } from '../entry/intersection-table-entry-original.component';
-import { IntersectionTableEntryQuickviewComponent } from '../entry/intersection-table-entry-quickview.component';
 import { IntersectionTableEntryTagsComponent } from '../entry/intersection-table-entry-tags.component';
 import { IntersectionTableRow } from './intersection-table-row';
 
@@ -49,9 +49,9 @@ export class IntersectionTableRowComponent implements OnInit, OnDestroy {
         const frequencyComponentResolver = this.resolver.resolveComponentFactory(IntersectionTableEntryFrequencyComponent);
         const cdr3aaComponentResolver = this.resolver.resolveComponentFactory(IntersectionTableEntryCdr3aaComponent);
 
-        const quickViewComponentResolver = this.resolver.resolveComponentFactory(IntersectionTableEntryQuickviewComponent);
+        const quickViewComponentResolver = this.resolver.resolveComponentFactory(IntersectionTableEntryDetailsComponent);
         const quickViewComponent = this.rowViewContainer.createComponent(quickViewComponentResolver);
-        quickViewComponent.instance.generate(this.row.matches, this.row.metadata);
+        quickViewComponent.instance.generate(this.row.matches);
 
         if (this.row.entries) {
             const columns = this.sampleTableService.getColumns();
@@ -78,7 +78,7 @@ export class IntersectionTableRowComponent implements OnInit, OnDestroy {
 
         const tagsComponentResolver = this.resolver.resolveComponentFactory(IntersectionTableEntryTagsComponent);
         const tagsComponent = this.rowViewContainer.createComponent(tagsComponentResolver);
-        tagsComponent.instance.generate(this.row.matches);
+        tagsComponent.instance.generate(this.row.tags);
         this._components.push(tagsComponent);
     }
 

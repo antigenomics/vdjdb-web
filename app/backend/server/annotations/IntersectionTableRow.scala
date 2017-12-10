@@ -21,20 +21,31 @@ import com.antigenomics.vdjdb.impl.ClonotypeSearchResult
 import com.antigenomics.vdjtools.sample.Clonotype
 import play.api.libs.json.{Json, Writes}
 
-case class IntersectionTableRow(entries: Seq[String], matches: Seq[IntersectionTableRowMatch], metadata: IntersectionTableRowMetadata)
+case class IntersectionTableRow(entries: Seq[String], matches: Seq[IntersectionTableRowMatch],
+                                tags: Map[String, Seq[String]], metadata: IntersectionTableRowMetadata)
 
 object IntersectionTableRow {
+    private final val tagsFields: Seq[String] = Seq("antigen.epitope", "antigen.species", "mhc.a", "mhc.b")
+
     implicit val intersectTableRowWrites: Writes[IntersectionTableRow] = Json.writes[IntersectionTableRow]
 
     def createFromSearchResult(searchResult: (Clonotype, Seq[ClonotypeSearchResult])): IntersectionTableRow = {
         val clonotype = searchResult._1
         val results = searchResult._2
         val id = results.head.getId
+        val tags = tagsFields.map(field => {
+            field -> createTagsFromClonotypeSearchResults(results, field)
+        }).toMap
+
         IntersectionTableRow(
             Seq(id.toString, results.size.toString,
                 clonotype.getFreq.toString, clonotype.getCount.toString,
                 clonotype.getCdr3aa, clonotype.getV, clonotype.getJ),
-            results.map(IntersectionTableRowMatch.createFromSearchResult),
+            results.map(IntersectionTableRowMatch.createFromSearchResult), tags,
             IntersectionTableRowMetadata(clonotype.getVEnd, clonotype.getJStart, clonotype.getCdr3nt))
+    }
+
+    private def createTagsFromClonotypeSearchResults(results: Seq[ClonotypeSearchResult], field: String): Seq[String] = {
+        results.map(_.getRow.getAt(field).getValue).distinct
     }
 }
