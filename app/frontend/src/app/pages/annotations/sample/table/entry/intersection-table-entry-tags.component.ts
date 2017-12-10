@@ -16,65 +16,31 @@
  */
 
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { IntersectionTableRowMatch } from '../row/intersection-table-row-match';
-
-export class IntersectionTableRowTag {
-    public readonly label: string;
-    public readonly detail: string;
-
-    constructor(label: string, detail: string) {
-        this.label = label;
-        this.detail = detail;
-    }
-}
-
-// <div class="detail">{{ tag.detail }}</div>
+import { IntersectionTableRowTags } from '../row/intersection-table-row';
 
 @Component({
     selector:        'td[intersection-table-entry-tags]',
-    template:        `<div class="ui basic mini label" *ngFor="let tag of tags">{{ tag.label }}</div>`,
+    template:        `<div class="ui small basic {{ tag[1] }} label" *ngFor="let tag of values">{{ tag[0] }}</div>`,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class IntersectionTableEntryTagsComponent {
-    public tags: IntersectionTableRowTag[] = [];
+    private static readonly _colors: string[] = [ 'teal', 'blue', 'violet', 'red' ];
 
-    public generate(matches: IntersectionTableRowMatch[]) {
-        const epitopeIndex: number = 8;
-        const speciesIndex: number = 10;
-        const mhcaIndex: number = 5;
-        const mhcbIndex: number = 6;
+    public tags: IntersectionTableRowTags;
+    public values: Array<[ string, string ]> = [];
 
-        this.tags = this.tags
-            .concat(this.generateTags(matches, epitopeIndex, (s: string) => s.length > 5 ? `${s.substring(0, 5)}..` : s))
-            .concat(this.generateTags(matches, speciesIndex, (s: string) => s.length > 5 ? `${s.substring(0, 5)}..` : s))
-            .concat(this.generateTags(matches, mhcaIndex))
-            .concat(this.generateTags(matches, mhcbIndex));
-    }
+    public generate(tags: IntersectionTableRowTags) {
+        this.tags = tags;
+        this.values = [];
 
-    private generateTags(matches: IntersectionTableRowMatch[], index: number, transformer?: (s: string) => string): IntersectionTableRowTag[] {
-        const array = matches.map((match) => {
-            return match.row.entries[index];
-        });
-        const uniqueMap = this.generateUniqueMap(array);
-        const tags: IntersectionTableRowTag[] = [];
-        uniqueMap.forEach((value: number, key: string) => {
-            tags.push(new IntersectionTableRowTag(transformer ? transformer(key) : key, value.toString()));
-        });
-        return tags;
-    }
-
-    private generateUniqueMap(array: string[]): Map<string, number> {
-        const map: Map<string, number> = new Map();
-
-        array.forEach((entry) => {
-            if (map.has(entry)) {
-                const previousValue = map.get(entry);
-                map.set(entry, previousValue + 1);
-            } else {
-                map.set(entry, 1);
+        let index = 0;
+        for (const key in this.tags) {
+            if (this.tags.hasOwnProperty(key)) {
+                this.values = this.values.concat(this.tags[ key ].map((tag) =>
+                    [ tag, IntersectionTableEntryTagsComponent._colors[ index ] ] as [ string, string ])
+                );
+                index += 1;
             }
-        });
-
-        return map;
+        }
     }
 }

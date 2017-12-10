@@ -4,7 +4,7 @@
     <div class="sub header">Sub header</div>
 </h2>
 <div style="width: 100%; overflow-x: auto" *ngIf="!table.isEmpty()">
-    <table class="ui unstackable very compact celled stripped table">
+    <table class="ui unstackable very compact celled stripped small table">
         <thead>
         <tr>
             <th class="{{ column.width }} center aligned" *ngFor="let column of columns">
@@ -13,7 +13,7 @@
         </tr>
         </thead>
         <tbody>
-        <tr class="center aligned" *ngFor="let row of table.getRows()" [intersection-table-row]="row"></tr>
+        <tr *ngFor="let row of table.getRows()" [intersection-table-row]="row"></tr>
         </tbody>
     </table>
 </div>

@@ -21,13 +21,14 @@ import { IntersectionTableRowMatch } from '../row/intersection-table-row-match';
 import { IntersectionTableRowMetadata } from '../row/intersection-table-row-metadata';
 
 @Component({
-    selector:        'td[intersection-table-entry-quickview]',
+    selector:        'td[intersection-table-entry-details]',
     template:        `<i class="info circle icon cursor pointer" [popup]="quickView"
                      display="table" header="Quick view" position="right" width="700" topShift="-35" 
                      shiftStrategy="per-item" footer="Click on 'Detailed' icon to see more information"></i>`,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class IntersectionTableEntryQuickviewComponent {
+export class IntersectionTableEntryDetailsComponent {
+    private static readonly _maxMatchesInQuickView: number = 10;
 
     @HostBinding('class.center')
     public classCenterHostBindingProperty: boolean = true;
@@ -37,17 +38,22 @@ export class IntersectionTableEntryQuickviewComponent {
 
     public quickView: PopupContentTable;
 
-    public generate(matches: IntersectionTableRowMatch[], _: IntersectionTableRowMetadata) {
+    public generate(matches: IntersectionTableRowMatch[]) {
         const cdr3Index: number = 1;
         const epitopeIndex: number = 8;
         const speciesIndex: number = 10;
         const mhcaIndex: number = 5;
         const mhcbIndex: number = 6;
         const headers = [ 'CDR3', 'Epitope', 'Species', 'MHC.A', 'MHC.B' ];
-        const rows = matches.map((match) => {
+        const rows = matches.slice(0, IntersectionTableEntryDetailsComponent._maxMatchesInQuickView).map((match) => {
             const e = match.row.entries;
             return [ e[cdr3Index], e[epitopeIndex], e[speciesIndex], e[mhcaIndex], e[mhcbIndex] ];
         });
+
+        if (matches.length > IntersectionTableEntryDetailsComponent._maxMatchesInQuickView) {
+            rows.push(['....', '....', '....', '....', '....']);
+        }
+
         this.quickView = new PopupContentTable(headers, rows);
     }
 }
