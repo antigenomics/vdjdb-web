@@ -55,6 +55,7 @@
     "glob": "^7.1.2",
     "glob-all": "3.1.0",
     "gzip-size": "4.1.0",
+    "hard-source-webpack-plugin": "0.4.14",
     "image-webpack-loader": "3.4.2",
     "jasmine-core": "2.8.0",
     "jasmine-spec-reporter": "4.2.1",
@@ -82,8 +83,7 @@
     "webpack": "3.10.0",
     "webpack-dev-server": "2.9.7",
     "webpack-dll-bundles-plugin": "1.0.0-beta.5",
-    "webpack-merge": "4.1.1",
-    "hard-source-webpack-plugin": "0.4.14"
+    "webpack-merge": "4.1.1"
   },
   "engines": {
     "node": ">= 8",

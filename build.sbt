@@ -13,7 +13,7 @@ lazy val root = (project in file(".")).enablePlugins(PlayScala, LauncherJarPlugi
 pipelineStages := Seq(digest)
 
 libraryDependencies ++= Seq(
-    "com.antigenomics" % "vdjdb" % "1.1.6",
+    "com.antigenomics" % "vdjdb" % "1.1.7",
     "ch.qos.logback" % "logback-classic" % "1.2.3",
     "com.typesafe.scala-logging" %% "scala-logging" % "3.7.2",
     "com.typesafe.play" %% "play-slick" % "3.0.2",
@@ -46,13 +46,12 @@ publishArtifact in(Compile, packageDoc) := false
 lazy val isWindows = System.getProperty("os.name").toUpperCase().contains("WIN")
 lazy val frontendApplicationPath = if (isWindows) "app\\frontend" else "./app/frontend"
 lazy val npm: String = if (isWindows) "cmd /c npm " else "npm "
-lazy val yarn: String = if (isWindows) "cmd /c npm " else "yarn "
 
 lazy val installFrontendDependencies = taskKey[Unit]("Install frontend dependencies")
 installFrontendDependencies := {
     val logger: TaskStreams = streams.value
     logger.log.info("Installing frontend dependencies")
-    val install = Process(yarn + "install", file(frontendApplicationPath)).run()
+    val install = Process(npm + "install", file(frontendApplicationPath)).run()
     if (install.exitValue != 0) {
         throw new IllegalStateException("Installing fronted dependencies failed!")
     }
