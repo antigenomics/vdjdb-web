@@ -27,5 +27,4 @@ npm-debug.log
 *.DS_Store
 /RUNNING_PID
 /build
-/app/frontend/package-lock.json
 /test/frontend/dll
