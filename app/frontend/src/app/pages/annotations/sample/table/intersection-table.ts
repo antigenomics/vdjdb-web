@@ -16,59 +16,35 @@
  */
 
 import { SampleItem } from '../../../../shared/sample/sample-item';
+import { Table } from '../../../../shared/table/table';
 import { IntersectionTableRow } from './row/intersection-table-row';
 
-export class IntersectionTable {
-    private _error: boolean;
-    private _loading: boolean;
-    private _initialized: boolean;
+export class IntersectionTable extends Table<IntersectionTableRow> {
     private _sample: SampleItem;
-    private _rows: IntersectionTableRow[] = [];
 
     constructor(sample: SampleItem) {
-        this._error = false;
-        this._loading = false;
-        this._initialized = false;
+        super();
         this._sample = sample;
-    }
-
-    public isError(): boolean {
-        return this._error;
-    }
-
-    public isLoading(): boolean {
-        return this._loading;
-    }
-
-    public isInitialized(): boolean {
-        return this._initialized;
-    }
-
-    public isEmpty(): boolean {
-        return this._rows.length === 0;
     }
 
     public getSample(): SampleItem {
         return this._sample;
     }
 
-    public getRows(): IntersectionTableRow[] {
-        return this._rows;
+    public getCurrentPage(): IntersectionTableRow[] {
+        if (this.page >= 0) {
+            let fromIndex = this.pageSize * this.page;
+            fromIndex = (fromIndex > this.getRowsCount()) ? this.getRowsCount() : fromIndex;
+            let toIndex = this.pageSize * (this.page + 1);
+            toIndex = (toIndex > this.getRowsCount()) ? this.getRowsCount() : toIndex;
+            return (this.rows as IntersectionTableRow[]).slice(fromIndex, toIndex);
+        } else {
+            this.updatePage(0);
+            return this.getCurrentPage();
+        }
     }
 
-    public loading(): void {
-        this._loading = true;
-    }
-
-    public update(rows: any[]): void {
-        this._rows = rows.map((r) => new IntersectionTableRow(r));
-        this._initialized = true;
-        this._loading = false;
-    }
-
-    public error(): void {
-        this._initialized = true;
-        this._loading = false;
-        this._error = true;
+    public getRowsCount(): number {
+        return (this.rows as IntersectionTableRow[]).length;
     }
 }

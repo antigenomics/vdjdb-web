@@ -44,7 +44,7 @@ export class SearchTableComponent implements OnInit, OnDestroy {
     }
 
     public ngOnInit(): void {
-        this._updateEventSubscription = this.table.updateEvent.subscribe(() => {
+        this._updateEventSubscription = this.table.events.subscribe(() => {
             this.changeDetector.detectChanges();
         });
         this.calculateHeaderFontSize();

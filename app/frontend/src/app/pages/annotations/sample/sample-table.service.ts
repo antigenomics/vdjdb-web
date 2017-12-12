@@ -23,6 +23,7 @@ import { AnnotationsService } from '../annotations.service';
 import { IntersectionTableColumnInfo } from './table/column/intersection-table-column-info';
 import { IntersectionTableFilters } from './table/filters/intersection-table-filters';
 import { IntersectionTable } from './table/intersection-table';
+import { IntersectionTableRow } from './table/row/intersection-table-row';
 
 export type SampleTableServiceEventType = number;
 
@@ -40,8 +41,6 @@ export class SampleTableServiceEvent {
         this.type = type;
     }
 }
-
-// TODO delete cache table if sample deleted
 
 @Injectable()
 export class SampleTableService {
@@ -74,15 +73,17 @@ export class SampleTableService {
     public async intersect(sample: SampleItem) {
         const table = this.getTable(sample);
         const filters = this.getFilters(sample);
-        table.loading();
+        table.startLoading();
         filters.disable();
         this._events.next(new SampleTableServiceEvent(sample.name, SampleTableServiceEventType.TABLE_LOADING));
         const response = await this.annotationsService.intersect(sample, filters);
         if (response.isSuccess()) {
-            table.update(response.get('rows'));
+            const rows = response.get('rows').map((r: any) => new IntersectionTableRow(r));
+            table.updatePage(0);
+            table.updateRows(rows);
         } else if (response.isError()) {
             this.notifications.error('Annotations', 'Unable to annotate sample');
-            table.error();
+            table.setError();
         }
         this._tables.set(sample.name, table);
         filters.enable();

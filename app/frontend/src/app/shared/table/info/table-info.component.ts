@@ -15,26 +15,17 @@
  *
  */
 
-export class IntersectionTableFilters {
-    private _disabled: boolean = false;
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 
-    public hammingDistance: number = 0;
-    public confidenceThreshold: number = 0;
-    public matchV: boolean = true;
-    public matchJ: boolean = true;
-    public species: string = 'HomoSapiens';
-    public gene: string = 'TRB';
-    public mhc: string = 'Any';
+@Component({
+    selector:        'table-info',
+    templateUrl:     './table-info.component.html',
+    changeDetection: ChangeDetectionStrategy.OnPush
+})
+export class TableInfoComponent {
+    @Input()
+    public found: number;
 
-    public disable(): void {
-        this._disabled = true;
-    }
-
-    public isDisabled(): boolean {
-        return this._disabled;
-    }
-
-    public enable(): void {
-        this._disabled = false;
-    }
+    @Input()
+    public total: number;
 }

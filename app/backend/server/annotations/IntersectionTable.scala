@@ -55,7 +55,9 @@ class IntersectionTable extends ResultsTable[IntersectionTableRow] {
         }
         val searchParameters = new SequenceSearcherPreset(treeSearchParameters)
         val filters = new util.ArrayList[TextFilter]()
-        filters.add(new ExactTextFilter("mhc.class", request.mhc, false))
+        if (request.mhc.toLowerCase() != "any") {
+            filters.add(new ExactTextFilter("mhc.class", request.mhc, false))
+        }
 
         val instance = database.getInstance.filter(filters)
             .asClonotypeDatabase(request.matchV, request.matchJ, searchParameters, request.species, request.gene, request.confidenceThreshold)
@@ -66,6 +68,7 @@ class IntersectionTable extends ResultsTable[IntersectionTableRow] {
             .sortWith { case ((c1, _), (c2, _)) => c1.getFreq > c2.getFreq }
             .map { case (c, l) => (c, l.asScala) }
             .map(IntersectionTableRow.createFromSearchResult)
+        this.currentPage = 0
         this
     }
 }
