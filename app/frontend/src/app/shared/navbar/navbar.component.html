@@ -1,21 +1,21 @@
 <div class="ui top fixed borderless inverted menu large">
     <div class="ui container">
-        <a route="/" class="item"><h1>VDJdb</h1></a>
+        <div class="header item"><h1>VDJdb</h1></div>
         <a route="/" class="item">Home</a>
         <a route="/search" class="item">Browse</a>
 
         <a class="ui dropdown item" dropdown [content]="content" *ngIf="!isLogged()">
-            Annotations
+            Annotation
             <div class="menu fade element slow padded" tabindex="-1" #content>
-                <div class="ui error message">
-                    <div class="header">Error</div>
-                    <p>You must log-in to access this page</p>
+                <div class="ui info message">
+                    <div class="header">Log in required</div>
+                    <p>You must logged in to access this page</p>
                 </div>
             </div>
         </a>
 
         <a route="/annotations/info" class="item" *ngIf="isLogged()">
-            Annotations
+            Annotation
         </a>
 
         <a route="/about" class="item">About</a>

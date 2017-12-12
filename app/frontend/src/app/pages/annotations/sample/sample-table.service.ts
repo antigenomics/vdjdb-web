@@ -104,8 +104,8 @@ export class SampleTableService {
     public getColumns(): IntersectionTableColumnInfo[] {
         return [
             new IntersectionTableColumnInfo('details', 'Details', 'collapsing'),
-            new IntersectionTableColumnInfo('id', 'ID', 'collapsing'),
-            new IntersectionTableColumnInfo('found', 'Found', 'collapsing'),
+            new IntersectionTableColumnInfo('id', 'Rank', 'collapsing'),
+            new IntersectionTableColumnInfo('found', '# matches', 'collapsing'),
             new IntersectionTableColumnInfo('freq', 'Frequency', 'collapsing'),
             new IntersectionTableColumnInfo('count', 'Count', 'collapsing'),
             new IntersectionTableColumnInfo('cdr3aa', 'CDR3aa', 'collapsing'),
