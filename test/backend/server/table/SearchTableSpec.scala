@@ -17,6 +17,7 @@
 package backend.server.table
 
 import backend.BaseTestSpecWithApplication
+import backend.server.ResultsTable
 import backend.server.database.Database
 import backend.server.database.filters.{DatabaseFilterRequest, DatabaseFilterType, DatabaseFilters}
 import backend.server.search.SearchTable
@@ -30,13 +31,13 @@ class SearchTableSpec extends BaseTestSpecWithApplication {
             val request: List[DatabaseFilterRequest] = List(DatabaseFilterRequest("gene", DatabaseFilterType.Exact, negative = false, "TRA"))
             val filters = DatabaseFilters.createFromRequest(request, database)
 
-            val table = SearchTable().update(filters, database)
+            val table = new SearchTable().update(filters, database)
 
             table.getRecordsFound should be > 0
             table.getRows.size should be > 0
             table.getCurrentPage shouldBe 0
             table.getPageCount should be > 0
-            table.getPageSize shouldBe SearchTable.DEFAULT_PAGE_SIZE
+            table.getPageSize shouldBe ResultsTable.DEFAULT_PAGE_SIZE
             table.getRows.foreach(_.entries should (contain ("TRA") and not contain "TRB"))
             succeed
         }
@@ -44,7 +45,7 @@ class SearchTableSpec extends BaseTestSpecWithApplication {
         "give the correct rows while changing pages" in {
             val request: List[DatabaseFilterRequest] = List(DatabaseFilterRequest("vdjdb.score", DatabaseFilterType.Level, negative = false, "3"))
             val filters = DatabaseFilters.createFromRequest(request, database)
-            val table = SearchTable().update(filters, database)
+            val table = new SearchTable().update(filters, database)
 
             val testPageSizes = Seq(25, 50, 100)
             val rows = table.getRows
@@ -76,7 +77,7 @@ class SearchTableSpec extends BaseTestSpecWithApplication {
                 DatabaseFilterRequest("cdr3", DatabaseFilterType.Range, negative = false, "9:10")
             )
             val filters = DatabaseFilters.createFromRequest(request, database)
-            val table = SearchTable().update(filters, database)
+            val table = new SearchTable().update(filters, database)
 
             for (sortType <- List("asc", "desc")) {
                 for (columnIndex <- 0 to 10) {

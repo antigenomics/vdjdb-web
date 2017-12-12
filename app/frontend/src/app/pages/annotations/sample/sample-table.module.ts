@@ -19,6 +19,7 @@ import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
 import { ModalsModule } from '../../../shared/modals/modals.module';
+import { TableModule } from '../../../shared/table/table.module';
 import { SampleTableComponent } from './sample-table.component';
 import { SampleTableService } from './sample-table.service';
 import { IntersectionTableEntryCdr3aaComponent } from './table/entry/intersection-table-entry-cdr3aa.component';
@@ -31,7 +32,7 @@ import { IntersectionTableComponent } from './table/intersection-table.component
 import { IntersectionTableRowComponent } from './table/row/intersection-table-row.component';
 
 @NgModule({
-    imports:         [ BrowserModule, ModalsModule, FormsModule ],
+    imports:         [ BrowserModule, ModalsModule, FormsModule, TableModule ],
     declarations:    [
         SampleTableComponent,
         IntersectionTableComponent,

@@ -5,6 +5,7 @@
 # Home page
 GET         /                                         backend.controllers.Application.index
 GET         /search                                   backend.controllers.Application.index
+GET         /overview                                 backend.controllers.Application.index
 GET         /about                                    backend.controllers.Application.index
 
 GET         /annotations                              controllers.Default.redirect(to = "/annotations/info")

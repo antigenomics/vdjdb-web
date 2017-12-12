@@ -70,6 +70,11 @@ export class AnnotationsSidebarComponent implements OnInit, OnDestroy {
         this._state = new AnnotationsSidebarState(this.router.url);
     }
 
+    // TODO delete this
+    public debugDisconnect(): void {
+        this.annotationsService.debugDiconnect();
+    }
+
     public ngOnInit(): void {
         this._uploadServiceEventsSubscription = this.uploadService.getEvents().subscribe((event) => {
             if (event === UploadServiceEvent.UPLOADING_STARTED) {

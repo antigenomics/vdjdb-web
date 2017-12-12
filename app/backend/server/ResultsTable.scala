@@ -54,5 +54,5 @@ abstract class ResultsTable[T] {
 }
 
 object ResultsTable {
-    final private val DEFAULT_PAGE_SIZE: Int = 25
+    final val DEFAULT_PAGE_SIZE: Int = 25
 }

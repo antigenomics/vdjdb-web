@@ -41,6 +41,7 @@ class SearchTable extends ResultsTable[SearchTableRow] {
     def update(filters: DatabaseFilters, database: Database): SearchTable = {
         val results = database.getInstance.getDbInstance.search(filters.text, filters.sequence)
         this.rows = results.asScala.map(r => SearchTableRow.createFromRow(r.getRow)).toList
+        this.currentPage = 0
         this
     }
 }

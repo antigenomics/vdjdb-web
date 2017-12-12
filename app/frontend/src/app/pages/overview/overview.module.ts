@@ -15,26 +15,15 @@
  *
  */
 
-export class IntersectionTableFilters {
-    private _disabled: boolean = false;
+import { NgModule } from '@angular/core';
+import { RouterModule } from '@angular/router';
+import { OverviewPageComponent } from './overview.component';
+import { OverviewService } from './overview.service';
 
-    public hammingDistance: number = 0;
-    public confidenceThreshold: number = 0;
-    public matchV: boolean = true;
-    public matchJ: boolean = true;
-    public species: string = 'HomoSapiens';
-    public gene: string = 'TRB';
-    public mhc: string = 'Any';
-
-    public disable(): void {
-        this._disabled = true;
-    }
-
-    public isDisabled(): boolean {
-        return this._disabled;
-    }
-
-    public enable(): void {
-        this._disabled = false;
-    }
-}
+@NgModule({
+    imports:      [ RouterModule.forChild([ { path: 'overview', component: OverviewPageComponent } ]) ],
+    declarations: [ OverviewPageComponent ],
+    exports:      [ OverviewPageComponent ],
+    providers:    [ OverviewService ]
+})
+export class OverviewPageModule {}
