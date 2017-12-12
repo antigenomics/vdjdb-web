@@ -27,7 +27,11 @@ case class IntersectionTableRow(entries: Seq[String], matches: Seq[IntersectionT
 object IntersectionTableRow {
     private final val tagsFields: Seq[String] = Seq("antigen.epitope", "antigen.species", "mhc.a", "mhc.b")
 
-    implicit val intersectTableRowWrites: Writes[IntersectionTableRow] = Json.writes[IntersectionTableRow]
+    implicit val intersectTableRowWrites: Writes[IntersectionTableRow] = (o: IntersectionTableRow) => Json.obj(
+        "entries" -> o.entries,
+        "metadata" -> o.metadata,
+        "tags" -> o.tags
+    )
 
     def createFromSearchResult(searchResult: (Clonotype, Seq[ClonotypeSearchResult])): IntersectionTableRow = {
         val clonotype = searchResult._1

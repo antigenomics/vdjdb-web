@@ -17,9 +17,12 @@
 import { Injectable } from '@angular/core';
 import 'rxjs/add/operator/filter';
 import 'rxjs/add/operator/take';
+import 'rxjs/add/operator/map';
+import { Observable } from 'rxjs/Observable';
 import { Subject } from 'rxjs/Subject';
 import { environment } from '../../../environments/environment';
 import { LoggerService } from '../../utils/logger/logger.service';
+import { Utils } from '../../utils/utils';
 import { IWebSocketRequestData } from './websocket-request';
 import { WebSocketResponseData } from './websocket-response';
 
@@ -64,7 +67,8 @@ export class WebSocketService {
     private _onErrorCallback: (event: Event) => void;
     private _onCloseCallback: (event: CloseEvent) => void;
 
-    constructor(private logger: LoggerService) {}
+    constructor(private logger: LoggerService) {
+    }
 
     public isDisconnected(): boolean {
         return this._connectionStatus === WebSocketConnectionStatus.CLOSED;
@@ -121,15 +125,21 @@ export class WebSocketService {
         message.id = this._uniqueMessageID++;
         return new Promise<WebSocketResponseData>((resolve) => {
             this._messages
-                .filter((response: any) => {
-                    return (message.action === response.action) && (message.id === response.id);
-                })
+                .filter((response: any) => (message.action === response.action) && (message.id === response.id))
                 .take(1)
                 .subscribe((response: any) => {
                     resolve(new WebSocketResponseData(response));
                 });
             this._connection.send(JSON.stringify(message));
         });
+    }
+
+    public subscribeMessages(message: WebSocketRequestMessage, observerCallback: (o: Observable<WebSocketResponseData>) => void): void {
+        message.id = this._uniqueMessageID++;
+        observerCallback(this._messages
+                             .filter((response: any) => (message.action === response.action) && (message.id === response.id))
+                             .map((response: any) => new WebSocketResponseData(response)));
+        this._connection.send(JSON.stringify(message));
     }
 
     public disconnect(): void {
@@ -167,6 +177,7 @@ export class WebSocketService {
         };
 
         this._connection.onmessage = (message: MessageEvent) => {
+            this.logger.debug('Message received', `(size: ${Utils.Memory.formattedMemorySizeOf(message.data)})`);
             this._messages.next(JSON.parse(message.data));
         };
 

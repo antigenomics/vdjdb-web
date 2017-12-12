@@ -15,21 +15,28 @@
  *
  */
 
+import { SampleItem } from '../../../../../shared/sample/sample-item';
 import { IntersectionTableRowMatch } from './intersection-table-row-match';
 import { IntersectionTableRowMetadata } from './intersection-table-row-metadata';
 
 export interface IntersectionTableRowTags { [field: string]: string[]; }
 
 export class IntersectionTableRow {
+    public readonly index: number;
+    public readonly sample: SampleItem;
     public readonly entries: string[];
-    public readonly matches: IntersectionTableRowMatch[];
     public readonly tags: IntersectionTableRowTags;
     public readonly metadata: IntersectionTableRowMetadata;
 
-    constructor(row: any) {
+    public matchesLoaded: boolean = false;
+    public matchesCount: number = 0;
+    public matches: IntersectionTableRowMatch[];
+
+    constructor(row: any, sample: SampleItem, index: number) {
+        this.index = index;
+        this.sample = sample;
         /* tslint:disable:no-string-literal */
         this.entries = row[ 'entries' ];
-        this.matches = row[ 'matches' ].map((m: any) => new IntersectionTableRowMatch(m));
         this.tags = row[ 'tags' ];
         this.metadata = new IntersectionTableRowMetadata(row[ 'metadata' ]);
         /* tslint:enable:no-string-literal */

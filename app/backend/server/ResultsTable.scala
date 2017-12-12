@@ -20,7 +20,7 @@ package backend.server
 abstract class ResultsTable[T] {
     protected var pageSize: Int = ResultsTable.DEFAULT_PAGE_SIZE
     protected var currentPage: Int = 0
-    protected var rows: List[T] = List()
+    protected var rows: Seq[T] = Seq()
 
     def getPageSize: Int = pageSize
 
@@ -30,13 +30,13 @@ abstract class ResultsTable[T] {
 
     def getPageCount: Int = getRecordsFound / pageSize + 1
 
-    def getRows: List[T] = rows
+    def getRows: Seq[T] = rows
 
     def getRecordsFound: Int = rows.length
 
     def getCurrentPage: Int = currentPage
 
-    def getPage(page: Int): List[T] = {
+    def getPage(page: Int): Seq[T] = {
         if (page >= 0) {
             currentPage = page
             var fromIndex: Int = pageSize * page

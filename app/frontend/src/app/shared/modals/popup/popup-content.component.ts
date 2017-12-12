@@ -60,6 +60,9 @@ export class PopupContentComponent implements AfterViewInit {
     @Input('shiftStrategy')
     public shiftStrategy: 'absolute' | 'per-item';
 
+    @Input('loading')
+    public loading: boolean = false;
+
     @Input('content')
     set content(popupContent: string | string[] | PopupContentTable) {
         if (typeof popupContent === 'string') {
@@ -79,7 +82,7 @@ export class PopupContentComponent implements AfterViewInit {
         this._footer = footerContent;
     }
 
-    constructor(private changeDetector: ChangeDetectorRef) {}
+    constructor(public changeDetector: ChangeDetectorRef) {}
 
     public ngAfterViewInit(): void {
         this.positionElement();
@@ -107,7 +110,7 @@ export class PopupContentComponent implements AfterViewInit {
         return this._footer;
     }
 
-    private positionElement(): void {
+    public positionElement(): void {
         const hostBoundingRectangle = this.hostElement.getBoundingClientRect();
         const windowViewport = Utils.Window.getViewport();
 
