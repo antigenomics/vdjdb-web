@@ -1,38 +1,38 @@
 authorization.forms.login.login = Login
 authorization.forms.login.forgot = Forgot password?
-authorization.forms.login.back = Back to home.
-authorization.forms.login.signup = Sign up now!
+authorization.forms.login.back = Back to home
+authorization.forms.login.signup = Sign up
 authorization.forms.login.signup.question = Don't have an account?
 authorization.forms.login.placeholder.email = E-mail address
 authorization.forms.login.placeholder.password = Password
 authorization.forms.login.failed.unverified = Please verify your account
 authorization.forms.login.failed.message = Please check that you have entered your login and password correctly.
-authorization.forms.login.failed.workaround.1 = Is the Caps Lock turned off?
-authorization.forms.login.failed.workaround.2 = Maybe you are using the wrong input language?
+authorization.forms.login.failed.workaround.1 = Check that Caps Lock is turned off
+authorization.forms.login.failed.workaround.2 = Check that you're using correct input language
 authorization.forms.login.flashing.verified = Your account has been successfully verified
 authorization.forms.login.flashing.reset = Your password has been successfully changed
 
 authorization.forms.signup.signup = Signup
 authorization.forms.signup.back = Back to home
-authorization.forms.signup.login = Log-in now!
+authorization.forms.signup.login = Log-in
 authorization.forms.signup.login.question = Already have an account?
 authorization.forms.signup.placeholder.login = Login
 authorization.forms.signup.placeholder.email = E-mail address
 authorization.forms.signup.placeholder.password = Password
 authorization.forms.signup.placeholder.repeatPassword = Repeat password
-authorization.forms.signup.success.created = Your account has been created. Please follow verification link in email to complete registration
-authorization.forms.signup.success.createdAndVerified = Your account has been created and verified
-authorization.forms.signup.failed.message = Please check that you have entered your credentials correctly
-authorization.forms.signup.failed.workaround.1 = Login text field should not be empty
+authorization.forms.signup.success.created = Your account has been created. Please follow the verification link in the email we've sent you to complete the registration process
+authorization.forms.signup.success.createdAndVerified = Your account has been successfully created and verified
+authorization.forms.signup.failed.message = Please check that you have entered valid credentials
+authorization.forms.signup.failed.workaround.1 = Login (user name) field should not be blank
 authorization.forms.signup.failed.workaround.2 = E-mail address field should be a valid email
-authorization.forms.signup.failed.workaround.3 = Passwords should be equal
-authorization.forms.signup.failed.alreadyExists = User already exists. Click forgot password link if it is your account
+authorization.forms.signup.failed.workaround.3 = Passwords should match
+authorization.forms.signup.failed.alreadyExists = User already exists. Click forgot password link if you don't remember your credentials
 
 authorization.forms.reset.reset = Reset
 authorization.forms.reset.back = Back to home
 authorization.forms.reset.placeholder.email = E-mail address
-authorization.forms.reset.flashing.message = You request was accepted. If there any account with this email, you will receive a message with \
-  reset password instructions
+authorization.forms.reset.flashing.message = Your request was accepted. If there is an account registered with this email, you will receive a message with \
+  instructions on how to reset your password
 
 authorization.verification.invalidToken = Invalid verification token
 
@@ -43,7 +43,7 @@ account.change.password.newPasswordPlaceholder = New password
 account.change.password.newPasswordRepeatPlaceholder = Repeat new password
 account.change.password.button = Change
 
-account.change.password.success = Your password has been updated successfully
+account.change.password.success = Your password has been changed successfully
 account.change.password.error.invalidOldPassword = Please check that you have entered your old password correctly
 
 notfound.message = Oops! Page not found.
