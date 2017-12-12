@@ -264,9 +264,68 @@ export namespace Utils {
             const matches = document.cookie.match(new RegExp(
                 `(?:^|; )${name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1')}=([^;]*)`
             ));
-            return matches ? decodeURIComponent(matches[1]) : undefined;
+            return matches ? decodeURIComponent(matches[ 1 ]) : undefined;
         }
 
+    }
+
+    export namespace Memory {
+        export const numberSizeInBytes: number = 8;
+        export const stringCharacterSizeInBytes: number = 2;
+        export const booleanSizeInBytes: number = 4;
+
+        export const bytesInKiB: number = 1024;
+        export const bytesInMiB: number = 1048576;
+        export const bytesInGiB: number = 1073741824;
+
+        export function formattedMemorySizeOf(object: any) {
+            return formatByteSize(memorySizeOf(object));
+        }
+
+        export function memorySizeOf(object: any) {
+            let bytes = 0;
+            if (object !== null && object !== undefined) {
+                switch (typeof object) {
+                    case 'number':
+                        bytes += Memory.numberSizeInBytes;
+                        break;
+                    case 'string':
+                        bytes += object.length * Memory.stringCharacterSizeInBytes;
+                        break;
+                    case 'boolean':
+                        bytes += Memory.booleanSizeInBytes;
+                        break;
+                    case 'object':
+                        const objClass = Object.prototype.toString.call(object).slice(8, -1);
+                        if (objClass === 'Object' || objClass === 'Array') {
+                            for (const key in object) {
+                                if (!object.hasOwnProperty(key)) {
+                                    continue;
+                                }
+                                memorySizeOf(object[ key ]);
+                            }
+                        } else {
+                            bytes += object.toString().length * 2;
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            }
+            return bytes;
+        }
+
+        export function formatByteSize(bytes: number) {
+            if (bytes < Memory.bytesInKiB) {
+                return bytes + ' bytes';
+            } else if (bytes < Memory.bytesInMiB) {
+                return (bytes / Memory.bytesInKiB).toFixed(3) + ' KiB';
+            } else if (bytes < Memory.bytesInGiB) {
+                return (bytes / Memory.bytesInMiB).toFixed(3) + ' MiB';
+            } else {
+                return (bytes / Memory.bytesInGiB).toFixed(3) + ' GiB';
+            }
+        }
     }
 
 }

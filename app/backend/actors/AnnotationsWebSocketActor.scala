@@ -7,6 +7,7 @@ import backend.models.files.FileMetadataProvider
 import backend.models.files.sample.SampleFileProvider
 import backend.server.annotations.IntersectionTable
 import backend.server.annotations.api.intersect.{SampleIntersectionRequest, SampleIntersectionResponse}
+import backend.server.annotations.api.quick_view.{IntersectionQuickViewRequest, IntersectionQuickViewResponse}
 import backend.server.annotations.api.sample.delete.{DeleteSampleRequest, DeleteSampleResponse}
 import backend.server.annotations.api.sample.software.AvailableSoftwareResponse
 import backend.server.annotations.api.sample.validate.{ValidateSampleRequest, ValidateSampleResponse}
@@ -27,6 +28,8 @@ class AnnotationsWebSocketActor(out: ActorRef, limit: IpLimit, user: User, detai
                                 upp: UserPermissionsProvider, sfp: SampleFileProvider, fmp: FileMetadataProvider)
     extends WebSocketActor(out, limit) {
     private val intersectionTableResults: mutable.HashMap[String, IntersectionTable] = new mutable.HashMap()
+
+
 
     def handleMessage(out: WebSocketOutActorRef, data: Option[JsValue]): Unit = {
         out.getAction match {
@@ -62,17 +65,31 @@ class AnnotationsWebSocketActor(out: ActorRef, limit: IpLimit, user: User, detai
                     sampleFile match {
                         case Some(file) =>
                             try {
+                                out.success(SampleIntersectionResponse.ParseState)
                                 val sampleFileConnection = new SampleFileConnection(file._2.path, Software.valueOf(file._1.software))
                                 val sample = sampleFileConnection.getSample
                                 val table = new IntersectionTable()
+                                out.success(SampleIntersectionResponse.AnnotateState)
                                 table.update(intersectRequest, sample, database)
                                 intersectionTableResults += (file._1.sampleName -> table)
-                                out.success(SampleIntersectionResponse(table.getRows))
+                                out.success(SampleIntersectionResponse.CompletedState(table.getRows))
                             } catch {
                                 case _: Exception => out.errorMessage("Unable to intersect")
                             }
                         case None =>
                             out.errorMessage("Invalid file name")
+                    }
+                })
+            case IntersectionQuickViewResponse.Action =>
+                validateData(out, data, (quickViewRequest: IntersectionQuickViewRequest) => {
+                    intersectionTableResults.get(quickViewRequest.sampleName) match {
+                        case Some(table) =>
+                            if (quickViewRequest.rowIndex >= 0 && table.getRecordsFound > quickViewRequest.rowIndex) {
+                                val row = table.getRows(quickViewRequest.rowIndex)
+                                out.success(IntersectionQuickViewResponse(row.matches.slice(0, 10), row.matches.length))
+                            }
+                        case None =>
+                            out.errorMessage("Unable to find table results")
                     }
                 })
             case _ =>

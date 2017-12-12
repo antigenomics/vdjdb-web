@@ -20,10 +20,14 @@ package backend.server.annotations.api.intersect
 import backend.server.annotations.IntersectionTableRow
 import play.api.libs.json.{Json, Writes}
 
-case class SampleIntersectionResponse(rows: List[IntersectionTableRow])
+case class SampleIntersectionResponse(state: String, rows: Seq[IntersectionTableRow])
 
 object SampleIntersectionResponse {
     final val Action: String = "intersect"
+
+    final val ParseState = SampleIntersectionResponse("parse", Seq())
+    final val AnnotateState = SampleIntersectionResponse("annotate", Seq())
+    final def CompletedState(rows: Seq[IntersectionTableRow]) = SampleIntersectionResponse("completed", rows)
 
     implicit val sampleIntersectionResponseWrites: Writes[SampleIntersectionResponse] = Json.writes[SampleIntersectionResponse]
 }

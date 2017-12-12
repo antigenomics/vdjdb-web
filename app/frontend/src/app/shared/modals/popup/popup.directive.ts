@@ -52,7 +52,26 @@ export class PopupDirective {
     @Input('shiftStrategy')
     public shiftStrategy: 'absolute' | 'per-item' = 'absolute';
 
+    @Input('loading')
+    public loading: boolean = false;
+
     constructor(private viewContainerRef: ViewContainerRef, private resolver: ComponentFactoryResolver) {}
+
+    public updateView(): void {
+        this._tooltip.instance.hostElement = this.viewContainerRef.element.nativeElement;
+        this._tooltip.instance.content = this.popupContent;
+        this._tooltip.instance.header = this.headerContent;
+        this._tooltip.instance.footer = this.footerContent;
+        this._tooltip.instance.width = this.width;
+        this._tooltip.instance.position = this.position;
+        this._tooltip.instance.display = this.display;
+        this._tooltip.instance.topShift = this.topShift;
+        this._tooltip.instance.bottomShift = this.bottomShift;
+        this._tooltip.instance.shiftStrategy = this.shiftStrategy;
+        this._tooltip.instance.loading = this.loading;
+        this._tooltip.instance.positionElement();
+        this._tooltip.instance.changeDetector.detectChanges();
+    }
 
     @HostListener('focusin')
     @HostListener('mouseenter')
@@ -60,16 +79,7 @@ export class PopupDirective {
         if (!this._visible) {
             const factory = this.resolver.resolveComponentFactory<PopupContentComponent>(PopupContentComponent);
             this._tooltip = this.viewContainerRef.createComponent<PopupContentComponent>(factory);
-            this._tooltip.instance.hostElement = this.viewContainerRef.element.nativeElement;
-            this._tooltip.instance.content = this.popupContent;
-            this._tooltip.instance.header = this.headerContent;
-            this._tooltip.instance.footer = this.footerContent;
-            this._tooltip.instance.width = this.width;
-            this._tooltip.instance.position = this.position;
-            this._tooltip.instance.display = this.display;
-            this._tooltip.instance.topShift = this.topShift;
-            this._tooltip.instance.bottomShift = this.bottomShift;
-            this._tooltip.instance.shiftStrategy = this.shiftStrategy;
+            this.updateView();
             this._visible = true;
         }
     }

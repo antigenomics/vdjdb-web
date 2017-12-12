@@ -19,7 +19,7 @@ package backend.server.search.api.search
 import backend.server.search.SearchTableRow
 import play.api.libs.json.{Json, Writes}
 
-case class SearchDataResponse(page: Int, pageSize: Int, pageCount: Int, recordsFound: Int, rows: List[SearchTableRow])
+case class SearchDataResponse(page: Int, pageSize: Int, pageCount: Int, recordsFound: Int, rows: Seq[SearchTableRow])
 
 object SearchDataResponse {
     final val Action: String = "search"

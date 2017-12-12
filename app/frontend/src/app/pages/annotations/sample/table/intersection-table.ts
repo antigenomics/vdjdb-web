@@ -20,11 +20,16 @@ import { Table } from '../../../../shared/table/table';
 import { IntersectionTableRow } from './row/intersection-table-row';
 
 export class IntersectionTable extends Table<IntersectionTableRow> {
+    private _loadingLabel: string = 'Loading';
     private _sample: SampleItem;
 
     constructor(sample: SampleItem) {
         super();
         this._sample = sample;
+    }
+
+    public setLoadingLabel(label: string): void {
+        this._loadingLabel = label;
     }
 
     public getSample(): SampleItem {
@@ -46,5 +51,9 @@ export class IntersectionTable extends Table<IntersectionTableRow> {
 
     public getRowsCount(): number {
         return (this.rows as IntersectionTableRow[]).length;
+    }
+
+    get loadingLabel(): string {
+        return this._loadingLabel;
     }
 }

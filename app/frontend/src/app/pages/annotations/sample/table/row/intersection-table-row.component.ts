@@ -51,7 +51,7 @@ export class IntersectionTableRowComponent implements OnInit, OnDestroy {
 
         const quickViewComponentResolver = this.resolver.resolveComponentFactory(IntersectionTableEntryDetailsComponent);
         const quickViewComponent = this.rowViewContainer.createComponent(quickViewComponentResolver);
-        quickViewComponent.instance.generate(this.row.matches);
+        quickViewComponent.instance.generate(this.row);
 
         if (this.row.entries) {
             const columns = this.sampleTableService.getColumns();

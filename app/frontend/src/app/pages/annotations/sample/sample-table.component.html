@@ -14,7 +14,7 @@
     <h3 class="ui top attached header">Results</h3>
     <div class="ui attached teal padded blurring segment" style="min-height: 200px;">
         <div class="ui inverted dimmer" [ngClass]="{'active':table.loading}">
-            <div class="ui large text loader top element">Updating</div>
+            <div class="ui large text loader top element">{{ table.loadingLabel }}</div>
         </div>
         <intersection-table [table]="table" [columns]="getColumns()"></intersection-table>
     </div>

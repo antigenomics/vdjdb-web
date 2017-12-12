@@ -21,7 +21,10 @@
         <div class="description">
             <div class="ui grid">
                 <div class="one column row middle aligned">
-                    <div class="column">
+                    <div class="column" *ngIf="loading">
+                        <div class="ui active centered inline text loader">Loading</div>
+                    </div>
+                    <div class="column" *ngIf="!loading">
                         <div class="ui very basic fixed single line unstackable compact table">
                             <thead>
                             <tr>
@@ -39,7 +42,7 @@
             </div>
         </div>
     </div>
-    <div class="content footer" *ngIf="isFooterExists()">
+    <div class="content footer" *ngIf="isFooterExists() && !loading">
         <div class="ui divider"></div>
         <p>{{ getFooterContent() }}</p>
     </div>

@@ -16,14 +16,24 @@
  */
 
 import { Injectable } from '@angular/core';
+import { Observable } from 'rxjs/Observable';
 import { Subject } from 'rxjs/Subject';
 import { SampleItem } from '../../../shared/sample/sample-item';
+import { WebSocketResponseData } from '../../../shared/websocket/websocket-response';
 import { NotificationService } from '../../../utils/notifications/notification.service';
 import { AnnotationsService } from '../annotations.service';
 import { IntersectionTableColumnInfo } from './table/column/intersection-table-column-info';
 import { IntersectionTableFilters } from './table/filters/intersection-table-filters';
 import { IntersectionTable } from './table/intersection-table';
 import { IntersectionTableRow } from './table/row/intersection-table-row';
+
+export type SampleTableServiceUpdateState = string;
+
+export namespace SampleTableServiceUpdateState {
+    export const PARSE: string = 'parse';
+    export const ANNOTATE: string = 'annotate';
+    export const COMPLETED: string = 'completed';
+}
 
 export type SampleTableServiceEventType = number;
 
@@ -48,7 +58,8 @@ export class SampleTableService {
     private _filters: Map<string, IntersectionTableFilters> = new Map();
     private _events: Subject<SampleTableServiceEvent> = new Subject();
 
-    constructor(private annotationsService: AnnotationsService, private notifications: NotificationService) {}
+    constructor(private annotationsService: AnnotationsService, private notifications: NotificationService) {
+    }
 
     public getTable(sample: SampleItem): IntersectionTable {
         return this._tables.get(sample.name);
@@ -65,7 +76,7 @@ export class SampleTableService {
     }
 
     public getOrCreateFilters(sample: SampleItem): IntersectionTableFilters {
-        const filters = this.isFiltersExist(sample) ? this.getFilters(sample): new IntersectionTableFilters();
+        const filters = this.isFiltersExist(sample) ? this.getFilters(sample) : new IntersectionTableFilters();
         this._filters.set(sample.name, filters);
         return filters;
     }
@@ -75,19 +86,38 @@ export class SampleTableService {
         const filters = this.getFilters(sample);
         table.startLoading();
         filters.disable();
+        table.setLoadingLabel('Loading');
         this._events.next(new SampleTableServiceEvent(sample.name, SampleTableServiceEventType.TABLE_LOADING));
-        const response = await this.annotationsService.intersect(sample, filters);
-        if (response.isSuccess()) {
-            const rows = response.get('rows').map((r: any) => new IntersectionTableRow(r));
-            table.updatePage(0);
-            table.updateRows(rows);
-        } else if (response.isError()) {
-            this.notifications.error('Annotations', 'Unable to annotate sample');
-            table.setError();
-        }
-        this._tables.set(sample.name, table);
-        filters.enable();
-        this._events.next(new SampleTableServiceEvent(sample.name, SampleTableServiceEventType.TABLE_UPDATED));
+        this.annotationsService.intersect(sample, filters, (messages: Observable<WebSocketResponseData>) => {
+            const messagesSubscription = messages.subscribe((response: WebSocketResponseData) => {
+                if (response.isSuccess()) {
+                    const state = response.get('state');
+                    switch (state) {
+                        case SampleTableServiceUpdateState.PARSE:
+                            table.setLoadingLabel('Reading sample file (Stage 1 of 2)');
+                            break;
+                        case SampleTableServiceUpdateState.ANNOTATE:
+                            table.setLoadingLabel('Annotating (Stage 2 of 2)');
+                            break;
+                        case SampleTableServiceUpdateState.COMPLETED:
+                            let index = 0;
+                            const rows = response.get('rows').map((r: any) => new IntersectionTableRow(r, sample, index++));
+                            table.updatePage(0);
+                            table.updateRows(rows);
+                            this._tables.set(sample.name, table);
+                            filters.enable();
+                            messagesSubscription.unsubscribe();
+                            break;
+                        default:
+                    }
+                    this._events.next(new SampleTableServiceEvent(sample.name, SampleTableServiceEventType.TABLE_UPDATED));
+                } else if (response.isError()) {
+                    this.notifications.error('Annotations', 'Unable to annotate sample');
+                    table.setError();
+                    messagesSubscription.unsubscribe();
+                }
+            });
+        });
     }
 
     public isTableExist(sample: SampleItem): boolean {

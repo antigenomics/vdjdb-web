@@ -16,6 +16,7 @@
  */
 
 import { Injectable } from '@angular/core';
+import { Observable } from 'rxjs/Observable';
 import { Subject } from 'rxjs/Subject';
 import { SampleItem } from '../../shared/sample/sample-item';
 import { User, UserPermissions } from '../../shared/user/user';
@@ -24,6 +25,7 @@ import { WebSocketResponseData } from '../../shared/websocket/websocket-response
 import { WebSocketService } from '../../shared/websocket/websocket.service';
 import { LoggerService } from '../../utils/logger/logger.service';
 import { IntersectionTableFilters } from './sample/table/filters/intersection-table-filters';
+import { IntersectionTableRow } from './sample/table/row/intersection-table-row';
 import { FileItem } from './upload/item/file-item';
 
 export type AnnotationsServiceEvents = number;
@@ -40,6 +42,7 @@ export namespace AnnotationsServiceWebSocketActions {
     export const VALIDATE_SAMPLE: string = 'validate_sample';
     export const DELETE_SAMPLE: string = 'delete_sample';
     export const INTERSECT: string = 'intersect';
+    export const MATCH_QUICK_VIEW: string = 'match_quick_view';
 }
 
 @Injectable()
@@ -109,8 +112,8 @@ export class AnnotationsService {
         return this._availableSoftwareTypes;
     }
 
-    public async intersect(sample: SampleItem, filters: IntersectionTableFilters): Promise<WebSocketResponseData> {
-        return this.connection.sendMessage({
+    public intersect(sample: SampleItem, filters: IntersectionTableFilters, observerCallback: (o: Observable<WebSocketResponseData>) => void): void {
+        this.connection.subscribeMessages({
             action: AnnotationsServiceWebSocketActions.INTERSECT,
             data:   new WebSocketRequestData()
                     .add('sampleName', sample.name)
@@ -121,6 +124,16 @@ export class AnnotationsService {
                     .add('species', filters.species)
                     .add('gene', filters.gene)
                     .add('mhc', filters.mhc)
+                    .unpack()
+        }, observerCallback);
+    }
+
+    public matchesQuickView(row: IntersectionTableRow): Promise<WebSocketResponseData> {
+        return this.connection.sendMessage({
+            action: AnnotationsServiceWebSocketActions.MATCH_QUICK_VIEW,
+            data:   new WebSocketRequestData()
+                    .add('sampleName', row.sample.name)
+                    .add('rowIndex', row.index)
                     .unpack()
         });
     }
