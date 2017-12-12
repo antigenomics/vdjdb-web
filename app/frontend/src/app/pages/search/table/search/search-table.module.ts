@@ -19,26 +19,19 @@ import { FormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
 import { FiltersModule } from '../../../../shared/filters/filters.module';
 import { ModalsModule } from '../../../../shared/modals/modals.module';
+import { TableModule } from '../../../../shared/table/table.module';
 import { SearchTableEntryCdrComponent } from './entry/cdr/search-table-entry-cdr.component';
 import { SearchTableEntryGeneComponent } from './entry/gene/search-table-entry-gene.component';
 import { SearchTableEntryJsonComponent } from './entry/json/search-table-entry-json.component';
 import { SearchTableEntryOriginalComponent } from './entry/original/search-table-entry-original.component';
 import { SearchTableEntryUrlComponent } from './entry/url/search-table-entry-url.component';
-import { SearchTableExportComponent } from './export/search-table-export.component';
-import { SearchTableInfoComponent } from './info/search-table-info.component';
-import { SearchTablePagesizeComponent } from './pagesize/search-table-pagesize.component';
-import { SearchTablePaginationComponent } from './pagination/search-table-pagination.component';
 import { SearchTableRowComponent } from './row/search-table-row.component';
 import { SearchTableComponent } from './search-table.component';
 import { SearchTableService } from './search-table.service';
 
 @NgModule({
-    imports:         [ BrowserModule, FormsModule, ModalsModule, FiltersModule ],
+    imports:         [ BrowserModule, FormsModule, ModalsModule, FiltersModule, TableModule ],
     declarations:    [  SearchTableComponent,
-                        SearchTablePaginationComponent,
-                        SearchTableInfoComponent,
-                        SearchTableExportComponent,
-                        SearchTablePagesizeComponent,
                         SearchTableRowComponent,
                         SearchTableEntryOriginalComponent,
                         SearchTableEntryJsonComponent,
