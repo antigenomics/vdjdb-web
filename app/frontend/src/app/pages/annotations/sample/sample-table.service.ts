@@ -27,11 +27,10 @@ import { IntersectionTableFilters } from './table/filters/intersection-table-fil
 import { IntersectionTable } from './table/intersection-table';
 import { IntersectionTableRow } from './table/row/intersection-table-row';
 
-export type SampleTableServiceUpdateState = string;
-
 export namespace SampleTableServiceUpdateState {
     export const PARSE: string = 'parse';
     export const ANNOTATE: string = 'annotate';
+    export const LOADING: string = 'loading';
     export const COMPLETED: string = 'completed';
 }
 
@@ -89,33 +88,36 @@ export class SampleTableService {
         table.setLoadingLabel('Loading');
         this._events.next(new SampleTableServiceEvent(sample.name, SampleTableServiceEventType.TABLE_LOADING));
         this.annotationsService.intersect(sample, filters, (messages: Observable<WebSocketResponseData>) => {
+            this._tables.set(sample.name, table);
             const messagesSubscription = messages.subscribe((response: WebSocketResponseData) => {
                 if (response.isSuccess()) {
                     const state = response.get('state');
                     switch (state) {
                         case SampleTableServiceUpdateState.PARSE:
-                            table.setLoadingLabel('Reading sample file (Stage 1 of 2)');
+                            table.setLoadingLabel('Reading sample file (Stage 1 of 3)');
                             break;
                         case SampleTableServiceUpdateState.ANNOTATE:
-                            table.setLoadingLabel('Annotating (Stage 2 of 2)');
+                            table.setLoadingLabel('Annotating (Stage 2 of 3)');
+                            break;
+                        case SampleTableServiceUpdateState.LOADING:
+                            table.setLoadingLabel('Loading (Stage 3 of 3)');
                             break;
                         case SampleTableServiceUpdateState.COMPLETED:
                             let index = 0;
                             const rows = response.get('rows').map((r: any) => new IntersectionTableRow(r, sample, index++));
                             table.updatePage(0);
                             table.updateRows(rows);
-                            this._tables.set(sample.name, table);
                             filters.enable();
                             messagesSubscription.unsubscribe();
                             break;
                         default:
                     }
-                    this._events.next(new SampleTableServiceEvent(sample.name, SampleTableServiceEventType.TABLE_UPDATED));
                 } else if (response.isError()) {
                     this.notifications.error('Annotations', 'Unable to annotate sample');
                     table.setError();
                     messagesSubscription.unsubscribe();
                 }
+                this._events.next(new SampleTableServiceEvent(sample.name, SampleTableServiceEventType.TABLE_UPDATED));
             });
         });
     }
@@ -134,15 +136,15 @@ export class SampleTableService {
 
     public getColumns(): IntersectionTableColumnInfo[] {
         return [
-            new IntersectionTableColumnInfo('details', 'Details', 'collapsing'),
-            new IntersectionTableColumnInfo('id', 'Rank', 'collapsing'),
-            new IntersectionTableColumnInfo('found', '# matches', 'collapsing'),
-            new IntersectionTableColumnInfo('freq', 'Frequency', 'collapsing'),
-            new IntersectionTableColumnInfo('count', 'Count', 'collapsing'),
-            new IntersectionTableColumnInfo('cdr3aa', 'CDR3aa', 'collapsing'),
-            new IntersectionTableColumnInfo('v', 'V', 'collapsing'),
-            new IntersectionTableColumnInfo('j', 'J', 'collapsing'),
-            new IntersectionTableColumnInfo('tags', 'Tags', 'collapsing')
+            new IntersectionTableColumnInfo('details', 'Details'),
+            new IntersectionTableColumnInfo('found', '# matches'),
+            new IntersectionTableColumnInfo('id', 'Rank'),
+            new IntersectionTableColumnInfo('freq', 'Frequency'),
+            new IntersectionTableColumnInfo('count', 'Count'),
+            new IntersectionTableColumnInfo('cdr3aa', 'CDR3aa'),
+            new IntersectionTableColumnInfo('v', 'V'),
+            new IntersectionTableColumnInfo('j', 'J'),
+            new IntersectionTableColumnInfo('tags', 'Tags')
         ];
     }
 

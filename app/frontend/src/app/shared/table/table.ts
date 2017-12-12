@@ -118,6 +118,7 @@ export abstract class Table<RowType> {
         this._dirty = true;
         this._loading = false;
         this._error = true;
+        this._events.next(TableEvent.UPDATED);
     }
 
     // noinspection JSMethodCanBeStatic

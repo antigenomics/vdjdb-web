@@ -18,11 +18,9 @@
 export class IntersectionTableColumnInfo {
     public readonly name: string;
     public readonly title: string;
-    public readonly width: string;
 
-    constructor(name: string, title: string, width: string) {
+    constructor(name: string, title: string) {
         this.name = name;
         this.title = title;
-        this.width = width;
     }
 }

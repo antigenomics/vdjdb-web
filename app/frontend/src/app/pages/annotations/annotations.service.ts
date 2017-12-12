@@ -24,6 +24,7 @@ import { WebSocketRequestData } from '../../shared/websocket/websocket-request';
 import { WebSocketResponseData } from '../../shared/websocket/websocket-response';
 import { WebSocketService } from '../../shared/websocket/websocket.service';
 import { LoggerService } from '../../utils/logger/logger.service';
+import { NotificationService } from '../../utils/notifications/notification.service';
 import { IntersectionTableFilters } from './sample/table/filters/intersection-table-filters';
 import { IntersectionTableRow } from './sample/table/row/intersection-table-row';
 import { FileItem } from './upload/item/file-item';
@@ -54,8 +55,8 @@ export class AnnotationsService {
 
     private connection: WebSocketService;
 
-    constructor(private logger: LoggerService) {
-        this.connection = new WebSocketService(logger);
+    constructor(private logger: LoggerService, private notifications: NotificationService) {
+        this.connection = new WebSocketService(logger, notifications, true);
         this.connection.onOpen(async () => {
             const userDetailsRequest = this.connection.sendMessage({
                 action: AnnotationsServiceWebSocketActions.USER_DETAILS
@@ -80,7 +81,7 @@ export class AnnotationsService {
     }
 
     // TODO delete this
-    public debugDiconnect(): void {
+    public debugDisconnect(): void {
         this.connection.disconnect();
     }
 

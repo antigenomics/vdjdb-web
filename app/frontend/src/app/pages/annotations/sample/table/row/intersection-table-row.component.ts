@@ -33,6 +33,7 @@ import { IntersectionTableRow } from './intersection-table-row';
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class IntersectionTableRowComponent implements OnInit, OnDestroy {
+    private static _centeredColumnsNames: string[] = ['found', 'id', 'count'];
     private _components: Array<ComponentRef<any>> = [];
 
     @Input('intersection-table-row')
@@ -70,6 +71,9 @@ export class IntersectionTableRowComponent implements OnInit, OnDestroy {
                     default:
                         component = this.rowViewContainer.createComponent(originalComponentResolver);
                         component.instance.generate(entry);
+                        if (IntersectionTableRowComponent._centeredColumnsNames.indexOf(column.name) !== -1) {
+                            component.instance.centered = true;
+                        }
                         break;
                 }
                 this._components.push(component);

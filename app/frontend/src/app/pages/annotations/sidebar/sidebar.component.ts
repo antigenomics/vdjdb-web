@@ -72,7 +72,7 @@ export class AnnotationsSidebarComponent implements OnInit, OnDestroy {
 
     // TODO delete this
     public debugDisconnect(): void {
-        this.annotationsService.debugDiconnect();
+        this.annotationsService.debugDisconnect();
     }
 
     public ngOnInit(): void {
