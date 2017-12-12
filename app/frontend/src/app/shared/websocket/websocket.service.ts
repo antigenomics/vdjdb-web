@@ -22,6 +22,7 @@ import { Observable } from 'rxjs/Observable';
 import { Subject } from 'rxjs/Subject';
 import { environment } from '../../../environments/environment';
 import { LoggerService } from '../../utils/logger/logger.service';
+import { NotificationService } from '../../utils/notifications/notification.service';
 import { Utils } from '../../utils/utils';
 import { IWebSocketRequestData } from './websocket-request';
 import { WebSocketResponseData } from './websocket-response';
@@ -67,7 +68,7 @@ export class WebSocketService {
     private _onErrorCallback: (event: Event) => void;
     private _onCloseCallback: (event: CloseEvent) => void;
 
-    constructor(private logger: LoggerService) {
+    constructor(private logger: LoggerService, private notifications: NotificationService, private enableReconnect?: boolean) {
     }
 
     public isDisconnected(): boolean {
@@ -123,14 +124,17 @@ export class WebSocketService {
 
     public async sendMessage(message: WebSocketRequestMessage): Promise<WebSocketResponseData> {
         message.id = this._uniqueMessageID++;
-        return new Promise<WebSocketResponseData>((resolve) => {
+        return new Promise<WebSocketResponseData>(async (resolve) => {
             this._messages
                 .filter((response: any) => (message.action === response.action) && (message.id === response.id))
                 .take(1)
                 .subscribe((response: any) => {
                     resolve(new WebSocketResponseData(response));
                 });
-            this._connection.send(JSON.stringify(message));
+            const success = await this.send(message);
+            if (!success) {
+                resolve(new WebSocketResponseData({ status: 'error' }));
+            }
         });
     }
 
@@ -139,7 +143,7 @@ export class WebSocketService {
         observerCallback(this._messages
                              .filter((response: any) => (message.action === response.action) && (message.id === response.id))
                              .map((response: any) => new WebSocketResponseData(response)));
-        this._connection.send(JSON.stringify(message));
+        this.send(message);
     }
 
     public disconnect(): void {
@@ -150,6 +154,30 @@ export class WebSocketService {
             window.clearInterval(this._connectionTimeoutEvent);
         }
         this._connection = undefined;
+    }
+
+    private send(message: WebSocketRequestMessage): Promise<boolean> {
+        return new Promise((resolve) => {
+            if (this.isDisconnected() && this.enableReconnect) {
+                this.notifications.info('WebSocket', 'Reconnecting...');
+                this.onOpen(() => {
+                    this._connection.send(JSON.stringify(message));
+                });
+                if (!this.reconnect()) {
+                    this.notifications.error('WebSocket closed', 'Unable to reconnect, please check your internet connection');
+                    resolve(false);
+                } else {
+                    this.notifications.success('WebSocket', 'Successfully reconnected to server');
+                    resolve(true);
+                }
+            } else if (this.isConnected()) {
+                this._connection.send(JSON.stringify(message));
+                resolve(true);
+            } else {
+                this.notifications.error('WebSocket closed', 'Connection closed');
+                resolve(false);
+            }
+        });
     }
 
     private bindConnectionEvents(): void {

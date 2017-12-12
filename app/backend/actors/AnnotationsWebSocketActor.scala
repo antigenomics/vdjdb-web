@@ -71,6 +71,7 @@ class AnnotationsWebSocketActor(out: ActorRef, limit: IpLimit, user: User, detai
                                 val table = new IntersectionTable()
                                 out.success(SampleIntersectionResponse.AnnotateState)
                                 table.update(intersectRequest, sample, database)
+                                out.success(SampleIntersectionResponse.LoadingState)
                                 intersectionTableResults += (file._1.sampleName -> table)
                                 out.success(SampleIntersectionResponse.CompletedState(table.getRows))
                             } catch {

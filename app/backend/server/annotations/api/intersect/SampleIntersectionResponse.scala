@@ -27,6 +27,7 @@ object SampleIntersectionResponse {
 
     final val ParseState = SampleIntersectionResponse("parse", Seq())
     final val AnnotateState = SampleIntersectionResponse("annotate", Seq())
+    final val LoadingState = SampleIntersectionResponse("loading", Seq())
     final def CompletedState(rows: Seq[IntersectionTableRow]) = SampleIntersectionResponse("completed", rows)
 
     implicit val sampleIntersectionResponseWrites: Writes[SampleIntersectionResponse] = Json.writes[SampleIntersectionResponse]

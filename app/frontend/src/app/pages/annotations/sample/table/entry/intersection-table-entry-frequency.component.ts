@@ -15,7 +15,7 @@
  *
  */
 
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, HostBinding } from '@angular/core';
 
 @Component({
     selector: 'td[intersection-table-frequency-original]',
@@ -24,6 +24,10 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 })
 export class IntersectionTableEntryFrequencyComponent {
     private static _maxFixedDigits: number = 2;
+
+    @HostBinding('class.center')
+    @HostBinding('class.aligned')
+    public centered: boolean = true;
 
     public value: string;
 

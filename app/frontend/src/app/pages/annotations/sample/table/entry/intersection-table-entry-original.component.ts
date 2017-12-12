@@ -15,7 +15,7 @@
  *
  */
 
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, HostBinding } from '@angular/core';
 
 @Component({
     selector: 'td[intersection-table-entry-original]',
@@ -23,6 +23,11 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class IntersectionTableEntryOriginalComponent {
+
+    @HostBinding('class.center')
+    @HostBinding('class.aligned')
+    public centered: boolean = false;
+
     public value: string;
 
     public generate(value: string) {

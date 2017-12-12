@@ -50,7 +50,7 @@ export class SearchTableService extends Table<SearchTableRow> {
     constructor(private filters: FiltersService, private logger: LoggerService, private notifications: NotificationService) {
         super();
         this._rows = new ReplaySubject<SearchTableRow[]>(1);
-        this.connection = new WebSocketService(logger);
+        this.connection = new WebSocketService(logger, notifications, false);
         this.connection.onOpen(async () => {
             const metadataRequest = this.connection.sendMessage({
                 action: SearchTableWebSocketActions.METADATA

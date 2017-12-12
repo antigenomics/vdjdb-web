@@ -42,7 +42,7 @@ object IntersectionTableRow {
         }).toMap
 
         IntersectionTableRow(
-            Seq(id.toString, results.size.toString,
+            Seq(results.size.toString, id.toString,
                 clonotype.getFreq.toString, clonotype.getCount.toString,
                 clonotype.getCdr3aa, clonotype.getV, clonotype.getJ),
             results.map(IntersectionTableRowMatch.createFromSearchResult), tags,
