@@ -80,11 +80,6 @@ export class AnnotationsService {
         this.connection.connect('/api/annotations/connect');
     }
 
-    // TODO delete this
-    public debugDisconnect(): void {
-        this.connection.disconnect();
-    }
-
     public isInitialized(): boolean {
         return this._initialized;
     }
