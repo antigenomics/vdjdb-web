@@ -22,6 +22,7 @@ import { ApplicationComponent } from './application.component';
 import { AboutPageModule } from './pages/about/about.module';
 import { AnnotationsPageModule } from './pages/annotations/annotations.module';
 import { HomePageModule } from './pages/home/home.module';
+import { OverviewPageModule } from './pages/overview/overview.module';
 import { SearchPageModule } from './pages/search/search.module';
 import { NavigationBarModule } from './shared/navbar/navbar.module';
 import { ClipboardService } from './utils/clipboard/clipboard.service';
@@ -31,7 +32,7 @@ import { NotificationModule } from './utils/notifications/notification.module';
 
 @NgModule({
     imports:      [ CommonModule, BrowserModule,
-        HomePageModule, AboutPageModule, SearchPageModule, AnnotationsPageModule,
+        HomePageModule, AboutPageModule, OverviewPageModule, SearchPageModule, AnnotationsPageModule,
         NotificationModule, NavigationBarModule, LoaderModule,
         RouterModule.forRoot([]) ],
     declarations: [ ApplicationComponent ],

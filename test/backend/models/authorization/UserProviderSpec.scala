@@ -135,7 +135,7 @@ class UserProviderSpec extends DatabaseProviderTestSpec {
                 val file = new File("/tmp/dummy.txt")
                 file.createNewFile()
                 val tmpFile = Files.SingletonTemporaryFileCreator.create(Paths.get(file.getPath))
-                val sampleFileID = await(user.get.addSampleFile("sample", "txt", tmpFile))
+                val sampleFileID = await(user.get.addSampleFile("sample", "txt", "vdjtools", tmpFile))
                 sampleFileID should be('left)
                 sampleFileID.left.get shouldNot equal(0)
 

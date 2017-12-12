@@ -76,6 +76,11 @@ export class AnnotationsService {
         this.connection.connect('/api/annotations/connect');
     }
 
+    // TODO delete this
+    public debugDiconnect(): void {
+        this.connection.disconnect();
+    }
+
     public isInitialized(): boolean {
         return this._initialized;
     }
@@ -105,7 +110,7 @@ export class AnnotationsService {
     }
 
     public async intersect(sample: SampleItem, filters: IntersectionTableFilters): Promise<WebSocketResponseData> {
-        return await this.connection.sendMessage({
+        return this.connection.sendMessage({
             action: AnnotationsServiceWebSocketActions.INTERSECT,
             data:   new WebSocketRequestData()
                     .add('sampleName', sample.name)

@@ -15,26 +15,25 @@
  *
  */
 
-import { Component, Input} from '@angular/core';
-import { IntersectionTableColumnInfo } from './column/intersection-table-column-info';
-import { IntersectionTable } from './intersection-table';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
 
 @Component({
-    selector:        'intersection-table',
-    templateUrl:     './intersection-table.component.html'
+    selector:        'table-pagesize',
+    templateUrl:     './table-pagesize.component.html',
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class IntersectionTableComponent {
-    @Input('columns')
-    public columns: IntersectionTableColumnInfo[];
+export class TablePagesizeComponent {
+    @Input()
+    public pageSize: number;
 
-    @Input('table')
-    public table: IntersectionTable;
+    @Input()
+    public sizes: number[];
 
-    public pageChange(page: number): void {
-        this.table.updatePage(page);
-    }
+    @Output()
+    public changePageSize = new EventEmitter();
 
-    public pageSizeChange(pageSize: number): void {
-        this.table.updatePageSize(pageSize);
+    public changeSize(size: number): void {
+        this.pageSize = size;
+        this.changePageSize.emit(size);
     }
 }

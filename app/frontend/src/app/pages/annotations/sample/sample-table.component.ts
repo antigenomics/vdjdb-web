@@ -68,10 +68,6 @@ export class SampleTableComponent implements OnInit, OnDestroy {
             });
     }
 
-    public isTableLoading(): boolean {
-        return this.table.isLoading();
-    }
-
     public intersect(): void {
         this.sampleTableService.intersect(this.sample);
     }
