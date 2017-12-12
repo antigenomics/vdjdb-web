@@ -55,7 +55,7 @@ class IntersectionTable extends ResultsTable[IntersectionTableRow] {
         }
         val searchParameters = new SequenceSearcherPreset(treeSearchParameters)
         val filters = new util.ArrayList[TextFilter]()
-        if (request.mhc.toLowerCase() != "any") {
+        if (request.mhc != "MHCI+II") {
             filters.add(new ExactTextFilter("mhc.class", request.mhc, false))
         }
 

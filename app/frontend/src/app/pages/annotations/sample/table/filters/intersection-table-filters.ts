@@ -24,7 +24,7 @@ export class IntersectionTableFilters {
     public matchJ: boolean = true;
     public species: string = 'HomoSapiens';
     public gene: string = 'TRB';
-    public mhc: string = 'Any';
+    public mhc: string = 'MHCI+II';
 
     public disable(): void {
         this._disabled = true;
