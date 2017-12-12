@@ -2,32 +2,12 @@
     <div class="twelve column row middle aligned">
         <div class="eight wide column">
             <div class="ui horizontal divider">
-                Intersection parameters
+                Sample metadata
             </div>
         </div>
-    </div>
-    <div class="twelve column row middle aligned">
-        <div class="column">
-            <b>Match V / J</b>
-        </div>
-        <div class="column">
-            <div class="ui checkbox">
-                <input [attr.disabled]="filters.isDisabled()?'':null" type="checkbox" [(ngModel)]="filters.matchV">
-                <label>Match V</label>
-            </div>
-            <br>
-            <div class="ui checkbox">
-                <input [attr.disabled]="filters.isDisabled()?'':null" type="checkbox" [(ngModel)]="filters.matchJ">
-                <label>Match J</label>
-            </div>
-        </div>
-        <div class="two wide column"></div>
-        <div class="column">
-            <b>Confidence score threshold</b>
-        </div>
-        <div class="two wide column">
-            <div class="ui input fluid">
-                <input [attr.disabled]="filters.isDisabled()?'':null" type="number" min="0" max="3" [ngModel]="filters.confidenceThreshold" (ngModelChange)="checkConfidenceThreshold($event)">
+        <div class="eight wide column">
+            <div class="ui horizontal divider">
+                Database query parameters
             </div>
         </div>
     </div>
@@ -46,7 +26,6 @@
                 </div>
             </div>
         </div>
-        <div class="column"></div>
         <div class="column">
             <b>Gene</b>
         </div>
@@ -58,6 +37,29 @@
                     <div class="item" (click)="filters.gene='TRA'">TRA</div>
                     <div class="item" (click)="filters.gene='TRB'">TRB</div>
                 </div>
+            </div>
+        </div>
+        <div class="column"></div>
+        <div class="column">
+            <b>Segment match rule</b>
+        </div>
+        <div class="two wide column">
+            <div class="ui checkbox">
+                <input [attr.disabled]="filters.isDisabled()?'':null" type="checkbox" [(ngModel)]="filters.matchV">
+                <label>Match V</label>
+            </div>
+            <br>
+            <div class="ui checkbox">
+                <input [attr.disabled]="filters.isDisabled()?'':null" type="checkbox" [(ngModel)]="filters.matchJ">
+                <label>Match J</label>
+            </div>
+        </div>
+        <div class="column">
+            <b>Confidence score threshold</b>
+        </div>
+        <div class="two wide column">
+            <div class="ui input fluid">
+                <input [attr.disabled]="filters.isDisabled()?'':null" type="number" min="0" max="3" [ngModel]="filters.confidenceThreshold" (ngModelChange)="checkConfidenceThreshold($event)">
             </div>
         </div>
     </div>
@@ -73,10 +75,13 @@
                     <div class="item" (click)="filters.mhc='Any'">Any</div>
                     <div class="item" (click)="filters.mhc='MHCI'">MHCI</div>
                     <div class="item" (click)="filters.mhc='MHCII'">MHCII</div>
+                    <div class="item" (click)="filters.mhc='MHCI+II'">MHCI+II</div>
                 </div>
             </div>
         </div>
         <div class="column"></div>
+        <div class="column"></div>
+        <div class="two wide column"></div>
         <div class="column">
             <b>Hamming distance</b>
         </div>
