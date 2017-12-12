@@ -18,12 +18,10 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, HostBinding, HostListener, ViewChild } from '@angular/core';
 import { PopupContentTable } from '../../../../../shared/modals/popup/popup-content-table';
 import { PopupDirective } from '../../../../../shared/modals/popup/popup.directive';
-import { SampleItem } from '../../../../../shared/sample/sample-item';
 import { LoggerService } from '../../../../../utils/logger/logger.service';
 import { AnnotationsService } from '../../../annotations.service';
 import { IntersectionTableRow } from '../row/intersection-table-row';
 import { IntersectionTableRowMatch } from '../row/intersection-table-row-match';
-import { IntersectionTableRowMetadata } from '../row/intersection-table-row-metadata';
 
 @Component({
     selector:        'td[intersection-table-entry-details]',

@@ -14,9 +14,8 @@
  *    limitations under the License.
  */
 
-import { EventEmitter, Injectable } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { ReplaySubject } from 'rxjs/ReplaySubject';
-import { Subject } from 'rxjs/Subject';
 import { Filter, FiltersOptions, IFilter } from '../../../../shared/filters/filters';
 import { FiltersService } from '../../../../shared/filters/filters.service';
 import { ExportFormat } from '../../../../shared/table/export/table-export.component';

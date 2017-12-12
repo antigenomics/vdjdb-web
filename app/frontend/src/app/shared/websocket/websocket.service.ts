@@ -16,8 +16,8 @@
 
 import { Injectable } from '@angular/core';
 import 'rxjs/add/operator/filter';
-import 'rxjs/add/operator/take';
 import 'rxjs/add/operator/map';
+import 'rxjs/add/operator/take';
 import { Observable } from 'rxjs/Observable';
 import { Subject } from 'rxjs/Subject';
 import { environment } from '../../../environments/environment';
