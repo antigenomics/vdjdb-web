@@ -23,7 +23,9 @@
     "help:e2e": "hg help e2e",
     "postinstall": "node ./styles/semantic-fix.js && node ./scripts/purify-patch.install.js",
     "test": "ng test",
-    "e2e": "ng e2e"
+    "e2e": "ng e2e",
+    "clean:node_modules": "rimraf node_modules",
+    "clean:cache": "rimraf node_modules/.cache && rimraf webpack/dll"
   },
   "author": "Dmitry Bagaev",
   "homepage": "https://github.com/antigenomics/vdjdb-web-private",
