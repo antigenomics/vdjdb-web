@@ -29,7 +29,8 @@ import { IntersectionTableRowMatch } from '../row/intersection-table-row-match';
 
 @Component({
     selector:        'td[intersection-table-entry-details]',
-    template:        `<button class="circular ui icon basic tiny button" [popup]="quickView" [loading]="loading" [disabled]="popupDisabled"
+    template:        `<button class="circular ui icon basic tiny button" [ngClass]="{'teal':popupDisabled}" [popup]="quickView" 
+                        [loading]="loading" [disabled]="popupDisabled"
                         display="table" header="Quick view" position="right" width="700" topShift="-35"
                         shiftStrategy="per-item" footer="Click on the 'arrow' to see the alignments" #popupDirective>
                         <i class="dropdown circle icon cursor pointer"></i>
