@@ -21,7 +21,7 @@ import { DatabaseColumnInfo } from '../../../../database/database-metadata';
 
 @Component({
     selector: 'td[search-table-entry-json]',
-    template: `<i class="info circle icon cursor pointer" [style.color]="color" [popup]="value" 
+    template: `<i class="info circle icon cursor pointer" [style.color]="color" [popup]="value" topShift="-25" shiftStrategy="per-item"
                 footer="Click 'i' to copy to clipboard" [header]="title" width="250" display="list"></i>`,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
