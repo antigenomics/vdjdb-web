@@ -21,12 +21,14 @@ import backend.server.search.SearchTableRow
 import com.antigenomics.vdjdb.impl.ClonotypeSearchResult
 import play.api.libs.json.{Json, Writes}
 
-case class IntersectionTableRowMatch(row: SearchTableRow)
+case class IntersectionTableRowMatch(row: SearchTableRow, alignment: IntersectionTableRowAlignment)
 
 object IntersectionTableRowMatch {
     implicit val intersectionTableRowMatchWrites: Writes[IntersectionTableRowMatch] = Json.writes[IntersectionTableRowMatch]
 
     def createFromSearchResult(result: ClonotypeSearchResult): IntersectionTableRowMatch = {
-        IntersectionTableRowMatch(SearchTableRow.createFromRow(result.getRow))
+        IntersectionTableRowMatch(
+            SearchTableRow.createFromRow(result.getRow),
+            IntersectionTableRowAlignment.createFromAlignmentHelper(result.getResult.getAlignmentHelper))
     }
 }

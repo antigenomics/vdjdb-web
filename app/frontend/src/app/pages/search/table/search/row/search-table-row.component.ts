@@ -18,7 +18,9 @@ import {
     ChangeDetectionStrategy, Component, ComponentFactoryResolver, ComponentRef, HostBinding, Input, OnDestroy, OnInit,
     ViewChild, ViewContainerRef
 } from '@angular/core';
+import { IntersectionTableRowAlignment } from '../../../../annotations/sample/table/row/intersection-table-row-alignment';
 import { DatabaseColumnInfo } from '../../../database/database-metadata';
+import { SearchTableEntryAlignmentComponent } from '../entry/alignment/search-table-entry-alignment.component';
 import { SearchTableEntryCdrComponent } from '../entry/cdr/search-table-entry-cdr.component';
 import { SearchTableEntryGeneComponent } from '../entry/gene/search-table-entry-gene.component';
 import { SearchTableEntryJsonComponent } from '../entry/json/search-table-entry-json.component';
@@ -54,6 +56,9 @@ export class SearchTableRowComponent implements OnInit, OnDestroy {
     @Input('index')
     public index: number;
 
+    @Input('alignment')
+    public alignment: IntersectionTableRowAlignment;
+
     @ViewChild('rowViewContainer', { read: ViewContainerRef })
     public rowViewContainer: ViewContainerRef;
 
@@ -67,12 +72,18 @@ export class SearchTableRowComponent implements OnInit, OnDestroy {
         const originalComponentResolver = this.resolver.resolveComponentFactory(SearchTableEntryOriginalComponent);
         const geneComponentResolver = this.resolver.resolveComponentFactory(SearchTableEntryGeneComponent);
         const rowComponentResolver = this.resolver.resolveComponentFactory(SearchTableRowComponent);
+        const alignmentComponentResolver = this.resolver.resolveComponentFactory(SearchTableEntryAlignmentComponent);
 
         if (this.row.entries) {
             if (this.index !== undefined) {
                 const indexComponent = this.rowViewContainer.createComponent(originalComponentResolver);
                 indexComponent.instance.generate(this.index.toString());
                 this._components.push(indexComponent);
+            }
+            if (this.alignment !== undefined) {
+                const alignmentComponent = this.rowViewContainer.createComponent(alignmentComponentResolver);
+                alignmentComponent.instance.generate(this.alignment);
+                this._components.push(alignmentComponent);
             }
             this.row.entries.forEach((entry: string, index: number) => {
                 const column = this.columns[ index ];
