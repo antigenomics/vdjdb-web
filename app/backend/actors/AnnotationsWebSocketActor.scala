@@ -7,12 +7,13 @@ import backend.models.files.FileMetadataProvider
 import backend.models.files.sample.SampleFileProvider
 import backend.server.annotations.IntersectionTable
 import backend.server.annotations.api.intersect.{SampleIntersectionRequest, SampleIntersectionResponse}
-import backend.server.annotations.api.quick_view.{IntersectionQuickViewRequest, IntersectionQuickViewResponse}
+import backend.server.annotations.api.matches.{IntersectionMatchesRequest, IntersectionMatchesResponse}
 import backend.server.annotations.api.sample.delete.{DeleteSampleRequest, DeleteSampleResponse}
 import backend.server.annotations.api.sample.software.AvailableSoftwareResponse
 import backend.server.annotations.api.sample.validate.{ValidateSampleRequest, ValidateSampleResponse}
 import backend.server.annotations.api.user.UserDetailsResponse
 import backend.server.database.Database
+import backend.server.database.api.metadata.DatabaseMetadataResponse
 import backend.server.limit.{IpLimit, RequestLimits}
 import com.antigenomics.vdjtools.io.SampleFileConnection
 import com.antigenomics.vdjtools.misc.Software
@@ -81,18 +82,20 @@ class AnnotationsWebSocketActor(out: ActorRef, limit: IpLimit, user: User, detai
                             out.errorMessage("Invalid file name")
                     }
                 })
-            case IntersectionQuickViewResponse.Action =>
-                validateData(out, data, (quickViewRequest: IntersectionQuickViewRequest) => {
+            case IntersectionMatchesResponse.Action =>
+                validateData(out, data, (quickViewRequest: IntersectionMatchesRequest) => {
                     intersectionTableResults.get(quickViewRequest.sampleName) match {
                         case Some(table) =>
                             if (quickViewRequest.rowIndex >= 0 && table.getRecordsFound > quickViewRequest.rowIndex) {
                                 val row = table.getRows(quickViewRequest.rowIndex)
-                                out.success(IntersectionQuickViewResponse(row.matches.slice(0, 10), row.matches.length))
+                                out.success(IntersectionMatchesResponse(row.matches, row.matches.length))
                             }
                         case None =>
                             out.errorMessage("Unable to find table results")
                     }
                 })
+            case DatabaseMetadataResponse.Action =>
+                out.success(DatabaseMetadataResponse(database.getMetadata))
             case _ =>
                 out.errorMessage("Invalid action")
         }

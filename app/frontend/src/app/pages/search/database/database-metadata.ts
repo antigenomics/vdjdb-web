@@ -15,51 +15,22 @@
  */
 
 export class DatabaseColumnInfo {
-
-    private _name: string;
-    private _columnType: string;
-    private _visible: boolean;
-    private _dataType: string;
-    private _title: string;
-    private _comment: string;
-    private _values: string[];
+    public readonly name: string;
+    public readonly columnType: string;
+    public readonly visible: boolean;
+    public readonly dataType: string;
+    public readonly title: string;
+    public readonly comment: string;
+    public readonly values: string[];
 
     constructor(name: string, columnType: string, visible: boolean, dataType: string, title: string, comment: string, values: string[]) {
-        this._name = name;
-        this._columnType = columnType;
-        this._visible = visible;
-        this._dataType = dataType;
-        this._title = title;
-        this._comment = comment;
-        this._values = values;
-    }
-
-    get name(): string {
-        return this._name;
-    }
-
-    get columnType(): string {
-        return this._columnType;
-    }
-
-    get visible(): boolean {
-        return this._visible;
-    }
-
-    get dataType(): string {
-        return this._dataType;
-    }
-
-    get title(): string {
-        return this._title;
-    }
-
-    get comment(): string {
-        return this._comment;
-    }
-
-    get values(): string[] {
-        return this._values;
+        this.name = name;
+        this.columnType = columnType;
+        this.visible = visible;
+        this.dataType = dataType;
+        this.title = title;
+        this.comment = comment;
+        this.values = values;
     }
 
     public static deserialize(input: any): DatabaseColumnInfo {
@@ -72,30 +43,18 @@ export class DatabaseColumnInfo {
 }
 
 export class DatabaseMetadata {
-    private _numberOfRecords: number;
-    private _numberOfColumns: number;
-    private _columns: DatabaseColumnInfo[];
+    public readonly numberOfRecords: number;
+    public readonly numberOfColumns: number;
+    public readonly columns: DatabaseColumnInfo[];
 
     constructor(numberOfRecords: number, numberOfColumns: number, columns: DatabaseColumnInfo[]) {
-        this._numberOfRecords = numberOfRecords;
-        this._numberOfColumns = numberOfColumns;
-        this._columns = columns;
-    }
-
-    get numberOfRecords(): number {
-        return this._numberOfRecords;
-    }
-
-    get numberOfColumns(): number {
-        return this._numberOfColumns;
-    }
-
-    get columns(): DatabaseColumnInfo[] {
-        return this._columns;
+        this.numberOfRecords = numberOfRecords;
+        this.numberOfColumns = numberOfColumns;
+        this.columns = columns;
     }
 
     public getColumnInfo(columnName: string): DatabaseColumnInfo {
-        return this._columns.find((i: DatabaseColumnInfo) => i.name === columnName);
+        return this.columns.find((i: DatabaseColumnInfo) => i.name === columnName);
     }
 
     public static deserialize(input: any): DatabaseMetadata {

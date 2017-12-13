@@ -38,7 +38,7 @@ import { SearchTableService } from './search-table.service';
                         SearchTableEntryUrlComponent,
                         SearchTableEntryGeneComponent,
                         SearchTableEntryCdrComponent ],
-    exports:         [  SearchTableComponent ],
+    exports:         [  SearchTableComponent, SearchTableRowComponent ],
     entryComponents: [  SearchTableRowComponent,
                         SearchTableEntryOriginalComponent,
                         SearchTableEntryJsonComponent,

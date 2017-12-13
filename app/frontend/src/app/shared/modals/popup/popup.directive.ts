@@ -55,10 +55,15 @@ export class PopupDirective {
     @Input('loading')
     public loading: boolean = false;
 
+    @Input('disabled')
+    public disabled: boolean = false;
+
     constructor(private viewContainerRef: ViewContainerRef, private resolver: ComponentFactoryResolver) {}
 
     public updateView(): void {
-        if (this._tooltip && this._tooltip.instance) {
+        if (this._tooltip && this.disabled) {
+            this._tooltip.destroy();
+        } else if (this._tooltip && this._tooltip.instance) {
             this._tooltip.instance.hostElement = this.viewContainerRef.element.nativeElement;
             this._tooltip.instance.content = this.popupContent;
             this._tooltip.instance.header = this.headerContent;
@@ -78,7 +83,7 @@ export class PopupDirective {
     @HostListener('focusin')
     @HostListener('mouseenter')
     public show(): void {
-        if (!this._visible) {
+        if (!this._visible && !this.disabled) {
             const factory = this.resolver.resolveComponentFactory<PopupContentComponent>(PopupContentComponent);
             this._tooltip = this.viewContainerRef.createComponent<PopupContentComponent>(factory);
             this.updateView();

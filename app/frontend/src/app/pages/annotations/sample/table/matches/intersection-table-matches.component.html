@@ -1,0 +1,18 @@
+<td colspan="9" class="slow fade element">
+    <h4 class="ui header" style="margin: 10px">
+        Matches
+    </h4>
+    <table class="ui table" [style.font-size]="headerFontSize">
+        <thead>
+        <tr>
+            <th class="center aligned">#</th>
+            <th class="center aligned" *ngFor="let header of getHeaderColumns()">{{ header.title }}</th>
+        </tr>
+        </thead>
+        <tbody>
+        <ng-container *ngFor="let match of matches; let i = index">
+            <tr [search-table-row]="match.row" [columns]="getColumns()" [skip-columns]="getUnnecessaryColumns()" [index]="i + 1"></tr>
+        </ng-container>
+        </tbody>
+    </table>
+</td>

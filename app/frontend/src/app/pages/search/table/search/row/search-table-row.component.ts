@@ -18,6 +18,7 @@ import {
     ChangeDetectionStrategy, Component, ComponentFactoryResolver, ComponentRef, HostBinding, Input, OnDestroy, OnInit,
     ViewChild, ViewContainerRef
 } from '@angular/core';
+import { DatabaseColumnInfo } from '../../../database/database-metadata';
 import { SearchTableEntryCdrComponent } from '../entry/cdr/search-table-entry-cdr.component';
 import { SearchTableEntryGeneComponent } from '../entry/gene/search-table-entry-gene.component';
 import { SearchTableEntryJsonComponent } from '../entry/json/search-table-entry-json.component';
@@ -35,10 +36,8 @@ export class SearchTableRowComponent implements OnInit, OnDestroy {
     private _components: Array<ComponentRef<any>> = [];
 
     @HostBinding('class.center')
-    public centered: boolean = true;
-
     @HostBinding('class.aligned')
-    public aligned: boolean = true;
+    public centered: boolean = true;
 
     @Input('allowPaired')
     public allowPaired: boolean = true;
@@ -46,11 +45,19 @@ export class SearchTableRowComponent implements OnInit, OnDestroy {
     @Input('search-table-row')
     public row: SearchTableRow;
 
+    @Input('columns')
+    public columns: DatabaseColumnInfo[];
+
+    @Input('skip-columns')
+    public skip: string[];
+
+    @Input('index')
+    public index: number;
+
     @ViewChild('rowViewContainer', { read: ViewContainerRef })
     public rowViewContainer: ViewContainerRef;
 
-    constructor(private hostViewContainer: ViewContainerRef, private resolver: ComponentFactoryResolver,
-                private table: SearchTableService) {
+    constructor(private hostViewContainer: ViewContainerRef, private resolver: ComponentFactoryResolver) {
     }
 
     public ngOnInit(): void {
@@ -62,38 +69,45 @@ export class SearchTableRowComponent implements OnInit, OnDestroy {
         const rowComponentResolver = this.resolver.resolveComponentFactory(SearchTableRowComponent);
 
         if (this.row.entries) {
+            if (this.index !== undefined) {
+                const indexComponent = this.rowViewContainer.createComponent(originalComponentResolver);
+                indexComponent.instance.generate(this.index.toString());
+                this._components.push(indexComponent);
+            }
             this.row.entries.forEach((entry: string, index: number) => {
-                const column = this.table.columns[ index ];
+                const column = this.columns[ index ];
                 let component: ComponentRef<any>;
-                switch (column.name) {
-                    case 'gene':
-                        if (this.allowPaired) {
-                            component = this.rowViewContainer.createComponent(geneComponentResolver);
-                            component.instance.generate(entry, this.row.metadata.pairedID, this.hostViewContainer, rowComponentResolver);
-                        } else {
+                if (this.skip === undefined || this.skip.indexOf(column.name) === -1) {
+                    switch (column.name) {
+                        case 'gene':
+                            if (this.allowPaired) {
+                                component = this.rowViewContainer.createComponent(geneComponentResolver);
+                                component.instance.generate(entry, this.row.metadata.pairedID, this.hostViewContainer, rowComponentResolver);
+                            } else {
+                                component = this.rowViewContainer.createComponent(originalComponentResolver);
+                                component.instance.generate(`${entry}`);
+                            }
+                            break;
+                        case 'cdr3':
+                            component = this.rowViewContainer.createComponent(cdrComponentResolver);
+                            component.instance.generate(entry, this.row);
+                            break;
+                        case 'reference.id':
+                            component = this.rowViewContainer.createComponent(urlComponentResolver);
+                            component.instance.generate(entry);
+                            break;
+                        case 'method':
+                        case 'meta':
+                        case 'cdr3fix':
+                            component = this.rowViewContainer.createComponent(jsonComponentResolver);
+                            component.instance.generate(column.title, entry, column);
+                            break;
+                        default:
                             component = this.rowViewContainer.createComponent(originalComponentResolver);
-                            component.instance.generate(`${entry}`);
-                        }
-                        break;
-                    case 'cdr3':
-                        component = this.rowViewContainer.createComponent(cdrComponentResolver);
-                        component.instance.generate(entry, this.row);
-                        break;
-                    case 'reference.id':
-                        component = this.rowViewContainer.createComponent(urlComponentResolver);
-                        component.instance.generate(entry);
-                        break;
-                    case 'method':
-                    case 'meta':
-                    case 'cdr3fix':
-                        component = this.rowViewContainer.createComponent(jsonComponentResolver);
-                        component.instance.generate(column.title, entry, column);
-                        break;
-                    default:
-                        component = this.rowViewContainer.createComponent(originalComponentResolver);
-                        component.instance.generate(entry);
+                            component.instance.generate(entry);
+                    }
+                    this._components.push(component);
                 }
-                this._components.push(component);
             });
         }
     }
