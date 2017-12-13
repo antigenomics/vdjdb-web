@@ -23,38 +23,38 @@ import { Utils } from '../../utils/utils';
 
 @Injectable()
 export class OverviewService {
+    private static readonly _rejectedMessage: string = 'Security issue, please try again later';
+    private static readonly _failedMessage: string = 'Failed to download overview, please try again later';
+
     private _rejected: boolean = false;
     private _overviewContent: string;
 
     constructor(private logger: LoggerService) {}
 
-    public getSummaryContent(): Observable<string> {
-        if (this._rejected) {
-            return Observable.create((observer: Observer<string>) => {
-                observer.next('');
-                observer.complete();
-            });
-        }
-        if (this._overviewContent) {
-            return Observable.create((observer: Observer<string>) => {
-                observer.next(this._overviewContent);
-                observer.complete();
-            });
-        } else {
-            return Observable.create((observer: Observer<string>) => {
-                this.logger.debug('Summary service', 'downloaded');
-                Utils.HTTP.get('/api/database/summary').subscribe((request: XMLHttpRequest) => {
+    public getOverviewContent(): Promise<string> {
+        return new Promise<string>((resolve) => {
+            if (this._rejected) {
+                resolve(OverviewService._rejectedMessage);
+            } else if (this._overviewContent) {
+                resolve(this._overviewContent);
+            } else {
+                this.logger.debug('Overview service', 'downloading..');
+                Utils.HTTP.get('/api/database/summary').then((request: XMLHttpRequest) => {
                     const text = request.responseText;
                     if (text.indexOf('script') !== -1) {
                         this._rejected = true;
-                        observer.next('');
+                        resolve(OverviewService._rejectedMessage);
+                        this.logger.debug('Overview service: WARNING', 'rejected');
                     } else {
                         this._overviewContent = request.responseText;
-                        observer.next(request.responseText);
+                        this.logger.debug('Overview service', 'downloaded successfully');
+                        resolve(this._overviewContent);
                     }
-                    observer.complete();
+                }).catch(() => {
+                    this.logger.warn('Overview service', 'failed');
+                    resolve(OverviewService._failedMessage);
                 });
-            });
-        }
+            }
+        });
     }
 }

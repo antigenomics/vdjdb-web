@@ -20,9 +20,9 @@ import { Filter, FiltersOptions, IFilter } from '../../../../shared/filters/filt
 import { FiltersService } from '../../../../shared/filters/filters.service';
 import { ExportFormat } from '../../../../shared/table/export/table-export.component';
 import { Table } from '../../../../shared/table/table';
+import { WebSocketConnection, WebSocketResponseStatus } from '../../../../shared/websocket/websocket-connection';
 import { WebSocketRequestData } from '../../../../shared/websocket/websocket-request';
 import { WebSocketResponseData } from '../../../../shared/websocket/websocket-response';
-import { WebSocketResponseStatus, WebSocketService } from '../../../../shared/websocket/websocket.service';
 import { LoggerService } from '../../../../utils/logger/logger.service';
 import { NotificationService } from '../../../../utils/notifications/notification.service';
 import { Utils } from '../../../../utils/utils';
@@ -44,12 +44,12 @@ export class SearchTableService extends Table<SearchTableRow> {
     private _recordsFound: number = 0;
     private _numberOfRecords: number = 0;
 
-    private connection: WebSocketService;
+    private connection: WebSocketConnection;
 
     constructor(private filters: FiltersService, private logger: LoggerService, private notifications: NotificationService) {
         super();
         this._rows = new ReplaySubject<SearchTableRow[]>(1);
-        this.connection = new WebSocketService(logger, notifications, false);
+        this.connection = new WebSocketConnection(logger, notifications, false);
         this.connection.onOpen(async () => {
             const metadataRequest = this.connection.sendMessage({
                 action: SearchTableWebSocketActions.METADATA

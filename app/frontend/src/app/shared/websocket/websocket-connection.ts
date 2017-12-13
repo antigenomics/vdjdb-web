@@ -14,7 +14,6 @@
  *    limitations under the License.
  */
 
-import { Injectable } from '@angular/core';
 import 'rxjs/add/operator/filter';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/take';
@@ -50,8 +49,7 @@ export class WebSocketRequestMessage {
     public data?: IWebSocketRequestData;
 }
 
-@Injectable()
-export class WebSocketService {
+export class WebSocketConnection {
     private static pingConnectionTimeout: number = 30000;
     private static maxReconnectAttempts: number = 1000;
 
@@ -82,13 +80,13 @@ export class WebSocketService {
     public connect(url: string): void {
         if (this._connection) {
             if (this._lastConnectedUrl !== url) {
-                this.logger.debug('WebSocketService WARNING!: attempt to reconnect', `Last connected url: ${this._lastConnectedUrl}, Attempt: ${url}`);
+                this.logger.debug('WebSocketConnection WARNING!: attempt to reconnect', `Last connected url: ${this._lastConnectedUrl}, Attempt: ${url}`);
             }
             return;
         }
 
         this._currentReconnectAttempt = 0;
-        this._lastConnectedUrl = WebSocketService.getWebSocketPrefix() + url;
+        this._lastConnectedUrl = WebSocketConnection.getWebSocketPrefix() + url;
         this._connectionStatus = WebSocketConnectionStatus.CONNECTING;
         this._connection = new WebSocket(this._lastConnectedUrl);
 
@@ -97,7 +95,7 @@ export class WebSocketService {
 
     public reconnect(): boolean {
         this._currentReconnectAttempt += 1;
-        if (this._currentReconnectAttempt < WebSocketService.maxReconnectAttempts) {
+        if (this._currentReconnectAttempt < WebSocketConnection.maxReconnectAttempts) {
             this.disconnect();
             this._connection = new WebSocket(this._lastConnectedUrl);
             this.bindConnectionEvents();
@@ -218,7 +216,7 @@ export class WebSocketService {
             this.sendMessage({
                 action: 'ping'
             });
-        }, WebSocketService.pingConnectionTimeout);
+        }, WebSocketConnection.pingConnectionTimeout);
 
         if (!environment.production) {
             this._messages.subscribe((message: any) => {
@@ -242,6 +240,6 @@ export class WebSocketService {
     }
 
     private static getWebSocketPrefix(): string {
-        return WebSocketService.getWebSocketProtocol() + WebSocketService.getWebSocketLocation();
+        return WebSocketConnection.getWebSocketProtocol() + WebSocketConnection.getWebSocketLocation();
     }
 }

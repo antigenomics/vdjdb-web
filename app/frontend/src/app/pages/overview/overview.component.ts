@@ -31,7 +31,7 @@ export class OverviewPageComponent implements OnInit {
     }
 
     public ngOnInit(): void {
-        this.overviewService.getSummaryContent().subscribe((text: string) => {
+        this.overviewService.getOverviewContent().then((text: string) => {
             this.overviewContainer.nativeElement.innerHTML = text;
         });
     }
