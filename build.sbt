@@ -47,6 +47,28 @@ lazy val isWindows = System.getProperty("os.name").toUpperCase().contains("WIN")
 lazy val frontendApplicationPath = if (isWindows) "app\\frontend" else "./app/frontend"
 lazy val npm: String = if (isWindows) "cmd /c npm " else "npm "
 
+lazy val cleanFrontendDependencies = taskKey[Unit]("Clean frontend dependencies")
+cleanFrontendDependencies := {
+    val logger: TaskStreams = streams.value
+    logger.log.info("Cleaning frontend dependencies (node_modules folder)")
+    val clean = Process(npm + "run clean:node_modules", file(frontendApplicationPath)).run()
+    if (clean.exitValue != 0) {
+        throw new IllegalStateException("Cleaning fronted dependencies failed!")
+    }
+    logger.log.info("Frontend dependencies cleaned successfully")
+}
+
+lazy val cleanFrontendCache = taskKey[Unit]("Clean frontend cache")
+cleanFrontendCache := {
+    val logger: TaskStreams = streams.value
+    logger.log.info("Cleaning frontend cache")
+    val clean = Process(npm + "run clean:cache", file(frontendApplicationPath)).run()
+    if (clean.exitValue != 0) {
+        throw new IllegalStateException("Cleaning fronted cache failed!")
+    }
+    logger.log.info("Frontend cache cleaned successfully")
+}
+
 lazy val installFrontendDependencies = taskKey[Unit]("Install frontend dependencies")
 installFrontendDependencies := {
     val logger: TaskStreams = streams.value
