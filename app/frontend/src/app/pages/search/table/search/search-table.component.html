@@ -16,7 +16,7 @@
         </tr>
         </thead>
         <tbody>
-        <tr *ngFor="let row of table.rows | async" [search-table-row]="row" class="center aligned"></tr>
+        <tr *ngFor="let row of table.rows | async" [search-table-row]="row" [columns]="table.columns" class="center aligned"></tr>
         </tbody>
     </table>
 </div>

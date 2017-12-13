@@ -15,12 +15,15 @@
  *
  */
 
-package backend.server.annotations.api.quick_view
+package backend.server.annotations.api.matches
 
-import play.api.libs.json.{Json, Reads}
+import backend.server.annotations.IntersectionTableRowMatch
+import play.api.libs.json.{Json, Writes}
 
-case class IntersectionQuickViewRequest(sampleName: String, rowIndex: Int)
+case class IntersectionMatchesResponse(matches: Seq[IntersectionTableRowMatch], count: Int)
 
-object IntersectionQuickViewRequest {
-    implicit val intersectionQuickViewRequestReads: Reads[IntersectionQuickViewRequest] = Json.reads[IntersectionQuickViewRequest]
+object IntersectionMatchesResponse {
+    final val Action: String = "download_matches"
+
+    implicit val intersectionMatchesResponseWrites: Writes[IntersectionMatchesResponse] = Json.writes[IntersectionMatchesResponse]
 }

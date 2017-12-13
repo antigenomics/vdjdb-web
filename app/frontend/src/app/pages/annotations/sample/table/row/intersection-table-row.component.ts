@@ -33,7 +33,7 @@ import { IntersectionTableRow } from './intersection-table-row';
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class IntersectionTableRowComponent implements OnInit, OnDestroy {
-    private static _centeredColumnsNames: string[] = ['found', 'id', 'count'];
+    private static _centeredColumnsNames: string[] = [ 'found', 'id', 'count' ];
     private _components: Array<ComponentRef<any>> = [];
 
     @Input('intersection-table-row')
@@ -42,8 +42,8 @@ export class IntersectionTableRowComponent implements OnInit, OnDestroy {
     @ViewChild('rowViewContainer', { read: ViewContainerRef })
     public rowViewContainer: ViewContainerRef;
 
-    constructor(private resolver: ComponentFactoryResolver, private sampleTableService: SampleTableService) {
-    }
+    constructor(private hostViewContainer: ViewContainerRef, private resolver: ComponentFactoryResolver,
+                private sampleTableService: SampleTableService) {}
 
     public ngOnInit(): void {
         const originalComponentResolver = this.resolver.resolveComponentFactory(IntersectionTableEntryOriginalComponent);
@@ -52,7 +52,7 @@ export class IntersectionTableRowComponent implements OnInit, OnDestroy {
 
         const quickViewComponentResolver = this.resolver.resolveComponentFactory(IntersectionTableEntryDetailsComponent);
         const quickViewComponent = this.rowViewContainer.createComponent(quickViewComponentResolver);
-        quickViewComponent.instance.generate(this.row);
+        quickViewComponent.instance.generate(this.row, this.hostViewContainer);
 
         if (this.row.entries) {
             const columns = this.sampleTableService.getColumns();

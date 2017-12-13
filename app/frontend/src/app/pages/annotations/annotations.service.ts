@@ -25,6 +25,7 @@ import { WebSocketRequestData } from '../../shared/websocket/websocket-request';
 import { WebSocketResponseData } from '../../shared/websocket/websocket-response';
 import { LoggerService } from '../../utils/logger/logger.service';
 import { NotificationService } from '../../utils/notifications/notification.service';
+import { DatabaseColumnInfo, DatabaseMetadata } from '../search/database/database-metadata';
 import { IntersectionTableFilters } from './sample/table/filters/intersection-table-filters';
 import { IntersectionTableRow } from './sample/table/row/intersection-table-row';
 import { FileItem } from './upload/item/file-item';
@@ -38,12 +39,13 @@ export namespace AnnotationsServiceEvents {
 }
 
 export namespace AnnotationsServiceWebSocketActions {
+    export const DATABASE_METADATA: string = 'meta';
     export const USER_DETAILS: string = 'details';
     export const AVAILABLE_SOFTWARE: string = 'available_software';
     export const VALIDATE_SAMPLE: string = 'validate_sample';
     export const DELETE_SAMPLE: string = 'delete_sample';
     export const INTERSECT: string = 'intersect';
-    export const MATCH_QUICK_VIEW: string = 'match_quick_view';
+    export const DOWNLOAD_MATCHES: string = 'download_matches';
 }
 
 @Injectable()
@@ -52,18 +54,24 @@ export class AnnotationsService {
     private _initialized: boolean = false;
     private _user: User;
     private _availableSoftwareTypes: string[] = [];
+    private _databaseMetadata: DatabaseMetadata;
 
     private connection: WebSocketConnection;
 
     constructor(private logger: LoggerService, notifications: NotificationService) {
         this.connection = new WebSocketConnection(logger, notifications, true);
         this.connection.onOpen(async () => {
+
             const userDetailsRequest = this.connection.sendMessage({
                 action: AnnotationsServiceWebSocketActions.USER_DETAILS
             });
 
             const availableSoftwareTypesRequest = this.connection.sendMessage({
                 action: AnnotationsServiceWebSocketActions.AVAILABLE_SOFTWARE
+            });
+
+            const databaseMetadataRequest = this.connection.sendMessage({
+                action: AnnotationsServiceWebSocketActions.DATABASE_METADATA
             });
 
             const userDetailsResponse = await userDetailsRequest;
@@ -73,6 +81,10 @@ export class AnnotationsService {
             const availableSoftwareTypesResponse = await availableSoftwareTypesRequest;
             this._availableSoftwareTypes = availableSoftwareTypesResponse.get('available');
             this.logger.debug('AnnotationsService: available software', this._availableSoftwareTypes);
+
+            const databaseMetadataResponse = await databaseMetadataRequest;
+            this._databaseMetadata = DatabaseMetadata.deserialize(databaseMetadataResponse.get('metadata'));
+            this.logger.debug('AnnotationsService: database metadata', this._databaseMetadata);
 
             this._initialized = true;
             this._events.next(AnnotationsServiceEvents.INITIALIZED);
@@ -108,6 +120,10 @@ export class AnnotationsService {
         return this._availableSoftwareTypes;
     }
 
+    public getDatabaseMetadata(): DatabaseMetadata {
+        return this._databaseMetadata;
+    }
+
     public intersect(sample: SampleItem, filters: IntersectionTableFilters, observerCallback: (o: Observable<WebSocketResponseData>) => void): void {
         this.connection.subscribeMessages({
             action: AnnotationsServiceWebSocketActions.INTERSECT,
@@ -124,9 +140,9 @@ export class AnnotationsService {
         }, observerCallback);
     }
 
-    public matchesQuickView(row: IntersectionTableRow): Promise<WebSocketResponseData> {
+    public downloadMatches(row: IntersectionTableRow): Promise<WebSocketResponseData> {
         return this.connection.sendMessage({
-            action: AnnotationsServiceWebSocketActions.MATCH_QUICK_VIEW,
+            action: AnnotationsServiceWebSocketActions.DOWNLOAD_MATCHES,
             data:   new WebSocketRequestData()
                     .add('sampleName', row.sample.name)
                     .add('rowIndex', row.index)
