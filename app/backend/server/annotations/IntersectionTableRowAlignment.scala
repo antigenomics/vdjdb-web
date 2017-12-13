@@ -15,17 +15,17 @@
  *
  */
 
-import { SearchTableRow } from '../../../../search/table/search/row/search-table-row';
-import { IntersectionTableRowAlignment } from './intersection-table-row-alignment';
+package backend.server.annotations
 
-export class IntersectionTableRowMatch {
-    public readonly row: SearchTableRow;
-    public readonly alignment: IntersectionTableRowAlignment;
+import com.milaboratory.core.alignment.AlignmentHelper
+import play.api.libs.json.{Json, Writes}
 
-    constructor(match: any) {
-        /* tslint:disable:no-string-literal */
-        this.row = new SearchTableRow(match['row']);
-        this.alignment = new IntersectionTableRowAlignment(match['alignment']);
-        /* tslint:enable:no-string-literal */
+case class IntersectionTableRowAlignment(seq1String: String, markup: String, seq2String: String)
+
+object IntersectionTableRowAlignment {
+    implicit val intersectionTableRowAlignmentWrites: Writes[IntersectionTableRowAlignment] = Json.writes[IntersectionTableRowAlignment]
+
+    def createFromAlignmentHelper(helper: AlignmentHelper): IntersectionTableRowAlignment = {
+        IntersectionTableRowAlignment(helper.getSeq1String, helper.getMarkup, helper.getSeq2String)
     }
 }

@@ -5,7 +5,7 @@
      [style.bottom]="boundingRect.bottom"
      style="display: block !important; position: fixed; text-align: left !important; white-space: normal;">
     <div class="header">{{ getHeaderContent() }}</div>
-    <div class="ui divider"></div>
+    <div class="ui divider" *ngIf="getHeaderContent()"></div>
     <div class="content" *ngIf="display === 'paragraph'">
         <p *ngFor="let paragraph of getPopupContent()">{{ paragraph }}</p>
     </div>
@@ -26,12 +26,12 @@
                     </div>
                     <div class="column" *ngIf="!loading">
                         <div class="ui very basic fixed single line unstackable compact table">
-                            <thead>
+                            <thead *ngIf="getPopupContent().headers.length !== 0">
                             <tr>
                                 <th class="one wide center aligned" *ngFor="let header of getPopupContent().headers"><span class="header">{{ header }}</span></th>
                             </tr>
                             </thead>
-                            <tbody>
+                            <tbody class="{{ popupClass }}">
                             <tr class="center aligned" *ngFor="let row of getPopupContent().rows">
                                 <td *ngFor="let entry of row">{{ entry }}</td>
                             </tr>

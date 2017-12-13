@@ -15,17 +15,16 @@
  *
  */
 
-import { SearchTableRow } from '../../../../search/table/search/row/search-table-row';
-import { IntersectionTableRowAlignment } from './intersection-table-row-alignment';
+export class IntersectionTableRowAlignment {
+    public readonly seq1String: string;
+    public readonly markup: string;
+    public readonly seq2String: string;
 
-export class IntersectionTableRowMatch {
-    public readonly row: SearchTableRow;
-    public readonly alignment: IntersectionTableRowAlignment;
-
-    constructor(match: any) {
+    constructor(helper: any) {
         /* tslint:disable:no-string-literal */
-        this.row = new SearchTableRow(match['row']);
-        this.alignment = new IntersectionTableRowAlignment(match['alignment']);
+        this.seq1String = helper['seq1String'];
+        this.markup = helper['markup'];
+        this.seq2String = helper['seq2String'];
         /* tslint:enable:no-string-literal */
     }
 }

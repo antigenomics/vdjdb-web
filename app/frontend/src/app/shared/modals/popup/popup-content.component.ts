@@ -63,6 +63,9 @@ export class PopupContentComponent implements AfterViewInit {
     @Input('loading')
     public loading: boolean = false;
 
+    @Input('popupClass')
+    public popupClass: string = '';
+
     @Input('content')
     set content(popupContent: string | string[] | PopupContentTable) {
         if (typeof popupContent === 'string') {

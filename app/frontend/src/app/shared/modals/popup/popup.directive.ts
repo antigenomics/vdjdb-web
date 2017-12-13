@@ -58,6 +58,9 @@ export class PopupDirective {
     @Input('disabled')
     public disabled: boolean = false;
 
+    @Input('popupClass')
+    public popupClass: string = '';
+
     constructor(private viewContainerRef: ViewContainerRef, private resolver: ComponentFactoryResolver) {}
 
     public updateView(): void {
@@ -75,6 +78,7 @@ export class PopupDirective {
             this._tooltip.instance.bottomShift = this.bottomShift;
             this._tooltip.instance.shiftStrategy = this.shiftStrategy;
             this._tooltip.instance.loading = this.loading;
+            this._tooltip.instance.popupClass = this.popupClass;
             this._tooltip.instance.positionElement();
             this._tooltip.instance.changeDetector.detectChanges();
         }
