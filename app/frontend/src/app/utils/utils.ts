@@ -240,17 +240,28 @@ export namespace Utils {
 
     export namespace HTTP {
 
-        export function get(url: string): Observable<XMLHttpRequest> {
-            return Observable.create((observer: Observer<XMLHttpRequest>) => {
+        export function get(url: string): Promise<XMLHttpRequest> {
+            return new Promise<XMLHttpRequest>((resolve, reject) => {
                 const xhttp = new XMLHttpRequest();
                 const lastReadyState = 4;
                 const successStatus = 200;
+                const failedStatus = 400;
                 xhttp.onreadystatechange = function() {
                     if (this.readyState === lastReadyState && this.status === successStatus) {
-                        observer.next(this);
-                        observer.complete();
+                        resolve(this);
+                    } else if (this.readyState === lastReadyState && this.status === failedStatus) {
+                        reject(this);
                     }
                 };
+
+                xhttp.onerror = function() {
+                    reject(this);
+                };
+
+                xhttp.onabort = function() {
+                    reject(this);
+                };
+
                 xhttp.open('GET', url, true);
                 xhttp.send();
             });

@@ -20,9 +20,9 @@ import { Observable } from 'rxjs/Observable';
 import { Subject } from 'rxjs/Subject';
 import { SampleItem } from '../../shared/sample/sample-item';
 import { User, UserPermissions } from '../../shared/user/user';
+import { WebSocketConnection } from '../../shared/websocket/websocket-connection';
 import { WebSocketRequestData } from '../../shared/websocket/websocket-request';
 import { WebSocketResponseData } from '../../shared/websocket/websocket-response';
-import { WebSocketService } from '../../shared/websocket/websocket.service';
 import { LoggerService } from '../../utils/logger/logger.service';
 import { NotificationService } from '../../utils/notifications/notification.service';
 import { IntersectionTableFilters } from './sample/table/filters/intersection-table-filters';
@@ -53,10 +53,10 @@ export class AnnotationsService {
     private _user: User;
     private _availableSoftwareTypes: string[] = [];
 
-    private connection: WebSocketService;
+    private connection: WebSocketConnection;
 
     constructor(private logger: LoggerService, notifications: NotificationService) {
-        this.connection = new WebSocketService(logger, notifications, true);
+        this.connection = new WebSocketConnection(logger, notifications, true);
         this.connection.onOpen(async () => {
             const userDetailsRequest = this.connection.sendMessage({
                 action: AnnotationsServiceWebSocketActions.USER_DETAILS

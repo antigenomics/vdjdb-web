@@ -45,6 +45,7 @@ class DatabaseAPI @Inject()(cc: ControllerComponents, database: Database, config
             database.getSummaryFile match {
                 case Some(file) =>
                     Ok.sendFile(content = file, fileName = _.getName, inline = true)
+                    BadRequest("No summary")
                 case None =>
                     BadRequest("No summary")
             }

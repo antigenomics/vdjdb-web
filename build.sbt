@@ -43,67 +43,52 @@ mappings in (Compile, packageDoc) := Seq.empty
 publishArtifact in(Compile, packageDoc) := false
 // Ends.
 
+// Starts: NPM tasks integration with sbt build
+
 lazy val isWindows = System.getProperty("os.name").toUpperCase().contains("WIN")
 lazy val frontendApplicationPath = if (isWindows) "app\\frontend" else "./app/frontend"
 lazy val npm: String = if (isWindows) "cmd /c npm " else "npm "
 
-lazy val cleanFrontendDependencies = taskKey[Unit]("Clean frontend dependencies")
-cleanFrontendDependencies := {
-    val logger: TaskStreams = streams.value
-    logger.log.info("Cleaning frontend dependencies (node_modules folder)")
-    val clean = Process(npm + "run clean:node_modules", file(frontendApplicationPath)).run()
-    if (clean.exitValue != 0) {
-        throw new IllegalStateException("Cleaning fronted dependencies failed!")
+def frontendNPMTask(task: String): Unit = {
+    println(s"Executing npm task: $task")
+    val process = Process(s"$npm$task", file(frontendApplicationPath)).run()
+    if (process.exitValue != 0) {
+        throw new IllegalStateException(s"npm task '$task' failed")
     }
-    logger.log.info("Frontend dependencies cleaned successfully")
+    println(s"npm task '$task' completed successfully")
 }
 
-lazy val cleanFrontendCache = taskKey[Unit]("Clean frontend cache")
-cleanFrontendCache := {
-    val logger: TaskStreams = streams.value
-    logger.log.info("Cleaning frontend cache")
-    val clean = Process(npm + "run clean:cache", file(frontendApplicationPath)).run()
-    if (clean.exitValue != 0) {
-        throw new IllegalStateException("Cleaning fronted cache failed!")
-    }
-    logger.log.info("Frontend cache cleaned successfully")
-}
+lazy val frontendCleanDependencies = taskKey[Unit]("Clean frontend dependencies")
+frontendCleanDependencies := frontendNPMTask("run clean:node_modules")
 
-lazy val installFrontendDependencies = taskKey[Unit]("Install frontend dependencies")
-installFrontendDependencies := {
-    val logger: TaskStreams = streams.value
-    logger.log.info("Installing frontend dependencies")
-    val install = Process(npm + "install", file(frontendApplicationPath)).run()
-    if (install.exitValue != 0) {
-        throw new IllegalStateException("Installing fronted dependencies failed!")
-    }
-    logger.log.info("Frontend dependencies installed successfully")
-}
-lazy val buildFrontend = taskKey[Unit]("Build frontend application")
-buildFrontend := {
-    val logger: TaskStreams = streams.value
-    logger.log.info("Building frontend bundle")
-    val build = Process(npm + "run bundle", file(frontendApplicationPath)).run()
-    if (build.exitValue != 0) {
-        throw new IllegalStateException("Building frontend bundle failed!")
-    }
-    logger.log.info("Frontend bundle built successfully")
-}
+lazy val frontendCleanCache = taskKey[Unit]("Clean frontend cache")
+frontendCleanCache := frontendNPMTask("run clean:cache")
 
-lazy val testFrontend = taskKey[Unit]("Test frontend application")
-testFrontend := {
-    val logger: TaskStreams = streams.value
-    logger.log.info("Testing frontend application")
-    val test = Process(npm + "run test:karma:once", file(frontendApplicationPath)).run()
-    logger.log.info(s"Test completed (exit code: ${test.exitValue()})")
-}
+lazy val frontendCleanBuild = taskKey[Unit]("Clean frontend build")
+frontendCleanBuild := frontendNPMTask("run bundle:clean:public")
 
-addCommandAlias("buildBackend", "dist")
-addCommandAlias("testBackend", "test")
+lazy val frontendInstallDependencies = taskKey[Unit]("Install frontend dependencies")
+frontendInstallDependencies := frontendNPMTask("install")
+
+lazy val frontendBuildAngular = taskKey[Unit]("Build angular application")
+frontendBuildAngular := frontendNPMTask("run bundle:aot")
+
+lazy val frontendBuildWebpack = taskKey[Unit]("Build webpack assets")
+frontendBuildWebpack := frontendNPMTask("run bundle:webpack")
+
+lazy val frontendBuild = taskKey[Unit]("Build frontend application")
+frontendBuild := frontendNPMTask("run bundle")
+
+// Ends.
+
+
+
+addCommandAlias("backendBuild", "dist")
+addCommandAlias("backendTest", "test")
 
 lazy val build = taskKey[Unit]("Build application")
 build := {
-    ((packageBin in Universal) dependsOn buildFrontend).value
+    ((packageBin in Universal) dependsOn frontendBuild).value
 }
 
 // Starts: Webpack server process when running locally and build actions for production bundle
