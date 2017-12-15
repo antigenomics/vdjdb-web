@@ -15,23 +15,27 @@
  *
  */
 
-import { ChangeDetectionStrategy, Component, HostBinding } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ComponentFactoryResolver, HostBinding, ViewContainerRef } from '@angular/core';
+import { TableColumn } from '../../../../../shared/table/column/table-column';
+import { TableEntry } from '../../../../../shared/table/entry/table-entry';
+import { TableRow } from '../../../../../shared/table/row/table-row';
 
 @Component({
-    selector: 'td[intersection-table-frequency-original]',
-    template: '{{ value }}',
+    selector: 'td[intersection-table-entry-frequency]',
+    template: '{{ entry }}',
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class IntersectionTableEntryFrequencyComponent {
+export class IntersectionTableEntryFrequencyComponent extends TableEntry {
     private static _maxFixedDigits: number = 2;
 
     @HostBinding('class.center')
     @HostBinding('class.aligned')
     public centered: boolean = true;
 
-    public value: string;
+    public entry: string;
 
-    public generate(value: string) {
-        this.value = parseFloat(value).toExponential(IntersectionTableEntryFrequencyComponent._maxFixedDigits);
+    public create(entry: string, column: TableColumn, columns: TableColumn[], row: TableRow,
+                  hostViewContainer: ViewContainerRef, resolver: ComponentFactoryResolver): void {
+        this.entry = parseFloat(entry).toExponential(IntersectionTableEntryFrequencyComponent._maxFixedDigits);
     }
 }

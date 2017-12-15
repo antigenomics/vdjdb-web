@@ -4,24 +4,8 @@
     <div class="sub header">Make sure that you've selected parameters (species, etc) that match your sample metadata</div>
 </h2>
 <div style="width: 100%; overflow-x: auto" *ngIf="table.dirty && !table.isEmpty()">
-    <table class="ui unstackable very compact celled stripped small table">
-        <thead>
-        <tr>
-            <th colspan="9" style="padding: 1em">
-                <table-pagination [page]="table.page" [range]="5" [pageCount]="table.pageCount" (pageChange)="pageChange($event)"></table-pagination>
-                <table-info [found]="table.getRowsCount()"></table-info>
-                <table-pagesize [sizes]="table.getAvailablePageSizes()" [pageSize]="table.pageSize" (changePageSize)="pageSizeChange($event)"></table-pagesize>
-            </th>
-        </tr>
-        <tr>
-            <th class="collapsing center aligned" *ngFor="let column of columns">
-                <span class="header">{{ column.title }}</span>
-            </th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr class="fade slow element" *ngFor="let row of table.getCurrentPage()" [intersection-table-row]="row"></tr>
-        </tbody>
+    <table class="ui unstackable very compact celled stripped small table" table-component [settings]="settings"
+           [columns]="getColumns()" [table]="table" (onPageChange)="onPageChange($event)" (onPageSizeChange)="onPageSizeChange($event)">
     </table>
 </div>
 <div *ngIf="table.dirty && table.isEmpty() && !table.error">

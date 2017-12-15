@@ -1,11 +1,11 @@
 /*
- *     Copyright 2017 Bagaev Dmitry
+ *    Copyright 2017 Bagaev Dmitry
  *
  *     Licensed under the Apache License, Version 2.0 (the "License");
  *     you may not use this file except in compliance with the License.
  *     You may obtain a copy of the License at
  *
- *         http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  *     Unless required by applicable law or agreed to in writing, software
  *     distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,12 +15,14 @@
  *
  */
 
-import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { PopupContentTable } from '../../../../../shared/modals/popup/popup-content-table';
-import { IntersectionTableRowAlignment } from '../../../../annotations/sample/table/row/intersection-table-row-alignment';
+import { ChangeDetectionStrategy, Component, ComponentFactoryResolver, ViewContainerRef } from '@angular/core';
+import { PopupContentTable } from '../../../../../../shared/modals/popup/popup-content-table';
+import { TableColumn } from '../../../../../../shared/table/column/table-column';
+import { TableEntry } from '../../../../../../shared/table/entry/table-entry';
+import { MatchRowAlignment, MatchTableRow } from '../row/match-table-row';
 
 @Component({
-    selector:        'td[search-table-entry-alignment]',
+    selector:        'td[match-table-entry-alignment]',
     template:        `<span class="text alignment cursor pointer" [popup]="popupAlignmentTable"
                         display="table" position="right" popupClass="big text alignment" width="800">
                             {{ alignment.seq1String }}<br>
@@ -29,15 +31,16 @@ import { IntersectionTableRowAlignment } from '../../../../annotations/sample/ta
                       </span>`,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class SearchTableEntryAlignmentComponent {
-    public alignment: IntersectionTableRowAlignment;
+export class MatchesTableEntryAlignmentComponent extends TableEntry {
+    public alignment: MatchRowAlignment;
 
     public popupAlignmentTable: PopupContentTable;
 
-    public create(alignment: IntersectionTableRowAlignment): void {
-        this.alignment = alignment;
+    public create(entry: string, column: TableColumn, columns: TableColumn[], row: MatchTableRow,
+                  hostViewContainer: ViewContainerRef, resolver: ComponentFactoryResolver): void {
+        this.alignment = row.alignment;
 
-        const rows = [ [ alignment.seq1String ], [ alignment.markup ], [ alignment.seq2String ] ];
+        const rows = [ [ row.alignment.seq1String ], [ row.alignment.markup ], [ row.alignment.seq2String ] ];
         this.popupAlignmentTable = new PopupContentTable([ 'Alignment' ], rows);
     }
 }

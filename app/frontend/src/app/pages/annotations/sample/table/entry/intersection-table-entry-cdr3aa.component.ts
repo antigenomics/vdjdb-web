@@ -16,26 +16,37 @@
  */
 
 /* tslint:disable:max-line-length */
-import { ChangeDetectionStrategy, Component, HostBinding } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ComponentFactoryResolver, ViewContainerRef } from '@angular/core';
+import { TableColumn } from '../../../../../shared/table/column/table-column';
+import { TableEntry } from '../../../../../shared/table/entry/table-entry';
 import { ClipboardService } from '../../../../../utils/clipboard/clipboard.service';
 import { NotificationService } from '../../../../../utils/notifications/notification.service';
 import { Utils } from '../../../../../utils/utils';
-import { IntersectionTableRowMetadata } from '../row/intersection-table-row-metadata';
+import { IntersectionTableRow } from '../row/intersection-table-row';
 import ColorizedPatternRegion = Utils.SequencePattern.ColorizedPatternRegion;
 
 @Component({
     selector:        'td[intersection-table-entry-cdr3aa]',
-    templateUrl:     './intersection-table-entry-cdr3aa.component.html',
+    template:        `<div style="width: 100%; height: 20px" [popup]="ntRegions" header="CDR3nt" display="colored-text" class="cursor pointer"
+                           footer="Click on amino-acid sequence to save nucleotide sequence to clipboard" position="top" width="500" (click)="copyToClipboard()">
+                            <span *ngFor="let region of aaRegions" [style.color]="region.color">{{ region.part }}</span>
+                      </div>`,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class IntersectionTableEntryCdr3aaComponent {
+export class IntersectionTableEntryCdr3aaComponent implements TableEntry {
     public aaRegions: ColorizedPatternRegion[] = [];
     public ntRegions: string[] = [];
 
-    @HostBinding('class.hover-inside-icon')
-    public hoverInsideIconClassProperty: boolean = true;
+    constructor(private clipboard: ClipboardService, private notifications: NotificationService) {}
 
-    constructor(private clipboard: ClipboardService, private notifications: NotificationService) {
+    public create(entry: string, column: TableColumn, columns: TableColumn[], row: IntersectionTableRow,
+                  hostViewContainer: ViewContainerRef, resolver: ComponentFactoryResolver): void {
+        this.aaRegions = Utils.SequencePattern.colorizePattern(entry, row.metadata.vEnd / 3, row.metadata.jStart / 3);
+        this.ntRegions =
+            Utils.SequencePattern.colorizePattern(row.metadata.cdr3nt, row.metadata.vEnd, row.metadata.jStart)
+                .map((colorizedRegion: ColorizedPatternRegion) => {
+                    return `${colorizedRegion.part}|${colorizedRegion.color}`;
+                });
     }
 
     public copyToClipboard(): void {
@@ -51,15 +62,5 @@ export class IntersectionTableEntryCdr3aaComponent {
             this.notifications.warn('Copy to clipboard', 'Empty content');
         }
     }
-
-    public generate(value: string, metadata: IntersectionTableRowMetadata) {
-        this.aaRegions = Utils.SequencePattern.colorizePattern(value, metadata.vEnd / 3, metadata.jStart / 3);
-        this.ntRegions =
-            Utils.SequencePattern.colorizePattern(metadata.cdr3nt, metadata.vEnd, metadata.jStart)
-                 .map((colorizedRegion: ColorizedPatternRegion) => {
-                     return `${colorizedRegion.part}|${colorizedRegion.color}`;
-                 });
-    }
 }
-
 /* tslint:enable:max-line-length */

@@ -19,10 +19,10 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs/Observable';
 import { Subject } from 'rxjs/Subject';
 import { SampleItem } from '../../../shared/sample/sample-item';
+import { TableColumn } from '../../../shared/table/column/table-column';
 import { WebSocketResponseData } from '../../../shared/websocket/websocket-response';
 import { NotificationService } from '../../../utils/notifications/notification.service';
 import { AnnotationsService } from '../annotations.service';
-import { IntersectionTableColumnInfo } from './table/column/intersection-table-column-info';
 import { IntersectionTableFilters } from './table/filters/intersection-table-filters';
 import { IntersectionTable } from './table/intersection-table';
 import { IntersectionTableRow } from './table/row/intersection-table-row';
@@ -104,9 +104,10 @@ export class SampleTableService {
                             break;
                         case SampleTableServiceUpdateState.COMPLETED:
                             let index = 0;
-                            const rows = response.get('rows').map((r: any) => new IntersectionTableRow(r, sample, index++));
+                            const rows = response.get('rows').map((r: any) => new IntersectionTableRow(r, index++, sample));
                             table.updatePage(0);
                             table.updateRows(rows);
+                            table.updateRecordsFound(rows.length);
                             filters.enable();
                             messagesSubscription.unsubscribe();
                             break;
@@ -133,19 +134,4 @@ export class SampleTableService {
     public getEvents(): Subject<SampleTableServiceEvent> {
         return this._events;
     }
-
-    public getColumns(): IntersectionTableColumnInfo[] {
-        return [
-            new IntersectionTableColumnInfo('details', 'Details'),
-            new IntersectionTableColumnInfo('found', '# matches'),
-            new IntersectionTableColumnInfo('id', 'Rank'),
-            new IntersectionTableColumnInfo('freq', 'Frequency'),
-            new IntersectionTableColumnInfo('count', 'Count'),
-            new IntersectionTableColumnInfo('cdr3aa', 'CDR3aa'),
-            new IntersectionTableColumnInfo('v', 'V'),
-            new IntersectionTableColumnInfo('j', 'J'),
-            new IntersectionTableColumnInfo('tags', 'Tags')
-        ];
-    }
-
 }

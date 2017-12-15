@@ -1,14 +1,14 @@
 <thead class="cursor pointer">
-<tr>
+<tr *ngIf="!settings.utils.disable">
     <th [attr.colspan]="columns.length" style="padding: 1em">
-        <table-pagination [page]="table.page" [range]="table.pageRange" [pageCount]="table.pageCount" (pageChange)="pageChange($event)"></table-pagination>
-        <table-info [found]="table.recordsFound" [total]="table.numberOfRecords"></table-info>
-        <table-export [formats]="table.getAvailableExportFormats()" (exportEvent)="export($event)"></table-export>
-        <table-pagesize [sizes]="table.getAvailablePageSizes()" [pageSize]="table.pageSize" (changePageSize)="pageSizeChange($event)"></table-pagesize>
+        <table-pagination *ngIf="settings.utils.pagination" [page]="table.page" [range]="table.pageRange" [pageCount]="table.pageCount" (pageChange)="onPageChange.emit($event)"></table-pagination>
+        <table-info *ngIf="settings.utils.info" [found]="table.recordsFound" [total]="table.numberOfRecords"></table-info>
+        <table-export *ngIf="settings.utils.export" [formats]="table.getAvailableExportFormats()" (exportEvent)="onExport.emit($event)"></table-export>
+        <table-pagesize *ngIf="settings.utils.pageSize" [sizes]="table.getAvailablePageSizes()" [pageSize]="table.pageSize" (changePageSize)="onPageSizeChange.emit($event)"></table-pagesize>
     </th>
 </tr>
 <tr>
-    <th class="{{ isSorted(column) }} {{ settings.classes.columns }}" *ngFor="let column of columns; let i = index;" (click)="columnClick(column)">
+    <th class="{{ isSorted(column) }} {{ settings.classes.columns }}" *ngFor="let column of columns; let i = index;" (click)="onColumnClick.emit(column)">
         <span class="header" [popup]="column.popupContent" [footer]="column.popupFooter" [header]="column.title" position="top" width="300" [disabled]="!column.popup">
             {{ column.title }}
         </span>
@@ -16,20 +16,5 @@
 </tr>
 </thead>
 <tbody>
-    <tr *ngFor="let row of table.rows" table-row [row]="row" [columns]="columns" class="{{ settings.classes.rows }}"></tr>
+    <tr *ngFor="let row of table.getRows()" table-row [row]="row" [columns]="columns" class="{{ settings.classes.rows }}"></tr>
 </tbody>
-
-<!--<table class="ui unstackable single line celled stripped very compact small table" [style.font-size]="headerFontSize">-->
-<!--<thead class="cursor pointer">-->
-<!--<tr>-->
-<!--</tr>-->
-<!--<tr>-->
-<!--<th class="center aligned collapsing" *ngFor="let column of table.columns; let i = index;" (click)="table.sort(column.name)" [ngClass]="isSorted(column.name)">-->
-<!--<span class="header" [popup]="column.comment" footer="Click to sort" [header]="column.title" position="top" width="300">{{ column.title }}</span>-->
-<!--</th>-->
-<!--</tr>-->
-<!--</thead>-->
-<!--<tbody>-->
-<!--<tr *ngFor="let row of table.rows | async" [search-table-row]="row" [columns]="table.columns" class="center aligned"></tr>-->
-<!--</tbody>-->
-<!--</table>-->

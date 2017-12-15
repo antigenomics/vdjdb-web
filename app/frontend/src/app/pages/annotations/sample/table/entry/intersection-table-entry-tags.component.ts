@@ -15,28 +15,29 @@
  *
  */
 
-import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { IntersectionTableRowTags } from '../row/intersection-table-row';
+import { ChangeDetectionStrategy, Component, ComponentFactoryResolver, ViewContainerRef } from '@angular/core';
+import { TableColumn } from '../../../../../shared/table/column/table-column';
+import { TableEntry } from '../../../../../shared/table/entry/table-entry';
+import { IntersectionTableRow } from '../row/intersection-table-row';
 
 @Component({
     selector:        'td[intersection-table-entry-tags]',
     template:        `<div class="ui small basic {{ tag[1] }} label" *ngFor="let tag of values">{{ tag[0] }}</div>`,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class IntersectionTableEntryTagsComponent {
+export class IntersectionTableEntryTagsComponent extends TableEntry {
     private static readonly _colors: string[] = [ 'teal', 'blue', 'violet', 'red' ];
 
-    public tags: IntersectionTableRowTags;
     public values: Array<[ string, string ]> = [];
 
-    public generate(tags: IntersectionTableRowTags) {
-        this.tags = tags;
+    public create(entry: string, column: TableColumn, columns: TableColumn[], row: IntersectionTableRow,
+                  hostViewContainer: ViewContainerRef, resolver: ComponentFactoryResolver): void {
         this.values = [];
 
         let index = 0;
-        for (const key in this.tags) {
-            if (this.tags.hasOwnProperty(key)) {
-                this.values = this.values.concat(this.tags[ key ].map((tag) =>
+        for (const key in row.tags) {
+            if (row.tags.hasOwnProperty(key)) {
+                this.values = this.values.concat(row.tags[ key ].map((tag) =>
                     [ tag, IntersectionTableEntryTagsComponent._colors[ index ] ] as [ string, string ])
                 );
                 index += 1;

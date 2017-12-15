@@ -61,15 +61,15 @@ export abstract class Table<R extends TableRow> {
     private _dirty: boolean = false;
     private _error: boolean = false;
     private _empty: boolean = true;
-
     private _page: number = Table._initialPage;
     private _pageSize: number = Table._initialPageSize;
     private _pageRange: number = Table._defaultPageRange;
     private _pageCount: number;
-
     private _sortRule: TableSortRule = new TableSortRule();
-
     private _rows: R[] = [];
+
+    private _recordsFound: number;
+    private _numberOfRecords: number;
 
     public startLoading(): void {
         this._loading = true;
@@ -105,6 +105,14 @@ export abstract class Table<R extends TableRow> {
         this._pageCount = pageCount !== undefined ? pageCount : Math.floor(this._rows.length / this._pageSize) + 1;
     }
 
+    public updateRecordsFound(recordsFound: number): void {
+        this._recordsFound = recordsFound;
+    }
+
+    public updateNumberOfRecords(numberOfRecords: number): void {
+        this._numberOfRecords = numberOfRecords;
+    }
+
     public setError(): void {
         this._dirty = true;
         this._loading = false;
@@ -130,6 +138,8 @@ export abstract class Table<R extends TableRow> {
     public getAvailablePageSizes(): number[] {
         return Table._availablePageSizes;
     }
+
+    public abstract getRows(): R[];
 
     get events(): Subject<TableEvent> {
         return this._events;
@@ -169,5 +179,13 @@ export abstract class Table<R extends TableRow> {
 
     get rows(): R[] {
         return this._rows;
+    }
+
+    get recordsFound(): number {
+        return this._recordsFound;
+    }
+
+    get numberOfRecords(): number {
+        return this._numberOfRecords;
     }
 }

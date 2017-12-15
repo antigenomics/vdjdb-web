@@ -20,11 +20,9 @@ import { BrowserModule } from '@angular/platform-browser';
 import { FiltersModule } from '../../../../shared/filters/filters.module';
 import { ModalsModule } from '../../../../shared/modals/modals.module';
 import { TableModule } from '../../../../shared/table/table.module';
-import { SearchTableEntryAlignmentComponent } from './entry/search-table-entry-alignment.component';
 import { SearchTableEntryCdrComponent } from './entry/search-table-entry-cdr.component';
 import { SearchTableEntryGeneComponent } from './entry/search-table-entry-gene.component';
 import { SearchTableEntryMetaComponent } from './entry/search-table-entry-meta.component';
-import { SearchTableEntryOriginalComponent } from './entry/search-table-entry-original.component';
 import { SearchTableEntryUrlComponent } from './entry/search-table-entry-url.component';
 import { SearchTableComponent } from './search-table.component';
 import { SearchTableService } from './search-table.service';
@@ -35,16 +33,12 @@ import { SearchTableService } from './search-table.service';
         SearchTableEntryMetaComponent,
         SearchTableEntryUrlComponent,
         SearchTableEntryGeneComponent,
-        SearchTableEntryCdrComponent,
-        SearchTableEntryOriginalComponent,
-        SearchTableEntryAlignmentComponent ],
+        SearchTableEntryCdrComponent ],
     exports:         [ SearchTableComponent ],
     entryComponents: [ SearchTableEntryMetaComponent,
         SearchTableEntryUrlComponent,
         SearchTableEntryGeneComponent,
-        SearchTableEntryCdrComponent,
-        SearchTableEntryOriginalComponent,
-        SearchTableEntryAlignmentComponent ],
+        SearchTableEntryCdrComponent ],
     providers:       [ SearchTableService ]
 })
 export class SearchTableModule {

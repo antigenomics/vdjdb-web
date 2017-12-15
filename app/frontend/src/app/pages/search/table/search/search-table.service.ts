@@ -41,8 +41,6 @@ export class SearchTableService extends Table<SearchTableRow> {
     private _initialized: boolean = false;
     private _filters: IFilter[] = [];
     private _columns: DatabaseColumnInfo[] = [];
-    private _recordsFound: number = 0;
-    private _numberOfRecords: number = 0;
 
     private connection: WebSocketConnection;
 
@@ -75,7 +73,7 @@ export class SearchTableService extends Table<SearchTableRow> {
             metadataOptions.add('mhc.haplotype.secondChainValues', metadata.getColumnInfo('mhc.b').values);
             metadataOptions.add('meta.general.referencesValues', metadata.getColumnInfo('reference.id').values);
             this._columns = columns;
-            this._numberOfRecords = metadata.numberOfRecords;
+            this.updateNumberOfRecords(metadata.numberOfRecords);
             this.filters.setOptions(metadataOptions.unpack());
 
             // noinspection JSIgnoredPromiseFromCall
@@ -244,21 +242,19 @@ export class SearchTableService extends Table<SearchTableRow> {
         });
     }
 
+
+    public getRows(): SearchTableRow[] {
+        return this.rows;
+    }
+
     private updateFromResponse(response: WebSocketResponseData): void {
         const page = response.get('page');
         const pageSize = response.get('pageSize');
         const rows = response.get('rows').map((row: any) => new SearchTableRow(row));
         const pageCount = response.get('pageCount');
+        const recordsFound = response.get('recordsFound');
         this.updateTable(page, pageSize, rows, pageCount);
-        this._recordsFound = response.get('recordsFound');
-    }
-
-    get recordsFound(): number {
-        return this._recordsFound;
-    }
-
-    get numberOfRecords(): number {
-        return this._numberOfRecords;
+        this.updateRecordsFound(recordsFound);
     }
 
     get columns(): DatabaseColumnInfo[] {

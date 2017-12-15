@@ -19,15 +19,18 @@ export class TableColumn {
     public readonly name: string;
     public readonly title: string;
     public readonly skip: boolean;
+    public readonly noEntry: boolean;
 
     public readonly popup: boolean = false;
     public readonly popupContent: string = '';
     public readonly popupFooter: string = '';
 
-    constructor(name: string, title: string, skip: boolean = false, popup?: boolean, popupContent?: string, popupFooter?: string) {
+    constructor(name: string, title: string, skip: boolean = false, noEntry: boolean = false,
+                popup?: boolean, popupContent?: string, popupFooter?: string) {
         this.name = name;
         this.title = title;
         this.skip = skip;
+        this.noEntry = noEntry;
         if (popup) {
             this.popup = popup;
             this.popupContent = popupContent;

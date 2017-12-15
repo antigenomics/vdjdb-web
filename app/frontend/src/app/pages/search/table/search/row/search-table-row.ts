@@ -40,27 +40,32 @@ export class SearchTableRowMetadata {
 export class SearchTableRow extends TableRow {
     private _pairedDisabled: boolean = false;
 
+    public readonly entries: string[];
     public readonly metadata: SearchTableRowMetadata;
 
     constructor(row: any, pairedDisabled: boolean = false) {
         /* tslint:disable:no-string-literal */
-        super(row[ 'entries' ]);
+        super();
+        this.entries = row[ 'entries' ];
         this.metadata = new SearchTableRowMetadata(row[ 'metadata' ]);
         this._pairedDisabled = pairedDisabled;
         /* tslint:enable:no-string-literal */
     }
 
+    public getEntries(): string[] {
+        return this.entries;
+    }
+
     public resolveComponentFactory(column: TableColumn, resolver: ComponentFactoryResolver): ComponentFactory<TableEntry> {
-        let entryResolver: ComponentFactory<TableEntry>;
         if (column.name === 'gene' && !this._pairedDisabled) {
-            entryResolver = resolver.resolveComponentFactory(SearchTableEntryGeneComponent);
+            return resolver.resolveComponentFactory(SearchTableEntryGeneComponent);
         } else if (column.name === 'cdr3') {
-            entryResolver = resolver.resolveComponentFactory(SearchTableEntryCdrComponent);
+            return resolver.resolveComponentFactory(SearchTableEntryCdrComponent);
         } else if (column.name === 'reference.id') {
-            entryResolver = resolver.resolveComponentFactory(SearchTableEntryUrlComponent);
+            return resolver.resolveComponentFactory(SearchTableEntryUrlComponent);
         } else if (column.name === 'method' || column.name === 'meta' || column.name === 'cdr3fix') {
-            entryResolver = resolver.resolveComponentFactory(SearchTableEntryMetaComponent);
+            return resolver.resolveComponentFactory(SearchTableEntryMetaComponent);
         }
-        return entryResolver;
+        return undefined;
     }
 }

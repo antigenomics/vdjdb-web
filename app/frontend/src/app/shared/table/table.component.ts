@@ -55,25 +55,9 @@ export class TableComponent implements OnInit, OnDestroy {
     constructor(private changeDetector: ChangeDetectorRef) {}
 
     public ngOnInit(): void {
-        this._tableEventsSubscription = this.table.events.subscribe((event) => {
+        this._tableEventsSubscription = this.table.events.subscribe(() => {
             this.changeDetector.detectChanges();
         });
-    }
-
-    public columnClick(column: TableColumn): void {
-        this.onColumnClick.emit(column);
-    }
-
-    public pageChange(page: number): void {
-        this.onPageChange.emit(page);
-    }
-
-    public pageSizeChange(pageSize: number): void {
-        this.onPageSizeChange.emit(pageSize);
-    }
-
-    public export(format: ExportFormat): void {
-        this.onExport.emit(format);
     }
 
     public isSorted(column: TableColumn): string {

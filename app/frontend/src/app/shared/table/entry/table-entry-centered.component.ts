@@ -15,11 +15,25 @@
  *
  */
 
-import { ComponentFactoryResolver, ViewContainerRef } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ComponentFactoryResolver, HostBinding, ViewContainerRef } from '@angular/core';
 import { TableColumn } from '../column/table-column';
 import { TableRow } from '../row/table-row';
+import { TableEntry } from './table-entry';
 
-export abstract class TableEntry {
-    public abstract create(entry: string, column: TableColumn, columns: TableColumn[], row: TableRow,
-                           hostViewContainer: ViewContainerRef, resolver: ComponentFactoryResolver): void;
+@Component({
+    selector: 'td[table-entry-centered]',
+    template: '{{ entry }}',
+    changeDetection: ChangeDetectionStrategy.OnPush
+})
+export class TableEntryCenteredComponent extends TableEntry {
+    @HostBinding('class.center')
+    @HostBinding('class.aligned')
+    public centered: boolean = true;
+
+    public entry: string;
+
+    public create(entry: string, column: TableColumn, columns: TableColumn[], row: TableRow,
+                  hostViewContainer: ViewContainerRef, resolver: ComponentFactoryResolver): void {
+        this.entry = entry;
+    }
 }

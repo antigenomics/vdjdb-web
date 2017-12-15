@@ -21,7 +21,6 @@ import { Subscription } from 'rxjs/Subscription';
 import { SampleItem } from '../../../shared/sample/sample-item';
 import { LoggerService } from '../../../utils/logger/logger.service';
 import { SampleTableService, SampleTableServiceEvent, SampleTableServiceEventType } from './sample-table.service';
-import { IntersectionTableColumnInfo } from './table/column/intersection-table-column-info';
 import { IntersectionTableFilters } from './table/filters/intersection-table-filters';
 import { IntersectionTable } from './table/intersection-table';
 
@@ -70,10 +69,6 @@ export class SampleTableComponent implements OnInit, OnDestroy {
 
     public intersect(): void {
         this.sampleTableService.intersect(this.sample);
-    }
-
-    public getColumns(): IntersectionTableColumnInfo[] {
-        return this.sampleTableService.getColumns();
     }
 
     public ngOnDestroy(): void {
