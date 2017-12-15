@@ -23,31 +23,29 @@ import { TableModule } from '../../../../shared/table/table.module';
 import { SearchTableEntryAlignmentComponent } from './entry/search-table-entry-alignment.component';
 import { SearchTableEntryCdrComponent } from './entry/search-table-entry-cdr.component';
 import { SearchTableEntryGeneComponent } from './entry/search-table-entry-gene.component';
-import { SearchTableEntryJsonComponent } from './entry/search-table-entry-json.component';
+import { SearchTableEntryMetaComponent } from './entry/search-table-entry-meta.component';
 import { SearchTableEntryOriginalComponent } from './entry/search-table-entry-original.component';
 import { SearchTableEntryUrlComponent } from './entry/search-table-entry-url.component';
-import { SearchTableRowComponent } from './row/search-table-row.component';
 import { SearchTableComponent } from './search-table.component';
 import { SearchTableService } from './search-table.service';
 
 @NgModule({
     imports:         [ BrowserModule, FormsModule, ModalsModule, FiltersModule, TableModule ],
-    declarations:    [  SearchTableComponent,
-                        SearchTableRowComponent,
-                        SearchTableEntryJsonComponent,
-                        SearchTableEntryUrlComponent,
-                        SearchTableEntryGeneComponent,
-                        SearchTableEntryCdrComponent,
-                        SearchTableEntryOriginalComponent,
-                        SearchTableEntryAlignmentComponent ],
-    exports:         [  SearchTableComponent, SearchTableRowComponent ],
-    entryComponents: [  SearchTableRowComponent,
-                        SearchTableEntryJsonComponent,
-                        SearchTableEntryUrlComponent,
-                        SearchTableEntryGeneComponent,
-                        SearchTableEntryCdrComponent,
-                        SearchTableEntryOriginalComponent,
-                        SearchTableEntryAlignmentComponent ],
+    declarations:    [ SearchTableComponent,
+        SearchTableEntryMetaComponent,
+        SearchTableEntryUrlComponent,
+        SearchTableEntryGeneComponent,
+        SearchTableEntryCdrComponent,
+        SearchTableEntryOriginalComponent,
+        SearchTableEntryAlignmentComponent ],
+    exports:         [ SearchTableComponent ],
+    entryComponents: [ SearchTableEntryMetaComponent,
+        SearchTableEntryUrlComponent,
+        SearchTableEntryGeneComponent,
+        SearchTableEntryCdrComponent,
+        SearchTableEntryOriginalComponent,
+        SearchTableEntryAlignmentComponent ],
     providers:       [ SearchTableService ]
 })
-export class SearchTableModule {}
+export class SearchTableModule {
+}

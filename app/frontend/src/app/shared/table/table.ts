@@ -16,12 +16,14 @@
  */
 
 import { Subject } from 'rxjs/Subject';
+import { TableRow } from './row/table-row';
 
 export type TableEvent = number;
 
 export namespace TableEvent {
     export const LOADING: number = 0;
-    export const UPDATED: number = 1;
+    export const INITIALIZED: number = 1;
+    export const UPDATED: number = 2;
 }
 
 export class TableSortRule {
@@ -47,7 +49,7 @@ export class TableSortRule {
     }
 }
 
-export abstract class Table<RowType> {
+export abstract class Table<R extends TableRow> {
     private static readonly _availablePageSizes: number[] = [ 25, 50, 100 ]; // tslint:disable-line:no-magic-numbers
     private static readonly _initialPage: number = 0;
     private static readonly _initialPageSize: number = 25;
@@ -67,7 +69,7 @@ export abstract class Table<RowType> {
 
     private _sortRule: TableSortRule = new TableSortRule();
 
-    protected _rows: RowType[] | Subject<RowType[]>;
+    private _rows: R[] = [];
 
     public startLoading(): void {
         this._loading = true;
@@ -78,27 +80,16 @@ export abstract class Table<RowType> {
         return this.dirty && this._empty;
     }
 
-    public updateTable(page?: number, pageSize?: number, rows?: RowType[], pageCount?: number): void {
-        if (page !== undefined) {
-            this._page = page;
-        }
-        if (pageSize !== undefined) {
-            this._pageSize = pageSize;
-        }
+    public updateTable(page: number, pageSize: number, rows: R[], pageCount?: number): void {
+        this._page = page;
+        this._pageSize = pageSize;
         this.updateRows(rows, pageCount);
-        this._events.next(TableEvent.UPDATED);
     }
 
-    public updateRows(rows?: RowType[], pageCount?: number): void {
-        if (rows !== undefined) {
-            this._empty = rows.length === 0;
-            if (this._rows instanceof Subject) {
-                this._rows.next(rows);
-            } else {
-                this._rows = rows;
-            }
-            this._pageCount = pageCount !== undefined ? pageCount : Math.floor(rows.length / this._pageSize) + 1;
-        }
+    public updateRows(rows: R[], pageCount?: number): void {
+        this._empty = rows.length === 0;
+        this._rows = rows;
+        this._pageCount = pageCount !== undefined ? pageCount : Math.floor(rows.length / this._pageSize) + 1;
         this._error = false;
         this._dirty = true;
         this._loading = false;
@@ -111,7 +102,7 @@ export abstract class Table<RowType> {
 
     public updatePageSize(pageSize: number, pageCount?: number): void {
         this._pageSize = pageSize;
-        this._pageCount = pageCount !== undefined ? pageCount : Math.floor((this._rows as RowType[]).length / this._pageSize) + 1;
+        this._pageCount = pageCount !== undefined ? pageCount : Math.floor(this._rows.length / this._pageSize) + 1;
     }
 
     public setError(): void {
@@ -176,7 +167,7 @@ export abstract class Table<RowType> {
         return this._sortRule;
     }
 
-    get rows(): RowType[] | Subject<RowType[]> {
+    get rows(): R[] {
         return this._rows;
     }
 }

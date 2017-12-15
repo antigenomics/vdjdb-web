@@ -15,11 +15,10 @@
  */
 
 import { Injectable } from '@angular/core';
-import { ReplaySubject } from 'rxjs/ReplaySubject';
 import { Filter, FiltersOptions, IFilter } from '../../../../shared/filters/filters';
 import { FiltersService } from '../../../../shared/filters/filters.service';
 import { ExportFormat } from '../../../../shared/table/export/table-export.component';
-import { Table } from '../../../../shared/table/table';
+import { Table, TableEvent } from '../../../../shared/table/table';
 import { WebSocketConnection, WebSocketResponseStatus } from '../../../../shared/websocket/websocket-connection';
 import { WebSocketRequestData } from '../../../../shared/websocket/websocket-request';
 import { WebSocketResponseData } from '../../../../shared/websocket/websocket-response';
@@ -39,6 +38,7 @@ export namespace SearchTableWebSocketActions {
 
 @Injectable()
 export class SearchTableService extends Table<SearchTableRow> {
+    private _initialized: boolean = false;
     private _filters: IFilter[] = [];
     private _columns: DatabaseColumnInfo[] = [];
     private _recordsFound: number = 0;
@@ -48,7 +48,6 @@ export class SearchTableService extends Table<SearchTableRow> {
 
     constructor(private filters: FiltersService, private logger: LoggerService, private notifications: NotificationService) {
         super();
-        this._rows = new ReplaySubject<SearchTableRow[]>(1);
         this.connection = new WebSocketConnection(logger, notifications, false);
         this.connection.onOpen(async () => {
             const metadataRequest = this.connection.sendMessage({
@@ -87,8 +86,15 @@ export class SearchTableService extends Table<SearchTableRow> {
             const suggestionsOptions = new FiltersOptions();
             suggestionsOptions.add('ag.epitope.epitopeSuggestions', suggestionResponse.get('suggestion'));
             this.filters.setOptions(suggestionsOptions.unpack());
+
+            this._initialized = true;
+            this.events.next(TableEvent.INITIALIZED);
         });
         this.connection.connect('/api/database/connect');
+    }
+
+    public isInitialized(): boolean {
+        return this._initialized;
     }
 
     public async update(): Promise<void> {
@@ -140,7 +146,7 @@ export class SearchTableService extends Table<SearchTableRow> {
         this.updateFromResponse(response);
     }
 
-    public async pageChange(page: number): Promise<void> {
+    public async changePage(page: number): Promise<void> {
         await this.checkConnection();
         this.startLoading();
         this.logger.debug('Page change', page);

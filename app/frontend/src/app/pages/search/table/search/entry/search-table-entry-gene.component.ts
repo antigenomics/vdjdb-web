@@ -15,8 +15,11 @@
  */
 
 import {
-    ChangeDetectionStrategy, ChangeDetectorRef, Component, ComponentFactory, ComponentRef, HostListener, Renderer2, ViewContainerRef
+    ChangeDetectionStrategy, ChangeDetectorRef, Component, ComponentFactoryResolver, ComponentRef, HostListener, Renderer2, ViewContainerRef
 } from '@angular/core';
+import { TableColumn } from '../../../../../shared/table/column/table-column';
+import { TableEntry } from '../../../../../shared/table/entry/table-entry';
+import { TableRowComponent } from '../../../../../shared/table/row/table-row.component';
 import { NotificationService } from '../../../../../utils/notifications/notification.service';
 import { SearchTableRow } from '../row/search-table-row';
 import { SearchTableService } from '../search-table.service';
@@ -25,28 +28,33 @@ import { SearchTableService } from '../search-table.service';
     selector:        'td[search-table-entry-gene]',
     template:        `<div class="ui active mini centered inline loader" *ngIf="pairedLoading"></div>
                       <i class="plus icon cursor pointer" [class.disabled]="isDisabled()" *ngIf="!visible && !pairedLoading"></i>
-                      <i class="minus icon cursor pointer" *ngIf="visible && !pairedLoading"></i><span *ngIf="!pairedLoading">{{ value }}</span>`,
+                      <i class="minus icon cursor pointer" *ngIf="visible && !pairedLoading"></i><span *ngIf="!pairedLoading">{{ entry }}</span>`,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class SearchTableEntryGeneComponent {
-    private _hostRowViewContainer: ViewContainerRef;
+export class SearchTableEntryGeneComponent extends TableEntry {
+    private _hostViewContainer: ViewContainerRef;
+    private _resolver: ComponentFactoryResolver;
+    private _columns: TableColumn[];
     private _pairedRow: ComponentRef<any>;
-    private _pairedRowResolver: ComponentFactory<any>;
 
     public visible: boolean = false;
     public pairedLoading: boolean = false;
-    public value: string;
+    public entry: string;
     public pairedID: string;
 
     constructor(private renderer: Renderer2, private table: SearchTableService, private notifications: NotificationService,
                 private changeDetector: ChangeDetectorRef) {
+        super();
     }
 
-    public generate(value: string, pairedID: string, viewContainer: ViewContainerRef, pairedRowResolver: ComponentFactory<any>): void {
-        this.value = value;
-        this.pairedID = pairedID;
-        this._hostRowViewContainer = viewContainer;
-        this._pairedRowResolver = pairedRowResolver;
+    public create(entry: string, column: TableColumn, columns: TableColumn[], row: SearchTableRow,
+                  hostViewContainer: ViewContainerRef, resolver: ComponentFactoryResolver): void {
+        this.entry = entry;
+        this.pairedID = row.metadata.pairedID;
+
+        this._hostViewContainer = hostViewContainer;
+        this._resolver = resolver;
+        this._columns = columns;
     }
 
     @HostListener('click')
@@ -63,13 +71,15 @@ export class SearchTableEntryGeneComponent {
                 this.visible = !this.visible;
             } else if (!this.pairedLoading) {
                 this.pairedLoading = true;
-                const pairedResponse = await this.table.getPaired(this.pairedID, this.value);
-                this._pairedRow = this._hostRowViewContainer.createComponent(this._pairedRowResolver);
-                this._pairedRow.instance.row = new SearchTableRow(pairedResponse.get('paired'));
-                this._pairedRow.instance.allowPaired = false;
-                this._pairedRow.instance.ngOnInit();
+                const pairedResponse = await this.table.getPaired(this.pairedID, this.entry);
+                const rowResolver = this._resolver.resolveComponentFactory(TableRowComponent);
+                this._pairedRow = this._hostViewContainer.createComponent(rowResolver);
+                this._pairedRow.instance.row = new SearchTableRow(pairedResponse.get('paired'), true);
+                this._pairedRow.instance.columns = this._columns;
                 this._pairedRow.changeDetectorRef.detectChanges();
                 this.renderer.addClass(this._pairedRow.location.nativeElement, 'warning');
+                this.renderer.addClass(this._pairedRow.location.nativeElement, 'center');
+                this.renderer.addClass(this._pairedRow.location.nativeElement, 'aligned');
                 this.visible = true;
                 this.pairedLoading = false;
                 this.changeDetector.detectChanges();

@@ -14,8 +14,11 @@
  *    limitations under the License.
  */
 
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ComponentFactoryResolver, ViewContainerRef } from '@angular/core';
+import { TableColumn } from '../../../../../shared/table/column/table-column';
+import { TableEntry } from '../../../../../shared/table/entry/table-entry';
 import { Utils } from '../../../../../utils/utils';
+import { SearchTableRow } from '../row/search-table-row';
 import ColorizedPatternRegion = Utils.SequencePattern.ColorizedPatternRegion;
 
 @Component({
@@ -23,10 +26,11 @@ import ColorizedPatternRegion = Utils.SequencePattern.ColorizedPatternRegion;
     template: `<span *ngFor="let region of regions" [style.color]="region.color">{{ region.part }}</span>`,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class SearchTableEntryCdrComponent {
+export class SearchTableEntryCdrComponent extends TableEntry {
     public regions: ColorizedPatternRegion[] = [];
 
-    public create(input: string, vEnd: number, jStart: number): void {
-        this.regions = Utils.SequencePattern.colorizePattern(input, vEnd, jStart);
+    public create(entry: string, column: TableColumn, columns: TableColumn[], row: SearchTableRow,
+                  hostViewContainer: ViewContainerRef, resolver: ComponentFactoryResolver): void {
+        this.regions = Utils.SequencePattern.colorizePattern(entry, row.metadata.cdr3vEnd, row.metadata.cdr3jStart);
     }
 }

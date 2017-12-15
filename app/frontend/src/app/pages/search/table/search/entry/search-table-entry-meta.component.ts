@@ -14,7 +14,10 @@
  *    limitations under the License.
  */
 
-import { ChangeDetectionStrategy, Component, HostListener } from '@angular/core';
+import { ChangeDetectionStrategy, Component, HostListener, ViewContainerRef, ComponentFactoryResolver } from '@angular/core';
+import { TableColumn } from '../../../../../shared/table/column/table-column';
+import { TableEntry } from '../../../../../shared/table/entry/table-entry';
+import { TableRow } from '../../../../../shared/table/row/table-row';
 import { ClipboardService } from '../../../../../utils/clipboard/clipboard.service';
 import { NotificationService } from '../../../../../utils/notifications/notification.service';
 import { DatabaseColumnInfo } from '../../../database/database-metadata';
@@ -25,12 +28,14 @@ import { DatabaseColumnInfo } from '../../../database/database-metadata';
                 footer="Click 'i' to copy to clipboard" [header]="title" width="250" display="list"></i>`,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class SearchTableEntryJsonComponent {
+export class SearchTableEntryMetaComponent extends TableEntry {
     public value: string[];
     public title: string;
     public color: string;
 
-    constructor(private clipboard: ClipboardService, private notifications: NotificationService) {}
+    constructor(private clipboard: ClipboardService, private notifications: NotificationService) {
+        super();
+    }
 
     @HostListener('click')
     public copyToClipboard(): void {
@@ -47,10 +52,11 @@ export class SearchTableEntryJsonComponent {
         }
     }
 
-    public generate(title: string, jsonString: string, column: DatabaseColumnInfo): void {
-        this.title = title;
+    public create(entry: string, column: TableColumn, columns: TableColumn[], row: TableRow,
+                  hostViewContainer: ViewContainerRef, resolver: ComponentFactoryResolver): void {
+        this.title = column.title;
         try {
-            const json = JSON.parse(jsonString);
+            const json = JSON.parse(entry);
             let color = 'black';
             const text: string[] = [];
 

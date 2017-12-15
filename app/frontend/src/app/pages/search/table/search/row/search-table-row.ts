@@ -14,12 +14,13 @@
  *    limitations under the License.
  */
 
-import { ComponentFactoryResolver, ComponentRef, ViewContainerRef } from '@angular/core';
+import { ComponentFactory, ComponentFactoryResolver } from '@angular/core';
 import { TableColumn } from '../../../../../shared/table/column/table-column';
+import { TableEntry } from '../../../../../shared/table/entry/table-entry';
 import { TableRow } from '../../../../../shared/table/row/table-row';
 import { SearchTableEntryCdrComponent } from '../entry/search-table-entry-cdr.component';
 import { SearchTableEntryGeneComponent } from '../entry/search-table-entry-gene.component';
-import { SearchTableEntryJsonComponent } from '../entry/search-table-entry-json.component';
+import { SearchTableEntryMetaComponent } from '../entry/search-table-entry-meta.component';
 import { SearchTableEntryUrlComponent } from '../entry/search-table-entry-url.component';
 
 export class SearchTableRowMetadata {
@@ -37,70 +38,29 @@ export class SearchTableRowMetadata {
 }
 
 export class SearchTableRow extends TableRow {
+    private _pairedDisabled: boolean = false;
+
     public readonly metadata: SearchTableRowMetadata;
 
-    constructor(row: any) {
+    constructor(row: any, pairedDisabled: boolean = false) {
         /* tslint:disable:no-string-literal */
         super(row[ 'entries' ]);
         this.metadata = new SearchTableRowMetadata(row[ 'metadata' ]);
+        this._pairedDisabled = pairedDisabled;
         /* tslint:enable:no-string-literal */
     }
 
-
-    public create(entry: string, column: TableColumn, hostViewContainer: ViewContainerRef,
-                  rowViewContainer: ViewContainerRef, resolver: ComponentFactoryResolver): ComponentRef<any> {
-        let component;
-        switch (column.name) {
-            case 'cdr3':
-                const cdr3EntryComponentResolver = resolver.resolveComponentFactory(SearchTableEntryCdrComponent);
-                component = rowViewContainer.createComponent(cdr3EntryComponentResolver);
-                component.instance.create(entry, this.metadata.cdr3vEnd, this.metadata.cdr3jStart);
-                break;
-            case 'reference.id':
-                const urlEntryComponentResolver = resolver.resolveComponentFactory(SearchTableEntryUrlComponent);
-                component = rowViewContainer.createComponent(urlEntryComponentResolver);
-                component.instance.generate(entry);
-                break;
-            case 'method':
-            case 'meta':
-            case 'cdr3fix':
-                const jsonEntryComponentResolver = resolver.resolveComponentFactory(SearchTableEntryJsonComponent);
-                component = this.rowViewContainer.createComponent(jsonComponentResolver);
-                component.instance.generate(column.title, entry, column);
-            default:
-                break;
+    public resolveComponentFactory(column: TableColumn, resolver: ComponentFactoryResolver): ComponentFactory<TableEntry> {
+        let entryResolver: ComponentFactory<TableEntry>;
+        if (column.name === 'gene' && !this._pairedDisabled) {
+            entryResolver = resolver.resolveComponentFactory(SearchTableEntryGeneComponent);
+        } else if (column.name === 'cdr3') {
+            entryResolver = resolver.resolveComponentFactory(SearchTableEntryCdrComponent);
+        } else if (column.name === 'reference.id') {
+            entryResolver = resolver.resolveComponentFactory(SearchTableEntryUrlComponent);
+        } else if (column.name === 'method' || column.name === 'meta' || column.name === 'cdr3fix') {
+            entryResolver = resolver.resolveComponentFactory(SearchTableEntryMetaComponent);
         }
-        // switch (column.name) {
-        //     case 'gene':
-        //         // if (this.allowPaired) {
-        //         // const rowComponentResolver = resolver.resolveComponentFactory();
-        //         // component = rowViewContainer.createComponent(geneComponentResolver);
-        //         // component.instance.generate(entry, this.metadata.pairedID, hostViewContainer, rowComponentResolver);
-        //         // } else {
-        //         //
-        //         // }
-        //
-        //         component = rowViewContainer.createComponent(originalComponentResolver);
-        //         component.instance.generate(`${entry}`);
-        //         break;
-        //     case 'cdr3':
-        //         component = this.rowViewContainer.createComponent(cdrComponentResolver);
-        //         component.instance.generate(entry, this.row);
-        //         break;
-        //     case 'reference.id':
-        //         component = this.rowViewContainer.createComponent(urlComponentResolver);
-        //         component.instance.generate(entry);
-        //         break;
-        //     case 'method':
-        //     case 'meta':
-        //     case 'cdr3fix':
-        //         component = this.rowViewContainer.createComponent(jsonComponentResolver);
-        //         component.instance.generate(column.title, entry, column);
-        //         break;
-        //     default:
-        //         component = this.rowViewContainer.createComponent(originalComponentResolver);
-        //         component.instance.generate(entry);
-        // }
-        return component;
+        return entryResolver;
     }
 }

@@ -40,7 +40,7 @@ import { TableComponent } from './table.component';
         TableInfoComponent,
         TableExportComponent,
         TablePagesizeComponent ],
-    entryComponents: [ TableEntryDefaultComponent ]
+    entryComponents: [ TableEntryDefaultComponent, TableRowComponent ]
 })
 export class TableModule {
 }

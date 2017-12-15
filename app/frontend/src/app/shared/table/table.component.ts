@@ -15,31 +15,74 @@
  *
  */
 
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
+import { Subscription } from 'rxjs/Subscription';
 import { TableColumn } from './column/table-column';
+import { ExportFormat } from './export/table-export.component';
 import { TableRow } from './row/table-row';
+import { TableSettings } from './settings/table-settings';
+import { Table } from './table';
 
 @Component({
     selector:    'table[table-component]',
     templateUrl: './table.component.html',
     styleUrls:   [ './table.component.css' ]
 })
-export class TableComponent {
-    @Input('headerSize')
-    public headerSize: string;
+export class TableComponent implements OnInit, OnDestroy {
+    private _tableEventsSubscription: Subscription;
+
+    @Input('settings')
+    public settings: TableSettings;
 
     @Input('columns')
     public columns: TableColumn[];
 
-    @Input('columnsClass')
-    public columnsClass: string;
+    @Input('table')
+    public table: Table<TableRow>;
 
     @Output('onColumnClick')
     public onColumnClick = new EventEmitter<TableColumn>();
 
-    @Input('rows')
-    public rows: TableRow[];
+    @Output('onPageChange')
+    public onPageChange = new EventEmitter<number>();
 
-    @Input('rowsClass')
-    public rowsClass: string;
+    @Output('onPageSizeChange')
+    public onPageSizeChange = new EventEmitter<number>();
+
+    @Output('onExport')
+    public onExport = new EventEmitter<ExportFormat>();
+
+    constructor(private changeDetector: ChangeDetectorRef) {}
+
+    public ngOnInit(): void {
+        this._tableEventsSubscription = this.table.events.subscribe((event) => {
+            this.changeDetector.detectChanges();
+        });
+    }
+
+    public columnClick(column: TableColumn): void {
+        this.onColumnClick.emit(column);
+    }
+
+    public pageChange(page: number): void {
+        this.onPageChange.emit(page);
+    }
+
+    public pageSizeChange(pageSize: number): void {
+        this.onPageSizeChange.emit(pageSize);
+    }
+
+    public export(format: ExportFormat): void {
+        this.onExport.emit(format);
+    }
+
+    public isSorted(column: TableColumn): string {
+        return this.table.isSorted(column.name);
+    }
+
+    public ngOnDestroy(): void {
+        if (this._tableEventsSubscription) {
+            this._tableEventsSubscription.unsubscribe();
+        }
+    }
 }
