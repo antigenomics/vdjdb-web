@@ -27,7 +27,7 @@ import ColorizedPatternRegion = Utils.SequencePattern.ColorizedPatternRegion;
 
 @Component({
     selector:        'td[intersection-table-entry-cdr3aa]',
-    template:        `<div style="float: left; width: 90%; height: 20px" [popup]="ntRegions" header="CDR3nt" display="colored-text" class="cursor pointer"
+    template:        `<div style="float: left; height: 20px" [popup]="ntRegions" header="CDR3nt" display="colored-text" class="cursor pointer"
                            footer="Click on 'copy' icon to save nucleotide sequence to clipboard" position="top" width="500">
                             <span *ngFor="let region of aaRegions" [style.color]="region.color">{{ region.part }}</span>
                       </div>
