@@ -1,0 +1,12 @@
+<thead class="cursor pointer" [attr.font-size]="headerSize">
+<tr>
+    <th [attr.class]="columnsClass" *ngFor="let column of columns; let i = index;" (click)="onColumnClick.emit(column)">
+        <span class="header" [popup]="column.popupContent" [footer]="column.popupFooter" [header]="column.title" position="top" width="300" [disabled]="!column.popup">
+            {{ column.title }}
+        </span>
+    </th>
+</tr>
+</thead>
+<tbody>
+    <tr *ngFor="let row of rows" table-row [row]="row" [columns]="columns" [attr.class]="rowsClass"></tr>
+</tbody>

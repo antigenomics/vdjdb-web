@@ -79,6 +79,9 @@ frontendBuildWebpack := frontendNPMTask("run bundle:webpack")
 lazy val frontendBuild = taskKey[Unit]("Build frontend application")
 frontendBuild := frontendNPMTask("run bundle")
 
+lazy val frontendOutdated = taskKey[Unit]("Check frontend dependencies updates")
+frontendOutdated := frontendNPMTask("outdated")
+
 // Ends.
 
 

@@ -15,9 +15,9 @@
  */
 
 import { ChangeDetectionStrategy, Component, HostListener } from '@angular/core';
-import { ClipboardService } from '../../../../../../utils/clipboard/clipboard.service';
-import { NotificationService } from '../../../../../../utils/notifications/notification.service';
-import { DatabaseColumnInfo } from '../../../../database/database-metadata';
+import { ClipboardService } from '../../../../../utils/clipboard/clipboard.service';
+import { NotificationService } from '../../../../../utils/notifications/notification.service';
+import { DatabaseColumnInfo } from '../../../database/database-metadata';
 
 @Component({
     selector: 'td[search-table-entry-json]',

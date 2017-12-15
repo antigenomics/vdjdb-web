@@ -17,14 +17,30 @@
 
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
+import { ModalsModule } from '../modals/modals.module';
+import { TableEntryDefaultComponent } from './entry/table-entry-default.component';
 import { TableExportComponent } from './export/table-export.component';
 import { TableInfoComponent } from './info/table-info.component';
 import { TablePagesizeComponent } from './pagesize/table-pagesize.component';
 import { TablePaginationComponent } from './pagination/table-pagination.component';
+import { TableRowComponent } from './row/table-row.component';
+import { TableComponent } from './table.component';
 
 @NgModule({
-    imports:      [ BrowserModule ],
-    declarations: [ TablePaginationComponent, TableInfoComponent, TableExportComponent, TablePagesizeComponent ],
-    exports:      [ TablePaginationComponent, TableInfoComponent, TableExportComponent, TablePagesizeComponent ]
+    imports:         [ BrowserModule, ModalsModule ],
+    declarations:    [ TableComponent,
+        TableRowComponent,
+        TablePaginationComponent,
+        TableInfoComponent,
+        TableExportComponent,
+        TablePagesizeComponent,
+        TableEntryDefaultComponent ],
+    exports:         [ TableComponent,
+        TablePaginationComponent,
+        TableInfoComponent,
+        TableExportComponent,
+        TablePagesizeComponent ],
+    entryComponents: [ TableEntryDefaultComponent ]
 })
-export class TableModule {}
+export class TableModule {
+}

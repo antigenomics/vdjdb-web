@@ -1,0 +1,14 @@
+th.ascending {
+    border-bottom: 2px solid #00B5AD !important;
+}
+
+th.descending {
+    border-top: 2px solid #00B5AD !important;
+}
+
+th span.header {
+    display: block;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+}
