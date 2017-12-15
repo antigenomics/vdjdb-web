@@ -15,7 +15,7 @@
  *
  */
 
-import { ChangeDetectionStrategy, Component, ComponentFactoryResolver, ViewContainerRef } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ComponentFactoryResolver, HostBinding, ViewContainerRef } from '@angular/core';
 import { TableColumn } from '../../../../../shared/table/column/table-column';
 import { TableEntry } from '../../../../../shared/table/entry/table-entry';
 import { IntersectionTableRow } from '../row/intersection-table-row';
@@ -27,6 +27,9 @@ import { IntersectionTableRow } from '../row/intersection-table-row';
 })
 export class IntersectionTableEntryTagsComponent extends TableEntry {
     private static readonly _colors: string[] = [ 'teal', 'blue', 'violet', 'red' ];
+
+    @HostBinding('style.max-width')
+    public width: string = '35%';
 
     public values: Array<[ string, string ]> = [];
 
