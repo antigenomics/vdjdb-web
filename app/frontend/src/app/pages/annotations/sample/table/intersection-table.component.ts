@@ -33,7 +33,7 @@ export class IntersectionTableComponent {
     constructor() {
         this.settings = {
             classes: {
-                columns: 'collapsing center aligned',
+                columns: 'center aligned',
                 rows:    'fade element'
             },
             utils:   {
