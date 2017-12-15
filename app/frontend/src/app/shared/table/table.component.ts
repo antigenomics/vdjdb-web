@@ -15,7 +15,7 @@
  *
  */
 
-import { ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, OnInit, Output, Renderer2 } from '@angular/core';
 import { Subscription } from 'rxjs/Subscription';
 import { TableColumn } from './column/table-column';
 import { ExportFormat } from './export/table-export.component';
@@ -28,8 +28,15 @@ import { Table } from './table';
     templateUrl: './table.component.html',
     styleUrls:   [ './table.component.css' ]
 })
-export class TableComponent implements OnInit, OnDestroy {
+export class TableComponent implements OnInit, AfterViewInit, OnDestroy {
+    private static _resizeEventWaitTime: number = 200;
+
+    private _resizeEventListener: () => void;
+    private _resizeEventTimeout: number;
     private _tableEventsSubscription: Subscription;
+
+    public headerFontSize: string = 'inherit';
+    public contentFontSize: string = 'inherit';
 
     @Input('settings')
     public settings: TableSettings;
@@ -52,12 +59,21 @@ export class TableComponent implements OnInit, OnDestroy {
     @Output('onExport')
     public onExport = new EventEmitter<ExportFormat>();
 
-    constructor(private changeDetector: ChangeDetectorRef) {}
+    constructor(private changeDetector: ChangeDetectorRef, private renderer: Renderer2) {}
 
     public ngOnInit(): void {
         this._tableEventsSubscription = this.table.events.subscribe(() => {
             this.changeDetector.detectChanges();
         });
+    }
+
+    public ngAfterViewInit(): void {
+        if (this.settings.size.header.dynamicSizeEnabled || this.settings.size.content.dynamicSizeEnabled) {
+            this.updateFontSize();
+            this._resizeEventListener = this.renderer.listen('window', 'resize', () => {
+                this.onResize();
+            });
+        }
     }
 
     public isSorted(column: TableColumn): string {
@@ -68,5 +84,36 @@ export class TableComponent implements OnInit, OnDestroy {
         if (this._tableEventsSubscription) {
             this._tableEventsSubscription.unsubscribe();
         }
+    }
+
+    private onResize(): void {
+        window.clearTimeout(this._resizeEventTimeout);
+        this._resizeEventTimeout = window.setTimeout(() => {
+            this.updateFontSize();
+        }, TableComponent._resizeEventWaitTime);
+    }
+
+    private updateFontSize(): void {
+        if (this.settings.size.header.dynamicSizeEnabled) {
+            this.calculateHeaderFontSize();
+        }
+        if (this.settings.size.content.dynamicSizeEnabled) {
+            this.calculateContentFontSize();
+        }
+        this.changeDetector.detectChanges();
+    }
+
+    private calculateHeaderFontSize(): void {
+        const a = this.settings.size.header.dynamicSizeWeightA;
+        const b = this.settings.size.header.dynamicSizeWeightB;
+        const headerSize = a * window.innerWidth + b;
+        this.headerFontSize = headerSize + 'em';
+    }
+
+    private calculateContentFontSize(): void {
+        const a = this.settings.size.content.dynamicSizeWeightA;
+        const b = this.settings.size.content.dynamicSizeWeightB;
+        const contentFontSize = a * window.innerWidth + b;
+        this.contentFontSize = contentFontSize + 'em';
     }
 }

@@ -7,7 +7,7 @@
         <table-pagesize *ngIf="settings.utils.pageSize" [sizes]="table.getAvailablePageSizes()" [pageSize]="table.pageSize" (changePageSize)="onPageSizeChange.emit($event)"></table-pagesize>
     </th>
 </tr>
-<tr>
+<tr [style.font-size]="headerFontSize">
     <th class="{{ isSorted(column) }} {{ settings.classes.columns }}" *ngFor="let column of columns; let i = index;" (click)="onColumnClick.emit(column)">
         <span class="header" [popup]="column.popupContent" [footer]="column.popupFooter" [header]="column.title" position="top" width="300" [disabled]="!column.popup">
             {{ column.title }}
@@ -15,6 +15,6 @@
     </th>
 </tr>
 </thead>
-<tbody>
+<tbody [style.font-size]="contentFontSize">
     <tr *ngFor="let row of table.getRows()" table-row [row]="row" [columns]="columns" class="{{ settings.classes.rows }}"></tr>
 </tbody>
