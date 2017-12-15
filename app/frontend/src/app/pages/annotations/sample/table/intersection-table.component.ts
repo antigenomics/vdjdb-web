@@ -31,7 +31,7 @@ export class IntersectionTableComponent {
     public table: IntersectionTable;
 
     constructor() {
-        this.settings = {
+        this.settings = new TableSettings({
             classes: {
                 columns: 'center aligned',
                 rows:    'fade element'
@@ -42,8 +42,14 @@ export class IntersectionTableComponent {
                 info:       true,
                 export:     false,
                 pageSize:   true
+            },
+            size:    {
+                header: {
+                    dynamicSizeEnabled: true,
+                    dynamicSizeWeightB: 0.5
+                }
             }
-        };
+        });
     }
 
     public onPageChange(page: number): void {

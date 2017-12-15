@@ -33,19 +33,25 @@ export class MatchesTableComponent {
     public settings: TableSettings;
 
     constructor(private annotationsService: AnnotationsService) {
-        this.settings = {
+        this.settings = new TableSettings({
             classes: {
                 columns: 'collapsing center aligned',
                 rows:    'center aligned'
             },
             utils:   {
-                disable:    true,
-                pagination: false,
-                info:       false,
-                export:     false,
-                pageSize:   false
+                disable:    true
+            },
+            size:    {
+                header: {
+                    dynamicSizeEnabled: true,
+                    dynamicSizeWeightB: 0.25
+                },
+                content: {
+                    dynamicSizeEnabled: true,
+                    dynamicSizeWeightB: 0.4
+                }
             }
-        };
+        });
     }
 
     public getColumns(): TableColumn[] {

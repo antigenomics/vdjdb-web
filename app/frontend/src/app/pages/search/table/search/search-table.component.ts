@@ -33,19 +33,21 @@ export class SearchTableComponent implements OnInit {
     public columns: TableColumn[] = [];
 
     constructor(public table: SearchTableService) {
-        this.settings = {
+        this.settings = new TableSettings({
             classes: {
                 columns: 'collapsing center aligned',
                 rows:    'center aligned fade element'
             },
-            utils:   {
-                disable:    false,
-                pagination: true,
-                info:       true,
-                export:     true,
-                pageSize:   true
+            size:    {
+                header: {
+                    dynamicSizeEnabled: true
+                },
+                content: {
+                    dynamicSizeEnabled: true,
+                    dynamicSizeWeightB: 0.6
+                }
             }
-        };
+        });
     }
 
     public ngOnInit(): void {

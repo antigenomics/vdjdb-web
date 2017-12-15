@@ -15,30 +15,30 @@
  *
  */
 
-export class TableClassesSettings {
-    public readonly columns: string = '';
-    public readonly rows: string = '';
+import { ITableClassesSettings, TableClassesSettings } from './table-classes-settings';
+import { ITableSizeSettings, TableSizeSettings } from './table-size-settings';
+import { ITableUtilsSettings, TableUtilsSettings } from './table-utils-settings';
 
-    constructor(columns: string, rows: string) {
-        this.columns = columns;
-        this.rows = rows;
-    }
-}
-
-export class TableUtilsSettings {
-    public disable: boolean = false;
-    public pagination: boolean = true;
-    public info: boolean = true;
-    public export: boolean = true;
-    public pageSize: boolean = true;
+export interface ITableSettings {
+    readonly size?: ITableSizeSettings;
+    readonly classes?: ITableClassesSettings;
+    readonly utils?: ITableUtilsSettings;
 }
 
 export class TableSettings {
-    public readonly classes: TableClassesSettings;
-    public readonly utils: TableUtilsSettings;
+    public readonly size: TableSizeSettings = new TableSizeSettings({});
+    public readonly classes: TableClassesSettings = new TableClassesSettings({});
+    public readonly utils: TableUtilsSettings = new TableUtilsSettings({});
 
-    constructor(classes: TableClassesSettings, utils: TableUtilsSettings) {
-        this.classes = classes;
-        this.utils = utils;
+    constructor(settings: ITableSettings) {
+        if (settings.size !== undefined) {
+            this.size = new TableSizeSettings(settings.size);
+        }
+        if (settings.classes !== undefined) {
+            this.classes = new TableClassesSettings(settings.classes);
+        }
+        if (settings.utils !== undefined) {
+            this.utils = new TableUtilsSettings(settings.utils);
+        }
     }
 }
