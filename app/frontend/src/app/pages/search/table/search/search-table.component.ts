@@ -15,38 +15,61 @@
  *
  */
 
-import { ChangeDetectorRef, Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { Subscription } from 'rxjs/Subscription';
+import { Component, OnInit } from '@angular/core';
+import 'rxjs/add/operator/filter';
+import 'rxjs/add/operator/take';
 import { TableColumn } from '../../../../shared/table/column/table-column';
+import { ExportFormat } from '../../../../shared/table/export/table-export.component';
+import { TableSettings } from '../../../../shared/table/settings/table-settings';
+import { TableEvent } from '../../../../shared/table/table';
 import { SearchTableService } from './search-table.service';
 
 @Component({
     selector:    'search-table',
-    templateUrl: './search-table.component.html',
-    styleUrls:   [ './search-table.component.css' ]
+    templateUrl: './search-table.component.html'
 })
-export class SearchTableComponent implements OnInit, OnDestroy {
-    private _updateEventSubscription: Subscription;
+export class SearchTableComponent implements OnInit {
+    public settings: TableSettings;
+    public columns: TableColumn[] = [];
 
-    public columns: TableColumn[];
-
-    constructor(public table: SearchTableService, private changeDetector: ChangeDetectorRef) {}
+    constructor(public table: SearchTableService) {
+        this.settings = {
+            classes: {
+                columns: 'collapsing center aligned',
+                rows: 'center aligned fade element'
+            },
+            utils: {
+                pagination: true,
+                info: true,
+                export: true,
+                pageSize: true
+            }
+        };
+    }
 
     public ngOnInit(): void {
-        this._updateEventSubscription = this.table.events.subscribe(() => {
-            this.columns = this.table.columns.map((c) => {
-                return new TableColumn(c.name, c.title);
+        if (!this.table.isInitialized()) {
+            this.table.events.filter((event) => event === TableEvent.INITIALIZED).take(1).subscribe(() => {
+                this.columns = this.table.columns.map((c) => {
+                    return new TableColumn(c.name, c.title, false, true, c.comment, 'Click to sort column');
+                });
             });
-            this.changeDetector.detectChanges();
-        });
-        // this.calculateHeaderFontSize();
+        }
     }
 
-    public pageChange(page: number): void {
-        this.table.pageChange(page);
+    public async onPageChange(page: number): Promise<void> {
+        return this.table.changePage(page);
     }
 
-    public ngOnDestroy(): void {
-        this._updateEventSubscription.unsubscribe();
+    public async onPageSizeChange(pageSize: number): Promise<void> {
+        return this.table.changePageSize(pageSize);
+    }
+
+    public async onColumnClick(column: TableColumn): Promise<void> {
+        return this.table.sort(column.name);
+    }
+
+    public async onExport(format: ExportFormat): Promise<void> {
+        return this.table.exportTable(format);
     }
 }

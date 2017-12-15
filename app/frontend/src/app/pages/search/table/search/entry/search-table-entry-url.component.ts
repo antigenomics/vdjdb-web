@@ -14,35 +14,39 @@
  *    limitations under the License.
  */
 
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ComponentFactoryResolver, ViewContainerRef } from '@angular/core';
+import { TableColumn } from '../../../../../shared/table/column/table-column';
+import { TableEntry } from '../../../../../shared/table/entry/table-entry';
+import { TableRow } from '../../../../../shared/table/row/table-row';
 
 @Component({
     selector: 'td[search-table-entry-url]',
     template: '<a [attr.href]="link" target="_blank" rel="noopener">{{ value }}</a>',
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class SearchTableEntryUrlComponent {
+export class SearchTableEntryUrlComponent extends TableEntry {
     private static prefixPMIDLength: number = 5;
 
     public value: string;
     public link: string;
 
-    public generate(input: string) {
-        if (input.indexOf('PMID') >= 0) {
-            const id = input.substring(SearchTableEntryUrlComponent.prefixPMIDLength, input.length);
+    public create(entry: string, column: TableColumn, columns: TableColumn[], row: TableRow,
+                  hostViewContainer: ViewContainerRef, resolver: ComponentFactoryResolver): void {
+        if (entry.indexOf('PMID') >= 0) {
+            const id = entry.substring(SearchTableEntryUrlComponent.prefixPMIDLength, entry.length);
             this.link = `http://www.ncbi.nlm.nih.gov/pubmed/?term=${id}`;
             this.value = `PMID:${id}`;
-        } else if (input.indexOf('http') >= 0) {
+        } else if (entry.indexOf('http') >= 0) {
             let domain;
             // find & remove protocol (http, ftp, etc.) and get domain
-            if (input.indexOf('://') > -1) {
-                domain = input.split('/')[2];
+            if (entry.indexOf('://') > -1) {
+                domain = entry.split('/')[2];
             } else {
-                domain = input.split('/')[0];
+                domain = entry.split('/')[0];
             }
             // find & remove port number
             this.value = domain.split(':')[0];
-            this.link = input;
+            this.link = entry;
         }
     }
 }

@@ -14,17 +14,21 @@
  *    limitations under the License.
  */
 
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ComponentFactoryResolver, ViewContainerRef } from '@angular/core';
+import { TableColumn } from '../../../../../shared/table/column/table-column';
+import { TableEntry } from '../../../../../shared/table/entry/table-entry';
+import { TableRow } from '../../../../../shared/table/row/table-row';
 
 @Component({
     selector: 'td[search-table-entry-original]',
-    template: '{{ value }}',
+    template: '{{ entry }}',
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class SearchTableEntryOriginalComponent {
-    public value: string;
+export class SearchTableEntryOriginalComponent extends TableEntry {
+    public entry: string;
 
-    public generate(value: string) {
-        this.value = value;
+    public create(entry: string, column: TableColumn, columns: TableColumn[], row: TableRow,
+                  hostViewContainer: ViewContainerRef, resolver: ComponentFactoryResolver): void {
+        this.entry = entry;
     }
 }

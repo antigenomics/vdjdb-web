@@ -14,17 +14,21 @@
  *    limitations under the License.
  */
 
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ComponentFactoryResolver, ViewContainerRef } from '@angular/core';
+import { TableColumn } from '../column/table-column';
+import { TableRow } from '../row/table-row';
+import { TableEntry } from './table-entry';
 
 @Component({
     selector: 'td[table-entry-default]',
-    template: '{{ value }}',
+    template: '{{ entry }}',
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class TableEntryDefaultComponent {
-    public value: string;
+export class TableEntryDefaultComponent extends TableEntry {
+    public entry: string;
 
-    public create(value: string) {
-        this.value = value;
+    public create(entry: string, column: TableColumn, columns: TableColumn[], row: TableRow,
+                  hostViewContainer: ViewContainerRef, resolver: ComponentFactoryResolver): void {
+        this.entry = entry;
     }
 }

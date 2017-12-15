@@ -1,11 +1,11 @@
 /*
- *     Copyright 2017 Bagaev Dmitry
+ *    Copyright 2017 Bagaev Dmitry
  *
  *     Licensed under the Apache License, Version 2.0 (the "License");
  *     you may not use this file except in compliance with the License.
  *     You may obtain a copy of the License at
  *
- *         http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  *     Unless required by applicable law or agreed to in writing, software
  *     distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,16 +15,11 @@
  *
  */
 
-import { ComponentFactory, ComponentFactoryResolver } from '@angular/core';
+import { ComponentFactoryResolver, ViewContainerRef } from '@angular/core';
 import { TableColumn } from '../column/table-column';
-import { TableEntry } from '../entry/table-entry';
+import { TableRow } from '../row/table-row';
 
-export abstract class TableRow {
-    public readonly entries: string[];
-
-    constructor(entries: string[]) {
-        this.entries = entries;
-    }
-
-    public abstract resolveComponentFactory(column: TableColumn, resolver: ComponentFactoryResolver): ComponentFactory<TableEntry>;
+export abstract class TableEntry {
+    public abstract create(entry: string, column: TableColumn, columns: TableColumn[], row: TableRow,
+                           hostViewContainer: ViewContainerRef, resolver: ComponentFactoryResolver): void;
 }

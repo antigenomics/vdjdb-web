@@ -21,7 +21,12 @@ import { IntersectionTableRowAlignment } from '../../../../annotations/sample/ta
 
 @Component({
     selector:        'td[search-table-entry-alignment]',
-    templateUrl:     'search-table-entry-alignment.component.html',
+    template:        `<span class="text alignment cursor pointer" [popup]="popupAlignmentTable"
+                        display="table" position="right" popupClass="big text alignment" width="800">
+                            {{ alignment.seq1String }}<br>
+                            {{ alignment.markup }}<br>
+                            {{ alignment.seq2String }}
+                      </span>`,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SearchTableEntryAlignmentComponent {
@@ -29,10 +34,10 @@ export class SearchTableEntryAlignmentComponent {
 
     public popupAlignmentTable: PopupContentTable;
 
-    public generate(alignment: IntersectionTableRowAlignment): void {
+    public create(alignment: IntersectionTableRowAlignment): void {
         this.alignment = alignment;
 
-        const rows = [[alignment.seq1String], [alignment.markup], [alignment.seq2String]];
-        this.popupAlignmentTable = new PopupContentTable(['Alignment'], rows);
+        const rows = [ [ alignment.seq1String ], [ alignment.markup ], [ alignment.seq2String ] ];
+        this.popupAlignmentTable = new PopupContentTable([ 'Alignment' ], rows);
     }
 }
