@@ -89,8 +89,11 @@ export class IntersectionTableEntryDetailsComponent extends TableEntry implement
         if (this._row.matchesLoaded && !this._matchesComponent) {
             const matchesComponentResolver = this.resolver.resolveComponentFactory(MatchesTableComponent);
             this._matchesComponent = this._hostViewContainer.createComponent(matchesComponentResolver);
-            this._matchesComponent.instance.table = new MatchesTable();
-            this._matchesComponent.instance.table.updateRows(this._row.matches);
+
+            const table = new MatchesTable();
+            table.updateRows(this._row.matches);
+
+            this._matchesComponent.instance.table = table;
             this.updatePopup();
         } else if (this._matchesComponent) {
             this._matchesComponent.destroy();
