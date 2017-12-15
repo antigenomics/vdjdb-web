@@ -15,21 +15,16 @@
  */
 
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { Utils } from '../../../../../../utils/utils';
-import { SearchTableRow } from '../../row/search-table-row';
-import ColorizedPatternRegion = Utils.SequencePattern.ColorizedPatternRegion;
 
 @Component({
-    selector: 'td[search-table-entry-cdr]',
-    template: `<span *ngFor="let region of regions" [style.color]="region.color">{{ region.part }}</span>`,
+    selector: 'td[table-entry-default]',
+    template: '{{ value }}',
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class SearchTableEntryCdrComponent {
-    public regions: ColorizedPatternRegion[] = [];
+export class TableEntryDefaultComponent {
+    public value: string;
 
-    public generate(input: string, row: SearchTableRow): void {
-        const vEnd = row.metadata.cdr3vEnd;
-        const jStart = row.metadata.cdr3jStart;
-        this.regions = Utils.SequencePattern.colorizePattern(input, vEnd, jStart);
+    public create(value: string) {
+        this.value = value;
     }
 }

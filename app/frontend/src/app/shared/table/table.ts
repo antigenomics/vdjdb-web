@@ -121,6 +121,20 @@ export abstract class Table<RowType> {
         this._events.next(TableEvent.UPDATED);
     }
 
+    public isSorted(name: string): string {
+        if (this.sortRule.column !== name) {
+            return '';
+        }
+        switch (this.sortRule.type) {
+            case 'asc':
+                return 'ascending';
+            case 'desc':
+                return 'descending';
+            default:
+                return '';
+        }
+    }
+
     // noinspection JSMethodCanBeStatic
     public getAvailablePageSizes(): number[] {
         return Table._availablePageSizes;

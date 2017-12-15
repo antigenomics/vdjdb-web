@@ -16,8 +16,8 @@
  */
 
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { PopupContentTable } from '../../../../../../shared/modals/popup/popup-content-table';
-import { IntersectionTableRowAlignment } from '../../../../../annotations/sample/table/row/intersection-table-row-alignment';
+import { PopupContentTable } from '../../../../../shared/modals/popup/popup-content-table';
+import { IntersectionTableRowAlignment } from '../../../../annotations/sample/table/row/intersection-table-row-alignment';
 
 @Component({
     selector:        'td[search-table-entry-alignment]',

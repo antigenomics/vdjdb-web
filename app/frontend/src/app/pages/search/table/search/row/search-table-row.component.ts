@@ -20,13 +20,12 @@ import {
 } from '@angular/core';
 import { IntersectionTableRowAlignment } from '../../../../annotations/sample/table/row/intersection-table-row-alignment';
 import { DatabaseColumnInfo } from '../../../database/database-metadata';
-import { SearchTableEntryAlignmentComponent } from '../entry/alignment/search-table-entry-alignment.component';
-import { SearchTableEntryCdrComponent } from '../entry/cdr/search-table-entry-cdr.component';
-import { SearchTableEntryGeneComponent } from '../entry/gene/search-table-entry-gene.component';
-import { SearchTableEntryJsonComponent } from '../entry/json/search-table-entry-json.component';
-import { SearchTableEntryOriginalComponent } from '../entry/original/search-table-entry-original.component';
-import { SearchTableEntryUrlComponent } from '../entry/url/search-table-entry-url.component';
-import { SearchTableService } from '../search-table.service';
+import { SearchTableEntryAlignmentComponent } from '../entry/search-table-entry-alignment.component';
+import { SearchTableEntryCdrComponent } from '../entry/search-table-entry-cdr.component';
+import { SearchTableEntryGeneComponent } from '../entry/search-table-entry-gene.component';
+import { SearchTableEntryJsonComponent } from '../entry/search-table-entry-json.component';
+import { SearchTableEntryOriginalComponent } from '../entry/search-table-entry-original.component';
+import { SearchTableEntryUrlComponent } from '../entry/search-table-entry-url.component';
 import { SearchTableRow } from './search-table-row';
 
 @Component({
@@ -101,7 +100,7 @@ export class SearchTableRowComponent implements OnInit, OnDestroy {
                             break;
                         case 'cdr3':
                             component = this.rowViewContainer.createComponent(cdrComponentResolver);
-                            component.instance.generate(entry, this.row);
+                            component.instance.create(entry, this.row.metadata.cdr3vEnd, this.row.metadata.cdr3jStart);
                             break;
                         case 'reference.id':
                             component = this.rowViewContainer.createComponent(urlComponentResolver);

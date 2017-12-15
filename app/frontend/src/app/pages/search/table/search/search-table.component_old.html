@@ -1,0 +1,30 @@
+<div style="width: 100%; min-height: 100px; overflow-x: auto" *ngIf="!table.isEmpty()">
+    <table class="ui unstackable single line celled stripped very compact small table" table-component></table>
+    <table class="ui unstackable single line celled stripped very compact small table" [style.font-size]="headerFontSize">
+        <thead class="cursor pointer">
+        <tr>
+            <th [attr.colspan]="table.columns.length" style="padding: 1em">
+                <table-pagination [page]="table.page" [range]="5" [pageCount]="table.pageCount" (pageChange)="pageChange($event)"></table-pagination>
+                <table-info [found]="table.recordsFound" [total]="table.numberOfRecords"></table-info>
+                <table-export [formats]="table.getAvailableExportFormats()" (exportEvent)="table.exportTable($event)"></table-export>
+                <table-pagesize [sizes]="table.getAvailablePageSizes()" [pageSize]="table.pageSize" (changePageSize)="table.changePageSize($event)"></table-pagesize>
+            </th>
+        </tr>
+        <tr>
+            <th class="center aligned collapsing" *ngFor="let column of table.columns; let i = index;" (click)="table.sort(column.name)" [ngClass]="isSorted(column.name)">
+                <span class="header" [popup]="column.comment" footer="Click to sort" [header]="column.title" position="top" width="300">{{ column.title }}</span>
+            </th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr *ngFor="let row of table.rows | async" [search-table-row]="row" [columns]="table.columns" class="center aligned"></tr>
+        </tbody>
+    </table>
+</div>
+<div *ngIf="table.isEmpty()">
+    <h2 class="ui center aligned icon header">
+        <i class="search icon"></i>
+        No results found
+        <div class="sub header">Please change the filters</div>
+    </h2>
+</div>
