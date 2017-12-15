@@ -26,6 +26,7 @@ export class TableClassesSettings {
 }
 
 export class TableUtilsSettings {
+    public disable: boolean = false;
     public pagination: boolean = true;
     public info: boolean = true;
     public export: boolean = true;

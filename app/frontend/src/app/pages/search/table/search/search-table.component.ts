@@ -36,13 +36,14 @@ export class SearchTableComponent implements OnInit {
         this.settings = {
             classes: {
                 columns: 'collapsing center aligned',
-                rows: 'center aligned fade element'
+                rows:    'center aligned fade element'
             },
-            utils: {
+            utils:   {
+                disable:    false,
                 pagination: true,
-                info: true,
-                export: true,
-                pageSize: true
+                info:       true,
+                export:     true,
+                pageSize:   true
             }
         };
     }
@@ -51,7 +52,7 @@ export class SearchTableComponent implements OnInit {
         if (!this.table.isInitialized()) {
             this.table.events.filter((event) => event === TableEvent.INITIALIZED).take(1).subscribe(() => {
                 this.columns = this.table.columns.map((c) => {
-                    return new TableColumn(c.name, c.title, false, true, c.comment, 'Click to sort column');
+                    return new TableColumn(c.name, c.title, false, false, true, c.comment, 'Click to sort column');
                 });
             });
         }

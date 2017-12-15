@@ -21,11 +21,14 @@ import {
 } from '@angular/core';
 import { PopupContentTable } from '../../../../../shared/modals/popup/popup-content-table';
 import { PopupDirective } from '../../../../../shared/modals/popup/popup.directive';
+import { TableColumn } from '../../../../../shared/table/column/table-column';
+import { TableEntry } from '../../../../../shared/table/entry/table-entry';
 import { LoggerService } from '../../../../../utils/logger/logger.service';
 import { AnnotationsService } from '../../../annotations.service';
-import { IntersectionTableMatchesComponent } from '../matches/intersection-table-matches.component';
+import { MatchesTable } from '../matches/matches-table';
+import { MatchesTableComponent } from '../matches/matches-table.component';
+import { MatchTableRow } from '../matches/row/match-table-row';
 import { IntersectionTableRow } from '../row/intersection-table-row';
-import { IntersectionTableRowMatch } from '../row/intersection-table-row-match';
 
 @Component({
     selector:        'td[intersection-table-entry-details]',
@@ -37,14 +40,14 @@ import { IntersectionTableRowMatch } from '../row/intersection-table-row-match';
                       </button>`,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class IntersectionTableEntryDetailsComponent implements OnDestroy {
+export class IntersectionTableEntryDetailsComponent extends TableEntry implements OnDestroy {
     private static readonly _maxMatchesInQuickView: number = 10;
 
     private _loading: boolean = false;
     private _row: IntersectionTableRow;
 
-    private _matchesComponent: ComponentRef<IntersectionTableMatchesComponent>;
-    private _viewContainer: ViewContainerRef;
+    private _matchesComponent: ComponentRef<MatchesTableComponent>;
+    private _hostViewContainer: ViewContainerRef;
 
     @ViewChild('popupDirective', { read: PopupDirective })
     private _directive: PopupDirective;
@@ -58,7 +61,9 @@ export class IntersectionTableEntryDetailsComponent implements OnDestroy {
     public quickView: PopupContentTable;
 
     constructor(private logger: LoggerService, private changeDetector: ChangeDetectorRef,
-                private annotationsService: AnnotationsService, private resolver: ComponentFactoryResolver) {}
+                private annotationsService: AnnotationsService, private resolver: ComponentFactoryResolver) {
+        super();
+    }
 
     @HostListener('focusin')
     @HostListener('mouseenter')
@@ -66,7 +71,7 @@ export class IntersectionTableEntryDetailsComponent implements OnDestroy {
         if (!this._row.matchesLoaded && !this._loading) {
             this._loading = true;
             const response = await this.annotationsService.downloadMatches(this._row);
-            const matches = response.get('matches').map((m: any) => new IntersectionTableRowMatch(m));
+            const matches = response.get('matches').map((m: any) => new MatchTableRow(m));
             const count = response.get('count');
             this.logger.debug('QuickView matches loaded', matches);
 
@@ -82,9 +87,10 @@ export class IntersectionTableEntryDetailsComponent implements OnDestroy {
     @HostListener('click')
     public async showAlignmentMatches(): Promise<void> {
         if (this._row.matchesLoaded && !this._matchesComponent) {
-            const matchesComponentResolver = this.resolver.resolveComponentFactory(IntersectionTableMatchesComponent);
-            this._matchesComponent = this._viewContainer.createComponent(matchesComponentResolver);
-            this._matchesComponent.instance.matches = this._row.matches;
+            const matchesComponentResolver = this.resolver.resolveComponentFactory(MatchesTableComponent);
+            this._matchesComponent = this._hostViewContainer.createComponent(matchesComponentResolver);
+            this._matchesComponent.instance.table = new MatchesTable();
+            this._matchesComponent.instance.table.updateRows(this._row.matches);
             this.updatePopup();
         } else if (this._matchesComponent) {
             this._matchesComponent.destroy();
@@ -92,9 +98,10 @@ export class IntersectionTableEntryDetailsComponent implements OnDestroy {
         }
     }
 
-    public generate(row: IntersectionTableRow, viewContainer: ViewContainerRef) {
+    public create(entry: string, column: TableColumn, columns: TableColumn[], row: IntersectionTableRow,
+                  hostViewContainer: ViewContainerRef, resolver: ComponentFactoryResolver): void {
         this._row = row;
-        this._viewContainer = viewContainer;
+        this._hostViewContainer = hostViewContainer;
         this.quickView = row.matchesLoaded ? this.createTable(this._row.matches, this._row.matchesCount) : new PopupContentTable([], []);
     }
 
@@ -104,7 +111,7 @@ export class IntersectionTableEntryDetailsComponent implements OnDestroy {
         }
     }
 
-    private createTable(matches: IntersectionTableRowMatch[], count: number): PopupContentTable {
+    private createTable(matches: MatchTableRow[], count: number): PopupContentTable {
         const cdr3Index: number = 1;
         const epitopeIndex: number = 8;
         const speciesIndex: number = 10;
@@ -112,7 +119,7 @@ export class IntersectionTableEntryDetailsComponent implements OnDestroy {
         const mhcbIndex: number = 6;
         const headers = [ 'CDR3', 'Epitope', 'Species', 'MHC.A', 'MHC.B' ];
         const rows = matches.slice(0, IntersectionTableEntryDetailsComponent._maxMatchesInQuickView).map((match) => {
-            const e = match.row.entries;
+            const e = match.entries;
             return [ e[cdr3Index], e[epitopeIndex], e[speciesIndex], e[mhcaIndex], e[mhcbIndex] ];
         });
 

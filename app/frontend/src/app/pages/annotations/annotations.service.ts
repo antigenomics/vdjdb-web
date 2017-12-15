@@ -25,7 +25,7 @@ import { WebSocketRequestData } from '../../shared/websocket/websocket-request';
 import { WebSocketResponseData } from '../../shared/websocket/websocket-response';
 import { LoggerService } from '../../utils/logger/logger.service';
 import { NotificationService } from '../../utils/notifications/notification.service';
-import { DatabaseColumnInfo, DatabaseMetadata } from '../search/database/database-metadata';
+import { DatabaseMetadata } from '../search/database/database-metadata';
 import { IntersectionTableFilters } from './sample/table/filters/intersection-table-filters';
 import { IntersectionTableRow } from './sample/table/row/intersection-table-row';
 import { FileItem } from './upload/item/file-item';

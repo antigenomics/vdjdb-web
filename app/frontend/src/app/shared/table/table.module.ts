@@ -18,6 +18,7 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { ModalsModule } from '../modals/modals.module';
+import { TableEntryCenteredComponent } from './entry/table-entry-centered.component';
 import { TableEntryDefaultComponent } from './entry/table-entry-default.component';
 import { TableExportComponent } from './export/table-export.component';
 import { TableInfoComponent } from './info/table-info.component';
@@ -34,13 +35,14 @@ import { TableComponent } from './table.component';
         TableInfoComponent,
         TableExportComponent,
         TablePagesizeComponent,
-        TableEntryDefaultComponent ],
+        TableEntryDefaultComponent,
+        TableEntryCenteredComponent ],
     exports:         [ TableComponent,
         TablePaginationComponent,
         TableInfoComponent,
         TableExportComponent,
         TablePagesizeComponent ],
-    entryComponents: [ TableEntryDefaultComponent, TableRowComponent ]
+    entryComponents: [ TableEntryDefaultComponent, TableEntryCenteredComponent, TableRowComponent ]
 })
 export class TableModule {
 }

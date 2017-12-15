@@ -20,11 +20,7 @@ import { TableColumn } from '../column/table-column';
 import { TableEntry } from '../entry/table-entry';
 
 export abstract class TableRow {
-    public readonly entries: string[];
-
-    constructor(entries: string[]) {
-        this.entries = entries;
-    }
-
     public abstract resolveComponentFactory(column: TableColumn, resolver: ComponentFactoryResolver): ComponentFactory<TableEntry>;
+
+    public abstract getEntries(): string[];
 }

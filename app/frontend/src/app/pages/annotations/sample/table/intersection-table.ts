@@ -36,21 +36,21 @@ export class IntersectionTable extends Table<IntersectionTableRow> {
         return this._sample;
     }
 
-    public getCurrentPage(): IntersectionTableRow[] {
+    public getRows(): IntersectionTableRow[] {
         if (this.page >= 0) {
             let fromIndex = this.pageSize * this.page;
             fromIndex = (fromIndex > this.getRowsCount()) ? this.getRowsCount() : fromIndex;
             let toIndex = this.pageSize * (this.page + 1);
             toIndex = (toIndex > this.getRowsCount()) ? this.getRowsCount() : toIndex;
-            return (this.rows as IntersectionTableRow[]).slice(fromIndex, toIndex);
+            return this.rows.slice(fromIndex, toIndex);
         } else {
             this.updatePage(0);
-            return this.getCurrentPage();
+            return this.getRows();
         }
     }
 
     public getRowsCount(): number {
-        return (this.rows as IntersectionTableRow[]).length;
+        return this.rows.length;
     }
 
     get loadingLabel(): string {

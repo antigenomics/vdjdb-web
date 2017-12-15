@@ -15,26 +15,57 @@
  *
  */
 
-import { Component, Input} from '@angular/core';
-import { IntersectionTableColumnInfo } from './column/intersection-table-column-info';
+import { Component, Input } from '@angular/core';
+import { TableColumn } from '../../../../shared/table/column/table-column';
+import { TableSettings } from '../../../../shared/table/settings/table-settings';
 import { IntersectionTable } from './intersection-table';
 
 @Component({
-    selector:        'intersection-table',
-    templateUrl:     './intersection-table.component.html'
+    selector:    'intersection-table',
+    templateUrl: './intersection-table.component.html'
 })
 export class IntersectionTableComponent {
-    @Input('columns')
-    public columns: IntersectionTableColumnInfo[];
+    public settings: TableSettings;
 
     @Input('table')
     public table: IntersectionTable;
 
-    public pageChange(page: number): void {
+    constructor() {
+        this.settings = {
+            classes: {
+                columns: 'collapsing center aligned',
+                rows:    'fade element'
+            },
+            utils:   {
+                disable:    false,
+                pagination: true,
+                info:       true,
+                export:     false,
+                pageSize:   true
+            }
+        };
+    }
+
+    public onPageChange(page: number): void {
         this.table.updatePage(page);
     }
 
-    public pageSizeChange(pageSize: number): void {
+    public onPageSizeChange(pageSize: number): void {
         this.table.updatePageSize(pageSize);
+    }
+
+    // noinspection JSMethodCanBeStatic
+    public getColumns(): TableColumn[] {
+        return [
+            new TableColumn('details', 'Details', false, true),
+            new TableColumn('found', '# matches'),
+            new TableColumn('id', 'Rank'),
+            new TableColumn('freq', 'Frequency'),
+            new TableColumn('count', 'Count'),
+            new TableColumn('cdr3aa', 'CDR3aa'),
+            new TableColumn('v', 'V'),
+            new TableColumn('j', 'J'),
+            new TableColumn('tags', 'Tags', false, true)
+        ];
     }
 }

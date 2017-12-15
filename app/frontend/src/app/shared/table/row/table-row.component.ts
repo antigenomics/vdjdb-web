@@ -43,9 +43,12 @@ export class TableRowComponent implements OnInit, OnDestroy {
 
     public ngOnInit(): void {
         const defaultEntryComponentResolver = this.resolver.resolveComponentFactory(TableEntryDefaultComponent);
-        if (this.row.entries) {
-            this.row.entries.forEach(async (entry: string, index: number) => {
-                const column = this.columns[ index ];
+        if (this.columns) {
+            const entries: string[] = this.row.getEntries();
+
+            let entryIndex: number = 0;
+            this.columns.forEach(async (column: TableColumn) => {
+                const entry = column.noEntry ? '' : entries[entryIndex++];
                 let entryResolver = this.row.resolveComponentFactory(column, this.resolver);
                 if (!entryResolver) {
                     entryResolver = defaultEntryComponentResolver;

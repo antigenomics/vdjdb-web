@@ -20,40 +20,37 @@ import { FormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
 import { ModalsModule } from '../../../shared/modals/modals.module';
 import { TableModule } from '../../../shared/table/table.module';
-import { SearchTableModule } from '../../search/table/search/search-table.module';
 import { SampleTableComponent } from './sample-table.component';
 import { SampleTableService } from './sample-table.service';
 import { IntersectionTableEntryCdr3aaComponent } from './table/entry/intersection-table-entry-cdr3aa.component';
 import { IntersectionTableEntryDetailsComponent } from './table/entry/intersection-table-entry-details.component';
 import { IntersectionTableEntryFrequencyComponent } from './table/entry/intersection-table-entry-frequency.component';
-import { IntersectionTableEntryOriginalComponent } from './table/entry/intersection-table-entry-original.component';
 import { IntersectionTableEntryTagsComponent } from './table/entry/intersection-table-entry-tags.component';
 import { IntersectionTableFiltersComponent } from './table/filters/intersection-table-filters.component';
 import { IntersectionTableComponent } from './table/intersection-table.component';
-import { IntersectionTableMatchesComponent } from './table/matches/intersection-table-matches.component';
-import { IntersectionTableRowComponent } from './table/row/intersection-table-row.component';
+import { MatchesTableEntryAlignmentComponent } from './table/matches/entry/matches-table-entry-alignment.component';
+import { MatchesTableComponent } from './table/matches/matches-table.component';
 
 @NgModule({
-    imports:         [ BrowserModule, ModalsModule, FormsModule, TableModule, SearchTableModule ],
+    imports:         [ BrowserModule, ModalsModule, FormsModule, TableModule ],
     declarations:    [
         SampleTableComponent,
         IntersectionTableComponent,
         IntersectionTableFiltersComponent,
-        IntersectionTableRowComponent,
-        IntersectionTableEntryOriginalComponent,
         IntersectionTableEntryFrequencyComponent,
         IntersectionTableEntryCdr3aaComponent,
         IntersectionTableEntryDetailsComponent,
         IntersectionTableEntryTagsComponent,
-        IntersectionTableMatchesComponent ],
+        MatchesTableComponent,
+        MatchesTableEntryAlignmentComponent ],
     exports:         [ SampleTableComponent ],
     entryComponents: [
-        IntersectionTableEntryOriginalComponent,
         IntersectionTableEntryFrequencyComponent,
         IntersectionTableEntryCdr3aaComponent,
         IntersectionTableEntryDetailsComponent,
         IntersectionTableEntryTagsComponent,
-        IntersectionTableMatchesComponent ],
+        MatchesTableComponent,
+        MatchesTableEntryAlignmentComponent ],
     providers:       [ SampleTableService ]
 })
 export class SampleTableModule {
