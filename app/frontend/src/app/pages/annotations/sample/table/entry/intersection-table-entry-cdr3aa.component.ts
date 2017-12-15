@@ -16,7 +16,7 @@
  */
 
 /* tslint:disable:max-line-length */
-import { ChangeDetectionStrategy, Component, ComponentFactoryResolver, ViewContainerRef } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ComponentFactoryResolver, HostBinding, ViewContainerRef } from '@angular/core';
 import { TableColumn } from '../../../../../shared/table/column/table-column';
 import { TableEntry } from '../../../../../shared/table/entry/table-entry';
 import { ClipboardService } from '../../../../../utils/clipboard/clipboard.service';
@@ -27,13 +27,17 @@ import ColorizedPatternRegion = Utils.SequencePattern.ColorizedPatternRegion;
 
 @Component({
     selector:        'td[intersection-table-entry-cdr3aa]',
-    template:        `<div style="width: 100%; height: 20px" [popup]="ntRegions" header="CDR3nt" display="colored-text" class="cursor pointer"
-                           footer="Click on amino-acid sequence to save nucleotide sequence to clipboard" position="top" width="500" (click)="copyToClipboard()">
+    template:        `<div style="float: left; width: 90%; height: 20px" [popup]="ntRegions" header="CDR3nt" display="colored-text" class="cursor pointer"
+                           footer="Click on 'copy' icon to save nucleotide sequence to clipboard" position="top" width="500">
                             <span *ngFor="let region of aaRegions" [style.color]="region.color">{{ region.part }}</span>
-                      </div>`,
+                      </div>
+                      <i style="float: right" class="copy icon cursor pointer" (click)="copyToClipboard()"></i>`,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class IntersectionTableEntryCdr3aaComponent implements TableEntry {
+    @HostBinding('class.hover-inside-icon')
+    public hoverIconBinding: boolean = true;
+
     public aaRegions: ColorizedPatternRegion[] = [];
     public ntRegions: string[] = [];
 
