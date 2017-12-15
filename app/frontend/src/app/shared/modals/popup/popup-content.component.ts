@@ -68,8 +68,10 @@ export class PopupContentComponent implements AfterViewInit {
 
     @Input('content')
     set content(popupContent: string | string[] | PopupContentTable) {
-        if (typeof popupContent === 'string') {
+        if (typeof popupContent === 'string' && this.display === 'paragraph') {
             this._content = Utils.Text.splitParagraphs(popupContent);
+        } else if (typeof popupContent === 'string') {
+            this._content = [ popupContent ];
         } else if (Array.isArray(popupContent) || popupContent instanceof PopupContentTable) {
             this._content = popupContent;
         }

@@ -31,7 +31,7 @@ export class TableColumn {
         this.title = title;
         this.skip = skip;
         this.noEntry = noEntry;
-        if (popup) {
+        if (popup !== undefined) {
             this.popup = popup;
             this.popupContent = popupContent;
             this.popupFooter = popupFooter;
