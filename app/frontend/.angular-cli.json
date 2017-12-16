@@ -30,5 +30,11 @@
   "test": {
     "karma": { "config": "../../test/frontend/karma.conf.js" }
   },
-  "defaults": { "styleExt": "css", "component": {} }
+  "defaults": {
+    "styleExt": "css",
+    "component": {},
+    "build": {
+      "showCircularDependencies": false
+    }
+  }
 }

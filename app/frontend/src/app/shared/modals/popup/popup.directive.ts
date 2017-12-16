@@ -70,7 +70,7 @@ export class PopupDirective implements AfterViewInit, OnDestroy {
                 private resolver: ComponentFactoryResolver) {}
 
     public ngAfterViewInit(): void {
-        this.bindEvents();
+        this.bindEnterEvents();
     }
 
     public updateView(): void {
@@ -78,7 +78,7 @@ export class PopupDirective implements AfterViewInit, OnDestroy {
             this.unbindEvents();
             this._tooltip.destroy();
         } else if (this._tooltip && this._tooltip.instance) {
-            this.bindEvents();
+            this.bindEnterEvents();
             this._tooltip.instance.hostElement = this.viewContainerRef.element.nativeElement;
             this._tooltip.instance.content = this.popupContent;
             this._tooltip.instance.header = this.headerContent;
@@ -100,6 +100,7 @@ export class PopupDirective implements AfterViewInit, OnDestroy {
         if (!this._visible && !this.disabled) {
             const factory = this.resolver.resolveComponentFactory<PopupContentComponent>(PopupContentComponent);
             this._tooltip = this.viewContainerRef.createComponent<PopupContentComponent>(factory);
+            this.bindLeaveEvents();
             this.updateView();
             this._visible = true;
         }
@@ -109,6 +110,7 @@ export class PopupDirective implements AfterViewInit, OnDestroy {
         if (this._visible) {
             if (this._tooltip) {
                 this._tooltip.destroy();
+                this.unbindLeaveEvents();
             }
             this._visible = false;
         }
@@ -118,7 +120,7 @@ export class PopupDirective implements AfterViewInit, OnDestroy {
         this.unbindEvents();
     }
 
-    private bindEvents(): void {
+    private bindEnterEvents(): void {
         if (!this.disabled) {
             const nativeElement = this.viewContainerRef.element.nativeElement;
             if (this._focusInListener === undefined) {
@@ -131,6 +133,14 @@ export class PopupDirective implements AfterViewInit, OnDestroy {
                     this.show();
                 });
             }
+        } else {
+            this.unbindEnterEvents();
+        }
+    }
+
+    private bindLeaveEvents(): void {
+        if (!this.disabled) {
+            const nativeElement = this.viewContainerRef.element.nativeElement;
             if (this._focusOutListener === undefined) {
                 this._focusOutListener = this.renderer.listen(nativeElement, 'focusout', () => {
                     this.hide();
@@ -142,11 +152,16 @@ export class PopupDirective implements AfterViewInit, OnDestroy {
                 });
             }
         } else {
-            this.unbindEvents();
+            this.unbindLeaveEvents();
         }
     }
 
     private unbindEvents(): void {
+        this.unbindEnterEvents();
+        this.unbindLeaveEvents();
+    }
+
+    private unbindEnterEvents(): void {
         if (this._focusInListener) {
             this._focusInListener();
             this._focusInListener = undefined;
@@ -155,6 +170,9 @@ export class PopupDirective implements AfterViewInit, OnDestroy {
             this._mouseEnterListener();
             this._mouseEnterListener = undefined;
         }
+    }
+
+    private unbindLeaveEvents(): void {
         if (this._focusOutListener) {
             this._focusOutListener();
             this._focusOutListener = undefined;
