@@ -86,6 +86,7 @@ export class IntersectionTableEntryDetailsComponent extends TableEntry implement
 
     @HostListener('click')
     public async showAlignmentMatches(): Promise<void> {
+        console.log('details cliced');
         if (this._row.matchesLoaded && !this._matchesComponent) {
             const matchesComponentResolver = this.resolver.resolveComponentFactory(MatchesTableComponent);
             this._matchesComponent = this._hostViewContainer.createComponent(matchesComponentResolver);

@@ -38,7 +38,10 @@ defaultConfiguration.plugins.push(
             info: true,
             minify: true,
             output: path.join(__dirname, '../../../public/bundles/bundle.min.css'),
-            whitelist: [ 'success', 'warning', 'error', 'info', 'circle', 'icon', 'violet', 'circular' ]
+            whitelist: [
+                'success', 'warning', 'error', 'info',
+                'circle', 'icon', 'violet', 'circular', 'circle',
+                'text', 'alignment', 'big', 'hover-inside-icon' ]
         }
     })
 );

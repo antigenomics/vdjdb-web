@@ -7,12 +7,11 @@
             <p>{{ content }}</p>
         </div>
         <div class="actions">
-            <div class="ui negative button" (click)="no()" *ngIf="!isLoading()">
+            <div class="ui positive button" (click)="no()" *ngIf="!isLoading()">
                 No
             </div>
-            <div class="ui positive right labeled icon button" [ngClass]="{'loading':isLoading()}" (click)="yes()">
+            <div class="ui negative right button" [ngClass]="{'loading':isLoading()}" (click)="yes()">
                 Yes
-                <i class="checkmark icon"></i>
             </div>
         </div>
     </div>
