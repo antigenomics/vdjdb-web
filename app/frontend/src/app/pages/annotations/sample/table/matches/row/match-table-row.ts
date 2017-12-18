@@ -28,9 +28,9 @@ export class MatchRowAlignment {
 
     constructor(helper: any) {
         /* tslint:disable:no-string-literal */
-        this.seq1String = helper[ 'seq1String' ];
-        this.markup = helper[ 'markup' ];
-        this.seq2String = helper[ 'seq2String' ];
+        this.seq1String = helper[ 'seq1String' ].trim();
+        this.markup = helper[ 'markup' ].trim();
+        this.seq2String = helper[ 'seq2String' ].trim();
         /* tslint:enable:no-string-literal */
     }
 }

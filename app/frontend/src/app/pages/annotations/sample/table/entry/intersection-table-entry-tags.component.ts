@@ -28,8 +28,8 @@ import { IntersectionTableRow } from '../row/intersection-table-row';
 export class IntersectionTableEntryTagsComponent extends TableEntry {
     private static readonly _colors: string[] = [ 'teal', 'blue', 'violet', 'red' ];
 
-    @HostBinding('style.max-width')
-    public width: string = '35%';
+    @HostBinding('class')
+    public width: string = 'seven wide';
 
     public values: Array<[ string, string ]> = [];
 
