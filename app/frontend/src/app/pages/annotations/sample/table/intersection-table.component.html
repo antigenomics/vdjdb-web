@@ -8,7 +8,7 @@
            [columns]="getColumns()" [table]="table" (onPageChange)="onPageChange($event)" (onPageSizeChange)="onPageSizeChange($event)">
     </table>
 </div>
-<div *ngIf="table.dirty && table.isEmpty() && !table.error">
+<div *ngIf="table.dirty && table.isEmpty() && !table.error &&!table.loading">
     <h2 class="ui center aligned icon header">
         <i class="search icon"></i>
         No results found
