@@ -22,14 +22,15 @@ import { TableEntry } from '../../../../../../shared/table/entry/table-entry';
 import { MatchRowAlignment, MatchTableRow } from '../row/match-table-row';
 
 @Component({
-    selector:        'td[match-table-entry-alignment]',
-    template:        `<span class="text alignment cursor pointer" [popup]="popupAlignmentTable"
-                        display="table" position="right" popupClass="big text alignment" width="800">
+    selector:            'td[match-table-entry-alignment]',
+    template:            `<span class="text alignment cursor pointer" [popup]="popupAlignmentTable"
+                            display="table" position="right" popupClass="big text alignment" width="800">
                             {{ alignment.seq1String }}<br>
                             {{ alignment.markup }}<br>
                             {{ alignment.seq2String }}
-                      </span>`,
-    changeDetection: ChangeDetectionStrategy.OnPush
+                         </span>`,
+    changeDetection:     ChangeDetectionStrategy.OnPush,
+    preserveWhitespaces: false
 })
 export class MatchesTableEntryAlignmentComponent extends TableEntry {
     public alignment: MatchRowAlignment;
