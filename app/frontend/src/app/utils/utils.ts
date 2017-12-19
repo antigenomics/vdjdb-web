@@ -14,9 +14,6 @@
  *    limitations under the License.
  */
 
-import { Observable } from 'rxjs/Observable';
-import { Observer } from 'rxjs/Observer';
-
 export namespace Utils {
 
     export namespace Array {

@@ -15,7 +15,7 @@
  */
 
 import { Injectable } from '@angular/core';
-import { LoggerService } from '../logger/logger.service';
+import { LoggerService } from 'utils';
 
 @Injectable()
 export class ClipboardService {

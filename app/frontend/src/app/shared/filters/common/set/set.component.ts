@@ -15,7 +15,7 @@
  */
 
 import { ChangeDetectionStrategy, Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
-import { Utils } from '../../../../utils/utils';
+import { Utils } from 'utils';
 import { SetEntry } from './set-entry';
 import { SuggestionEntry } from './suggestion-entry';
 

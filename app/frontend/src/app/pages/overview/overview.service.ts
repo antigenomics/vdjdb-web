@@ -16,10 +16,7 @@
  */
 
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs/Observable';
-import { Observer } from 'rxjs/Observer';
-import { LoggerService } from '../../utils/logger/logger.service';
-import { Utils } from '../../utils/utils';
+import { LoggerService, Utils } from 'utils';
 
 @Injectable()
 export class OverviewService {
