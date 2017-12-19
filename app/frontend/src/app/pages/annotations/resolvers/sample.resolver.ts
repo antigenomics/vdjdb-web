@@ -18,8 +18,8 @@
 import { Injectable } from '@angular/core';
 import { ActivatedRouteSnapshot, Resolve, RouterStateSnapshot } from '@angular/router';
 import { Observable } from 'rxjs/Observable';
-import { SampleItem } from '../../../shared/sample/sample-item';
-import { LoggerService } from '../../../utils/logger/logger.service';
+import { SampleItem } from 'shared/sample/sample-item';
+import { LoggerService } from 'utils/logger/logger.service';
 import { AnnotationsService, AnnotationsServiceEvents } from '../annotations.service';
 
 @Injectable()

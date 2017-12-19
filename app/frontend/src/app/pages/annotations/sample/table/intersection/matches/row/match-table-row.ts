@@ -16,9 +16,9 @@
  */
 
 import { ComponentFactory, ComponentFactoryResolver } from '@angular/core';
-import { TableColumn } from '../../../../../../../shared/table/column/table-column';
-import { TableEntry } from '../../../../../../../shared/table/entry/table-entry';
-import { SearchTableRow } from '../../../../../../search/table/search/row/search-table-row';
+import { SearchTableRow } from 'pages/search/table/search/row/search-table-row';
+import { TableColumn } from 'shared/table/column/table-column';
+import { TableEntry } from 'shared/table/entry/table-entry';
 import { MatchesTableEntryAlignmentComponent } from '../entry/matches-table-entry-alignment.component';
 
 export class MatchRowAlignment {

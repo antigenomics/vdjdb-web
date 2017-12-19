@@ -17,7 +17,7 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { RouterModule } from '@angular/router';
-import { FiltersModule } from '../../shared/filters/filters.module';
+import { FiltersModule } from 'shared/filters/filters.module';
 import { SearchInfoComponent } from './info/search-info.component';
 import { SearchPageComponent } from './search.component';
 import { SearchTableModule } from './table/search/search-table.module';

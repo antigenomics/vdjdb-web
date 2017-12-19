@@ -18,14 +18,17 @@ import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { RouterModule } from '@angular/router';
-import { ClipboardService, LoaderModule, LoggerService, NotificationModule } from 'utils';
+import { AboutPageModule } from 'pages/about/about.module';
+import { AnnotationsPageModule } from 'pages/annotations/annotations.module';
+import { HomePageModule } from 'pages/home/home.module';
+import { OverviewPageModule } from 'pages/overview/overview.module';
+import { SearchPageModule } from 'pages/search/search.module';
+import { NavigationBarModule } from 'shared/navbar/navbar.module';
+import { ClipboardService } from 'utils/clipboard/clipboard.service';
+import { LoaderModule } from 'utils/loader/loader.module';
+import { LoggerService } from 'utils/logger/logger.service';
+import { NotificationModule } from 'utils/notifications/notification.module';
 import { ApplicationComponent } from './application.component';
-import { AboutPageModule } from './pages/about/about.module';
-import { AnnotationsPageModule } from './pages/annotations/annotations.module';
-import { HomePageModule } from './pages/home/home.module';
-import { OverviewPageModule } from './pages/overview/overview.module';
-import { SearchPageModule } from './pages/search/search.module';
-import { NavigationBarModule } from './shared/navbar/navbar.module';
 
 @NgModule({
     imports:      [ CommonModule, BrowserModule,

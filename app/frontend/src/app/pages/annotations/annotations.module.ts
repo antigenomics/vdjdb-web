@@ -18,7 +18,7 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { RouterModule } from '@angular/router';
-import { ModalsModule } from '../../shared/modals/modals.module';
+import { ModalsModule } from 'shared/modals/modals.module';
 import { AnnotationsPageComponent } from './annotations.component';
 import { AnnotationsService } from './annotations.service';
 import { AnnotationsInfoComponent } from './info/annotations-info.component';

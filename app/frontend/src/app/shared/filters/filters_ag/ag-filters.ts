@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-import { Utils } from '../../../utils/utils';
+import { Utils } from 'utils/utils';
 import { SetEntry } from '../common/set/set-entry';
 import { SuggestionEntry } from '../common/set/suggestion-entry';
 import { Filter, FilterInterface, FilterType, IFiltersOptions } from '../filters';

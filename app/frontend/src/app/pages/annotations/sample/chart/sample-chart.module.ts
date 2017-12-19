@@ -17,7 +17,7 @@
 
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
-import { ModalsModule } from '../../../../shared/modals/modals.module';
+import { ModalsModule } from 'shared/modals/modals.module';
 import { SampleChartComponent } from './sample-chart.component';
 
 @NgModule({

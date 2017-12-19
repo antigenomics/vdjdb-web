@@ -20,8 +20,8 @@ import { ActivatedRouteSnapshot, Resolve, RouterStateSnapshot } from '@angular/r
 import 'rxjs/add/operator/filter';
 import 'rxjs/add/operator/take';
 import { Observable } from 'rxjs/Observable';
-import { User } from '../../../shared/user/user';
-import { LoggerService } from '../../../utils/logger/logger.service';
+import { User } from 'shared/user/user';
+import { LoggerService } from 'utils/logger/logger.service';
 import { AnnotationsService, AnnotationsServiceEvents } from '../annotations.service';
 
 @Injectable()

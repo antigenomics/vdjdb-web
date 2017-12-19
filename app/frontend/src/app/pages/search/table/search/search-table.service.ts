@@ -15,16 +15,16 @@
  */
 
 import { Injectable } from '@angular/core';
-import { Filter, FiltersOptions, IFilter } from '../../../../shared/filters/filters';
-import { FiltersService } from '../../../../shared/filters/filters.service';
-import { ExportFormat } from '../../../../shared/table/export/table-export.component';
-import { Table, TableEvent } from '../../../../shared/table/table';
-import { WebSocketConnection, WebSocketResponseStatus } from '../../../../shared/websocket/websocket-connection';
-import { WebSocketRequestData } from '../../../../shared/websocket/websocket-request';
-import { WebSocketResponseData } from '../../../../shared/websocket/websocket-response';
-import { LoggerService } from '../../../../utils/logger/logger.service';
-import { NotificationService } from '../../../../utils/notifications/notification.service';
-import { Utils } from '../../../../utils/utils';
+import { Filter, FiltersOptions, IFilter } from 'shared/filters/filters';
+import { FiltersService } from 'shared/filters/filters.service';
+import { ExportFormat } from 'shared/table/export/table-export.component';
+import { Table, TableEvent } from 'shared/table/table';
+import { WebSocketConnection, WebSocketResponseStatus } from 'shared/websocket/websocket-connection';
+import { WebSocketRequestData } from 'shared/websocket/websocket-request';
+import { WebSocketResponseData } from 'shared/websocket/websocket-response';
+import { LoggerService } from 'utils/logger/logger.service';
+import { NotificationService } from 'utils/notifications/notification.service';
+import { Utils } from 'utils/utils';
 import { DatabaseColumnInfo, DatabaseMetadata } from '../../database/database-metadata';
 import { SearchTableRow } from './row/search-table-row';
 
@@ -241,7 +241,6 @@ export class SearchTableService extends Table<SearchTableRow> {
             }
         });
     }
-
 
     public getRows(): SearchTableRow[] {
         return this.rows;

@@ -2,11 +2,6 @@
   "extends": "../tsconfig.json",
   "compilerOptions": {
     "outDir": "../out-tsc/app",
-    "baseUrl": ".",
-    "paths": {
-      "shared": [ "app/shared" ],
-      "utils": [ "app/utils" ]
-    },
     "module": "es2015",
     "types": [ ]
   },

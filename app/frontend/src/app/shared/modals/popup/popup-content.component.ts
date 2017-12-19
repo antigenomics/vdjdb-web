@@ -15,7 +15,7 @@
  */
 
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, Input } from '@angular/core';
-import { Utils } from '../../../utils/utils';
+import { Utils } from 'utils/utils';
 import { PopupContentTable } from './popup-content-table';
 import WindowViewport = Utils.Window.WindowViewport;
 

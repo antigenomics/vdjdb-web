@@ -14,13 +14,12 @@
  *    limitations under the License.
  */
 
-import { ChangeDetectionStrategy, Component, HostListener, ViewContainerRef, ComponentFactoryResolver } from '@angular/core';
-import { TableColumn } from '../../../../../shared/table/column/table-column';
-import { TableEntry } from '../../../../../shared/table/entry/table-entry';
-import { TableRow } from '../../../../../shared/table/row/table-row';
-import { ClipboardService } from '../../../../../utils/clipboard/clipboard.service';
-import { NotificationService } from '../../../../../utils/notifications/notification.service';
-import { DatabaseColumnInfo } from '../../../database/database-metadata';
+import { ChangeDetectionStrategy, Component, ComponentFactoryResolver, HostListener, ViewContainerRef } from '@angular/core';
+import { TableColumn } from 'shared/table/column/table-column';
+import { TableEntry } from 'shared/table/entry/table-entry';
+import { TableRow } from 'shared/table/row/table-row';
+import { ClipboardService } from 'utils/clipboard/clipboard.service';
+import { NotificationService } from 'utils/notifications/notification.service';
 
 @Component({
     selector: 'td[search-table-entry-json]',

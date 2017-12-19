@@ -16,8 +16,8 @@
  */
 
 import { Component, Input } from '@angular/core';
-import { TableColumn } from '../../../../../shared/table/column/table-column';
-import { TableSettings } from '../../../../../shared/table/settings/table-settings';
+import { TableColumn } from 'shared/table/column/table-column';
+import { TableSettings } from 'shared/table/settings/table-settings';
 import { IntersectionTable } from './intersection-table';
 
 @Component({

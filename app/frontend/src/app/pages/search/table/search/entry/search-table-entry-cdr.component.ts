@@ -15,9 +15,9 @@
  */
 
 import { ChangeDetectionStrategy, Component, ComponentFactoryResolver, ViewContainerRef } from '@angular/core';
-import { TableColumn } from '../../../../../shared/table/column/table-column';
-import { TableEntry } from '../../../../../shared/table/entry/table-entry';
-import { Utils } from '../../../../../utils/utils';
+import { TableColumn } from 'shared/table/column/table-column';
+import { TableEntry } from 'shared/table/entry/table-entry';
+import { Utils } from 'utils/utils';
 import { SearchTableRow } from '../row/search-table-row';
 import ColorizedPatternRegion = Utils.SequencePattern.ColorizedPatternRegion;
 

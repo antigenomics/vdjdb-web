@@ -15,8 +15,8 @@
  */
 
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { LoggerService } from '../../utils/logger/logger.service';
-import { Utils } from '../../utils/utils';
+import { LoggerService } from 'utils/logger/logger.service';
+import { Utils } from 'utils/utils';
 
 @Component({
     selector:    'navbar',

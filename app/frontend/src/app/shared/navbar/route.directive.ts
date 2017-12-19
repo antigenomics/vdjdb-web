@@ -16,7 +16,7 @@
 
 import { Directive, HostListener, Input } from '@angular/core';
 import { Router } from '@angular/router';
-import { Utils } from '../../utils/utils';
+import { Utils } from 'utils/utils';
 
 @Directive({
     selector: '[route]'

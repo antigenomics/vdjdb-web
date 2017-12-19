@@ -40,6 +40,13 @@ defaultConfiguration.resolve.plugins = [
     new TsConfigPathsPlugin()
 ];
 
+defaultConfiguration.resolve.alias = {
+    'pages': path.resolve(__dirname, '../src/app/pages'),
+    'utils': path.resolve(__dirname, '../src/app/utils'),
+    'shared': path.resolve(__dirname, '../src/app/shared'),
+    'environments': path.resolve(__dirname, '../src/app/environments')
+};
+
 defaultConfiguration.plugins.push(new CheckerPlugin());
 defaultConfiguration.plugins.push(new HardSourceWebpackPlugin());
 defaultConfiguration.plugins.push(new DllBundlesPlugin({

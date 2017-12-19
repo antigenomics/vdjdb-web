@@ -19,11 +19,11 @@ import {
     ChangeDetectionStrategy, ChangeDetectorRef, Component, ComponentFactoryResolver, ComponentRef, HostBinding, HostListener, OnDestroy, ViewChild,
     ViewContainerRef
 } from '@angular/core';
-import { PopupContentTable } from '../../../../../../shared/modals/popup/popup-content-table';
-import { PopupDirective } from '../../../../../../shared/modals/popup/popup.directive';
-import { TableColumn } from '../../../../../../shared/table/column/table-column';
-import { TableEntry } from '../../../../../../shared/table/entry/table-entry';
-import { LoggerService } from '../../../../../../utils/logger/logger.service';
+import { PopupContentTable } from 'shared/modals/popup/popup-content-table';
+import { PopupDirective } from 'shared/modals/popup/popup.directive';
+import { TableColumn } from 'shared/table/column/table-column';
+import { TableEntry } from 'shared/table/entry/table-entry';
+import { LoggerService } from 'utils/logger/logger.service';
 import { AnnotationsService } from '../../../../annotations.service';
 import { MatchesTable } from '../matches/matches-table';
 import { MatchesTableComponent } from '../matches/matches-table.component';
@@ -86,7 +86,6 @@ export class IntersectionTableEntryDetailsComponent extends TableEntry implement
 
     @HostListener('click')
     public async showAlignmentMatches(): Promise<void> {
-        console.log('details cliced');
         if (this._row.matchesLoaded && !this._matchesComponent) {
             const matchesComponentResolver = this.resolver.resolveComponentFactory(MatchesTableComponent);
             this._matchesComponent = this._hostViewContainer.createComponent(matchesComponentResolver);

@@ -15,7 +15,7 @@
  */
 
 import { Component } from '@angular/core';
-import { FiltersService } from '../../shared/filters/filters.service';
+import { FiltersService } from 'shared/filters/filters.service';
 import { SearchTableService } from './table/search/search-table.service';
 
 @Component({
