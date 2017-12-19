@@ -15,7 +15,7 @@
  *
  */
 
-import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs/Subscription';
 import { SampleItem } from 'shared/sample/sample-item';
@@ -25,7 +25,7 @@ import { SampleItem } from 'shared/sample/sample-item';
     templateUrl:     './sample-chart.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class SampleChartComponent implements OnInit, AfterViewInit {
+export class SampleChartComponent implements OnInit {
     private _routeSampleSubscription: Subscription;
 
     public sample: SampleItem;
@@ -39,9 +39,5 @@ export class SampleChartComponent implements OnInit, AfterViewInit {
             this.sample = data.sample;
             this.changeDetector.detectChanges();
         });
-    }
-
-    public ngAfterViewInit(): void {
-        // TODO
     }
 }

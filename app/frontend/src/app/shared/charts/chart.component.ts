@@ -15,15 +15,17 @@
  *
  */
 
-import { NgModule } from '@angular/core';
-import { BrowserModule } from '@angular/platform-browser';
-import { ChartsModule } from 'shared/charts/charts.module';
-import { ModalsModule } from 'shared/modals/modals.module';
-import { SampleChartComponent } from './sample-chart.component';
+import { Component, Input } from '@angular/core';
+import { ChartMarginConfiguration, IChartMarginConfiguration } from 'shared/charts/configuration/chart-margin-configuration';
 
-@NgModule({
-    imports:      [ BrowserModule, ModalsModule, ChartsModule ],
-    declarations: [ SampleChartComponent ],
-    exports:      [ SampleChartComponent ]
+@Component({
+    selector: 'chart'
 })
-export class SampleChartModule {}
+export class ChartComponent {
+    protected margin: ChartMarginConfiguration = new ChartMarginConfiguration({});
+
+    @Input('margin')
+    set setMargin(margin: IChartMarginConfiguration) {
+        this.margin = new ChartMarginConfiguration(margin);
+    }
+}

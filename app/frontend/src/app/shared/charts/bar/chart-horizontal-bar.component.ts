@@ -15,15 +15,19 @@
  *
  */
 
-import { NgModule } from '@angular/core';
-import { BrowserModule } from '@angular/platform-browser';
-import { ChartsModule } from 'shared/charts/charts.module';
-import { ModalsModule } from 'shared/modals/modals.module';
-import { SampleChartComponent } from './sample-chart.component';
+import { AfterViewInit, Component, ElementRef, ViewChild } from '@angular/core';
+import * as d3 from 'external/d3';
+import { ChartComponent } from 'shared/charts/chart.component';
 
-@NgModule({
-    imports:      [ BrowserModule, ModalsModule, ChartsModule ],
-    declarations: [ SampleChartComponent ],
-    exports:      [ SampleChartComponent ]
+@Component({
+    selector: 'chart-horizontal-bar',
+    template: '<div #chartContainer></div>'
 })
-export class SampleChartModule {}
+export class ChartHorizontalBarComponent extends ChartComponent implements AfterViewInit {
+    @ViewChild('chartContainer', { read: ElementRef })
+    public chartContainer: ElementRef;
+
+    public ngAfterViewInit(): void {
+        d3.select(this.chartContainer.nativeElement);
+    }
+}

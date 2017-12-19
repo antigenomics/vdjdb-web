@@ -16,14 +16,10 @@
  */
 
 import { NgModule } from '@angular/core';
-import { BrowserModule } from '@angular/platform-browser';
-import { ChartsModule } from 'shared/charts/charts.module';
-import { ModalsModule } from 'shared/modals/modals.module';
-import { SampleChartComponent } from './sample-chart.component';
+import { ChartHorizontalBarComponent } from 'shared/charts/bar/chart-horizontal-bar.component';
 
 @NgModule({
-    imports:      [ BrowserModule, ModalsModule, ChartsModule ],
-    declarations: [ SampleChartComponent ],
-    exports:      [ SampleChartComponent ]
+    declarations: [ ChartHorizontalBarComponent ],
+    exports:      [ ChartHorizontalBarComponent ]
 })
-export class SampleChartModule {}
+export class ChartsModule {}

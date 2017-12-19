@@ -41,6 +41,7 @@ defaultConfiguration.resolve.plugins = [
 ];
 
 defaultConfiguration.resolve.alias = {
+    'external': path.resolve(__dirname, '../src/external'),
     'pages': path.resolve(__dirname, '../src/app/pages'),
     'utils': path.resolve(__dirname, '../src/app/utils'),
     'shared': path.resolve(__dirname, '../src/app/shared'),
