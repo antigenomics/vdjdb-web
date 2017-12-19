@@ -16,9 +16,9 @@
  */
 
 import { ChangeDetectionStrategy, Component, ComponentFactoryResolver, ViewContainerRef } from '@angular/core';
-import { PopupContentTable } from '../../../../../../shared/modals/popup/popup-content-table';
-import { TableColumn } from '../../../../../../shared/table/column/table-column';
-import { TableEntry } from '../../../../../../shared/table/entry/table-entry';
+import { PopupContentTable } from '../../../../../../../shared/modals/popup/popup-content-table';
+import { TableColumn } from '../../../../../../../shared/table/column/table-column';
+import { TableEntry } from '../../../../../../../shared/table/entry/table-entry';
 import { MatchRowAlignment, MatchTableRow } from '../row/match-table-row';
 
 @Component({

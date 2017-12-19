@@ -39,16 +39,28 @@ export class AnnotationsSidebarState {
     public update(url: string): void {
         this.path = url.substring('/annotations/'.length);
         if (this.path.startsWith('sample')) {
-            this.metadata.set('sample', this.parseSampleName(this.path));
+            const [ sample, route ] = this.parseSampleName(this.path);
+            this.metadata.set('sample', sample);
+            this.metadata.set('route', route);
         } else {
             this.metadata.delete('sample');
+            this.metadata.delete('route');
         }
     }
 
-    private parseSampleName(url: string): string {
-        const sample = url.substring('sample/'.length);
-        const additionalRouteIndex = sample.indexOf('/');
-        return sample.substring(0, additionalRouteIndex === -1 ? sample.length : additionalRouteIndex);
+    public isRouteContains(s: string): boolean {
+        if (this.metadata.has('route')) {
+            return this.metadata.get('route').indexOf(s) !== -1;
+        }
+        return false;
+    }
+
+    private parseSampleName(url: string): [string, string] {
+        const sampleRoute = url.substring('sample/'.length);
+        const additionalRouteIndex = sampleRoute.indexOf('/');
+        const sampleName = sampleRoute.substring(0, additionalRouteIndex === -1 ? sampleRoute.length : additionalRouteIndex);
+        const route = sampleRoute.substring(sampleName.length, sampleRoute.length);
+        return [ sampleName, route ];
     }
 }
 
@@ -101,6 +113,10 @@ export class AnnotationsSidebarComponent implements OnInit, OnDestroy {
 
     public isSamplesEmpty(): boolean {
         return this.getSamples().length === 0;
+    }
+
+    public isSampleRouteContains(route: string): boolean {
+        return this._state.isRouteContains(route);
     }
 
     public isFilesUploading(): boolean {

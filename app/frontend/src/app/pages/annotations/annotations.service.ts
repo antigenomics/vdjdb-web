@@ -26,8 +26,8 @@ import { WebSocketResponseData } from '../../shared/websocket/websocket-response
 import { LoggerService } from '../../utils/logger/logger.service';
 import { NotificationService } from '../../utils/notifications/notification.service';
 import { DatabaseMetadata } from '../search/database/database-metadata';
-import { IntersectionTableFilters } from './sample/table/filters/intersection-table-filters';
-import { IntersectionTableRow } from './sample/table/row/intersection-table-row';
+import { IntersectionTableFilters } from './sample/table/intersection/filters/intersection-table-filters';
+import { IntersectionTableRow } from './sample/table/intersection/row/intersection-table-row';
 import { FileItem } from './upload/item/file-item';
 
 export type AnnotationsServiceEvents = number;

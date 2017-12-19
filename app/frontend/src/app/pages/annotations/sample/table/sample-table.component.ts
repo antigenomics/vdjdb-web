@@ -18,11 +18,11 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs/Subscription';
-import { SampleItem } from '../../../shared/sample/sample-item';
-import { LoggerService } from '../../../utils/logger/logger.service';
+import { SampleItem } from '../../../../shared/sample/sample-item';
+import { LoggerService } from '../../../../utils/logger/logger.service';
+import { IntersectionTableFilters } from './intersection/filters/intersection-table-filters';
+import { IntersectionTable } from './intersection/intersection-table';
 import { SampleTableService, SampleTableServiceEvent, SampleTableServiceEventType } from './sample-table.service';
-import { IntersectionTableFilters } from './table/filters/intersection-table-filters';
-import { IntersectionTable } from './table/intersection-table';
 
 @Component({
     selector:        'sample-table',

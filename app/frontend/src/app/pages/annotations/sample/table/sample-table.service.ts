@@ -18,14 +18,13 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs/Observable';
 import { Subject } from 'rxjs/Subject';
-import { SampleItem } from '../../../shared/sample/sample-item';
-import { TableColumn } from '../../../shared/table/column/table-column';
-import { WebSocketResponseData } from '../../../shared/websocket/websocket-response';
-import { NotificationService } from '../../../utils/notifications/notification.service';
-import { AnnotationsService } from '../annotations.service';
-import { IntersectionTableFilters } from './table/filters/intersection-table-filters';
-import { IntersectionTable } from './table/intersection-table';
-import { IntersectionTableRow } from './table/row/intersection-table-row';
+import { SampleItem } from '../../../../shared/sample/sample-item';
+import { WebSocketResponseData } from '../../../../shared/websocket/websocket-response';
+import { NotificationService } from '../../../../utils/notifications/notification.service';
+import { AnnotationsService } from '../../annotations.service';
+import { IntersectionTableFilters } from './intersection/filters/intersection-table-filters';
+import { IntersectionTable } from './intersection/intersection-table';
+import { IntersectionTableRow } from './intersection/row/intersection-table-row';
 
 export namespace SampleTableServiceUpdateState {
     export const PARSE: string = 'parse';

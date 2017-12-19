@@ -16,11 +16,11 @@
  */
 
 import { ComponentFactory, ComponentFactoryResolver } from '@angular/core';
-import { SampleItem } from '../../../../../shared/sample/sample-item';
-import { TableColumn } from '../../../../../shared/table/column/table-column';
-import { TableEntry } from '../../../../../shared/table/entry/table-entry';
-import { TableEntryCenteredComponent } from '../../../../../shared/table/entry/table-entry-centered.component';
-import { TableRow } from '../../../../../shared/table/row/table-row';
+import { SampleItem } from '../../../../../../shared/sample/sample-item';
+import { TableColumn } from '../../../../../../shared/table/column/table-column';
+import { TableEntry } from '../../../../../../shared/table/entry/table-entry';
+import { TableEntryCenteredComponent } from '../../../../../../shared/table/entry/table-entry-centered.component';
+import { TableRow } from '../../../../../../shared/table/row/table-row';
 import { IntersectionTableEntryCdr3aaComponent } from '../entry/intersection-table-entry-cdr3aa.component';
 import { IntersectionTableEntryDetailsComponent } from '../entry/intersection-table-entry-details.component';
 import { IntersectionTableEntryFrequencyComponent } from '../entry/intersection-table-entry-frequency.component';

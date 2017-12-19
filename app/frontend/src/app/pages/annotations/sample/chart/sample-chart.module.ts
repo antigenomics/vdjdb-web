@@ -1,11 +1,11 @@
 /*
- *    Copyright 2017 Bagaev Dmitry
+ *     Copyright 2017 Bagaev Dmitry
  *
  *     Licensed under the Apache License, Version 2.0 (the "License");
  *     you may not use this file except in compliance with the License.
  *     You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *         http://www.apache.org/licenses/LICENSE-2.0
  *
  *     Unless required by applicable law or agreed to in writing, software
  *     distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,11 +15,14 @@
  *
  */
 
-import { Table } from '../../../../../shared/table/table';
-import { MatchTableRow } from './row/match-table-row';
+import { NgModule } from '@angular/core';
+import { BrowserModule } from '@angular/platform-browser';
+import { ModalsModule } from '../../../../shared/modals/modals.module';
+import { SampleChartComponent } from './sample-chart.component';
 
-export class MatchesTable extends Table<MatchTableRow> {
-    public getRows(): MatchTableRow[] {
-        return this.rows;
-    }
-}
+@NgModule({
+    imports:      [ BrowserModule, ModalsModule ],
+    declarations: [ SampleChartComponent ],
+    exports:      [ SampleChartComponent ]
+})
+export class SampleChartModule {}

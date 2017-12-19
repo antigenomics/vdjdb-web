@@ -24,8 +24,10 @@ import { AnnotationsService } from './annotations.service';
 import { AnnotationsInfoComponent } from './info/annotations-info.component';
 import { SampleItemResolver } from './resolvers/sample.resolver';
 import { UserResolver } from './resolvers/user.resolver';
-import { SampleTableComponent } from './sample/sample-table.component';
-import { SampleTableModule } from './sample/sample-table.module';
+import { SampleChartComponent } from './sample/chart/sample-chart.component';
+import { SampleChartModule } from './sample/chart/sample-chart.module';
+import { SampleTableComponent } from './sample/table/sample-table.component';
+import { SampleTableModule } from './sample/table/sample-table.module';
 import { AnnotationsSidebarComponent } from './sidebar/sidebar.component';
 import { AnnotationsUploadComponent } from './upload/upload.component';
 import { UploadModule } from './upload/upload.module';
@@ -37,13 +39,14 @@ const routes = [
             { path: 'info', component: AnnotationsInfoComponent },
             { path: 'upload', component: AnnotationsUploadComponent },
             { path: 'sample/:sample/table', component: SampleTableComponent, resolve: { sample: SampleItemResolver } },
+            { path: 'sample/:sample/chart', component: SampleChartComponent, resolve: { sample: SampleItemResolver } },
             { path: '**', redirectTo: 'info' }
         ]
     }
 ];
 
 @NgModule({
-    imports:      [ BrowserModule, UploadModule, RouterModule.forChild(routes), ModalsModule, SampleTableModule ],
+    imports:      [ BrowserModule, UploadModule, RouterModule.forChild(routes), ModalsModule, SampleTableModule, SampleChartModule ],
     declarations: [ AnnotationsPageComponent, AnnotationsSidebarComponent, AnnotationsInfoComponent ],
     exports:      [ AnnotationsPageComponent ],
     providers:    [ AnnotationsService, UserResolver, SampleItemResolver ]

@@ -17,9 +17,11 @@
             <a class="item" *ngFor="let sample of getSamples()" (click)="sidebarRoute('sample', sample.name, 'table')"
                [ngClass]="{'padded vertically border selected':isSampleSelected(sample)}">
                 <i class="trash icon" (click)="deleteSample(sample); $event.stopPropagation()"></i>{{ sample.name }}
-                <div class="menu" *ngIf="isSampleSelected(sample)">
-                    <div class="item padded horizontally selected">Table</div>
-                    <div class="item padded horizontally">Charts</div>
+                <div class="sample sub menu" *ngIf="isSampleSelected(sample)">
+                    <div class="item padded horizontally" [ngClass]="{'selected':isSampleRouteContains('table')}"
+                         (click)="sidebarRoute('sample', sample.name, 'table'); $event.stopPropagation()">Table</div>
+                    <div class="item padded horizontally" [ngClass]="{'selected':isSampleRouteContains('chart')}"
+                         (click)="sidebarRoute('sample', sample.name, 'chart'); $event.stopPropagation()">Charts</div>
                 </div>
             </a>
         </div>

@@ -18,18 +18,18 @@
 import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
-import { ModalsModule } from '../../../shared/modals/modals.module';
-import { TableModule } from '../../../shared/table/table.module';
+import { ModalsModule } from '../../../../shared/modals/modals.module';
+import { TableModule } from '../../../../shared/table/table.module';
+import { IntersectionTableEntryCdr3aaComponent } from './intersection/entry/intersection-table-entry-cdr3aa.component';
+import { IntersectionTableEntryDetailsComponent } from './intersection/entry/intersection-table-entry-details.component';
+import { IntersectionTableEntryFrequencyComponent } from './intersection/entry/intersection-table-entry-frequency.component';
+import { IntersectionTableEntryTagsComponent } from './intersection/entry/intersection-table-entry-tags.component';
+import { IntersectionTableFiltersComponent } from './intersection/filters/intersection-table-filters.component';
+import { IntersectionTableComponent } from './intersection/intersection-table.component';
+import { MatchesTableEntryAlignmentComponent } from './intersection/matches/entry/matches-table-entry-alignment.component';
+import { MatchesTableComponent } from './intersection/matches/matches-table.component';
 import { SampleTableComponent } from './sample-table.component';
 import { SampleTableService } from './sample-table.service';
-import { IntersectionTableEntryCdr3aaComponent } from './table/entry/intersection-table-entry-cdr3aa.component';
-import { IntersectionTableEntryDetailsComponent } from './table/entry/intersection-table-entry-details.component';
-import { IntersectionTableEntryFrequencyComponent } from './table/entry/intersection-table-entry-frequency.component';
-import { IntersectionTableEntryTagsComponent } from './table/entry/intersection-table-entry-tags.component';
-import { IntersectionTableFiltersComponent } from './table/filters/intersection-table-filters.component';
-import { IntersectionTableComponent } from './table/intersection-table.component';
-import { MatchesTableEntryAlignmentComponent } from './table/matches/entry/matches-table-entry-alignment.component';
-import { MatchesTableComponent } from './table/matches/matches-table.component';
 
 @NgModule({
     imports:         [ BrowserModule, ModalsModule, FormsModule, TableModule ],
