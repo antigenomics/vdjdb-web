@@ -20,7 +20,12 @@
  */
 
 * >>> .bar {
-    fill: #48af75
+    fill: #48af75;
+    -webkit-transition: fill .3s ease;
+    -moz-transition: fill .3s ease;
+    -ms-transition: fill .3s ease;
+    transition: fill .3s ease;
+    cursor: pointer;
 }
 
 * >>> .bar:hover {

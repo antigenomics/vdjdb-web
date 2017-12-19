@@ -19,7 +19,8 @@ import { Component, Input } from '@angular/core';
 import { ChartMarginConfiguration, IChartMarginConfiguration } from 'shared/charts/configuration/chart-margin-configuration';
 
 @Component({
-    selector: 'chart'
+    selector: 'chart',
+    template: ''
 })
 export class ChartComponent {
     protected margin: ChartMarginConfiguration = new ChartMarginConfiguration({});
