@@ -16,9 +16,9 @@
 
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
-import { NotificationService } from './notification.service';
 import { NotificationContainerComponent } from './container/notification-container.component';
 import { NotificationItemComponent } from './item/notification-item.component';
+import { NotificationService } from './notification.service';
 
 @NgModule({
     imports:      [ BrowserModule ],
