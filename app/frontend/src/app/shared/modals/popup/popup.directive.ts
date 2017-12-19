@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-import { AfterViewInit, ComponentFactoryResolver, ComponentRef, Directive, HostListener, Input, OnDestroy, Renderer2, ViewContainerRef } from '@angular/core';
+import { AfterViewInit, ComponentFactoryResolver, ComponentRef, Directive, Input, OnDestroy, Renderer2, ViewContainerRef } from '@angular/core';
 import { PopupContentTable } from './popup-content-table';
 import { PopupContentComponent } from './popup-content.component';
 

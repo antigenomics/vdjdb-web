@@ -42,6 +42,6 @@ export class SampleChartComponent implements OnInit, AfterViewInit {
     }
 
     public ngAfterViewInit(): void {
-
+        // TODO
     }
 }
