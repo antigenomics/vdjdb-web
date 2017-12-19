@@ -15,11 +15,8 @@
  *
  */
 
-export as namespace d3;
-
-export const version: string;
-// export * from 'd3-array';
-// export * from 'd3-axis';
+export * from 'd3-array';
+export * from 'd3-axis';
 // export * from 'd3-brush';
 // export * from 'd3-chord';
 // export * from 'd3-collection';
@@ -39,7 +36,7 @@ export const version: string;
 // export * from 'd3-queue';
 // export * from 'd3-random';
 // export * from 'd3-request';
-// export * from 'd3-scale';
+export * from 'd3-scale';
 export * from 'd3-selection';
 // export * from 'd3-shape';
 // export * from 'd3-time';
