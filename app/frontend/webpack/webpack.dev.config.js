@@ -21,8 +21,8 @@ const path = require('path');
 const webpackMerge = require('webpack-merge'); // used to merge webpack configs
 const defaultConfiguration = Object.create(require('./webpack.base.config'));
 const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
-const DllBundlesPlugin = require('webpack-dll-bundles-plugin').DllBundlesPlugin;
-const { CheckerPlugin } = require('awesome-typescript-loader');
+const { DllBundlesPlugin } = require('webpack-dll-bundles-plugin');
+const { TsConfigPathsPlugin, CheckerPlugin } = require('awesome-typescript-loader');
 const HardSourceWebpackPlugin = require('hard-source-webpack-plugin');
 
 defaultConfiguration.entry[ 'bundle.js' ] = [
@@ -32,12 +32,16 @@ defaultConfiguration.entry[ 'bundle.js' ] = [
 
 defaultConfiguration.module.rules.push({
     test: /\.ts(x?)$/,
-    exclude: [ /e2e/,  /node_modules/ ],
+    exclude: [ /e2e/, /node_modules/ ],
     loaders: [ 'awesome-typescript-loader', 'angular2-template-loader' ]
 });
 
-// defaultConfiguration.plugins.push(new CheckerPlugin());
-// defaultConfiguration.plugins.push(new HardSourceWebpackPlugin());
+defaultConfiguration.resolve.plugins = [
+    new TsConfigPathsPlugin()
+];
+
+defaultConfiguration.plugins.push(new CheckerPlugin());
+defaultConfiguration.plugins.push(new HardSourceWebpackPlugin());
 defaultConfiguration.plugins.push(new DllBundlesPlugin({
     bundles: {
         polyfills: [
