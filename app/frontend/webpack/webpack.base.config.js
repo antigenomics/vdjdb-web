@@ -24,7 +24,7 @@ module.exports = {
     module: {
         rules: [
             {
-                test: /\.component\.css$/,
+                test: /\.(component|styles)\.css$/,
                 exclude: /node_modules/,
                 loaders: [ 'raw-loader' ]
             },
