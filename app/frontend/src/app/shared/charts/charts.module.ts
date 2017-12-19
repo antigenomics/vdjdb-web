@@ -17,9 +17,10 @@
 
 import { NgModule } from '@angular/core';
 import { ChartHorizontalBarComponent } from 'shared/charts/bar/chart-horizontal-bar.component';
+import { ChartComponent } from 'shared/charts/chart.component';
 
 @NgModule({
-    declarations: [ ChartHorizontalBarComponent ],
+    declarations: [ ChartHorizontalBarComponent, ChartComponent ],
     exports:      [ ChartHorizontalBarComponent ]
 })
 export class ChartsModule {}
