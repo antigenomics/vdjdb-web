@@ -19,12 +19,12 @@ import {
     ChangeDetectionStrategy, ChangeDetectorRef, Component, ComponentFactoryResolver, ComponentRef, HostBinding, HostListener, OnDestroy, ViewChild,
     ViewContainerRef
 } from '@angular/core';
-import { PopupContentTable } from '../../../../../shared/modals/popup/popup-content-table';
-import { PopupDirective } from '../../../../../shared/modals/popup/popup.directive';
-import { TableColumn } from '../../../../../shared/table/column/table-column';
-import { TableEntry } from '../../../../../shared/table/entry/table-entry';
-import { LoggerService } from '../../../../../utils/logger/logger.service';
-import { AnnotationsService } from '../../../annotations.service';
+import { PopupContentTable } from '../../../../../../shared/modals/popup/popup-content-table';
+import { PopupDirective } from '../../../../../../shared/modals/popup/popup.directive';
+import { TableColumn } from '../../../../../../shared/table/column/table-column';
+import { TableEntry } from '../../../../../../shared/table/entry/table-entry';
+import { LoggerService } from '../../../../../../utils/logger/logger.service';
+import { AnnotationsService } from '../../../../annotations.service';
 import { MatchesTable } from '../matches/matches-table';
 import { MatchesTableComponent } from '../matches/matches-table.component';
 import { MatchTableRow } from '../matches/row/match-table-row';
