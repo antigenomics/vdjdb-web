@@ -18,8 +18,8 @@
 import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
-import { ModalsModule } from '../../../../shared/modals/modals.module';
-import { TableModule } from '../../../../shared/table/table.module';
+import { ModalsModule } from 'shared/modals/modals.module';
+import { TableModule } from 'shared/table/table.module';
 import { IntersectionTableEntryCdr3aaComponent } from './intersection/entry/intersection-table-entry-cdr3aa.component';
 import { IntersectionTableEntryDetailsComponent } from './intersection/entry/intersection-table-entry-details.component';
 import { IntersectionTableEntryFrequencyComponent } from './intersection/entry/intersection-table-entry-frequency.component';

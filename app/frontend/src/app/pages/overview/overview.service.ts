@@ -16,7 +16,8 @@
  */
 
 import { Injectable } from '@angular/core';
-import { LoggerService, Utils } from 'utils';
+import { LoggerService } from 'utils/logger/logger.service';
+import { Utils } from 'utils/utils';
 
 @Injectable()
 export class OverviewService {

@@ -16,7 +16,7 @@
  */
 
 import { ReplaySubject } from 'rxjs/ReplaySubject';
-import { Utils } from '../../../../utils/utils';
+import { Utils } from 'utils/utils';
 import { FileItemStatus } from './file-item-status';
 
 export class FileItem {

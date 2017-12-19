@@ -19,8 +19,8 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs/Observable';
 import { Observer } from 'rxjs/Observer';
 import { ReplaySubject } from 'rxjs/ReplaySubject';
-import { LoggerService } from '../../../utils/logger/logger.service';
-import { NotificationService } from '../../../utils/notifications/notification.service';
+import { LoggerService } from 'utils/logger/logger.service';
+import { NotificationService } from 'utils/notifications/notification.service';
 import { AnnotationsService, AnnotationsServiceEvents } from '../annotations.service';
 import { FileItem } from './item/file-item';
 

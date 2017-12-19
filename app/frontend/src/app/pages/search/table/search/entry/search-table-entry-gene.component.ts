@@ -17,10 +17,10 @@
 import {
     ChangeDetectionStrategy, ChangeDetectorRef, Component, ComponentFactoryResolver, ComponentRef, HostListener, Renderer2, ViewContainerRef
 } from '@angular/core';
-import { TableColumn } from '../../../../../shared/table/column/table-column';
-import { TableEntry } from '../../../../../shared/table/entry/table-entry';
-import { TableRowComponent } from '../../../../../shared/table/row/table-row.component';
-import { NotificationService } from '../../../../../utils/notifications/notification.service';
+import { TableColumn } from 'shared/table/column/table-column';
+import { TableEntry } from 'shared/table/entry/table-entry';
+import { TableRowComponent } from 'shared/table/row/table-row.component';
+import { NotificationService } from 'utils/notifications/notification.service';
 import { SearchTableRow } from '../row/search-table-row';
 import { SearchTableService } from '../search-table.service';
 

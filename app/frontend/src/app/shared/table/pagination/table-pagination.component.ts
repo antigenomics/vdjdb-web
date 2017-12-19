@@ -16,7 +16,7 @@
  */
 
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { Utils } from '../../../utils/utils';
+import { Utils } from 'utils/utils';
 
 @Component({
     selector:        'table-pagination',

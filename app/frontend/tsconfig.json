@@ -22,8 +22,10 @@
     "lib": [ "es2017", "dom" ],
     "baseUrl": ".",
     "paths": {
-      "shared": [ "src/app/shared" ],
-      "utils": [ "src/app/utils" ]
+      "pages/*": [ "src/app/pages/*" ],
+      "shared/*": [ "src/app/shared/*" ],
+      "utils/*": [ "src/app/utils/*" ],
+      "environments/*": [ "src/environments/*" ]
     }
   },
   "exclude": [

@@ -15,8 +15,8 @@
  *
  */
 
-import { SampleItem } from '../../../../../shared/sample/sample-item';
-import { Table } from '../../../../../shared/table/table';
+import { SampleItem } from 'shared/sample/sample-item';
+import { Table } from 'shared/table/table';
 import { IntersectionTableRow } from './row/intersection-table-row';
 
 export class IntersectionTable extends Table<IntersectionTableRow> {

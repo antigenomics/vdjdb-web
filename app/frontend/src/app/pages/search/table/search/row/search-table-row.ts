@@ -15,9 +15,9 @@
  */
 
 import { ComponentFactory, ComponentFactoryResolver } from '@angular/core';
-import { TableColumn } from '../../../../../shared/table/column/table-column';
-import { TableEntry } from '../../../../../shared/table/entry/table-entry';
-import { TableRow } from '../../../../../shared/table/row/table-row';
+import { TableColumn } from 'shared/table/column/table-column';
+import { TableEntry } from 'shared/table/entry/table-entry';
+import { TableRow } from 'shared/table/row/table-row';
 import { SearchTableEntryCdrComponent } from '../entry/search-table-entry-cdr.component';
 import { SearchTableEntryGeneComponent } from '../entry/search-table-entry-gene.component';
 import { SearchTableEntryMetaComponent } from '../entry/search-table-entry-meta.component';

@@ -16,8 +16,8 @@
  */
 
 import { ChangeDetectionStrategy, Component, ComponentFactoryResolver, HostBinding, ViewContainerRef } from '@angular/core';
-import { TableColumn } from '../../../../../../shared/table/column/table-column';
-import { TableEntry } from '../../../../../../shared/table/entry/table-entry';
+import { TableColumn } from 'shared/table/column/table-column';
+import { TableEntry } from 'shared/table/entry/table-entry';
 import { IntersectionTableRow } from '../row/intersection-table-row';
 
 @Component({

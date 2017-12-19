@@ -15,7 +15,7 @@
  *
  */
 
-import { Table } from '../../../../../../shared/table/table';
+import { Table } from 'shared/table/table';
 import { MatchTableRow } from './row/match-table-row';
 
 export class MatchesTable extends Table<MatchTableRow> {

@@ -16,7 +16,7 @@
  */
 
 import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, Input, Renderer2, ViewChild } from '@angular/core';
-import { NotificationService } from 'utils';
+import { NotificationService } from '../notification.service';
 import { NotificationItem, NotificationItemType } from './notification-item';
 
 @Component({

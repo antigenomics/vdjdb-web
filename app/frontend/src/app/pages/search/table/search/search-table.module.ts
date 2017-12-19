@@ -17,9 +17,9 @@
 import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
-import { FiltersModule } from '../../../../shared/filters/filters.module';
-import { ModalsModule } from '../../../../shared/modals/modals.module';
-import { TableModule } from '../../../../shared/table/table.module';
+import { FiltersModule } from 'shared/filters/filters.module';
+import { ModalsModule } from 'shared/modals/modals.module';
+import { TableModule } from 'shared/table/table.module';
 import { SearchTableEntryCdrComponent } from './entry/search-table-entry-cdr.component';
 import { SearchTableEntryGeneComponent } from './entry/search-table-entry-gene.component';
 import { SearchTableEntryMetaComponent } from './entry/search-table-entry-meta.component';

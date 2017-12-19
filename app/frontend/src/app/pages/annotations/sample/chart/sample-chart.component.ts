@@ -18,7 +18,7 @@
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs/Subscription';
-import { SampleItem } from '../../../../shared/sample/sample-item';
+import { SampleItem } from 'shared/sample/sample-item';
 
 @Component({
     selector:        'sample-chart',

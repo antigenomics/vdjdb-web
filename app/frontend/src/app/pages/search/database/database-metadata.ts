@@ -14,8 +14,6 @@
  *    limitations under the License.
  */
 
-import { TableColumn } from '../../../shared/table/column/table-column';
-
 export class DatabaseColumnInfo {
     public readonly name: string;
     public readonly columnType: string;

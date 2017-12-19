@@ -17,11 +17,11 @@
 
 /* tslint:disable:max-line-length */
 import { ChangeDetectionStrategy, Component, ComponentFactoryResolver, HostBinding, ViewContainerRef } from '@angular/core';
-import { TableColumn } from '../../../../../../shared/table/column/table-column';
-import { TableEntry } from '../../../../../../shared/table/entry/table-entry';
-import { ClipboardService } from '../../../../../../utils/clipboard/clipboard.service';
-import { NotificationService } from '../../../../../../utils/notifications/notification.service';
-import { Utils } from '../../../../../../utils/utils';
+import { TableColumn } from 'shared/table/column/table-column';
+import { TableEntry } from 'shared/table/entry/table-entry';
+import { ClipboardService } from 'utils/clipboard/clipboard.service';
+import { NotificationService } from 'utils/notifications/notification.service';
+import { Utils } from 'utils/utils';
 import { IntersectionTableRow } from '../row/intersection-table-row';
 import ColorizedPatternRegion = Utils.SequencePattern.ColorizedPatternRegion;
 

@@ -14,15 +14,15 @@
  *    limitations under the License.
  */
 
+import { environment } from 'environments/environment';
 import 'rxjs/add/operator/filter';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/take';
 import { Observable } from 'rxjs/Observable';
 import { Subject } from 'rxjs/Subject';
-import { environment } from '../../../environments/environment';
-import { LoggerService } from '../../utils/logger/logger.service';
-import { NotificationService } from '../../utils/notifications/notification.service';
-import { Utils } from '../../utils/utils';
+import { LoggerService } from 'utils/logger/logger.service';
+import { NotificationService } from 'utils/notifications/notification.service';
+import { Utils } from 'utils/utils';
 import { IWebSocketRequestData } from './websocket-request';
 import { WebSocketResponseData } from './websocket-response';
 
