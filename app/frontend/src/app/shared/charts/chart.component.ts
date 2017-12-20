@@ -15,18 +15,38 @@
  *
  */
 
-import { Component, Input } from '@angular/core';
+import { ElementRef, Input } from '@angular/core';
+import * as d3 from 'external/d3';
 import { ChartMarginConfiguration, IChartMarginConfiguration } from 'shared/charts/configuration/chart-margin-configuration';
+import { SVGContainer, ISVGContainerConfiguration } from 'shared/charts/svg/svg-container';
 
-@Component({
-    selector: 'chart',
-    template: ''
-})
 export class ChartComponent {
     protected margin: ChartMarginConfiguration = new ChartMarginConfiguration({});
 
     @Input('margin')
     set setMargin(margin: IChartMarginConfiguration) {
         this.margin = new ChartMarginConfiguration(margin);
+    }
+
+    protected createSVGContainer(elementRef: ElementRef, configuration?: ISVGContainerConfiguration): SVGContainer {
+        const native = elementRef.nativeElement;
+        const width = native.clientWidth - this.margin.right;
+        const height = native.clientHeight - this.margin.bottom;
+        const svg = d3.select(native)
+                      .append('svg')
+                      .attr('width', width)
+                      .attr('height', height);
+
+        if (configuration && configuration.backgroundFill) {
+            svg.append('rect')
+               .attr('width', width)
+               .attr('height', height)
+               .attr('x', 0)
+               .attr('x', 0)
+               .style('fill', configuration.backgroundFill);
+        }
+
+        const container = svg.append('g').attr('transform', `translate(${this.margin.left},${this.margin.top})`);
+        return new SVGContainer(container, width - this.margin.left, height - this.margin.top);
     }
 }

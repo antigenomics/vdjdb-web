@@ -15,12 +15,20 @@
  *
  */
 
-import { NgModule } from '@angular/core';
-import { BarChartComponent } from 'shared/charts/bar/bar-chart.component';
-import { ChartComponent } from 'shared/charts/chart.component';
+export interface IBarChartConfiguration {
+    readonly gap?: number;
+    readonly type?: string;
+}
 
-@NgModule({
-    declarations: [ BarChartComponent ],
-    exports:      [ BarChartComponent ]
-})
-export class ChartsModule {}
+export class BarChartConfiguration {
+    private static readonly gapDefault: number = 0.1;
+    private static readonly typeDefault: string = 'bar';
+
+    public readonly gap: number;
+    public readonly type: string;
+
+    constructor(config: IBarChartConfiguration) {
+        this.gap = (config.gap !== undefined) ? config.gap : BarChartConfiguration.gapDefault;
+        this.type = (config.type !== undefined) ? config.type : BarChartConfiguration.typeDefault;
+    }
+}
