@@ -15,12 +15,22 @@
  *
  */
 
-import { NgModule } from '@angular/core';
-import { BarChartComponent } from 'shared/charts/bar/bar-chart.component';
-import { ChartComponent } from 'shared/charts/chart.component';
+import * as d3 from 'external/d3';
 
-@NgModule({
-    declarations: [ BarChartComponent ],
-    exports:      [ BarChartComponent ]
-})
-export class ChartsModule {}
+export type D3HTMLSelection = d3.Selection<d3.BaseType, any, HTMLElement, any>;
+
+export interface ISVGContainerConfiguration {
+    readonly backgroundFill?: string;
+}
+
+export class SVGContainer {
+    public readonly svg: D3HTMLSelection;
+    public readonly width: number;
+    public readonly height: number;
+
+    constructor(svg: D3HTMLSelection, width: number, height: number) {
+        this.svg = svg;
+        this.width = width;
+        this.height = height;
+    }
+}

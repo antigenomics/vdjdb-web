@@ -34,9 +34,9 @@ export class ChartMarginConfiguration {
     public readonly bottom: number;
 
     constructor(config: IChartMarginConfiguration) {
-        this.top = config.top ? config.top : ChartMarginConfiguration.topDefault;
-        this.left = config.left ? config.left : ChartMarginConfiguration.leftDefault;
-        this.right = config.right ? config.right : ChartMarginConfiguration.rightDefault;
-        this.bottom = config.bottom ? config.bottom : ChartMarginConfiguration.bottomDefault;
+        this.top = (config.top !== undefined) ? config.top : ChartMarginConfiguration.topDefault;
+        this.left = (config.left !== undefined) ? config.left : ChartMarginConfiguration.leftDefault;
+        this.right = (config.right !== undefined) ? config.right : ChartMarginConfiguration.rightDefault;
+        this.bottom = (config.bottom !== undefined) ? config.bottom : ChartMarginConfiguration.bottomDefault;
     }
 }
