@@ -20,7 +20,7 @@ import 'rxjs/add/operator/filter';
 import 'rxjs/add/operator/take';
 import { TableColumn } from 'shared/table/column/table-column';
 import { ExportFormat } from 'shared/table/export/table-export.component';
-import { TableSettings } from 'shared/table/settings/table-settings';
+import { TableSettings } from 'shared/table/configuration/table-settings';
 import { TableEvent } from 'shared/table/table';
 import { SearchTableService } from './search-table.service';
 

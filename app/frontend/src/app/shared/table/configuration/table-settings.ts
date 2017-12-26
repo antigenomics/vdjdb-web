@@ -41,4 +41,9 @@ export class TableSettings {
             this.utils = new TableUtilsSettings(settings.utils);
         }
     }
+
+    public extend(settings: ITableSettings): ITableSettings {
+        const self: ITableSettings = this;
+        return {...self, ...settings}
+    }
 }

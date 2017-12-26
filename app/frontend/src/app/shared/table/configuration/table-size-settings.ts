@@ -15,11 +15,11 @@
  *
  */
 
-import { FontSizeSettings, IFontSizeSettings } from './table-size-font-settings';
+import { FontSizeSettings, IFontSizeConfiguration } from './table-size-font-settings';
 
 export interface ITableSizeSettings {
-    readonly header?: IFontSizeSettings;
-    readonly content?: IFontSizeSettings;
+    readonly header?: IFontSizeConfiguration;
+    readonly content?: IFontSizeConfiguration;
 }
 
 export class TableSizeSettings {

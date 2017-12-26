@@ -20,7 +20,7 @@ import { Subscription } from 'rxjs/Subscription';
 import { TableColumn } from './column/table-column';
 import { ExportFormat } from './export/table-export.component';
 import { TableRow } from './row/table-row';
-import { TableSettings } from './settings/table-settings';
+import { TableSettings } from './configuration/table-settings';
 import { Table } from './table';
 
 @Component({

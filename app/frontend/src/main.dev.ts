@@ -18,22 +18,6 @@
 import 'core-js';
 import 'reflect-metadata';
 import 'zone.js';
+import { bootstrap } from './bootstrap';
 
-import { enableProdMode } from '@angular/core';
-import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
-
-import { LoggerService } from 'utils/logger/logger.service';
-import { ApplicationModule } from './app/application.module';
-import { environment } from 'environments/environment';
-
-if (environment.production) {
-    enableProdMode();
-}
-
-const logger = new LoggerService();
-platformBrowserDynamic().bootstrapModule(ApplicationModule, { preserveWhitespaces: false }).then(() => {
-    const mode = environment.production ? 'production' : 'development';
-    logger.info('Application loaded', `(${mode})`);
-}).catch((error) => {
-    logger.error('Bootstrap error', error);
-});
+bootstrap();
