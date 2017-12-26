@@ -128,7 +128,7 @@ case class DatabaseSearchWebSocketActor(out: ActorRef, database: Database, actor
                 validateData(out, data, (exportRequest: ExportDataRequest) => {
                     val converter = SearchTableConverter.getConverter(exportRequest.format)
                     if (converter.nonEmpty) {
-                        converter.get.convert(table, database) onComplete {
+                        converter.get.convert(table, database, exportRequest.options) onComplete {
                             case Success(link) =>
                                 out.success(ExportDataResponse(link.getDownloadLink))
                             case Failure(ex) =>

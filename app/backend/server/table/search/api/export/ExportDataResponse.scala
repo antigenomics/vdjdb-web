@@ -18,7 +18,7 @@ package backend.server.table.search.api.export
 
 import play.api.libs.json.{Json, Writes}
 
-case class ExportDataResponse(link: String)
+case class ExportDataResponse(link: String, link_tra: String = "")
 
 object ExportDataResponse {
     final val Action: String = "export"

@@ -18,8 +18,11 @@ package backend.server.table.search.api.export
 
 import play.api.libs.json.{Json, Reads}
 
-case class ExportDataRequest(format: String)
+case class ExportOptions(exportPaired: Boolean)
+
+case class ExportDataRequest(format: String, options: ExportOptions)
 
 object ExportDataRequest {
+    implicit val exportOptionsReads: Reads[ExportOptions] = Json.reads[ExportOptions]
     implicit val exportDataRequestReads: Reads[ExportDataRequest] = Json.reads[ExportDataRequest]
 }

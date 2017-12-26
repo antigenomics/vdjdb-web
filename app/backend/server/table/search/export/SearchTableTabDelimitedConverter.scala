@@ -18,20 +18,37 @@ package backend.server.table.search.export
 
 import backend.models.files.temporary.{TemporaryFileLink, TemporaryFileProvider}
 import backend.server.database.Database
-import backend.server.table.search.SearchTable
+import backend.server.database.filters.{DatabaseFilterRequest, DatabaseFilterType, DatabaseFilters}
+import backend.server.table.search.{SearchTable, SearchTableRow}
+import backend.server.table.search.api.export.ExportOptions
+
 import scala.concurrent.Future
 
 case class SearchTableTabDelimitedConverter()(implicit temporaryFileProvider: TemporaryFileProvider) extends SearchTableConverter {
 
-    override def convert(table: SearchTable, database: Database): Future[TemporaryFileLink] = {
+    override def convert(table: SearchTable, database: Database, options: ExportOptions): Future[TemporaryFileLink] = {
         val rows = table.getRows
 
         val content = new StringBuilder()
 
-        val header = database.getMetadata.columns.map(column => column.title).mkString("", "\t", "\r\n")
+        val header = database.getMetadata.columns.map(column => column.title).mkString("complex.id\t", "\t", "\r\n")
         content.append(header)
 
-        rows.foreach(row => content.append(row.entries.mkString("", "\t", "\r\n")))
+        rows.foreach(row => content.append(row.entries.mkString(s"${row.metadata.pairedID}\t", "\t", "\r\n")))
+
+        if (options.exportPaired) {
+            val rowsWithPaired = rows.filter((r) => !(r.metadata.pairedID == "0"))
+            val complexFilter = rowsWithPaired.map(_.metadata.pairedID).mkString(",")
+            val pairedFilterRequest: List[DatabaseFilterRequest] =
+                List(DatabaseFilterRequest("complex.id", DatabaseFilterType.ExactSet, negative = false, complexFilter))
+            val pairedFilters: DatabaseFilters = DatabaseFilters.createFromRequest(pairedFilterRequest, database)
+            val pairedTable: SearchTable = SearchTable()
+            pairedTable.update(pairedFilters, database)
+
+            val pairedRows = pairedTable.getRows.filter(p => !rowsWithPaired.contains(p))
+
+            pairedRows.foreach(row => content.append(row.entries.mkString(s"${row.metadata.pairedID}\t", "\t", "\r\n")))
+        }
 
         temporaryFileProvider.createTemporaryFile("SearchTable", getExtension, content.toString())
     }

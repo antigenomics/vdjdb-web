@@ -26,7 +26,7 @@ import { FiltersService } from '../../filters/filters.service';
 import { WebSocketRequestData } from '../../websocket/websocket-request';
 import { WebSocketResponseData } from '../../websocket/websocket-response';
 import { WebSocketResponseStatus, WebSocketService } from '../../websocket/websocket.service';
-import { ExportFormat } from './export/search-table-export.component';
+import { ExportFormat, ExportOptions } from './export/search-table-export.component';
 import { SearchTableRow } from './row/search-table-row';
 
 export namespace SearchTableWebSocketActions {
@@ -176,13 +176,16 @@ export class SearchTableService {
         this.updateFromResponse(response);
     }
 
-    public async exportTable(format: ExportFormat): Promise<void> {
+    public async exportTable(request: { format: ExportFormat, options: ExportOptions }): Promise<void> {
+        const format = request.format;
+        const options = request.options;
         await this.checkConnection(true, false);
         this.logger.debug('Export', format);
         const response = await this.connection.sendMessage({
             action: SearchTableWebSocketActions.EXPORT,
             data:   new WebSocketRequestData()
                     .add('format', format.name)
+                    .add('options', options)
                     .unpack()
         });
         this.logger.debug('Export', response);
