@@ -34,7 +34,7 @@ const compiler = new closureCompiler({
     js: files,
     language_in: 'ES6_STRICT',
     language_out: 'ES5',
-    compilation_level: 'ADVANCED_OPTIMIZATIONS',
+    compilation_level: 'SIMPLE_OPTIMIZATIONS',
     entry_point: './lib/aot/main.prod.js',
     js_output_file: '../../public/bundles/bundle.min.js',
     create_source_map: '%outname%.map',
