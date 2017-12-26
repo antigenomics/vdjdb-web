@@ -19,10 +19,12 @@ package backend.server.table.search.export
 import backend.models.files.temporary.{TemporaryFileLink, TemporaryFileProvider}
 import backend.server.database.Database
 import backend.server.table.search.SearchTable
+import backend.server.table.search.api.export.ExportOptions
+
 import scala.concurrent.Future
 
 trait SearchTableConverter {
-    def convert(table: SearchTable, database: Database): Future[TemporaryFileLink]
+    def convert(table: SearchTable, database: Database, exportOptions: ExportOptions): Future[TemporaryFileLink]
     def getExtension: String
 }
 

@@ -3,7 +3,22 @@
         Export as:
         <i class="dropdown icon"></i>
         <div class="menu">
-            <a class="item" *ngFor="let format of formats" (click)="exportTable(format)">{{ format.title }}</a>
+            <div class="header">
+                <i class="download icon"></i>
+                Export as:
+            </div>
+            <a class="item" *ngFor="let format of formats" (click)="exportTable(format)"><i class="file text outline icon"></i> {{ format.title }}</a>
+            <div class="divider"></div>
+            <div class="header">
+                <i class="options icon"></i>
+                Options
+            </div>
+            <a class="item" *ngIf="!options.exportPaired" (click)="options.exportPaired=true">
+                <i class="remove icon"></i> Paired gene export disabled
+            </a>
+            <a class="item" *ngIf="options.exportPaired" (click)="options.exportPaired=false">
+                <i class="checkmark icon"></i> Paired gene export enabled
+            </a>
         </div>
     </div>
 </div>

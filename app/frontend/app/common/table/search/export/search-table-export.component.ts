@@ -26,12 +26,18 @@ export class ExportFormat {
     }
 }
 
+export class ExportOptions {
+    public exportPaired: boolean = true;
+}
+
 @Component({
     selector:        'search-table-export',
     templateUrl:     './search-table-export.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SearchTableExportComponent {
+    public options: ExportOptions = new ExportOptions();
+
     @Input()
     public formats: ExportFormat[];
 
@@ -39,6 +45,6 @@ export class SearchTableExportComponent {
     public exportEvent = new EventEmitter();
 
     public exportTable(format: ExportFormat): void {
-        this.exportEvent.emit(format);
+        this.exportEvent.emit({ format: format, options: this.options });
     }
 }
