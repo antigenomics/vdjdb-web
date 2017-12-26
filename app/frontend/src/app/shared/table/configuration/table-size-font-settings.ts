@@ -15,18 +15,16 @@
  *
  */
 
-export interface IFontSizeSettings {
+export interface IFontSizeConfiguration {
     readonly dynamicSizeEnabled?: boolean;
     readonly dynamicSizeWeightA?: number;
     readonly dynamicSizeWeightB?: number;
 }
 
 export class FontSizeSettings {
-    public readonly dynamicSizeEnabled: boolean = false;
-    public readonly dynamicSizeWeightA: number = 0.0003125;
-    public readonly dynamicSizeWeightB: number = 0.4;
+    private readonly _configuration: IFontSizeConfiguration;
 
-    constructor(fontSizeSettings: IFontSizeSettings) {
+    constructor(fontSizeSettings: IFontSizeConfiguration) {
         if (fontSizeSettings.dynamicSizeEnabled !== undefined) {
             this.dynamicSizeEnabled = fontSizeSettings.dynamicSizeEnabled;
         }
@@ -37,4 +35,6 @@ export class FontSizeSettings {
             this.dynamicSizeWeightB = fontSizeSettings.dynamicSizeWeightB;
         }
     }
+
+    
 }
