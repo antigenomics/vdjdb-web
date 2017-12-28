@@ -19,6 +19,7 @@ package backend.server.search.export
 import backend.models.files.temporary.{TemporaryFileLink, TemporaryFileProvider}
 import backend.server.database.Database
 import backend.server.search.SearchTable
+
 import scala.concurrent.Future
 
 trait SearchTableConverter {

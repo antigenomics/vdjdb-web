@@ -17,7 +17,8 @@
 
 import { Component, Input } from '@angular/core';
 import { TableColumn } from 'shared/table/column/table-column';
-import { TableSettings } from 'shared/table/configuration/table-settings';
+import { ITableConfigurationDescriptor } from 'shared/table/configuration/table-configuration';
+import { Configuration } from 'utils/configuration/configuration';
 import { IntersectionTable } from './intersection-table';
 
 @Component({
@@ -25,13 +26,13 @@ import { IntersectionTable } from './intersection-table';
     templateUrl: './intersection-table.component.html'
 })
 export class IntersectionTableComponent {
-    public settings: TableSettings;
+    public configuration: ITableConfigurationDescriptor;
 
     @Input('table')
     public table: IntersectionTable;
 
     constructor() {
-        this.settings = new TableSettings({
+        this.configuration = {
             classes: {
                 columns: 'center aligned',
                 rows:    'fade element'
@@ -49,7 +50,7 @@ export class IntersectionTableComponent {
                     dynamicSizeWeightB: 0.5
                 }
             }
-        });
+        };
     }
 
     public onPageChange(page: number): void {

@@ -17,10 +17,11 @@
 
 import { AfterViewInit, ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, OnInit, Output, Renderer2 } from '@angular/core';
 import { Subscription } from 'rxjs/Subscription';
+import { ITableConfigurationDefault, ITableConfigurationDescriptor } from 'shared/table/configuration/table-configuration';
+import { Configuration } from 'utils/configuration/configuration';
 import { TableColumn } from './column/table-column';
 import { ExportFormat } from './export/table-export.component';
 import { TableRow } from './row/table-row';
-import { TableSettings } from './configuration/table-settings';
 import { Table } from './table';
 
 @Component({
@@ -34,12 +35,20 @@ export class TableComponent implements OnInit, AfterViewInit, OnDestroy {
     private _resizeEventListener: () => void;
     private _resizeEventTimeout: number;
     private _tableEventsSubscription: Subscription;
+    private _configuration: ITableConfigurationDescriptor;
 
     public headerFontSize: string = 'inherit';
     public contentFontSize: string = 'inherit';
 
-    @Input('settings')
-    public settings: TableSettings;
+    @Input('configuration')
+    public set configuration(source: ITableConfigurationDescriptor) {
+        this._configuration = ITableConfigurationDefault();
+        Configuration.extend(this._configuration, source);
+    }
+
+    public get configuration(): ITableConfigurationDescriptor {
+        return this._configuration;
+    }
 
     @Input('columns')
     public columns: TableColumn[];
@@ -59,7 +68,8 @@ export class TableComponent implements OnInit, AfterViewInit, OnDestroy {
     @Output('onExport')
     public onExport = new EventEmitter<ExportFormat>();
 
-    constructor(private changeDetector: ChangeDetectorRef, private renderer: Renderer2) {}
+    constructor(private changeDetector: ChangeDetectorRef, private renderer: Renderer2) {
+    }
 
     public ngOnInit(): void {
         this._tableEventsSubscription = this.table.events.subscribe(() => {
@@ -68,7 +78,7 @@ export class TableComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     public ngAfterViewInit(): void {
-        if (this.settings.size.header.dynamicSizeEnabled || this.settings.size.content.dynamicSizeEnabled) {
+        if (this.configuration.size.header.dynamicSizeEnabled || this.configuration.size.content.dynamicSizeEnabled) {
             this.updateFontSize();
             this._resizeEventListener = this.renderer.listen('window', 'resize', () => {
                 this.onResize();
@@ -94,25 +104,25 @@ export class TableComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     private updateFontSize(): void {
-        if (this.settings.size.header.dynamicSizeEnabled) {
+        if (this.configuration.size.header.dynamicSizeEnabled) {
             this.calculateHeaderFontSize();
         }
-        if (this.settings.size.content.dynamicSizeEnabled) {
+        if (this.configuration.size.content.dynamicSizeEnabled) {
             this.calculateContentFontSize();
         }
         this.changeDetector.detectChanges();
     }
 
     private calculateHeaderFontSize(): void {
-        const a = this.settings.size.header.dynamicSizeWeightA;
-        const b = this.settings.size.header.dynamicSizeWeightB;
+        const a = this.configuration.size.header.dynamicSizeWeightA;
+        const b = this.configuration.size.header.dynamicSizeWeightB;
         const headerSize = a * window.innerWidth + b;
         this.headerFontSize = headerSize + 'em';
     }
 
     private calculateContentFontSize(): void {
-        const a = this.settings.size.content.dynamicSizeWeightA;
-        const b = this.settings.size.content.dynamicSizeWeightB;
+        const a = this.configuration.size.content.dynamicSizeWeightA;
+        const b = this.configuration.size.content.dynamicSizeWeightB;
         const contentFontSize = a * window.innerWidth + b;
         this.contentFontSize = contentFontSize + 'em';
     }
