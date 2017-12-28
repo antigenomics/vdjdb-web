@@ -51,7 +51,8 @@ export class SearchTableComponent implements OnInit {
             },
             utils:   {
                 export: {
-                    formats: [ new ExportFormat('tab-delimited-txt', 'TAB-delimited txt', 'file text outline') ]
+                    formats: [ { name: 'tsv', title: 'TSV', icon: 'file text outline' } ],
+                    options: [ { name: 'tra_export', title: 'Paired gene export', value: true } ]
                 }
             }
         };

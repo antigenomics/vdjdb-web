@@ -17,16 +17,16 @@
 
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
 
-export class ExportFormat {
-    public readonly name: string;
-    public readonly title: string;
-    public readonly icon: string;
+export interface ExportFormat {
+    readonly name: string;
+    readonly title: string;
+    readonly icon?: string;
+}
 
-    constructor(name: string, title: string, icon?: string) {
-        this.name = name;
-        this.title = title;
-        this.icon = icon;
-    }
+export interface ExportOptionFlag {
+    readonly name: string,
+    readonly title: string
+    value: boolean
 }
 
 @Component({
@@ -35,13 +35,20 @@ export class ExportFormat {
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TableExportComponent {
-    @Input()
+    @Input('formats')
     public formats: ExportFormat[];
 
+    @Input('options')
+    public options: ExportOptionFlag[];
+
     @Output()
-    public exportEvent = new EventEmitter();
+    public exportEvent = new EventEmitter<{ format: ExportFormat, options: ExportOptionFlag[] }>();
 
     public exportTable(format: ExportFormat): void {
-        this.exportEvent.emit(format);
+        this.exportEvent.emit({ format: format, options: this.options });
+    }
+
+    public isOptionsAvailable(): boolean {
+        return this.options !== undefined && this.options.length !== 0;
     }
 }
