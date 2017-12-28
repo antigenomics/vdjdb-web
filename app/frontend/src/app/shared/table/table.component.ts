@@ -17,7 +17,7 @@
 
 import { AfterViewInit, ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, OnInit, Output, Renderer2 } from '@angular/core';
 import { Subscription } from 'rxjs/Subscription';
-import { ITableConfigurationDefault, ITableConfigurationDescriptor } from 'shared/table/configuration/table-configuration';
+import { createDefaultTableConfiguration, ITableConfigurationDescriptor } from 'shared/table/configuration/table-configuration';
 import { Configuration } from 'utils/configuration/configuration';
 import { TableColumn } from './column/table-column';
 import { ExportFormat } from './export/table-export.component';
@@ -42,7 +42,7 @@ export class TableComponent implements OnInit, AfterViewInit, OnDestroy {
 
     @Input('configuration')
     public set configuration(source: ITableConfigurationDescriptor) {
-        this._configuration = ITableConfigurationDefault();
+        this._configuration = createDefaultTableConfiguration();
         Configuration.extend(this._configuration, source);
     }
 
@@ -94,12 +94,17 @@ export class TableComponent implements OnInit, AfterViewInit, OnDestroy {
         if (this._tableEventsSubscription) {
             this._tableEventsSubscription.unsubscribe();
         }
+        if (this._resizeEventTimeout !== undefined) {
+            window.clearTimeout(this._resizeEventTimeout);
+            this._resizeEventTimeout = undefined;
+        }
     }
 
     private onResize(): void {
         window.clearTimeout(this._resizeEventTimeout);
         this._resizeEventTimeout = window.setTimeout(() => {
             this.updateFontSize();
+            this._resizeEventTimeout = undefined;
         }, TableComponent._resizeEventWaitTime);
     }
 

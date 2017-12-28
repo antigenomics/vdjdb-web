@@ -17,12 +17,14 @@
 
 /* Table classes configuration options
  * =================================== */
+import { ExportFormat } from 'shared/table/export/table-export.component';
+
 export interface ITableClassesConfigurationDescriptor {
     readonly columns?: string;
     readonly rows?: string;
 }
 
-export function ITableClassesConfigurationDefault(): ITableClassesConfigurationDescriptor {
+function createDefaultTableClassesConfiguration(): ITableClassesConfigurationDescriptor {
     return {
         columns: '',
         rows:    ''
@@ -31,21 +33,36 @@ export function ITableClassesConfigurationDefault(): ITableClassesConfigurationD
 
 /* Table utils configuration options
  * =================================== */
-export interface ITableUtilsConfigurationDescriptor {
+export interface ITableUtilsPaginationConfigurationDescriptor {
     readonly disable?: boolean;
-    readonly pagination?: boolean;
-    readonly info?: boolean;
-    readonly export?: boolean;
-    readonly pageSize?: boolean;
+    readonly pageRange?: number;
 }
 
-export function ITableUtilsConfigurationDefault(): ITableUtilsConfigurationDescriptor {
+export interface ITableUtilsExportConfigurationDescriptor {
+    readonly disable?: boolean;
+    readonly formats?: ExportFormat[];
+}
+
+export interface ITableUtilsPageSizeConfigurationDescriptor {
+    readonly disable?: boolean;
+    readonly sizes?: number[];
+}
+
+export interface ITableUtilsConfigurationDescriptor {
+    readonly disable?: boolean;
+    readonly pagination?: ITableUtilsPaginationConfigurationDescriptor;
+    readonly info?: boolean;
+    readonly export?: ITableUtilsExportConfigurationDescriptor;
+    readonly pageSize?: ITableUtilsPageSizeConfigurationDescriptor;
+}
+
+function ITableUtilsConfigurationDefault(): ITableUtilsConfigurationDescriptor {
     return {
         disable:    false,
-        pagination: true,
+        pagination: { disable: false, pageRange: 5 },
         info:       true,
-        export:     true,
-        pageSize:   true
+        export:     { disable: false, formats: [] },
+        pageSize:   { disable: false, sizes: [ 25, 50, 100 ] }
     };
 }
 
@@ -57,23 +74,15 @@ export interface IFontSizeConfigurationDescriptor {
     readonly dynamicSizeWeightB?: number;
 }
 
-export function IFontSizeConfigurationDefault(): IFontSizeConfigurationDescriptor {
-    return {
-        dynamicSizeEnabled: false,
-        dynamicSizeWeightA: 0.0003125,
-        dynamicSizeWeightB: 0.4
-    };
-}
-
 export interface ITableSizeConfigurationDescriptor {
     readonly header?: IFontSizeConfigurationDescriptor;
     readonly content?: IFontSizeConfigurationDescriptor;
 }
 
-export function ITableSizeConfigurationDefault(): ITableSizeConfigurationDescriptor {
+function createDefaultTableSizeConfiguration(): ITableSizeConfigurationDescriptor {
     return {
-        header:  IFontSizeConfigurationDefault(),
-        content: IFontSizeConfigurationDefault()
+        header:  { dynamicSizeEnabled: false, dynamicSizeWeightA: 0.0003125, dynamicSizeWeightB: 0.4 },
+        content: { dynamicSizeEnabled: false, dynamicSizeWeightA: 0.0003125, dynamicSizeWeightB: 0.4 }
     };
 }
 
@@ -85,10 +94,10 @@ export interface ITableConfigurationDescriptor {
     readonly size?: ITableSizeConfigurationDescriptor;
 }
 
-export function ITableConfigurationDefault(): ITableConfigurationDescriptor {
+export function createDefaultTableConfiguration(): ITableConfigurationDescriptor {
     return {
-        classes: ITableClassesConfigurationDefault(),
+        classes: createDefaultTableClassesConfiguration(),
         utils:   ITableUtilsConfigurationDefault(),
-        size:    ITableSizeConfigurationDefault()
+        size:    createDefaultTableSizeConfiguration()
     };
 }

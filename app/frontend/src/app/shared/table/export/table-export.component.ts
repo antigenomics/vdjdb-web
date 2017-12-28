@@ -18,12 +18,14 @@
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
 
 export class ExportFormat {
-    public name: string;
-    public title: string;
+    public readonly name: string;
+    public readonly title: string;
+    public readonly icon: string;
 
-    constructor(name: string, title: string) {
+    constructor(name: string, title: string, icon?: string) {
         this.name = name;
         this.title = title;
+        this.icon = icon;
     }
 }
 

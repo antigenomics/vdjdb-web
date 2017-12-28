@@ -7,7 +7,9 @@
                 <i class="download icon"></i>
                 Export as:
             </div>
-            <a class="item" *ngFor="let format of formats" (click)="exportTable(format)"><i class="file text outline icon"></i> {{ format.title }}</a>
+            <a class="item" *ngFor="let format of formats" (click)="exportTable(format)">
+                <i class="{{ format.icon }} icon" *ngIf="format.icon"></i> {{ format.title }}
+            </a>
             <!--<div class="divider"></div>-->
             <!--<div class="header">-->
                 <!--<i class="options icon"></i>-->
