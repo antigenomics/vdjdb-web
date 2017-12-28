@@ -17,7 +17,7 @@
 
 /* Table classes configuration options
  * =================================== */
-import { ExportFormat } from 'shared/table/export/table-export.component';
+import { ExportFormat, ExportOptionFlag } from 'shared/table/export/table-export.component';
 
 export interface ITableClassesConfigurationDescriptor {
     readonly columns?: string;
@@ -41,6 +41,7 @@ export interface ITableUtilsPaginationConfigurationDescriptor {
 export interface ITableUtilsExportConfigurationDescriptor {
     readonly disable?: boolean;
     readonly formats?: ExportFormat[];
+    readonly options?: ExportOptionFlag[];
 }
 
 export interface ITableUtilsPageSizeConfigurationDescriptor {
@@ -61,7 +62,7 @@ function ITableUtilsConfigurationDefault(): ITableUtilsConfigurationDescriptor {
         disable:    false,
         pagination: { disable: false, pageRange: 5 },
         info:       true,
-        export:     { disable: false, formats: [] },
+        export:     { disable: false, formats: [], options: [] },
         pageSize:   { disable: false, sizes: [ 25, 50, 100 ] }
     };
 }

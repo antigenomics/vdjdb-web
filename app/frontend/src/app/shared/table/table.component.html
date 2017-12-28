@@ -9,7 +9,8 @@
                     [found]="table.recordsFound" [total]="table.numberOfRecords"></table-info>
 
         <table-export *ngIf="!configuration.utils.export.disable"
-                      [formats]="configuration.utils.export.formats" (exportEvent)="onExport.emit($event)"></table-export>
+                      [options]="configuration.utils.export.options" [formats]="configuration.utils.export.formats"
+                      (exportEvent)="onExport.emit($event)"></table-export>
 
         <table-pagesize *ngIf="!configuration.utils.pageSize.disable"
                         [sizes]="configuration.utils.pageSize.sizes" [pageSize]="table.pageSize"
