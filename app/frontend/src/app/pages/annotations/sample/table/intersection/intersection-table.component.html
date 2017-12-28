@@ -4,7 +4,7 @@
     <div class="sub header">Make sure that you've selected parameters (species, etc) that match your sample metadata</div>
 </h2>
 <div style="width: 100%; overflow-x: auto" *ngIf="table.dirty && !table.isEmpty()">
-    <table class="ui unstackable very compact celled stripped small table" table-component [settings]="settings"
+    <table class="ui unstackable very compact celled stripped small table" table-component [configuration]="configuration"
            [columns]="getColumns()" [table]="table" (onPageChange)="onPageChange($event)" (onPageSizeChange)="onPageSizeChange($event)">
     </table>
 </div>

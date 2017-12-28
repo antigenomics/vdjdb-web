@@ -17,7 +17,8 @@
 
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { TableColumn } from 'shared/table/column/table-column';
-import { TableSettings } from 'shared/table/configuration/table-settings';
+import { ITableConfigurationDescriptor } from 'shared/table/configuration/table-configuration';
+import { Configuration } from 'utils/configuration/configuration';
 import { AnnotationsService } from '../../../../annotations.service';
 import { MatchesTable } from './matches-table';
 
@@ -30,19 +31,19 @@ export class MatchesTableComponent {
     @Input('table')
     public table: MatchesTable;
 
-    public settings: TableSettings;
+    public configuration: ITableConfigurationDescriptor;
 
     constructor(private annotationsService: AnnotationsService) {
-        this.settings = new TableSettings({
+        this.configuration = {
             classes: {
                 columns: 'collapsing center aligned',
                 rows:    'center aligned'
             },
             utils:   {
-                disable:    true
+                disable: true
             },
             size:    {
-                header: {
+                header:  {
                     dynamicSizeEnabled: true,
                     dynamicSizeWeightB: 0.25
                 },
@@ -51,7 +52,7 @@ export class MatchesTableComponent {
                     dynamicSizeWeightB: 0.4
                 }
             }
-        });
+        };
     }
 
     public getColumns(): TableColumn[] {

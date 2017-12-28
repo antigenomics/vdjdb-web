@@ -28,4 +28,5 @@ export function bootstrap() {
         console.error('Bootstrap error', error);
     });
 }
+
 /* tslint:enable:no-console */

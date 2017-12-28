@@ -19,9 +19,11 @@ import { Component, OnInit } from '@angular/core';
 import 'rxjs/add/operator/filter';
 import 'rxjs/add/operator/take';
 import { TableColumn } from 'shared/table/column/table-column';
+import { ITableConfigurationDescriptor } from 'shared/table/configuration/table-configuration';
 import { ExportFormat } from 'shared/table/export/table-export.component';
-import { TableSettings } from 'shared/table/configuration/table-settings';
+
 import { TableEvent } from 'shared/table/table';
+import { Configuration } from 'utils/configuration/configuration';
 import { SearchTableService } from './search-table.service';
 
 @Component({
@@ -29,17 +31,17 @@ import { SearchTableService } from './search-table.service';
     templateUrl: './search-table.component.html'
 })
 export class SearchTableComponent implements OnInit {
-    public settings: TableSettings;
+    public configuration: ITableConfigurationDescriptor;
     public columns: TableColumn[] = [];
 
     constructor(public table: SearchTableService) {
-        this.settings = new TableSettings({
+        this.configuration = {
             classes: {
                 columns: 'collapsing center aligned',
                 rows:    'center aligned fade element'
             },
             size:    {
-                header: {
+                header:  {
                     dynamicSizeEnabled: true
                 },
                 content: {
@@ -47,7 +49,7 @@ export class SearchTableComponent implements OnInit {
                     dynamicSizeWeightB: 0.6
                 }
             }
-        });
+        };
     }
 
     public ngOnInit(): void {

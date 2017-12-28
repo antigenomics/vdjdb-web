@@ -25,7 +25,7 @@ case class SampleIntersectionResponse(state: String, rows: Seq[IntersectionTable
 object SampleIntersectionResponse {
     final val Action: String = "intersect"
 
-    final val ParseState = SampleIntersectionResponse("parse", Seq())
+    final val ParseState = SampleIntersectionResponse("print", Seq())
     final val AnnotateState = SampleIntersectionResponse("annotate", Seq())
     final val LoadingState = SampleIntersectionResponse("loading", Seq())
     final def CompletedState(rows: Seq[IntersectionTableRow]) = SampleIntersectionResponse("completed", rows)

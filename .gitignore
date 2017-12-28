@@ -1,7 +1,6 @@
 # Front end
 /app/frontend/node_modules
 /app/frontend/app/build
-/app/frontend_old
 /app/frontend/dist
 /app/frontend/tmp
 /app/frontend/out-tsc
