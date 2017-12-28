@@ -50,10 +50,8 @@ export class TableSortRule {
 }
 
 export abstract class Table<R extends TableRow> {
-    private static readonly _availablePageSizes: number[] = [ 25, 50, 100 ]; // tslint:disable-line:no-magic-numbers
     private static readonly _initialPage: number = 0;
     private static readonly _initialPageSize: number = 25;
-    private static readonly _defaultPageRange: number = 5;
 
     private _events: Subject<TableEvent> = new Subject();
 
@@ -63,7 +61,6 @@ export abstract class Table<R extends TableRow> {
     private _empty: boolean = true;
     private _page: number = Table._initialPage;
     private _pageSize: number = Table._initialPageSize;
-    private _pageRange: number = Table._defaultPageRange;
     private _pageCount: number;
     private _sortRule: TableSortRule = new TableSortRule();
     private _rows: R[] = [];
@@ -134,11 +131,6 @@ export abstract class Table<R extends TableRow> {
         }
     }
 
-    // noinspection JSMethodCanBeStatic
-    public getAvailablePageSizes(): number[] {
-        return Table._availablePageSizes;
-    }
-
     public abstract getRows(): R[];
 
     get events(): Subject<TableEvent> {
@@ -163,10 +155,6 @@ export abstract class Table<R extends TableRow> {
 
     get pageSize(): number {
         return this._pageSize;
-    }
-
-    get pageRange(): number {
-        return this._pageRange;
     }
 
     get pageCount(): number {

@@ -48,6 +48,11 @@ export class SearchTableComponent implements OnInit {
                     dynamicSizeEnabled: true,
                     dynamicSizeWeightB: 0.6
                 }
+            },
+            utils:   {
+                export: {
+                    formats: [ new ExportFormat('tab-delimited-txt', 'TAB-delimited txt', 'file text outline') ]
+                }
             }
         };
     }

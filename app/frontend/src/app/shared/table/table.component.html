@@ -1,10 +1,20 @@
 <thead class="cursor pointer">
 <tr *ngIf="!configuration.utils.disable">
     <th [attr.colspan]="columns.length" style="padding: 1em">
-        <table-pagination *ngIf="configuration.utils.pagination" [page]="table.page" [range]="table.pageRange" [pageCount]="table.pageCount" (pageChange)="onPageChange.emit($event)"></table-pagination>
-        <table-info *ngIf="configuration.utils.info" [found]="table.recordsFound" [total]="table.numberOfRecords"></table-info>
-        <table-export *ngIf="configuration.utils.export" [formats]="table.getAvailableExportFormats()" (exportEvent)="onExport.emit($event)"></table-export>
-        <table-pagesize *ngIf="configuration.utils.pageSize" [sizes]="table.getAvailablePageSizes()" [pageSize]="table.pageSize" (changePageSize)="onPageSizeChange.emit($event)"></table-pagesize>
+        <table-pagination *ngIf="!configuration.utils.pagination.disable"
+                          [page]="table.page" [range]="configuration.utils.pagination.pageRange" [pageCount]="table.pageCount"
+                          (pageChange)="onPageChange.emit($event)"></table-pagination>
+
+        <table-info *ngIf="!configuration.utils.info.disable"
+                    [found]="table.recordsFound" [total]="table.numberOfRecords"></table-info>
+
+        <table-export *ngIf="!configuration.utils.export.disable"
+                      [formats]="configuration.utils.export.formats" (exportEvent)="onExport.emit($event)"></table-export>
+
+        <table-pagesize *ngIf="!configuration.utils.pageSize.disable"
+                        [sizes]="configuration.utils.pageSize.sizes" [pageSize]="table.pageSize"
+                        (changePageSize)="onPageSizeChange.emit($event)"></table-pagesize>
+
     </th>
 </tr>
 <tr [style.font-size]="headerFontSize">
@@ -16,5 +26,5 @@
 </tr>
 </thead>
 <tbody [style.font-size]="contentFontSize">
-    <tr *ngFor="let row of table.getRows()" table-row [row]="row" [columns]="columns" class="{{ configuration.classes.rows }}"></tr>
+<tr *ngFor="let row of table.getRows()" table-row [row]="row" [columns]="columns" class="{{ configuration.classes.rows }}"></tr>
 </tbody>

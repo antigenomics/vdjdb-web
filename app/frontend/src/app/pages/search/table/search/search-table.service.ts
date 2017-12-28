@@ -175,11 +175,6 @@ export class SearchTableService extends Table<SearchTableRow> {
         }
     }
 
-    // noinspection JSMethodCanBeStatic
-    public getAvailableExportFormats(): ExportFormat[] {
-        return [ new ExportFormat('tab-delimited-txt', 'TAB-delimited txt') ];
-    }
-
     public async changePageSize(pageSize: number): Promise<void> {
         await this.checkConnection();
         this.startLoading();

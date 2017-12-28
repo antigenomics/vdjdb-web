@@ -39,10 +39,8 @@ export class IntersectionTableComponent {
             },
             utils:   {
                 disable:    false,
-                pagination: true,
                 info:       true,
-                export:     false,
-                pageSize:   true
+                export:     { disable: true }
             },
             size:    {
                 header: {
