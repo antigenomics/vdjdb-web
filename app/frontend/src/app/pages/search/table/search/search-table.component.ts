@@ -20,7 +20,7 @@ import 'rxjs/add/operator/filter';
 import 'rxjs/add/operator/take';
 import { TableColumn } from 'shared/table/column/table-column';
 import { ITableConfigurationDescriptor } from 'shared/table/configuration/table-configuration';
-import { ExportFormat } from 'shared/table/export/table-export.component';
+import { ExportFormat, ExportOptionFlag } from 'shared/table/export/table-export.component';
 
 import { TableEvent } from 'shared/table/table';
 import { Configuration } from 'utils/configuration/configuration';
@@ -80,7 +80,7 @@ export class SearchTableComponent implements OnInit {
         return this.table.sort(column.name);
     }
 
-    public async onExport(format: ExportFormat): Promise<void> {
-        return this.table.exportTable(format);
+    public async onExport(request: { format: ExportFormat, options: ExportOptionFlag[] }): Promise<void> {
+        return this.table.exportTable(request);
     }
 }

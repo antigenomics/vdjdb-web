@@ -65,7 +65,8 @@ defaultConfiguration.plugins.push(new DllBundlesPlugin({
             '@angular/common',
             '@angular/forms',
             '@angular/router',
-            'rxjs'
+            'rxjs',
+            'd3'
         ]
     },
     dllDir: './webpack/dll/',
