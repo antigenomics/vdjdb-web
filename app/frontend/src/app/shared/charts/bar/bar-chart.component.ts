@@ -17,24 +17,28 @@
 
 import { AfterViewInit, Component, ElementRef, Input, ViewChild } from '@angular/core';
 import * as d3 from 'external/d3';
-import { BarChartConfiguration, IBarChartConfiguration } from 'shared/charts/bar/bar-chart-configuration';
-import { ChartComponent } from 'shared/charts/chart.component';
+import { createDefaultBarChartConfiguration, IBarChartConfiguration } from 'shared/charts/bar/bar-chart-configuration';
+import { ChartContainer } from 'shared/charts/container/chart-container';
+import { IChartContainerConfiguration } from 'shared/charts/container/chart-container-configuration';
+import { Configuration } from 'utils/configuration/configuration';
 
 @Component({
     selector:  'bar-chart',
-    template:  '<div #chartContainer style="width: 100%; height: 500px"></div>',
+    template:  '<div #container style="width: 100%; height: 100%"></div>',
     styleUrls: [ './bar-chart.styles.css' ]
 })
-export class BarChartComponent extends ChartComponent implements AfterViewInit {
-    protected configuration: BarChartConfiguration = new BarChartConfiguration({});
+export class BarChartComponent implements AfterViewInit {
+    private configuration: IBarChartConfiguration = createDefaultBarChartConfiguration();
+    private container: ChartContainer;
 
-    @Input('bar-chart-configuration')
-    set setConfiguration(config: IBarChartConfiguration) {
-        this.configuration = new BarChartConfiguration(config);
+    @ViewChild('container', { read: ElementRef })
+    private containerElementRef: ElementRef;
+
+    @Input('configuration')
+    set setConfiguration(configuration: IBarChartConfiguration) {
+        this.configuration = createDefaultBarChartConfiguration();
+        Configuration.extend(this.configuration, configuration);
     }
-
-    @ViewChild('chartContainer', { read: ElementRef })
-    public chartContainer: ElementRef;
 
     public ngAfterViewInit(): void {
         const max = 50;
@@ -45,9 +49,11 @@ export class BarChartComponent extends ChartComponent implements AfterViewInit {
             data.push(Math.floor(Math.random() * (max - min)) + min);
         }
 
-        const svgContainer = this.createSVGContainer(this.chartContainer);
+        this.container = new ChartContainer(this.containerElementRef, this.configuration.container);
 
-        const { svg, width, height } = svgContainer;
+        const svg = this.container.getContainer();
+        const width = this.container.getWidth();
+        const height = this.container.getHeight();
 
         const barSize = this.calculateBarWidth(data, width, height);
         const gapSize = barSize * this.configuration.gap;

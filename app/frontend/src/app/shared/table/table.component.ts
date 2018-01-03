@@ -35,7 +35,7 @@ export class TableComponent implements OnInit, AfterViewInit, OnDestroy {
     private _resizeEventListener: () => void;
     private _resizeEventTimeout: number;
     private _tableEventsSubscription: Subscription;
-    private _configuration: ITableConfigurationDescriptor;
+    private _configuration: ITableConfigurationDescriptor = createDefaultTableConfiguration();
 
     public headerFontSize: string = 'inherit';
     public contentFontSize: string = 'inherit';
