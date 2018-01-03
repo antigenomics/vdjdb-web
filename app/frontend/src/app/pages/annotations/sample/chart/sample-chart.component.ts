@@ -18,6 +18,7 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs/Subscription';
+import { IBarChartConfiguration } from 'shared/charts/bar/bar-chart-configuration';
 import { SampleItem } from 'shared/sample/sample-item';
 
 @Component({
@@ -29,9 +30,17 @@ export class SampleChartComponent implements OnInit {
     private _routeSampleSubscription: Subscription;
 
     public sample: SampleItem;
+    public configuration: IBarChartConfiguration;
 
     constructor(private activatedRoute: ActivatedRoute, private changeDetector: ChangeDetectorRef) {
         this.sample = this.activatedRoute.snapshot.data.sample;
+        this.configuration = {
+            container: {
+                margin: {
+                    left: 25, right: 25, top: 10, bottom: 10
+                }
+            }
+        }
     }
 
     public ngOnInit(): void {

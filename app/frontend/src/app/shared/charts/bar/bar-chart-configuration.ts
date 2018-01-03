@@ -15,20 +15,18 @@
  *
  */
 
+import { createDefaultChartContainerConfiguration, IChartContainerConfiguration } from 'shared/charts/container/chart-container-configuration';
+
 export interface IBarChartConfiguration {
+    readonly container?: IChartContainerConfiguration;
     readonly gap?: number;
     readonly type?: string;
 }
 
-export class BarChartConfiguration {
-    private static readonly gapDefault: number = 0.1;
-    private static readonly typeDefault: string = 'bar';
-
-    public readonly gap: number;
-    public readonly type: string;
-
-    constructor(config: IBarChartConfiguration) {
-        this.gap = (config.gap !== undefined) ? config.gap : BarChartConfiguration.gapDefault;
-        this.type = (config.type !== undefined) ? config.type : BarChartConfiguration.typeDefault;
+export function createDefaultBarChartConfiguration(): IBarChartConfiguration {
+    return {
+        container: createDefaultChartContainerConfiguration(),
+        gap: 0.1,
+        type: 'bar'
     }
 }

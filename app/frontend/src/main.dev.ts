@@ -18,6 +18,15 @@
 import 'core-js';
 import 'reflect-metadata';
 import 'zone.js';
-import { bootstrap } from './bootstrap';
+import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
+import { environment } from 'environments/environment';
+import { ApplicationModule } from './app/application.module';
 
-bootstrap();
+/* tslint:disable:no-console */
+platformBrowserDynamic().bootstrapModule(ApplicationModule, { preserveWhitespaces: false }).then(() => {
+    const mode = environment.production ? 'production' : 'development';
+    console.info('Application loaded', `(${mode})`);
+}).catch((error) => {
+    console.error('Bootstrap error', error);
+});
+/* tslint:enable:no-console */

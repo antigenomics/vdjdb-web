@@ -16,10 +16,19 @@
  */
 
 import { enableProdMode } from '@angular/core';
+import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
+import { ApplicationModule } from './app/application.module';
 import { environment } from './environments/environment';
-import { bootstrap } from './bootstrap';
 
 if (environment.production) {
     enableProdMode();
 }
-bootstrap();
+
+/* tslint:disable:no-console */
+platformBrowserDynamic().bootstrapModule(ApplicationModule, { preserveWhitespaces: false }).then(() => {
+    const mode = environment.production ? 'production' : 'development';
+    console.info('Application loaded', `(${mode})`);
+}).catch((error) => {
+    console.error('Bootstrap error', error);
+});
+/* tslint:enable:no-console */
