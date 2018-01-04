@@ -19,7 +19,7 @@
     * >>> here is important, see https://stackoverflow.com/questions/36214546/styles-in-component-for-d3-js-do-not-show-in-angular-2
  */
 
-* >>> .bar-chart > rect.bar {
+* >>> .bar.chart > rect.bar {
     fill: #48af75;
     -webkit-transition: fill .3s ease;
     -moz-transition: fill .3s ease;
@@ -28,6 +28,6 @@
     cursor: pointer;
 }
 
-* >>> .bar-chart > rect.bar:hover {
+* >>> .bar.chart > rect.bar:hover {
     fill: #1a69a4;
 }

@@ -18,6 +18,7 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs/Subscription';
+import { BarChartDataEntry } from 'shared/charts/bar/bar-chart';
 import { IBarChartConfiguration } from 'shared/charts/bar/bar-chart-configuration';
 import { SampleItem } from 'shared/sample/sample-item';
 
@@ -31,16 +32,43 @@ export class SampleChartComponent implements OnInit {
 
     public sample: SampleItem;
     public configuration: IBarChartConfiguration;
+    public data: BarChartDataEntry[] = [];
 
     constructor(private activatedRoute: ActivatedRoute, private changeDetector: ChangeDetectorRef) {
         this.sample = this.activatedRoute.snapshot.data.sample;
         this.configuration = {
             container: {
                 margin: {
-                    left: 25, right: 25, top: 10, bottom: 10
+                    left: 25, right: 25, top: 20, bottom: 20
                 }
-            }
+            },
+            type:      'horizontal'
+        };
+
+        const max = 20;
+        const min = 0;
+        const count = Math.floor(Math.random() * (max - min)) + min;
+        for (let i = 0; i < count; ++i) {
+            this.data.push({
+                domain: `${i}`,
+                value:  Math.floor(Math.random() * (max - min)) + min
+            });
         }
+    }
+
+    public updateData(): void {
+        const newData = [];
+        const max = 20;
+        const min = 0;
+        const count = Math.floor(Math.random() * (max - min)) + min;
+        for (let i = 0; i < count; ++i) {
+            newData.push({
+                domain: `${i}`,
+                value:  Math.floor(Math.random() * (max - min)) + min
+            });
+        }
+        this.data = newData;
+        this.changeDetector.detectChanges();
     }
 
     public ngOnInit(): void {

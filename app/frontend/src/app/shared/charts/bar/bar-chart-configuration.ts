@@ -19,14 +19,14 @@ import { createDefaultChartContainerConfiguration, IChartContainerConfiguration 
 
 export interface IBarChartConfiguration {
     readonly container?: IChartContainerConfiguration;
-    readonly gap?: number;
+    readonly padding?: number;
     readonly type?: string;
 }
 
 export function createDefaultBarChartConfiguration(): IBarChartConfiguration {
     return {
         container: createDefaultChartContainerConfiguration(),
-        gap: 0.1,
+        padding: 0.1,
         type: 'bar'
     }
 }

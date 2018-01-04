@@ -19,6 +19,7 @@ import { AfterViewInit, ChangeDetectorRef, Component, EventEmitter, Input, OnDes
 import { Subscription } from 'rxjs/Subscription';
 import { createDefaultTableConfiguration, ITableConfigurationDescriptor } from 'shared/table/configuration/table-configuration';
 import { Configuration } from 'utils/configuration/configuration';
+import { Utils } from 'utils/utils';
 import { TableColumn } from './column/table-column';
 import { ExportFormat } from './export/table-export.component';
 import { TableRow } from './row/table-row';
@@ -30,10 +31,11 @@ import { Table } from './table';
     styleUrls:   [ './table.component.css' ]
 })
 export class TableComponent implements OnInit, AfterViewInit, OnDestroy {
-    private static _resizeEventWaitTime: number = 200;
+    private static _resizeEventWaitTime: number = 500;
 
     private _resizeEventListener: () => void;
-    private _resizeEventTimeout: number;
+    private _resizeDebouncedHandler = Utils.Time.debounce(this.updateFontSize, TableComponent._resizeEventWaitTime);
+
     private _tableEventsSubscription: Subscription;
     private _configuration: ITableConfigurationDescriptor = createDefaultTableConfiguration();
 
@@ -81,7 +83,7 @@ export class TableComponent implements OnInit, AfterViewInit, OnDestroy {
         if (this.configuration.size.header.dynamicSizeEnabled || this.configuration.size.content.dynamicSizeEnabled) {
             this.updateFontSize();
             this._resizeEventListener = this.renderer.listen('window', 'resize', () => {
-                this.onResize();
+                this._resizeDebouncedHandler()
             });
         }
     }
@@ -91,21 +93,12 @@ export class TableComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     public ngOnDestroy(): void {
+        if (this._resizeEventListener) {
+            this._resizeEventListener();
+        }
         if (this._tableEventsSubscription) {
             this._tableEventsSubscription.unsubscribe();
         }
-        if (this._resizeEventTimeout !== undefined) {
-            window.clearTimeout(this._resizeEventTimeout);
-            this._resizeEventTimeout = undefined;
-        }
-    }
-
-    private onResize(): void {
-        window.clearTimeout(this._resizeEventTimeout);
-        this._resizeEventTimeout = window.setTimeout(() => {
-            this.updateFontSize();
-            this._resizeEventTimeout = undefined;
-        }, TableComponent._resizeEventWaitTime);
     }
 
     private updateFontSize(): void {
