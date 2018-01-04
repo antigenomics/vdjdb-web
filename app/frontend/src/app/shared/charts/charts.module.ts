@@ -17,7 +17,6 @@
 
 import { NgModule } from '@angular/core';
 import { BarChartComponent } from 'shared/charts/bar/bar-chart.component';
-import { ChartComponent } from 'shared/charts/chart.component';
 
 @NgModule({
     declarations: [ BarChartComponent ],

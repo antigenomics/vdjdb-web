@@ -15,8 +15,9 @@
  *
  */
 
-import { AfterViewInit, Component, ElementRef, Input, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, Input, OnDestroy, ViewChild } from '@angular/core';
 import * as d3 from 'external/d3';
+import { BarChart, BarChartDataEntry } from 'shared/charts/bar/bar-chart';
 import { createDefaultBarChartConfiguration, IBarChartConfiguration } from 'shared/charts/bar/bar-chart-configuration';
 import { ChartContainer } from 'shared/charts/container/chart-container';
 import { IChartContainerConfiguration } from 'shared/charts/container/chart-container-configuration';
@@ -27,74 +28,36 @@ import { Configuration } from 'utils/configuration/configuration';
     template:  '<div #container style="width: 100%; height: 100%"></div>',
     styleUrls: [ './bar-chart.styles.css' ]
 })
-export class BarChartComponent implements AfterViewInit {
-    private configuration: IBarChartConfiguration = createDefaultBarChartConfiguration();
+export class BarChartComponent implements AfterViewInit, OnDestroy {
+
     private container: ChartContainer;
+    private chart: BarChart;
+    private data: BarChartDataEntry[];
 
     @ViewChild('container', { read: ElementRef })
     private containerElementRef: ElementRef;
 
     @Input('configuration')
-    set setConfiguration(configuration: IBarChartConfiguration) {
-        this.configuration = createDefaultBarChartConfiguration();
-        Configuration.extend(this.configuration, configuration);
+    private configuration: IBarChartConfiguration;
+
+    @Input('data')
+    public set setData(newData: BarChartDataEntry[]) {
+        if (this.data) {
+            this.data = newData;
+            this.chart.update(this.data);
+        } else {
+            this.data = newData;
+        }
     }
 
     public ngAfterViewInit(): void {
-        const max = 50;
-        const min = 10;
-        const count = Math.floor(Math.random() * (max - min)) + min;
-        const data: number[] = [];
-        for (let i = 0; i < count; ++i) {
-            data.push(Math.floor(Math.random() * (max - min)) + min);
-        }
-
         this.container = new ChartContainer(this.containerElementRef, this.configuration.container);
-
-        const svg = this.container.getContainer();
-        const width = this.container.getWidth();
-        const height = this.container.getHeight();
-
-        const barSize = this.calculateBarWidth(data, width, height);
-        const gapSize = barSize * this.configuration.gap;
-
-        const heights = this.calculateBarHeight(data, width, height);
-        svg.attr('class', 'bar-chart')
-           .selectAll('rect')
-           .data(data)
-           .enter().append('rect')
-           .attr('class', 'bar')
-           .attr('height', (d, i) => heights[ i ])
-           .attr('width', barSize)
-           .attr('x', (d, i) => (i + 1) * gapSize + i * barSize)
-           .attr('y', (d, i) => height - heights[ i ]);
-
-        if (this.configuration.type === 'horizontal') {
-            svg.attr('transform', `${svg.attr('transform')}, rotate(90), translate(0, -${height})`);
-        }
+        this.chart = new BarChart(this.container);
+        this.chart.create(this.data, this.configuration);
     }
 
-    private calculateBarWidth(data: number[], width: number, height: number): number {
-        const count = data.length;
-        switch (this.configuration.type) {
-            case 'bar':
-                return width / (count + (count + 1) * this.configuration.gap);
-            case 'horizontal':
-                return height / (count + (count + 1) * this.configuration.gap);
-            default:
-                throw new Error(`Unexpected bar type ${this.configuration.type}`);
-        }
-    }
-
-    private calculateBarHeight(data: number[], width: number, height: number): number[] {
-        const max = d3.max(data);
-        switch (this.configuration.type) {
-            case 'bar':
-                return data.map((d) => height * d / max);
-            case 'horizontal':
-                return data.map((d) => width * d / max);
-            default:
-                throw new Error(`Unexpected bar type ${this.configuration.type}`);
-        }
+    public ngOnDestroy(): void {
+        this.container.getContainer().remove();
     }
 }
+
