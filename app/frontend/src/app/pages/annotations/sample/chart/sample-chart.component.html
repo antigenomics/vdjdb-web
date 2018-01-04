@@ -4,7 +4,7 @@
         <div class="sub header">Software: {{ sample.software }}</div>
     </h3>
     <div class="ui attached teal padded segment">
-        <button class="ui button teal" (click)="updateData()">Update</button>
+        <button class="ui button teal" (click)="updateValues()">Update values</button>
     </div>
 </div>
 <div class="ui two column grid">
@@ -12,7 +12,7 @@
         <div class="ui fade slow element segments">
             <h3 class="ui top attached header">Charts</h3>
             <div class="ui attached teal padded segment" style="height: 400px; min-height: 400px;">
-                <bar-chart [configuration]="configuration" [data]="data"></bar-chart>
+                <bar-chart [configuration]="configuration" [stream]="stream"></bar-chart>
             </div>
         </div>
     </div>
@@ -20,7 +20,7 @@
         <div class="ui fade slow element segments">
             <h3 class="ui top attached header">Charts</h3>
             <div class="ui attached teal padded segment" style="height: 400px; min-height: 400px;">
-                <bar-chart [configuration]="configuration" [data]="data"></bar-chart>
+                <bar-chart [configuration]="configuration" [stream]="stream"></bar-chart>
             </div>
         </div>
     </div>

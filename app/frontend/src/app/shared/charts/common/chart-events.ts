@@ -15,18 +15,14 @@
  *
  */
 
-import { createDefaultChartContainerConfiguration, IChartContainerConfiguration } from 'shared/charts/container/chart-container-configuration';
+export type ChartEventType = number;
 
-export interface IBarChartConfiguration {
-    readonly container?: IChartContainerConfiguration;
-    readonly padding?: number;
-    readonly type?: string;
+export namespace ChartEventType {
+    export const INITIAL_DATA: number = 0;
+    export const UPDATE_VALUES: number = 1;
 }
 
-export function createDefaultBarChartConfiguration(): IBarChartConfiguration {
-    return {
-        container: createDefaultChartContainerConfiguration(),
-        padding: 0.1,
-        type: 'bar'
-    }
+export interface ChartEvent<T> {
+    readonly type: ChartEventType;
+    readonly data: T[];
 }

@@ -17,9 +17,13 @@
 
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { ReplaySubject } from 'rxjs/ReplaySubject';
+import { Subject } from 'rxjs/Subject';
 import { Subscription } from 'rxjs/Subscription';
-import { BarChartDataEntry } from 'shared/charts/bar/bar-chart';
-import { IBarChartConfiguration } from 'shared/charts/bar/bar-chart-configuration';
+import { BarChartHorizontalDataEntry } from 'shared/charts/bar/horizontal/bar-chart-horizontal';
+import { ChartEvent, ChartEventType } from 'shared/charts/common/chart-events';
+
+import { IChartContainerConfiguration } from 'shared/charts/container/chart-container-configuration';
 import { SampleItem } from 'shared/sample/sample-item';
 
 @Component({
@@ -29,46 +33,55 @@ import { SampleItem } from 'shared/sample/sample-item';
 })
 export class SampleChartComponent implements OnInit {
     private _routeSampleSubscription: Subscription;
+    private _count: number = 0;
 
     public sample: SampleItem;
-    public configuration: IBarChartConfiguration;
-    public data: BarChartDataEntry[] = [];
+    public configuration: IChartContainerConfiguration;
+
+    public stream: Subject<ChartEvent<BarChartHorizontalDataEntry>> = new ReplaySubject(1);
 
     constructor(private activatedRoute: ActivatedRoute, private changeDetector: ChangeDetectorRef) {
         this.sample = this.activatedRoute.snapshot.data.sample;
         this.configuration = {
-            container: {
-                margin: {
-                    left: 25, right: 25, top: 20, bottom: 20
-                }
-            },
-            type:      'horizontal'
+            margin: {
+                left: 25, right: 25, top: 20, bottom: 20
+            }
         };
 
         const max = 20;
-        const min = 0;
-        const count = Math.floor(Math.random() * (max - min)) + min;
+        const min = 10;
+        const count = Math.floor(Math.random() * (max - 1)) + min;
+        const data: BarChartHorizontalDataEntry[] = [];
         for (let i = 0; i < count; ++i) {
-            this.data.push({
-                domain: `${i}`,
-                value:  Math.floor(Math.random() * (max - min)) + min
+            data.push({
+                name:  `${i}`,
+                value: Math.floor(Math.random() * (max - 1)) + 1
             });
         }
+
+        this.stream.next({
+            type: ChartEventType.INITIAL_DATA,
+            data: data
+        });
+        this._count = data.length;
     }
 
-    public updateData(): void {
-        const newData = [];
-        const max = 20;
-        const min = 0;
-        const count = Math.floor(Math.random() * (max - min)) + min;
+    public updateValues(): void {
+        const max = 100;
+        const min = 10;
+        const count = this._count;
+        const data: BarChartHorizontalDataEntry[] = [];
         for (let i = 0; i < count; ++i) {
-            newData.push({
-                domain: `${i}`,
-                value:  Math.floor(Math.random() * (max - min)) + min
+            data.push({
+                name:  `${i}`,
+                value: Math.floor(Math.random() * max) + 1
             });
         }
-        this.data = newData;
-        this.changeDetector.detectChanges();
+
+        this.stream.next({
+            type: ChartEventType.UPDATE_VALUES,
+            data: data
+        });
     }
 
     public ngOnInit(): void {
