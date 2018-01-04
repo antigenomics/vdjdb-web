@@ -18,24 +18,27 @@
 import * as d3 from 'external/d3';
 import { ChartContainer } from 'shared/charts/container/chart-container';
 
-export interface BarChartHorizontalDataEntry {
+export interface IBarChartHorizontalDataEntry {
     readonly name: string;
     readonly value: number;
 }
 
 export class BarChartHorizontal {
+    private static readonly defaultPadding: number = 0.1;
+    private static readonly defaultXMargin: number = 5;
+
     constructor(private container: ChartContainer) {
     }
 
-    public create(data: BarChartHorizontalDataEntry[]): void {
+    public create(data: IBarChartHorizontalDataEntry[]): void {
         const width = this.container.getWidth();
         const height = this.container.getHeight();
 
         const svg = this.container.getContainer();
         svg.attr('class', 'bar chart horizontal');
 
-        const y = d3.scaleBand().rangeRound([ height, 0 ]).padding(0.1);
-        const x = d3.scaleLinear().range([ 0, width ]);
+        const y = d3.scaleBand().rangeRound([ height, 0 ]).padding(BarChartHorizontal.defaultPadding);
+        const x = d3.scaleLinear().range([ BarChartHorizontal.defaultXMargin, width ]);
 
         y.domain(data.map((d) => d.name));
         x.domain([ 0, d3.max(data.map((d) => d.value)) ]);
@@ -48,7 +51,7 @@ export class BarChartHorizontal {
            .call(yAxis)
            .append('text')
            .attr('transform', 'rotate(-90)')
-           .attr('y', 6)
+           .attr('y', 6) // tslint:disable-line:no-magic-numbers
            .attr('dy', '.71em')
            .style('text-anchor', 'end')
            .text('Frequency');
@@ -68,12 +71,12 @@ export class BarChartHorizontal {
            .attr('class', 'bar')
            .attr('y', (d) => y(d.name))
            .attr('height', y.bandwidth)
-           .attr('x', 5)
+           .attr('x', BarChartHorizontal.defaultXMargin)
            .attr('width', (d) => x(d.value))
            .attr('fill', (d, i) => colors(i));
     }
 
-    public updateValues(data: BarChartHorizontalDataEntry[]): void {
+    public updateValues(data: IBarChartHorizontalDataEntry[]): void {
         const x = d3.scaleLinear().range([ 0, this.container.getWidth() ]);
 
         x.domain([ 0, d3.max(data.map((d) => d.value)) ]);
@@ -81,7 +84,9 @@ export class BarChartHorizontal {
         const xAxis = d3.axisBottom(x) as any;
 
         const svg = this.container.getContainer();
-        const transition = svg.transition().duration(750);
+
+        const transitionDuration: number = 750;
+        const transition = svg.transition().duration(transitionDuration);
 
         transition.selectAll('.bar')
                   .attr('width', (d, i) => x(data[ i ].value));

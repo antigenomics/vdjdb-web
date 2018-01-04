@@ -17,16 +17,16 @@
 
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
 
-export interface ExportFormat {
+export interface IExportFormat {
     readonly name: string;
     readonly title: string;
     readonly icon?: string;
 }
 
-export interface ExportOptionFlag {
-    readonly name: string,
-    readonly title: string
-    value: boolean
+export interface IExportOptionFlag {
+    readonly name: string;
+    readonly title: string;
+    value: boolean;
 }
 
 @Component({
@@ -36,16 +36,16 @@ export interface ExportOptionFlag {
 })
 export class TableExportComponent {
     @Input('formats')
-    public formats: ExportFormat[];
+    public formats: IExportFormat[];
 
     @Input('options')
-    public options: ExportOptionFlag[];
+    public options: IExportOptionFlag[];
 
     @Output()
-    public exportEvent = new EventEmitter<{ format: ExportFormat, options: ExportOptionFlag[] }>();
+    public exportEvent = new EventEmitter<{ format: IExportFormat, options: IExportOptionFlag[] }>();
 
-    public exportTable(format: ExportFormat): void {
-        this.exportEvent.emit({ format: format, options: this.options });
+    public exportTable(format: IExportFormat): void {
+        this.exportEvent.emit({ format, options: this.options });
     }
 
     public isOptionsAvailable(): boolean {

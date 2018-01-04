@@ -18,7 +18,6 @@
 import { Component, Input } from '@angular/core';
 import { TableColumn } from 'shared/table/column/table-column';
 import { ITableConfigurationDescriptor } from 'shared/table/configuration/table-configuration';
-import { Configuration } from 'utils/configuration/configuration';
 import { IntersectionTable } from './intersection-table';
 
 @Component({

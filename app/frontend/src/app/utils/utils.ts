@@ -243,7 +243,7 @@ export namespace Utils {
                 const lastReadyState = 4;
                 const successStatus = 200;
                 const failedStatus = 400;
-                xhttp.onreadystatechange = function () {
+                xhttp.onreadystatechange = function() {
                     if (this.readyState === lastReadyState && this.status === successStatus) {
                         resolve(this);
                     } else if (this.readyState === lastReadyState && this.status === failedStatus) {
@@ -251,11 +251,11 @@ export namespace Utils {
                     }
                 };
 
-                xhttp.onerror = function () {
+                xhttp.onerror = function() {
                     reject(this);
                 };
 
-                xhttp.onabort = function () {
+                xhttp.onabort = function() {
                     reject(this);
                 };
 
@@ -339,12 +339,12 @@ export namespace Utils {
     }
 
     export namespace Time {
-        export function debounce(f: Function, ms: number): any {
-            let timer: number = undefined;
-            return function (...args: any[]) {
+        export function debounce(f: () => void, ms: number): any {
+            let timer: number;
+            return function(...args: any[]) {
                 const onComplete = () => {
                     f.apply(this, args);
-                    timer = null;
+                    timer = undefined;
                 };
 
                 if (timer) {

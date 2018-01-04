@@ -22,7 +22,7 @@ export namespace ChartEventType {
     export const UPDATE_VALUES: number = 1;
 }
 
-export interface ChartEvent<T> {
+export interface IChartEvent<T> {
     readonly type: ChartEventType;
     readonly data: T[];
 }

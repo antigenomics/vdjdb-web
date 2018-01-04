@@ -18,7 +18,6 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { TableColumn } from 'shared/table/column/table-column';
 import { ITableConfigurationDescriptor } from 'shared/table/configuration/table-configuration';
-import { Configuration } from 'utils/configuration/configuration';
 import { AnnotationsService } from '../../../../annotations.service';
 import { MatchesTable } from './matches-table';
 
