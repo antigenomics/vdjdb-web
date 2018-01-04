@@ -20,14 +20,14 @@
  */
 
 * >>> .bar.chart > rect.bar {
-    fill: #48af75;
-    -webkit-transition: fill .3s ease;
-    -moz-transition: fill .3s ease;
-    -ms-transition: fill .3s ease;
-    transition: fill .3s ease;
+    opacity: 0.9;
+    -webkit-transition: opacity .3s ease;
+    -moz-transition: opacity .3s ease;
+    -ms-transition: opacity .3s ease;
+    transition: opacity .3s ease;
     cursor: pointer;
 }
 
 * >>> .bar.chart > rect.bar:hover {
-    fill: #1a69a4;
+    opacity: 1.0;
 }

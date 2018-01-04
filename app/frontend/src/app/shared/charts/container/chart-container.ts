@@ -20,7 +20,7 @@ import * as d3 from 'external/d3';
 import { createDefaultChartContainerConfiguration, IChartContainerConfiguration } from 'shared/charts/container/chart-container-configuration';
 import { Configuration } from 'utils/configuration/configuration';
 
-export type D3HTMLSelection = d3.Selection<d3.BaseType, any, HTMLElement, any>;
+export type D3HTMLSelection = d3.Selection<d3.BaseType, any, any, any>;
 export type D3MultipleDataSelection<T> = d3.Selection<d3.BaseType, T, any, any>
 
 export class ChartContainer {
