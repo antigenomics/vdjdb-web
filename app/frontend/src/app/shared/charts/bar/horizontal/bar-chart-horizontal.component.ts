@@ -16,14 +16,12 @@
  */
 
 import { AfterViewInit, Component, ElementRef, Input, OnDestroy, ViewChild } from '@angular/core';
-import * as d3 from 'external/d3';
 import { Observable } from 'rxjs/Observable';
 import { Subscription } from 'rxjs/Subscription';
-import { BarChartHorizontal, BarChartHorizontalDataEntry } from 'shared/charts/bar/horizontal/bar-chart-horizontal';
-import { ChartEvent, ChartEventType } from 'shared/charts/common/chart-events';
+import { BarChartHorizontal, IBarChartHorizontalDataEntry } from 'shared/charts/bar/horizontal/bar-chart-horizontal';
+import { ChartEventType, IChartEvent } from 'shared/charts/common/chart-events';
 import { ChartContainer } from 'shared/charts/container/chart-container';
 import { IChartContainerConfiguration } from 'shared/charts/container/chart-container-configuration';
-import { Configuration } from 'utils/configuration/configuration';
 
 @Component({
     selector:  'bar-chart',
@@ -43,7 +41,7 @@ export class BarChartHorizontalComponent implements AfterViewInit, OnDestroy {
     public configuration: IChartContainerConfiguration;
 
     @Input('stream')
-    public stream: Observable<ChartEvent<BarChartHorizontalDataEntry>>;
+    public stream: Observable<IChartEvent<IBarChartHorizontalDataEntry>>;
 
     public ngAfterViewInit(): void {
         this.container = new ChartContainer(this.containerElementRef, this.configuration);
@@ -71,4 +69,3 @@ export class BarChartHorizontalComponent implements AfterViewInit, OnDestroy {
         this.streamSubscription.unsubscribe();
     }
 }
-

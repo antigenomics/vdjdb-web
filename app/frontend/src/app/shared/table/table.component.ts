@@ -21,7 +21,7 @@ import { createDefaultTableConfiguration, ITableConfigurationDescriptor } from '
 import { Configuration } from 'utils/configuration/configuration';
 import { Utils } from 'utils/utils';
 import { TableColumn } from './column/table-column';
-import { ExportFormat } from './export/table-export.component';
+import { IExportFormat } from './export/table-export.component';
 import { TableRow } from './row/table-row';
 import { Table } from './table';
 
@@ -68,7 +68,7 @@ export class TableComponent implements OnInit, AfterViewInit, OnDestroy {
     public onPageSizeChange = new EventEmitter<number>();
 
     @Output('onExport')
-    public onExport = new EventEmitter<ExportFormat>();
+    public onExport = new EventEmitter<IExportFormat>();
 
     constructor(private changeDetector: ChangeDetectorRef, private renderer: Renderer2) {
     }
@@ -83,7 +83,7 @@ export class TableComponent implements OnInit, AfterViewInit, OnDestroy {
         if (this.configuration.size.header.dynamicSizeEnabled || this.configuration.size.content.dynamicSizeEnabled) {
             this.updateFontSize();
             this._resizeEventListener = this.renderer.listen('window', 'resize', () => {
-                this._resizeDebouncedHandler()
+                this._resizeDebouncedHandler();
             });
         }
     }

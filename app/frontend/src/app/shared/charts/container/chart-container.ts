@@ -21,7 +21,7 @@ import { createDefaultChartContainerConfiguration, IChartContainerConfiguration 
 import { Configuration } from 'utils/configuration/configuration';
 
 export type D3HTMLSelection = d3.Selection<d3.BaseType, any, any, any>;
-export type D3MultipleDataSelection<T> = d3.Selection<d3.BaseType, T, any, any>
+export type D3MultipleDataSelection<T> = d3.Selection<d3.BaseType, T, any, any>;
 
 export class ChartContainer {
     private readonly _configuration: IChartContainerConfiguration;

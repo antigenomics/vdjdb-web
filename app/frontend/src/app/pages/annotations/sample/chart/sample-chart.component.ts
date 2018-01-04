@@ -20,8 +20,8 @@ import { ActivatedRoute } from '@angular/router';
 import { ReplaySubject } from 'rxjs/ReplaySubject';
 import { Subject } from 'rxjs/Subject';
 import { Subscription } from 'rxjs/Subscription';
-import { BarChartHorizontalDataEntry } from 'shared/charts/bar/horizontal/bar-chart-horizontal';
-import { ChartEvent, ChartEventType } from 'shared/charts/common/chart-events';
+import { IBarChartHorizontalDataEntry } from 'shared/charts/bar/horizontal/bar-chart-horizontal';
+import { ChartEventType, IChartEvent } from 'shared/charts/common/chart-events';
 
 import { IChartContainerConfiguration } from 'shared/charts/container/chart-container-configuration';
 import { SampleItem } from 'shared/sample/sample-item';
@@ -38,7 +38,7 @@ export class SampleChartComponent implements OnInit {
     public sample: SampleItem;
     public configuration: IChartContainerConfiguration;
 
-    public stream: Subject<ChartEvent<BarChartHorizontalDataEntry>> = new ReplaySubject(1);
+    public stream: Subject<IChartEvent<IBarChartHorizontalDataEntry>> = new ReplaySubject(1);
 
     constructor(private activatedRoute: ActivatedRoute, private changeDetector: ChangeDetectorRef) {
         this.sample = this.activatedRoute.snapshot.data.sample;
@@ -51,7 +51,7 @@ export class SampleChartComponent implements OnInit {
         const max = 20;
         const min = 10;
         const count = Math.floor(Math.random() * (max - 1)) + min;
-        const data: BarChartHorizontalDataEntry[] = [];
+        const data: IBarChartHorizontalDataEntry[] = [];
         for (let i = 0; i < count; ++i) {
             data.push({
                 name:  `${i}`,
@@ -59,29 +59,19 @@ export class SampleChartComponent implements OnInit {
             });
         }
 
-        this.stream.next({
-            type: ChartEventType.INITIAL_DATA,
-            data: data
-        });
+        this.stream.next({ type: ChartEventType.INITIAL_DATA, data });
         this._count = data.length;
     }
 
     public updateValues(): void {
         const max = 100;
-        const min = 10;
         const count = this._count;
-        const data: BarChartHorizontalDataEntry[] = [];
+        const data: IBarChartHorizontalDataEntry[] = [];
         for (let i = 0; i < count; ++i) {
-            data.push({
-                name:  `${i}`,
-                value: Math.floor(Math.random() * max) + 1
-            });
+            data.push({ name: `${i}`, value: Math.floor(Math.random() * max) + 1 });
         }
 
-        this.stream.next({
-            type: ChartEventType.UPDATE_VALUES,
-            data: data
-        });
+        this.stream.next({ type: ChartEventType.UPDATE_VALUES, data });
     }
 
     public ngOnInit(): void {

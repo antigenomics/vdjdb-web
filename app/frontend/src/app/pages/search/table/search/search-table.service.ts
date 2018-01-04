@@ -17,7 +17,7 @@
 import { Injectable } from '@angular/core';
 import { Filter, FiltersOptions, IFilter } from 'shared/filters/filters';
 import { FiltersService } from 'shared/filters/filters.service';
-import { ExportFormat, ExportOptionFlag } from 'shared/table/export/table-export.component';
+import { IExportFormat, IExportOptionFlag } from 'shared/table/export/table-export.component';
 import { Table, TableEvent } from 'shared/table/table';
 import { WebSocketConnection, WebSocketResponseStatus } from 'shared/websocket/websocket-connection';
 import { WebSocketRequestData } from 'shared/websocket/websocket-request';
@@ -158,7 +158,7 @@ export class SearchTableService extends Table<SearchTableRow> {
         this.updateFromResponse(response);
     }
 
-    public async exportTable(request: { format: ExportFormat, options: ExportOptionFlag[] }): Promise<void> {
+    public async exportTable(request: { format: IExportFormat, options: IExportOptionFlag[] }): Promise<void> {
         const { format, options } = request;
         await this.checkConnection(true, false);
         this.logger.debug('Export', format);

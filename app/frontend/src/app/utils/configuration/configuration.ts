@@ -19,28 +19,31 @@ export namespace Configuration {
 
     export function extend<T>(target: T, ...sources: T[]): void {
         for (const source of sources) {
-            for (let property in source) {
-                const value = source[ property ];
-                const isObject = (typeof value === 'object') && !(Array.isArray(value));
-                if (isObject) {
-                    extend(target[ property ], value);
-                } else {
-                    target[ property ] = value;
+            for (const property in source) {
+                if (source.hasOwnProperty(property)) {
+                    const value = source[ property ];
+                    const isObject = (typeof value === 'object') && !(Array.isArray(value));
+                    if (isObject) {
+                        extend(target[ property ], value);
+                    } else {
+                        target[ property ] = value;
+                    }
                 }
             }
         }
     }
 
     export function print<T>(target: T, shift: string = '') {
-
-        for (let property in target) {
-            const value = target[ property ];
-            const isObject = (typeof value === 'object') && !(Array.isArray(value));
-            if (isObject) {
-                console.log(`${shift}${property}`);
-                print(value, shift + '\t');
-            } else {
-                console.log(`${shift}${property}: `, value);
+        for (const property in target) {
+            if (target.hasOwnProperty(property)) {
+                const value = target[ property ];
+                const isObject = (typeof value === 'object') && !(Array.isArray(value));
+                if (isObject) {
+                    console.log(`${shift}${property}`); // tslint:disable-line:no-console
+                    print(value, shift + '\t');
+                } else {
+                    console.log(`${shift}${property}: `, value); // tslint:disable-line:no-console
+                }
             }
         }
     }

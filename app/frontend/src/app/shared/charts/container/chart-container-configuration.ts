@@ -22,8 +22,8 @@ export interface IChartContainerMarginConfiguration {
     readonly bottom?: number;
 }
 
-function createDefaultChartContainerMarginConfiguration() : IChartContainerMarginConfiguration {
-    return { left: 0, right: 0, top: 0, bottom: 0 }
+function createDefaultChartContainerMarginConfiguration(): IChartContainerMarginConfiguration {
+    return { left: 0, right: 0, top: 0, bottom: 0 };
 }
 
 export interface IChartContainerConfiguration {
@@ -33,5 +33,5 @@ export interface IChartContainerConfiguration {
 }
 
 export function createDefaultChartContainerConfiguration(): IChartContainerConfiguration {
-    return { margin: createDefaultChartContainerMarginConfiguration() }
+    return { margin: createDefaultChartContainerMarginConfiguration() };
 }
