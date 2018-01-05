@@ -43,7 +43,7 @@ export class SampleChartComponent implements OnInit {
         this.sample = this.activatedRoute.snapshot.data.sample;
         this.configuration = {
             margin: {
-                left: 25, right: 25, top: 20, bottom: 20
+                left: 80, right: 25, top: 20, bottom: 20
             }
         };
 
@@ -72,7 +72,7 @@ export class SampleChartComponent implements OnInit {
     private generateRandomData(count: number, min: number, max: number): IBarChartHorizontalDataEntry[] {
         const data: IBarChartHorizontalDataEntry[] = [];
         for (let i = 0; i < count; ++i) {
-            data.push({ name: `${i}`, value: Math.floor(Math.random() * (max - min)) + min });
+            data.push({ name: `some text ${i}`, value: Math.floor(Math.random() * (max - min)) + min });
         }
         return data;
     }

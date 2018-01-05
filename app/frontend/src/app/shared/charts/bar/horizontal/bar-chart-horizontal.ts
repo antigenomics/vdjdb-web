@@ -15,43 +15,39 @@
  *
  */
 
+import { ScaleBand, ScaleLinear } from 'd3-scale';
+import { event as D3CurrentEvent } from 'd3-selection';
 import * as d3 from 'external/d3';
-import { ChartContainer } from 'shared/charts/container/chart-container';
+import { Observable } from 'rxjs/Observable';
+import { Chart } from 'shared/charts/chart';
+import { IChartEvent } from 'shared/charts/chart-events';
+import { ChartContainer, D3HTMLSelection } from 'shared/charts/container/chart-container';
 
 export interface IBarChartHorizontalDataEntry {
     readonly name: string;
     readonly value: number;
 }
 
-export class BarChartHorizontal {
+export class BarChartHorizontal extends Chart<IBarChartHorizontalDataEntry> {
     private static readonly defaultTransitionDuration: number = 750;
     private static readonly defaultPadding: number = 0.1;
     private static readonly defaultXMargin: number = 5;
 
-    constructor(private container: ChartContainer) {
+    constructor(container: ChartContainer, dataStream: Observable<IChartEvent<IBarChartHorizontalDataEntry>>) {
+        super(container, dataStream);
+        this.container.classed('bar chart horizontal');
     }
 
     public create(data: IBarChartHorizontalDataEntry[]): void {
-        const width = this.container.getWidth();
-        const height = this.container.getHeight();
-
-        const svg = this.container.getContainer();
-        svg.attr('class', 'bar chart horizontal');
-
-        const y = d3.scaleBand().rangeRound([ height, 0 ]).padding(BarChartHorizontal.defaultPadding);
-        const x = d3.scaleLinear().range([ BarChartHorizontal.defaultXMargin, width ]);
-
-        y.domain(data.map((d) => d.name));
-        x.domain([ 0, d3.max(data.map((d) => d.value)) ]);
-
-        const xAxis = d3.axisBottom(x);
-        const yAxis = d3.axisLeft(y);
+        const { svg, width, height } = this.container.getContainer();
+        const { x, xAxis } = this.createXAxis(width, data.map((d) => d.value));
+        const { y, yAxis } = this.createYAxis(height, data.map((d) => d.name));
+        const colors = this.getColors(data.length);
 
         svg.append('g')
            .attr('class', 'y axis')
            .call(yAxis)
            .append('text')
-           // .attr('y', 6) // tslint:disable-line:no-magic-numbers
            .attr('dx', '2.5em')
            .attr('dy', '-0.4em')
            .text('Frequency');
@@ -60,10 +56,6 @@ export class BarChartHorizontal {
            .attr('class', 'x axis')
            .attr('transform', `translate(0, ${height})`)
            .call(xAxis);
-
-        const colors = d3.scaleLinear()
-                         .domain([ 0, data.length ])
-                         .range([ '#48af75', '#3897e0' ] as any);
 
         svg.selectAll('.bar')
            .data(data)
@@ -77,39 +69,21 @@ export class BarChartHorizontal {
     }
 
     public update(data: IBarChartHorizontalDataEntry[]): void {
-        const width = this.container.getWidth();
-        const height = this.container.getHeight();
-
-        const y = d3.scaleBand().rangeRound([ height, 0 ]).padding(BarChartHorizontal.defaultPadding);
-        const x = d3.scaleLinear().range([ 0, width ]);
-
-        y.domain(data.map((d) => d.name));
-        x.domain([ 0, d3.max(data.map((d) => d.value)) ]);
-
-        const xAxis = d3.axisBottom(x) as any;
-        const yAxis = d3.axisLeft(y) as any;
-
-        const svg = this.container.getContainer();
+        const { svg, width, height } = this.container.getContainer();
+        const { x, xAxis } = this.createXAxis(width, data.map((d) => d.value));
+        const { y, yAxis } = this.createYAxis(height, data.map((d) => d.name));
+        const colors = this.getColors(data.length);
 
         const bars = svg.selectAll('.bar').data(data);
-        const colors = d3.scaleLinear()
-                         .domain([ 0, data.length ])
-                         .range([ '#48af75', '#3897e0' ] as any);
 
         bars.exit().remove();
         bars.enter().append('rect')
             .attr('class', 'bar')
-            .attr('y', (d) => y(d.name))
-            .attr('x', BarChartHorizontal.defaultXMargin)
+            .merge(bars)
             .transition().duration(BarChartHorizontal.defaultTransitionDuration)
-            .attr('height', y.bandwidth)
-            .attr('width', (d) => x(d.value))
-            .attr('fill', (d, i) => colors(i));
-
-        bars.transition().duration(BarChartHorizontal.defaultTransitionDuration)
             .attr('y', (d) => y(d.name))
-            .attr('height', y.bandwidth)
             .attr('x', BarChartHorizontal.defaultXMargin)
+            .attr('height', y.bandwidth)
             .attr('width', (d) => x(d.value))
             .attr('fill', (d, i) => colors(i));
 
@@ -123,21 +97,36 @@ export class BarChartHorizontal {
     }
 
     public updateValues(data: IBarChartHorizontalDataEntry[]): void {
-        const x = d3.scaleLinear().range([ 0, this.container.getWidth() ]);
+        const { svg, width } = this.container.getContainer();
+        const { x, xAxis } = this.createXAxis(width, data.map((d) => d.value));
 
-        x.domain([ 0, d3.max(data.map((d) => d.value)) ]);
+        svg.selectAll('.bar').data(data)
+           .transition().duration(BarChartHorizontal.defaultTransitionDuration)
+           .attr('width', (d, i) => x(d.value));
 
-        const xAxis = d3.axisBottom(x) as any;
+        svg.select('.x.axis')
+           .transition().duration(BarChartHorizontal.defaultTransitionDuration)
+           .call(xAxis);
+    }
 
-        const svg = this.container.getContainer();
+    private createXAxis(width: number, values: number[]): { x: ScaleLinear<number, number>, xAxis: any } {
+        const x = d3.scaleLinear().range([ 0, width ])
+                    .domain([ 0, d3.max(values) ]);
+        const xAxis = d3.axisBottom(x);
+        return { x, xAxis };
+    }
 
-        svg.selectAll('.bar').data(data);
-        const transition = svg.transition().duration(BarChartHorizontal.defaultTransitionDuration);
+    private createYAxis(height: number, names: string[]): { y: ScaleBand<string>, yAxis: any } {
+        const y = d3.scaleBand().rangeRound([ height, 0 ])
+                    .padding(BarChartHorizontal.defaultPadding)
+                    .domain(names);
+        const yAxis = d3.axisLeft(y);
+        return { y, yAxis };
+    }
 
-        transition.selectAll('.bar')
-                  .attr('width', (d: IBarChartHorizontalDataEntry, i) => x(d.value));
-
-        transition.select('.x.axis')
-                  .call(xAxis);
+    private getColors(count: number): ScaleLinear<number, number> {
+        return d3.scaleLinear()
+                 .domain([ 0, count ])
+                 .range([ '#48af75', '#3897e0' ] as any);
     }
 }

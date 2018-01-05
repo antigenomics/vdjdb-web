@@ -29,7 +29,7 @@ export class ChartContainer {
     private readonly _width: number;
     private readonly _height: number;
 
-    constructor(element: ElementRef, configuration?: IChartContainerConfiguration) {
+    constructor(private readonly element: ElementRef, configuration?: IChartContainerConfiguration) {
         this._configuration = createDefaultChartContainerConfiguration();
         Configuration.extend(this._configuration, configuration);
 
@@ -48,8 +48,16 @@ export class ChartContainer {
         this._height = height;
     }
 
-    public getContainer(): D3HTMLSelection {
-        return this._container;
+    public classed(name: string): void {
+        this._container.attr('class', name);
+    }
+
+    public getElementRef(): ElementRef {
+        return this.element;
+    }
+
+    public getContainer(): { svg?: D3HTMLSelection, width?: number, height?: number } {
+        return { svg: this._container, width: this._width, height: this._height };
     }
 
     public getWidth(): number {
@@ -58,5 +66,9 @@ export class ChartContainer {
 
     public getHeight(): number {
         return this._height;
+    }
+
+    public destroy(): void {
+        this._container.remove();
     }
 }
