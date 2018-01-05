@@ -304,9 +304,7 @@ export namespace Utils {
                         bytes += Memory.booleanSizeInBytes;
                         break;
                     case 'object':
-                        /* tslint:disable:no-magic-numbers */
-                        const objClass = Object.prototype.toString.call(object).slice(8, -1);
-                        /* tslint:enable:no-magic-numbers */
+                        const objClass = Object.prototype.toString.call(object).slice(8, -1); // tslint:disable-line:no-magic-numbers
                         if (objClass === 'Object' || objClass === 'Array') {
                             for (const key in object) {
                                 if (!object.hasOwnProperty(key)) {
