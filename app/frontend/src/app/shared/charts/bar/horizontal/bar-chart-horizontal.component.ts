@@ -29,10 +29,7 @@ import { IChartContainerConfiguration } from 'shared/charts/container/chart-cont
     styleUrls: [ '../bar-chart.styles.css' ]
 })
 export class BarChartHorizontalComponent implements AfterViewInit, OnDestroy {
-    private created: boolean = false;
-    private container: ChartContainer;
     private chart: BarChartHorizontal;
-    private streamSubscription: Subscription;
 
     @ViewChild('container', { read: ElementRef })
     public containerElementRef: ElementRef;
@@ -44,31 +41,11 @@ export class BarChartHorizontalComponent implements AfterViewInit, OnDestroy {
     public stream: Observable<IChartEvent<IBarChartHorizontalDataEntry>>;
 
     public ngAfterViewInit(): void {
-        this.container = new ChartContainer(this.containerElementRef, this.configuration);
-        this.chart = new BarChartHorizontal(this.container);
-
-        this.streamSubscription = this.stream.subscribe((event) => {
-            if (!this.created) {
-                this.chart.create(event.data);
-                this.created = true;
-            } else {
-                switch (event.type) {
-                    case ChartEventType.UPDATE_VALUES:
-                        this.chart.updateValues(event.data);
-                        break;
-                    case ChartEventType.UPDATE_DATA:
-                        this.chart.update(event.data);
-                        break;
-                    default:
-                        break;
-                }
-            }
-
-        });
+        const container = new ChartContainer(this.containerElementRef, this.configuration);
+        this.chart = new BarChartHorizontal(container, this.stream);
     }
 
     public ngOnDestroy(): void {
-        this.container.getContainer().remove();
-        this.streamSubscription.unsubscribe();
+        this.chart.destroy();
     }
 }
