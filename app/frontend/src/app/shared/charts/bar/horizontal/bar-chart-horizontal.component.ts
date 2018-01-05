@@ -19,7 +19,7 @@ import { AfterViewInit, Component, ElementRef, Input, OnDestroy, ViewChild } fro
 import { Observable } from 'rxjs/Observable';
 import { Subscription } from 'rxjs/Subscription';
 import { BarChartHorizontal, IBarChartHorizontalDataEntry } from 'shared/charts/bar/horizontal/bar-chart-horizontal';
-import { ChartEventType, IChartEvent } from 'shared/charts/common/chart-events';
+import { ChartEventType, IChartEvent } from 'shared/charts/chart-events';
 import { ChartContainer } from 'shared/charts/container/chart-container';
 import { IChartContainerConfiguration } from 'shared/charts/container/chart-container-configuration';
 
@@ -55,6 +55,9 @@ export class BarChartHorizontalComponent implements AfterViewInit, OnDestroy {
                 switch (event.type) {
                     case ChartEventType.UPDATE_VALUES:
                         this.chart.updateValues(event.data);
+                        break;
+                    case ChartEventType.UPDATE_DATA:
+                        this.chart.update(event.data);
                         break;
                     default:
                         break;

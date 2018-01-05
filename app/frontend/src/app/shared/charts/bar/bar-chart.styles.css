@@ -31,3 +31,7 @@
 * >>> .bar.chart > rect.bar:hover {
     opacity: 1.0;
 }
+
+* >>> .bar.chart > .y.axis > text {
+    fill: #000;
+}

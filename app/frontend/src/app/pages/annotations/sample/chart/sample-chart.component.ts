@@ -21,8 +21,7 @@ import { ReplaySubject } from 'rxjs/ReplaySubject';
 import { Subject } from 'rxjs/Subject';
 import { Subscription } from 'rxjs/Subscription';
 import { IBarChartHorizontalDataEntry } from 'shared/charts/bar/horizontal/bar-chart-horizontal';
-import { ChartEventType, IChartEvent } from 'shared/charts/common/chart-events';
-
+import { ChartEventType, IChartEvent } from 'shared/charts/chart-events';
 import { IChartContainerConfiguration } from 'shared/charts/container/chart-container-configuration';
 import { SampleItem } from 'shared/sample/sample-item';
 
@@ -48,30 +47,19 @@ export class SampleChartComponent implements OnInit {
             }
         };
 
-        const max = 20;
-        const min = 10;
-        const count = Math.floor(Math.random() * (max - 1)) + min;
-        const data: IBarChartHorizontalDataEntry[] = [];
-        for (let i = 0; i < count; ++i) {
-            data.push({
-                name:  `${i}`,
-                value: Math.floor(Math.random() * (max - 1)) + 1
-            });
-        }
-
+        const data = this.generateRandomData(20, 10, 20);
         this.stream.next({ type: ChartEventType.INITIAL_DATA, data });
         this._count = data.length;
     }
 
-    public updateValues(): void {
-        const max = 100;
-        const count = this._count;
-        const data: IBarChartHorizontalDataEntry[] = [];
-        for (let i = 0; i < count; ++i) {
-            data.push({ name: `${i}`, value: Math.floor(Math.random() * max) + 1 });
-        }
+    public update(): void {
+        const data = this.generateRandomData(Math.floor(Math.random() * 20) + 1, 1, 100);
+        this.stream.next({ type: ChartEventType.UPDATE_DATA, data });
+        this._count = data.length;
+    }
 
-        this.stream.next({ type: ChartEventType.UPDATE_VALUES, data });
+    public updateValues(): void {
+        this.stream.next({ type: ChartEventType.UPDATE_VALUES, data: this.generateRandomData(this._count, 1, 100) });
     }
 
     public ngOnInit(): void {
@@ -79,5 +67,13 @@ export class SampleChartComponent implements OnInit {
             this.sample = data.sample;
             this.changeDetector.detectChanges();
         });
+    }
+
+    private generateRandomData(count: number, min: number, max: number): IBarChartHorizontalDataEntry[] {
+        const data: IBarChartHorizontalDataEntry[] = [];
+        for (let i = 0; i < count; ++i) {
+            data.push({ name: `${i}`, value: Math.floor(Math.random() * (max - min)) + min });
+        }
+        return data;
     }
 }
