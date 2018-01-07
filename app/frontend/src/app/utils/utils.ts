@@ -337,7 +337,7 @@ export namespace Utils {
     }
 
     export namespace Time {
-        export function debounce(f: () => void, ms: number): any {
+        export function debounce(f: (...args: any[]) => void, ms: number = 100): any {
             let timer: number;
             return function(...args: any[]) {
                 const onComplete = () => {

@@ -18,17 +18,20 @@
 package backend.server.annotations.api.intersect
 
 import backend.server.annotations.IntersectionTableRow
+import backend.server.annotations.summary.IntersectionSummary
 import play.api.libs.json.{Json, Writes}
 
-case class SampleIntersectionResponse(state: String, rows: Seq[IntersectionTableRow])
+case class SampleIntersectionResponse(state: String, rows: Seq[IntersectionTableRow], summary: Option[IntersectionSummary])
 
 object SampleIntersectionResponse {
     final val Action: String = "intersect"
 
-    final val ParseState = SampleIntersectionResponse("print", Seq())
-    final val AnnotateState = SampleIntersectionResponse("annotate", Seq())
-    final val LoadingState = SampleIntersectionResponse("loading", Seq())
-    final def CompletedState(rows: Seq[IntersectionTableRow]) = SampleIntersectionResponse("completed", rows)
+    final val ParseState = SampleIntersectionResponse("parse", Seq(), None)
+    final val AnnotateState = SampleIntersectionResponse("annotate", Seq(), None)
+    final val LoadingState = SampleIntersectionResponse("loading", Seq(), None)
+
+    final def CompletedState(rows: Seq[IntersectionTableRow], summary: IntersectionSummary) =
+        SampleIntersectionResponse("completed", rows, Some(summary))
 
     implicit val sampleIntersectionResponseWrites: Writes[SampleIntersectionResponse] = Json.writes[SampleIntersectionResponse]
 }

@@ -15,16 +15,12 @@
  *
  */
 
-export type ChartEventType = number;
+package backend.server.annotations.summary
 
-export namespace ChartEventType {
-    export const INITIAL_DATA: number = 0;
-    export const UPDATE_VALUES: number = 1;
-    export const UPDATE_DATA: number = 2;
-    export const RESIZE: number = 3;
-}
+import play.api.libs.json.{Json, Writes}
 
-export interface IChartEvent<T> {
-    readonly type: ChartEventType;
-    readonly data: T[];
+case class SummaryClonotypeCounter(unique: Int, databaseUnique: Long, frequency: Double)
+
+object SummaryClonotypeCounter {
+    implicit val summaryClonotypeCounterWrites: Writes[SummaryClonotypeCounter] = Json.writes[SummaryClonotypeCounter]
 }

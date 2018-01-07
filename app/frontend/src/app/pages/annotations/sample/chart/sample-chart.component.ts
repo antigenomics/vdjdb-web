@@ -15,7 +15,7 @@
  *
  */
 
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, Renderer2 } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { ReplaySubject } from 'rxjs/ReplaySubject';
 import { Subject } from 'rxjs/Subject';
@@ -24,42 +24,43 @@ import { IBarChartHorizontalDataEntry } from 'shared/charts/bar/horizontal/bar-c
 import { ChartEventType, IChartEvent } from 'shared/charts/chart-events';
 import { IChartContainerConfiguration } from 'shared/charts/container/chart-container-configuration';
 import { SampleItem } from 'shared/sample/sample-item';
+import { Utils } from 'utils/utils';
+import Time = Utils.Time;
 
 @Component({
     selector:        'sample-chart',
     templateUrl:     './sample-chart.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class SampleChartComponent implements OnInit {
+export class SampleChartComponent implements OnInit, OnDestroy {
+    private _debouncedResizeListener: any;
     private _routeSampleSubscription: Subscription;
-    private _count: number = 0;
+
+    private _data: IBarChartHorizontalDataEntry[] = [];
 
     public sample: SampleItem;
     public configuration: IChartContainerConfiguration;
 
     public stream: Subject<IChartEvent<IBarChartHorizontalDataEntry>> = new ReplaySubject(1);
 
-    constructor(private activatedRoute: ActivatedRoute, private changeDetector: ChangeDetectorRef) {
+    constructor(private activatedRoute: ActivatedRoute, private renderer: Renderer2,
+                private changeDetector: ChangeDetectorRef) {
         this.sample = this.activatedRoute.snapshot.data.sample;
         this.configuration = {
             margin: {
                 left: 80, right: 25, top: 20, bottom: 20
             }
         };
-
-        const data = this.generateRandomData(20, 10, 20);
-        this.stream.next({ type: ChartEventType.INITIAL_DATA, data });
-        this._count = data.length;
     }
 
     public update(): void {
-        const data = this.generateRandomData(Math.floor(Math.random() * 20) + 1, 1, 100);
-        this.stream.next({ type: ChartEventType.UPDATE_DATA, data });
-        this._count = data.length;
+        this._data = this.generateRandomData(Math.floor(Math.random() * 20) + 1, 1, 100);
+        this.stream.next({ type: ChartEventType.UPDATE_DATA, data: this._data });
     }
 
     public updateValues(): void {
-        this.stream.next({ type: ChartEventType.UPDATE_VALUES, data: this.generateRandomData(this._count, 1, 100) });
+        this._data = this.generateRandomData(this._data.length, 1, 100);
+        this.stream.next({ type: ChartEventType.UPDATE_VALUES, data: this._data });
     }
 
     public ngOnInit(): void {
@@ -67,6 +68,21 @@ export class SampleChartComponent implements OnInit {
             this.sample = data.sample;
             this.changeDetector.detectChanges();
         });
+
+        this._data = this.generateRandomData(20, 10, 20);
+        this.stream.next({ type: ChartEventType.INITIAL_DATA, data: this._data });
+
+        this._debouncedResizeListener = Utils.Time.debounce(() => {
+            this.stream.next({ type: ChartEventType.RESIZE, data: this._data });
+        });
+
+        this.renderer.listen('window', 'resize', this._debouncedResizeListener);
+    }
+
+    public ngOnDestroy(): void {
+        if (this._debouncedResizeListener) {
+            this._debouncedResizeListener();
+        }
     }
 
     private generateRandomData(count: number, min: number, max: number): IBarChartHorizontalDataEntry[] {

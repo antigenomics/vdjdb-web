@@ -15,16 +15,16 @@
  *
  */
 
-export type ChartEventType = number;
+export class SummaryClonotypeCounter {
+    public readonly unique: number;
+    public readonly databaseUnique: number;
+    public readonly frequency: number;
 
-export namespace ChartEventType {
-    export const INITIAL_DATA: number = 0;
-    export const UPDATE_VALUES: number = 1;
-    export const UPDATE_DATA: number = 2;
-    export const RESIZE: number = 3;
-}
-
-export interface IChartEvent<T> {
-    readonly type: ChartEventType;
-    readonly data: T[];
+    constructor(counter: any) {
+        /* tslint:disable:no-string-literal */
+        this.unique = counter['unique'];
+        this.databaseUnique = counter['databaseUnique'];
+        this.frequency = counter['frequency'];
+        /* tslint:enable:no-string-literal */
+    }
 }
