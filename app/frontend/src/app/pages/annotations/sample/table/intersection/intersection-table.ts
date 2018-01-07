@@ -15,6 +15,7 @@
  *
  */
 
+import { IntersectionSummary } from 'pages/annotations/sample/table/intersection/summary/intersection-summary';
 import { SampleItem } from 'shared/sample/sample-item';
 import { Table } from 'shared/table/table';
 import { IntersectionTableRow } from './row/intersection-table-row';
@@ -22,6 +23,8 @@ import { IntersectionTableRow } from './row/intersection-table-row';
 export class IntersectionTable extends Table<IntersectionTableRow> {
     private _loadingLabel: string = 'Loading';
     private _sample: SampleItem;
+
+    private _summary: IntersectionSummary;
 
     constructor(sample: SampleItem) {
         super();
@@ -51,6 +54,14 @@ export class IntersectionTable extends Table<IntersectionTableRow> {
 
     public getRowsCount(): number {
         return this.rows.length;
+    }
+
+    public updateSummary(summary: IntersectionSummary) {
+        this._summary = summary;
+    }
+
+    public getSummary(): IntersectionSummary {
+        return this._summary;
     }
 
     get loadingLabel(): string {

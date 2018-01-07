@@ -19,6 +19,7 @@ import { Observable } from 'rxjs/Observable';
 import { Subscription } from 'rxjs/Subscription';
 import { ChartEventType, IChartEvent } from 'shared/charts/chart-events';
 import { ChartContainer } from 'shared/charts/container/chart-container';
+import { Utils } from 'utils/utils';
 
 // tslint:disable-next-line:interface-name
 export interface Chart<T> {
@@ -28,12 +29,15 @@ export interface Chart<T> {
 
     updateValues(data: T[]): void;
 
+    resize(data: T[]): void;
+
     destroy(): void;
 }
 
 export class Chart<T> {
     private created: boolean = false;
     private dataStreamSubscription: Subscription;
+    private debounceResizeListener = Utils.Time.debounce(this.resize);
 
     constructor(protected container: ChartContainer, protected dataStream: Observable<IChartEvent<T>>) {
         this.dataStreamSubscription = this.dataStream.subscribe((event) => {
@@ -48,11 +52,14 @@ export class Chart<T> {
                     case ChartEventType.UPDATE_VALUES:
                         this.updateValues(event.data);
                         break;
+                    case ChartEventType.RESIZE:
+                        this.container.recalculateContainerViewSize();
+                        this.resize(event.data);
+                        break;
                     default:
                         break;
                 }
             }
-
         });
     }
 

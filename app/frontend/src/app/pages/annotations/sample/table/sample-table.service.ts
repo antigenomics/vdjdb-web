@@ -16,6 +16,8 @@
  */
 
 import { Injectable } from '@angular/core';
+import { sum } from 'd3-array';
+import { IntersectionSummary } from 'pages/annotations/sample/table/intersection/summary/intersection-summary';
 import { Observable } from 'rxjs/Observable';
 import { Subject } from 'rxjs/Subject';
 import { SampleItem } from 'shared/sample/sample-item';
@@ -107,6 +109,10 @@ export class SampleTableService {
                             table.updatePage(0);
                             table.updateRows(rows);
                             table.updateRecordsFound(rows.length);
+
+                            const summary = new IntersectionSummary(response.get('summary').data);
+                            table.updateSummary(summary);
+
                             filters.enable();
                             messagesSubscription.unsubscribe();
                             break;

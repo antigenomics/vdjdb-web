@@ -74,7 +74,7 @@ class AnnotationsWebSocketActor(out: ActorRef, limit: IpLimit, user: User, detai
                                 table.update(intersectRequest, sample, database)
                                 out.success(SampleIntersectionResponse.LoadingState)
                                 intersectionTableResults += (file._1.sampleName -> table)
-                                out.success(SampleIntersectionResponse.CompletedState(table.getRows))
+                                out.success(SampleIntersectionResponse.CompletedState(table.getRows, table.summary))
                             } catch {
                                 case _: Exception => out.errorMessage("Unable to intersect")
                             }

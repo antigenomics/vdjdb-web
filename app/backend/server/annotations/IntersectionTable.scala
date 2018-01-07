@@ -21,8 +21,10 @@ import java.util
 
 import backend.server.ResultsTable
 import backend.server.annotations.api.intersect.SampleIntersectionRequest
+import backend.server.annotations.summary.{IntersectionSummary, SummaryClonotypeCounter}
 import backend.server.database.Database
 import com.antigenomics.vdjdb.scoring.SequenceSearcherPreset
+import com.antigenomics.vdjdb.stat.ClonotypeSearchSummary
 import com.antigenomics.vdjdb.text.{ExactTextFilter, TextFilter}
 import com.antigenomics.vdjtools.sample.Sample
 import com.milaboratory.core.tree.TreeSearchParameters
@@ -30,7 +32,7 @@ import com.milaboratory.core.tree.TreeSearchParameters
 import scala.collection.JavaConverters._
 import scala.math.Ordering.String
 
-class IntersectionTable extends ResultsTable[IntersectionTableRow] {
+class IntersectionTable(var summary: IntersectionSummary = null) extends ResultsTable[IntersectionTableRow] {
 
     def sort(columnIndex: Int, sortType: String): Unit = {
         if ((sortType == "desc" || sortType == "asc") && (columnIndex >= 0)) {
@@ -68,6 +70,16 @@ class IntersectionTable extends ResultsTable[IntersectionTableRow] {
             .sortWith { case ((c1, _), (c2, _)) => c1.getFreq > c2.getFreq }
             .map { case (c, l) => (c, l.asScala) }
             .map(IntersectionTableRow.createFromSearchResult)
+
+        val summary = new ClonotypeSearchSummary(results, sample, ClonotypeSearchSummary.FIELDS_STARBURST, instance)
+
+        val summaryData = summary.fieldCounters.asScala.map { case (name, map) =>
+            name -> map.asScala.map { case (field, value) =>
+                field -> SummaryClonotypeCounter(value.getUnique, value.getDatabaseUnique, value.getFrequency)
+            }.toMap
+        }.toMap
+
+        this.summary = IntersectionSummary(summaryData)
         this.currentPage = 0
         this
     }
