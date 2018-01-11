@@ -25,9 +25,8 @@ import { AnnotationsInfoComponent } from './info/annotations-info.component';
 import { SampleItemResolver } from './resolvers/sample.resolver';
 import { UserResolver } from './resolvers/user.resolver';
 import { SampleChartComponent } from './sample/chart/sample-chart.component';
-import { SampleChartModule } from './sample/chart/sample-chart.module';
+import { SampleModule } from './sample/sample.module';
 import { SampleTableComponent } from './sample/table/sample-table.component';
-import { SampleTableModule } from './sample/table/sample-table.module';
 import { AnnotationsSidebarComponent } from './sidebar/sidebar.component';
 import { AnnotationsUploadComponent } from './upload/upload.component';
 import { UploadModule } from './upload/upload.module';
@@ -46,7 +45,7 @@ const routes = [
 ];
 
 @NgModule({
-    imports:      [ BrowserModule, UploadModule, RouterModule.forChild(routes), ModalsModule, SampleTableModule, SampleChartModule ],
+    imports:      [ BrowserModule, UploadModule, RouterModule.forChild(routes), ModalsModule, SampleModule ],
     declarations: [ AnnotationsPageComponent, AnnotationsSidebarComponent, AnnotationsInfoComponent ],
     exports:      [ AnnotationsPageComponent ],
     providers:    [ AnnotationsService, UserResolver, SampleItemResolver ]

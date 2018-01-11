@@ -6,7 +6,7 @@ import backend.models.authorization.user.{User, UserDetails}
 import backend.models.files.FileMetadataProvider
 import backend.models.files.sample.SampleFileProvider
 import backend.server.annotations.IntersectionTable
-import backend.server.annotations.api.intersect.{SampleIntersectionRequest, SampleIntersectionResponse}
+import backend.server.annotations.api.annotate.{SampleAnnotateRequest, SampleAnnotateResponse}
 import backend.server.annotations.api.matches.{IntersectionMatchesRequest, IntersectionMatchesResponse}
 import backend.server.annotations.api.sample.delete.{DeleteSampleRequest, DeleteSampleResponse}
 import backend.server.annotations.api.sample.software.AvailableSoftwareResponse
@@ -60,21 +60,21 @@ class AnnotationsWebSocketActor(out: ActorRef, limit: IpLimit, user: User, detai
                             out.success(DeleteSampleResponse(true))
                     }
                 })
-            case SampleIntersectionResponse.Action =>
-                validateData(out, data, (intersectRequest: SampleIntersectionRequest) => async {
+            case SampleAnnotateResponse.Action =>
+                validateData(out, data, (intersectRequest: SampleAnnotateRequest) => async {
                     val sampleFile = await(user.getSampleFileByNameWithMetadata(intersectRequest.sampleName))
                     sampleFile match {
                         case Some(file) =>
                             try {
-                                out.success(SampleIntersectionResponse.ParseState)
+                                out.success(SampleAnnotateResponse.ParseState)
                                 val sampleFileConnection = new SampleFileConnection(file._2.path, Software.valueOf(file._1.software))
                                 val sample = sampleFileConnection.getSample
                                 val table = new IntersectionTable()
-                                out.success(SampleIntersectionResponse.AnnotateState)
+                                out.success(SampleAnnotateResponse.AnnotateState)
                                 table.update(intersectRequest, sample, database)
-                                out.success(SampleIntersectionResponse.LoadingState)
+                                out.success(SampleAnnotateResponse.LoadingState)
                                 intersectionTableResults += (file._1.sampleName -> table)
-                                out.success(SampleIntersectionResponse.CompletedState(table.getRows, table.summary))
+                                out.success(SampleAnnotateResponse.CompletedState(table.getRows, table.summary))
                             } catch {
                                 case _: Exception => out.errorMessage("Unable to intersect")
                             }

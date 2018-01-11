@@ -15,7 +15,7 @@
  *
  */
 
-import { IntersectionSummary } from 'pages/annotations/sample/table/intersection/summary/intersection-summary';
+import { SummaryFieldCounter } from 'pages/annotations/sample/table/intersection/summary/summary-field-counter';
 import { SampleItem } from 'shared/sample/sample-item';
 import { Table } from 'shared/table/table';
 import { IntersectionTableRow } from './row/intersection-table-row';
@@ -24,7 +24,7 @@ export class IntersectionTable extends Table<IntersectionTableRow> {
     private _loadingLabel: string = 'Loading';
     private _sample: SampleItem;
 
-    private _summary: IntersectionSummary;
+    private _summary?: SummaryFieldCounter[];
 
     constructor(sample: SampleItem) {
         super();
@@ -56,11 +56,15 @@ export class IntersectionTable extends Table<IntersectionTableRow> {
         return this.rows.length;
     }
 
-    public updateSummary(summary: IntersectionSummary) {
+    public updateSummary(summary: SummaryFieldCounter[]) {
         this._summary = summary;
     }
 
-    public getSummary(): IntersectionSummary {
+    public isSummaryExist(): boolean {
+        return this._summary !== undefined;
+    }
+
+    public getSummary(): SummaryFieldCounter[] {
         return this._summary;
     }
 

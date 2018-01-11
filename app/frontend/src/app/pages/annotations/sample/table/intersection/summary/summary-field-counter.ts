@@ -15,26 +15,16 @@
  *
  */
 
-import { sum } from 'd3-array';
 import { SummaryClonotypeCounter } from 'pages/annotations/sample/table/intersection/summary/summary-clonotype-counter';
 
-export interface IntersectionSummaryDataType {
-    [name: string]: { [field: string]: SummaryClonotypeCounter };
-}
+export class SummaryFieldCounter {
+    public readonly name: string;
+    public readonly counters: SummaryClonotypeCounter[];
 
-export class IntersectionSummary {
-    private readonly data: IntersectionSummaryDataType;
-
-    constructor(summary: any) {
-        this.data = {};
-        Object.keys(summary).forEach((name) => {
-            if (this.data[ name ] === undefined) {
-                this.data[ name ] = {};
-            }
-            const fields = summary[ name ];
-            Object.keys(fields).forEach((field) => {
-                this.data[ name ][ field ] = new SummaryClonotypeCounter(fields[ field ]);
-            });
-        });
+    constructor(counter: any) {
+        /* tslint:disable:no-string-literal */
+        this.name = counter[ 'name' ];
+        this.counters = counter[ 'counters' ].map((c: any) => new SummaryClonotypeCounter(c));
+        /* tslint:enable:no-string-literal */
     }
 }

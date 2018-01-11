@@ -15,12 +15,12 @@
  *
  */
 
-package backend.server.annotations.summary
+package backend.server.annotations.charts.summary
 
 import play.api.libs.json.{Json, Writes}
 
-case class IntersectionSummary(data: Map[String, Map[String, SummaryClonotypeCounter]])
+case class SummaryClonotypeCounter(field: String, unique: Int, databaseUnique: Long, frequency: Double)
 
-object IntersectionSummary {
-    implicit val intersectionSummaryWrites: Writes[IntersectionSummary] = Json.writes[IntersectionSummary]
+object SummaryClonotypeCounter {
+    implicit val summaryClonotypeCounterWrites: Writes[SummaryClonotypeCounter] = Json.writes[SummaryClonotypeCounter]
 }

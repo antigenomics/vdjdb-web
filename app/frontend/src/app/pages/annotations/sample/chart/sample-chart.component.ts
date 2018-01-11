@@ -17,6 +17,10 @@
 
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, Renderer2 } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { SampleService, SampleServiceEvent, SampleServiceEventType } from 'pages/annotations/sample/sample.service';
+import { IntersectionTableFilters } from 'pages/annotations/sample/table/intersection/filters/intersection-table-filters';
+import { IntersectionTable } from 'pages/annotations/sample/table/intersection/intersection-table';
+import { SummaryFieldCounter } from 'pages/annotations/sample/table/intersection/summary/summary-field-counter';
 import { ReplaySubject } from 'rxjs/ReplaySubject';
 import { Subject } from 'rxjs/Subject';
 import { Subscription } from 'rxjs/Subscription';
@@ -24,8 +28,10 @@ import { IBarChartHorizontalDataEntry } from 'shared/charts/bar/horizontal/bar-c
 import { ChartEventType, IChartEvent } from 'shared/charts/chart-events';
 import { IChartContainerConfiguration } from 'shared/charts/container/chart-container-configuration';
 import { SampleItem } from 'shared/sample/sample-item';
+import { LoggerService } from 'utils/logger/logger.service';
 import { Utils } from 'utils/utils';
 import Time = Utils.Time;
+import UPDATE_DATA = ChartEventType.UPDATE_DATA;
 
 @Component({
     selector:        'sample-chart',
@@ -33,63 +39,62 @@ import Time = Utils.Time;
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SampleChartComponent implements OnInit, OnDestroy {
-    private _debouncedResizeListener: any;
     private _routeSampleSubscription: Subscription;
+    private _intersectionTableServiceEventsSubscription: Subscription;
 
     private _data: IBarChartHorizontalDataEntry[] = [];
 
     public sample: SampleItem;
-    public configuration: IChartContainerConfiguration;
+    public table: IntersectionTable;
+    public filters: IntersectionTableFilters;
 
-    public stream: Subject<IChartEvent<IBarChartHorizontalDataEntry>> = new ReplaySubject(1);
-
-    constructor(private activatedRoute: ActivatedRoute, private renderer: Renderer2,
-                private changeDetector: ChangeDetectorRef) {
+    constructor(private activatedRoute: ActivatedRoute, private sampleService: SampleService,
+                private changeDetector: ChangeDetectorRef, private logger: LoggerService) {
         this.sample = this.activatedRoute.snapshot.data.sample;
-        this.configuration = {
-            margin: {
-                left: 80, right: 25, top: 20, bottom: 20
-            }
-        };
-    }
-
-    public update(): void {
-        this._data = this.generateRandomData(Math.floor(Math.random() * 20) + 1, 1, 100);
-        this.stream.next({ type: ChartEventType.UPDATE_DATA, data: this._data });
-    }
-
-    public updateValues(): void {
-        this._data = this.generateRandomData(this._data.length, 1, 100);
-        this.stream.next({ type: ChartEventType.UPDATE_VALUES, data: this._data });
+        this.table = this.sampleService.getOrCreateTable(this.sample);
+        this.filters = this.sampleService.getOrCreateFilters(this.sample);
     }
 
     public ngOnInit(): void {
         this._routeSampleSubscription = this.activatedRoute.data.subscribe((data: { sample: SampleItem }) => {
             this.sample = data.sample;
+            this.table = this.sampleService.getOrCreateTable(this.sample);
+            this.filters = this.sampleService.getOrCreateFilters(this.sample);
             this.changeDetector.detectChanges();
         });
 
-        this._data = this.generateRandomData(20, 10, 20);
-        this.stream.next({ type: ChartEventType.INITIAL_DATA, data: this._data });
+        this._intersectionTableServiceEventsSubscription =
+            this.sampleService.getEvents().subscribe((event: SampleServiceEvent) => {
+                if (event.name === this.sample.name) {
+                    this.changeDetector.detectChanges();
+                    switch (event.type) {
+                        case SampleServiceEventType.EVENT_UPDATED:
+                            this.logger.debug('Sample table update', this.sampleService.getTable(this.sample));
+                            break;
+                        default:
 
-        this._debouncedResizeListener = Utils.Time.debounce(() => {
-            this.stream.next({ type: ChartEventType.RESIZE, data: this._data });
-        });
+                    }
+                }
+            });
+    }
 
-        this.renderer.listen('window', 'resize', this._debouncedResizeListener);
+    public getData(): SummaryFieldCounter[] {
+        if (this.table.isSummaryExist()) {
+            return this.table.getSummary();
+        }
+        return undefined;
+    }
+
+    public intersect(): void {
+        this.sampleService.intersect(this.sample);
     }
 
     public ngOnDestroy(): void {
-        if (this._debouncedResizeListener) {
-            this._debouncedResizeListener();
+        if (this._routeSampleSubscription) {
+            this._routeSampleSubscription.unsubscribe();
         }
-    }
-
-    private generateRandomData(count: number, min: number, max: number): IBarChartHorizontalDataEntry[] {
-        const data: IBarChartHorizontalDataEntry[] = [];
-        for (let i = 0; i < count; ++i) {
-            data.push({ name: `some text ${i}`, value: Math.floor(Math.random() * (max - min)) + min });
+        if (this._intersectionTableServiceEventsSubscription) {
+            this._intersectionTableServiceEventsSubscription.unsubscribe();
         }
-        return data;
     }
 }

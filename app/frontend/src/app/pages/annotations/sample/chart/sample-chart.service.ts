@@ -15,15 +15,9 @@
  *
  */
 
-import { NgModule } from '@angular/core';
-import { BrowserModule } from '@angular/platform-browser';
-import { ChartsModule } from 'shared/charts/charts.module';
-import { ModalsModule } from 'shared/modals/modals.module';
-import { SampleChartComponent } from './sample-chart.component';
+import { Injectable } from '@angular/core';
 
-@NgModule({
-    imports:      [ BrowserModule, ModalsModule, ChartsModule ],
-    declarations: [ SampleChartComponent ],
-    exports:      [ SampleChartComponent ]
-})
-export class SampleChartModule {}
+@Injectable()
+export class SampleChartService {
+    private charts: Map<string, >
+}

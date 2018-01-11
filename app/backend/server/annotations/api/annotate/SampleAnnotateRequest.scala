@@ -15,15 +15,15 @@
  *
  */
 
-package backend.server.annotations.api.intersect
+package backend.server.annotations.api.annotate
 
 import play.api.libs.json.{Json, Reads}
 
-case class SampleIntersectionRequest(sampleName: String,
-                                     hammingDistance: Int, confidenceThreshold: Int,
-                                     matchV: Boolean, matchJ: Boolean,
-                                     species: String, gene: String, mhc: String)
+case class SampleAnnotateRequest(sampleName: String,
+                                 hammingDistance: Int, confidenceThreshold: Int,
+                                 matchV: Boolean, matchJ: Boolean,
+                                 species: String, gene: String, mhc: String)
 
-object SampleIntersectionRequest {
-    implicit val sampleIntersectionRequestReads: Reads[SampleIntersectionRequest] = Json.reads[SampleIntersectionRequest]
+object SampleAnnotateRequest {
+    implicit val sampleIntersectionRequestReads: Reads[SampleAnnotateRequest] = Json.reads[SampleAnnotateRequest]
 }
