@@ -19,5 +19,5 @@ import { Injectable } from '@angular/core';
 
 @Injectable()
 export class SampleChartService {
-    private charts: Map<string, >
+    // private charts: Map<string, >
 }

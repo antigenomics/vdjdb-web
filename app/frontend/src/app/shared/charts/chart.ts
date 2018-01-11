@@ -37,7 +37,10 @@ export interface Chart<T> {
 export class Chart<T> {
     private created: boolean = false;
     private dataStreamSubscription: Subscription;
-    private debounceResizeListener = Utils.Time.debounce(this.resize);
+    private debounceResizeListener = Utils.Time.debounce((data) => {
+        this.container.recalculateContainerViewSize();
+        this.resize(data);
+    });
 
     constructor(protected container: ChartContainer, protected dataStream: Observable<IChartEvent<T>>) {
         this.dataStreamSubscription = this.dataStream.subscribe((event) => {
@@ -53,8 +56,7 @@ export class Chart<T> {
                         this.updateValues(event.data);
                         break;
                     case ChartEventType.RESIZE:
-                        this.container.recalculateContainerViewSize();
-                        this.resize(event.data);
+                        this.debounceResizeListener(event.data);
                         break;
                     default:
                         break;

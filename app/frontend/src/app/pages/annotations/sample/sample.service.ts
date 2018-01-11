@@ -16,7 +16,6 @@
  */
 
 import { Injectable } from '@angular/core';
-import { sum } from 'd3-array';
 import { AnnotationsService } from 'pages/annotations/annotations.service';
 import { IntersectionTableFilters } from 'pages/annotations/sample/table/intersection/filters/intersection-table-filters';
 import { IntersectionTable } from 'pages/annotations/sample/table/intersection/intersection-table';
