@@ -15,23 +15,15 @@
  *
  */
 
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, Renderer2 } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { SampleService, SampleServiceEvent, SampleServiceEventType } from 'pages/annotations/sample/sample.service';
 import { IntersectionTableFilters } from 'pages/annotations/sample/table/intersection/filters/intersection-table-filters';
 import { IntersectionTable } from 'pages/annotations/sample/table/intersection/intersection-table';
 import { SummaryFieldCounter } from 'pages/annotations/sample/table/intersection/summary/summary-field-counter';
-import { ReplaySubject } from 'rxjs/ReplaySubject';
-import { Subject } from 'rxjs/Subject';
 import { Subscription } from 'rxjs/Subscription';
-import { IBarChartHorizontalDataEntry } from 'shared/charts/bar/horizontal/bar-chart-horizontal';
-import { ChartEventType, IChartEvent } from 'shared/charts/chart-events';
-import { IChartContainerConfiguration } from 'shared/charts/container/chart-container-configuration';
 import { SampleItem } from 'shared/sample/sample-item';
 import { LoggerService } from 'utils/logger/logger.service';
-import { Utils } from 'utils/utils';
-import Time = Utils.Time;
-import UPDATE_DATA = ChartEventType.UPDATE_DATA;
 
 @Component({
     selector:        'sample-chart',
@@ -41,8 +33,6 @@ import UPDATE_DATA = ChartEventType.UPDATE_DATA;
 export class SampleChartComponent implements OnInit, OnDestroy {
     private _routeSampleSubscription: Subscription;
     private _intersectionTableServiceEventsSubscription: Subscription;
-
-    private _data: IBarChartHorizontalDataEntry[] = [];
 
     public sample: SampleItem;
     public table: IntersectionTable;

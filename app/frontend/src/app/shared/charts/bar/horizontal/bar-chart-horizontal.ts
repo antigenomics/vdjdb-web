@@ -16,12 +16,11 @@
  */
 
 import { ScaleBand, ScaleLinear } from 'd3-scale';
-import { event as D3CurrentEvent } from 'd3-selection';
 import * as d3 from 'external/d3';
 import { Observable } from 'rxjs/Observable';
 import { Chart } from 'shared/charts/chart';
 import { IChartEvent } from 'shared/charts/chart-events';
-import { ChartContainer, D3HTMLSelection } from 'shared/charts/container/chart-container';
+import { ChartContainer } from 'shared/charts/container/chart-container';
 
 export interface IBarChartHorizontalDataEntry {
     readonly name: string;

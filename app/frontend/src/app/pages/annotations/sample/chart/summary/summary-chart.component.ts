@@ -16,7 +16,6 @@
  */
 
 import { ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from '@angular/core';
-import { SampleChartService } from 'pages/annotations/sample/chart/sample-chart.service';
 import { SampleService, SampleServiceEventType } from 'pages/annotations/sample/sample.service';
 import { SummaryFieldCounter } from 'pages/annotations/sample/table/intersection/summary/summary-field-counter';
 import { ReplaySubject } from 'rxjs/ReplaySubject';
@@ -24,8 +23,6 @@ import { Subject } from 'rxjs/Subject';
 import { Subscription } from 'rxjs/Subscription';
 import { IBarChartHorizontalDataEntry } from 'shared/charts/bar/horizontal/bar-chart-horizontal';
 import { ChartEventType, IChartEvent } from 'shared/charts/chart-events';
-import { IChartContainerConfiguration } from 'shared/charts/container/chart-container-configuration';
-import INITIAL_DATA = ChartEventType.INITIAL_DATA;
 
 @Component({
     selector:    'div[summary-chart]',
@@ -34,7 +31,6 @@ import INITIAL_DATA = ChartEventType.INITIAL_DATA;
 export class SummaryChartComponent implements OnInit, OnDestroy {
     private sampleServiceEventsSubscription: Subscription;
 
-    public configuration: IChartContainerConfiguration;
     public stream: Subject<IChartEvent<IBarChartHorizontalDataEntry>> = new ReplaySubject(1);
 
     @Input('data')
@@ -43,12 +39,11 @@ export class SummaryChartComponent implements OnInit, OnDestroy {
             const chartData = data[ 0 ].counters.map((c) => {
                 return { name: c.field, value: c.unique };
             });
-            this.stream.next({ type: INITIAL_DATA, data: chartData });
+            this.stream.next({ type: ChartEventType.INITIAL_DATA, data: chartData });
         }
     }
 
-    constructor(private sampleChartService: SampleChartService, private sampleService: SampleService,
-                private changeDetector: ChangeDetectorRef) {
+    constructor(private sampleService: SampleService, private changeDetector: ChangeDetectorRef) {
     }
 
     public ngOnInit(): void {
