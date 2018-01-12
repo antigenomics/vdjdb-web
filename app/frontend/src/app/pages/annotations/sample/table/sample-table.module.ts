@@ -41,7 +41,6 @@ import { TableModule } from 'shared/table/table.module';
     imports:         [ BrowserModule, ModalsModule, FormsModule, TableModule ],
     declarations:    [
         SampleTableComponent,
-        IntersectionTableComponent,
         IntersectionTableEntryFrequencyComponent,
         IntersectionTableEntryCdr3aaComponent,
         IntersectionTableEntryDetailsComponent,

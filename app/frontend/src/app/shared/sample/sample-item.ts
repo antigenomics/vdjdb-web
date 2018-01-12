@@ -73,8 +73,6 @@ export class SampleItem {
     }
 
     public static deserialize(o: any): SampleItem {
-        /* tslint:disable:no-string-literal */
-        return new SampleItem(o[ 'name' ], o[ 'software' ]);
-        /* tslint:enable:no-string-literal */
+        return new SampleItem(o[ 'name' ], o[ 'software' ]); // tslint:disable-line:no-string-literal
     }
 }
