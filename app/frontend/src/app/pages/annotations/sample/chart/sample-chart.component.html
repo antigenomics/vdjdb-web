@@ -11,9 +11,7 @@
             <ng-container *ngSwitchCase="'summary'">
                 <div class="ui fade slow element segments">
                     <h4 class="ui top attached header">Summary</h4>
-                    <div class="ui teal attached padded segment"
-                         summary-chart [data]="sample.table.getSummary()" style="height: 400px">
-                    </div>
+                    <div class="ui teal attached padded segment" summary-chart [data]="sample.table.getSummary()"></div>
                 </div>
             </ng-container>
         </ng-container>
