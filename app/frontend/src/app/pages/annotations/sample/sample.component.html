@@ -10,7 +10,7 @@
         <button class="ui teal button left floated" [ngClass]="{'loading':sample.isProcessing()}" (click)="intersect()">Annotate</button>
     </div>
 </div>
-<div class="ui fade slow element segments" *ngIf="!sample.table.dirty || sample.table.isEmpty()">
+<div class="ui fade slow element segments" *ngIf="!sample.table.dirty || sample.table.isEmpty() || sample.isProcessing()">
     <div class="ui teal attached padded blurring segment" style="min-height: 200px;">
         <div class="ui inverted dimmer" [ngClass]="{'active':sample.isProcessing()}">
             <div class="ui large text loader top element">{{ sample.getProcessingLabel() }}</div>
@@ -36,6 +36,6 @@
         </div>
     </div>
 </div>
-<div *ngIf="sample.table.dirty && !sample.table.isEmpty()">
+<div *ngIf="sample.table.dirty && !sample.table.isEmpty() && !sample.isProcessing()">
     <router-outlet></router-outlet>
 </div>
