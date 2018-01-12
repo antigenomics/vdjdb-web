@@ -16,7 +16,6 @@
  */
 
 import { ComponentFactory, ComponentFactoryResolver } from '@angular/core';
-import { SampleItem } from 'shared/sample/sample-item';
 import { TableColumn } from 'shared/table/column/table-column';
 import { TableEntry } from 'shared/table/entry/table-entry';
 import { TableEntryCenteredComponent } from 'shared/table/entry/table-entry-centered.component';
@@ -48,7 +47,6 @@ export class IntersectionTableRowMetadata {
 export class IntersectionTableRow extends TableRow {
     public readonly entries: string[];
     public readonly index: number;
-    public readonly sample: SampleItem;
     public readonly tags: IntersectionTableRowTags;
     public readonly metadata: IntersectionTableRowMetadata;
 
@@ -56,12 +54,11 @@ export class IntersectionTableRow extends TableRow {
     public matchesCount: number = 0;
     public matches: MatchTableRow[];
 
-    constructor(row: any, index: number, sample: SampleItem) {
+    constructor(row: any, index: number) {
         /* tslint:disable:no-string-literal */
         super();
         this.entries = row[ 'entries' ];
         this.index = index;
-        this.sample = sample;
         this.tags = row[ 'tags' ];
         this.metadata = new IntersectionTableRowMetadata(row[ 'metadata' ]);
         /* tslint:enable:no-string-literal */

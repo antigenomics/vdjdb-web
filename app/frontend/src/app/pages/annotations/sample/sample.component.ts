@@ -17,48 +17,49 @@
 
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { SampleService, SampleServiceEvent, SampleServiceEventType } from 'pages/annotations/sample/sample.service';
-import { IntersectionTable } from 'pages/annotations/sample/table/intersection/intersection-table';
-import { SummaryFieldCounter } from 'pages/annotations/sample/table/intersection/summary/summary-field-counter';
+import { SampleService } from 'pages/annotations/sample/sample.service';
 import { Subscription } from 'rxjs/Subscription';
 import { SampleItem } from 'shared/sample/sample-item';
 import { LoggerService } from 'utils/logger/logger.service';
 
 @Component({
-    selector:        'sample-chart',
-    templateUrl:     './sample-chart.component.html'
+    selector:        'sample',
+    templateUrl:     './sample.component.html',
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class SampleChartComponent implements OnInit, OnDestroy {
+export class AnnotationsSampleComponent implements OnInit, OnDestroy {
+    private _sampleServiceEventsSubscription: Subscription;
     private _routeSampleSubscription: Subscription;
 
     public sample: SampleItem;
 
     constructor(private activatedRoute: ActivatedRoute, private sampleService: SampleService,
-                private changeDetector: ChangeDetectorRef, private logger: LoggerService) {
-        this.sample = this.activatedRoute.parent.snapshot.data.sample;
-    }
-
-    public ngOnInit(): void {
-        this._routeSampleSubscription = this.activatedRoute.parent.data.subscribe((data: { sample: SampleItem }) => {
-            this.sample = data.sample;
-            this.changeDetector.detectChanges();
-        });
-    }
-
-    public getData(): SummaryFieldCounter[] {
-        // if (this.sample.table.isSummaryExist()) {
-        //     return this.sample.table.getSummary();
-        // }
-        return undefined;
+                private changeDetector: ChangeDetectorRef) {
+        this.sample = this.activatedRoute.snapshot.data.sample;
     }
 
     public intersect(): void {
         this.sampleService.intersect(this.sample);
     }
 
+    public ngOnInit(): void {
+        this._routeSampleSubscription = this.activatedRoute.data.subscribe((data: { sample: SampleItem }) => {
+            this.sample = data.sample;
+            this.changeDetector.detectChanges();
+        });
+        this._sampleServiceEventsSubscription = this.sampleService.getEvents().subscribe((event) => {
+            if (this.sample.name === event.name) {
+                this.changeDetector.detectChanges();
+            }
+        });
+    }
+
     public ngOnDestroy(): void {
         if (this._routeSampleSubscription) {
             this._routeSampleSubscription.unsubscribe();
+        }
+        if (this._sampleServiceEventsSubscription) {
+            this._sampleServiceEventsSubscription.unsubscribe();
         }
     }
 }

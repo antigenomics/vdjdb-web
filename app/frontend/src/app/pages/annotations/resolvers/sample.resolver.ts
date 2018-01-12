@@ -17,6 +17,8 @@
 
 import { Injectable } from '@angular/core';
 import { ActivatedRouteSnapshot, Resolve, RouterStateSnapshot } from '@angular/router';
+import { SampleFilters } from 'pages/annotations/sample/filters/sample-filters';
+import { IntersectionTable } from 'pages/annotations/sample/table/intersection/intersection-table';
 import { Observable } from 'rxjs/Observable';
 import { SampleItem } from 'shared/sample/sample-item';
 import { LoggerService } from 'utils/logger/logger.service';
@@ -24,7 +26,8 @@ import { AnnotationsService, AnnotationsServiceEvents } from '../annotations.ser
 
 @Injectable()
 export class SampleItemResolver implements Resolve<SampleItem> {
-    constructor(private annotationService: AnnotationsService, private logger: LoggerService) {}
+    constructor(private annotationService: AnnotationsService, private logger: LoggerService) {
+    }
 
     public resolve(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<SampleItem> | Promise<SampleItem> | SampleItem {
         this.logger.debug('SampleItemResolver', 'Resolving');
@@ -45,6 +48,9 @@ export class SampleItemResolver implements Resolve<SampleItem> {
 
     private getSample(route: ActivatedRouteSnapshot): SampleItem {
         const sample = this.annotationService.getSample(route.paramMap.get('sample'));
+        if (!sample.hasData()) {
+            sample.setData({ table: new IntersectionTable(), filters: new SampleFilters() });
+        }
         this.logger.debug('SampleItemResolver: resolved', sample);
         return sample;
     }

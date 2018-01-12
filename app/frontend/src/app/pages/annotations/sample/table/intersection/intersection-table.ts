@@ -16,27 +16,15 @@
  */
 
 import { SummaryFieldCounter } from 'pages/annotations/sample/table/intersection/summary/summary-field-counter';
-import { SampleItem } from 'shared/sample/sample-item';
 import { Table } from 'shared/table/table';
+import { WebSocketResponseData } from 'shared/websocket/websocket-response';
 import { IntersectionTableRow } from './row/intersection-table-row';
 
 export class IntersectionTable extends Table<IntersectionTableRow> {
-    private _loadingLabel: string = 'Loading';
-    private _sample: SampleItem;
-
     private _summary?: SummaryFieldCounter[];
 
-    constructor(sample: SampleItem) {
+    constructor() {
         super();
-        this._sample = sample;
-    }
-
-    public setLoadingLabel(label: string): void {
-        this._loadingLabel = label;
-    }
-
-    public getSample(): SampleItem {
-        return this._sample;
     }
 
     public getRows(): IntersectionTableRow[] {
@@ -56,6 +44,17 @@ export class IntersectionTable extends Table<IntersectionTableRow> {
         return this.rows.length;
     }
 
+    public update(response: WebSocketResponseData): void {
+        const summary = response.get('summary').map((v: any) => new SummaryFieldCounter(v));
+        this.updateSummary(summary);
+
+        let index = 0;
+        const rows = response.get('rows').map((r: any) => new IntersectionTableRow(r, index++));
+        this.updatePage(0);
+        this.updateRecordsFound(rows.length);
+        this.updateRows(rows);
+    }
+
     public updateSummary(summary: SummaryFieldCounter[]) {
         this._summary = summary;
     }
@@ -66,9 +65,5 @@ export class IntersectionTable extends Table<IntersectionTableRow> {
 
     public getSummary(): SummaryFieldCounter[] {
         return this._summary;
-    }
-
-    get loadingLabel(): string {
-        return this._loadingLabel;
     }
 }

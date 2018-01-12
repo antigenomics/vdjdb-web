@@ -16,18 +16,21 @@
  */
 
 import { ChangeDetectorRef, Component, Input } from '@angular/core';
-import { IntersectionTableFilters } from './intersection-table-filters';
+import { SampleFilters } from 'pages/annotations/sample/filters/sample-filters';
 
 @Component({
-    selector: 'intersection-table-filters',
-    templateUrl: './intersection-table-filters.component.html'
+    selector: 'sample-filters',
+    templateUrl: './sample-filters.component.html'
 })
-export class IntersectionTableFiltersComponent {
+export class AnnotationsFiltersComponent {
     private static hammingDistanceRange = { min: 0, max: 3 };
     private static confidenceThresholdRange = { min: 0, max: 3 };
 
     @Input('filters')
-    public filters: IntersectionTableFilters;
+    public filters: SampleFilters;
+
+    @Input('disabled')
+    public disabled: boolean;
 
     constructor(private changeDetector: ChangeDetectorRef) {}
 
@@ -35,11 +38,11 @@ export class IntersectionTableFiltersComponent {
         this.filters.hammingDistance = -1;
         this.changeDetector.detectChanges();
         if (isNaN(Number(distance)) || distance === null || distance === undefined) {
-            this.filters.hammingDistance = IntersectionTableFiltersComponent.hammingDistanceRange.min;
-        } else if (distance >  IntersectionTableFiltersComponent.hammingDistanceRange.max) {
-            this.filters.hammingDistance =  IntersectionTableFiltersComponent.hammingDistanceRange.max;
-        } else if (distance < IntersectionTableFiltersComponent.hammingDistanceRange.min) {
-            this.filters.hammingDistance = IntersectionTableFiltersComponent.hammingDistanceRange.min;
+            this.filters.hammingDistance = AnnotationsFiltersComponent.hammingDistanceRange.min;
+        } else if (distance >  AnnotationsFiltersComponent.hammingDistanceRange.max) {
+            this.filters.hammingDistance =  AnnotationsFiltersComponent.hammingDistanceRange.max;
+        } else if (distance < AnnotationsFiltersComponent.hammingDistanceRange.min) {
+            this.filters.hammingDistance = AnnotationsFiltersComponent.hammingDistanceRange.min;
         } else {
             this.filters.hammingDistance = distance;
         }
@@ -50,11 +53,11 @@ export class IntersectionTableFiltersComponent {
         this.filters.confidenceThreshold = -1;
         this.changeDetector.detectChanges();
         if (isNaN(Number(threshold)) || threshold === null || threshold === undefined) {
-            this.filters.confidenceThreshold = IntersectionTableFiltersComponent.confidenceThresholdRange.min;
-        } else if (threshold >  IntersectionTableFiltersComponent.confidenceThresholdRange.max) {
-            this.filters.confidenceThreshold =  IntersectionTableFiltersComponent.confidenceThresholdRange.max;
-        } else if (threshold < IntersectionTableFiltersComponent.confidenceThresholdRange.min) {
-            this.filters.confidenceThreshold = IntersectionTableFiltersComponent.confidenceThresholdRange.min;
+            this.filters.confidenceThreshold = AnnotationsFiltersComponent.confidenceThresholdRange.min;
+        } else if (threshold >  AnnotationsFiltersComponent.confidenceThresholdRange.max) {
+            this.filters.confidenceThreshold =  AnnotationsFiltersComponent.confidenceThresholdRange.max;
+        } else if (threshold < AnnotationsFiltersComponent.confidenceThresholdRange.min) {
+            this.filters.confidenceThreshold = AnnotationsFiltersComponent.confidenceThresholdRange.min;
         } else {
             this.filters.confidenceThreshold = threshold;
         }
