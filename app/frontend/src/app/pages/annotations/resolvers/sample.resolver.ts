@@ -18,6 +18,7 @@
 import { Injectable } from '@angular/core';
 import { ActivatedRouteSnapshot, Resolve, RouterStateSnapshot } from '@angular/router';
 import { SampleFilters } from 'pages/annotations/sample/filters/sample-filters';
+import { SampleService } from 'pages/annotations/sample/sample.service';
 import { IntersectionTable } from 'pages/annotations/sample/table/intersection/intersection-table';
 import { Observable } from 'rxjs/Observable';
 import { SampleItem } from 'shared/sample/sample-item';
@@ -26,17 +27,14 @@ import { AnnotationsService, AnnotationsServiceEvents } from '../annotations.ser
 
 @Injectable()
 export class SampleItemResolver implements Resolve<SampleItem> {
-    constructor(private annotationService: AnnotationsService, private logger: LoggerService) {
-    }
+    constructor(private annotationService: AnnotationsService, private sampleService: SampleService, private logger: LoggerService) {}
 
     public resolve(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<SampleItem> | Promise<SampleItem> | SampleItem {
-        this.logger.debug('SampleItemResolver', 'Resolving');
         return new Promise<SampleItem>((resolve) => {
             if (this.annotationService.isInitialized()) {
                 resolve(this.getSample(route));
             } else {
-                this.annotationService
-                    .getEvents()
+                this.annotationService.getEvents()
                     .filter((event) => event === AnnotationsServiceEvents.INITIALIZED)
                     .take(1)
                     .subscribe(() => {
@@ -51,6 +49,7 @@ export class SampleItemResolver implements Resolve<SampleItem> {
         if (!sample.hasData()) {
             sample.setData({ table: new IntersectionTable(), filters: new SampleFilters() });
         }
+        this.sampleService.setCurrentSample(sample);
         this.logger.debug('SampleItemResolver: resolved', sample);
         return sample;
     }

@@ -15,39 +15,67 @@
  *
  */
 
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnChanges, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { SampleRouteResolverComponent } from 'pages/annotations/sample/common/sample-route-resolver.component';
 import { SampleFilters } from 'pages/annotations/sample/filters/sample-filters';
 import { SampleService, SampleServiceEvent, SampleServiceEventType } from 'pages/annotations/sample/sample.service';
 import { Subscription } from 'rxjs/Subscription';
 import { SampleItem } from 'shared/sample/sample-item';
+import { TableColumn } from 'shared/table/column/table-column';
+import { ITableConfigurationDescriptor } from 'shared/table/configuration/table-configuration';
 import { LoggerService } from 'utils/logger/logger.service';
 import { IntersectionTable } from './intersection/intersection-table';
 
 @Component({
     selector:        'sample-table',
-    templateUrl:     './sample-table.component.html'
+    templateUrl:     './sample-table.component.html',
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class SampleTableComponent implements OnInit, OnDestroy {
-    private _routeSampleSubscription: Subscription;
-
-    public sample: SampleItem;
-
-    constructor(private activatedRoute: ActivatedRoute, private changeDetector: ChangeDetectorRef,
-                private sampleService: SampleService, private logger: LoggerService) {
-        this.sample = this.activatedRoute.parent.snapshot.data.sample;
-    }
-
-    public ngOnInit(): void {
-        this._routeSampleSubscription = this.activatedRoute.parent.data.subscribe((data: { sample: SampleItem }) => {
-            this.sample = data.sample;
-            this.changeDetector.detectChanges();
-        });
-    }
-
-    public ngOnDestroy(): void {
-        if (this._routeSampleSubscription) {
-            this._routeSampleSubscription.unsubscribe();
+export class SampleTableComponent extends SampleRouteResolverComponent {
+    public configuration: ITableConfigurationDescriptor = {
+        classes: {
+            columns: 'center aligned',
+            rows:    'fade element'
+        },
+        utils:   {
+            disable: false,
+            info:    true,
+            export:  { disable: true }
+        },
+        size:    {
+            header: {
+                dynamicSizeEnabled: true,
+                dynamicSizeWeightB: 0.5
+            }
         }
+    };
+
+    constructor(sampleService: SampleService, activatedRoute: ActivatedRoute, changeDetector: ChangeDetectorRef) {
+        super(activatedRoute.parent.data, activatedRoute.parent.snapshot, changeDetector, sampleService);
     }
+
+    public onPageChange(page: number): void {
+        this.sample.table.updatePage(page);
+    }
+
+    public onPageSizeChange(pageSize: number): void {
+        this.sample.table.updatePageSize(pageSize);
+    }
+
+    // noinspection JSMethodCanBeStatic
+    public getColumns(): TableColumn[] {
+        return [
+            new TableColumn('details', 'Details', false, true),
+            new TableColumn('found', '# matches'),
+            new TableColumn('id', 'Rank'),
+            new TableColumn('freq', 'Frequency'),
+            new TableColumn('count', 'Count'),
+            new TableColumn('cdr3aa', 'CDR3aa'),
+            new TableColumn('v', 'V'),
+            new TableColumn('j', 'J'),
+            new TableColumn('tags', 'Tags', false, true)
+        ];
+    }
+
 }

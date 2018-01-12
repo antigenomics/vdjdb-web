@@ -38,7 +38,8 @@ export type SampleServiceEventType = number;
 
 export namespace SampleServiceEventType {
     export const EVENT_LOADING: number = 0;
-    export const EVENT_UPDATED: number = 1;
+    export const EVENT_SELECTED: number = 1;
+    export const EVENT_UPDATED: number = 2;
 }
 
 export class SampleServiceEvent {
@@ -53,9 +54,19 @@ export class SampleServiceEvent {
 
 @Injectable()
 export class SampleService {
+    private _currentSample: SampleItem;
     private _events: Subject<SampleServiceEvent> = new Subject();
 
     constructor(private annotationsService: AnnotationsService, private notifications: NotificationService) {}
+
+    public setCurrentSample(sample: SampleItem): void {
+        this._currentSample = sample;
+        this._events.next(new SampleServiceEvent(sample.name, SampleServiceEventType.EVENT_SELECTED));
+    }
+
+    public getCurrentSample(): SampleItem {
+        return this._currentSample;
+    }
 
     public async intersect(sample: SampleItem) {
         if (!sample.isProcessing()) {

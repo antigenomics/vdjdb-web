@@ -17,6 +17,7 @@
 
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { SampleRouteResolverComponent } from 'pages/annotations/sample/common/sample-route-resolver.component';
 import { SampleService } from 'pages/annotations/sample/sample.service';
 import { Subscription } from 'rxjs/Subscription';
 import { SampleItem } from 'shared/sample/sample-item';
@@ -27,39 +28,13 @@ import { LoggerService } from 'utils/logger/logger.service';
     templateUrl:     './sample.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class AnnotationsSampleComponent implements OnInit, OnDestroy {
-    private _sampleServiceEventsSubscription: Subscription;
-    private _routeSampleSubscription: Subscription;
+export class AnnotationsSampleComponent extends SampleRouteResolverComponent {
 
-    public sample: SampleItem;
-
-    constructor(private activatedRoute: ActivatedRoute, private sampleService: SampleService,
-                private changeDetector: ChangeDetectorRef) {
-        this.sample = this.activatedRoute.snapshot.data.sample;
+    constructor(sampleService: SampleService, activatedRoute: ActivatedRoute, changeDetector: ChangeDetectorRef) {
+        super(activatedRoute.data, activatedRoute.snapshot, changeDetector, sampleService);
     }
 
     public intersect(): void {
         this.sampleService.intersect(this.sample);
-    }
-
-    public ngOnInit(): void {
-        this._routeSampleSubscription = this.activatedRoute.data.subscribe((data: { sample: SampleItem }) => {
-            this.sample = data.sample;
-            this.changeDetector.detectChanges();
-        });
-        this._sampleServiceEventsSubscription = this.sampleService.getEvents().subscribe((event) => {
-            if (this.sample.name === event.name) {
-                this.changeDetector.detectChanges();
-            }
-        });
-    }
-
-    public ngOnDestroy(): void {
-        if (this._routeSampleSubscription) {
-            this._routeSampleSubscription.unsubscribe();
-        }
-        if (this._sampleServiceEventsSubscription) {
-            this._sampleServiceEventsSubscription.unsubscribe();
-        }
     }
 }

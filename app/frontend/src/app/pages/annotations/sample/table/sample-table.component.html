@@ -1,9 +1,5 @@
-<div class="ui fade slow element segments">
-    <h3 class="ui top attached header">Results</h3>
-    <div class="ui attached teal padded blurring segment" style="min-height: 200px;">
-        <div class="ui inverted dimmer" [ngClass]="{'active':sample.isProcessing()}">
-            <div class="ui large text loader top element">{{ sample.getProcessingLabel() }}</div>
-        </div>
-        <intersection-table [table]="sample.table"></intersection-table>
-    </div>
+<div style="width: 100%; overflow-x: auto">
+    <table class="ui unstackable very compact celled stripped small table" table-component [configuration]="configuration"
+           [columns]="getColumns()" [table]="sample.table" (onPageChange)="onPageChange($event)" (onPageSizeChange)="onPageSizeChange($event)">
+    </table>
 </div>

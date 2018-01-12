@@ -20,6 +20,7 @@ import {
     ViewContainerRef
 } from '@angular/core';
 import { AnnotationsService } from 'pages/annotations/annotations.service';
+import { SampleService } from 'pages/annotations/sample/sample.service';
 import { PopupContentTable } from 'shared/modals/popup/popup-content-table';
 import { PopupDirective } from 'shared/modals/popup/popup.directive';
 import { TableColumn } from 'shared/table/column/table-column';
@@ -53,14 +54,12 @@ export class IntersectionTableEntryDetailsComponent extends TableEntry implement
     private _directive: PopupDirective;
 
     @HostBinding('class.center')
-    public classCenterHostBindingProperty: boolean = true;
-
     @HostBinding('class.aligned')
-    public classAlignedHostBindingProperty: boolean = true;
+    public classCenterAlignedHostBindingProperty: boolean = true;
 
     public quickView: PopupContentTable;
 
-    constructor(private logger: LoggerService, private changeDetector: ChangeDetectorRef,
+    constructor(private logger: LoggerService, private changeDetector: ChangeDetectorRef, private sampleService: SampleService,
                 private annotationsService: AnnotationsService, private resolver: ComponentFactoryResolver) {
         super();
     }
@@ -70,7 +69,7 @@ export class IntersectionTableEntryDetailsComponent extends TableEntry implement
     public async downloadQuickViewMatches(): Promise<void> {
         if (!this._row.matchesLoaded && !this._loading) {
             this._loading = true;
-            const response = await this.annotationsService.downloadMatches(this._row);
+            const response = await this.annotationsService.downloadMatches(this._row, this.sampleService.getCurrentSample());
             const matches = response.get('matches').map((m: any) => new MatchTableRow(m));
             const count = response.get('count');
             this.logger.debug('QuickView matches loaded', matches);
@@ -123,11 +122,11 @@ export class IntersectionTableEntryDetailsComponent extends TableEntry implement
         const headers = [ 'CDR3', 'Epitope', 'Species', 'MHC.A', 'MHC.B' ];
         const rows = matches.slice(0, IntersectionTableEntryDetailsComponent._maxMatchesInQuickView).map((match) => {
             const e = match.entries;
-            return [ e[cdr3Index], e[epitopeIndex], e[speciesIndex], e[mhcaIndex], e[mhcbIndex] ];
+            return [ e[ cdr3Index ], e[ epitopeIndex ], e[ speciesIndex ], e[ mhcaIndex ], e[ mhcbIndex ] ];
         });
 
         if (count > IntersectionTableEntryDetailsComponent._maxMatchesInQuickView) {
-            rows.push(['....', '....', '....', '....', '....']);
+            rows.push([ '....', '....', '....', '....', '....' ]);
         }
 
         return new PopupContentTable(headers, rows);
