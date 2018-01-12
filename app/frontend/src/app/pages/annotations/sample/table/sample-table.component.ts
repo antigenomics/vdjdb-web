@@ -17,66 +17,37 @@
 
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { SampleFilters } from 'pages/annotations/sample/filters/sample-filters';
 import { SampleService, SampleServiceEvent, SampleServiceEventType } from 'pages/annotations/sample/sample.service';
 import { Subscription } from 'rxjs/Subscription';
 import { SampleItem } from 'shared/sample/sample-item';
 import { LoggerService } from 'utils/logger/logger.service';
-import { IntersectionTableFilters } from './intersection/filters/intersection-table-filters';
 import { IntersectionTable } from './intersection/intersection-table';
 
 @Component({
     selector:        'sample-table',
-    templateUrl:     './sample-table.component.html',
-    changeDetection: ChangeDetectionStrategy.OnPush
+    templateUrl:     './sample-table.component.html'
 })
 export class SampleTableComponent implements OnInit, OnDestroy {
     private _routeSampleSubscription: Subscription;
-    private _intersectionTableServiceEventsSubscription: Subscription;
 
     public sample: SampleItem;
-    public table: IntersectionTable;
-    public filters: IntersectionTableFilters;
 
     constructor(private activatedRoute: ActivatedRoute, private changeDetector: ChangeDetectorRef,
                 private sampleService: SampleService, private logger: LoggerService) {
-        this.sample = this.activatedRoute.snapshot.data.sample;
-        this.table = this.sampleService.getOrCreateTable(this.sample);
-        this.filters = this.sampleService.getOrCreateFilters(this.sample);
+        this.sample = this.activatedRoute.parent.snapshot.data.sample;
     }
 
     public ngOnInit(): void {
-        this._routeSampleSubscription = this.activatedRoute.data.subscribe((data: { sample: SampleItem }) => {
+        this._routeSampleSubscription = this.activatedRoute.parent.data.subscribe((data: { sample: SampleItem }) => {
             this.sample = data.sample;
-            this.table = this.sampleService.getOrCreateTable(this.sample);
-            this.filters = this.sampleService.getOrCreateFilters(this.sample);
             this.changeDetector.detectChanges();
         });
-
-        this._intersectionTableServiceEventsSubscription =
-            this.sampleService.getEvents().subscribe((event: SampleServiceEvent) => {
-                if (event.name === this.sample.name) {
-                    this.changeDetector.detectChanges();
-                    switch (event.type) {
-                        case SampleServiceEventType.EVENT_UPDATED:
-                            this.logger.debug('Sample table update', this.sampleService.getTable(this.sample));
-                            break;
-                        default:
-
-                    }
-                }
-            });
-    }
-
-    public intersect(): void {
-        this.sampleService.intersect(this.sample);
     }
 
     public ngOnDestroy(): void {
         if (this._routeSampleSubscription) {
             this._routeSampleSubscription.unsubscribe();
-        }
-        if (this._intersectionTableServiceEventsSubscription) {
-            this._intersectionTableServiceEventsSubscription.unsubscribe();
         }
     }
 }

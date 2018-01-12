@@ -1,21 +1,9 @@
-<div class="ui segments">
-    <h3 class="ui top attached header">
-        Sample {{ sample.name }}
-        <div class="sub header">Software: {{ sample.software }}</div>
-    </h3>
-    <div class="ui attached teal padded blurring segment">
-        <intersection-table-filters [filters]="filters"></intersection-table-filters>
-    </div>
-    <div class="ui attached secondary clearing segment">
-        <button class="ui teal button left floated" [ngClass]="{'loading':table.loading}" (click)="intersect()">Annotate</button>
-    </div>
-</div>
 <div class="ui fade slow element segments">
     <h3 class="ui top attached header">Results</h3>
     <div class="ui attached teal padded blurring segment" style="min-height: 200px;">
-        <div class="ui inverted dimmer" [ngClass]="{'active':table.loading}">
-            <div class="ui large text loader top element">{{ table.loadingLabel }}</div>
+        <div class="ui inverted dimmer" [ngClass]="{'active':sample.isProcessing()}">
+            <div class="ui large text loader top element">{{ sample.getProcessingLabel() }}</div>
         </div>
-        <intersection-table [table]="table"></intersection-table>
+        <intersection-table [table]="sample.table"></intersection-table>
     </div>
 </div>

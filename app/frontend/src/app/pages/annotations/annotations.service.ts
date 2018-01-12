@@ -16,6 +16,7 @@
  */
 
 import { Injectable } from '@angular/core';
+import { SampleFilters } from 'pages/annotations/sample/filters/sample-filters';
 import { Observable } from 'rxjs/Observable';
 import { Subject } from 'rxjs/Subject';
 import { SampleItem } from 'shared/sample/sample-item';
@@ -26,8 +27,7 @@ import { WebSocketResponseData } from 'shared/websocket/websocket-response';
 import { LoggerService } from 'utils/logger/logger.service';
 import { NotificationService } from 'utils/notifications/notification.service';
 import { DatabaseMetadata } from '../search/database/database-metadata';
-import { IntersectionTableFilters } from './sample/table/intersection/filters/intersection-table-filters';
-import { IntersectionTableRow } from './sample/table/intersection/row/intersection-table-row';
+// import { IntersectionTableRow } from './sample/table/intersection/row/intersection-table-row';
 import { FileItem } from './upload/item/file-item';
 
 export type AnnotationsServiceEvents = number;
@@ -124,7 +124,7 @@ export class AnnotationsService {
         return this._databaseMetadata;
     }
 
-    public intersect(sample: SampleItem, filters: IntersectionTableFilters, observerCallback: (o: Observable<WebSocketResponseData>) => void): void {
+    public intersect(sample: SampleItem, filters: SampleFilters, observerCallback: (o: Observable<WebSocketResponseData>) => void): void {
         this.connection.subscribeMessages({
             action: AnnotationsServiceWebSocketActions.INTERSECT,
             data:   new WebSocketRequestData()
@@ -140,15 +140,15 @@ export class AnnotationsService {
         }, observerCallback);
     }
 
-    public downloadMatches(row: IntersectionTableRow): Promise<WebSocketResponseData> {
-        return this.connection.sendMessage({
-            action: AnnotationsServiceWebSocketActions.DOWNLOAD_MATCHES,
-            data:   new WebSocketRequestData()
-                    .add('sampleName', row.sample.name)
-                    .add('rowIndex', row.index)
-                    .unpack()
-        });
-    }
+    // public downloadMatches(row: IntersectionTableRow): Promise<WebSocketResponseData> {
+    //     return this.connection.sendMessage({
+    //         action: AnnotationsServiceWebSocketActions.DOWNLOAD_MATCHES,
+    //         data:   new WebSocketRequestData()
+    //                 // .add('sampleName', row.sample.name)
+    //                 .add('rowIndex', row.index)
+    //                 .unpack()
+    //     });
+    // }
 
     public async addSample(file: FileItem): Promise<boolean> {
         const response = await this.connection.sendMessage({

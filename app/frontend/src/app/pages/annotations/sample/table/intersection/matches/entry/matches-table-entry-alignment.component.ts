@@ -23,7 +23,8 @@ import { MatchRowAlignment, MatchTableRow } from '../row/match-table-row';
 
 @Component({
     selector:            'td[match-table-entry-alignment]',
-    template:            `<span class="text alignment cursor pointer" [popup]="popupAlignmentTable"
+    template:            `<span class="text alignment cursor pointer" [popup]="popupAlignmentTable" 
+                            style="display: block; width: 100%; height: 100%;"
                             display="table" position="right" popupClass="big text alignment" width="800">
                             {{ alignment.seq1String }}<br>
                             {{ alignment.markup }}<br>

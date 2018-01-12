@@ -17,7 +17,7 @@
 
 import { Injectable } from '@angular/core';
 import { AnnotationsService } from 'pages/annotations/annotations.service';
-import { IntersectionTableFilters } from 'pages/annotations/sample/table/intersection/filters/intersection-table-filters';
+import { SampleFilters } from 'pages/annotations/sample/filters/sample-filters';
 import { IntersectionTable } from 'pages/annotations/sample/table/intersection/intersection-table';
 import { IntersectionTableRow } from 'pages/annotations/sample/table/intersection/row/intersection-table-row';
 import { SummaryFieldCounter } from 'pages/annotations/sample/table/intersection/summary/summary-field-counter';
@@ -53,85 +53,56 @@ export class SampleServiceEvent {
 
 @Injectable()
 export class SampleService {
-    private _tables: Map<string, IntersectionTable> = new Map();
-    private _filters: Map<string, IntersectionTableFilters> = new Map();
     private _events: Subject<SampleServiceEvent> = new Subject();
 
-    constructor(private annotationsService: AnnotationsService, private notifications: NotificationService) {
-    }
-
-    public getTable(sample: SampleItem): IntersectionTable {
-        return this._tables.get(sample.name);
-    }
-
-    public getFilters(sample: SampleItem): IntersectionTableFilters {
-        return this._filters.get(sample.name);
-    }
-
-    public getOrCreateTable(sample: SampleItem): IntersectionTable {
-        const table = this.isTableExist(sample) ? this.getTable(sample) : new IntersectionTable(sample);
-        this._tables.set(sample.name, table);
-        return table;
-    }
-
-    public getOrCreateFilters(sample: SampleItem): IntersectionTableFilters {
-        const filters = this.isFiltersExist(sample) ? this.getFilters(sample) : new IntersectionTableFilters();
-        this._filters.set(sample.name, filters);
-        return filters;
-    }
+    constructor(private annotationsService: AnnotationsService, private notifications: NotificationService) {}
 
     public async intersect(sample: SampleItem) {
-        const table = this.getTable(sample);
-        const filters = this.getFilters(sample);
-        table.startLoading();
-        filters.disable();
-        table.setLoadingLabel('Loading');
-        this._events.next(new SampleServiceEvent(sample.name, SampleServiceEventType.EVENT_LOADING));
-        this.annotationsService.intersect(sample, filters, (messages: Observable<WebSocketResponseData>) => {
-            const messagesSubscription = messages.subscribe((response: WebSocketResponseData) => {
-                if (response.isSuccess()) {
-                    const state = response.get('state');
-                    switch (state) {
-                        case SampleServiceUpdateState.PARSE:
-                            table.setLoadingLabel('Reading sample file (Stage 1 of 3)');
-                            break;
-                        case SampleServiceUpdateState.ANNOTATE:
-                            table.setLoadingLabel('Annotating (Stage 2 of 3)');
-                            break;
-                        case SampleServiceUpdateState.LOADING:
-                            table.setLoadingLabel('Loading (Stage 3 of 3)');
-                            break;
-                        case SampleServiceUpdateState.COMPLETED:
-                            const summary = response.get('summary').map((v: any) => new SummaryFieldCounter(v));
-                            table.updateSummary(summary);
+        if (!sample.isProcessing()) {
+            sample.setProcessingStatus(true);
+            sample.setProcessingLabel('Loading');
 
-                            let index = 0;
-                            const rows = response.get('rows').map((r: any) => new IntersectionTableRow(r, index++, sample));
-                            table.updatePage(0);
-                            table.updateRows(rows);
-                            table.updateRecordsFound(rows.length);
+            const table = sample.table;
+            const filters = sample.filters;
+            table.startLoading();
 
-                            filters.enable();
-                            messagesSubscription.unsubscribe();
-                            break;
-                        default:
+            this._events.next(new SampleServiceEvent(sample.name, SampleServiceEventType.EVENT_LOADING));
+            this.annotationsService.intersect(sample, filters, (messages: Observable<WebSocketResponseData>) => {
+                const messagesSubscription = messages.subscribe((response: WebSocketResponseData) => {
+                    if (response.isSuccess()) {
+                        const state = response.get('state');
+                        switch (state) {
+                            case SampleServiceUpdateState.PARSE:
+                                sample.setProcessingLabel('Reading sample file (Stage 1 of 3)');
+                                break;
+                            case SampleServiceUpdateState.ANNOTATE:
+                                sample.setProcessingLabel('Annotating (Stage 2 of 3)');
+                                break;
+                            case SampleServiceUpdateState.LOADING:
+                                sample.setProcessingLabel('Loading (Stage 3 of 3)');
+                                break;
+                            case SampleServiceUpdateState.COMPLETED:
+                                sample.setProcessingLabel('Completed');
+
+                                table.update(response);
+                                messagesSubscription.unsubscribe();
+                                sample.setProcessingStatus(false);
+                                break;
+                            default:
+                        }
+                    } else if (response.isError()) {
+                        this.notifications.error('Annotations', 'Unable to annotate sample');
+
+                        table.setError();
+                        messagesSubscription.unsubscribe();
+                        sample.setProcessingStatus(false);
                     }
-                } else if (response.isError()) {
-                    this.notifications.error('Annotations', 'Unable to annotate sample');
-                    table.setError();
-                    messagesSubscription.unsubscribe();
-                }
-                this._events.next(new SampleServiceEvent(sample.name, SampleServiceEventType.EVENT_UPDATED));
+                    this._events.next(new SampleServiceEvent(sample.name, SampleServiceEventType.EVENT_UPDATED));
+                });
             });
-        });
-    }
-
-    public isTableExist(sample: SampleItem): boolean {
-        return this._tables.has(sample.name);
-    }
-
-    public isFiltersExist(sample: SampleItem): boolean {
-        return this._filters.has(sample.name);
+        } else {
+            this.notifications.info('Annotations', 'Sample is in proccesing state');
+        }
     }
 
     public getEvents(): Subject<SampleServiceEvent> {

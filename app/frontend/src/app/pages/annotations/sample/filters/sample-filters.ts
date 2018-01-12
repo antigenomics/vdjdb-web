@@ -15,9 +15,7 @@
  *
  */
 
-export class IntersectionTableFilters {
-    private _disabled: boolean = false;
-
+export class SampleFilters {
     public hammingDistance: number = 0;
     public confidenceThreshold: number = 0;
     public matchV: boolean = true;
@@ -25,16 +23,4 @@ export class IntersectionTableFilters {
     public species: string = 'HomoSapiens';
     public gene: string = 'TRB';
     public mhc: string = 'MHCI+II';
-
-    public disable(): void {
-        this._disabled = true;
-    }
-
-    public isDisabled(): boolean {
-        return this._disabled;
-    }
-
-    public enable(): void {
-        this._disabled = false;
-    }
 }

@@ -15,7 +15,19 @@
  *
  */
 
+import { SampleFilters } from 'pages/annotations/sample/filters/sample-filters';
+import { IntersectionTable } from 'pages/annotations/sample/table/intersection/intersection-table';
+
+export interface ISampleItemData {
+    readonly filters: SampleFilters;
+    readonly table: IntersectionTable;
+}
+
 export class SampleItem {
+    private _data: ISampleItemData;
+    private _processingLabel: string = '';
+    private _processing: boolean = false;
+
     public readonly name: string;
     public readonly software: string;
 
@@ -24,9 +36,45 @@ export class SampleItem {
         this.software = software;
     }
 
+    public setData(data: ISampleItemData): void {
+        this._data = data;
+    }
+
+    public hasData(): boolean {
+        return this._data !== undefined;
+    }
+
+    public getData(): ISampleItemData {
+        return this._data;
+    }
+
+    public get table(): IntersectionTable {
+        return this._data.table;
+    }
+
+    public get filters(): SampleFilters {
+        return this._data.filters;
+    }
+
+    public setProcessingLabel(processingLabel: string): void {
+        this._processingLabel = processingLabel;
+    }
+
+    public getProcessingLabel(): string {
+        return this._processingLabel;
+    }
+
+    public setProcessingStatus(processing: boolean): void {
+        this._processing = processing;
+    }
+
+    public isProcessing(): boolean {
+        return this._processing;
+    }
+
     public static deserialize(o: any): SampleItem {
         /* tslint:disable:no-string-literal */
-        return new SampleItem(o['name'], o['software']);
+        return new SampleItem(o[ 'name' ], o[ 'software' ]);
         /* tslint:enable:no-string-literal */
     }
 }

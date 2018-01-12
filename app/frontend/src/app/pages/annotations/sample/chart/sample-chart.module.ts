@@ -18,24 +18,19 @@
 import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
-import { RouterModule } from '@angular/router';
 import { SampleChartComponent } from 'pages/annotations/sample/chart/sample-chart.component';
-import { SampleChartModule } from 'pages/annotations/sample/chart/sample-chart.module';
 import { SampleChartService } from 'pages/annotations/sample/chart/sample-chart.service';
 import { SummaryChartComponent } from 'pages/annotations/sample/chart/summary/summary-chart.component';
-import { AnnotationsFiltersComponent } from 'pages/annotations/sample/filters/sample-filters.component';
-import { AnnotationsSampleComponent } from 'pages/annotations/sample/sample.component';
-import { SampleService } from 'pages/annotations/sample/sample.service';
-import { SampleTableModule } from 'pages/annotations/sample/table/sample-table.module';
 import { ChartsModule } from 'shared/charts/charts.module';
 import { ModalsModule } from 'shared/modals/modals.module';
 import { TableModule } from 'shared/table/table.module';
 
 @NgModule({
-    imports:      [ BrowserModule, FormsModule, RouterModule, ModalsModule, SampleTableModule, SampleChartModule ],
-    declarations: [ AnnotationsSampleComponent, AnnotationsFiltersComponent ],
-    providers:    [ SampleService ]
+    imports:      [ BrowserModule, ModalsModule, ChartsModule ],
+    declarations: [ SampleChartComponent, SummaryChartComponent ],
+    exports:      [ SampleChartComponent ],
+    providers:    [ SampleChartService ]
 })
-export class SampleModule {
+export class SampleChartModule {
 
 }

@@ -18,6 +18,8 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { RouterModule } from '@angular/router';
+import { Routes } from '@angular/router/src/config';
+import { AnnotationsSampleComponent } from 'pages/annotations/sample/sample.component';
 import { ModalsModule } from 'shared/modals/modals.module';
 import { AnnotationsPageComponent } from './annotations.component';
 import { AnnotationsService } from './annotations.service';
@@ -31,14 +33,19 @@ import { AnnotationsSidebarComponent } from './sidebar/sidebar.component';
 import { AnnotationsUploadComponent } from './upload/upload.component';
 import { UploadModule } from './upload/upload.module';
 
-const routes = [
+const routes: Routes = [
     {
         path:     'annotations', component: AnnotationsPageComponent, resolve: { user: UserResolver },
         children: [
             { path: 'info', component: AnnotationsInfoComponent },
             { path: 'upload', component: AnnotationsUploadComponent },
-            { path: 'sample/:sample/table', component: SampleTableComponent, resolve: { sample: SampleItemResolver } },
-            { path: 'sample/:sample/chart', component: SampleChartComponent, resolve: { sample: SampleItemResolver } },
+            {
+                path:     'sample/:sample', component: AnnotationsSampleComponent, resolve: { sample: SampleItemResolver },
+                children: [
+                    { path: 'table', component: SampleTableComponent },
+                    { path: 'chart', component: SampleChartComponent }
+                ]
+            },
             { path: '**', redirectTo: 'info' }
         ]
     }

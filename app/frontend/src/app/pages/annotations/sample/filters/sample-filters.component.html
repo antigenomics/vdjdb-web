@@ -16,7 +16,7 @@
             <b>Species</b>
         </div>
         <div class="two wide column">
-            <div class="ui fluid selection dropdown" [ngClass]="{'disabled':filters.isDisabled()}" dropdown [content]="speciescontent">
+            <div class="ui fluid selection dropdown" [ngClass]="{'disabled':disabled}" dropdown [content]="speciescontent">
                 <span class="text">{{ filters.species }}</span>
                 <i class="dropdown icon"></i>
                 <div class="menu fast fade element" #speciescontent>
@@ -30,7 +30,7 @@
             <b>Gene</b>
         </div>
         <div class="two wide column">
-            <div class="ui fluid selection dropdown" [ngClass]="{'disabled':filters.isDisabled()}" dropdown [content]="genecontent">
+            <div class="ui fluid selection dropdown" [ngClass]="{'disabled':disabled}" dropdown [content]="genecontent">
                 <span class="text">{{ filters.gene }}</span>
                 <i class="dropdown icon"></i>
                 <div class="menu fast fade element" #genecontent>
@@ -45,12 +45,12 @@
         </div>
         <div class="two wide column">
             <div class="ui checkbox">
-                <input [attr.disabled]="filters.isDisabled()?'':null" type="checkbox" [(ngModel)]="filters.matchV">
+                <input [attr.disabled]="disabled?'':null" type="checkbox" [(ngModel)]="filters.matchV">
                 <label>Match V</label>
             </div>
             <br>
             <div class="ui checkbox">
-                <input [attr.disabled]="filters.isDisabled()?'':null" type="checkbox" [(ngModel)]="filters.matchJ">
+                <input [attr.disabled]="disabled?'':null" type="checkbox" [(ngModel)]="filters.matchJ">
                 <label>Match J</label>
             </div>
         </div>
@@ -59,7 +59,7 @@
         </div>
         <div class="two wide column">
             <div class="ui input fluid">
-                <input [attr.disabled]="filters.isDisabled()?'':null" type="number" min="0" max="3" [ngModel]="filters.confidenceThreshold" (ngModelChange)="checkConfidenceThreshold($event)">
+                <input [attr.disabled]="disabled?'':null" type="number" min="0" max="3" [ngModel]="filters.confidenceThreshold" (ngModelChange)="checkConfidenceThreshold($event)">
             </div>
         </div>
     </div>
@@ -68,7 +68,7 @@
             <b>MHC class</b>
         </div>
         <div class="two wide column">
-            <div class="ui fluid selection dropdown" [ngClass]="{'disabled':filters.isDisabled()}" dropdown [content]="mhccontent">
+            <div class="ui fluid selection dropdown" [ngClass]="{'disabled':disabled}" dropdown [content]="mhccontent">
                 <span class="text">{{ filters.mhc }}</span>
                 <i class="dropdown icon"></i>
                 <div class="menu fast fade element" #mhccontent>
@@ -86,7 +86,7 @@
         </div>
         <div class="two wide column">
             <div class="ui input fluid">
-                <input [attr.disabled]="filters.isDisabled()?'':null" type="number" min="0" max="3" [ngModel]="filters.hammingDistance" (ngModelChange)="checkHammingDistance($event)">
+                <input [attr.disabled]="disabled?'':null" type="number" min="0" max="3" [ngModel]="filters.hammingDistance" (ngModelChange)="checkHammingDistance($event)">
             </div>
         </div>
     </div>
