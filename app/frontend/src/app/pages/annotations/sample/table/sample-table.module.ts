@@ -29,7 +29,6 @@ import { IntersectionTableEntryCdr3aaComponent } from 'pages/annotations/sample/
 import { IntersectionTableEntryDetailsComponent } from 'pages/annotations/sample/table/intersection/entry/intersection-table-entry-details.component';
 import { IntersectionTableEntryFrequencyComponent } from 'pages/annotations/sample/table/intersection/entry/intersection-table-entry-frequency.component';
 import { IntersectionTableEntryTagsComponent } from 'pages/annotations/sample/table/intersection/entry/intersection-table-entry-tags.component';
-import { IntersectionTableComponent } from 'pages/annotations/sample/table/intersection/intersection-table.component';
 import { MatchesTableEntryAlignmentComponent } from 'pages/annotations/sample/table/intersection/matches/entry/matches-table-entry-alignment.component';
 import { MatchesTableComponent } from 'pages/annotations/sample/table/intersection/matches/matches-table.component';
 import { SampleTableComponent } from 'pages/annotations/sample/table/sample-table.component';

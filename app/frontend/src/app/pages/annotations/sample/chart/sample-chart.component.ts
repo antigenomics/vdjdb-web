@@ -17,6 +17,8 @@
 
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { SampleChartComponentType, SampleChartService } from 'pages/annotations/sample/chart/sample-chart.service';
+import { SummaryChartComponent } from 'pages/annotations/sample/chart/summary/summary-chart.component';
 import { SampleRouteResolverComponent } from 'pages/annotations/sample/common/sample-route-resolver.component';
 import { SampleService, SampleServiceEvent, SampleServiceEventType } from 'pages/annotations/sample/sample.service';
 import { IntersectionTable } from 'pages/annotations/sample/table/intersection/intersection-table';
@@ -31,8 +33,16 @@ import { LoggerService } from 'utils/logger/logger.service';
 })
 export class SampleChartComponent extends SampleRouteResolverComponent {
 
-    constructor(sampleService: SampleService, activatedRoute: ActivatedRoute, changeDetector: ChangeDetectorRef) {
+    constructor(private sampleChartService: SampleChartService,
+                sampleService: SampleService, activatedRoute: ActivatedRoute, changeDetector: ChangeDetectorRef) {
         super(activatedRoute.parent.data, activatedRoute.parent.snapshot, changeDetector, sampleService);
     }
 
+    public addChart(type: SampleChartComponentType): void {
+        this.sampleChartService.addSampleChart(this.sample, type);
+    }
+
+    public getCharts(): SampleChartComponentType[] {
+        return this.sampleChartService.getSampleCharts(this.sample);
+    }
 }

@@ -1,1 +1,10 @@
 <bar-chart [configuration]="{ margin: { left: 80, right: 25, top: 20, bottom: 20 } }" [stream]="stream"></bar-chart>
+<div class="ui selection dropdown" dropdown [content]="content">
+    <span class="text">{{ getCurrentFieldTitle() }}</span>
+    <i class="dropdown icon"></i>
+    <div class="menu fast fade element" #content>
+        <div class="item" *ngFor="let field of getFields(); index as i" (click)="setCurrentField(i)">
+            {{ field }}
+        </div>
+    </div>
+</div>

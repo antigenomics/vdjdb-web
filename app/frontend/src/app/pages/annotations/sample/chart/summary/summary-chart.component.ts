@@ -16,6 +16,7 @@
  */
 
 import { ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { SampleChartComponentType } from 'pages/annotations/sample/chart/sample-chart.service';
 import { SampleService, SampleServiceEventType } from 'pages/annotations/sample/sample.service';
 import { SummaryFieldCounter } from 'pages/annotations/sample/table/intersection/summary/summary-field-counter';
 import { ReplaySubject } from 'rxjs/ReplaySubject';
@@ -28,35 +29,41 @@ import { ChartEventType, IChartEvent } from 'shared/charts/chart-events';
     selector:    'div[summary-chart]',
     templateUrl: './summary-chart.component.html'
 })
-export class SummaryChartComponent implements OnInit, OnDestroy {
-    private sampleServiceEventsSubscription: Subscription;
+export class SummaryChartComponent {
+    private currentField: number = 0;
 
+    public data: SummaryFieldCounter[];
     public stream: Subject<IChartEvent<IBarChartHorizontalDataEntry>> = new ReplaySubject(1);
 
     @Input('data')
     public set setData(data: SummaryFieldCounter[]) {
-        if (data) {
-            const chartData = data[ 0 ].counters.map((c) => {
-                return { name: c.field, value: c.unique };
-            });
-            this.stream.next({ type: ChartEventType.INITIAL_DATA, data: chartData });
-        }
+        this.data = data;
+        this.updateStream();
+
     }
 
     constructor(private sampleService: SampleService, private changeDetector: ChangeDetectorRef) {
     }
 
-    public ngOnInit(): void {
-        this.sampleServiceEventsSubscription = this.sampleService.getEvents().subscribe((event) => {
-            if (event.type === SampleServiceEventType.EVENT_UPDATED) {
-                this.changeDetector.detectChanges();
-            }
+    public getFields(): string[] {
+        return this.data.map((d) => d.name);
+    }
+
+    public getCurrentFieldTitle(): string {
+        return this.data[ this.currentField ].name;
+    }
+
+    public setCurrentField(index: number): void {
+        this.currentField = index;
+        this.updateStream();
+    }
+
+    private updateStream(): void {
+        this.stream.next({
+            type: ChartEventType.UPDATE_DATA, data: this.data[ this.currentField ].counters.map((c) => {
+                return { name: c.field, value: c.unique };
+            })
         });
     }
 
-    public ngOnDestroy(): void {
-        if (this.sampleServiceEventsSubscription) {
-            this.sampleServiceEventsSubscription.unsubscribe();
-        }
-    }
 }

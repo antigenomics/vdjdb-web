@@ -1,2 +1,21 @@
-chart
-{{ sample.getProcessingLabel() }}
+<div class="ui fade slow element segments">
+    <h3 class="ui top attached header">Charts</h3>
+    <div class="ui teal attached padded segment">
+        <button class="ui button teal" (click)="addChart('summary')">Add summary chart</button>
+    </div>
+</div>
+
+<div class="ui two column grid">
+    <div class="column" *ngFor="let chart of getCharts()">
+        <ng-container [ngSwitch]="chart">
+            <ng-container *ngSwitchCase="'summary'">
+                <div class="ui fade slow element segments">
+                    <h4 class="ui top attached header">Summary</h4>
+                    <div class="ui teal attached padded segment"
+                         summary-chart [data]="sample.table.getSummary()" style="height: 400px">
+                    </div>
+                </div>
+            </ng-container>
+        </ng-container>
+    </div>
+</div>
