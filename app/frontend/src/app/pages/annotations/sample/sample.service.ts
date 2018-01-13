@@ -94,10 +94,12 @@ export class SampleService {
                                 break;
                             case SampleServiceUpdateState.COMPLETED:
                                 sample.setProcessingLabel('Completed');
-
                                 table.update(response);
                                 messagesSubscription.unsubscribe();
                                 sample.setProcessingStatus(false);
+                                if (this._currentSample.name !== sample.name) {
+                                    this.notifications.success('Annotations', `Sample ${sample.name} has been successfully annotated`);
+                                }
                                 break;
                             default:
                         }

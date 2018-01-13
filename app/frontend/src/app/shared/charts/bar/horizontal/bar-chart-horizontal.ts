@@ -18,38 +18,49 @@
 import { ScaleBand, ScaleLinear } from 'd3-scale';
 import * as d3 from 'external/d3';
 import { Observable } from 'rxjs/Observable';
+import { Subject } from 'rxjs/Subject';
+import { createDefaultBarChartConfiguration, IBarChartConfiguration } from 'shared/charts/bar/bar-chart-configuration';
 import { Chart } from 'shared/charts/chart';
 import { IChartEvent } from 'shared/charts/chart-events';
 import { ChartContainer } from 'shared/charts/container/chart-container';
+import { Configuration } from 'utils/configuration/configuration';
+
+export type BarChartStreamType = Subject<IChartEvent<IBarChartHorizontalDataEntry>>;
+export type BarChartInputStreamType = Observable<IChartEvent<IBarChartHorizontalDataEntry>>;
 
 export interface IBarChartHorizontalDataEntry {
     readonly name: string;
     readonly value: number;
 }
 
-export class BarChartHorizontal extends Chart<IBarChartHorizontalDataEntry> {
+export class BarChartHorizontal extends Chart<IBarChartHorizontalDataEntry, IBarChartConfiguration> {
     private static readonly defaultTransitionDuration: number = 750;
     private static readonly defaultPadding: number = 0.1;
     private static readonly defaultXMargin: number = 5;
 
-    constructor(container: ChartContainer, dataStream: Observable<IChartEvent<IBarChartHorizontalDataEntry>>) {
-        super(container, dataStream);
+    constructor(configuration: IBarChartConfiguration, container: ChartContainer, dataStream: BarChartInputStreamType) {
+        super(configuration, container, dataStream);
         this.container.classed('bar chart horizontal');
+    }
+
+    public configure(configuration: IBarChartConfiguration): void {
+        this.configuration = createDefaultBarChartConfiguration();
+        Configuration.extend(this.configuration, configuration);
     }
 
     public create(data: IBarChartHorizontalDataEntry[]): void {
         const { svg, width, height } = this.container.getContainer();
-        const { x, xAxis } = this.createXAxis(width, data);
-        const { y, yAxis } = this.createYAxis(height, data);
+        const { x, xAxis } = this.createXAxis(width, height, data);
+        const { y, yAxis } = this.createYAxis(width, height, data);
         const colors = this.getColors(data.length);
 
         svg.append('g')
            .attr('class', 'y axis')
            .call(yAxis)
            .append('text')
-           .attr('dx', '2.5em')
-           .attr('dy', '-0.4em')
-           .text('Frequency');
+           .attr('dx', this.configuration.axis.y.dx)
+           .attr('dy', this.configuration.axis.y.dy)
+           .text(this.configuration.axis.y.title);
 
         svg.append('g')
            .attr('class', 'x axis')
@@ -69,13 +80,14 @@ export class BarChartHorizontal extends Chart<IBarChartHorizontalDataEntry> {
 
     public update(data: IBarChartHorizontalDataEntry[]): void {
         const { svg, width, height } = this.container.getContainer();
-        const { x, xAxis } = this.createXAxis(width, data);
-        const { y, yAxis } = this.createYAxis(height, data);
+        const { x, xAxis } = this.createXAxis(width, height, data);
+        const { y, yAxis } = this.createYAxis(width, height, data);
         const colors = this.getColors(data.length);
 
         const bars = svg.selectAll('.bar').data(data);
 
         bars.exit().remove();
+
         bars.enter().append('rect')
             .attr('class', 'bar')
             .merge(bars)
@@ -96,8 +108,8 @@ export class BarChartHorizontal extends Chart<IBarChartHorizontalDataEntry> {
     }
 
     public updateValues(data: IBarChartHorizontalDataEntry[]): void {
-        const { svg, width } = this.container.getContainer();
-        const { x, xAxis } = this.createXAxis(width, data);
+        const { svg, width, height } = this.container.getContainer();
+        const { x, xAxis } = this.createXAxis(width, height, data);
 
         svg.selectAll('.bar').data(data)
            .transition().duration(BarChartHorizontal.defaultTransitionDuration)
@@ -110,8 +122,8 @@ export class BarChartHorizontal extends Chart<IBarChartHorizontalDataEntry> {
 
     public resize(data: IBarChartHorizontalDataEntry[]): void {
         const { svg, width, height } = this.container.getContainer();
-        const { x, xAxis } = this.createXAxis(width, data);
-        const { y, yAxis } = this.createYAxis(height, data);
+        const { x, xAxis } = this.createXAxis(width, height, data);
+        const { y, yAxis } = this.createYAxis(width, height, data);
         const colors = this.getColors(data.length);
 
         svg.select('.x.axis')
@@ -133,18 +145,32 @@ export class BarChartHorizontal extends Chart<IBarChartHorizontalDataEntry> {
             .attr('fill', (d, i) => colors(i));
     }
 
-    private createXAxis(width: number, data: IBarChartHorizontalDataEntry[]): { x: ScaleLinear<number, number>, xAxis: any } {
+    private createXAxis(width: number, height: number, data: IBarChartHorizontalDataEntry[]): { x: ScaleLinear<number, number>, xAxis: any } {
         const x = d3.scaleLinear().range([ 0, width ])
                     .domain([ 0, d3.max(data.map((d) => d.value)) ]);
         const xAxis = d3.axisBottom(x);
+        if (this.configuration.grid) {
+            xAxis.tickSizeInner(-height);
+            xAxis.tickSizeOuter(0);
+        }
+        if (this.configuration.axis.x.tickFormat) {
+            xAxis.tickFormat(d3.format(this.configuration.axis.x.tickFormat));
+        }
+        if (this.configuration.axis.x.ticksCount) {
+            xAxis.ticks(this.configuration.axis.x.ticksCount);
+        }
         return { x, xAxis };
     }
 
-    private createYAxis(height: number, data: IBarChartHorizontalDataEntry[]): { y: ScaleBand<string>, yAxis: any } {
+    private createYAxis(width: number, height: number, data: IBarChartHorizontalDataEntry[]): { y: ScaleBand<string>, yAxis: any } {
         const y = d3.scaleBand().rangeRound([ height, 0 ])
                     .padding(BarChartHorizontal.defaultPadding)
                     .domain(data.map((d) => d.name));
         const yAxis = d3.axisLeft(y);
+        if (this.configuration.grid) {
+            yAxis.tickSizeInner(-width);
+            yAxis.tickSizeOuter(0);
+        }
         return { y, yAxis };
     }
 
