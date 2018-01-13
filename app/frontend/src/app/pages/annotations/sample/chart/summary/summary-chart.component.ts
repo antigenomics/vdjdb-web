@@ -16,7 +16,7 @@
  */
 
 import { ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from '@angular/core';
-import { SampleChartComponentType } from 'pages/annotations/sample/chart/sample-chart.service';
+import { ISampleChartComponentItem } from 'pages/annotations/sample/chart/sample-chart.service';
 import { SampleService, SampleServiceEventType } from 'pages/annotations/sample/sample.service';
 import { SummaryClonotypeCounter } from 'pages/annotations/sample/table/intersection/summary/summary-clonotype-counter';
 import { SummaryFieldCounter } from 'pages/annotations/sample/table/intersection/summary/summary-field-counter';
@@ -72,7 +72,7 @@ export class SummaryChartComponent {
             x: { tickFormat: '.1e', ticksCount: 5 }
         },
         grid:      true,
-        container: { margin: { left: 80, right: 25, top: 20, bottom: 20 } }
+        container: { margin: { left: 100, right: 25, top: 20, bottom: 20 } }
     };
 
     public get weighted(): boolean {

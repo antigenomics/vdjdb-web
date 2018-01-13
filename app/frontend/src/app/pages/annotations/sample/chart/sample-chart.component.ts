@@ -17,7 +17,7 @@
 
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { SampleChartComponentType, SampleChartService } from 'pages/annotations/sample/chart/sample-chart.service';
+import { ISampleChartComponentItem, SampleChartService } from 'pages/annotations/sample/chart/sample-chart.service';
 import { SummaryChartComponent } from 'pages/annotations/sample/chart/summary/summary-chart.component';
 import { SampleRouteResolverComponent } from 'pages/annotations/sample/common/sample-route-resolver.component';
 import { SampleService, SampleServiceEvent, SampleServiceEventType } from 'pages/annotations/sample/sample.service';
@@ -38,11 +38,19 @@ export class SampleChartComponent extends SampleRouteResolverComponent {
         super(activatedRoute.parent.data, activatedRoute.parent.snapshot, changeDetector, sampleService);
     }
 
-    public addChart(type: SampleChartComponentType): void {
+    public addChart(type: string): void {
         this.sampleChartService.addSampleChart(this.sample, type);
     }
 
-    public getCharts(): SampleChartComponentType[] {
+    public removeChart(chart: ISampleChartComponentItem): void {
+        this.sampleChartService.removeSampleChart(this.sample, chart);
+    }
+
+    public getCharts(): ISampleChartComponentItem[] {
         return this.sampleChartService.getSampleCharts(this.sample);
+    }
+
+    public trackChartFn(index: number, item: ISampleChartComponentItem) {
+        return item.id; // or item.id
     }
 }
