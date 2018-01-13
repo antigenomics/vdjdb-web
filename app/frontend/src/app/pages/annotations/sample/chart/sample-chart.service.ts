@@ -18,21 +18,33 @@
 import { Injectable } from '@angular/core';
 import { SampleItem } from 'shared/sample/sample-item';
 
-export type SampleChartComponentType = string;
+export interface ISampleChartComponentItem {
+    id: number;
+    type: string;
+}
 
 @Injectable()
 export class SampleChartService {
-    private charts: Map<string, SampleChartComponentType[]> = new Map();
+    private idCounter: number = 0;
+    private charts: Map<string, ISampleChartComponentItem[]> = new Map();
 
-    public getSampleCharts(sample: SampleItem): SampleChartComponentType[] {
+    public getSampleCharts(sample: SampleItem): ISampleChartComponentItem[] {
         if (!this.charts.has(sample.name)) {
             this.charts.set(sample.name, new Array());
         }
         return this.charts.get(sample.name);
     }
 
-    public addSampleChart(sample: SampleItem, type: SampleChartComponentType): void {
+    public addSampleChart(sample: SampleItem, type: string): void {
         const charts = this.getSampleCharts(sample);
-        charts.push(type);
+        charts.push({ id: this.idCounter++, type });
+    }
+
+    public removeSampleChart(sample: SampleItem, chart: ISampleChartComponentItem): void {
+        const charts = this.getSampleCharts(sample);
+        const index = charts.findIndex((c) => c.id === chart.id);
+        if (index !== -1) {
+            charts.splice(index, 1);
+        }
     }
 }

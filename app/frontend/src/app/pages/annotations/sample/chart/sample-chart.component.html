@@ -6,11 +6,25 @@
 </div>
 
 <div class="ui two column grid">
-    <div class="column" *ngFor="let chart of getCharts()">
-        <ng-container [ngSwitch]="chart">
+    <div class="column" *ngFor="let chart of getCharts();trackBy: trackChartFn">
+        <ng-container [ngSwitch]="chart.type">
             <ng-container *ngSwitchCase="'summary'">
                 <div class="ui fade slow element segments">
-                    <h4 class="ui top attached header">Summary</h4>
+                    <div class="ui top attached clearing segment">
+                        <div class="ui grid">
+                            <div class="fifteen wide column">
+                                <h3 class="ui header">Summary</h3>
+                            </div>
+                            <div class="one wide column cursor pointer" dropdown [content]="commonChartSettgins">
+                                <i class="ui ellipsis vertical link icon"></i>
+                                <div class="ui dropdown item">
+                                    <div class="menu fade element slow padded" tabindex="-1" #commonChartSettgins>
+                                        <a class="item" (click)="removeChart(chart)"><i class="trash outline icon"></i>Remove</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     <div class="ui teal attached padded segment" summary-chart [data]="sample.table.getSummary()"></div>
                 </div>
             </ng-container>

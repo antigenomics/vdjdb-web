@@ -33,7 +33,7 @@
         </div>
         <ng-container *ngIf="isThresholdTypesAvailable()">
             <h4>Threshold</h4>
-            <div class="ui selection fluid dropdown" dropdown [content]="thresholdContent">
+            <div class="ui selection fluid upward dropdown" dropdown [content]="thresholdContent">
                 <span class="text">{{ getCurrentThresholdTypeTitle() }}</span>
                 <i class="dropdown icon"></i>
                 <div class="menu fast fade element" #thresholdContent>
