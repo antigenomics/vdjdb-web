@@ -61,7 +61,7 @@ export class SampleChartComponent extends SampleRouteResolverComponent implement
     }
 
     public trackChartFn(index: number, item: ISampleChartComponentItem) {
-        return item.id; // or item.id
+        return item.id;
     }
 
     public ngOnDestroy(): void {
