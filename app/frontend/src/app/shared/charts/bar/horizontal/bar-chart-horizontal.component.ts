@@ -17,10 +17,12 @@
 
 import { AfterViewInit, Component, ElementRef, Input, OnDestroy, ViewChild } from '@angular/core';
 import { Observable } from 'rxjs/Observable';
-import { BarChartHorizontal, IBarChartHorizontalDataEntry } from 'shared/charts/bar/horizontal/bar-chart-horizontal';
+import { createDefaultBarChartConfiguration, IBarChartConfiguration } from 'shared/charts/bar/bar-chart-configuration';
+import { BarChartHorizontal, BarChartInputStreamType, IBarChartHorizontalDataEntry } from 'shared/charts/bar/horizontal/bar-chart-horizontal';
 import { IChartEvent } from 'shared/charts/chart-events';
 import { ChartContainer } from 'shared/charts/container/chart-container';
 import { IChartContainerConfiguration } from 'shared/charts/container/chart-container-configuration';
+import { Configuration } from 'utils/configuration/configuration';
 
 @Component({
     selector:  'bar-chart',
@@ -30,18 +32,21 @@ import { IChartContainerConfiguration } from 'shared/charts/container/chart-cont
 export class BarChartHorizontalComponent implements AfterViewInit, OnDestroy {
     private chart: BarChartHorizontal;
 
+    @Input('configuration')
+    public configuration: IBarChartConfiguration = createDefaultBarChartConfiguration();
+
+    @Input('stream')
+    public stream: BarChartInputStreamType;
+
     @ViewChild('container', { read: ElementRef })
     public containerElementRef: ElementRef;
 
-    @Input('configuration')
-    public configuration: IChartContainerConfiguration;
-
-    @Input('stream')
-    public stream: Observable<IChartEvent<IBarChartHorizontalDataEntry>>;
-
     public ngAfterViewInit(): void {
-        const container = new ChartContainer(this.containerElementRef, this.configuration);
-        this.chart = new BarChartHorizontal(container, this.stream);
+        const configuration = createDefaultBarChartConfiguration();
+        Configuration.extend(configuration, this.configuration);
+
+        const container = new ChartContainer(this.containerElementRef, configuration.container);
+        this.chart = new BarChartHorizontal(configuration, container, this.stream);
     }
 
     public ngOnDestroy(): void {

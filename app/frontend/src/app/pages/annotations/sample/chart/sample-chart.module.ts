@@ -26,7 +26,7 @@ import { ModalsModule } from 'shared/modals/modals.module';
 import { TableModule } from 'shared/table/table.module';
 
 @NgModule({
-    imports:         [ BrowserModule, ModalsModule, ChartsModule ],
+    imports:         [ BrowserModule, FormsModule, ModalsModule, ChartsModule ],
     declarations:    [ SampleChartComponent, SummaryChartComponent ],
     exports:         [ SampleChartComponent ],
     providers:       [ SampleChartService ]

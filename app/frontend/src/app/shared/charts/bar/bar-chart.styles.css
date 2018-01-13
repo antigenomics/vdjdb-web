@@ -35,3 +35,11 @@
 * >>> .bar.chart > .y.axis > text {
     fill: #000;
 }
+
+* >>> .bar.chart > .y.axis > g.tick > line {
+    opacity: 0.2;
+}
+
+* >>> .bar.chart > .x.axis > g.tick > line {
+    opacity: 0.2;
+}

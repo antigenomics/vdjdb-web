@@ -37,4 +37,24 @@ export class AnnotationsSampleComponent extends SampleRouteResolverComponent {
     public intersect(): void {
         this.sampleService.intersect(this.sample);
     }
+
+    public isHelperBarVisible(): boolean {
+        return !this.sample.table.dirty && !this.sample.isProcessing();
+    }
+
+    public isProcessingBarVisible(): boolean {
+        return this.sample.isProcessing();
+    }
+
+    public isEmptyResultsBarVisible(): boolean {
+        return this.sample.table.dirty && this.sample.table.isEmpty() && !this.sample.table.error && !this.sample.isProcessing();
+    }
+
+    public isErrorBarVisible(): boolean {
+        return this.sample.table.dirty && this.sample.table.error;
+    }
+
+    public isRouterOutlerHidden(): boolean {
+        return !this.sample.table.dirty || this.sample.table.isEmpty() || this.sample.isProcessing() || this.sample.table.error;
+    }
 }

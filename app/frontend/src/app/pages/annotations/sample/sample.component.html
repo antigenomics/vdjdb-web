@@ -10,32 +10,32 @@
         <button class="ui teal button left floated" [ngClass]="{'loading':sample.isProcessing()}" (click)="intersect()">Annotate</button>
     </div>
 </div>
-<div class="ui fade slow element segments" *ngIf="!sample.table.dirty || sample.table.isEmpty() || sample.isProcessing()">
-    <div class="ui teal attached padded blurring segment" style="min-height: 200px;">
-        <div class="ui inverted dimmer" [ngClass]="{'active':sample.isProcessing()}">
-            <div class="ui large text loader top element">{{ sample.getProcessingLabel() }}</div>
-        </div>
-        <h2 class="ui center aligned icon header" *ngIf="!sample.table.dirty && !sample.isProcessing()">
-            <i class="info circle icon"></i>
-            <div class="content"> Click "Annotate" button to query VDJdb</div>
-            <div class="sub header">Make sure that you've selected parameters (species, etc) that match your sample metadata</div>
-        </h2>
-        <div *ngIf="sample.table.dirty && sample.table.isEmpty() && !sample.table.error && !sample.isProcessing()">
-            <h2 class="ui center aligned icon header">
-                <i class="search icon"></i>
-                No results found
-                <div class="sub header">Perhaps you need to change the annotation parameters</div>
-            </h2>
-        </div>
-        <div *ngIf="sample.table.dirty && sample.table.isEmpty() && sample.table.error">
-            <h2 class="ui center aligned icon header">
-                <i class="warning sign icon"></i>
-                Unable to parse sample file
-                <div class="sub header">Wrong software type</div>
-            </h2>
-        </div>
+<div class="ui fade element padded segment" *ngIf="isProcessingBarVisible()" style="min-height: 190px">
+    <div class="ui inverted active dimmer">
+        <div class="ui large text loader top element">{{ sample.getProcessingLabel() }}</div>
     </div>
 </div>
-<div *ngIf="sample.table.dirty && !sample.table.isEmpty() && !sample.isProcessing()">
+<div class="ui fade element padded segment" *ngIf="isHelperBarVisible()">
+    <h2 class="ui center aligned icon header" *ngIf="!sample.table.dirty && !sample.isProcessing()">
+        <i class="options icon"></i>
+        <div class="content"> Click "Annotate" button to query VDJdb</div>
+        <div class="sub header">Make sure that you've selected parameters (species, etc) that match your sample metadata</div>
+    </h2>
+</div>
+<div class="ui fade element padded segment" *ngIf="isEmptyResultsBarVisible()">
+    <h2 class="ui center aligned icon header">
+        <i class="search icon"></i>
+        <div class="content">No results found</div>
+        <div class="sub header">Perhaps you need to change the annotation parameters</div>
+    </h2>
+</div>
+<div class="ui fade element padded segment" *ngIf="isErrorBarVisible()">
+    <h2 class="ui center aligned icon header">
+        <i class="warning sign icon"></i>
+        <div class="content">Unable to parse sample file</div>
+        <div class="sub header">Wrong software type</div>
+    </h2>
+</div>
+<div [ngClass]="{'hide element':isRouterOutlerHidden()}">
     <router-outlet></router-outlet>
 </div>

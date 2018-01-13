@@ -22,7 +22,9 @@ import { ChartContainer } from 'shared/charts/container/chart-container';
 import { Utils } from 'utils/utils';
 
 // tslint:disable-next-line:interface-name
-export interface Chart<T> {
+export interface Chart<T, C> {
+    configure(configuration: C): void;
+
     create(data: T[]): void;
 
     update(data: T[]): void;
@@ -34,7 +36,7 @@ export interface Chart<T> {
     destroy(): void;
 }
 
-export class Chart<T> {
+export class Chart<T, C> {
     private created: boolean = false;
     private dataStreamSubscription: Subscription;
     private debounceResizeListener = Utils.Time.debounce((data) => {
@@ -42,7 +44,9 @@ export class Chart<T> {
         this.resize(data);
     });
 
-    constructor(protected container: ChartContainer, protected dataStream: Observable<IChartEvent<T>>) {
+    constructor(protected configuration: C, protected container: ChartContainer,
+                protected dataStream: Observable<IChartEvent<T>>) {
+        this.configure(configuration);
         this.dataStreamSubscription = this.dataStream.subscribe((event) => {
             if (!this.created) {
                 this.create(event.data);
