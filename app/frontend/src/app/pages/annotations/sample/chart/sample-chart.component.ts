@@ -33,8 +33,9 @@ import { Utils } from 'utils/utils';
     selector:    'sample-chart',
     templateUrl: './sample-chart.component.html'
 })
-export class SampleChartComponent extends SampleRouteResolverComponent implements AfterViewInit {
-    private readonly resizeDebouncedHandler = Utils.Time.debounce(() => {
+export class SampleChartComponent extends SampleRouteResolverComponent implements AfterViewInit, OnDestroy {
+    private resizeWindowListener: () => void;
+    private resizeDebouncedHandler = Utils.Time.debounce(() => {
         this.sampleChartService.fireResizeEvent();
     });
 
@@ -44,7 +45,7 @@ export class SampleChartComponent extends SampleRouteResolverComponent implement
     }
 
     public ngAfterViewInit(): void {
-        this.renderer.listen('window', 'resize', this.resizeDebouncedHandler);
+        this.resizeWindowListener = this.renderer.listen('window', 'resize', this.resizeDebouncedHandler);
     }
 
     public addChart(type: string): void {
@@ -61,5 +62,10 @@ export class SampleChartComponent extends SampleRouteResolverComponent implement
 
     public trackChartFn(index: number, item: ISampleChartComponentItem) {
         return item.id; // or item.id
+    }
+
+    public ngOnDestroy(): void {
+        super.ngOnDestroy();
+        this.resizeWindowListener();
     }
 }
