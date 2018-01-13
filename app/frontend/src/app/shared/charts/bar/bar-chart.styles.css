@@ -43,3 +43,20 @@
 * >>> .bar.chart > .x.axis > g.tick > line {
     opacity: 0.2;
 }
+
+* >>> div.tooltip:after {
+    content: "";
+    width: 0;
+    height: 0;
+    border-left: 12px solid transparent;
+    border-right: 12px solid transparent;
+    border-top: 12px solid white;
+    position: absolute;
+    bottom: 0px;
+    left: 50%;
+    margin-left: -12px;
+}
+* >>> div.tooltip span {
+    font-weight: 500;
+    color: #081F2C;
+}

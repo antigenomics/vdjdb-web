@@ -16,6 +16,7 @@
  */
 
 import { ScaleBand, ScaleLinear } from 'd3-scale';
+import { event as D3CurrentEvent } from 'd3-selection';
 import * as d3 from 'external/d3';
 import { Observable } from 'rxjs/Observable';
 import { Subject } from 'rxjs/Subject';
@@ -67,15 +68,17 @@ export class BarChartHorizontal extends Chart<IBarChartHorizontalDataEntry, IBar
            .attr('transform', `translate(0, ${height})`)
            .call(xAxis);
 
-        svg.selectAll('.bar')
-           .data(data)
-           .enter().append('rect')
-           .attr('class', 'bar')
-           .attr('y', (d) => y(d.name))
-           .attr('height', y.bandwidth)
-           .attr('x', BarChartHorizontal.defaultXMargin)
-           .attr('width', (d) => x(d.value))
-           .attr('fill', (d, i) => colors(i));
+        const bars = svg.selectAll('.bar')
+                        .data(data)
+                        .enter().append('rect')
+                        .attr('class', 'bar')
+                        .attr('y', (d) => y(d.name))
+                        .attr('height', y.bandwidth)
+                        .attr('x', BarChartHorizontal.defaultXMargin)
+                        .attr('width', (d) => x(d.value))
+                        .attr('fill', (d, i) => colors(i));
+
+        this.bindTooltipEvents(bars);
     }
 
     public update(data: IBarChartHorizontalDataEntry[]): void {
@@ -88,15 +91,16 @@ export class BarChartHorizontal extends Chart<IBarChartHorizontalDataEntry, IBar
 
         bars.exit().remove();
 
-        bars.enter().append('rect')
-            .attr('class', 'bar')
-            .merge(bars)
-            .transition().duration(BarChartHorizontal.defaultTransitionDuration)
-            .attr('y', (d) => y(d.name))
-            .attr('x', BarChartHorizontal.defaultXMargin)
-            .attr('height', y.bandwidth)
-            .attr('width', (d) => x(d.value))
-            .attr('fill', (d, i) => colors(i));
+        const merged = bars.enter().append('rect')
+                           .attr('class', 'bar')
+                           .merge(bars);
+
+        merged.transition().duration(BarChartHorizontal.defaultTransitionDuration)
+              .attr('y', (d) => y(d.name))
+              .attr('x', BarChartHorizontal.defaultXMargin)
+              .attr('height', y.bandwidth)
+              .attr('width', (d) => x(d.value))
+              .attr('fill', (d, i) => colors(i));
 
         svg.select('.x.axis')
            .transition().duration(BarChartHorizontal.defaultTransitionDuration)
@@ -105,6 +109,8 @@ export class BarChartHorizontal extends Chart<IBarChartHorizontalDataEntry, IBar
         svg.select('.y.axis')
            .transition().duration(BarChartHorizontal.defaultTransitionDuration)
            .call(yAxis);
+
+        this.bindTooltipEvents(merged);
     }
 
     public updateValues(data: IBarChartHorizontalDataEntry[]): void {
@@ -143,6 +149,8 @@ export class BarChartHorizontal extends Chart<IBarChartHorizontalDataEntry, IBar
             .attr('height', y.bandwidth)
             .attr('width', (d) => x(d.value))
             .attr('fill', (d, i) => colors(i));
+
+        this.bindTooltipEvents(bars);
     }
 
     private createXAxis(width: number, height: number, data: IBarChartHorizontalDataEntry[]): { x: ScaleLinear<number, number>, xAxis: any } {
@@ -178,5 +186,19 @@ export class BarChartHorizontal extends Chart<IBarChartHorizontalDataEntry, IBar
         return d3.scaleLinear()
                  .domain([ 0, count ])
                  .range([ '#48af75', '#3897e0' ] as any);
+    }
+
+    private bindTooltipEvents(elements: any): void {
+        const xDefaultOffset = 20;
+        const yDefaultOffset = -40;
+
+        elements.on('mouseover', (d: IBarChartHorizontalDataEntry) => {
+            this.tooltip.text(d.name, `Value: ${d.value}`);
+            this.tooltip.show();
+        }).on('mouseout', () => {
+            this.tooltip.hide();
+        }).on('mousemove', (d: IBarChartHorizontalDataEntry) => {
+            this.tooltip.position(D3CurrentEvent.pageX + xDefaultOffset, D3CurrentEvent.pageY + yDefaultOffset);
+        });
     }
 }

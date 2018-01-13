@@ -15,7 +15,7 @@
  *
  */
 
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, Renderer2 } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { ISampleChartComponentItem, SampleChartService } from 'pages/annotations/sample/chart/sample-chart.service';
 import { SummaryChartComponent } from 'pages/annotations/sample/chart/summary/summary-chart.component';
@@ -25,17 +25,26 @@ import { IntersectionTable } from 'pages/annotations/sample/table/intersection/i
 import { SummaryFieldCounter } from 'pages/annotations/sample/table/intersection/summary/summary-field-counter';
 import { Subscription } from 'rxjs/Subscription';
 import { SampleItem } from 'shared/sample/sample-item';
+import { TableComponent } from 'shared/table/table.component';
 import { LoggerService } from 'utils/logger/logger.service';
+import { Utils } from 'utils/utils';
 
 @Component({
-    selector:        'sample-chart',
-    templateUrl:     './sample-chart.component.html'
+    selector:    'sample-chart',
+    templateUrl: './sample-chart.component.html'
 })
-export class SampleChartComponent extends SampleRouteResolverComponent {
+export class SampleChartComponent extends SampleRouteResolverComponent implements AfterViewInit {
+    private readonly resizeDebouncedHandler = Utils.Time.debounce(() => {
+        this.sampleChartService.fireResizeEvent();
+    });
 
-    constructor(private sampleChartService: SampleChartService,
+    constructor(private sampleChartService: SampleChartService, private renderer: Renderer2,
                 sampleService: SampleService, activatedRoute: ActivatedRoute, changeDetector: ChangeDetectorRef) {
         super(activatedRoute.parent.data, activatedRoute.parent.snapshot, changeDetector, sampleService);
+    }
+
+    public ngAfterViewInit(): void {
+        this.renderer.listen('window', 'resize', this.resizeDebouncedHandler);
     }
 
     public addChart(type: string): void {

@@ -16,7 +16,15 @@
  */
 
 import { Injectable } from '@angular/core';
+import { Observable } from 'rxjs/Observable';
+import { Subject } from 'rxjs/Subject';
 import { SampleItem } from 'shared/sample/sample-item';
+
+export type SampleChartServiceEventType = number;
+
+export namespace SampleChartServiceEventType {
+    export const RESIZE_EVENT: number = 1;
+}
 
 export interface ISampleChartComponentItem {
     id: number;
@@ -26,7 +34,12 @@ export interface ISampleChartComponentItem {
 @Injectable()
 export class SampleChartService {
     private idCounter: number = 0;
+    private events: Subject<SampleChartServiceEventType> = new Subject();
     private charts: Map<string, ISampleChartComponentItem[]> = new Map();
+
+    public getEvents(): Observable<SampleChartServiceEventType> {
+        return this.events;
+    }
 
     public getSampleCharts(sample: SampleItem): ISampleChartComponentItem[] {
         if (!this.charts.has(sample.name)) {
@@ -46,5 +59,9 @@ export class SampleChartService {
         if (index !== -1) {
             charts.splice(index, 1);
         }
+    }
+
+    public fireResizeEvent(): void {
+        this.events.next(SampleChartServiceEventType.RESIZE_EVENT);
     }
 }

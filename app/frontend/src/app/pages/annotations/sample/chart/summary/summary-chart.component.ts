@@ -16,7 +16,7 @@
  */
 
 import { ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from '@angular/core';
-import { ISampleChartComponentItem } from 'pages/annotations/sample/chart/sample-chart.service';
+import { ISampleChartComponentItem, SampleChartService, SampleChartServiceEventType } from 'pages/annotations/sample/chart/sample-chart.service';
 import { SampleService, SampleServiceEventType } from 'pages/annotations/sample/sample.service';
 import { SummaryClonotypeCounter } from 'pages/annotations/sample/table/intersection/summary/summary-clonotype-counter';
 import { SummaryFieldCounter } from 'pages/annotations/sample/table/intersection/summary/summary-field-counter';
@@ -42,7 +42,7 @@ interface IThresholdType {
     selector:    'div[summary-chart]',
     templateUrl: './summary-chart.component.html'
 })
-export class SummaryChartComponent {
+export class SummaryChartComponent implements OnInit, OnDestroy {
     private static readonly normalizeTypes: INormalizeType[] = [
         { name: 'db', title: 'Normalize by number in database', shortTitle: 'Database' },
         { name: 'matches', title: 'Normalize by number of matches', shortTitle: 'Matches' }
@@ -55,6 +55,8 @@ export class SummaryChartComponent {
         { title: 'Top 15', threshold: 15 },
         { title: 'Top 20', threshold: 20 }
     ];
+
+    private sampleChartServiceEventsSubscription: Subscription;
 
     private currentField: number = 0;
     private currentNormalizeType: INormalizeType = SummaryChartComponent.normalizeTypes[ 0 ];
@@ -92,7 +94,20 @@ export class SummaryChartComponent {
 
     }
 
-    constructor(private sampleService: SampleService, private changeDetector: ChangeDetectorRef) {
+    constructor(private sampleService: SampleService, private sampleChartService: SampleChartService,
+                private changeDetector: ChangeDetectorRef) {
+    }
+
+    public ngOnInit(): void {
+        this.sampleChartServiceEventsSubscription = this.sampleChartService.getEvents().subscribe((event) => {
+            switch (event) {
+                case SampleChartServiceEventType.RESIZE_EVENT:
+                    this.updateStream(true);
+                    break;
+                default:
+                    break;
+            }
+        });
     }
 
     // Fields methods
@@ -145,7 +160,11 @@ export class SummaryChartComponent {
         this.updateStream();
     }
 
-    private updateStream(): void {
+    public ngOnDestroy(): void {
+        this.sampleChartServiceEventsSubscription.unsubscribe();
+    }
+
+    private updateStream(resize: boolean = false): void {
         let valueConverter: (c: SummaryClonotypeCounter) => number;
         switch (this.currentNormalizeType.name) {
             case 'db':
@@ -167,7 +186,7 @@ export class SummaryChartComponent {
             data = data.slice(0, this.currentThresholdType.threshold);
         }
 
-        this.stream.next({ type: ChartEventType.UPDATE_DATA, data: data.reverse() });
+        this.stream.next({ type: resize ? ChartEventType.RESIZE : ChartEventType.UPDATE_DATA, data: data.reverse() });
     }
 
     private updateThresholdValues(): void {
