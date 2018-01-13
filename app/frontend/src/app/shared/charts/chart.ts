@@ -19,6 +19,7 @@ import { Observable } from 'rxjs/Observable';
 import { Subscription } from 'rxjs/Subscription';
 import { ChartEventType, IChartEvent } from 'shared/charts/chart-events';
 import { ChartContainer } from 'shared/charts/container/chart-container';
+import { ChartTooltip } from 'shared/charts/tooltip/chart-tooltip';
 import { Utils } from 'utils/utils';
 
 // tslint:disable-next-line:interface-name
@@ -44,6 +45,8 @@ export class Chart<T, C> {
         this.resize(data);
     });
 
+    protected tooltip: ChartTooltip;
+
     constructor(protected configuration: C, protected container: ChartContainer,
                 protected dataStream: Observable<IChartEvent<T>>) {
         this.configure(configuration);
@@ -67,10 +70,12 @@ export class Chart<T, C> {
                 }
             }
         });
+        this.tooltip = new ChartTooltip();
     }
 
     public destroy(): void {
         this.container.destroy();
+        this.tooltip.destroy();
         if (this.dataStreamSubscription) {
             this.dataStreamSubscription.unsubscribe();
         }
