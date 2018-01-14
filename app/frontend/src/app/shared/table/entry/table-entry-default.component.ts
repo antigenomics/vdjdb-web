@@ -20,15 +20,15 @@ import { TableRow } from '../row/table-row';
 import { TableEntry } from './table-entry';
 
 @Component({
-    selector: 'td[table-entry-default]',
-    template: '{{ entry }}',
+    selector:        'td[table-entry-default]',
+    template:        '{{ entry }}',
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TableEntryDefaultComponent extends TableEntry {
     public entry: string;
 
-    public create(entry: string, column: TableColumn, columns: TableColumn[], row: TableRow,
-                  hostViewContainer: ViewContainerRef, resolver: ComponentFactoryResolver): void {
+    public create(entry: string, _column: TableColumn, _columns: TableColumn[], _row: TableRow,
+                  _hostViewContainer: ViewContainerRef, _resolver: ComponentFactoryResolver): void {
         this.entry = entry;
     }
 }

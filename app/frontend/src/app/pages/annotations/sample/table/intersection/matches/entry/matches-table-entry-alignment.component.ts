@@ -38,8 +38,8 @@ export class MatchesTableEntryAlignmentComponent extends TableEntry {
 
     public popupAlignmentTable: PopupContentTable;
 
-    public create(entry: string, column: TableColumn, columns: TableColumn[], row: MatchTableRow,
-                  hostViewContainer: ViewContainerRef, resolver: ComponentFactoryResolver): void {
+    public create(_entry: string, _column: TableColumn, _columns: TableColumn[], row: MatchTableRow,
+                  _hostViewContainer: ViewContainerRef, _resolver: ComponentFactoryResolver): void {
         this.alignment = row.alignment;
 
         const rows = [ [ row.alignment.seq1String ], [ row.alignment.markup ], [ row.alignment.seq2String ] ];

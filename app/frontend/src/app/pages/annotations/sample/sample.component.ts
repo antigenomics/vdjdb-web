@@ -15,13 +15,10 @@
  *
  */
 
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { SampleRouteResolverComponent } from 'pages/annotations/sample/common/sample-route-resolver.component';
 import { SampleService } from 'pages/annotations/sample/sample.service';
-import { Subscription } from 'rxjs/Subscription';
-import { SampleItem } from 'shared/sample/sample-item';
-import { LoggerService } from 'utils/logger/logger.service';
 
 @Component({
     selector:        'sample',

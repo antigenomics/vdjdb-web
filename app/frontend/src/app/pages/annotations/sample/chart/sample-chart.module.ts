@@ -23,7 +23,6 @@ import { SampleChartService } from 'pages/annotations/sample/chart/sample-chart.
 import { SummaryChartComponent } from 'pages/annotations/sample/chart/summary/summary-chart.component';
 import { ChartsModule } from 'shared/charts/charts.module';
 import { ModalsModule } from 'shared/modals/modals.module';
-import { TableModule } from 'shared/table/table.module';
 
 @NgModule({
     imports:         [ BrowserModule, FormsModule, ModalsModule, ChartsModule ],

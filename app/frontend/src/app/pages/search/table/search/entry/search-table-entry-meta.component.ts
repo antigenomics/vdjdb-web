@@ -22,8 +22,8 @@ import { ClipboardService } from 'utils/clipboard/clipboard.service';
 import { NotificationService } from 'utils/notifications/notification.service';
 
 @Component({
-    selector: 'td[search-table-entry-json]',
-    template: `<i class="info circle icon cursor pointer" [style.color]="color" [popup]="value" topShift="-25" shiftStrategy="per-item"
+    selector:        'td[search-table-entry-json]',
+    template:        `<i class="info circle icon cursor pointer" [style.color]="color" [popup]="value" topShift="-25" shiftStrategy="per-item"
                 footer="Click 'i' to copy to clipboard" [header]="title" width="250" display="list"></i>`,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -51,8 +51,8 @@ export class SearchTableEntryMetaComponent extends TableEntry {
         }
     }
 
-    public create(entry: string, column: TableColumn, columns: TableColumn[], row: TableRow,
-                  hostViewContainer: ViewContainerRef, resolver: ComponentFactoryResolver): void {
+    public create(entry: string, column: TableColumn, _columns: TableColumn[], _row: TableRow,
+                  _hostViewContainer: ViewContainerRef, _resolver: ComponentFactoryResolver): void {
         this.title = column.title;
         try {
             const json = JSON.parse(entry);
@@ -61,8 +61,8 @@ export class SearchTableEntryMetaComponent extends TableEntry {
 
             const properties = Object.keys(json).sort();
             properties.forEach((property: string) => {
-                if (json[property] !== '') {
-                    text.push(`${property} : ${json[property]}`);
+                if (json[ property ] !== '') {
+                    text.push(`${property} : ${json[ property ]}`);
                 }
             });
 
@@ -75,10 +75,10 @@ export class SearchTableEntryMetaComponent extends TableEntry {
             /* Disable tslint to prevent ClosureCompiler mangling */
             /* tslint:disable:no-string-literal */
             if (column.name === 'cdr3fix') {
-                if (json['good'] === false) {
+                if (json[ 'good' ] === false) {
                     color = '#d7191c';
-                } else if (json['fixNeeded'] === true) {
-                    if (json['cdr3'] === json['cdr3_old']) {
+                } else if (json[ 'fixNeeded' ] === true) {
+                    if (json[ 'cdr3' ] === json[ 'cdr3_old' ]) {
                         color = '#dde927';
                     } else {
                         color = '#fdae61';

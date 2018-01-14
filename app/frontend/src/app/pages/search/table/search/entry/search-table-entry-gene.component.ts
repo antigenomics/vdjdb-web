@@ -47,7 +47,7 @@ export class SearchTableEntryGeneComponent extends TableEntry {
         super();
     }
 
-    public create(entry: string, column: TableColumn, columns: TableColumn[], row: SearchTableRow,
+    public create(entry: string, _column: TableColumn, columns: TableColumn[], row: SearchTableRow,
                   hostViewContainer: ViewContainerRef, resolver: ComponentFactoryResolver): void {
         this.entry = entry;
         this.pairedID = row.metadata.pairedID;

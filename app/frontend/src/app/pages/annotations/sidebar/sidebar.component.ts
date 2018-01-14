@@ -20,7 +20,6 @@ import {
     ViewContainerRef
 } from '@angular/core';
 import { Router } from '@angular/router';
-import { SampleService } from 'pages/annotations/sample/sample.service';
 import { Subscription } from 'rxjs/Subscription';
 import { ModalComponent } from 'shared/modals/modal/modal.component';
 import { SampleItem } from 'shared/sample/sample-item';
