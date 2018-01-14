@@ -17,10 +17,6 @@
 
 import { Injectable } from '@angular/core';
 import { AnnotationsService } from 'pages/annotations/annotations.service';
-import { SampleFilters } from 'pages/annotations/sample/filters/sample-filters';
-import { IntersectionTable } from 'pages/annotations/sample/table/intersection/intersection-table';
-import { IntersectionTableRow } from 'pages/annotations/sample/table/intersection/row/intersection-table-row';
-import { SummaryFieldCounter } from 'pages/annotations/sample/table/intersection/summary/summary-field-counter';
 import { Observable } from 'rxjs/Observable';
 import { Subject } from 'rxjs/Subject';
 import { SampleItem } from 'shared/sample/sample-item';

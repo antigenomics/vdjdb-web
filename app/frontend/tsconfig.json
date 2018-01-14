@@ -12,13 +12,15 @@
     "types": [ "node" ],
     "noImplicitAny": true,
     "removeComments": true,
-    "alwaysStrict": true,
     "pretty": true,
     "allowUnreachableCode": false,
     "allowUnusedLabels": false,
     "noFallthroughCasesInSwitch": true,
     "noImplicitReturns": true,
-    "noUnusedParameters": false,
+    "noUnusedParameters": true,
+    "noUnusedLocals": true,
+    "alwaysStrict": true,
+    "strictFunctionTypes": true,
     "lib": [ "es2017", "dom" ],
     "baseUrl": ".",
     "paths": {
@@ -35,7 +37,9 @@
     "src/main.ts"
   ],
   "angularCompilerOptions": {
-    "strictMetadataEmit": true
+    "strictMetadataEmit": true,
+    "fullTemplateTypeCheck": true,
+    "preserveWhitespaces": false
   },
   "awesomeTypescriptLoaderOptions": {
     "useCache": true,

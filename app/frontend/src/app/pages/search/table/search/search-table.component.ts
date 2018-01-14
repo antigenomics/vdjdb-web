@@ -16,8 +16,7 @@
  */
 
 import { Component, OnInit } from '@angular/core';
-import 'rxjs/add/operator/filter';
-import 'rxjs/add/operator/take';
+import { filter, take } from 'rxjs/operators';
 import { TableColumn } from 'shared/table/column/table-column';
 import { ITableConfigurationDescriptor } from 'shared/table/configuration/table-configuration';
 import { IExportFormat, IExportOptionFlag } from 'shared/table/export/table-export.component';
@@ -58,7 +57,11 @@ export class SearchTableComponent implements OnInit {
 
     public ngOnInit(): void {
         if (!this.table.isInitialized()) {
-            this.table.events.filter((event) => event === TableEvent.INITIALIZED).take(1).subscribe(() => {
+            const stream = this.table.events.pipe(filter((event) => {
+                return event === TableEvent.INITIALIZED;
+            }), take(1));
+
+            stream.subscribe(() => {
                 this.columns = this.table.columns.map((c) => {
                     return new TableColumn(c.name, c.title, false, false, true, c.comment, 'Click to sort column');
                 });

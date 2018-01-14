@@ -21,6 +21,7 @@ import { SampleFilters } from 'pages/annotations/sample/filters/sample-filters';
 import { SampleService } from 'pages/annotations/sample/sample.service';
 import { IntersectionTable } from 'pages/annotations/sample/table/intersection/intersection-table';
 import { Observable } from 'rxjs/Observable';
+import { filter, take } from 'rxjs/operators';
 import { SampleItem } from 'shared/sample/sample-item';
 import { LoggerService } from 'utils/logger/logger.service';
 import { AnnotationsService, AnnotationsServiceEvents } from '../annotations.service';
@@ -29,17 +30,16 @@ import { AnnotationsService, AnnotationsServiceEvents } from '../annotations.ser
 export class SampleItemResolver implements Resolve<SampleItem> {
     constructor(private annotationService: AnnotationsService, private sampleService: SampleService, private logger: LoggerService) {}
 
-    public resolve(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<SampleItem> | Promise<SampleItem> | SampleItem {
+    public resolve(route: ActivatedRouteSnapshot, _state: RouterStateSnapshot): Observable<SampleItem> | Promise<SampleItem> | SampleItem {
         return new Promise<SampleItem>((resolve) => {
             if (this.annotationService.isInitialized()) {
                 resolve(this.getSample(route));
             } else {
-                this.annotationService.getEvents()
-                    .filter((event) => event === AnnotationsServiceEvents.INITIALIZED)
-                    .take(1)
-                    .subscribe(() => {
-                        resolve(this.getSample(route));
-                    });
+                this.annotationService.getEvents().pipe(filter((event) => {
+                    return event === AnnotationsServiceEvents.INITIALIZED;
+                }), take(1)).subscribe(() => {
+                    resolve(this.getSample(route));
+                });
             }
         });
     }

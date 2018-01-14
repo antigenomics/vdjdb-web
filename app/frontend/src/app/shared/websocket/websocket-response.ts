@@ -21,17 +21,17 @@ export interface IWebSocketResponseData {
 export class WebSocketResponseData {
     private _data: IWebSocketResponseData;
 
-    constructor(data: any) {
+    constructor(data: IWebSocketResponseData) {
         this._data = data;
     }
 
     public get(key: string): any {
-        return this._data[key];
+        return this._data[ key ];
     }
 
     public status(): string {
         /*tslint:disable:no-string-literal */
-        return this._data['status'];
+        return this._data[ 'status' ];
         /*tslint:enable:no-string-literal */
     }
 

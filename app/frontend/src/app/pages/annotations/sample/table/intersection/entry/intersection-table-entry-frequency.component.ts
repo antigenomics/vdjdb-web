@@ -21,8 +21,8 @@ import { TableEntry } from 'shared/table/entry/table-entry';
 import { TableRow } from 'shared/table/row/table-row';
 
 @Component({
-    selector: 'td[intersection-table-entry-frequency]',
-    template: '{{ entry }}',
+    selector:        'td[intersection-table-entry-frequency]',
+    template:        '{{ entry }}',
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class IntersectionTableEntryFrequencyComponent extends TableEntry {
@@ -34,8 +34,8 @@ export class IntersectionTableEntryFrequencyComponent extends TableEntry {
 
     public entry: string;
 
-    public create(entry: string, column: TableColumn, columns: TableColumn[], row: TableRow,
-                  hostViewContainer: ViewContainerRef, resolver: ComponentFactoryResolver): void {
+    public create(entry: string, _column: TableColumn, _columns: TableColumn[], _row: TableRow,
+                  _hostViewContainer: ViewContainerRef, _resolver: ComponentFactoryResolver): void {
         this.entry = parseFloat(entry).toExponential(IntersectionTableEntryFrequencyComponent._maxFixedDigits);
     }
 }
