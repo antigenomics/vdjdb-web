@@ -64,6 +64,10 @@ export class IntersectionTableRow extends TableRow {
         /* tslint:enable:no-string-literal */
     }
 
+    public hash(): string {
+        return `${this.entries[2]}${this.entries[4]}`; // tslint:disable-line:no-magic-numbers
+    }
+
     public getEntries(): string[] {
         return this.entries;
     }

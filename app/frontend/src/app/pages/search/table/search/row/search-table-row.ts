@@ -52,6 +52,10 @@ export class SearchTableRow extends TableRow {
         /* tslint:enable:no-string-literal */
     }
 
+    public hash(): string {
+        return this.entries[1];
+    }
+
     public getEntries(): string[] {
         return this.entries;
     }

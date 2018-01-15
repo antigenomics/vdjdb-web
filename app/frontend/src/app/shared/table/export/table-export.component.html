@@ -7,7 +7,7 @@
                 <i class="download icon"></i>
                 Export as:
             </div>
-            <a class="item" *ngFor="let format of formats" (click)="exportTable(format)">
+            <a class="item" *ngFor="let format of formats; trackBy: trackFormatFn" (click)="exportTable(format)">
                 <i class="{{ format.icon }} icon" *ngIf="format.icon"></i> {{ format.title }}
             </a>
             <ng-container *ngIf="isOptionsAvailable()">
@@ -16,7 +16,7 @@
                     <i class="options icon"></i>
                     Options
                 </div>
-                <ng-container *ngFor="let option of options">
+                <ng-container *ngFor="let option of options; trackBy: trackOptionFn">
                     <a class="item" *ngIf="!option.value" (click)="option.value=true">
                         <i class="radio icon"></i> {{ option.title }} (disabled)
                     </a>
