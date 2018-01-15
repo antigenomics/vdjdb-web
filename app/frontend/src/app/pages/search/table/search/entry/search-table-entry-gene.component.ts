@@ -42,7 +42,7 @@ export class SearchTableEntryGeneComponent extends TableEntry {
     public entry: string;
     public pairedID: string;
 
-    constructor(private renderer: Renderer2, private table: SearchTableService, private notifications: NotificationService,
+    constructor(private renderer: Renderer2, private service: SearchTableService, private notifications: NotificationService,
                 private changeDetector: ChangeDetectorRef) {
         super();
     }
@@ -71,7 +71,7 @@ export class SearchTableEntryGeneComponent extends TableEntry {
                 this.visible = !this.visible;
             } else if (!this.pairedLoading) {
                 this.pairedLoading = true;
-                const pairedResponse = await this.table.getPaired(this.pairedID, this.entry);
+                const pairedResponse = await this.service.getPaired(this.pairedID, this.entry);
                 const rowResolver = this._resolver.resolveComponentFactory(TableRowComponent);
                 this._pairedRow = this._hostViewContainer.createComponent(rowResolver);
                 this._pairedRow.instance.row = new SearchTableRow(pairedResponse.get('paired'), true);

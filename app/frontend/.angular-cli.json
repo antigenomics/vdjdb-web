@@ -35,7 +35,8 @@
     "styleExt": "css",
     "component": {},
     "build": {
-      "showCircularDependencies": false
+      "showCircularDependencies": false,
+      "namedChunks": true
     }
   }
 }

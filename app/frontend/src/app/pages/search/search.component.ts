@@ -14,17 +14,44 @@
  *    limitations under the License.
  */
 
-import { Component } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { SearchTable } from 'pages/search/table/search/search-table';
 import { FiltersService } from 'shared/filters/filters.service';
+import { TableColumn } from 'shared/table/column/table-column';
+import { LoggerService } from 'utils/logger/logger.service';
+import { NotificationService } from 'utils/notifications/notification.service';
 import { SearchTableService } from './table/search/search-table.service';
 
 @Component({
-    selector:        'search',
-    templateUrl:     './search.component.html'
+    selector:    'search',
+    templateUrl: './search.component.html'
 })
-export class SearchPageComponent {
+export class SearchPageComponent implements OnInit, OnDestroy {
+    public columns: TableColumn[] = [];
+    public table: SearchTable;
 
-    constructor(private table: SearchTableService, private filters: FiltersService) {}
+    constructor(private searchTableService: SearchTableService, private filters: FiltersService,
+                logger: LoggerService, notifications: NotificationService) {
+        this.table = new SearchTable(searchTableService, filters, logger, notifications);
+        if (this.searchTableService.isInitialized()) {
+            this.fetchColumns();
+        }
+    }
+
+    public ngOnInit(): void {
+        if (!this.searchTableService.isInitialized()) {
+            this.searchTableService.waitInitialization().then(() => {
+                this.fetchColumns();
+                if (!this.table.dirty) {
+                    this.table.update();
+                }
+            });
+        }
+    }
+
+    public disconnect(): void {
+        this.searchTableService.getConnection().disconnect();
+    }
 
     public search(): void {
         this.table.update();
@@ -36,5 +63,16 @@ export class SearchPageComponent {
 
     public isLoading(): boolean {
         return this.table.loading || !this.table.dirty;
+    }
+
+    public ngOnDestroy(): void {
+        this.table.destroy();
+    }
+
+    private fetchColumns(): void {
+        const metadata = this.searchTableService.getMetadata();
+        this.columns = metadata.columns.map((c) => {
+            return new TableColumn(c.name, c.title, false, false, true, c.comment, 'Click to sort column');
+        });
     }
 }

@@ -17,42 +17,19 @@
 
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
-import { RouterModule } from '@angular/router';
-import { Routes } from '@angular/router/src/config';
-import { AnnotationsSampleComponent } from 'pages/annotations/sample/sample.component';
+import { AnnotationsRouting } from 'pages/annotations/annotations.routing';
 import { ModalsModule } from 'shared/modals/modals.module';
 import { AnnotationsPageComponent } from './annotations.component';
 import { AnnotationsService } from './annotations.service';
 import { AnnotationsInfoComponent } from './info/annotations-info.component';
 import { SampleItemResolver } from './resolvers/sample.resolver';
 import { UserResolver } from './resolvers/user.resolver';
-import { SampleChartComponent } from './sample/chart/sample-chart.component';
 import { SampleModule } from './sample/sample.module';
-import { SampleTableComponent } from './sample/table/sample-table.component';
 import { AnnotationsSidebarComponent } from './sidebar/sidebar.component';
-import { AnnotationsUploadComponent } from './upload/upload.component';
 import { UploadModule } from './upload/upload.module';
 
-const routes: Routes = [
-    {
-        path:     '', component: AnnotationsPageComponent, resolve: { user: UserResolver },
-        children: [
-            { path: 'info', component: AnnotationsInfoComponent },
-            { path: 'upload', component: AnnotationsUploadComponent },
-            {
-                path:     'sample/:sample', component: AnnotationsSampleComponent, resolve: { sample: SampleItemResolver },
-                children: [
-                    { path: 'table', component: SampleTableComponent },
-                    { path: 'chart', component: SampleChartComponent }
-                ]
-            },
-            { path: '**', redirectTo: 'info' }
-        ]
-    }
-];
-
 @NgModule({
-    imports:      [ CommonModule, UploadModule, RouterModule.forChild(routes), ModalsModule, SampleModule ],
+    imports:      [ CommonModule, UploadModule, ModalsModule, SampleModule, AnnotationsRouting ],
     declarations: [ AnnotationsPageComponent, AnnotationsSidebarComponent, AnnotationsInfoComponent ],
     exports:      [ AnnotationsPageComponent ],
     providers:    [ AnnotationsService, UserResolver, SampleItemResolver ]
