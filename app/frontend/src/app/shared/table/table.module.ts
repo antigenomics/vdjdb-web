@@ -15,8 +15,8 @@
  *
  */
 
+import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
-import { BrowserModule } from '@angular/platform-browser';
 import { ModalsModule } from '../modals/modals.module';
 import { TableEntryCenteredComponent } from './entry/table-entry-centered.component';
 import { TableEntryDefaultComponent } from './entry/table-entry-default.component';
@@ -28,7 +28,7 @@ import { TableRowComponent } from './row/table-row.component';
 import { TableComponent } from './table.component';
 
 @NgModule({
-    imports:         [ BrowserModule, ModalsModule ],
+    imports:         [ CommonModule, ModalsModule ],
     declarations:    [ TableComponent,
         TableRowComponent,
         TablePaginationComponent,

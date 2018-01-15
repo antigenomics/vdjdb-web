@@ -14,16 +14,16 @@
  *    limitations under the License.
  */
 
+import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { BrowserModule } from '@angular/platform-browser';
 import { DropdownDirective } from './dropdown/dropdown.directive';
 import { ModalComponent } from './modal/modal.component';
 import { PopupContentComponent } from './popup/popup-content.component';
 import { PopupDirective } from './popup/popup.directive';
 
 @NgModule({
-    imports:         [ BrowserModule, FormsModule ],
+    imports:         [ CommonModule, FormsModule ],
     declarations:    [ PopupDirective, PopupContentComponent, ModalComponent, DropdownDirective ],
     exports:         [ PopupDirective, PopupContentComponent, ModalComponent, DropdownDirective ],
     entryComponents: [ PopupContentComponent, ModalComponent ]

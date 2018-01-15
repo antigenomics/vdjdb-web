@@ -15,8 +15,8 @@
  *       limitations under the License.
  */
 
+import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
-import { BrowserModule } from '@angular/platform-browser';
 import { RouterModule } from '@angular/router';
 import { Routes } from '@angular/router/src/config';
 import { AnnotationsSampleComponent } from 'pages/annotations/sample/sample.component';
@@ -35,7 +35,7 @@ import { UploadModule } from './upload/upload.module';
 
 const routes: Routes = [
     {
-        path:     'annotations', component: AnnotationsPageComponent, resolve: { user: UserResolver },
+        path:     '', component: AnnotationsPageComponent, resolve: { user: UserResolver },
         children: [
             { path: 'info', component: AnnotationsInfoComponent },
             { path: 'upload', component: AnnotationsUploadComponent },
@@ -52,7 +52,7 @@ const routes: Routes = [
 ];
 
 @NgModule({
-    imports:      [ BrowserModule, UploadModule, RouterModule.forChild(routes), ModalsModule, SampleModule ],
+    imports:      [ CommonModule, UploadModule, RouterModule.forChild(routes), ModalsModule, SampleModule ],
     declarations: [ AnnotationsPageComponent, AnnotationsSidebarComponent, AnnotationsInfoComponent ],
     exports:      [ AnnotationsPageComponent ],
     providers:    [ AnnotationsService, UserResolver, SampleItemResolver ]

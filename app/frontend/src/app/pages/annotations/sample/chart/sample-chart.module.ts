@@ -15,9 +15,9 @@
  *
  */
 
+import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { BrowserModule } from '@angular/platform-browser';
 import { SampleChartComponent } from 'pages/annotations/sample/chart/sample-chart.component';
 import { SampleChartService } from 'pages/annotations/sample/chart/sample-chart.service';
 import { SummaryChartComponent } from 'pages/annotations/sample/chart/summary/summary-chart.component';
@@ -25,10 +25,10 @@ import { ChartsModule } from 'shared/charts/charts.module';
 import { ModalsModule } from 'shared/modals/modals.module';
 
 @NgModule({
-    imports:         [ BrowserModule, FormsModule, ModalsModule, ChartsModule ],
-    declarations:    [ SampleChartComponent, SummaryChartComponent ],
-    exports:         [ SampleChartComponent ],
-    providers:       [ SampleChartService ]
+    imports:      [ CommonModule, FormsModule, ModalsModule, ChartsModule ],
+    declarations: [ SampleChartComponent, SummaryChartComponent ],
+    exports:      [ SampleChartComponent ],
+    providers:    [ SampleChartService ]
 })
 export class SampleChartModule {
 
