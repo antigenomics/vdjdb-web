@@ -14,14 +14,14 @@
  *    limitations under the License.
  */
 
+import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
-import { BrowserModule } from '@angular/platform-browser';
 import { ModalsModule } from '../modals/modals.module';
 import { NavigationBarComponent } from './navbar.component';
 import { RouteDirective } from './route.directive';
 
 @NgModule({
-    imports:      [ BrowserModule, ModalsModule ],
+    imports:      [ CommonModule, ModalsModule ],
     declarations: [ NavigationBarComponent, RouteDirective ],
     exports:      [ NavigationBarComponent, RouteDirective ]
 })

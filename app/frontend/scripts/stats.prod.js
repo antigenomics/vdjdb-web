@@ -41,9 +41,9 @@ if (fs.existsSync(pathToBundle + '/bundle.css')) {
 
 const bundleFiles = [
     'polyfills.bundle.js',
-    'main.bundle.js',
     'vendor.bundle.js',
-    'inline.bundle.js',
+    'main.bundle.js',
+    '0.chunk.js',
     'bundle.min.css'
 ];
 

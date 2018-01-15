@@ -19,7 +19,6 @@ import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { RouterModule } from '@angular/router';
 import { AboutPageModule } from 'pages/about/about.module';
-import { AnnotationsPageModule } from 'pages/annotations/annotations.module';
 import { HomePageModule } from 'pages/home/home.module';
 import { OverviewPageModule } from 'pages/overview/overview.module';
 import { SearchPageModule } from 'pages/search/search.module';
@@ -31,10 +30,11 @@ import { NotificationModule } from 'utils/notifications/notification.module';
 import { ApplicationComponent } from './application.component';
 
 @NgModule({
-    imports:      [ CommonModule, BrowserModule,
-        HomePageModule, AboutPageModule, OverviewPageModule, SearchPageModule, AnnotationsPageModule,
-        NotificationModule, NavigationBarModule, LoaderModule,
-        RouterModule.forRoot([]) ],
+    imports:      [ BrowserModule, CommonModule,
+        HomePageModule, AboutPageModule, OverviewPageModule, SearchPageModule, NotificationModule, NavigationBarModule, LoaderModule,
+        RouterModule.forRoot([ {
+            path: 'annotations', loadChildren: 'pages/annotations/annotations.module#AnnotationsPageModule'
+        } ]) ],
     declarations: [ ApplicationComponent ],
     providers:    [ LoggerService, ClipboardService ],
     bootstrap:    [ ApplicationComponent ]

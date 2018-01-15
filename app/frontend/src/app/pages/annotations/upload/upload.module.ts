@@ -15,9 +15,9 @@
  *       limitations under the License.
  */
 
+import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { BrowserModule } from '@angular/platform-browser';
 import { ModalsModule } from 'shared/modals/modals.module';
 import { UploadTableRowComponent } from './table/row/upload-table-row.component';
 import { UploadTableComponent } from './table/upload-table.component';
@@ -25,7 +25,7 @@ import { AnnotationsUploadComponent } from './upload.component';
 import { UploadService } from './upload.service';
 
 @NgModule({
-    imports:      [ BrowserModule, FormsModule, ModalsModule ],
+    imports:      [ CommonModule, FormsModule, ModalsModule ],
     declarations: [ AnnotationsUploadComponent, UploadTableComponent, UploadTableRowComponent ],
     exports:      [ AnnotationsUploadComponent, UploadTableComponent, UploadTableRowComponent ],
     providers:    [ UploadService ]

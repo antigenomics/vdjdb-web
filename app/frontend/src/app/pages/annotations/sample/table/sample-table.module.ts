@@ -15,9 +15,9 @@
  *
  */
 
+import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { BrowserModule } from '@angular/platform-browser';
 import { IntersectionTableEntryCdr3aaComponent } from 'pages/annotations/sample/table/intersection/entry/intersection-table-entry-cdr3aa.component';
 import { IntersectionTableEntryDetailsComponent } from 'pages/annotations/sample/table/intersection/entry/intersection-table-entry-details.component';
 import { IntersectionTableEntryFrequencyComponent } from 'pages/annotations/sample/table/intersection/entry/intersection-table-entry-frequency.component';
@@ -29,7 +29,7 @@ import { ModalsModule } from 'shared/modals/modals.module';
 import { TableModule } from 'shared/table/table.module';
 
 @NgModule({
-    imports:         [ BrowserModule, ModalsModule, FormsModule, TableModule ],
+    imports:         [ CommonModule, ModalsModule, FormsModule, TableModule ],
     declarations:    [
         SampleTableComponent,
         IntersectionTableEntryFrequencyComponent,

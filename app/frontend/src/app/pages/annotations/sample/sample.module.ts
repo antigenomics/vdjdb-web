@@ -15,9 +15,9 @@
  *
  */
 
+import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { BrowserModule } from '@angular/platform-browser';
 import { RouterModule } from '@angular/router';
 import { SampleChartModule } from 'pages/annotations/sample/chart/sample-chart.module';
 import { AnnotationsFiltersComponent } from 'pages/annotations/sample/filters/sample-filters.component';
@@ -27,7 +27,7 @@ import { SampleTableModule } from 'pages/annotations/sample/table/sample-table.m
 import { ModalsModule } from 'shared/modals/modals.module';
 
 @NgModule({
-    imports:      [ BrowserModule, FormsModule, RouterModule, ModalsModule, SampleTableModule, SampleChartModule ],
+    imports:      [ CommonModule, FormsModule, RouterModule, ModalsModule, SampleTableModule, SampleChartModule ],
     declarations: [ AnnotationsSampleComponent, AnnotationsFiltersComponent ],
     providers:    [ SampleService ]
 })
