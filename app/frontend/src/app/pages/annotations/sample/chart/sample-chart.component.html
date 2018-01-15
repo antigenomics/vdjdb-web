@@ -6,7 +6,7 @@
 </div>
 
 <div class="ui two column grid">
-    <div class="column" *ngFor="let chart of getCharts();trackBy: trackChartFn">
+    <div class="column" *ngFor="let chart of getCharts(); trackBy: trackChartFn">
         <ng-container [ngSwitch]="chart.type">
             <ng-container *ngSwitchCase="'summary'">
                 <div class="ui fade slow element segments">
@@ -18,7 +18,7 @@
                             <div class="one wide column cursor pointer" dropdown [content]="commonChartSettgins">
                                 <i class="ui ellipsis vertical link icon"></i>
                                 <div class="ui dropdown item">
-                                    <div class="menu fade element slow padded" tabindex="-1" #commonChartSettgins>
+                                    <div class="left menu fade element slow padded" tabindex="-1" #commonChartSettgins>
                                         <a class="item" (click)="removeChart(chart)"><i class="trash outline icon"></i>Remove</a>
                                     </div>
                                 </div>

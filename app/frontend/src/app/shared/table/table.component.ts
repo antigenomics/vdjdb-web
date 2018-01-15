@@ -92,6 +92,14 @@ export class TableComponent implements OnInit, AfterViewInit, OnDestroy {
         return this.table.isSorted(column.name);
     }
 
+    public trackColumnFn(_index: number, column: TableColumn) {
+        return column.name;
+    }
+
+    public trackRowFn(index: number, row: TableRow) {
+        return `${index}${row.hash()}`;
+    }
+
     public ngOnDestroy(): void {
         if (this._resizeEventListener) {
             this._resizeEventListener();

@@ -48,6 +48,14 @@ export class TableExportComponent {
         this.exportEvent.emit({ format, options: this.options });
     }
 
+    public trackFormatFn(_index: number, format: IExportFormat) {
+        return format.name;
+    }
+
+    public trackOptionFn(_index: number, option: IExportOptionFlag) {
+        return option.name;
+    }
+
     public isOptionsAvailable(): boolean {
         return this.options !== undefined && this.options.length !== 0;
     }

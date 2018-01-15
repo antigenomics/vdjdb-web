@@ -19,7 +19,7 @@
     </th>
 </tr>
 <tr [style.font-size]="headerFontSize">
-    <th class="{{ isSorted(column) }} {{ configuration.classes.columns }}" *ngFor="let column of columns; let i = index;" (click)="onColumnClick.emit(column)">
+    <th class="{{ isSorted(column) }} {{ configuration.classes.columns }}" *ngFor="let column of columns; trackBy: trackColumnFn" (click)="onColumnClick.emit(column)">
         <span class="header" [popup]="column.popupContent" [footer]="column.popupFooter" [header]="column.title" position="top" width="300" [disabled]="!column.popup">
             {{ column.title }}
         </span>
@@ -27,5 +27,5 @@
 </tr>
 </thead>
 <tbody [style.font-size]="contentFontSize">
-<tr *ngFor="let row of table.getRows()" table-row [row]="row" [columns]="columns" class="{{ configuration.classes.rows }}"></tr>
+<tr *ngFor="let row of table.getRows(); trackBy: trackRowFn" table-row [row]="row" [columns]="columns" class="{{ configuration.classes.rows }}"></tr>
 </tbody>

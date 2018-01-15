@@ -35,6 +35,7 @@ export class SearchPageComponent implements OnInit, OnDestroy {
         this.table = new SearchTable(searchTableService, filters, logger, notifications);
         if (this.searchTableService.isInitialized()) {
             this.fetchColumns();
+            this.table.updateNumberOfRecords(this.searchTableService.getMetadata().numberOfRecords);
         }
     }
 
@@ -42,15 +43,12 @@ export class SearchPageComponent implements OnInit, OnDestroy {
         if (!this.searchTableService.isInitialized()) {
             this.searchTableService.waitInitialization().then(() => {
                 this.fetchColumns();
+                this.table.updateNumberOfRecords(this.searchTableService.getMetadata().numberOfRecords);
                 if (!this.table.dirty) {
                     this.table.update();
                 }
             });
         }
-    }
-
-    public disconnect(): void {
-        this.searchTableService.getConnection().disconnect();
     }
 
     public search(): void {

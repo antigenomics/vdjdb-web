@@ -37,7 +37,7 @@
                 <span class="text">{{ getCurrentThresholdTypeTitle() }}</span>
                 <i class="dropdown icon"></i>
                 <div class="menu fast fade element" #thresholdContent>
-                    <div class="item" *ngFor="let threshold of getThresholdTypes()" (click)="setThreshold(threshold)">
+                    <div class="item" *ngFor="let threshold of getThresholdTypes(); trackBy: trackThresholdFn" (click)="setThreshold(threshold)">
                         {{ threshold.title }}
                     </div>
                 </div>

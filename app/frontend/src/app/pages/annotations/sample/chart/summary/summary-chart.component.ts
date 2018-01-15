@@ -138,6 +138,9 @@ export class SummaryChartComponent implements OnInit, OnDestroy {
     }
 
     // Threshold methods
+    public trackThresholdFn(_index: number, threshold: IThresholdType) {
+        return threshold.threshold;
+    }
 
     public isThresholdTypesAvailable(): boolean {
         return this.thresholdTypesAvailable > 1;
