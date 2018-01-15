@@ -14,9 +14,9 @@
  *    limitations under the License.
  */
 
+import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { BrowserModule } from '@angular/platform-browser';
 import { ModalsModule } from '../modals/modals.module';
 import { FiltersCommonModule } from './common/filters-common.module';
 import { FiltersService } from './filters.service';
@@ -36,7 +36,7 @@ import { TCRGeneralFilterComponent } from './filters_tcr/tcr_general_filter/tcr-
 import { TCRSegmentsFilterComponent } from './filters_tcr/tcr_segments_filter/tcr-segments-filter.component';
 
 @NgModule({
-    imports:      [ BrowserModule, FormsModule, FiltersCommonModule, ModalsModule ],
+    imports:      [ CommonModule, FormsModule, FiltersCommonModule, ModalsModule ],
     declarations: [ TCRGeneralFilterComponent, TCRSegmentsFilterComponent, TCRcdr3FilterComponent,
         AGOriginFilterComponent, AGEpitopeFilterComponent,
         MHCGeneralFilterComponent, MHCHaplotypeFilterComponent,

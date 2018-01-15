@@ -15,18 +15,11 @@
  *
  */
 
-import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, Renderer2 } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, OnDestroy, Renderer2 } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { ISampleChartComponentItem, SampleChartService } from 'pages/annotations/sample/chart/sample-chart.service';
-import { SummaryChartComponent } from 'pages/annotations/sample/chart/summary/summary-chart.component';
 import { SampleRouteResolverComponent } from 'pages/annotations/sample/common/sample-route-resolver.component';
-import { SampleService, SampleServiceEvent, SampleServiceEventType } from 'pages/annotations/sample/sample.service';
-import { IntersectionTable } from 'pages/annotations/sample/table/intersection/intersection-table';
-import { SummaryFieldCounter } from 'pages/annotations/sample/table/intersection/summary/summary-field-counter';
-import { Subscription } from 'rxjs/Subscription';
-import { SampleItem } from 'shared/sample/sample-item';
-import { TableComponent } from 'shared/table/table.component';
-import { LoggerService } from 'utils/logger/logger.service';
+import { SampleService } from 'pages/annotations/sample/sample.service';
 import { Utils } from 'utils/utils';
 
 @Component({
@@ -60,7 +53,7 @@ export class SampleChartComponent extends SampleRouteResolverComponent implement
         return this.sampleChartService.getSampleCharts(this.sample);
     }
 
-    public trackChartFn(index: number, item: ISampleChartComponentItem) {
+    public trackChartFn(_index: number, item: ISampleChartComponentItem) {
         return item.id;
     }
 

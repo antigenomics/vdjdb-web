@@ -100,8 +100,8 @@ export class IntersectionTableEntryDetailsComponent extends TableEntry implement
         }
     }
 
-    public create(entry: string, column: TableColumn, columns: TableColumn[], row: IntersectionTableRow,
-                  hostViewContainer: ViewContainerRef, resolver: ComponentFactoryResolver): void {
+    public create(_entry: string, _column: TableColumn, _columns: TableColumn[], row: IntersectionTableRow,
+                  hostViewContainer: ViewContainerRef, _resolver: ComponentFactoryResolver): void {
         this._row = row;
         this._hostViewContainer = hostViewContainer;
         this.quickView = row.matchesLoaded ? this.createTable(this._row.matches, this._row.matchesCount) : new PopupContentTable([], []);

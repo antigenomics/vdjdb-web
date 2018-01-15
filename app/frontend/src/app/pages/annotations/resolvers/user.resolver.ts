@@ -17,9 +17,8 @@
 
 import { Injectable } from '@angular/core';
 import { ActivatedRouteSnapshot, Resolve, RouterStateSnapshot } from '@angular/router';
-import 'rxjs/add/operator/filter';
-import 'rxjs/add/operator/take';
 import { Observable } from 'rxjs/Observable';
+import { filter, take } from 'rxjs/operators';
 import { User } from 'shared/user/user';
 import { LoggerService } from 'utils/logger/logger.service';
 import { AnnotationsService, AnnotationsServiceEvents } from '../annotations.service';
@@ -27,21 +26,20 @@ import { AnnotationsService, AnnotationsServiceEvents } from '../annotations.ser
 @Injectable()
 export class UserResolver implements Resolve<User> {
 
-    constructor(private annotationService: AnnotationsService, private logger: LoggerService) {}
+    constructor(private annotationService: AnnotationsService, private logger: LoggerService) {
+    }
 
-    public resolve(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<User> | Promise<User> | User {
+    public resolve(_route: ActivatedRouteSnapshot, _state: RouterStateSnapshot): Observable<User> | Promise<User> | User {
         this.logger.debug('UserResolver', 'Resolving');
         return new Promise<User>((resolve) => {
             if (this.annotationService.isInitialized()) {
                 resolve(this.getUser());
             } else {
-                this.annotationService
-                    .getEvents()
-                    .filter((event) => event === AnnotationsServiceEvents.INITIALIZED)
-                    .take(1)
-                    .subscribe(() => {
-                        resolve(this.getUser());
-                    });
+                this.annotationService.getEvents().pipe(filter((event) => {
+                    return event === AnnotationsServiceEvents.INITIALIZED;
+                }), take(1)).subscribe(() => {
+                    resolve(this.getUser());
+                });
             }
         });
     }

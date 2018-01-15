@@ -15,16 +15,9 @@
  *
  */
 
+import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { BrowserModule } from '@angular/platform-browser';
-import { RouterModule } from '@angular/router';
-import { AnnotationsService } from 'pages/annotations/annotations.service';
-import { SampleChartComponent } from 'pages/annotations/sample/chart/sample-chart.component';
-import { SampleChartService } from 'pages/annotations/sample/chart/sample-chart.service';
-import { SummaryChartComponent } from 'pages/annotations/sample/chart/summary/summary-chart.component';
-import { AnnotationsSampleComponent } from 'pages/annotations/sample/sample.component';
-import { SampleService } from 'pages/annotations/sample/sample.service';
 import { IntersectionTableEntryCdr3aaComponent } from 'pages/annotations/sample/table/intersection/entry/intersection-table-entry-cdr3aa.component';
 import { IntersectionTableEntryDetailsComponent } from 'pages/annotations/sample/table/intersection/entry/intersection-table-entry-details.component';
 import { IntersectionTableEntryFrequencyComponent } from 'pages/annotations/sample/table/intersection/entry/intersection-table-entry-frequency.component';
@@ -32,12 +25,11 @@ import { IntersectionTableEntryTagsComponent } from 'pages/annotations/sample/ta
 import { MatchesTableEntryAlignmentComponent } from 'pages/annotations/sample/table/intersection/matches/entry/matches-table-entry-alignment.component';
 import { MatchesTableComponent } from 'pages/annotations/sample/table/intersection/matches/matches-table.component';
 import { SampleTableComponent } from 'pages/annotations/sample/table/sample-table.component';
-import { ChartsModule } from 'shared/charts/charts.module';
 import { ModalsModule } from 'shared/modals/modals.module';
 import { TableModule } from 'shared/table/table.module';
 
 @NgModule({
-    imports:         [ BrowserModule, ModalsModule, FormsModule, TableModule ],
+    imports:         [ CommonModule, ModalsModule, FormsModule, TableModule ],
     declarations:    [
         SampleTableComponent,
         IntersectionTableEntryFrequencyComponent,

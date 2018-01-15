@@ -16,12 +16,10 @@
  */
 
 import { NgModule } from '@angular/core';
-import { RouterModule } from '@angular/router';
 import { OverviewPageComponent } from './overview.component';
 import { OverviewService } from './overview.service';
 
 @NgModule({
-    imports:      [ RouterModule.forChild([ { path: 'overview', component: OverviewPageComponent } ]) ],
     declarations: [ OverviewPageComponent ],
     exports:      [ OverviewPageComponent ],
     providers:    [ OverviewService ]

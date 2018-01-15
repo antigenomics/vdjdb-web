@@ -33,8 +33,8 @@ export class IntersectionTableEntryTagsComponent extends TableEntry {
 
     public values: Array<[ string, string ]> = [];
 
-    public create(entry: string, column: TableColumn, columns: TableColumn[], row: IntersectionTableRow,
-                  hostViewContainer: ViewContainerRef, resolver: ComponentFactoryResolver): void {
+    public create(_entry: string, _column: TableColumn, _columns: TableColumn[], row: IntersectionTableRow,
+                  _hostViewContainer: ViewContainerRef, _resolver: ComponentFactoryResolver): void {
         this.values = [];
 
         let index = 0;

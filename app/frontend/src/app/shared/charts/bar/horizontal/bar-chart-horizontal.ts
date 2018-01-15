@@ -76,7 +76,7 @@ export class BarChartHorizontal extends Chart<IBarChartHorizontalDataEntry, IBar
                         .attr('height', y.bandwidth)
                         .attr('x', BarChartHorizontal.defaultXMargin)
                         .attr('width', (d) => x(d.value))
-                        .attr('fill', (d, i) => colors(i));
+                        .attr('fill', (_, i) => colors(i));
 
         this.bindTooltipEvents(bars);
     }
@@ -100,7 +100,7 @@ export class BarChartHorizontal extends Chart<IBarChartHorizontalDataEntry, IBar
               .attr('x', BarChartHorizontal.defaultXMargin)
               .attr('height', y.bandwidth)
               .attr('width', (d) => x(d.value))
-              .attr('fill', (d, i) => colors(i));
+              .attr('fill', (_, i) => colors(i));
 
         svg.select('.x.axis')
            .transition().duration(BarChartHorizontal.defaultTransitionDuration)
@@ -119,7 +119,7 @@ export class BarChartHorizontal extends Chart<IBarChartHorizontalDataEntry, IBar
 
         svg.selectAll('.bar').data(data)
            .transition().duration(BarChartHorizontal.defaultTransitionDuration)
-           .attr('width', (d, i) => x(d.value));
+           .attr('width', (d) => x(d.value));
 
         svg.select('.x.axis')
            .transition().duration(BarChartHorizontal.defaultTransitionDuration)
@@ -148,7 +148,7 @@ export class BarChartHorizontal extends Chart<IBarChartHorizontalDataEntry, IBar
             .attr('x', BarChartHorizontal.defaultXMargin)
             .attr('height', y.bandwidth)
             .attr('width', (d) => x(d.value))
-            .attr('fill', (d, i) => colors(i));
+            .attr('fill', (_, i) => colors(i));
 
         this.bindTooltipEvents(bars);
     }
@@ -162,7 +162,7 @@ export class BarChartHorizontal extends Chart<IBarChartHorizontalDataEntry, IBar
             xAxis.tickSizeOuter(0);
         }
         if (this.configuration.axis.x.tickFormat) {
-            xAxis.tickFormat(d3.format(this.configuration.axis.x.tickFormat));
+            xAxis.tickFormat(d3.format(this.configuration.axis.x.tickFormat) as any);
         }
         if (this.configuration.axis.x.ticksCount) {
             xAxis.ticks(this.configuration.axis.x.ticksCount);
@@ -197,7 +197,7 @@ export class BarChartHorizontal extends Chart<IBarChartHorizontalDataEntry, IBar
             this.tooltip.show();
         }).on('mouseout', () => {
             this.tooltip.hide();
-        }).on('mousemove', (d: IBarChartHorizontalDataEntry) => {
+        }).on('mousemove', () => {
             this.tooltip.position(D3CurrentEvent.pageX + xDefaultOffset, D3CurrentEvent.pageY + yDefaultOffset);
         });
     }

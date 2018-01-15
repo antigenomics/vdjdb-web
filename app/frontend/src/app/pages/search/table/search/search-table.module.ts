@@ -14,9 +14,9 @@
  *    limitations under the License.
  */
 
+import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { BrowserModule } from '@angular/platform-browser';
 import { FiltersModule } from 'shared/filters/filters.module';
 import { ModalsModule } from 'shared/modals/modals.module';
 import { TableModule } from 'shared/table/table.module';
@@ -28,7 +28,7 @@ import { SearchTableComponent } from './search-table.component';
 import { SearchTableService } from './search-table.service';
 
 @NgModule({
-    imports:         [ BrowserModule, FormsModule, ModalsModule, FiltersModule, TableModule ],
+    imports:         [ CommonModule, FormsModule, ModalsModule, FiltersModule, TableModule ],
     declarations:    [ SearchTableComponent,
         SearchTableEntryMetaComponent,
         SearchTableEntryUrlComponent,
