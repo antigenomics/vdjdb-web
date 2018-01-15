@@ -57,7 +57,7 @@ export class WebSocketConnection {
     private _connectionTimeoutEvent: number = -1;
     private _connection: WebSocket;
     private _connectionStatus: WebSocketConnectionStatus = WebSocketConnectionStatus.UNDEFINED;
-    private _messages: Subject<WebSocketResponseData> = new Subject();
+    private _messages: Subject<IWebSocketResponseData> = new Subject();
 
     // Callbacks
     private _onOpenCallback: (event: Event) => void;
@@ -116,6 +116,12 @@ export class WebSocketConnection {
 
     public onClose(callback: (event: CloseEvent) => void): void {
         this._onCloseCallback = callback;
+    }
+
+    public getMessages(): Observable<WebSocketResponseData> {
+        return this._messages.pipe(map((response: IWebSocketResponseData) => {
+            return new WebSocketResponseData(response);
+        }));
     }
 
     public async sendMessage(message: WebSocketRequestMessage): Promise<WebSocketResponseData> {

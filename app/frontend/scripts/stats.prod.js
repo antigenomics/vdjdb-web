@@ -28,11 +28,7 @@ function getStats(fileName) {
     const size = (stats.size / 1024.0).toFixed(2);
     const gzip = (gzipSize.sync(fs.readFileSync(pathToBundle + '/' + fileName)) / 1024.0).toFixed(2);
 
-    return {
-        fileName: fileName,
-        size: size,
-        gzip: gzip
-    }
+    return { fileName: fileName, size: size, gzip: gzip }
 }
 
 if (fs.existsSync(pathToBundle + '/bundle.css')) {
@@ -43,14 +39,11 @@ const bundleFiles = [
     'polyfills.bundle.js',
     'vendor.bundle.js',
     'main.bundle.js',
-    '0.chunk.js',
+    'annotations.module.chunk.js',
     'bundle.min.css'
 ];
 
-let total = {
-    size: 0,
-    gzip: 0
-};
+let total = { size: 0, gzip: 0 };
 
 const bundleStats = bundleFiles
     .map(function (fileName, index) {
@@ -65,18 +58,8 @@ const bundleStats = bundleFiles
         }
     })
     .concat([
-        {
-            '#': '',
-            'File name': '================',
-            'Size': '===========',
-            'gzip': '==========='
-        },
-        {
-            '#': '',
-            'File name': '',
-            'Size': total.size.toFixed(2) + ' KB',
-            'gzip': total.gzip.toFixed(2) + ' KB'
-        }
+        { '#': '', 'File name': '================', 'Size': '===========', 'gzip': '===========' },
+        { '#': '', 'File name': '', 'Size': total.size.toFixed(2) + ' KB', 'gzip': total.gzip.toFixed(2) + ' KB' }
     ]);
 
 console.table('Fronted bundle statistics', bundleStats);

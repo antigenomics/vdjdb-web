@@ -6,6 +6,7 @@
         </div>
         <div class="ui attached secondary clearing segment">
             <button class="ui blue button right floated" (click)="reset()">Reset filters</button>
+            <button class="ui teal button left floated" [ngClass]="{'loading':isLoading()}" (click)="disconnect()">D</button>
             <button class="ui teal button left floated" [ngClass]="{'loading':isLoading()}" (click)="search()">Refresh table</button>
         </div>
     </div>
@@ -15,7 +16,7 @@
             <div class="ui inverted dimmer" [ngClass]="{'active':isLoading()}">
                 <div class="ui large text loader top element">Updating</div>
             </div>
-            <search-table></search-table>
+            <search-table [table]="table" [columns]="columns"></search-table>
         </div>
     </div>
 </div>

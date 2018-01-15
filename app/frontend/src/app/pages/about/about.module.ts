@@ -16,11 +16,10 @@
 
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
-import { RouterModule } from '@angular/router';
 import { AboutPageComponent } from './about.component';
 
 @NgModule({
-    imports:      [ CommonModule, RouterModule.forChild([ { path: 'about', component: AboutPageComponent } ]) ],
+    imports:      [ CommonModule ],
     declarations: [ AboutPageComponent ],
     exports:      [ AboutPageComponent ]
 })

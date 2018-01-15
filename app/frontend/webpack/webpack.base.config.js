@@ -17,8 +17,9 @@ module.exports = {
     output: {
         path: buildPath,
         filename: '[name]',
+        chunkFilename: '[name]-chunk.js',
         sourceMapFilename: 'bundle.map',
-        publicPath: 'bundles/'
+        publicPath: 'develop/webpack/bundles/'
     },
     externals: {},
     module: {
