@@ -33,7 +33,7 @@ defaultConfiguration.entry[ 'bundle.js' ] = [
 defaultConfiguration.module.rules.push({
     test: /\.ts(x?)$/,
     exclude: [ /e2e/, /node_modules/ ],
-    loaders: [ 'awesome-typescript-loader', 'angular2-template-loader' ]
+    loaders: [ 'awesome-typescript-loader', 'angular-router-loader', 'angular2-template-loader' ]
 });
 
 defaultConfiguration.resolve.plugins = [

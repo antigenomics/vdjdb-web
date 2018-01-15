@@ -16,7 +16,7 @@
  */
 
 import * as d3 from 'external/d3';
-import { ChartContainer, D3HTMLSelection } from 'shared/charts/container/chart-container';
+import { D3HTMLSelection } from 'shared/charts/container/chart-container';
 
 export class ChartTooltip {
     private readonly tooltip: D3HTMLSelection;

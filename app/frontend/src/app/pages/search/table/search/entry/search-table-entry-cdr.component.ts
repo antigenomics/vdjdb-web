@@ -22,15 +22,15 @@ import { SearchTableRow } from '../row/search-table-row';
 import ColorizedPatternRegion = Utils.SequencePattern.ColorizedPatternRegion;
 
 @Component({
-    selector: 'td[search-table-entry-cdr]',
-    template: `<span *ngFor="let region of regions" [style.color]="region.color">{{ region.part }}</span>`,
+    selector:        'td[search-table-entry-cdr]',
+    template:        `<span *ngFor="let region of regions" [style.color]="region.color">{{ region.part }}</span>`,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SearchTableEntryCdrComponent extends TableEntry {
     public regions: ColorizedPatternRegion[] = [];
 
-    public create(entry: string, column: TableColumn, columns: TableColumn[], row: SearchTableRow,
-                  hostViewContainer: ViewContainerRef, resolver: ComponentFactoryResolver): void {
+    public create(entry: string, _column: TableColumn, _columns: TableColumn[], row: SearchTableRow,
+                  _hostViewContainer: ViewContainerRef, _resolver: ComponentFactoryResolver): void {
         this.regions = Utils.SequencePattern.colorizePattern(entry, row.metadata.cdr3vEnd, row.metadata.cdr3jStart);
     }
 }

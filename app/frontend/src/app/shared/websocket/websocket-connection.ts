@@ -15,16 +15,14 @@
  */
 
 import { environment } from 'environments/environment';
-import 'rxjs/add/operator/filter';
-import 'rxjs/add/operator/map';
-import 'rxjs/add/operator/take';
 import { Observable } from 'rxjs/Observable';
+import { filter, map, take } from 'rxjs/operators';
 import { Subject } from 'rxjs/Subject';
 import { LoggerService } from 'utils/logger/logger.service';
 import { NotificationService } from 'utils/notifications/notification.service';
 import { Utils } from 'utils/utils';
 import { IWebSocketRequestData } from './websocket-request';
-import { WebSocketResponseData } from './websocket-response';
+import { IWebSocketResponseData, WebSocketResponseData } from './websocket-response';
 
 export type WebSocketResponseStatus = string;
 
@@ -59,7 +57,7 @@ export class WebSocketConnection {
     private _connectionTimeoutEvent: number = -1;
     private _connection: WebSocket;
     private _connectionStatus: WebSocketConnectionStatus = WebSocketConnectionStatus.UNDEFINED;
-    private _messages: Subject<WebSocketResponseData> = new Subject();
+    private _messages: Subject<IWebSocketResponseData> = new Subject();
 
     // Callbacks
     private _onOpenCallback: (event: Event) => void;
@@ -120,15 +118,20 @@ export class WebSocketConnection {
         this._onCloseCallback = callback;
     }
 
+    public getMessages(): Observable<WebSocketResponseData> {
+        return this._messages.pipe(map((response: IWebSocketResponseData) => {
+            return new WebSocketResponseData(response);
+        }));
+    }
+
     public async sendMessage(message: WebSocketRequestMessage): Promise<WebSocketResponseData> {
         message.id = this._uniqueMessageID++;
         return new Promise<WebSocketResponseData>(async (resolve) => {
-            this._messages
-                .filter((response: any) => (message.action === response.action) && (message.id === response.id))
-                .take(1)
-                .subscribe((response: any) => {
-                    resolve(new WebSocketResponseData(response));
-                });
+            this._messages.pipe(filter((response: IWebSocketResponseData) => {
+                return (message.action === response.action) && (message.id === response.id);
+            }), take(1)).subscribe((response: IWebSocketResponseData) => {
+                resolve(new WebSocketResponseData(response));
+            });
             const success = await this.send(message);
             if (!success) {
                 resolve(new WebSocketResponseData({ status: 'error' }));
@@ -138,9 +141,12 @@ export class WebSocketConnection {
 
     public subscribeMessages(message: WebSocketRequestMessage, observerCallback: (o: Observable<WebSocketResponseData>) => void): void {
         message.id = this._uniqueMessageID++;
-        observerCallback(this._messages
-                             .filter((response: any) => (message.action === response.action) && (message.id === response.id))
-                             .map((response: any) => new WebSocketResponseData(response)));
+        const stream = this._messages.pipe(filter((response: IWebSocketResponseData) => {
+            return (message.action === response.action) && (message.id === response.id);
+        }), map((response: IWebSocketResponseData) => {
+            return new WebSocketResponseData(response);
+        }));
+        observerCallback(stream);
         this.send(message);
     }
 

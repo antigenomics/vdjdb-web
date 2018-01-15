@@ -16,12 +16,9 @@
  */
 
 import { AfterViewInit, Component, ElementRef, Input, OnDestroy, ViewChild } from '@angular/core';
-import { Observable } from 'rxjs/Observable';
 import { createDefaultBarChartConfiguration, IBarChartConfiguration } from 'shared/charts/bar/bar-chart-configuration';
-import { BarChartHorizontal, BarChartInputStreamType, IBarChartHorizontalDataEntry } from 'shared/charts/bar/horizontal/bar-chart-horizontal';
-import { IChartEvent } from 'shared/charts/chart-events';
+import { BarChartHorizontal, BarChartInputStreamType } from 'shared/charts/bar/horizontal/bar-chart-horizontal';
 import { ChartContainer } from 'shared/charts/container/chart-container';
-import { IChartContainerConfiguration } from 'shared/charts/container/chart-container-configuration';
 import { Configuration } from 'utils/configuration/configuration';
 
 @Component({

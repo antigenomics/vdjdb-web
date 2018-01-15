@@ -15,17 +15,15 @@
  *
  */
 
-import { ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from '@angular/core';
-import { ISampleChartComponentItem, SampleChartService, SampleChartServiceEventType } from 'pages/annotations/sample/chart/sample-chart.service';
-import { SampleService, SampleServiceEventType } from 'pages/annotations/sample/sample.service';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { SampleChartService, SampleChartServiceEventType } from 'pages/annotations/sample/chart/sample-chart.service';
 import { SummaryClonotypeCounter } from 'pages/annotations/sample/table/intersection/summary/summary-clonotype-counter';
 import { SummaryFieldCounter } from 'pages/annotations/sample/table/intersection/summary/summary-field-counter';
 import { ReplaySubject } from 'rxjs/ReplaySubject';
-import { Subject } from 'rxjs/Subject';
 import { Subscription } from 'rxjs/Subscription';
 import { IBarChartConfiguration } from 'shared/charts/bar/bar-chart-configuration';
-import { BarChartStreamType, IBarChartHorizontalDataEntry } from 'shared/charts/bar/horizontal/bar-chart-horizontal';
-import { ChartEventType, IChartEvent } from 'shared/charts/chart-events';
+import { BarChartStreamType } from 'shared/charts/bar/horizontal/bar-chart-horizontal';
+import { ChartEventType } from 'shared/charts/chart-events';
 
 interface INormalizeType {
     name: string;
@@ -94,9 +92,7 @@ export class SummaryChartComponent implements OnInit, OnDestroy {
 
     }
 
-    constructor(private sampleService: SampleService, private sampleChartService: SampleChartService,
-                private changeDetector: ChangeDetectorRef) {
-    }
+    constructor(private sampleChartService: SampleChartService) {}
 
     public ngOnInit(): void {
         this.sampleChartServiceEventsSubscription = this.sampleChartService.getEvents().subscribe((event) => {

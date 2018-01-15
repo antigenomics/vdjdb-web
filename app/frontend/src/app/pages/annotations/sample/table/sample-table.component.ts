@@ -15,17 +15,12 @@
  *
  */
 
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnChanges, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { SampleRouteResolverComponent } from 'pages/annotations/sample/common/sample-route-resolver.component';
-import { SampleFilters } from 'pages/annotations/sample/filters/sample-filters';
-import { SampleService, SampleServiceEvent, SampleServiceEventType } from 'pages/annotations/sample/sample.service';
-import { Subscription } from 'rxjs/Subscription';
-import { SampleItem } from 'shared/sample/sample-item';
+import { SampleService } from 'pages/annotations/sample/sample.service';
 import { TableColumn } from 'shared/table/column/table-column';
 import { ITableConfigurationDescriptor } from 'shared/table/configuration/table-configuration';
-import { LoggerService } from 'utils/logger/logger.service';
-import { IntersectionTable } from './intersection/intersection-table';
 
 @Component({
     selector:        'sample-table',

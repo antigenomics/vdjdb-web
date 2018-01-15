@@ -14,14 +14,14 @@
  *    limitations under the License.
  */
 
+import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
-import { BrowserModule } from '@angular/platform-browser';
 import { NotificationContainerComponent } from './container/notification-container.component';
 import { NotificationItemComponent } from './item/notification-item.component';
 import { NotificationService } from './notification.service';
 
 @NgModule({
-    imports:      [ BrowserModule ],
+    imports:      [ CommonModule ],
     declarations: [ NotificationContainerComponent, NotificationItemComponent ],
     exports:      [ NotificationContainerComponent, NotificationItemComponent ],
     providers:    [ NotificationService ]

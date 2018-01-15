@@ -41,16 +41,17 @@ export class IntersectionTableEntryCdr3aaComponent implements TableEntry {
     public aaRegions: ColorizedPatternRegion[] = [];
     public ntRegions: string[] = [];
 
-    constructor(private clipboard: ClipboardService, private notifications: NotificationService) {}
+    constructor(private clipboard: ClipboardService, private notifications: NotificationService) {
+    }
 
-    public create(entry: string, column: TableColumn, columns: TableColumn[], row: IntersectionTableRow,
-                  hostViewContainer: ViewContainerRef, resolver: ComponentFactoryResolver): void {
+    public create(entry: string, _column: TableColumn, _columns: TableColumn[], row: IntersectionTableRow,
+                  _hostViewContainer: ViewContainerRef, _resolver: ComponentFactoryResolver): void {
         this.aaRegions = Utils.SequencePattern.colorizePattern(entry, row.metadata.vEnd / 3, row.metadata.jStart / 3);
         this.ntRegions =
             Utils.SequencePattern.colorizePattern(row.metadata.cdr3nt, row.metadata.vEnd, row.metadata.jStart)
-                .map((colorizedRegion: ColorizedPatternRegion) => {
-                    return `${colorizedRegion.part}|${colorizedRegion.color}`;
-                });
+                 .map((colorizedRegion: ColorizedPatternRegion) => {
+                     return `${colorizedRegion.part}|${colorizedRegion.color}`;
+                 });
     }
 
     public copyToClipboard(): void {
@@ -67,4 +68,5 @@ export class IntersectionTableEntryCdr3aaComponent implements TableEntry {
         }
     }
 }
+
 /* tslint:enable:max-line-length */

@@ -15,56 +15,36 @@
  *
  */
 
-import { Component, OnInit } from '@angular/core';
-import 'rxjs/add/operator/filter';
-import 'rxjs/add/operator/take';
+import { Component, Input } from '@angular/core';
+import { SearchTable } from 'pages/search/table/search/search-table';
 import { TableColumn } from 'shared/table/column/table-column';
 import { ITableConfigurationDescriptor } from 'shared/table/configuration/table-configuration';
 import { IExportFormat, IExportOptionFlag } from 'shared/table/export/table-export.component';
-import { TableEvent } from 'shared/table/table';
-import { SearchTableService } from './search-table.service';
 
 @Component({
     selector:    'search-table',
     templateUrl: './search-table.component.html'
 })
-export class SearchTableComponent implements OnInit {
-    public configuration: ITableConfigurationDescriptor;
+export class SearchTableComponent {
+    public configuration: ITableConfigurationDescriptor = {
+        classes: { columns: 'collapsing center aligned', rows: 'center aligned fade element' },
+        size:    {
+            header:  { dynamicSizeEnabled: true },
+            content: { dynamicSizeEnabled: true, dynamicSizeWeightB: 0.6 }
+        },
+        utils:   {
+            export: {
+                formats: [ { name: 'tsv', title: 'TSV', icon: 'file text outline' } ],
+                options: [ { name: 'tra_export', title: 'Paired gene export', value: true } ]
+            }
+        }
+    };
+
+    @Input('columns')
     public columns: TableColumn[] = [];
 
-    constructor(public table: SearchTableService) {
-        this.configuration = {
-            classes: {
-                columns: 'collapsing center aligned',
-                rows:    'center aligned fade element'
-            },
-            size:    {
-                header:  {
-                    dynamicSizeEnabled: true
-                },
-                content: {
-                    dynamicSizeEnabled: true,
-                    dynamicSizeWeightB: 0.6
-                }
-            },
-            utils:   {
-                export: {
-                    formats: [ { name: 'tsv', title: 'TSV', icon: 'file text outline' } ],
-                    options: [ { name: 'tra_export', title: 'Paired gene export', value: true } ]
-                }
-            }
-        };
-    }
-
-    public ngOnInit(): void {
-        if (!this.table.isInitialized()) {
-            this.table.events.filter((event) => event === TableEvent.INITIALIZED).take(1).subscribe(() => {
-                this.columns = this.table.columns.map((c) => {
-                    return new TableColumn(c.name, c.title, false, false, true, c.comment, 'Click to sort column');
-                });
-            });
-        }
-    }
+    @Input('table')
+    public table: SearchTable;
 
     public async onPageChange(page: number): Promise<void> {
         return this.table.changePage(page);

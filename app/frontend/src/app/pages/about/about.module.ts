@@ -14,13 +14,12 @@
  *    limitations under the License.
  */
 
+import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
-import { BrowserModule } from '@angular/platform-browser';
-import { RouterModule } from '@angular/router';
 import { AboutPageComponent } from './about.component';
 
 @NgModule({
-    imports:      [ BrowserModule, RouterModule.forChild([ { path: 'about', component: AboutPageComponent } ]) ],
+    imports:      [ CommonModule ],
     declarations: [ AboutPageComponent ],
     exports:      [ AboutPageComponent ]
 })

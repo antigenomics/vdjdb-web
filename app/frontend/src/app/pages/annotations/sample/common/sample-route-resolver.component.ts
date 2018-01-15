@@ -18,8 +18,8 @@
 import { ChangeDetectorRef, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRouteSnapshot, Data } from '@angular/router';
 import { SampleService, SampleServiceEventType } from 'pages/annotations/sample/sample.service';
-import 'rxjs/add/operator/filter';
 import { Observable } from 'rxjs/Observable';
+import { filter } from 'rxjs/operators';
 import { Subscription } from 'rxjs/Subscription';
 import { SampleItem } from 'shared/sample/sample-item';
 
@@ -35,13 +35,13 @@ export class SampleRouteResolverComponent implements OnInit, OnDestroy {
     }
 
     public ngOnInit(): void {
-        this._sampleRouteSubscription = this.data.subscribe((data: { sample: SampleItem }) => {
+        this._sampleRouteSubscription = this.data.subscribe((data: Data) => {
             this.sample = data.sample;
             this.changeDetector.detectChanges();
         });
-        this._sampleServiceEventsSubscription = this.sampleService.getEvents().filter((event) => {
+        this._sampleServiceEventsSubscription = this.sampleService.getEvents().pipe(filter((event) => {
             return event.type === SampleServiceEventType.EVENT_UPDATED && event.name === this.sample.name;
-        }).subscribe((event) => {
+        })).subscribe(() => {
             this.changeDetector.detectChanges();
         });
     }

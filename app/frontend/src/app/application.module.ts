@@ -17,9 +17,7 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
-import { RouterModule } from '@angular/router';
 import { AboutPageModule } from 'pages/about/about.module';
-import { AnnotationsPageModule } from 'pages/annotations/annotations.module';
 import { HomePageModule } from 'pages/home/home.module';
 import { OverviewPageModule } from 'pages/overview/overview.module';
 import { SearchPageModule } from 'pages/search/search.module';
@@ -29,12 +27,12 @@ import { LoaderModule } from 'utils/loader/loader.module';
 import { LoggerService } from 'utils/logger/logger.service';
 import { NotificationModule } from 'utils/notifications/notification.module';
 import { ApplicationComponent } from './application.component';
+import { ApplicationRouting } from './application.routing';
 
 @NgModule({
-    imports:      [ CommonModule, BrowserModule,
-        HomePageModule, AboutPageModule, OverviewPageModule, SearchPageModule, AnnotationsPageModule,
-        NotificationModule, NavigationBarModule, LoaderModule,
-        RouterModule.forRoot([]) ],
+    imports:      [ BrowserModule, CommonModule, ApplicationRouting,
+        HomePageModule, AboutPageModule, OverviewPageModule, SearchPageModule,
+        NotificationModule, NavigationBarModule, LoaderModule ],
     declarations: [ ApplicationComponent ],
     providers:    [ LoggerService, ClipboardService ],
     bootstrap:    [ ApplicationComponent ]
