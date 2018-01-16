@@ -76,12 +76,14 @@ export interface IFontSizeConfigurationDescriptor {
 }
 
 export interface ITableSizeConfigurationDescriptor {
+    readonly overflowThreshold?: number;
     readonly header?: IFontSizeConfigurationDescriptor;
     readonly content?: IFontSizeConfigurationDescriptor;
 }
 
 function createDefaultTableSizeConfiguration(): ITableSizeConfigurationDescriptor {
     return {
+        overflowThreshold: 1200,
         header:  { dynamicSizeEnabled: false, dynamicSizeWeightA: 0.0003125, dynamicSizeWeightB: 0.4 },
         content: { dynamicSizeEnabled: false, dynamicSizeWeightA: 0.0003125, dynamicSizeWeightB: 0.4 }
     };

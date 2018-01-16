@@ -36,6 +36,12 @@ Play framework uses the `HOCON <https://github.com/lightbend/config/blob/master/
 
 More about HOCON syntax, data types and other features can be found `here <https://www.playframework.com/documentation/2.6.x/ConfigFile>`__.
 
+You can also specify another local configuration file not packaged into the application artifacts:
+
+.. code-block:: console
+
+   $ ./vdjdb-server -Dconfig.file=/path/to/application.conf
+
 VDJdb Database configuration
 """"""""""""""""""""""""""""
 
@@ -99,6 +105,12 @@ Common configuration:
 |                                                    |             |       "permissionsID": "1",     |                                                    |
 |                                                    |             |    }]                           |                                                    |
 +----------------------------------------------------+-------------+---------------------------------+----------------------------------------------------+
+
+List of available permissions ID:
+
+* **0** - No-limits
+* **1** - Standart, max files count is equal to 10, max file size is equal to 16MB
+* **2** - Demo account, uploading is not allowed
 
 Verification token configuration:
 

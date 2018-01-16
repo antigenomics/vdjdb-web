@@ -38,17 +38,8 @@ case class SearchTableTSVConverter()(implicit tfp: TemporaryFileProvider) extend
 
         options.foreach((option) => {
             option.name match {
-                case "tra_export" => {
-                    val rowsWithPaired = rows.filter((r) => !(r.metadata.pairedID == "0"))
-                    val complexFilter = rowsWithPaired.map(_.metadata.pairedID).mkString(",")
-                    val pairedFilterRequest: List[DatabaseFilterRequest] =
-                        List(DatabaseFilterRequest("complex.id", DatabaseFilterType.ExactSet, negative = false, complexFilter))
-                    val pairedFilters: DatabaseFilters = DatabaseFilters.createFromRequest(pairedFilterRequest, database)
-                    val pairedTable: SearchTable = new SearchTable()
-                    pairedTable.update(pairedFilters, database)
-
-                    val pairedRows = pairedTable.getRows.filter(p => !rowsWithPaired.contains(p))
-
+                case "paired_export" => {
+                    val pairedRows = SearchTable.getPairedRows(rows, database)
                     pairedRows.foreach(row => content.append(row.entries.mkString(s"${row.metadata.pairedID}\t", "\t", "\r\n")))
                 }
                 case _ =>

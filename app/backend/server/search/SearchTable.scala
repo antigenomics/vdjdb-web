@@ -19,7 +19,7 @@ package backend.server.search
 
 import backend.server.ResultsTable
 import backend.server.database.Database
-import backend.server.database.filters.DatabaseFilters
+import backend.server.database.filters.{DatabaseFilterRequest, DatabaseFilterType, DatabaseFilters}
 
 import scala.collection.JavaConverters._
 import scala.math.Ordering.String
@@ -43,5 +43,20 @@ class SearchTable extends ResultsTable[SearchTableRow] {
         this.rows = results.asScala.map(r => SearchTableRow.createFromRow(r.getRow)).toList
         this.currentPage = 0
         this
+    }
+}
+
+object SearchTable {
+    def getPairedRows(rows: Seq[SearchTableRow], database: Database): Seq[SearchTableRow] = {
+        val rowsWithPaired = rows.filter((r) => !(r.metadata.pairedID == "0"))
+        val complexFilter = rowsWithPaired.map(_.metadata.pairedID).mkString(",")
+        val pairedFilterRequest: List[DatabaseFilterRequest] =
+            List(DatabaseFilterRequest("complex.id", DatabaseFilterType.ExactSet, negative = false, complexFilter))
+
+        val pairedFilters: DatabaseFilters = DatabaseFilters.createFromRequest(pairedFilterRequest, database)
+        val pairedTable: SearchTable = new SearchTable()
+        pairedTable.update(pairedFilters, database)
+
+        pairedTable.getRows.filter(p => !rowsWithPaired.contains(p))
     }
 }

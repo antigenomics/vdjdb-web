@@ -27,7 +27,7 @@ import backend.server.search.api.search.{SearchDataRequest, SearchDataResponse}
 import backend.server.database.{Database, DatabaseColumnInfo}
 import backend.server.database.filters.DatabaseFilters
 import backend.server.limit.RequestLimits
-import backend.server.search.SearchTable
+import backend.server.search.{SearchTable, SearchTableRow}
 import play.api.Configuration
 import play.api.libs.json.Json.toJson
 import play.api.libs.json._
@@ -75,6 +75,7 @@ class DatabaseAPI @Inject()(cc: ControllerComponents, database: Database, config
                     if (data.get.filters.nonEmpty) {
                         val table = new SearchTable()
                         val filters = DatabaseFilters.createFromRequest(data.get.filters.get, database)
+
                         table.update(filters, database)
                         if (data.get.sort.nonEmpty) {
                             val sorting = data.get.sort.get.split(":")
@@ -82,14 +83,29 @@ class DatabaseAPI @Inject()(cc: ControllerComponents, database: Database, config
                             val sortType = sorting(1)
                             table.sort(database.getMetadata.getColumnIndex(columnName), sortType)
                         }
+
+                        var pageSize: Int = -1;
+                        var page: Int = -1;
+                        var pageCount: Int = -1;
+                        var rows: Seq[SearchTableRow] = Seq();
+
                         if (data.get.page.nonEmpty) {
-                            val pageSize: Int = data.get.pageSize.getOrElse(100)
-                            val page = data.get.page.get
+                            pageSize = data.get.pageSize.getOrElse(25)
+                            page = data.get.page.get
                             table.setPageSize(pageSize)
-                            Ok(toJson(SearchDataResponse(page, pageSize, table.getPageCount, table.getRecordsFound, table.getPage(page))))
+                            pageCount = table.getPageCount
+                            rows = table.getPage(page);
                         } else {
-                            Ok(toJson(SearchDataResponse(-1, -1, table.getPageCount, table.getRecordsFound, table.getRows)))
+                            rows = table.getRows
                         }
+
+                        val paired = data.get.paired.getOrElse(false)
+                        if (paired) {
+                            val pairedRows = SearchTable.getPairedRows(rows, database)
+                            rows = (rows ++ pairedRows)
+                        }
+
+                        Ok(toJson(SearchDataResponse(page, pageSize, pageCount, table.getRecordsFound, rows)))
                     } else {
                         BadRequest("Invalid request")
                     }

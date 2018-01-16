@@ -1,10 +1,7 @@
 <div class="ui fade slow element segments">
     <h3 class="ui top attached header">Intersection table</h3>
-    <div class="ui teal attached padded segment" style="min-height: 200px;">
-        <div style="width: 100%; overflow-x: auto">
-            <table class="ui unstackable very compact celled stripped small table" table-component [configuration]="configuration"
-                   [columns]="getColumns()" [table]="sample.table" (onPageChange)="onPageChange($event)" (onPageSizeChange)="onPageSizeChange($event)">
-            </table>
-        </div>
+    <div class="ui teal attached padded segment" style="width: 100%; min-height: 200px;"
+         table-component table-class="ui unstackable very compact celled stripped small table" [configuration]="configuration"
+         [columns]="getColumns()" [table]="sample.table" (onPageChange)="onPageChange($event)" (onPageSizeChange)="onPageSizeChange($event)">
     </div>
 </div>
