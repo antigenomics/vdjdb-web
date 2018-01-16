@@ -20,18 +20,17 @@ package backend.models.authorization.user
 import com.typesafe.config.Config
 import play.api.ConfigLoader
 
-case class UserCreateConfiguration(skip: Boolean, users: Seq[(String, String, String, String)], folder: String)
+case class UserCreateConfiguration(createUsers: Seq[(String, String, String, String)], uploadLocation: String)
 
 object UserCreateConfiguration {
     implicit val userCreateConfigurationLoader: ConfigLoader[UserCreateConfiguration] = (rootConfig: Config, path: String) => {
         val config = rootConfig.getConfig(path)
         UserCreateConfiguration(
-            skip = config.getBoolean("skip"),
-            users = config.getConfigList("create").toArray.map(p => {
+            createUsers = config.getConfigList("createUsers").toArray.map(p => {
                 val user = p.asInstanceOf[Config]
                 (user.getString("login"), user.getString("email"), user.getString("password"), user.getString("permissionsID"))
             }),
-            folder = config.getString("folder")
+            uploadLocation = config.getString("uploadLocation")
         )
     }
 }

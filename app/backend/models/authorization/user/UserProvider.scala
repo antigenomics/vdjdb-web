@@ -49,15 +49,15 @@ class UserProvider @Inject()(@NamedDatabase("default") protected val dbConfigPro
     extends HasDatabaseConfigProvider[JdbcProfile] {
     private final val logger = LoggerFactory.getLogger(this.getClass)
     private final val configuration = conf.get[VerificationTokenConfiguration]("application.auth.verification")
-    private final val initialUsersConfiguration = conf.get[UserCreateConfiguration]("application.auth.init")
+    private final val usersConfiguration = conf.get[UserCreateConfiguration]("application.auth.common")
 
     import dbConfig.profile.api._
 
     private final val table = TableQuery[UserTable]
 
-    if (!initialUsersConfiguration.skip && initialUsersConfiguration.users.nonEmpty) {
+    if (usersConfiguration.createUsers.nonEmpty) {
         logger.info("Initial users: ")
-        initialUsersConfiguration.users.foreach(user => async {
+        usersConfiguration.createUsers.foreach(user => async {
             val check = await(get(user._2))
             if (check.isEmpty) {
                 logger.info(s"User ${user._2} has been created")
@@ -82,7 +82,7 @@ class UserProvider @Inject()(@NamedDatabase("default") protected val dbConfigPro
         case Success(users) =>
             users.foreach(user => {
                 if (user.folderPath == "<default>") {
-                    val folderPath = s"${initialUsersConfiguration.folder}/${user.email}"
+                    val folderPath = s"${usersConfiguration.uploadLocation}/${user.email}"
                     val folder = new File(folderPath)
                     folder.mkdirs()
                     db.run(table.filter(_.id === user.id).map(_.folderPath).update(folderPath))
@@ -171,7 +171,7 @@ class UserProvider @Inject()(@NamedDatabase("default") protected val dbConfigPro
                 throw new RuntimeException("User already exists")
             }
             val hash = BCrypt.hashpw(password, BCrypt.gensalt())
-            val folderPath = s"${initialUsersConfiguration.folder}/$email"
+            val folderPath = s"${usersConfiguration.uploadLocation}/$email"
             val folder = new File(folderPath)
             folder.mkdirs()
             val user = User(0, login, email, verified = false, folderPath, hash, permissionsID)
