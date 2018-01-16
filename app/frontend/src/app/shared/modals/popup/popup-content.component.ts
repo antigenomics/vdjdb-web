@@ -49,7 +49,7 @@ export class PopupContentComponent implements AfterViewInit {
     public position: 'left' | 'right' | 'top' | 'bottom';
 
     @Input('display')
-    public display: 'paragraph' | 'list' | 'colored-text' | 'table';
+    public display: 'paragraph' | 'list' | 'colored-text' | 'table' = 'paragraph';
 
     @Input('topShift')
     public topShift: number = 0;
