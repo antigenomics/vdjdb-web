@@ -94,7 +94,7 @@ Common configuration:
 +----------------------------------------------------+-------------+---------------------------------+----------------------------------------------------+
 | Argument                                           | Type        | Default                         | Description                                        |
 +====================================================+=============+=================================+====================================================+
-| **application.auth.verification.uploadLocation**   | Boolean     | true                            | Is verification required or not                    |
+| **application.auth.verification.uploadLocation**   | Boolean     | /tmp/vdjdb/                     | Is verification required or not                    |
 +----------------------------------------------------+-------------+---------------------------------+----------------------------------------------------+
 | **application.auth.verification.createUsers**      | User Array  | .. code-block:: json            | | Create default users with application startup    |
 |                                                    |             |                                 | | **Note:** This field can't be passed as command  |
