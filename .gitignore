@@ -12,6 +12,9 @@
 # Front end build artifacts
 /public/bundles
 
+# Docs build directories
+/docs/_build
+
 npm-debug.log
 
 /logs
