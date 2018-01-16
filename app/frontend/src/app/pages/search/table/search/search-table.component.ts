@@ -35,7 +35,7 @@ export class SearchTableComponent {
         utils:   {
             export: {
                 formats: [ { name: 'tsv', title: 'TSV', icon: 'file text outline' } ],
-                options: [ { name: 'tra_export', title: 'Paired gene export', value: true } ]
+                options: [ { name: 'paired_export', title: 'Paired gene export', value: true } ]
             }
         }
     };

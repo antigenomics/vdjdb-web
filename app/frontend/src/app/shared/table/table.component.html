@@ -1,31 +1,33 @@
-<thead class="cursor pointer">
-<tr *ngIf="!configuration.utils.disable">
-    <th [attr.colspan]="columns.length" style="padding: 1em">
-        <table-pagination *ngIf="!configuration.utils.pagination.disable"
-                          [page]="table.page" [range]="configuration.utils.pagination.pageRange" [pageCount]="table.pageCount"
-                          (pageChange)="onPageChange.emit($event)"></table-pagination>
+<table [attr.class]="tableClass">
+    <thead class="cursor pointer">
+    <tr *ngIf="!configuration.utils.disable">
+        <th [attr.colspan]="columns.length" style="padding: 1em">
+            <table-pagination *ngIf="!configuration.utils.pagination.disable"
+                              [page]="table.page" [range]="configuration.utils.pagination.pageRange" [pageCount]="table.pageCount"
+                              (pageChange)="onPageChange.emit($event)"></table-pagination>
 
-        <table-info *ngIf="!configuration.utils.info.disable"
-                    [found]="table.recordsFound" [total]="table.numberOfRecords"></table-info>
+            <table-info *ngIf="!configuration.utils.info.disable"
+                        [found]="table.recordsFound" [total]="table.numberOfRecords"></table-info>
 
-        <table-export *ngIf="!configuration.utils.export.disable"
-                      [options]="configuration.utils.export.options" [formats]="configuration.utils.export.formats"
-                      (exportEvent)="onExport.emit($event)"></table-export>
+            <table-export *ngIf="!configuration.utils.export.disable"
+                          [options]="configuration.utils.export.options" [formats]="configuration.utils.export.formats"
+                          (exportEvent)="onExport.emit($event)"></table-export>
 
-        <table-pagesize *ngIf="!configuration.utils.pageSize.disable"
-                        [sizes]="configuration.utils.pageSize.sizes" [pageSize]="table.pageSize"
-                        (changePageSize)="onPageSizeChange.emit($event)"></table-pagesize>
+            <table-pagesize *ngIf="!configuration.utils.pageSize.disable"
+                            [sizes]="configuration.utils.pageSize.sizes" [pageSize]="table.pageSize"
+                            (changePageSize)="onPageSizeChange.emit($event)"></table-pagesize>
 
-    </th>
-</tr>
-<tr [style.font-size]="headerFontSize">
-    <th class="{{ isSorted(column) }} {{ configuration.classes.columns }}" *ngFor="let column of columns; trackBy: trackColumnFn" (click)="onColumnClick.emit(column)">
+        </th>
+    </tr>
+    <tr [style.font-size]="headerFontSize">
+        <th class="{{ isSorted(column) }} {{ configuration.classes.columns }}" *ngFor="let column of columns; trackBy: trackColumnFn" (click)="onColumnClick.emit(column)">
         <span class="header" [popup]="column.popupContent" [footer]="column.popupFooter" [header]="column.title" position="top" width="300" [disabled]="!column.popup">
             {{ column.title }}
         </span>
-    </th>
-</tr>
-</thead>
-<tbody [style.font-size]="contentFontSize">
-<tr *ngFor="let row of table.getRows(); trackBy: trackRowFn" table-row [row]="row" [columns]="columns" class="{{ configuration.classes.rows }}"></tr>
-</tbody>
+        </th>
+    </tr>
+    </thead>
+    <tbody [style.font-size]="contentFontSize">
+    <tr *ngFor="let row of table.getRows(); trackBy: trackRowFn" table-row [row]="row" [columns]="columns" class="{{ configuration.classes.rows }}"></tr>
+    </tbody>
+</table>

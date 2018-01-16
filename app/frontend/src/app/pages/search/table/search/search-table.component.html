@@ -1,8 +1,7 @@
-<div style="width: 100%; min-height: 100px; overflow-x: auto" *ngIf="!table.isEmpty()">
-    <table class="ui unstackable single line celled stripped very compact small table" table-component [configuration]="configuration"
-        [columns]="columns" [table]="table" (onPageChange)="onPageChange($event)" (onPageSizeChange)="onPageSizeChange($event)"
-        (onColumnClick)="onColumnClick($event)" (onExport)="onExport($event)">
-    </table>
+<div style="width: 100%; min-height: 100px; overflow-x: auto" *ngIf="!table.isEmpty()"
+     table-component table-class="ui unstackable single line celled stripped very compact small table" [configuration]="configuration"
+     [columns]="columns" [table]="table" (onPageChange)="onPageChange($event)" (onPageSizeChange)="onPageSizeChange($event)"
+     (onColumnClick)="onColumnClick($event)" (onExport)="onExport($event)">
 </div>
 <div *ngIf="table.isEmpty()">
     <h2 class="ui center aligned icon header">

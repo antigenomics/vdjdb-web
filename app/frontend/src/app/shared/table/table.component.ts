@@ -15,7 +15,7 @@
  *
  */
 
-import { AfterViewInit, ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, OnInit, Output, Renderer2 } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, EventEmitter, HostBinding, Input, OnDestroy, OnInit, Output, Renderer2 } from '@angular/core';
 import { Subscription } from 'rxjs/Subscription';
 import { createDefaultTableConfiguration, ITableConfigurationDescriptor } from 'shared/table/configuration/table-configuration';
 import { Configuration } from 'utils/configuration/configuration';
@@ -26,7 +26,7 @@ import { TableRow } from './row/table-row';
 import { Table } from './table';
 
 @Component({
-    selector:    'table[table-component]',
+    selector:    'div[table-component]',
     templateUrl: './table.component.html',
     styleUrls:   [ './table.component.css' ]
 })
@@ -41,6 +41,9 @@ export class TableComponent implements OnInit, AfterViewInit, OnDestroy {
 
     public headerFontSize: string = 'inherit';
     public contentFontSize: string = 'inherit';
+
+    @HostBinding('style.overflow')
+    public hostOverflowProperty: string = 'visible';
 
     @Input('configuration')
     public set configuration(source: ITableConfigurationDescriptor) {
@@ -57,6 +60,9 @@ export class TableComponent implements OnInit, AfterViewInit, OnDestroy {
 
     @Input('table')
     public table: Table<TableRow>;
+
+    @Input('table-class')
+    public tableClass: string;
 
     @Output('onColumnClick')
     public onColumnClick = new EventEmitter<TableColumn>();
@@ -116,6 +122,13 @@ export class TableComponent implements OnInit, AfterViewInit, OnDestroy {
         if (this.configuration.size.content.dynamicSizeEnabled) {
             this.calculateContentFontSize();
         }
+
+        if (window.innerWidth < this.configuration.size.overflowThreshold) {
+            this.hostOverflowProperty = 'auto';
+        } else {
+            this.hostOverflowProperty = 'visible';
+        }
+
         this.changeDetector.detectChanges();
     }
 
