@@ -8,7 +8,7 @@
 
         <div class="ui checkbox">
             <input type="checkbox" [(ngModel)]="weighted">
-            <label>Weighted</label>
+            <label>Weight by read count</label>
         </div>
 
         <h4>Column name</h4>
@@ -21,7 +21,7 @@
                 </div>
             </div>
         </div>
-        <h4>Normalize type</h4>
+        <h4>Normalize by</h4>
         <div class="ui selection fluid dropdown" dropdown [content]="normalizeTypeContent">
             <span class="text">{{ getCurrentNormalizeTypeShortTitle() }}</span>
             <i class="dropdown icon"></i>
@@ -32,7 +32,7 @@
             </div>
         </div>
         <ng-container *ngIf="isThresholdTypesAvailable()">
-            <h4>Threshold</h4>
+            <h4>Show</h4>
             <div class="ui selection fluid upward dropdown" dropdown [content]="thresholdContent">
                 <span class="text">{{ getCurrentThresholdTypeTitle() }}</span>
                 <i class="dropdown icon"></i>
