@@ -26,11 +26,17 @@ import { TableEntry } from './table-entry';
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TableEntryCenteredComponent extends TableEntry {
+
     @HostBinding('class.center')
     @HostBinding('class.aligned')
     public centered: boolean = true;
 
     public entry: string;
+
+    constructor() {
+        super();
+        console.log('asd');
+    }
 
     public create(entry: string, _column: TableColumn, _columns: TableColumn[], _row: TableRow,
                   _hostViewContainer: ViewContainerRef, _resolver: ComponentFactoryResolver): void {
