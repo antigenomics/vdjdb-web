@@ -33,11 +33,6 @@ export class TableEntryCenteredComponent extends TableEntry {
 
     public entry: string;
 
-    constructor() {
-        super();
-        console.log('asd');
-    }
-
     public create(entry: string, _column: TableColumn, _columns: TableColumn[], _row: TableRow,
                   _hostViewContainer: ViewContainerRef, _resolver: ComponentFactoryResolver): void {
         this.entry = entry;
