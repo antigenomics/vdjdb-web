@@ -113,3 +113,10 @@ javaOptions in Test ++= Seq(
 )
 libraryDependencies ++= Seq("org.scalatestplus.play" % "scalatestplus-play_2.12" % "3.1.2" % "test")
 // Ends.
+
+// Starts: Docker configuration
+
+dockerBaseImage := "anapsix/alpine-java"
+dockerEntrypoint := Seq("bin/vdjdb-server", "-Dconfig.file=/environment/application.conf")
+
+// Ends.
