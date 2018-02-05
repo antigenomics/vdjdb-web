@@ -14,7 +14,7 @@
  *      limitations under the License.
  */
 
-import * as d3 from 'external/d3';
+// import * as d3 from 'external/d3';
 import { Observable } from 'rxjs/Observable';
 import { Subject } from 'rxjs/Subject';
 import { Chart } from 'shared/charts/chart';
@@ -39,39 +39,40 @@ export class PieChart extends Chart<IChartDataEntry, IPieChartConfiguration> {
         Configuration.extend(this.configuration, configuration);
     }
 
-    public create(data: IChartDataEntry[]): void {
-        const { svg, width, height } = this.container.getContainer();
-        const radius = Math.min(width, height) / 2;
+    public create(_data: IChartDataEntry[]): void {
+        // const { svg, width, height } = this.container.getContainer();
+        // const radius = Math.min(width, height) / 2;
+        //
+        // const pie = d3.pie<IChartDataEntry>().value((d: IChartDataEntry) => d.value)(data);
+        //
+        // const _arc = d3.arc()
+        //     .outerRadius(radius - 10)
+        //     .innerRadius(0) as any;
+        //
+        // const center = svg.append('g').attr('transform', `translate(${width / 2}, ${height / 2})`);
+        // const _arcs = center.selectAll('arc')
+        //                    .data(pie)
+        //                    .enter().append('g')
+        //                    .attr('class', 'arc');
+        //
+        // const _color = d3.scaleOrdinal()
+        //     .range(['#2C93E8', '#838690', '#F56C4E']);
 
-        const pie = d3.pie<IChartDataEntry>().value((d: IChartDataEntry) => d.value)(data);
-
-        const arc = d3.arc()
-            .outerRadius(radius - 10)
-            .innerRadius(0) as any;
-
-        const center = svg.append('g').attr('transform', `translate(${width / 2}, ${height / 2})`);
-        const arcs = center.selectAll('arc')
-                           .data(pie)
-                           .enter().append('g')
-                           .attr('class', 'arc');
-
-        const color = d3.scaleOrdinal()
-            .range(['#2C93E8', '#838690', '#F56C4E']);
-
-        arcs.append('path')
-            .attr('d', arc)
-            .style('fill', (_d, i) => (color(i.toString())));
-    }
-
-    public update(data: IChartDataEntry[]): void {
+        // arcs.append('path')
+        //     .attr('d', arc)
+        //     .style('fill', (_d, i) => (color(i.toString())));
         throw new Error('Not implemented');
     }
 
-    public updateValues(data: IChartDataEntry[]): void {
+    public update(_data: IChartDataEntry[]): void {
         throw new Error('Not implemented');
     }
 
-    public resize(data: IChartDataEntry[]): void {
+    public updateValues(_data: IChartDataEntry[]): void {
+        throw new Error('Not implemented');
+    }
+
+    public resize(_data: IChartDataEntry[]): void {
         throw new Error('Not implemented');
     }
 }

@@ -27,6 +27,10 @@ const defaultConfiguration = require('./webpack.base.config');
 defaultConfiguration.stats = 'errors-only';
 defaultConfiguration.devtool = false;
 
+defaultConfiguration.entry['polyfills-ie.bundle.js'] = [
+    './src/polyfills-ie.js'
+];
+
 defaultConfiguration.plugins.push(
     new webpack.NoEmitOnErrorsPlugin(),
     new PurifyCSSPlugin({
@@ -41,7 +45,7 @@ defaultConfiguration.plugins.push(
             whitelist: [
                 'success', 'warning', 'error', 'info',
                 'circle', 'icon', 'violet', 'circular', 'circle',
-                'text', 'alignment', 'big', 'hover-inside-icon' ]
+                'text', 'alignment', 'big', 'hover-inside-icon']
         }
     })
 );
