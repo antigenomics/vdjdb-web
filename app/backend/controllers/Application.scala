@@ -25,21 +25,25 @@ import backend.models.authorization.user.UserProvider
 import backend.models.files.temporary.TemporaryFileProvider
 import backend.utils.analytics.Analytics
 import controllers._
-
-import scala.concurrent.ExecutionContext.Implicits.global
 import play.api._
+import play.api.i18n.{Lang, Messages, MessagesApi}
 import play.api.libs.ws._
 import play.api.mvc._
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 class Application @Inject()(ws: WSClient, assets: Assets, configuration: Configuration, cc: ControllerComponents,
-                            userRequestAction: UserRequestAction, tfp: TemporaryFileProvider, up: UserProvider)
-                           (implicit environment: Environment, analytics: Analytics, stp: SessionTokenProvider) extends AbstractController(cc) {
+                            userRequestAction: UserRequestAction, tfp: TemporaryFileProvider, up: UserProvider, messagesApi: MessagesApi)
+                           (implicit environment: Environment, analytics: Analytics, stp: SessionTokenProvider, ec: ExecutionContext) extends AbstractController(cc) {
+    implicit val messages: Messages = messagesApi.preferred(Seq(Lang.defaultLang))
     private final val cacheControlTimeout: Int = 3600 //seconds
 
     def index: Action[AnyContent] = userRequestAction { implicit request =>
         SessionAction.updateCookies(Ok(frontend.views.html.index()))
+    }
+
+    def onNoScript: Action[AnyContent] = userRequestAction { implicit request =>
+        SessionAction.updateCookies(Ok(frontend.views.html.noScript()))
     }
 
     def authorizedIndex(route: String): Action[AnyContent] = (userRequestAction andThen SessionAction.authorizedOnly) { implicit request =>
