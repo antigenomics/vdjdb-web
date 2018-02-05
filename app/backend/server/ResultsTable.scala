@@ -28,7 +28,7 @@ abstract class ResultsTable[T] {
         this.pageSize = pageSize
     }
 
-    def getPageCount: Int = getRecordsFound / pageSize + 1
+    def getPageCount: Int = Math.ceil(getRecordsFound.toDouble / pageSize).toInt
 
     def getRows: Seq[T] = rows
 

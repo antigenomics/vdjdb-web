@@ -81,26 +81,3 @@ export class Chart<T, C> {
         }
     }
 }
-
-// private bindTooltipEvents(selection: D3HTMLSelection): void {
-//     selection.on('mousemove', (d) => {
-//         this.tooltip
-//             .style('left', D3CurrentEvent.pageX - 50 + 'px')
-//             .style('top', D3CurrentEvent.pageY - 120 + 'px')
-//             .style('display', 'inline-block')
-//             .html(`Here will be some tooltip<br>Name: ${d.name}<br>Value: ${d.value}`);
-//     }).on('mouseout', (d) => {
-//         this.tooltip.style('display', 'none');
-//     });
-// }
-
-// this.tooltip = d3.select('body')
-//                  .append('div').attr('class', 'chart-tooltip fade element')
-//                  .style('position', 'absolute')
-//                  .style('display', 'none')
-//                  .style('min-width', '80px')
-//                  .style('height', 'auto')
-//                  .style('padding', '14px')
-//                  .style('background', 'none repeat scroll 0 0 #ffffff')
-//                  .style('border', '2px solid #48af75')
-//                  .style('text-align', 'left');

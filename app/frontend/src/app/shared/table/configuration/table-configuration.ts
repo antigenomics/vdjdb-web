@@ -63,7 +63,7 @@ function ITableUtilsConfigurationDefault(): ITableUtilsConfigurationDescriptor {
         pagination: { disable: false, pageRange: 5 },
         info:       true,
         export:     { disable: false, formats: [], options: [] },
-        pageSize:   { disable: false, sizes: [ 25, 50, 100 ] } // tslint:disable-line:no-magic-numbers
+        pageSize:   { disable: false, sizes: [ 25, 32, 50, 100 ] } // tslint:disable-line:no-magic-numbers
     };
 }
 

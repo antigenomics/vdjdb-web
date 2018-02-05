@@ -24,17 +24,13 @@ import { createDefaultBarChartConfiguration, IBarChartConfiguration } from 'shar
 import { Chart } from 'shared/charts/chart';
 import { IChartEvent } from 'shared/charts/chart-events';
 import { ChartContainer } from 'shared/charts/container/chart-container';
+import { IChartDataEntry } from 'shared/charts/data/chart-data-entry';
 import { Configuration } from 'utils/configuration/configuration';
 
-export type BarChartStreamType = Subject<IChartEvent<IBarChartHorizontalDataEntry>>;
-export type BarChartInputStreamType = Observable<IChartEvent<IBarChartHorizontalDataEntry>>;
+export type BarChartStreamType = Subject<IChartEvent<IChartDataEntry>>;
+export type BarChartInputStreamType = Observable<IChartEvent<IChartDataEntry>>;
 
-export interface IBarChartHorizontalDataEntry {
-    readonly name: string;
-    readonly value: number;
-}
-
-export class BarChartHorizontal extends Chart<IBarChartHorizontalDataEntry, IBarChartConfiguration> {
+export class BarChartHorizontal extends Chart<IChartDataEntry, IBarChartConfiguration> {
     private static readonly defaultTransitionDuration: number = 750;
     private static readonly defaultPadding: number = 0.1;
     private static readonly defaultXMargin: number = 5;
@@ -49,7 +45,7 @@ export class BarChartHorizontal extends Chart<IBarChartHorizontalDataEntry, IBar
         Configuration.extend(this.configuration, configuration);
     }
 
-    public create(data: IBarChartHorizontalDataEntry[]): void {
+    public create(data: IChartDataEntry[]): void {
         const { svg, width, height } = this.container.getContainer();
         const { x, xAxis } = this.createXAxis(width, height, data);
         const { y, yAxis } = this.createYAxis(width, height, data);
@@ -81,7 +77,7 @@ export class BarChartHorizontal extends Chart<IBarChartHorizontalDataEntry, IBar
         this.bindTooltipEvents(bars);
     }
 
-    public update(data: IBarChartHorizontalDataEntry[]): void {
+    public update(data: IChartDataEntry[]): void {
         const { svg, width, height } = this.container.getContainer();
         const { x, xAxis } = this.createXAxis(width, height, data);
         const { y, yAxis } = this.createYAxis(width, height, data);
@@ -113,7 +109,7 @@ export class BarChartHorizontal extends Chart<IBarChartHorizontalDataEntry, IBar
         this.bindTooltipEvents(merged);
     }
 
-    public updateValues(data: IBarChartHorizontalDataEntry[]): void {
+    public updateValues(data: IChartDataEntry[]): void {
         const { svg, width, height } = this.container.getContainer();
         const { x, xAxis } = this.createXAxis(width, height, data);
 
@@ -126,7 +122,7 @@ export class BarChartHorizontal extends Chart<IBarChartHorizontalDataEntry, IBar
            .call(xAxis);
     }
 
-    public resize(data: IBarChartHorizontalDataEntry[]): void {
+    public resize(data: IChartDataEntry[]): void {
         const { svg, width, height } = this.container.getContainer();
         const { x, xAxis } = this.createXAxis(width, height, data);
         const { y, yAxis } = this.createYAxis(width, height, data);
@@ -153,7 +149,7 @@ export class BarChartHorizontal extends Chart<IBarChartHorizontalDataEntry, IBar
         this.bindTooltipEvents(bars);
     }
 
-    private createXAxis(width: number, height: number, data: IBarChartHorizontalDataEntry[]): { x: ScaleLinear<number, number>, xAxis: any } {
+    private createXAxis(width: number, height: number, data: IChartDataEntry[]): { x: ScaleLinear<number, number>, xAxis: any } {
         const x = d3.scaleLinear().range([ 0, width ])
                     .domain([ 0, d3.max(data.map((d) => d.value)) ]);
         const xAxis = d3.axisBottom(x);
@@ -170,7 +166,7 @@ export class BarChartHorizontal extends Chart<IBarChartHorizontalDataEntry, IBar
         return { x, xAxis };
     }
 
-    private createYAxis(width: number, height: number, data: IBarChartHorizontalDataEntry[]): { y: ScaleBand<string>, yAxis: any } {
+    private createYAxis(width: number, height: number, data: IChartDataEntry[]): { y: ScaleBand<string>, yAxis: any } {
         const y = d3.scaleBand().rangeRound([ height, 0 ])
                     .padding(BarChartHorizontal.defaultPadding)
                     .domain(data.map((d) => d.name));
@@ -192,7 +188,7 @@ export class BarChartHorizontal extends Chart<IBarChartHorizontalDataEntry, IBar
         const xDefaultOffset = 20;
         const yDefaultOffset = -40;
 
-        elements.on('mouseover', (d: IBarChartHorizontalDataEntry) => {
+        elements.on('mouseover', (d: IChartDataEntry) => {
             this.tooltip.text(d.name, `Value: ${d.value}`);
             this.tooltip.show();
         }).on('mouseout', () => {
