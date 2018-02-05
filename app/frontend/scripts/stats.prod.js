@@ -28,7 +28,7 @@ function getStats(fileName) {
     const size = (stats.size / 1024.0).toFixed(2);
     const gzip = (gzipSize.sync(fs.readFileSync(pathToBundle + '/' + fileName)) / 1024.0).toFixed(2);
 
-    return { fileName: fileName, size: size, gzip: gzip }
+    return {fileName: fileName, size: size, gzip: gzip}
 }
 
 if (fs.existsSync(pathToBundle + '/bundle.css')) {
@@ -36,31 +36,75 @@ if (fs.existsSync(pathToBundle + '/bundle.css')) {
 }
 
 const bundleFiles = [
-    'polyfills.bundle.js',
-    'polyfills-ie.bundle.js',
-    'vendor.bundle.js',
-    'main.bundle.js',
-    'annotations.module.chunk.js',
-    'bundle.min.css'
+    {name: 'polyfills.bundle.js', count: true, start: true},
+    {name: 'polyfills-ie.bundle.js', count: false, start: false},
+    {name: 'vendor.bundle.js', count: true, start: true},
+    {name: 'main.bundle.js', count: true, start: true},
+    {name: 'annotations.module.chunk.js', count: true, start: false},
+    {name: 'bundle.min.css', count: true, start: true}
 ];
 
-let total = { size: 0, gzip: 0 };
+let total = {startSize: 0, startGzip: 0, totalSize: 0, totalGzip: 0};
 
-const bundleStats = bundleFiles
-    .map(function (fileName, index) {
-        const stats = getStats(fileName);
-        total.size += parseFloat(stats.size);
-        total.gzip += parseFloat(stats.gzip);
-        return {
-            '#': index + 1,
-            'File name': stats.fileName,
-            'Size': stats.size += ' KB',
-            'gzip': stats.gzip += ' KB'
-        }
-    })
-    .concat([
-        { '#': '', 'File name': '================', 'Size': '===========', 'gzip': '===========' },
-        { '#': '', 'File name': '', 'Size': total.size.toFixed(2) + ' KB', 'gzip': total.gzip.toFixed(2) + ' KB' }
-    ]);
+const bundleStats = bundleFiles.map((file, index) => {
+    const stats = fs.statSync(pathToBundle + '/' + file.name);
+    const size = (stats.size / 1024.0); //KB
+    const gzip = (gzipSize.sync(fs.readFileSync(pathToBundle + '/' + file.name)) / 1024.0); //KB
 
-console.table('Fronted bundle statistics', bundleStats);
+    if (file.count) {
+        total.totalSize += size;
+        total.totalGzip += gzip;
+    }
+
+    if (file.start) {
+        total.startSize += size;
+        total.startGzip += gzip;
+    }
+
+    return {
+        '#': index + 1,
+        'File name': file.name,
+        'Size': size.toFixed(2) + ' KB',
+        'Compressed': gzip.toFixed(2) + ' KB',
+        'Start': file.start
+    }
+}).concat([
+    {
+        '#': '>',
+        'File name': 'Total',
+        'Size': total.totalSize.toFixed(2) + ' KB',
+        'Compressed': total.totalGzip.toFixed(2) + ' KB',
+        'Start': ''
+    },
+    {
+        '#': '>',
+        'File name': 'On start',
+        'Size': total.startSize.toFixed(2) + ' KB',
+        'Compressed': total.startGzip.toFixed(2) + ' KB',
+        'Start': ''
+    },
+]);
+
+
+console.table('Frontend bundle statistics', bundleStats);
+//
+// let total = { size: 0, gzip: 0 };
+//
+// const bundleStats = bundleFiles
+//     .map(function (fileName, index) {
+//         const stats = getStats(fileName);
+//         total.size += parseFloat(stats.size);
+//         total.gzip += parseFloat(stats.gzip);
+//         return {
+//             '#': index + 1,
+//             'File name': stats.fileName,
+//             'Size': stats.size += ' KB',
+//             'gzip': stats.gzip += ' KB'
+//         }
+//     })
+//     .concat([
+//         { '#': '', 'File name': '================', 'Size': '===========', 'gzip': '===========' },
+//         { '#': '', 'File name': '', 'Size': total.size.toFixed(2) + ' KB', 'gzip': total.gzip.toFixed(2) + ' KB' }
+//     ]);
+//
+// console.table('Fronted bundle statistics', bundleStats);
