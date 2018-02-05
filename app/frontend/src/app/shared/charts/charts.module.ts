@@ -17,9 +17,10 @@
 
 import { NgModule } from '@angular/core';
 import { BarChartHorizontalComponent } from 'shared/charts/bar/horizontal/bar-chart-horizontal.component';
+import { PieChartComponent } from 'shared/charts/pie/pie-chart.component';
 
 @NgModule({
-    declarations: [ BarChartHorizontalComponent ],
-    exports:      [ BarChartHorizontalComponent ]
+    declarations: [ BarChartHorizontalComponent, PieChartComponent ],
+    exports:      [ BarChartHorizontalComponent, PieChartComponent ]
 })
 export class ChartsModule {}
