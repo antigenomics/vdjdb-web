@@ -99,7 +99,8 @@ class RequestLimits @Inject()(configuration: Configuration, actorSystem: ActorSy
     }
 
     def allowConnection(limit: IpLimit): Boolean = {
-        limit.requestCount < limitConfiguration.maxRequestsCount && limit.requestTime < limitConfiguration.maxRequestsTime
+        (limitConfiguration.maxRequestsCount == 0 || limit.requestCount < limitConfiguration.maxRequestsCount) &&
+            (limitConfiguration.maxRequestsTime == 0 || limit.requestTime < limitConfiguration.maxRequestsTime)
     }
 
     def updateLimits(request: RequestHeader, count: Int, time: Long): Unit = {
