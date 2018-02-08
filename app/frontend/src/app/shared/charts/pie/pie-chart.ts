@@ -15,7 +15,7 @@
  */
 
 import { NgZone } from '@angular/core';
-// import * as d3 from 'external/d3';
+import * as d3 from 'external/d3';
 import { Observable } from 'rxjs/Observable';
 import { Subject } from 'rxjs/Subject';
 import { Chart } from 'shared/charts/chart';
@@ -29,6 +29,8 @@ export type PieChartStreamType = Subject<IChartEvent<IChartDataEntry>>;
 export type PieChartInputStreamType = Observable<IChartEvent<IChartDataEntry>>;
 
 export class PieChart extends Chart<IChartDataEntry, IPieChartConfiguration> {
+    private static readonly ARC_OUTER_RADIUS_SHIFT: number = 10;
+    private static readonly ARC_INNER_RADIUS_COEFF: number = 4.0;
 
     constructor(configuration: IPieChartConfiguration, container: ChartContainer,
                 dataStream: PieChartInputStreamType, ngZone: NgZone) {
@@ -41,37 +43,49 @@ export class PieChart extends Chart<IChartDataEntry, IPieChartConfiguration> {
         Configuration.extend(this.configuration, configuration);
     }
 
-    public create(_data: IChartDataEntry[]): void {
-        // const { svg, width, height } = this.container.getContainer();
-        // const radius = Math.min(width, height) / 2;
-        //
-        // const pie = d3.pie<IChartDataEntry>().value((d: IChartDataEntry) => d.value)(data);
-        //
-        // const _arc = d3.arc()
-        //     .outerRadius(radius - 10)
-        //     .innerRadius(0) as any;
-        //
-        // const center = svg.append('g').attr('transform', `translate(${width / 2}, ${height / 2})`);
-        // const _arcs = center.selectAll('arc')
-        //                    .data(pie)
-        //                    .enter().append('g')
-        //                    .attr('class', 'arc');
-        //
-        // const _color = d3.scaleOrdinal()
-        //     .range(['#2C93E8', '#838690', '#F56C4E']);
+    public create(data: IChartDataEntry[]): void {
+        const { svg, width, height } = this.container.getContainer();
+        const radius = Math.min(width, height) / 2;
 
-        // arcs.append('path')
-        //     .attr('d', arc)
-        //     .style('fill', (_d, i) => (color(i.toString())));
-        throw new Error('Not implemented');
+        const pie = d3.pie<IChartDataEntry>().value((d: IChartDataEntry) => d.value)(data);
+
+        const arc = d3.arc()
+                      .outerRadius(radius - PieChart.ARC_OUTER_RADIUS_SHIFT)
+                      .innerRadius(radius / PieChart.ARC_INNER_RADIUS_COEFF) as any;
+
+        const center = svg.append('g').attr('transform', `translate(${width / 2}, ${height / 2})`);
+
+        const arcs = center.selectAll('.arc')
+                           .data(pie)
+                           .enter()
+                           .append('g')
+                           .attr('class', 'arc');
+
+        // const colors = this.getLinearColors(data.length);
+        const colors = this.getRainbowColors(data.length);
+
+        arcs.append('path')
+            .attr('d', arc)
+            .style('fill', (_, i) => (colors(i)));
     }
 
-    public update(_data: IChartDataEntry[]): void {
-        throw new Error('Not implemented');
+    public update(data: IChartDataEntry[]): void {
+        const { svg } = this.container.getContainer();
+        svg.selectAll('g').remove();
+        this.create(data);
     }
 
-    public updateValues(_data: IChartDataEntry[]): void {
-        throw new Error('Not implemented');
+    public updateValues(data: IChartDataEntry[]): void {
+        const { svg, width, height } = this.container.getContainer();
+        const radius = Math.min(width, height) / 2;
+
+        const pie = d3.pie<IChartDataEntry>().value((d: IChartDataEntry) => d.value)(data);
+
+        const arc = d3.arc()
+                      .outerRadius(radius - PieChart.ARC_OUTER_RADIUS_SHIFT)
+                      .innerRadius(radius / PieChart.ARC_INNER_RADIUS_COEFF) as any;
+
+        svg.selectAll('arc').data(pie).selectAll('path').attr('d', arc);
     }
 
     public resize(_data: IChartDataEntry[]): void {

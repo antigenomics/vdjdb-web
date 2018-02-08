@@ -51,7 +51,7 @@ export class BarChartHorizontal extends Chart<IChartDataEntry, IBarChartConfigur
         const { svg, width, height } = this.container.getContainer();
         const { x, xAxis } = this.createXAxis(width, height, data);
         const { y, yAxis } = this.createYAxis(width, height, data);
-        const colors = this.getColors(data.length);
+        const colors = this.getLinearColors(data.length);
 
         svg.append('g')
            .attr('class', 'y axis')
@@ -83,7 +83,7 @@ export class BarChartHorizontal extends Chart<IChartDataEntry, IBarChartConfigur
         const { svg, width, height } = this.container.getContainer();
         const { x, xAxis } = this.createXAxis(width, height, data);
         const { y, yAxis } = this.createYAxis(width, height, data);
-        const colors = this.getColors(data.length);
+        const colors = this.getLinearColors(data.length);
 
         const bars = svg.selectAll('.bar').data(data);
 
@@ -128,7 +128,7 @@ export class BarChartHorizontal extends Chart<IChartDataEntry, IBarChartConfigur
         const { svg, width, height } = this.container.getContainer();
         const { x, xAxis } = this.createXAxis(width, height, data);
         const { y, yAxis } = this.createYAxis(width, height, data);
-        const colors = this.getColors(data.length);
+        const colors = this.getLinearColors(data.length);
 
         svg.select('.x.axis')
            .attr('transform', `translate(0, ${height})`)
@@ -178,12 +178,6 @@ export class BarChartHorizontal extends Chart<IChartDataEntry, IBarChartConfigur
             yAxis.tickSizeOuter(0);
         }
         return { y, yAxis };
-    }
-
-    private getColors(count: number): ScaleLinear<number, number> {
-        return d3.scaleLinear()
-                 .domain([ 0, count ])
-                 .range([ '#48af75', '#3897e0' ] as any);
     }
 
     private bindTooltipEvents(elements: any): void {

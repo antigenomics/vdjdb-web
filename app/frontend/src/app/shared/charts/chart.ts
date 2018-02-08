@@ -16,6 +16,8 @@
  */
 
 import { NgZone } from '@angular/core';
+import { ScaleLinear, ScaleSequential } from 'd3-scale';
+import * as d3 from 'external/d3';
 import { Observable } from 'rxjs/Observable';
 import { Subscription } from 'rxjs/Subscription';
 import { ChartEventType, IChartEvent } from 'shared/charts/chart-events';
@@ -83,5 +85,15 @@ export class Chart<T, C> {
         if (this.dataStreamSubscription) {
             this.dataStreamSubscription.unsubscribe();
         }
+    }
+
+    protected getLinearColors(count: number, start: string = '#48af75', end: string = '#3897e0'): ScaleLinear<number, number> {
+        return d3.scaleLinear()
+                 .domain([ 0, count ])
+                 .range([ start, end ] as any);
+    }
+
+    protected getRainbowColors(count: number): ScaleSequential<string> {
+        return d3.scaleSequential(d3.interpolateRainbow).domain([0, count]);
     }
 }
