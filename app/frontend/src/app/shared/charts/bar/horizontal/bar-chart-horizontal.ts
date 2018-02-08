@@ -15,6 +15,7 @@
  *
  */
 
+import { NgZone } from '@angular/core';
 import { ScaleBand, ScaleLinear } from 'd3-scale';
 import { event as D3CurrentEvent } from 'd3-selection';
 import * as d3 from 'external/d3';
@@ -35,8 +36,9 @@ export class BarChartHorizontal extends Chart<IChartDataEntry, IBarChartConfigur
     private static readonly defaultPadding: number = 0.1;
     private static readonly defaultXMargin: number = 5;
 
-    constructor(configuration: IBarChartConfiguration, container: ChartContainer, dataStream: BarChartInputStreamType) {
-        super(configuration, container, dataStream);
+    constructor(configuration: IBarChartConfiguration, container: ChartContainer,
+                dataStream: BarChartInputStreamType, ngZone: NgZone) {
+        super(configuration, container, dataStream, ngZone);
         this.container.classed('bar chart horizontal');
     }
 

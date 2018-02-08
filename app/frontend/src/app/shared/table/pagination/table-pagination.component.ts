@@ -37,7 +37,6 @@ export class TablePaginationComponent implements OnInit {
     public set pageCount(newPageCount: number) {
         this._pageCount = newPageCount;
         this.calculatePageNumbers();
-        console.log(this._pageCount)
     }
 
     @Output()

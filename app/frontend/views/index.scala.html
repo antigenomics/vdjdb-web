@@ -19,11 +19,11 @@
         <script type="application/javascript" src="develop/webpack/cached/webpack/dll/vendor.dll.js" charset="utf-8"></script>
         <script type="application/javascript" src="develop/webpack/bundles/bundle.js" charset="utf-8"></script>
     } else {
-        @if(request.attrs(BrowserDetectionAction.BROWSER_TYPED_KEY).getBrowser.equals(Browser.IE)) {
+        <script type="application/javascript" src="@routes.Assets.versioned("bundles/inline.bundle.js")" charset="utf-8"></script>
+        @if(request.attrs(BrowserDetectionAction.BROWSER_TYPED_KEY).getBrowser.getGroup.equals(Browser.IE)) {
             <script type="application/javascript" src="@routes.Assets.versioned("bundles/polyfills-ie.bundle.js")" charset="utf-8"></script>
         }
         <script type="application/javascript" src="@routes.Assets.versioned("bundles/polyfills.bundle.js")" charset="utf-8"></script>
-        <script type="application/javascript" src="@routes.Assets.versioned("bundles/inline.bundle.js")" charset="utf-8"></script>
         <script type="application/javascript" src="@routes.Assets.versioned("bundles/vendor.bundle.js")" charset="utf-8"></script>
         <script type="application/javascript" src="@routes.Assets.versioned("bundles/main.bundle.js")" charset="utf-8"></script>
     }

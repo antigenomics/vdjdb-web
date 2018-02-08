@@ -15,6 +15,7 @@
  *
  */
 
+import { NgZone } from '@angular/core';
 import { Observable } from 'rxjs/Observable';
 import { Subscription } from 'rxjs/Subscription';
 import { ChartEventType, IChartEvent } from 'shared/charts/chart-events';
@@ -48,27 +49,30 @@ export class Chart<T, C> {
     protected tooltip: ChartTooltip;
 
     constructor(protected configuration: C, protected container: ChartContainer,
-                protected dataStream: Observable<IChartEvent<T>>) {
+                protected dataStream: Observable<IChartEvent<T>>, protected ngZone: NgZone) {
         this.configure(configuration);
         this.dataStreamSubscription = this.dataStream.subscribe((event) => {
-            if (!this.created) {
-                this.create(event.data);
-                this.created = true;
-            } else {
-                switch (event.type) {
-                    case ChartEventType.UPDATE_DATA:
-                        this.update(event.data);
-                        break;
-                    case ChartEventType.UPDATE_VALUES:
-                        this.updateValues(event.data);
-                        break;
-                    case ChartEventType.RESIZE:
-                        this.debounceResizeListener(event.data);
-                        break;
-                    default:
-                        break;
+            this.ngZone.runOutsideAngular(() => {
+                if (!this.created) {
+                    this.create(event.data);
+                    this.created = true;
+                } else {
+                    switch (event.type) {
+                        case ChartEventType.UPDATE_DATA:
+                            this.update(event.data);
+                            break;
+                        case ChartEventType.UPDATE_VALUES:
+                            this.updateValues(event.data);
+                            break;
+                        case ChartEventType.RESIZE:
+                            this.debounceResizeListener(event.data);
+                            break;
+                        default:
+                            break;
+                    }
                 }
-            }
+            });
+
         });
         this.tooltip = new ChartTooltip();
     }
