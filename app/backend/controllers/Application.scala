@@ -19,7 +19,7 @@ package backend.controllers
 import java.io.File
 import javax.inject._
 
-import backend.actions.{SessionAction, UserRequestAction}
+import backend.actions.{BrowserDetectionAction, SessionAction, UserRequestAction}
 import backend.models.authorization.tokens.session.SessionTokenProvider
 import backend.models.authorization.user.UserProvider
 import backend.models.files.temporary.TemporaryFileProvider
@@ -32,21 +32,21 @@ import play.api.mvc._
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class Application @Inject()(ws: WSClient, assets: Assets, configuration: Configuration, cc: ControllerComponents,
+class Application @Inject()(ws: WSClient, assets: Assets, configuration: Configuration, cc: ControllerComponents, browserDetectionAction: BrowserDetectionAction,
                             userRequestAction: UserRequestAction, tfp: TemporaryFileProvider, up: UserProvider, messagesApi: MessagesApi)
                            (implicit environment: Environment, analytics: Analytics, stp: SessionTokenProvider, ec: ExecutionContext) extends AbstractController(cc) {
     implicit val messages: Messages = messagesApi.preferred(Seq(Lang.defaultLang))
     private final val cacheControlTimeout: Int = 3600 //seconds
 
-    def index: Action[AnyContent] = userRequestAction { implicit request =>
+    def index: Action[AnyContent] = (browserDetectionAction andThen userRequestAction) { implicit request =>
         SessionAction.updateCookies(Ok(frontend.views.html.index()))
     }
 
-    def onNoScript: Action[AnyContent] = userRequestAction { implicit request =>
+    def onNoScript: Action[AnyContent] = (browserDetectionAction andThen userRequestAction) { implicit request =>
         SessionAction.updateCookies(Ok(frontend.views.html.noScript()))
     }
 
-    def authorizedIndex(route: String): Action[AnyContent] = (userRequestAction andThen SessionAction.authorizedOnly) { implicit request =>
+    def authorizedIndex(route: String): Action[AnyContent] = (browserDetectionAction andThen userRequestAction andThen SessionAction.authorizedOnly) { implicit request =>
         SessionAction.updateCookies(Ok(frontend.views.html.index()))
     }
 

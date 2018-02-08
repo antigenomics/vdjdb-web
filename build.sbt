@@ -23,6 +23,7 @@ libraryDependencies ++= Seq(
     "org.mindrot" % "jbcrypt" % "0.4",
     "com.typesafe.play" %% "play-mailer" % "6.0.1",
     "com.typesafe.play" %% "play-mailer-guice" % "6.0.1",
+    "eu.bitwalker" % "UserAgentUtils" % "1.21",
     guice,
     ws,
     filters
@@ -38,7 +39,7 @@ scalacOptions ++= Seq(
 )
 
 // Starts: Prevent documentation of API for production bundles
-sources in(Compile, doc) := Seq.empty
+sources in (Compile, doc) := Seq.empty
 mappings in (Compile, packageDoc) := Seq.empty
 publishArtifact in(Compile, packageDoc) := false
 // Ends.

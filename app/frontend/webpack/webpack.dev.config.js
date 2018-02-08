@@ -21,6 +21,7 @@ const path = require('path');
 const webpackMerge = require('webpack-merge'); // used to merge webpack configs
 const defaultConfiguration = Object.create(require('./webpack.base.config'));
 const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
+const UglifyJSDefaultConfiguration = Object.create(require('./webpack.uglify.config'))
 const { DllBundlesPlugin } = require('webpack-dll-bundles-plugin');
 const { TsConfigPathsPlugin, CheckerPlugin } = require('awesome-typescript-loader');
 const HardSourceWebpackPlugin = require('hard-source-webpack-plugin');
