@@ -14,7 +14,7 @@
  *      limitations under the License.
  */
 
-import { AfterViewInit, Component, ElementRef, Input, OnDestroy, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, Input, NgZone, OnDestroy, ViewChild } from '@angular/core';
 import { ChartContainer } from 'shared/charts/container/chart-container';
 import { PieChart, PieChartInputStreamType } from 'shared/charts/pie/pie-chart';
 import { createDefaultPieChartConfiguration, IPieChartConfiguration } from 'shared/charts/pie/pie-chart-configuration';
@@ -25,7 +25,7 @@ import { Configuration } from 'utils/configuration/configuration';
     template:  '<div #container style="width: 100%; height: 100%"></div>',
     styleUrls: [ './pie-chart.styles.css' ]
 })
-export class PieChartComponent implements AfterViewInit, OnDestroy{
+export class PieChartComponent implements AfterViewInit, OnDestroy {
     private chart: PieChart;
 
     @Input('configuration')
@@ -37,12 +37,14 @@ export class PieChartComponent implements AfterViewInit, OnDestroy{
     @ViewChild('container', { read: ElementRef })
     public containerElementRef: ElementRef;
 
+    constructor(private ngZone: NgZone) {}
+
     public ngAfterViewInit(): void {
         const configuration = createDefaultPieChartConfiguration();
         Configuration.extend(configuration, this.configuration);
 
         const container = new ChartContainer(this.containerElementRef, configuration.container);
-        this.chart = new PieChart(configuration, container, this.stream);
+        this.chart = new PieChart(configuration, container, this.stream, this.ngZone);
     }
 
     public ngOnDestroy(): void {

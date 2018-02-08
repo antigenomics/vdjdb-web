@@ -14,6 +14,7 @@
  *      limitations under the License.
  */
 
+import { NgZone } from '@angular/core';
 // import * as d3 from 'external/d3';
 import { Observable } from 'rxjs/Observable';
 import { Subject } from 'rxjs/Subject';
@@ -29,8 +30,9 @@ export type PieChartInputStreamType = Observable<IChartEvent<IChartDataEntry>>;
 
 export class PieChart extends Chart<IChartDataEntry, IPieChartConfiguration> {
 
-    constructor(configuration: IPieChartConfiguration, container: ChartContainer, dataStream: PieChartInputStreamType) {
-        super(configuration, container, dataStream);
+    constructor(configuration: IPieChartConfiguration, container: ChartContainer,
+                dataStream: PieChartInputStreamType, ngZone: NgZone) {
+        super(configuration, container, dataStream, ngZone);
         this.container.classed('pie chart');
     }
 
