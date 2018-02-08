@@ -28,92 +28,84 @@ if (fs.existsSync(pathToBundle + '/bundle.css')) {
     fs.unlinkSync(pathToBundle + '/bundle.css');
 }
 
+const types = [
+    { name: 'bundle-js', test: (file) => file.endsWith('bundle.js') && !file.includes('polyfills') },
+    { name: 'bundle-css', test: (file) => file.endsWith('css') },
+    { name: 'module-js', test: (file) => file.endsWith('chunk.js') },
+    { name: 'polyfills', test: (file) => file.includes('polyfills') },
+    { name: 'unknown', test: () => true }
+]
+
 const bundleFiles = glob.sync(pathToBundle + '/*.@(js|css)').map((file) => {
     const stats = fs.statSync(file);
     const size = (stats.size / 1024.0); //KB
     const compressed = (gzipSize.sync(fs.readFileSync(file)) / 1024.0); //KB
     const name = path.basename(file);
 
-    let type = 'unknown';
-    if (name.endsWith('bundle.js') && !name.includes('polyfills')) {
-        type = 'bundle-js';
-    } else if (name.endsWith('css')) {
-        type = 'bundle-css';
-    } else if (name.endsWith('chunk.js')) {
-        type = 'module-js';
-    } else if (name.includes('polyfills')) {
-        type = 'polyfills';
-    }
-
+    const type = types.find((t) => t.test(name));
     return { name, size, compressed, type }
 });
 
-const rowDelimeterLengths = {};
+const lengthReducer = (prev, file, key) => {
+    const length = String(file[key]).length;
+    return prev > length ? prev : length;
+}
 
-console.table('Table', bundleFiles);
+const rowDelimeterLengths = {
+    name:       bundleFiles.reduce((prev, file) => lengthReducer(prev, file, 'name'), 0),
+    size:       bundleFiles.reduce((prev, file) => lengthReducer(prev, file, 'size'), 0),
+    compressed: bundleFiles.reduce((prev, file) => lengthReducer(prev, file, 'compressed'), 0),
+    type:       bundleFiles.reduce((prev, file) => lengthReducer(prev, file, 'type'), 0)
+};
 
-// const jsBundleFiles = bundleFiles.filter((name) => name.endsWith('bundle.js') && !name.includes('polyfills'));
-// const cssBundleFiles = bundleFiles.filter((name) => name.endsWith('css'));
-// const moduleFiles = bundleFiles.filter((name) => name.endsWith('chunk.js'));
-// const polyfills = bundleFiles.filter((name) => name.includes('polyfills'));
-//
-// console.log(bundleFiles);
-// console.log(jsBundleFiles);
-// console.log(cssBundleFiles);
-// console.log(moduleFiles);
-// console.log(polyfills);
+const createFillerRow = (delimiter) => ({
+    Name:       ''.padStart(rowDelimeterLengths.name, delimiter),
+    Size:       ''.padStart(rowDelimeterLengths.size, delimiter),
+    Compressed: ''.padStart(rowDelimeterLengths.compressed, delimiter),
+    Type:       ''.padStart(rowDelimeterLengths.type, delimiter)
+});
 
-let jsBundleSize = 0, jsCompressedBundleSize = 0;
+const fillerRows = {
+    empty:  createFillerRow(''),
+    dashed: createFillerRow('-')
+}
 
+const memorySizePrettifier = (size, key) => size.toFixed(2).padStart(rowDelimeterLengths[key] - 3) + ' KB'
 
-// const bundleFiles = [
-//     {name: 'polyfills.bundle.js', count: true, start: true},
-//     {name: 'polyfills-ie.bundle.js', count: false, start: false},
-//     {name: 'vendor.bundle.js', count: true, start: true},
-//     {name: 'main.bundle.js', count: true, start: true},
-//     {name: 'annotations.module.chunk.js', count: true, start: false},
-//     {name: 'bundle.min.css', count: true, start: true}
-// ];
-//
-// let total = {startSize: 0, startGzip: 0, totalSize: 0, totalGzip: 0};
-//
-// const bundleStats = bundleFiles.map((file, index) => {
-//     const stats = fs.statSync(pathToBundle + '/' + file.name);
-//     const size = (stats.size / 1024.0); //KB
-//     const gzip = (gzipSize.sync(fs.readFileSync(pathToBundle + '/' + file.name)) / 1024.0); //KB
-//
-//     if (file.count) {
-//         total.totalSize += size;
-//         total.totalGzip += gzip;
-//     }
-//
-//     if (file.start) {
-//         total.startSize += size;
-//         total.startGzip += gzip;
-//     }
-//
-//     return {
-//         '#': index + 1,
-//         'File name': file.name,
-//         'Size': size.toFixed(2) + ' KB',
-//         'Compressed': gzip.toFixed(2) + ' KB',
-//         'Start': file.start
-//     }
-// }).concat([
-//     {
-//         '#': '>',
-//         'File name': 'Total',
-//         'Size': total.totalSize.toFixed(2) + ' KB',
-//         'Compressed': total.totalGzip.toFixed(2) + ' KB',
-//         'Start': ''
-//     },
-//     {
-//         '#': '>',
-//         'File name': 'On start',
-//         'Size': total.startSize.toFixed(2) + ' KB',
-//         'Compressed': total.startGzip.toFixed(2) + ' KB',
-//         'Start': ''
-//     },
-// ]);
-//
-// console.table('Frontend bundle statistics', bundleStats);
+const rows = [];
+types.forEach((type) => {
+    if (type.name !== 'unknown') {
+        const typeFilteredFiles = bundleFiles.filter((file) => file.type.name === type.name);
+        typeFilteredFiles.sort((a, b) => a.size < b.size).forEach((file) => {
+            rows.push({
+                Name:       file.name,
+                Size:       memorySizePrettifier(file.size, 'size'),
+                Compressed: memorySizePrettifier(file.compressed, 'compressed'),
+                Type:       file.type.name
+            })
+        });
+        rows.push(fillerRows.dashed);
+    }
+});
+
+rows.push(fillerRows.empty);
+
+const totalStatisticTypes = [
+    { name: 'Application (start)',   types: [ 'bundle-js', 'bundle-css' ] },
+    { name: 'Application (modules)', types: [ 'module-js' ] },
+    { name: 'Application (total)',   types: [ 'bundle-js', 'bundle-css', 'module-js' ] },
+    { name: 'Polyfills',             types: [ 'polyfills' ] }
+];
+
+totalStatisticTypes.forEach((statistic) => {
+    const filtered = bundleFiles.filter((file) => statistic.types.includes(file.type.name));
+    const size = filtered.reduce((prev, file) => prev + file.size, 0);
+    const compressed = filtered.reduce((prev, file) => prev + file.compressed, 0);
+    rows.push({
+        'Name':         statistic.name,
+        'Size':         memorySizePrettifier(size, 'size'),
+        'Compressed':   memorySizePrettifier(compressed, 'compressed')
+    })
+})
+
+console.table('Frontend bundle statistic', rows);
