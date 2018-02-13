@@ -34,7 +34,7 @@ const types = [
     { name: 'module-js', test: (file) => file.endsWith('chunk.js') },
     { name: 'polyfills', test: (file) => file.includes('polyfills') },
     { name: 'unknown', test: () => true }
-]
+];
 
 const bundleFiles = glob.sync(pathToBundle + '/*.@(js|css)').map((file) => {
     const stats = fs.statSync(file);
@@ -49,7 +49,7 @@ const bundleFiles = glob.sync(pathToBundle + '/*.@(js|css)').map((file) => {
 const lengthReducer = (prev, file, key) => {
     const length = String(file[key]).length;
     return prev > length ? prev : length;
-}
+};
 
 const rowDelimeterLengths = {
     name:       bundleFiles.reduce((prev, file) => lengthReducer(prev, file, 'name'), 0),
