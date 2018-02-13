@@ -165,6 +165,7 @@ export class SummaryChartComponent implements OnInit, OnDestroy {
 
     private updateStream(resize: boolean = false): void {
         let valueConverter: (c: SummaryClonotypeCounter) => number;
+
         switch (this.currentNormalizeType.name) {
             case 'db':
                 valueConverter = (c) => (this.isWeighted ? c.frequency : c.unique) / c.databaseUnique;

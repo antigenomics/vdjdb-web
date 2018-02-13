@@ -15,20 +15,20 @@
  *
  */
 
-/*
-    * >>> here is important, see https://stackoverflow.com/questions/36214546/styles-in-component-for-d3-js-do-not-show-in-angular-2
- */
+import { ScaleOrdinal } from 'd3-scale';
+import * as d3 from 'external/d3';
+import { IChartDataEntry } from 'shared/charts/data/chart-data-entry';
 
-* >>> .pie.chart path.arc {
-    opacity: 0.8;
-    -webkit-transition: opacity .3s ease;
-    -moz-transition: opacity .3s ease;
-    -ms-transition: opacity .3s ease;
-    transition: opacity .3s ease;
-    cursor: pointer;
-    stroke: white;
-}
+export namespace ChartUtils {
 
-* >>> .pie.chart path.arc:hover {
-    opacity: 1.0;
+    export namespace Color {
+
+        export function generate(data: IChartDataEntry[]): ScaleOrdinal<string, string> {
+            return d3.scaleOrdinal(
+                d3.schemeCategory20.map((c) => (d3.color(c).brighter(0.1).toString())) // tslint:disable-line:no-magic-numbers
+            ).domain(data.map((d) => d.name));
+        }
+
+    }
+
 }

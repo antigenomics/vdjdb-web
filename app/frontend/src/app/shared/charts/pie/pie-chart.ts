@@ -15,12 +15,14 @@
  */
 
 import { NgZone } from '@angular/core';
+import { Arc, PieArcDatum } from 'd3-shape';
 import * as d3 from 'external/d3';
 import { Observable } from 'rxjs/Observable';
 import { Subject } from 'rxjs/Subject';
 import { Chart } from 'shared/charts/chart';
 import { IChartEvent } from 'shared/charts/chart-events';
-import { ChartContainer } from 'shared/charts/container/chart-container';
+import { ChartUtils } from 'shared/charts/chart-utils';
+import { ChartContainer, D3HTMLSelection } from 'shared/charts/container/chart-container';
 import { IChartDataEntry } from 'shared/charts/data/chart-data-entry';
 import { createDefaultPieChartConfiguration, IPieChartConfiguration } from 'shared/charts/pie/pie-chart-configuration';
 import { Configuration } from 'utils/configuration/configuration';
@@ -29,8 +31,13 @@ export type PieChartStreamType = Subject<IChartEvent<IChartDataEntry>>;
 export type PieChartInputStreamType = Observable<IChartEvent<IChartDataEntry>>;
 
 export class PieChart extends Chart<IChartDataEntry, IPieChartConfiguration> {
-    private static readonly ARC_OUTER_RADIUS_SHIFT: number = 10;
-    private static readonly ARC_INNER_RADIUS_COEFF: number = 4.0;
+    private static readonly ARC_ANIMATION_DURATION: number = 750;
+    private static readonly ARC_OUTER_RADIUS_SHIFT: number = 0;
+    private static readonly ARC_INNER_RADIUS_COEFF: number = 3;
+    private static readonly pie = d3.pie<IChartDataEntry>().value((d: IChartDataEntry) => d.value);
+
+    private arc: Arc<any, PieArcDatum<IChartDataEntry>>;
+    private path: D3HTMLSelection;
 
     constructor(configuration: IPieChartConfiguration, container: ChartContainer,
                 dataStream: PieChartInputStreamType, ngZone: NgZone) {
@@ -47,45 +54,58 @@ export class PieChart extends Chart<IChartDataEntry, IPieChartConfiguration> {
         const { svg, width, height } = this.container.getContainer();
         const radius = Math.min(width, height) / 2;
 
-        const pie = d3.pie<IChartDataEntry>().value((d: IChartDataEntry) => d.value)(data);
+        this.arc = d3.arc()
+                     .outerRadius(radius - PieChart.ARC_OUTER_RADIUS_SHIFT)
+                     .innerRadius(radius / PieChart.ARC_INNER_RADIUS_COEFF) as any;
 
-        const arc = d3.arc()
-                      .outerRadius(radius - PieChart.ARC_OUTER_RADIUS_SHIFT)
-                      .innerRadius(radius / PieChart.ARC_INNER_RADIUS_COEFF) as any;
+        const center = svg.append('g')
+                          .attr('class', 'center')
+                          .attr('transform', `translate(${width / 2}, ${height / 2})`);
 
-        const center = svg.append('g').attr('transform', `translate(${width / 2}, ${height / 2})`);
+        const colors = ChartUtils.Color.generate(data);
 
-        const arcs = center.selectAll('.arc')
-                           .data(pie)
-                           .enter()
-                           .append('g')
-                           .attr('class', 'arc');
-
-        // const colors = this.getLinearColors(data.length);
-        const colors = this.getRainbowColors(data.length);
-
-        arcs.append('path')
-            .attr('d', arc)
-            .style('fill', (_, i) => (colors(i)));
+        this.path = center.selectAll('path')
+                          .data(PieChart.pie(data))
+                          .enter()
+                          .append('path')
+                          .attr('d', this.arc)
+                          .attr('class', 'arc')
+                          .style('fill', (d) => (colors(d.data.name)));
     }
 
     public update(data: IChartDataEntry[]): void {
-        const { svg } = this.container.getContainer();
-        svg.selectAll('g').remove();
-        this.create(data);
+        const old = this.path.data();
+        this.path = this.path.data(PieChart.pie(data));
+
+        let index = 0;
+        this.path.transition().duration(PieChart.ARC_ANIMATION_DURATION).attrTween('d', (d: any) => {
+            const interpolate = d3.interpolate(old[ index++ ], d);
+            return (t: any) => {
+                return this.arc(interpolate(t));
+            };
+        });
+
+        const colors = ChartUtils.Color.generate(data);
+        this.path.enter()
+            .append('path')
+            .attr('d', this.arc)
+            .attr('class', 'arc')
+            .style('fill', (d) => (colors(d.data.name)));
+
+        this.path.exit().remove();
     }
 
     public updateValues(data: IChartDataEntry[]): void {
-        const { svg, width, height } = this.container.getContainer();
-        const radius = Math.min(width, height) / 2;
+        const old = this.path.data();
+        this.path = this.path.data(PieChart.pie(data));
 
-        const pie = d3.pie<IChartDataEntry>().value((d: IChartDataEntry) => d.value)(data);
-
-        const arc = d3.arc()
-                      .outerRadius(radius - PieChart.ARC_OUTER_RADIUS_SHIFT)
-                      .innerRadius(radius / PieChart.ARC_INNER_RADIUS_COEFF) as any;
-
-        svg.selectAll('arc').data(pie).selectAll('path').attr('d', arc);
+        let index = 0;
+        this.path.transition().duration(PieChart.ARC_ANIMATION_DURATION).attrTween('d', (d: any) => {
+            const interpolate = d3.interpolate(old[ index++ ], d);
+            return (t: any) => {
+                return this.arc(interpolate(t));
+            };
+        });
     }
 
     public resize(_data: IChartDataEntry[]): void {

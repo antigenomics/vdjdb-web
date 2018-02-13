@@ -24,6 +24,7 @@ import { Subject } from 'rxjs/Subject';
 import { createDefaultBarChartConfiguration, IBarChartConfiguration } from 'shared/charts/bar/bar-chart-configuration';
 import { Chart } from 'shared/charts/chart';
 import { IChartEvent } from 'shared/charts/chart-events';
+import { ChartUtils } from 'shared/charts/chart-utils';
 import { ChartContainer } from 'shared/charts/container/chart-container';
 import { IChartDataEntry } from 'shared/charts/data/chart-data-entry';
 import { Configuration } from 'utils/configuration/configuration';
@@ -51,7 +52,7 @@ export class BarChartHorizontal extends Chart<IChartDataEntry, IBarChartConfigur
         const { svg, width, height } = this.container.getContainer();
         const { x, xAxis } = this.createXAxis(width, height, data);
         const { y, yAxis } = this.createYAxis(width, height, data);
-        const colors = this.getLinearColors(data.length);
+        const colors = ChartUtils.Color.generate(data);
 
         svg.append('g')
            .attr('class', 'y axis')
@@ -74,7 +75,7 @@ export class BarChartHorizontal extends Chart<IChartDataEntry, IBarChartConfigur
                         .attr('height', y.bandwidth)
                         .attr('x', BarChartHorizontal.defaultXMargin)
                         .attr('width', (d) => x(d.value))
-                        .attr('fill', (_, i) => colors(i));
+                        .attr('fill', (d) => colors(d.name));
 
         this.bindTooltipEvents(bars);
     }
@@ -83,7 +84,7 @@ export class BarChartHorizontal extends Chart<IChartDataEntry, IBarChartConfigur
         const { svg, width, height } = this.container.getContainer();
         const { x, xAxis } = this.createXAxis(width, height, data);
         const { y, yAxis } = this.createYAxis(width, height, data);
-        const colors = this.getLinearColors(data.length);
+        const colors = ChartUtils.Color.generate(data);
 
         const bars = svg.selectAll('.bar').data(data);
 
@@ -98,7 +99,7 @@ export class BarChartHorizontal extends Chart<IChartDataEntry, IBarChartConfigur
               .attr('x', BarChartHorizontal.defaultXMargin)
               .attr('height', y.bandwidth)
               .attr('width', (d) => x(d.value))
-              .attr('fill', (_, i) => colors(i));
+              .attr('fill', (d) => colors(d.name));
 
         svg.select('.x.axis')
            .transition().duration(BarChartHorizontal.defaultTransitionDuration)
@@ -128,7 +129,7 @@ export class BarChartHorizontal extends Chart<IChartDataEntry, IBarChartConfigur
         const { svg, width, height } = this.container.getContainer();
         const { x, xAxis } = this.createXAxis(width, height, data);
         const { y, yAxis } = this.createYAxis(width, height, data);
-        const colors = this.getLinearColors(data.length);
+        const colors = ChartUtils.Color.generate(data);
 
         svg.select('.x.axis')
            .attr('transform', `translate(0, ${height})`)
@@ -146,7 +147,7 @@ export class BarChartHorizontal extends Chart<IChartDataEntry, IBarChartConfigur
             .attr('x', BarChartHorizontal.defaultXMargin)
             .attr('height', y.bandwidth)
             .attr('width', (d) => x(d.value))
-            .attr('fill', (_, i) => colors(i));
+            .attr('fill', (d) => colors(d.name));
 
         this.bindTooltipEvents(bars);
     }
