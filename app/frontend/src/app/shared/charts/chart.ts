@@ -94,6 +94,6 @@ export class Chart<T, C> {
     }
 
     protected getRainbowColors(count: number): ScaleSequential<string> {
-        return d3.scaleSequential(d3.interpolateRainbow).domain([0, count]);
+        return d3.scaleSequential((d3 as any).interpolateRainbow).domain([0, count]) as any;
     }
 }
