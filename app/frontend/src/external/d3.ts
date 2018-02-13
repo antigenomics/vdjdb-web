@@ -29,7 +29,7 @@ export * from 'd3-color';
 export * from 'd3-format';
 // export * from 'd3-geo';
 // export * from 'd3-hierarchy';
-// export * from 'd3-interpolate';
+export * from 'd3-interpolate';
 // export * from 'd3-path';
 // export * from 'd3-polygon';
 // export * from 'd3-quadtree';
