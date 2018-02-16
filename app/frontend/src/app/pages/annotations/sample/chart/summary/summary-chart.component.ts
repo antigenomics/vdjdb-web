@@ -94,7 +94,7 @@ export class SummaryChartComponent implements OnInit, OnDestroy {
 
     public set pie(pie: boolean) {
         this.isPie = pie;
-        this.updateStream(ChartEventType.INITIAL_DATA);
+        this.updateStream(ChartEventType.UPDATE_DATA);
     }
 
     public get notFoundHidden(): boolean {
@@ -112,7 +112,7 @@ export class SummaryChartComponent implements OnInit, OnDestroy {
 
     public set weighted(weighted: boolean) {
         this.isWeighted = weighted;
-        this.updateStream(ChartEventType.UPDATE_VALUES);
+        this.updateStream(ChartEventType.UPDATE_DATA);
     }
 
     @Input('data')
@@ -173,7 +173,7 @@ export class SummaryChartComponent implements OnInit, OnDestroy {
             this.currentNormalizeType.checked = false;
             this.currentNormalizeType = type;
             this.currentNormalizeType.checked = true;
-            this.updateStream(ChartEventType.UPDATE_VALUES);
+            this.updateStream(ChartEventType.UPDATE_DATA);
         }
     }
 
