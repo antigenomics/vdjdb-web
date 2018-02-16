@@ -43,7 +43,7 @@ export class SampleChartService {
 
     public getSampleCharts(sample: SampleItem): ISampleChartComponentItem[] {
         if (!this.charts.has(sample.name)) {
-            this.charts.set(sample.name, new Array());
+            this.charts.set(sample.name, []);
         }
         return this.charts.get(sample.name);
     }

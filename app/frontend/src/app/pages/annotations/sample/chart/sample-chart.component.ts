@@ -39,6 +39,7 @@ export class SampleChartComponent extends SampleRouteResolverComponent implement
 
     public ngAfterViewInit(): void {
         this.resizeWindowListener = this.renderer.listen('window', 'resize', this.resizeDebouncedHandler);
+        // this.addChart('summary');
     }
 
     public addChart(type: string): void {

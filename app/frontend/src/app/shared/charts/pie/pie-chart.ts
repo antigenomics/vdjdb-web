@@ -16,33 +16,34 @@
 
 import { NgZone } from '@angular/core';
 import { Arc, PieArcDatum } from 'd3-shape';
+import { event as D3CurrentEvent } from 'd3-selection';
 import * as d3 from 'external/d3';
-import { Observable } from 'rxjs/Observable';
-import { Subject } from 'rxjs/Subject';
-import { Chart } from 'shared/charts/chart';
-import { IChartEvent } from 'shared/charts/chart-events';
+import { Chart, ChartInputStreamType } from 'shared/charts/chart';
 import { ChartUtils } from 'shared/charts/chart-utils';
 import { ChartContainer, D3HTMLSelection } from 'shared/charts/container/chart-container';
 import { IChartDataEntry } from 'shared/charts/data/chart-data-entry';
 import { createDefaultPieChartConfiguration, IPieChartConfiguration } from 'shared/charts/pie/pie-chart-configuration';
 import { Configuration } from 'utils/configuration/configuration';
 
-export type PieChartStreamType = Subject<IChartEvent<IChartDataEntry>>;
-export type PieChartInputStreamType = Observable<IChartEvent<IChartDataEntry>>;
-
 export class PieChart extends Chart<IChartDataEntry, IPieChartConfiguration> {
     private static readonly ARC_ANIMATION_DURATION: number = 750;
-    private static readonly ARC_OUTER_RADIUS_SHIFT: number = 0;
-    private static readonly ARC_INNER_RADIUS_COEFF: number = 3;
-    private static readonly pie = d3.pie<IChartDataEntry>().value((d: IChartDataEntry) => d.value);
+    private static readonly ARC_PIE_OUTER_RADIUS_COEFF: number = 0.7;
+    private static readonly ARC_PIE_INNER_RADIUS_COEFF: number = 0.3;
+    private static readonly ARC_LABEL_RADIUS_COEFF: number = 0.75;
+    private static readonly ARC_LABEL_TEXT_RADIUS_COEFF: number = 0.8;
+    private static readonly pie = d3.pie<IChartDataEntry>().value((d: IChartDataEntry) => d.value).sort(undefined);
 
-    private arc: Arc<any, PieArcDatum<IChartDataEntry>>;
-    private path: D3HTMLSelection;
+    private pieArc: Arc<any, PieArcDatum<IChartDataEntry>>;
+    private labelArc: Arc<any, PieArcDatum<IChartDataEntry>>;
+    private pieChart: D3HTMLSelection;
+    private pieTextLabels: D3HTMLSelection;
+    private pieLineLabels: D3HTMLSelection;
 
     constructor(configuration: IPieChartConfiguration, container: ChartContainer,
-                dataStream: PieChartInputStreamType, ngZone: NgZone) {
+                dataStream: ChartInputStreamType, ngZone: NgZone) {
         super(configuration, container, dataStream, ngZone);
         this.container.classed('pie chart');
+        this.container.styled('overflow', 'visible');
     }
 
     public configure(configuration: IPieChartConfiguration): void {
@@ -54,61 +55,171 @@ export class PieChart extends Chart<IChartDataEntry, IPieChartConfiguration> {
         const { svg, width, height } = this.container.getContainer();
         const radius = Math.min(width, height) / 2;
 
-        this.arc = d3.arc()
-                     .outerRadius(radius - PieChart.ARC_OUTER_RADIUS_SHIFT)
-                     .innerRadius(radius / PieChart.ARC_INNER_RADIUS_COEFF) as any;
+        this.pieArc = d3.arc()
+            .outerRadius(radius * PieChart.ARC_PIE_OUTER_RADIUS_COEFF)
+            .innerRadius(radius * PieChart.ARC_PIE_INNER_RADIUS_COEFF) as any;
 
-        const center = svg.append('g')
-                          .attr('class', 'center')
-                          .attr('transform', `translate(${width / 2}, ${height / 2})`);
+        this.labelArc = d3.arc()
+            .outerRadius(radius * PieChart.ARC_LABEL_RADIUS_COEFF)
+            .innerRadius(radius * PieChart.ARC_LABEL_RADIUS_COEFF) as any;
+
+        this.pieChart = svg.append('g')
+            .attr('class', 'center')
+            .attr('transform', `translate(${width / 2}, ${height / 2})`);
 
         const colors = ChartUtils.Color.generate(data);
+        const pieData = PieChart.pie(data);
 
-        this.path = center.selectAll('path')
-                          .data(PieChart.pie(data))
-                          .enter()
-                          .append('path')
-                          .attr('d', this.arc)
-                          .attr('class', 'arc')
-                          .style('fill', (d) => (colors(d.data.name)));
+        this.createPaths(pieData, colors);
+
+        this.pieTextLabels = this.pieChart.append('g').attr('class', 'labels');
+        this.createTextLabels(radius, pieData);
+
+        this.pieLineLabels = this.pieChart.append('g').attr('class', 'lines');
+        this.createLineLabels(radius, pieData);
     }
 
     public update(data: IChartDataEntry[]): void {
-        const old = this.path.data();
-        this.path = this.path.data(PieChart.pie(data));
-
-        let index = 0;
-        this.path.transition().duration(PieChart.ARC_ANIMATION_DURATION).attrTween('d', (d: any) => {
-            const interpolate = d3.interpolate(old[ index++ ], d);
-            return (t: any) => {
-                return this.arc(interpolate(t));
-            };
-        });
-
+        const { width, height } = this.container.getContainer();
+        const radius = Math.min(width, height) / 2;
+        const oldData = this.pieChart.selectAll('path').data();
+        const newData = PieChart.pie(data);
         const colors = ChartUtils.Color.generate(data);
-        this.path.enter()
-            .append('path')
-            .attr('d', this.arc)
-            .attr('class', 'arc')
-            .style('fill', (d) => (colors(d.data.name)));
 
-        this.path.exit().remove();
+        this.updatePaths(oldData, newData);
+        this.createPaths(newData, colors);
+
+        this.updateTextLabels(radius, oldData, newData);
+        this.createTextLabels(radius, newData);
+
+        this.updateLineLabels(radius, oldData, newData);
+        this.createLineLabels(radius, newData);
     }
 
     public updateValues(data: IChartDataEntry[]): void {
-        const old = this.path.data();
-        this.path = this.path.data(PieChart.pie(data));
+        const { width, height } = this.container.getContainer();
+        const radius = Math.min(width, height) / 2;
+        const oldData = this.pieChart.selectAll('path').data();
+        const newData = PieChart.pie(data);
 
+        this.updatePaths(oldData, newData);
+        this.updateTextLabels(radius, oldData, newData);
+        this.updateLineLabels(radius, oldData, newData);
+    }
+
+    public resize(data: IChartDataEntry[]): void {
+        const { svg } = this.container.getContainer();
+        svg.selectAll('g').remove();
+        this.create(data);
+    }
+
+    private createPaths(newData: any[], colors: (s: any) => any): void {
+        const paths = this.pieChart.selectAll('path').data(newData);
+        paths.exit().remove();
+        const newPaths = paths.enter()
+            .append('path')
+            .attr('d', this.pieArc)
+            .attr('class', 'arc')
+            .style('fill', (d) => (colors(d.data.name)));
+        this.bindTooltipEvents(newPaths.merge(paths));
+    }
+
+    private updatePaths(oldData: any[], newData: any[]): void {
+        const paths = this.pieChart.selectAll('path').data(newData);
         let index = 0;
-        this.path.transition().duration(PieChart.ARC_ANIMATION_DURATION).attrTween('d', (d: any) => {
-            const interpolate = d3.interpolate(old[ index++ ], d);
+        paths.transition().duration(PieChart.ARC_ANIMATION_DURATION).attrTween('d', (d: any) => {
+            const interpolate = d3.interpolate(oldData[ index++ ], d);
             return (t: any) => {
-                return this.arc(interpolate(t));
+                return this.pieArc(interpolate(t));
             };
         });
     }
 
-    public resize(_data: IChartDataEntry[]): void {
-        throw new Error('Not implemented');
+    private createTextLabels(radius: number, newData: any[]): void {
+        const labels = this.pieTextLabels.selectAll('text').data(newData);
+        labels.exit().remove();
+        labels.enter()
+            .append('text')
+            .attr('dy', '.35em')
+            .text((d) => {
+                return d.data.name;
+            })
+            .attr('transform', (d) => {
+                const position = this.labelArc.centroid(d);
+                position[ 0 ] = radius * PieChart.ARC_LABEL_TEXT_RADIUS_COEFF * PieChart.checkMidAngle(d);
+                return `translate(${position})`;
+            })
+            .attr('text-anchor', (d) => {
+                return PieChart.checkMidAngle(d) === 1 ? 'start' : 'end';
+            });
+    }
+
+    private updateTextLabels(radius: number, oldData: any[], newData: any[]): void {
+        const labels = this.pieTextLabels.selectAll('text').data(newData).text((d) => {
+            return d.data.name;
+        });
+        let index1 = 0;
+        let index2 = 0;
+        labels.transition().duration(PieChart.ARC_ANIMATION_DURATION)
+            .attrTween('transform', (d: any) => {
+                const interpolate = d3.interpolate(oldData[ index1++ ], d);
+                return (t: any) => {
+                    const d2 = interpolate(t);
+                    const position = this.labelArc.centroid(d2);
+                    position[ 0 ] = radius * PieChart.ARC_LABEL_TEXT_RADIUS_COEFF * PieChart.checkMidAngle(d);
+                    return `translate(${position})`;
+                };
+            })
+            .styleTween('text-anchor', (d) => {
+                const interpolate = d3.interpolate(oldData[ index2++ ], d);
+                return (t) => {
+                    return PieChart.checkMidAngle(interpolate(t)) === 1 ? 'start' : 'end';
+                };
+            });
+    }
+
+    private createLineLabels(radius: number, newData: any[]): void {
+        const lines = this.pieLineLabels.selectAll('polyline').data(newData);
+        lines.exit().remove();
+        lines.enter()
+            .append('polyline')
+            .attr('points', (d) => {
+                const position = this.labelArc.centroid(d);
+                position[ 0 ] = radius * PieChart.ARC_LABEL_RADIUS_COEFF * PieChart.checkMidAngle(d);
+                return [ this.pieArc.centroid(d), this.labelArc.centroid(d), position ] as any;
+            });
+    }
+
+    private updateLineLabels(radius: number, oldData: any[], newData: any[]): void {
+        const lines = this.pieLineLabels.selectAll('polyline').data(newData);
+        let index = 0;
+        lines.transition().duration(PieChart.ARC_ANIMATION_DURATION)
+            .attrTween('points', (d: any) => {
+                const interpolate = d3.interpolate(oldData[ index++ ], d);
+                return (t: any) => {
+                    const d2 = interpolate(t);
+                    const position = this.labelArc.centroid(d2);
+                    position[ 0 ] = radius * PieChart.ARC_LABEL_RADIUS_COEFF * PieChart.checkMidAngle(d);
+                    return [ this.pieArc.centroid(d2), this.labelArc.centroid(d2), position ] as any;
+                };
+            });
+    }
+
+    private bindTooltipEvents(elements: any): void {
+        const xDefaultOffset = 20;
+        const yDefaultOffset = -40;
+
+        elements.on('mouseover', (d: PieArcDatum<IChartDataEntry>) => {
+            this.tooltip.text(d.data.name, `Value: ${d.data.value}`);
+            this.tooltip.show();
+        }).on('mouseout', () => {
+            this.tooltip.hide();
+        }).on('mousemove', () => {
+            this.tooltip.position(D3CurrentEvent.pageX + xDefaultOffset, D3CurrentEvent.pageY + yDefaultOffset);
+        });
+    }
+
+    private static checkMidAngle(d: PieArcDatum<IChartDataEntry>): number {
+        return (d.startAngle + (d.endAngle - d.startAngle) / 2) < Math.PI ? 1 : -1;
     }
 }

@@ -19,18 +19,12 @@ import { NgZone } from '@angular/core';
 import { ScaleBand, ScaleLinear } from 'd3-scale';
 import { event as D3CurrentEvent } from 'd3-selection';
 import * as d3 from 'external/d3';
-import { Observable } from 'rxjs/Observable';
-import { Subject } from 'rxjs/Subject';
 import { createDefaultBarChartConfiguration, IBarChartConfiguration } from 'shared/charts/bar/bar-chart-configuration';
-import { Chart } from 'shared/charts/chart';
-import { IChartEvent } from 'shared/charts/chart-events';
+import { Chart, ChartInputStreamType } from 'shared/charts/chart';
 import { ChartUtils } from 'shared/charts/chart-utils';
 import { ChartContainer } from 'shared/charts/container/chart-container';
 import { IChartDataEntry } from 'shared/charts/data/chart-data-entry';
 import { Configuration } from 'utils/configuration/configuration';
-
-export type BarChartStreamType = Subject<IChartEvent<IChartDataEntry>>;
-export type BarChartInputStreamType = Observable<IChartEvent<IChartDataEntry>>;
 
 export class BarChartHorizontal extends Chart<IChartDataEntry, IBarChartConfiguration> {
     private static readonly defaultTransitionDuration: number = 750;
@@ -38,7 +32,7 @@ export class BarChartHorizontal extends Chart<IChartDataEntry, IBarChartConfigur
     private static readonly defaultXMargin: number = 5;
 
     constructor(configuration: IBarChartConfiguration, container: ChartContainer,
-                dataStream: BarChartInputStreamType, ngZone: NgZone) {
+                dataStream: ChartInputStreamType, ngZone: NgZone) {
         super(configuration, container, dataStream, ngZone);
         this.container.classed('bar chart horizontal');
     }

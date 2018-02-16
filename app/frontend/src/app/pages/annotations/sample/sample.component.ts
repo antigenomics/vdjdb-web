@@ -51,7 +51,7 @@ export class AnnotationsSampleComponent extends SampleRouteResolverComponent {
         return this.sample.table.dirty && this.sample.table.error;
     }
 
-    public isRouterOutlerHidden(): boolean {
+    public isRouterOutletHidden(): boolean {
         return !this.sample.table.dirty || this.sample.table.isEmpty() || this.sample.isProcessing() || this.sample.table.error;
     }
 }

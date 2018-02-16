@@ -5,7 +5,7 @@
     </div>
 </div>
 
-<div class="ui two column grid">
+<div class="ui one column grid">
     <div class="column" *ngFor="let chart of getCharts(); trackBy: trackChartFn">
         <ng-container [ngSwitch]="chart.type">
             <ng-container *ngSwitchCase="'summary'">
@@ -15,17 +15,17 @@
                             <div class="fifteen wide column">
                                 <h3 class="ui header">Summary</h3>
                             </div>
-                            <div class="one wide column cursor pointer" dropdown [content]="commonChartSettgins">
+                            <div class="one wide column cursor pointer" dropdown [content]="commonChartSettings">
                                 <i class="ui ellipsis vertical link icon"></i>
                                 <div class="ui dropdown item">
-                                    <div class="left menu fade element slow padded" tabindex="-1" #commonChartSettgins>
+                                    <div class="left menu fade element slow padded" tabindex="-1" #commonChartSettings>
                                         <a class="item" (click)="removeChart(chart)"><i class="trash outline icon"></i>Remove</a>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div class="ui teal attached padded segment" summary-chart [data]="sample.table.getSummary()"></div>
+                    <div class="ui teal attached padded segment" *ngIf="sample.table.isSummaryExist()" summary-chart [data]="sample.table.getSummary()"></div>
                 </div>
             </ng-container>
         </ng-container>
