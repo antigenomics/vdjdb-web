@@ -15,7 +15,7 @@
  *
  */
 
-import { AfterViewInit, ChangeDetectorRef, Component, OnDestroy, Renderer2, ChangeDetectionStrategy } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, Renderer2 } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { ISampleChartComponentItem, SampleChartService } from 'pages/annotations/sample/chart/sample-chart.service';
 import { SampleRouteResolverComponent } from 'pages/annotations/sample/common/sample-route-resolver.component';
