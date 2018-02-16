@@ -22,13 +22,15 @@ import { SummaryFieldCounter } from 'pages/annotations/sample/table/intersection
 import { ReplaySubject } from 'rxjs/ReplaySubject';
 import { Subscription } from 'rxjs/Subscription';
 import { IBarChartConfiguration } from 'shared/charts/bar/bar-chart-configuration';
-import { BarChartStreamType } from 'shared/charts/bar/horizontal/bar-chart-horizontal';
+import { ChartStreamType } from 'shared/charts/chart';
 import { ChartEventType } from 'shared/charts/chart-events';
+import { IChartDataEntry } from 'shared/charts/data/chart-data-entry';
+import { createDefaultPieChartConfiguration, IPieChartConfiguration } from 'shared/charts/pie/pie-chart-configuration';
 
 interface INormalizeType {
     name: string;
     title: string;
-    shortTitle: string;
+    checked: boolean;
 }
 
 interface IThresholdType {
@@ -42,8 +44,8 @@ interface IThresholdType {
 })
 export class SummaryChartComponent implements OnInit, OnDestroy {
     private static readonly normalizeTypes: INormalizeType[] = [
-        { name: 'db', title: 'Normalize by number in database', shortTitle: 'Database' },
-        { name: 'matches', title: 'Normalize by number of matches', shortTitle: 'Matches' }
+        { name: 'db', title: 'number of VDJdb records', checked: true },
+        { name: 'matches', title: 'number of clonotypes in sample', checked: false }
     ];
 
     private static readonly thresholdTypes: IThresholdType[] = [
@@ -62,11 +64,12 @@ export class SummaryChartComponent implements OnInit, OnDestroy {
     private thresholdTypesAvailable: number = 1;
     private currentThresholdType: IThresholdType = SummaryChartComponent.thresholdTypes[ 0 ];
 
+    private isPie: boolean = false;
     private isWeighted: boolean = true;
     private data: SummaryFieldCounter[];
 
-    public stream: BarChartStreamType = new ReplaySubject(1);
-    public configuration: IBarChartConfiguration = {
+    public stream: ChartStreamType = new ReplaySubject(1);
+    public barChartConfiguration: IBarChartConfiguration = {
         axis:      {
             y: { title: 'Column values', dy: '-0.4em' },
             x: { tickFormat: '.1e', ticksCount: 5 }
@@ -74,6 +77,16 @@ export class SummaryChartComponent implements OnInit, OnDestroy {
         grid:      true,
         container: { margin: { left: 100, right: 25, top: 20, bottom: 20 } }
     };
+    public pieChartConfiguration: IPieChartConfiguration = createDefaultPieChartConfiguration();
+
+    public get pie(): boolean {
+        return this.isPie;
+    }
+
+    public set pie(pie: boolean) {
+        this.isPie = pie;
+        this.updateStream(ChartEventType.INITIAL_DATA);
+    }
 
     public get weighted(): boolean {
         return this.isWeighted;
@@ -81,15 +94,16 @@ export class SummaryChartComponent implements OnInit, OnDestroy {
 
     public set weighted(weighted: boolean) {
         this.isWeighted = weighted;
-        this.updateStream();
+        this.updateStream(ChartEventType.UPDATE_VALUES);
     }
 
     @Input('data')
     public set setData(data: SummaryFieldCounter[]) {
-        this.data = data;
-        this.updateThresholdValues();
-        this.updateStream();
-
+        if (data !== undefined) {
+            this.data = data;
+            this.updateThresholdValues();
+            this.updateStream(ChartEventType.INITIAL_DATA);
+        }
     }
 
     constructor(private sampleChartService: SampleChartService) {}
@@ -98,7 +112,7 @@ export class SummaryChartComponent implements OnInit, OnDestroy {
         this.sampleChartServiceEventsSubscription = this.sampleChartService.getEvents().subscribe((event) => {
             switch (event) {
                 case SampleChartServiceEventType.RESIZE_EVENT:
-                    this.updateStream(true);
+                    this.updateStream(ChartEventType.RESIZE);
                     break;
                 default:
                     break;
@@ -109,17 +123,23 @@ export class SummaryChartComponent implements OnInit, OnDestroy {
     // Fields methods
 
     public getFields(): string[] {
+        if (this.data === undefined) {
+            return [];
+        }
         return this.data.map((d) => d.name);
     }
 
     public getCurrentFieldTitle(): string {
+        if (this.data === undefined) {
+            return '';
+        }
         return this.data[ this.currentField ].name;
     }
 
     public setCurrentField(index: number): void {
         this.currentField = index;
         this.updateThresholdValues();
-        this.updateStream();
+        this.updateStream(ChartEventType.UPDATE_DATA);
     }
 
     // Normalize type methods
@@ -128,13 +148,18 @@ export class SummaryChartComponent implements OnInit, OnDestroy {
         return SummaryChartComponent.normalizeTypes;
     }
 
-    public getCurrentNormalizeTypeShortTitle(): string {
-        return this.currentNormalizeType.shortTitle;
+    public setNormalizeType(type: INormalizeType): void {
+        this.currentNormalizeType.checked = true;
+        if (!this.isNormalizeTypeChecked(type)) {
+            this.currentNormalizeType.checked = false;
+            this.currentNormalizeType = type;
+            this.currentNormalizeType.checked = true;
+            this.updateStream(ChartEventType.UPDATE_VALUES);
+        }
     }
 
-    public setNormalizeType(type: INormalizeType): void {
-        this.currentNormalizeType = type;
-        this.updateStream();
+    public isNormalizeTypeChecked(type: INormalizeType): boolean {
+        return this.currentNormalizeType === type;
     }
 
     // Threshold methods
@@ -156,14 +181,21 @@ export class SummaryChartComponent implements OnInit, OnDestroy {
 
     public setThreshold(threshold: IThresholdType): void {
         this.currentThresholdType = threshold;
-        this.updateStream();
+        this.updateStream(ChartEventType.UPDATE_DATA);
     }
 
     public ngOnDestroy(): void {
         this.sampleChartServiceEventsSubscription.unsubscribe();
     }
 
-    private updateStream(resize: boolean = false): void {
+    private updateStream(type: ChartEventType): void {
+        this.stream.next({ type, data: this.createData() });
+    }
+
+    private createData(): IChartDataEntry[] {
+        if (this.data === undefined) {
+            return [];
+        }
         let valueConverter: (c: SummaryClonotypeCounter) => number;
 
         switch (this.currentNormalizeType.name) {
@@ -185,8 +217,7 @@ export class SummaryChartComponent implements OnInit, OnDestroy {
         if (data.length > this.currentThresholdType.threshold) {
             data = data.slice(0, this.currentThresholdType.threshold);
         }
-
-        this.stream.next({ type: resize ? ChartEventType.RESIZE : ChartEventType.UPDATE_DATA, data: data.reverse() });
+        return data.reverse();
     }
 
     private updateThresholdValues(): void {

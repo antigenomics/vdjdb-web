@@ -1,12 +1,17 @@
 <div class="ui grid">
-    <div class="twelve wide column" style="height: 400px">
-        <bar-chart [configuration]="configuration" [stream]="stream"></bar-chart>
-        <pie-chart [stream]="stream"></pie-chart>
+    <div class="twelve wide column" style="height: 600px">
+        <bar-chart class="fade element" [configuration]="barChartConfiguration" [stream]="stream" *ngIf="!pie"></bar-chart>
+        <pie-chart class="fade element" [configuration]="pieChartConfiguration" [stream]="stream" *ngIf="pie"></pie-chart>
     </div>
     <div class="four wide column">
         <h4 class="ui header"><i class="options icon"></i>Options</h4>
         <div class="ui divider"></div>
 
+        <div class="ui checkbox">
+            <input type="checkbox" [(ngModel)]="pie">
+            <label>Pie chart</label>
+        </div>
+        <div class="ui divider"></div>
         <div class="ui checkbox">
             <input type="checkbox" [(ngModel)]="weighted">
             <label>Weight by read count</label>
@@ -23,14 +28,9 @@
             </div>
         </div>
         <h4>Normalize by</h4>
-        <div class="ui selection fluid dropdown" dropdown [content]="normalizeTypeContent">
-            <span class="text">{{ getCurrentNormalizeTypeShortTitle() }}</span>
-            <i class="dropdown icon"></i>
-            <div class="menu fast fade element" #normalizeTypeContent>
-                <div class="item" *ngFor="let type of getNormalizeTypes()" (click)="setNormalizeType(type)">
-                    {{ type.title }}
-                </div>
-            </div>
+        <div class="ui checkbox" *ngFor="let type of getNormalizeTypes()">
+            <input type="checkbox" (click)="setNormalizeType(type)" [(ngModel)]="type.checked">
+            <label>{{ type.title }}</label>
         </div>
         <ng-container *ngIf="isThresholdTypesAvailable()">
             <h4>Show</h4>
