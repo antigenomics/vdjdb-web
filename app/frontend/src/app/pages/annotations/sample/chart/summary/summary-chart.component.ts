@@ -15,7 +15,7 @@
  *
  */
 
-import { Component, Input, OnDestroy, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { SampleChartService, SampleChartServiceEventType } from 'pages/annotations/sample/chart/sample-chart.service';
 import { SummaryClonotypeCounter } from 'pages/annotations/sample/table/intersection/summary/summary-clonotype-counter';
 import { SummaryCounters } from 'pages/annotations/sample/table/intersection/summary/summary-counters';
