@@ -31,7 +31,7 @@ export class PieChart extends Chart<IChartDataEntry, IPieChartConfiguration> {
     private static readonly ARC_PIE_INNER_RADIUS_COEFF: number = 0.3;
     private static readonly ARC_LABEL_RADIUS_COEFF: number = 0.75;
     private static readonly ARC_LABEL_TEXT_RADIUS_COEFF: number = 0.8;
-    private static readonly pie = d3.pie<IChartDataEntry>().value((d: IChartDataEntry) => d.value).sort(undefined);
+    private static readonly pie = d3.pie<IChartDataEntry>().value((d: IChartDataEntry) => d.value);
 
     private pieArc: Arc<any, PieArcDatum<IChartDataEntry>>;
     private labelArc: Arc<any, PieArcDatum<IChartDataEntry>>;
