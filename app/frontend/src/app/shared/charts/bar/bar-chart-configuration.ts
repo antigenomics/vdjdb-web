@@ -16,6 +16,7 @@
  */
 
 import { createDefaultChartContainerConfiguration, IChartContainerConfiguration } from 'shared/charts/container/chart-container-configuration';
+import { createDefaultChartTooltipConfiguration, IChartTooltipConfiguration } from 'shared/charts/tooltip/chart-tooltip.configuration';
 
 export interface IBarChartAxisConfiguration {
     title?: string;
@@ -31,6 +32,7 @@ function createDefaultAxisConfiguration(): IBarChartAxisConfiguration {
 
 export interface IBarChartConfiguration {
     container?: IChartContainerConfiguration;
+    tooltip?: IChartTooltipConfiguration;
     grid?: boolean;
     axis?: {
         x?: IBarChartAxisConfiguration,
@@ -41,6 +43,7 @@ export interface IBarChartConfiguration {
 export function createDefaultBarChartConfiguration(): IBarChartConfiguration {
     return {
         container: createDefaultChartContainerConfiguration(),
+        tooltip: createDefaultChartTooltipConfiguration(),
         grid: false,
         axis:      {
             x: createDefaultAxisConfiguration(),

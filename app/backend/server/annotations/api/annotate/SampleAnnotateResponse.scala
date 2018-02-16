@@ -18,19 +18,19 @@
 package backend.server.annotations.api.annotate
 
 import backend.server.annotations.IntersectionTableRow
-import backend.server.annotations.charts.summary.{SummaryFieldCounter}
+import backend.server.annotations.charts.summary.SummaryCounters
 import play.api.libs.json.{Json, Writes}
 
-case class SampleAnnotateResponse(state: String, rows: Seq[IntersectionTableRow], summary: Seq[SummaryFieldCounter])
+case class SampleAnnotateResponse(state: String, rows: Seq[IntersectionTableRow], summary: Option[SummaryCounters])
 
 object SampleAnnotateResponse {
     final val Action: String = "intersect"
 
-    final val ParseState = SampleAnnotateResponse("parse", Seq(), Seq())
-    final val AnnotateState = SampleAnnotateResponse("annotate", Seq(), Seq())
-    final val LoadingState = SampleAnnotateResponse("loading", Seq(), Seq())
+    final val ParseState = SampleAnnotateResponse("parse", Seq(), None)
+    final val AnnotateState = SampleAnnotateResponse("annotate", Seq(), None)
+    final val LoadingState = SampleAnnotateResponse("loading", Seq(), None)
 
-    final def CompletedState(rows: Seq[IntersectionTableRow], summary: Seq[SummaryFieldCounter]) = SampleAnnotateResponse("completed", rows, summary)
+    final def CompletedState(rows: Seq[IntersectionTableRow], summary: Option[SummaryCounters]) = SampleAnnotateResponse("completed", rows, summary)
 
     implicit val sampleIntersectionResponseWrites: Writes[SampleAnnotateResponse] = Json.writes[SampleAnnotateResponse]
 }

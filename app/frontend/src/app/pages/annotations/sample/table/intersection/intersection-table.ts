@@ -15,13 +15,13 @@
  *
  */
 
-import { SummaryFieldCounter } from 'pages/annotations/sample/table/intersection/summary/summary-field-counter';
+import { SummaryCounters } from 'pages/annotations/sample/table/intersection/summary/summary-counters';
 import { Table } from 'shared/table/table';
 import { WebSocketResponseData } from 'shared/websocket/websocket-response';
 import { IntersectionTableRow } from './row/intersection-table-row';
 
 export class IntersectionTable extends Table<IntersectionTableRow> {
-    private _summary?: SummaryFieldCounter[];
+    private _summary?: SummaryCounters;
 
     constructor() {
         super();
@@ -45,7 +45,7 @@ export class IntersectionTable extends Table<IntersectionTableRow> {
     }
 
     public update(response: WebSocketResponseData): void {
-        const summary = response.get('summary').map((v: any) => new SummaryFieldCounter(v));
+        const summary = new SummaryCounters(response.get('summary'));
         this.updateSummary(summary);
 
         let index = 0;
@@ -55,7 +55,7 @@ export class IntersectionTable extends Table<IntersectionTableRow> {
         this.updateRows(rows);
     }
 
-    public updateSummary(summary: SummaryFieldCounter[]) {
+    public updateSummary(summary: SummaryCounters) {
         this._summary = summary;
     }
 
@@ -63,7 +63,7 @@ export class IntersectionTable extends Table<IntersectionTableRow> {
         return this._summary !== undefined;
     }
 
-    public getSummary(): SummaryFieldCounter[] {
+    public getSummary(): SummaryCounters {
         return this._summary;
     }
 }

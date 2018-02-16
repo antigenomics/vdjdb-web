@@ -69,7 +69,7 @@ export class BarChartHorizontal extends Chart<IChartDataEntry, IBarChartConfigur
                         .attr('height', y.bandwidth)
                         .attr('x', BarChartHorizontal.defaultXMargin)
                         .attr('width', (d) => x(d.value))
-                        .attr('fill', (d) => colors(d.name));
+                        .attr('fill', (d) => d.color ? d.color : colors(d.name));
 
         this.bindTooltipEvents(bars);
     }
@@ -93,7 +93,7 @@ export class BarChartHorizontal extends Chart<IChartDataEntry, IBarChartConfigur
               .attr('x', BarChartHorizontal.defaultXMargin)
               .attr('height', y.bandwidth)
               .attr('width', (d) => x(d.value))
-              .attr('fill', (d) => colors(d.name));
+              .attr('fill', (d) => d.color ? d.color : colors(d.name));
 
         svg.select('.x.axis')
            .transition().duration(BarChartHorizontal.defaultTransitionDuration)
@@ -141,7 +141,7 @@ export class BarChartHorizontal extends Chart<IChartDataEntry, IBarChartConfigur
             .attr('x', BarChartHorizontal.defaultXMargin)
             .attr('height', y.bandwidth)
             .attr('width', (d) => x(d.value))
-            .attr('fill', (d) => colors(d.name));
+            .attr('fill', (d) => d.color ? d.color : colors(d.name));
 
         this.bindTooltipEvents(bars);
     }
@@ -180,7 +180,8 @@ export class BarChartHorizontal extends Chart<IChartDataEntry, IBarChartConfigur
         const yDefaultOffset = -40;
 
         elements.on('mouseover', (d: IChartDataEntry) => {
-            this.tooltip.text(d.name, `Value: ${d.value}`);
+            const value = this.configuration.tooltip.value(d);
+            this.tooltip.text(d.name, `Value: ${value}`);
             this.tooltip.show();
         }).on('mouseout', () => {
             this.tooltip.hide();

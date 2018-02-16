@@ -15,20 +15,14 @@
  *
  */
 
-import { ScaleOrdinal } from 'd3-scale';
-import * as d3 from 'external/d3';
 import { IChartDataEntry } from 'shared/charts/data/chart-data-entry';
 
-export namespace ChartUtils {
+export interface IChartTooltipConfiguration {
+    value: (d: IChartDataEntry) => string;
+}
 
-    export namespace Color {
-
-        export function generate(data: IChartDataEntry[]): ScaleOrdinal<string, string> {
-            return d3.scaleOrdinal(
-                d3.schemeCategory20.map((c) => (d3.color(c).brighter(0.1).toString())) // tslint:disable-line:no-magic-numbers
-            ).domain(data.filter((d) => d.color === undefined).map((d) => d.name));
-        }
-
-    }
-
+export function createDefaultChartTooltipConfiguration(): IChartTooltipConfiguration {
+    return {
+        value: (d) => d.value.toString()
+    };
 }

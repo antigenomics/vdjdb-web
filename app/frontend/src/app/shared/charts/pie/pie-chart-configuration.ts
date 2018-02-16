@@ -15,13 +15,16 @@
  */
 
 import { createDefaultChartContainerConfiguration, IChartContainerConfiguration } from 'shared/charts/container/chart-container-configuration';
+import { createDefaultChartTooltipConfiguration, IChartTooltipConfiguration } from 'shared/charts/tooltip/chart-tooltip.configuration';
 
 export interface IPieChartConfiguration {
     container?: IChartContainerConfiguration;
+    tooltip?: IChartTooltipConfiguration;
 }
 
 export function createDefaultPieChartConfiguration(): IPieChartConfiguration {
     return {
-        container: createDefaultChartContainerConfiguration()
+        container: createDefaultChartContainerConfiguration(),
+        tooltip: createDefaultChartTooltipConfiguration()
     };
 }
