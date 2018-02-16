@@ -15,8 +15,8 @@
  */
 
 import { NgZone } from '@angular/core';
-import { Arc, PieArcDatum } from 'd3-shape';
 import { event as D3CurrentEvent } from 'd3-selection';
+import { Arc, PieArcDatum } from 'd3-shape';
 import * as d3 from 'external/d3';
 import { Chart, ChartInputStreamType } from 'shared/charts/chart';
 import { ChartUtils } from 'shared/charts/chart-utils';
@@ -86,7 +86,7 @@ export class PieChart extends Chart<IChartDataEntry, IPieChartConfiguration> {
         const newData = PieChart.pie(data);
         const colors = ChartUtils.Color.generate(data);
 
-        this.updatePaths(oldData, newData);
+        this.updatePaths(oldData, newData, colors);
         this.createPaths(newData, colors);
 
         this.updateTextLabels(radius, oldData, newData);
@@ -101,8 +101,9 @@ export class PieChart extends Chart<IChartDataEntry, IPieChartConfiguration> {
         const radius = Math.min(width, height) / 2;
         const oldData = this.pieChart.selectAll('path').data();
         const newData = PieChart.pie(data);
+        const colors = ChartUtils.Color.generate(data);
 
-        this.updatePaths(oldData, newData);
+        this.updatePaths(oldData, newData, colors);
         this.updateTextLabels(radius, oldData, newData);
         this.updateLineLabels(radius, oldData, newData);
     }
@@ -114,29 +115,30 @@ export class PieChart extends Chart<IChartDataEntry, IPieChartConfiguration> {
     }
 
     private createPaths(newData: any[], colors: (s: any) => any): void {
-        const paths = this.pieChart.selectAll('path').data(newData);
+        const paths = this.pieChart.selectAll('path').data(newData, PieChart.key);
         paths.exit().remove();
         const newPaths = paths.enter()
             .append('path')
             .attr('d', this.pieArc)
             .attr('class', 'arc')
-            .style('fill', (d) => (colors(d.data.name)));
+            .style('fill', (d) => d.data.color !== undefined ? d.data.color : (colors(d.data.name)));
+
         this.bindTooltipEvents(newPaths.merge(paths));
     }
 
-    private updatePaths(oldData: any[], newData: any[]): void {
-        const paths = this.pieChart.selectAll('path').data(newData);
+    private updatePaths(oldData: any[], newData: any[], colors: (s: any) => any): void {
+        const paths = this.pieChart.selectAll('path').data(newData, PieChart.key);
         let index = 0;
         paths.transition().duration(PieChart.ARC_ANIMATION_DURATION).attrTween('d', (d: any) => {
             const interpolate = d3.interpolate(oldData[ index++ ], d);
             return (t: any) => {
                 return this.pieArc(interpolate(t));
             };
-        });
+        }).attr('fill', (d) => d.data.color !== undefined ? d.data.color : (colors(d.data.name)));
     }
 
     private createTextLabels(radius: number, newData: any[]): void {
-        const labels = this.pieTextLabels.selectAll('text').data(newData);
+        const labels = this.pieTextLabels.selectAll('text').data(newData, PieChart.key);
         labels.exit().remove();
         labels.enter()
             .append('text')
@@ -155,7 +157,7 @@ export class PieChart extends Chart<IChartDataEntry, IPieChartConfiguration> {
     }
 
     private updateTextLabels(radius: number, oldData: any[], newData: any[]): void {
-        const labels = this.pieTextLabels.selectAll('text').data(newData).text((d) => {
+        const labels = this.pieTextLabels.selectAll('text').data(newData, PieChart.key).text((d) => {
             return d.data.name;
         });
         let index1 = 0;
@@ -179,7 +181,7 @@ export class PieChart extends Chart<IChartDataEntry, IPieChartConfiguration> {
     }
 
     private createLineLabels(radius: number, newData: any[]): void {
-        const lines = this.pieLineLabels.selectAll('polyline').data(newData);
+        const lines = this.pieLineLabels.selectAll('polyline').data(newData, PieChart.key);
         lines.exit().remove();
         lines.enter()
             .append('polyline')
@@ -191,7 +193,7 @@ export class PieChart extends Chart<IChartDataEntry, IPieChartConfiguration> {
     }
 
     private updateLineLabels(radius: number, oldData: any[], newData: any[]): void {
-        const lines = this.pieLineLabels.selectAll('polyline').data(newData);
+        const lines = this.pieLineLabels.selectAll('polyline').data(newData, PieChart.key);
         let index = 0;
         lines.transition().duration(PieChart.ARC_ANIMATION_DURATION)
             .attrTween('points', (d: any) => {
@@ -210,13 +212,18 @@ export class PieChart extends Chart<IChartDataEntry, IPieChartConfiguration> {
         const yDefaultOffset = -40;
 
         elements.on('mouseover', (d: PieArcDatum<IChartDataEntry>) => {
-            this.tooltip.text(d.data.name, `Value: ${d.data.value}`);
+            const value = this.configuration.tooltip.value(d.data);
+            this.tooltip.text(d.data.name, `Value: ${value}`);
             this.tooltip.show();
         }).on('mouseout', () => {
             this.tooltip.hide();
         }).on('mousemove', () => {
             this.tooltip.position(D3CurrentEvent.pageX + xDefaultOffset, D3CurrentEvent.pageY + yDefaultOffset);
         });
+    }
+
+    private static key(d: PieArcDatum<IChartDataEntry>): string {
+        return d.data.name;
     }
 
     private static checkMidAngle(d: PieArcDatum<IChartDataEntry>): number {

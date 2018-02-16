@@ -1,7 +1,9 @@
 <div class="ui grid">
-    <div class="twelve wide column" style="height: 600px">
-        <bar-chart class="fade element" [configuration]="barChartConfiguration" [stream]="stream" *ngIf="!pie"></bar-chart>
-        <pie-chart class="fade element" [configuration]="pieChartConfiguration" [stream]="stream" *ngIf="pie"></pie-chart>
+    <div class="twelve wide column fade slow element" style="height: 500px" *ngIf="!pie">
+        <bar-chart [configuration]="barChartConfiguration" [stream]="stream"></bar-chart>
+    </div>
+    <div class="twelve wide column fade slow element" style="height: 500px" *ngIf="pie">
+        <pie-chart [configuration]="pieChartConfiguration" [stream]="stream"></pie-chart>
     </div>
     <div class="four wide column">
         <h4 class="ui header"><i class="options icon"></i>Options</h4>
@@ -12,6 +14,11 @@
             <label>Pie chart</label>
         </div>
         <div class="ui divider"></div>
+        <div class="ui checkbox">
+            <input type="checkbox" [(ngModel)]="notFoundHidden">
+            <label>Hide unannotated</label>
+        </div>
+        <br>
         <div class="ui checkbox">
             <input type="checkbox" [(ngModel)]="weighted">
             <label>Weight by read count</label>

@@ -15,7 +15,7 @@
  *
  */
 
-import { AfterViewInit, ChangeDetectorRef, Component, OnDestroy, Renderer2 } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, OnDestroy, Renderer2, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { ISampleChartComponentItem, SampleChartService } from 'pages/annotations/sample/chart/sample-chart.service';
 import { SampleRouteResolverComponent } from 'pages/annotations/sample/common/sample-route-resolver.component';
@@ -23,8 +23,9 @@ import { SampleService } from 'pages/annotations/sample/sample.service';
 import { Utils } from 'utils/utils';
 
 @Component({
-    selector:    'sample-chart',
-    templateUrl: './sample-chart.component.html'
+    selector:        'sample-chart',
+    templateUrl:     './sample-chart.component.html',
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SampleChartComponent extends SampleRouteResolverComponent implements AfterViewInit, OnDestroy {
     private resizeWindowListener: () => void;
@@ -39,7 +40,6 @@ export class SampleChartComponent extends SampleRouteResolverComponent implement
 
     public ngAfterViewInit(): void {
         this.resizeWindowListener = this.renderer.listen('window', 'resize', this.resizeDebouncedHandler);
-        // this.addChart('summary');
     }
 
     public addChart(type: string): void {

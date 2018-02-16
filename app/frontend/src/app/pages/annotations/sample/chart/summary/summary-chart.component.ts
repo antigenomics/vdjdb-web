@@ -15,17 +15,17 @@
  *
  */
 
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { SampleChartService, SampleChartServiceEventType } from 'pages/annotations/sample/chart/sample-chart.service';
 import { SummaryClonotypeCounter } from 'pages/annotations/sample/table/intersection/summary/summary-clonotype-counter';
-import { SummaryFieldCounter } from 'pages/annotations/sample/table/intersection/summary/summary-field-counter';
+import { SummaryCounters } from 'pages/annotations/sample/table/intersection/summary/summary-counters';
 import { ReplaySubject } from 'rxjs/ReplaySubject';
 import { Subscription } from 'rxjs/Subscription';
 import { IBarChartConfiguration } from 'shared/charts/bar/bar-chart-configuration';
 import { ChartStreamType } from 'shared/charts/chart';
 import { ChartEventType } from 'shared/charts/chart-events';
 import { IChartDataEntry } from 'shared/charts/data/chart-data-entry';
-import { createDefaultPieChartConfiguration, IPieChartConfiguration } from 'shared/charts/pie/pie-chart-configuration';
+import { IPieChartConfiguration } from 'shared/charts/pie/pie-chart-configuration';
 
 interface INormalizeType {
     name: string;
@@ -39,8 +39,9 @@ interface IThresholdType {
 }
 
 @Component({
-    selector:    'div[summary-chart]',
-    templateUrl: './summary-chart.component.html'
+    selector:        'div[summary-chart]',
+    templateUrl:     './summary-chart.component.html',
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SummaryChartComponent implements OnInit, OnDestroy {
     private static readonly normalizeTypes: INormalizeType[] = [
@@ -65,8 +66,9 @@ export class SummaryChartComponent implements OnInit, OnDestroy {
     private currentThresholdType: IThresholdType = SummaryChartComponent.thresholdTypes[ 0 ];
 
     private isPie: boolean = false;
+    private isNotFoundHidden: boolean = true;
     private isWeighted: boolean = true;
-    private data: SummaryFieldCounter[];
+    private data: SummaryCounters;
 
     public stream: ChartStreamType = new ReplaySubject(1);
     public barChartConfiguration: IBarChartConfiguration = {
@@ -75,9 +77,16 @@ export class SummaryChartComponent implements OnInit, OnDestroy {
             x: { tickFormat: '.1e', ticksCount: 5 }
         },
         grid:      true,
-        container: { margin: { left: 100, right: 25, top: 20, bottom: 20 } }
+        container: { margin: { left: 100, right: 25, top: 20, bottom: 20 } },
+        tooltip:   {
+            value: SummaryChartComponent.tooltipValueFn
+        }
     };
-    public pieChartConfiguration: IPieChartConfiguration = createDefaultPieChartConfiguration();
+    public pieChartConfiguration: IPieChartConfiguration = {
+        tooltip: {
+            value: SummaryChartComponent.tooltipValueFn
+        }
+    };
 
     public get pie(): boolean {
         return this.isPie;
@@ -86,6 +95,15 @@ export class SummaryChartComponent implements OnInit, OnDestroy {
     public set pie(pie: boolean) {
         this.isPie = pie;
         this.updateStream(ChartEventType.INITIAL_DATA);
+    }
+
+    public get notFoundHidden(): boolean {
+        return this.isNotFoundHidden;
+    }
+
+    public set notFoundHidden(hidden: boolean) {
+        this.isNotFoundHidden = hidden;
+        this.updateStream(ChartEventType.UPDATE_DATA);
     }
 
     public get weighted(): boolean {
@@ -98,15 +116,16 @@ export class SummaryChartComponent implements OnInit, OnDestroy {
     }
 
     @Input('data')
-    public set setData(data: SummaryFieldCounter[]) {
+    public set setData(data: SummaryCounters) {
         if (data !== undefined) {
             this.data = data;
             this.updateThresholdValues();
-            this.updateStream(ChartEventType.INITIAL_DATA);
+            this.updateStream(ChartEventType.UPDATE_DATA);
         }
     }
 
-    constructor(private sampleChartService: SampleChartService) {}
+    constructor(private sampleChartService: SampleChartService) {
+    }
 
     public ngOnInit(): void {
         this.sampleChartServiceEventsSubscription = this.sampleChartService.getEvents().subscribe((event) => {
@@ -126,14 +145,14 @@ export class SummaryChartComponent implements OnInit, OnDestroy {
         if (this.data === undefined) {
             return [];
         }
-        return this.data.map((d) => d.name);
+        return this.data.counters.map((d) => d.name);
     }
 
     public getCurrentFieldTitle(): string {
         if (this.data === undefined) {
             return '';
         }
-        return this.data[ this.currentField ].name;
+        return this.data.counters[ this.currentField ].name;
     }
 
     public setCurrentField(index: number): void {
@@ -209,7 +228,7 @@ export class SummaryChartComponent implements OnInit, OnDestroy {
                 break;
         }
 
-        let data = this.data[ this.currentField ].counters.map((c) => {
+        let data: IChartDataEntry[] = this.data.counters[ this.currentField ].counters.map((c) => {
             return { name: c.field, value: valueConverter(c) };
         });
 
@@ -217,16 +236,25 @@ export class SummaryChartComponent implements OnInit, OnDestroy {
         if (data.length > this.currentThresholdType.threshold) {
             data = data.slice(0, this.currentThresholdType.threshold);
         }
+
+        if (!this.isNotFoundHidden) {
+            data.push({ name: 'Unannotated', value: valueConverter(this.data.notFoundCounter), color: 'rgba(40, 40, 40, 0.5)' });
+        }
+
         return data.reverse();
     }
 
     private updateThresholdValues(): void {
         this.thresholdTypesAvailable = 1;
         for (let i = 1; i < SummaryChartComponent.thresholdTypes.length; ++i) {
-            if (this.data[ this.currentField ].counters.length > SummaryChartComponent.thresholdTypes[ i ].threshold) {
+            if (this.data.counters[ this.currentField ].counters.length > SummaryChartComponent.thresholdTypes[ i ].threshold) {
                 this.thresholdTypesAvailable += 1;
             }
         }
         this.currentThresholdType = SummaryChartComponent.thresholdTypes[ this.thresholdTypesAvailable - 1 ];
     }
+
+    private static readonly tooltipValueFn: (d: IChartDataEntry) => string = (d: IChartDataEntry) => {
+        return d.value.toExponential(3);
+    };
 }

@@ -15,8 +15,9 @@
  */
 
 import { AfterViewInit, Component, ElementRef, Input, NgZone, OnDestroy, ViewChild } from '@angular/core';
+import { ChartInputStreamType } from 'shared/charts/chart';
 import { ChartContainer } from 'shared/charts/container/chart-container';
-import { PieChart, PieChartInputStreamType } from 'shared/charts/pie/pie-chart';
+import { PieChart } from 'shared/charts/pie/pie-chart';
 import { createDefaultPieChartConfiguration, IPieChartConfiguration } from 'shared/charts/pie/pie-chart-configuration';
 import { Configuration } from 'utils/configuration/configuration';
 
@@ -32,7 +33,7 @@ export class PieChartComponent implements AfterViewInit, OnDestroy {
     public configuration: IPieChartConfiguration = createDefaultPieChartConfiguration();
 
     @Input('stream')
-    public stream: PieChartInputStreamType;
+    public stream: ChartInputStreamType;
 
     @ViewChild('container', { read: ElementRef })
     public containerElementRef: ElementRef;
