@@ -44,11 +44,6 @@ interface IThresholdType {
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SummaryChartComponent implements OnInit, OnDestroy {
-    private static readonly normalizeTypes: INormalizeType[] = [
-        { name: 'db', title: 'number of VDJdb records', checked: true },
-        { name: 'matches', title: 'number of clonotypes in sample', checked: false }
-    ];
-
     private static readonly thresholdTypes: IThresholdType[] = [
         { title: 'All', threshold: 10000 },
         { title: 'Top 5', threshold: 5 },
@@ -60,7 +55,10 @@ export class SummaryChartComponent implements OnInit, OnDestroy {
     private sampleChartServiceEventsSubscription: Subscription;
 
     private currentField: number = 0;
-    private currentNormalizeType: INormalizeType = SummaryChartComponent.normalizeTypes[ 0 ];
+    private normalizeTypes: INormalizeType[] = [
+        { name: 'db', title: 'number of VDJdb records', checked: true },
+        { name: 'matches', title: 'number of clonotypes in sample', checked: true }
+    ];
 
     private thresholdTypesAvailable: number = 1;
     private currentThresholdType: IThresholdType = SummaryChartComponent.thresholdTypes[ 0 ];
@@ -97,12 +95,12 @@ export class SummaryChartComponent implements OnInit, OnDestroy {
         this.updateStream(ChartEventType.UPDATE_DATA);
     }
 
-    public get notFoundHidden(): boolean {
-        return this.isNotFoundHidden;
+    public get showNotFound(): boolean {
+        return !this.isNotFoundHidden;
     }
 
-    public set notFoundHidden(hidden: boolean) {
-        this.isNotFoundHidden = hidden;
+    public set showNotFound(show: boolean) {
+        this.isNotFoundHidden = !show;
         this.updateStream(ChartEventType.UPDATE_DATA);
     }
 
@@ -164,21 +162,11 @@ export class SummaryChartComponent implements OnInit, OnDestroy {
     // Normalize type methods
 
     public getNormalizeTypes(): INormalizeType[] {
-        return SummaryChartComponent.normalizeTypes;
+        return this.normalizeTypes;
     }
 
-    public setNormalizeType(type: INormalizeType): void {
-        this.currentNormalizeType.checked = true;
-        if (!this.isNormalizeTypeChecked(type)) {
-            this.currentNormalizeType.checked = false;
-            this.currentNormalizeType = type;
-            this.currentNormalizeType.checked = true;
-            this.updateStream(ChartEventType.UPDATE_DATA);
-        }
-    }
-
-    public isNormalizeTypeChecked(type: INormalizeType): boolean {
-        return this.currentNormalizeType === type;
+    public switchNormalizeType(): void {
+        this.updateStream(ChartEventType.UPDATE_DATA);
     }
 
     // Threshold methods
@@ -215,18 +203,17 @@ export class SummaryChartComponent implements OnInit, OnDestroy {
         if (this.data === undefined) {
             return [];
         }
-        let valueConverter: (c: SummaryClonotypeCounter) => number;
 
-        switch (this.currentNormalizeType.name) {
-            case 'db':
-                valueConverter = (c) => (this.isWeighted ? c.frequency : c.unique) / c.databaseUnique;
-                break;
-            case 'matches':
-                valueConverter = (c) => (this.isWeighted ? c.frequency : c.unique) / c.unique;
-                break;
-            default:
-                break;
-        }
+        const valueConverter: (c: SummaryClonotypeCounter) => number = (c) => {
+            let value = (this.isWeighted ? c.frequency : c.unique);
+            if (this.normalizeTypes[ 0 ].checked) { // db
+                value = value / c.databaseUnique;
+            }
+            if (this.normalizeTypes[1].checked) { // matches
+                value = value / c.unique;
+            }
+            return value;
+        };
 
         let data: IChartDataEntry[] = this.data.counters[ this.currentField ].counters.map((c) => {
             return { name: c.field, value: valueConverter(c) };
@@ -256,5 +243,5 @@ export class SummaryChartComponent implements OnInit, OnDestroy {
 
     private static readonly tooltipValueFn: (d: IChartDataEntry) => string = (d: IChartDataEntry) => {
         return d.value.toExponential(3);
-    };
+    }
 }

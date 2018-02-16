@@ -15,8 +15,8 @@
         </div>
         <div class="ui divider"></div>
         <div class="ui checkbox">
-            <input type="checkbox" [(ngModel)]="notFoundHidden">
-            <label>Hide unannotated</label>
+            <input type="checkbox" [(ngModel)]="showNotFound">
+            <label>Show unannotated</label>
         </div>
         <br>
         <div class="ui checkbox">
@@ -36,7 +36,7 @@
         </div>
         <h4>Normalize by</h4>
         <div class="ui checkbox" *ngFor="let type of getNormalizeTypes()">
-            <input type="checkbox" (click)="setNormalizeType(type)" [(ngModel)]="type.checked">
+            <input type="checkbox" (click)="switchNormalizeType()" [(ngModel)]="type.checked">
             <label>{{ type.title }}</label>
         </div>
         <ng-container *ngIf="isThresholdTypesAvailable()">
