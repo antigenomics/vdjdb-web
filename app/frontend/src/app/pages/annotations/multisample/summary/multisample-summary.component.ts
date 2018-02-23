@@ -26,6 +26,7 @@ import { Subscription } from 'rxjs/Subscription';
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MultisampleSummaryComponent implements OnInit, OnDestroy {
+    private multisampleSummaryServiceEventsSubscription: Subscription;
     private annotationsServiceEventsSubscription: Subscription;
 
     constructor(public multisampleSummaryService: MultisampleSummaryService, public annotationsService: AnnotationsService,
@@ -33,6 +34,9 @@ export class MultisampleSummaryComponent implements OnInit, OnDestroy {
     }
 
     public ngOnInit(): void {
+        this.multisampleSummaryServiceEventsSubscription = this.multisampleSummaryService.getEvents().subscribe(() => {
+            this.changeDetector.detectChanges();
+        });
         this.annotationsServiceEventsSubscription = this.annotationsService.getEvents().subscribe(() => {
             this.multisampleSummaryService.checkTabSelectedSamples(this.annotationsService.getSamples());
             this.changeDetector.detectChanges();
@@ -40,6 +44,7 @@ export class MultisampleSummaryComponent implements OnInit, OnDestroy {
     }
 
     public ngOnDestroy(): void {
+        this.multisampleSummaryServiceEventsSubscription.unsubscribe();
         this.annotationsServiceEventsSubscription.unsubscribe();
     }
 }
