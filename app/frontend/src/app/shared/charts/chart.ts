@@ -22,11 +22,15 @@ import { Subscription } from 'rxjs/Subscription';
 import { ChartEventType, IChartEvent } from 'shared/charts/chart-events';
 import { ChartContainer } from 'shared/charts/container/chart-container';
 import { IChartDataEntry } from 'shared/charts/data/chart-data-entry';
+import { IChartGroupedDataEntry } from 'shared/charts/data/chart-grouped-data-entry';
 import { ChartTooltip } from 'shared/charts/tooltip/chart-tooltip';
 import { Utils } from 'utils/utils';
 
 export type ChartStreamType = Subject<IChartEvent<IChartDataEntry>>;
 export type ChartInputStreamType = Observable<IChartEvent<IChartDataEntry>>;
+
+export type ChartGroupedStreamType = Subject<IChartEvent<IChartGroupedDataEntry>>;
+export type ChartInputGroupedStreamType = Observable<IChartEvent<IChartGroupedDataEntry>>;
 
 // tslint:disable-next-line:interface-name
 export interface Chart<T, C> {
