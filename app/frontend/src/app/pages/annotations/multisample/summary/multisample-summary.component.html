@@ -58,6 +58,13 @@
             <div class="ui large text loader top element">{{ getCurrentTabProcessingLabel() }}</div>
         </div>
     </div>
+
+    <div class="ui fade slow element segments" *ngIf="isCurrentTabCompleted()">
+        <h3 class="ui top attached header">Multisample summary</h3>
+        <div class="ui teal attached padded segment">
+            blabla
+        </div>
+    </div>
 </ng-container>
 
 <ng-container *ngIf="multisampleSummaryService.isConnectionFailed()">
