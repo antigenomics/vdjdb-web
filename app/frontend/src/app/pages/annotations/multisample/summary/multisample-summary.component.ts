@@ -44,7 +44,7 @@ export class MultisampleSummaryComponent implements OnInit, OnDestroy {
     }
 
     public isCurrentTabNotInitialized(): boolean {
-        return this.multisampleSummaryService.getCurrentTabState() === 'not-initialized';
+        return this.multisampleSummaryService.getCurrentTabState() === IMultisampleSummaryAnalysisTabState.NOT_INITIALIZED;
     }
 
     public isCurrentTabUpdating(): boolean {
@@ -66,6 +66,10 @@ export class MultisampleSummaryComponent implements OnInit, OnDestroy {
             }
         }
         return 'Updating';
+    }
+
+    public isCurrentTabCompleted(): boolean {
+        return this.multisampleSummaryService.getCurrentTabState() === IMultisampleSummaryAnalysisTabState.COMPLETED;
     }
 
     public ngOnDestroy(): void {
