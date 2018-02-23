@@ -18,10 +18,13 @@
 import { Injectable } from '@angular/core';
 import { AnnotationsService } from 'pages/annotations/annotations.service';
 import { SampleFilters } from 'pages/annotations/sample/filters/sample-filters';
+import { SummaryCounters } from 'pages/annotations/sample/table/intersection/summary/summary-counters';
 import { Observable } from 'rxjs/Observable';
 import { Subject } from 'rxjs/Subject';
 import { SampleItem } from 'shared/sample/sample-item';
 import { WebSocketConnection } from 'shared/websocket/websocket-connection';
+import { WebSocketRequestData } from 'shared/websocket/websocket-request';
+import { WebSocketResponseData } from 'shared/websocket/websocket-response';
 import { LoggerService } from 'utils/logger/logger.service';
 import { NotificationService } from 'utils/notifications/notification.service';
 
@@ -30,13 +33,29 @@ export type MultisampleSummaryServiceEvents = number;
 export namespace MultisampleSummaryServiceEvents {
     export const CONNECTION_OPEN: number = 0;
     export const CONNECTION_CLOSED: number = 1;
+    export const CURRENT_TAB_UPDATED: number = 2;
+}
+
+export namespace MultisampleSummaryServiceWebSocketActions {
+    export const ANNOTATE: string = 'multiple-summary';
+}
+
+export type IMultisampleSummaryAnalysisTabState = string;
+
+export namespace IMultisampleSummaryAnalysisTabState {
+    export const NOT_INITIALIZED: string = 'not-initialized';
+    export const CONNECTING: string = 'connecting';
+    export const COMPLETED: string = 'completed';
 }
 
 export interface IMultisampleSummaryAnalysisTab {
+    id: number;
     title: string;
     filters: SampleFilters;
     disabled: boolean;
     samples: SampleItem[];
+    state: IMultisampleSummaryAnalysisTabState;
+    counters: Map<string, SummaryCounters>;
 }
 
 @Injectable()
@@ -91,15 +110,79 @@ export class MultisampleSummaryService {
         this.connection.reconnect();
     }
 
+    public annotate(): void {
+        if (this.activeTab.samples.length < 2) {
+            this.notifications.warn('Multisample analysis', 'Please select at least two different samples');
+            return;
+        }
+
+        this.activeTab.state = IMultisampleSummaryAnalysisTabState.CONNECTING;
+
+        const tabID: number = this.activeTab.id;
+        const filters: SampleFilters = this.activeTab.filters;
+        const sampleNames: string[] = this.activeTab.samples.map((s) => s.name);
+        this.connection.subscribeMessages({
+            action: MultisampleSummaryServiceWebSocketActions.ANNOTATE,
+            data:   new WebSocketRequestData()
+                    .add('tabID', tabID)
+                    .add('sampleNames', sampleNames)
+                    .add('hammingDistance', filters.hammingDistance)
+                    .add('confidenceThreshold', filters.confidenceThreshold)
+                    .add('matchV', filters.matchV)
+                    .add('matchJ', filters.matchJ)
+                    .add('species', filters.species)
+                    .add('gene', filters.gene)
+                    .add('mhc', filters.mhc)
+                    .unpack()
+        }, (messages: Observable<WebSocketResponseData>) => {
+            const messagesSubscription = messages.subscribe((message) => {
+                if (message.isSuccess()) {
+                    const id = message.get('tabID');
+                    const tab = this.getTabByID(id);
+
+                    tab.state = message.get('state');
+
+                    if (tab.state === IMultisampleSummaryAnalysisTabState.COMPLETED) {
+                        this.logger.debug('Multisample analysis completed', message);
+                        const summary = message.get('summary');
+
+                        tab.counters.clear();
+                        sampleNames.forEach((name) => {
+                            const summaryCounters = summary[ name ];
+                            if (summaryCounters === undefined) {
+                                this.notifications.error('Multisample analysis error', `Missing data for sample ${name}`);
+                            } else {
+                                tab.counters.set(name, new SummaryCounters(summaryCounters));
+                            }
+                        });
+                        messagesSubscription.unsubscribe();
+
+                        if (this.activeTab !== tab) {
+                            // TODO notify on other pages, even if this.activeTab === tab
+                            this.notifications.info('Multisample analysis completed', `Tab '${tab.title}' annotated`);
+                        }
+                    }
+
+                    if (this.activeTab === tab) {
+                        this.events.next(MultisampleSummaryServiceEvents.CURRENT_TAB_UPDATED);
+                    }
+                }
+            });
+        });
+    }
+
     public addNewTab(): void {
         if (this.tabs.length >= MultisampleSummaryService.maxTabsAvailable) {
             return;
         }
         this.tabs.push({
-            title: MultisampleSummaryService.tabsNames[ this.tabs.length ],
-            filters: new SampleFilters(),
+            id:       this.tabs.length + 1,
+            title:    MultisampleSummaryService.tabsNames[ this.tabs.length ],
+            filters:  new SampleFilters(),
             disabled: false,
-            samples: []
+            samples:  [],
+            state:    IMultisampleSummaryAnalysisTabState.NOT_INITIALIZED,
+            counters: new Map()
         });
         this.activeTab = this.tabs[ this.tabs.length - 1 ];
     }
@@ -122,6 +205,10 @@ export class MultisampleSummaryService {
 
     public getCurrentTabFilters(): SampleFilters {
         return this.activeTab.filters;
+    }
+
+    public getCurrentTabState(): string {
+        return this.activeTab.state;
     }
 
     public isCurrentTabDisabled(): boolean {
@@ -163,5 +250,9 @@ export class MultisampleSummaryService {
         this.tabs.forEach((tab: IMultisampleSummaryAnalysisTab) => {
             tab.samples = tab.samples.filter((selected) => availableSamples.indexOf(selected) !== -1);
         });
+    }
+
+    private getTabByID(id: number): IMultisampleSummaryAnalysisTab {
+        return this.tabs.find((t) => t.id === id);
     }
 }
