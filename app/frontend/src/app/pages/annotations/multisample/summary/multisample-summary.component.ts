@@ -17,7 +17,7 @@
 
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { AnnotationsService } from 'pages/annotations/annotations.service';
-import { MultisampleSummaryService } from 'pages/annotations/multisample/summary/multisample-summary.service';
+import { IMultisampleSummaryAnalysisTabState, MultisampleSummaryService } from 'pages/annotations/multisample/summary/multisample-summary.service';
 import { Subscription } from 'rxjs/Subscription';
 
 @Component({
@@ -41,6 +41,31 @@ export class MultisampleSummaryComponent implements OnInit, OnDestroy {
             this.multisampleSummaryService.checkTabSelectedSamples(this.annotationsService.getSamples());
             this.changeDetector.detectChanges();
         });
+    }
+
+    public isCurrentTabNotInitialized(): boolean {
+        return this.multisampleSummaryService.getCurrentTabState() === 'not-initialized';
+    }
+
+    public isCurrentTabUpdating(): boolean {
+        const state = this.multisampleSummaryService.getCurrentTabState();
+        return state !== IMultisampleSummaryAnalysisTabState.NOT_INITIALIZED && state !== IMultisampleSummaryAnalysisTabState.COMPLETED;
+    }
+
+    public getCurrentTabProcessingLabel(): string {
+        const state = this.multisampleSummaryService.getCurrentTabState();
+        if (state.includes('parse') || state.includes('annotate')) {
+            const [ stateTitle, sampleName ] = state.split(':');
+            switch (stateTitle) {
+                case 'parse':
+                    return `Parsing sample file ${sampleName}`;
+                case 'annotate':
+                    return `Annotating ${sampleName}`;
+                default:
+                    return 'Updating';
+            }
+        }
+        return 'Updating';
     }
 
     public ngOnDestroy(): void {

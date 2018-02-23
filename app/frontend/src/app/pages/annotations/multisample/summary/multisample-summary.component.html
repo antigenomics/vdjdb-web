@@ -43,6 +43,21 @@
             <button class="ui teal button left floated" (click)="multisampleSummaryService.annotate()">Annotate</button>
         </div>
     </div>
+
+    <div class="ui fade element padded segment" *ngIf="isCurrentTabNotInitialized()">
+        <h2 class="ui center aligned icon header">
+            <i class="options icon"></i>
+            <div class="content"> Click "Annotate" button to query VDJdb with multiple samples</div>
+            <div class="sub header">Make sure that you've selected proper samples</div>
+            <div class="sub header">Also make sure that you've selected parameters (species, etc) that match your samples metadata</div>
+        </h2>
+    </div>
+
+    <div class="ui fade element padded segment" *ngIf="isCurrentTabUpdating()" style="min-height: 190px">
+        <div class="ui inverted active dimmer">
+            <div class="ui large text loader top element">{{ getCurrentTabProcessingLabel() }}</div>
+        </div>
+    </div>
 </ng-container>
 
 <ng-container *ngIf="multisampleSummaryService.isConnectionFailed()">
