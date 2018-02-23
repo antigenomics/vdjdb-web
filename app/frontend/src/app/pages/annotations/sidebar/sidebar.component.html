@@ -31,8 +31,15 @@
         </div>
     </div>
     <div class="item" *ngIf="!isSamplesEmpty()">
+        <div class="header" (click)="sidebarRoute('multisample')">Multisample</div>
+        <div class="menu">
+            <a class="item" (click)="sidebarRoute('multisample')">Info</a>
+            <a class="item" (click)="sidebarRoute('multisample', 'summary')">Summary</a>
+        </div>
+    </div>
+    <div class="item" *ngIf="!isSamplesEmpty()">
         <div class="header">Settings</div>
-        <div class="menu" *ngIf="!isSamplesEmpty()">
+        <div class="menu">
             <a class="item" (click)="deleteAllSamples()">Delete all</a>
         </div>
     </div>

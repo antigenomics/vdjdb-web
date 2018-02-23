@@ -29,6 +29,7 @@ import { ModalsModule } from 'shared/modals/modals.module';
 @NgModule({
     imports:      [ CommonModule, FormsModule, RouterModule, ModalsModule, SampleTableModule, SampleChartModule ],
     declarations: [ AnnotationsSampleComponent, AnnotationsFiltersComponent ],
+    exports:      [ AnnotationsFiltersComponent ],
     providers:    [ SampleService ]
 })
 export class SampleModule {

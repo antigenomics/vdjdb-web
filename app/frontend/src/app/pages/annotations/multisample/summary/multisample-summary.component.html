@@ -1,0 +1,35 @@
+<div class="ui fade slow element segments">
+    <h3 class="ui top attached header">Multisample summary analysis</h3>
+    <div class="ui teal attached segment">
+        <div class="ui horizontal divider">
+            Multisample analysis tabs
+        </div>
+        <div class="ui secondary menu">
+            <a class="item tab" [ngClass]="{'active':multisampleSummaryService.isTabActive(tab)}"
+               *ngFor="let tab of multisampleSummaryService.getTabs()" (click)="multisampleSummaryService.setActiveTab(tab)">
+                {{ tab.title }}
+            </a>
+            <button class="ui basic icon button" *ngIf="multisampleSummaryService.isNewTabAllowed()" (click)="multisampleSummaryService.addNewTab()">
+                <i class="icon plus"></i>
+            </button>
+        </div>
+        <div class="ui horizontal divider">
+            Selected samples
+        </div>
+        <div class="ui secondary menu">
+            <a class="item tab" [ngClass]="{'active':multisampleSummaryService.isSampleSelected(sample)}"
+               *ngFor="let sample of annotationsService.getSamples()" (click)="multisampleSummaryService.selectSample(sample)">
+                {{ sample.name }}
+            </a>
+        </div>
+        <sample-filters [filters]="multisampleSummaryService.getCurrentTabFilters()"
+                             [disabled]="multisampleSummaryService.isCurrentTabDisabled()">
+
+        </sample-filters>
+    </div>
+</div>
+
+<div class="ui fade slow element segments">
+    <h3 class="ui top attached header">Summary</h3>
+    <div class="ui teal attached segment"></div>
+</div>
