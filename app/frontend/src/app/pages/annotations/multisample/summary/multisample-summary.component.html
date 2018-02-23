@@ -62,7 +62,7 @@
     <div class="ui fade slow element segments" *ngIf="isCurrentTabCompleted()">
         <h3 class="ui top attached header">Multisample summary</h3>
         <div class="ui teal attached padded segment">
-            blabla
+            <multisample-summary-chart [tab]="multisampleSummaryService.getCurrentTab()"></multisample-summary-chart>
         </div>
     </div>
 </ng-container>

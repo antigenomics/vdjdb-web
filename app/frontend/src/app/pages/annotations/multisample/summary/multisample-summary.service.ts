@@ -215,6 +215,10 @@ export class MultisampleSummaryService {
         return this.activeTab.disabled;
     }
 
+    public getCurrentTab(): IMultisampleSummaryAnalysisTab {
+        return this.activeTab;
+    }
+
     public selectAllSamples(): void {
         this.annotationsService.getSamples().forEach((availableSample) => {
             if (!this.isSampleSelected(availableSample)) {

@@ -15,13 +15,7 @@
  *
  */
 
-import { NgModule } from '@angular/core';
-import { BarChartGroupedComponent } from 'shared/charts/bar/grouped/bar-chart-grouped.component';
-import { BarChartHorizontalComponent } from 'shared/charts/bar/horizontal/bar-chart-horizontal.component';
-import { PieChartComponent } from 'shared/charts/pie/pie-chart.component';
-
-@NgModule({
-    declarations: [ BarChartHorizontalComponent, BarChartGroupedComponent, PieChartComponent ],
-    exports:      [ BarChartHorizontalComponent, BarChartGroupedComponent, PieChartComponent ]
-})
-export class ChartsModule {}
+export interface IChartGroupedDataEntry {
+    readonly name: string;
+    readonly values: number[];
+}
