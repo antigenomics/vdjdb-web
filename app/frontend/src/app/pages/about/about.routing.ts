@@ -16,16 +16,10 @@
  */
 
 import { RouterModule, Routes } from '@angular/router';
-import { HomePageComponent } from 'pages/home/home.component';
-import { OverviewPageComponent } from 'pages/overview/overview.component';
-import { SearchPageComponent } from 'pages/search/search.component';
+import { AboutPageComponent } from 'pages/about/about.component';
 
 const routes: Routes = [
-    { path: '', component: HomePageComponent },
-    { path: 'about', loadChildren: 'pages/about/about.module#AboutPageModule' },
-    { path: 'overview', component: OverviewPageComponent },
-    { path: 'search', component: SearchPageComponent },
-    { path: 'annotations', loadChildren: 'pages/annotations/annotations.module#AnnotationsPageModule' }
+    { path: '', component: AboutPageComponent }
 ];
 
-export const ApplicationRouting = RouterModule.forRoot(routes); // tslint:disable-line:variable-name
+export const AboutPageRouting = RouterModule.forChild(routes); // tslint:disable-line:variable-name
