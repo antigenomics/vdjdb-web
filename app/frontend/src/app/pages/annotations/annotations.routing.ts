@@ -39,6 +39,7 @@ const routes: Routes = [
                     { path: 'chart', component: SampleChartComponent }
                 ]
             },
+            { path: 'multisample', loadChildren: 'pages/annotations/multisample/multisample.module#MultisamplePageModule' },
             { path: '**', redirectTo: 'info' }
         ]
     }

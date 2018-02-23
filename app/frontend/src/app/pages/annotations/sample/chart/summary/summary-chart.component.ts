@@ -209,7 +209,7 @@ export class SummaryChartComponent implements OnInit, OnDestroy {
             if (this.normalizeTypes[ 0 ].checked) { // db
                 value = value / c.databaseUnique;
             }
-            if (this.normalizeTypes[1].checked) { // matches
+            if (this.normalizeTypes[ 1 ].checked) { // matches
                 value = value / c.unique;
             }
             return value;
