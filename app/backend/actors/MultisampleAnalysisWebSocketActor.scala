@@ -17,6 +17,33 @@
 
 package backend.actors
 
-class MultisampleAnalysisWebSocketActor {
+import akka.actor.{ActorRef, ActorSystem, Props}
+import backend.models.authorization.permissions.UserPermissionsProvider
+import backend.models.authorization.user.{User, UserDetails}
+import backend.models.files.FileMetadataProvider
+import backend.models.files.sample.SampleFileProvider
+import backend.server.database.Database
+import backend.server.limit.{IpLimit, RequestLimits}
+import play.api.libs.json.JsValue
 
+import scala.concurrent.ExecutionContext
+
+class MultisampleAnalysisWebSocketActor(out: ActorRef, limit: IpLimit, user: User, details: UserDetails, database: Database)
+                                       (implicit ec: ExecutionContext, as: ActorSystem, limits: RequestLimits,
+                                        upp: UserPermissionsProvider, sfp: SampleFileProvider, fmp: FileMetadataProvider)
+    extends WebSocketActor(out, limit) {
+
+    def handleMessage(out: WebSocketOutActorRef, data: Option[JsValue]): Unit = {
+        out.getAction match {
+            case _ =>
+                out.errorMessage("Invalid action")
+        }
+    }
+}
+
+object MultisampleAnalysisWebSocketActor {
+    def props(out: ActorRef, limit: IpLimit, user: User, details: UserDetails, database: Database)
+             (implicit ec: ExecutionContext, as: ActorSystem, limits: RequestLimits,
+              upp: UserPermissionsProvider, sfp: SampleFileProvider, fmp: FileMetadataProvider): Props =
+        Props(new MultisampleAnalysisWebSocketActor(out, limit, user, details, database))
 }
