@@ -15,7 +15,7 @@
  *
  */
 
-import { ChangeDetectionStrategy, Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, OnDestroy, OnInit, Renderer2 } from '@angular/core';
 import {
     IMultisampleSummaryAnalysisTab, IMultisampleSummaryAnalysisTabState, MultisampleSummaryService,
     MultisampleSummaryServiceEvents
@@ -27,6 +27,7 @@ import { IBarChartConfiguration } from 'shared/charts/bar/bar-chart-configuratio
 import { ChartGroupedStreamType } from 'shared/charts/chart';
 import { ChartEventType } from 'shared/charts/chart-events';
 import { IChartGroupedDataEntry } from 'shared/charts/data/chart-grouped-data-entry';
+import { Utils } from 'utils/utils';
 
 @Component({
     selector:        'multisample-summary-chart',
@@ -34,6 +35,11 @@ import { IChartGroupedDataEntry } from 'shared/charts/data/chart-grouped-data-en
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MultisampleSummaryChartComponent implements OnInit, OnDestroy {
+    private resizeWindowListener: () => void;
+    private resizeDebouncedHandler = Utils.Time.debounce(() => {
+        this.updateStream(ChartEventType.RESIZE);
+    });
+
     private multisampleSummaryServiceEventsSubscription: Subscription;
     private currentTab: IMultisampleSummaryAnalysisTab;
 
@@ -50,9 +56,10 @@ export class MultisampleSummaryChartComponent implements OnInit, OnDestroy {
 
     public stream: ChartGroupedStreamType = new ReplaySubject(1);
 
-    constructor(private multisampleSummaryService: MultisampleSummaryService) {}
+    constructor(private multisampleSummaryService: MultisampleSummaryService, private renderer: Renderer2) {}
 
     public ngOnInit(): void {
+        this.resizeWindowListener = this.renderer.listen('window', 'resize', this.resizeDebouncedHandler);
         this.multisampleSummaryServiceEventsSubscription = this.multisampleSummaryService.getEvents().subscribe((event) => {
             if (event === MultisampleSummaryServiceEvents.CURRENT_TAB_UPDATED
                 && this.multisampleSummaryService.getCurrentTabState() === IMultisampleSummaryAnalysisTabState.COMPLETED) {
@@ -62,6 +69,7 @@ export class MultisampleSummaryChartComponent implements OnInit, OnDestroy {
     }
 
     public ngOnDestroy(): void {
+        this.resizeWindowListener();
         this.multisampleSummaryServiceEventsSubscription.unsubscribe();
     }
 
