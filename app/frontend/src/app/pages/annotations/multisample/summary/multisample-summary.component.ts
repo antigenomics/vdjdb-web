@@ -72,6 +72,11 @@ export class MultisampleSummaryComponent implements OnInit, OnDestroy {
         return this.multisampleSummaryService.getCurrentTabState() === IMultisampleSummaryAnalysisTabState.COMPLETED;
     }
 
+    public isCurrentTabDirty(): boolean {
+        return this.multisampleSummaryService.isCurrentTabDirty();
+    }
+
+
     public ngOnDestroy(): void {
         this.multisampleSummaryServiceEventsSubscription.unsubscribe();
         this.annotationsServiceEventsSubscription.unsubscribe();

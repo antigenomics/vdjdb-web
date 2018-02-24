@@ -15,7 +15,9 @@
  *
  */
 
+import { IChartDataEntry } from 'shared/charts/data/chart-data-entry';
+
 export interface IChartGroupedDataEntry {
     readonly name: string;
-    readonly values: number[];
+    readonly values: IChartDataEntry[];
 }
