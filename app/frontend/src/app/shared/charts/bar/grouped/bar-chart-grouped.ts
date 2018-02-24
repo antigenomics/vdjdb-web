@@ -17,7 +17,7 @@
 
 import { NgZone } from '@angular/core';
 import { ScaleBand, ScaleLinear, ScaleOrdinal } from 'd3-scale';
-import { BaseType } from 'd3-selection';
+import { BaseType, event as D3CurrentEvent } from 'd3-selection';
 import * as d3 from 'external/d3';
 import { createDefaultBarChartConfiguration, IBarChartConfiguration } from 'shared/charts/bar/bar-chart-configuration';
 import { Chart, ChartInputGroupedStreamType } from 'shared/charts/chart';
@@ -27,7 +27,8 @@ import { IChartDataEntry } from 'shared/charts/data/chart-data-entry';
 import { IChartGroupedDataEntry } from 'shared/charts/data/chart-grouped-data-entry';
 import { Configuration } from 'utils/configuration/configuration';
 
-interface IGroupRectData {
+interface IGroupBarData {
+    name: string;
     data: IChartDataEntry;
     colors: ScaleOrdinal<string, string>;
     x: ScaleBand<string>;
@@ -42,8 +43,8 @@ interface IGroupAxisType {
 type GroupsSelectionType = d3.Selection<BaseType, IChartGroupedDataEntry, BaseType, any>;
 type GroupsTransitionType = d3.Transition<BaseType, IChartGroupedDataEntry, BaseType, any>;
 
-type BarsSelectionType = d3.Selection<BaseType, IGroupRectData, BaseType, IChartGroupedDataEntry>;
-type BarsTransitionType = d3.Transition<BaseType, IGroupRectData, BaseType, IChartGroupedDataEntry>;
+type BarsSelectionType = d3.Selection<BaseType, IGroupBarData, BaseType, IChartGroupedDataEntry>;
+type BarsTransitionType = d3.Transition<BaseType, IGroupBarData, BaseType, IChartGroupedDataEntry>;
 
 export class BarChartGrouped extends Chart<IChartGroupedDataEntry, IBarChartConfiguration> {
     private static readonly defaultTransitionDuration: number = 750;
@@ -87,6 +88,8 @@ export class BarChartGrouped extends Chart<IChartGroupedDataEntry, IBarChartConf
         svg.append('g')
            .attr('class', 'x axis grouped main')
            .call(mainXAxis as any);
+
+        this.bindTooltipEvents(enterBars);
     }
 
     public update(data: IChartGroupedDataEntry[]): void {
@@ -104,6 +107,7 @@ export class BarChartGrouped extends Chart<IChartGroupedDataEntry, IBarChartConf
         /* Creating bars for new groups */
         const enterGroupsBars = this.appendBarsDataToGroups(enterGroups, groupsAxis);
         const enterGroupsEnterBars = enterGroupsBars.enter().append('rect');
+        this.bindTooltipEvents(enterGroupsEnterBars);
         this.setBarAttributes(height, y, enterGroupsEnterBars);
 
         /* Animating old groups */
@@ -114,6 +118,7 @@ export class BarChartGrouped extends Chart<IChartGroupedDataEntry, IBarChartConf
 
         /* Creating new bars for old groups */
         const enterBars = bars.enter().append('rect');
+        this.bindTooltipEvents(enterBars);
         this.setBarAttributes(height, y, enterBars);
 
         /* Animating old bars for old groups */
@@ -162,8 +167,8 @@ export class BarChartGrouped extends Chart<IChartGroupedDataEntry, IBarChartConf
     private appendBarsDataToGroups(groups: any, groupsAxis: IGroupAxisType[]): BarsSelectionType {
         return groups.selectAll('rect')
                      .data((d: IChartGroupedDataEntry, i: number) => d.values.map((v) => ({
-                         data: v, colors: ChartUtils.Color.generate(d.values), x: groupsAxis[ i ].x
-                     } as IGroupRectData)));
+                         name: d.name, data: v, colors: ChartUtils.Color.generate(d.values), x: groupsAxis[ i ].x
+                     } as IGroupBarData)));
     }
 
     private setBarAttributes(height: number, y: ScaleLinear<number, number>, bars: BarsSelectionType | BarsTransitionType): void {
@@ -222,5 +227,20 @@ export class BarChartGrouped extends Chart<IChartGroupedDataEntry, IBarChartConf
             xAxis.ticks(this.configuration.axis.x.ticksCount);
         }
         return { x, xAxis };
+    }
+
+    private bindTooltipEvents(elements: BarsSelectionType): void {
+        const xDefaultOffset = 20;
+        const yDefaultOffset = -40;
+
+        elements.on('mouseover', (d: IGroupBarData) => {
+            const value = this.configuration.tooltip.value(d.data);
+            this.tooltip.text(`${d.data.name}   (${d.name})`, `Value: ${value}`);
+            this.tooltip.show();
+        }).on('mouseout', () => {
+            this.tooltip.hide();
+        }).on('mousemove', () => {
+            this.tooltip.position(D3CurrentEvent.pageX + xDefaultOffset, D3CurrentEvent.pageY + yDefaultOffset);
+        });
     }
 }
