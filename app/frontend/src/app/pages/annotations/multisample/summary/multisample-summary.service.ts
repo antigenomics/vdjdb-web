@@ -34,6 +34,7 @@ export namespace MultisampleSummaryServiceEvents {
     export const CONNECTION_OPEN: number = 0;
     export const CONNECTION_CLOSED: number = 1;
     export const CURRENT_TAB_UPDATED: number = 2;
+    export const CURRENT_TAB_CHANGED: number = 3;
 }
 
 export namespace MultisampleSummaryServiceWebSocketActions {
@@ -51,6 +52,7 @@ export namespace IMultisampleSummaryAnalysisTabState {
 export interface IMultisampleSummaryAnalysisTab {
     id: number;
     title: string;
+    dirty: boolean;
     filters: SampleFilters;
     disabled: boolean;
     samples: SampleItem[];
@@ -161,6 +163,8 @@ export class MultisampleSummaryService {
                             // TODO notify on other pages, even if this.activeTab === tab
                             this.notifications.info('Multisample analysis completed', `Tab '${tab.title}' annotated`);
                         }
+
+                        tab.dirty = true;
                     }
 
                     if (this.activeTab === tab) {
@@ -178,6 +182,7 @@ export class MultisampleSummaryService {
         this.tabs.push({
             id:       this.tabs.length + 1,
             title:    MultisampleSummaryService.tabsNames[ this.tabs.length ],
+            dirty:    false,
             filters:  new SampleFilters(),
             disabled: false,
             samples:  [],
@@ -192,6 +197,7 @@ export class MultisampleSummaryService {
     }
 
     public setActiveTab(tab: IMultisampleSummaryAnalysisTab): void {
+        this.events.next(MultisampleSummaryServiceEvents.CURRENT_TAB_CHANGED);
         this.activeTab = tab;
     }
 
@@ -213,6 +219,10 @@ export class MultisampleSummaryService {
 
     public isCurrentTabDisabled(): boolean {
         return this.activeTab.disabled;
+    }
+
+    public isCurrentTabDirty(): boolean {
+        return this.activeTab.dirty;
     }
 
     public getCurrentTab(): IMultisampleSummaryAnalysisTab {

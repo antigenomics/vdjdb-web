@@ -15,9 +15,14 @@
  *
  */
 
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { IMultisampleSummaryAnalysisTab } from 'pages/annotations/multisample/summary/multisample-summary.service';
+import { ChangeDetectionStrategy, Component, Input, OnDestroy, OnInit } from '@angular/core';
+import {
+    IMultisampleSummaryAnalysisTab, IMultisampleSummaryAnalysisTabState, MultisampleSummaryService,
+    MultisampleSummaryServiceEvents
+} from 'pages/annotations/multisample/summary/multisample-summary.service';
+import { SummaryCounters } from 'pages/annotations/sample/table/intersection/summary/summary-counters';
 import { ReplaySubject } from 'rxjs/ReplaySubject';
+import { Subscription } from 'rxjs/Subscription';
 import { IBarChartConfiguration } from 'shared/charts/bar/bar-chart-configuration';
 import { ChartGroupedStreamType } from 'shared/charts/chart';
 import { ChartEventType } from 'shared/charts/chart-events';
@@ -28,12 +33,13 @@ import { IChartGroupedDataEntry } from 'shared/charts/data/chart-grouped-data-en
     templateUrl:     './multisample-summary-chart.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class MultisampleSummaryChartComponent {
+export class MultisampleSummaryChartComponent implements OnInit, OnDestroy {
+    private multisampleSummaryServiceEventsSubscription: Subscription;
     private currentTab: IMultisampleSummaryAnalysisTab;
 
     public barChartConfiguration: IBarChartConfiguration = {
         grid:      true,
-        container: { margin: { left: 25, right: 25, top: 20, bottom: 20 } }
+        container: { margin: { left: 25, right: 25, top: 20, bottom: 100 } }
     };
 
     @Input('tab')
@@ -44,6 +50,21 @@ export class MultisampleSummaryChartComponent {
 
     public stream: ChartGroupedStreamType = new ReplaySubject(1);
 
+    constructor(private multisampleSummaryService: MultisampleSummaryService) {}
+
+    public ngOnInit(): void {
+        this.multisampleSummaryServiceEventsSubscription = this.multisampleSummaryService.getEvents().subscribe((event) => {
+            if (event === MultisampleSummaryServiceEvents.CURRENT_TAB_UPDATED
+                && this.multisampleSummaryService.getCurrentTabState() === IMultisampleSummaryAnalysisTabState.COMPLETED) {
+                this.updateStream(ChartEventType.UPDATE_DATA);
+            }
+        });
+    }
+
+    public ngOnDestroy(): void {
+        this.multisampleSummaryServiceEventsSubscription.unsubscribe();
+    }
+
     private updateStream(type: ChartEventType): void {
         this.stream.next({ type, data: this.createData() });
     }
@@ -53,13 +74,14 @@ export class MultisampleSummaryChartComponent {
             return [];
         }
 
-        return [
-            { name: 'test1', values: [ 10, 10, 2, 3, 5, 7, 8, 9 ] },
-            { name: 'test2', values: [ 6, 6, 2, 7, 8, 9, 1, 2 ] },
-            { name: 'test3', values: [ 6, 3, 2, 2, 1, 2, 5, 8 ] },
-            { name: 'test4', values: [ 9, 11, 2, 1, 7, 7, 4, 5 ] },
-            { name: 'test5', values: [ 1, 2, 3, 4, 5, 6, 7, 8 ] },
-            { name: 'test6', values: [ 8, 7, 6, 5, 4, 3, 2, 1 ] }
-        ];
+        const data: IChartGroupedDataEntry[] = [];
+        this.currentTab.counters.forEach((value: SummaryCounters, key: string) => {
+            data.push({
+                name:   key,
+                values: value.counters[ 0 ].counters.map((c) => ({ name: c.field, value: c.unique }))
+            });
+        });
+
+        return data;
     }
 }

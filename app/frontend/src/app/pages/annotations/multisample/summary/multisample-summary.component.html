@@ -53,15 +53,18 @@
         </h2>
     </div>
 
-    <div class="ui fade element padded segment" *ngIf="isCurrentTabUpdating()" style="min-height: 190px">
+    <div class="ui fade element padded segment" *ngIf="isCurrentTabUpdating() && !isCurrentTabDirty()" style="min-height: 190px">
         <div class="ui inverted active dimmer">
             <div class="ui large text loader top element">{{ getCurrentTabProcessingLabel() }}</div>
         </div>
     </div>
 
-    <div class="ui fade slow element segments" *ngIf="isCurrentTabCompleted()">
+    <div class="ui fade slow element segments" *ngIf="isCurrentTabCompleted() || isCurrentTabDirty()">
         <h3 class="ui top attached header">Multisample summary</h3>
-        <div class="ui teal attached padded segment">
+        <div class="ui teal attached padded blurring segment">
+            <div class="ui inverted dimmer" [ngClass]="{'active':isCurrentTabUpdating()}">
+                <div class="ui large text loader top element">{{ getCurrentTabProcessingLabel() }}</div>
+            </div>
             <multisample-summary-chart [tab]="multisampleSummaryService.getCurrentTab()"></multisample-summary-chart>
         </div>
     </div>
