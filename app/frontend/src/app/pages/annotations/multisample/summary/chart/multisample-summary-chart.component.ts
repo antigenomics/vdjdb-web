@@ -83,12 +83,31 @@ export class MultisampleSummaryChartComponent implements OnInit, OnDestroy {
         }
 
         const data: IChartGroupedDataEntry[] = [];
+
         this.currentTab.counters.forEach((value: SummaryCounters, key: string) => {
             data.push({
                 name:   key,
                 values: value.counters[ 0 ].counters.map((c) => ({ name: c.field, value: c.unique }))
             });
         });
+
+        // const epitopes: Set<string> = new Set();
+        //
+        // data.forEach((d) => {
+        //     d.values.forEach((v) => {
+        //         epitopes.add(v.name);
+        //     });
+        // });
+        //
+        // const rData: IChartGroupedDataEntry[] = [];
+        // epitopes.forEach((v) => {
+        //
+        //     const values = data.filter((d) => d.values.findIndex((c) => c.name === v) !== -1).map((d) => {
+        //         const e = d.values.find((c) => c.name === v);
+        //         return { name: d.name, value: e.value };
+        //     });
+        //     rData.push({ name: v, values });
+        // });
 
         return data;
     }
