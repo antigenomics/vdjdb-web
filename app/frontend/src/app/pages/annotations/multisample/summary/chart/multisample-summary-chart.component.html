@@ -14,14 +14,13 @@
         <div class="ui divider"></div>
         <div class="ui checkbox">
             <input type="checkbox" [(ngModel)]="order">
-            <label>Order by samples (Not ready yet)</label>
+            <label>Order by samples</label>
         </div>
         <br>
         <div class="ui checkbox">
             <input type="checkbox" [(ngModel)]="shared" [disabled]="order">
             <label>Show shared only</label>
         </div>
-        <br>
         <div class="ui divider"></div>
         <summary-chart-options [options]="getCurrentTabSummaryChartOptions()"
                                (onOptionsChange)="handleChangeOptionsFn($event)"
