@@ -1,18 +1,6 @@
 <div class="ui fade slow element segments" *ngIf="sample.table.isSummaryExist()">
     <div class="ui top attached clearing segment">
-        <div class="ui grid">
-            <div class="fifteen wide column">
-                <h3 class="ui header">Summary chart</h3>
-            </div>
-            <div class="one wide column cursor pointer" dropdown [content]="commonChartSettings">
-                <i class="ui ellipsis vertical link icon" style="float: right"></i>
-                <div class="ui dropdown item">
-                    <div class="left menu fade element slow padded" tabindex="-1" #commonChartSettings>
-                        <a class="item" (click)="removeChart(chart)"><i class="trash outline icon"></i>Remove</a>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <h3 class="ui header">Summary chart</h3>
     </div>
     <div class="ui teal attached padded segment" summary-chart [data]="sample.table.getSummary()"></div>
 </div>

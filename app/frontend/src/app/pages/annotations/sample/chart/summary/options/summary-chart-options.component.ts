@@ -16,6 +16,8 @@
  */
 
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
+import { SummaryChartComponent } from 'pages/annotations/sample/chart/summary/summary-chart.component';
+import { ChartEventType } from 'shared/charts/chart-events';
 
 export interface IThresholdType {
     title: string;
@@ -34,6 +36,14 @@ export interface ISummaryFilterFieldType {
 }
 
 export class SummaryChartOptions {
+    public static readonly thresholdTypes: IThresholdType[] = [
+        { title: 'All', threshold: 10000 },
+        { title: 'Top 5', threshold: 5 },
+        { title: 'Top 10', threshold: 10 },
+        { title: 'Top 15', threshold: 15 },
+        { title: 'Top 20', threshold: 20 }
+    ];
+
     public normalizeTypes: INormalizeType[] = [
         { name: 'db', title: 'number of VDJdb records', checked: false },
         { name: 'matches', title: 'number of clonotypes in sample', checked: false }
@@ -48,9 +58,14 @@ export class SummaryChartOptions {
         { name: 'antigen.gene', title: 'Epitope gene' }
     ];
 
+    public currentThresholdType: IThresholdType = SummaryChartOptions.thresholdTypes[ 0 ];
     public currentFieldIndex: number = 0;
     public isNotFoundVisible: boolean = false;
     public isWeightedByReadCount: boolean = true;
+
+    public getCurrentSummaryFilterFieldType(): ISummaryFilterFieldType {
+        return this.fieldTypes[this.currentFieldIndex];
+    }
 }
 
 @Component({
@@ -59,11 +74,19 @@ export class SummaryChartOptions {
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SummaryChartOptionsComponent {
+    private thresholdTypesAvailable: number = -1;
+
     @Input('options')
     public options: SummaryChartOptions;
 
     @Output('onOptionsChange')
     public onOptionsChange = new EventEmitter();
+
+    @Input('threshold')
+    public set threshold(threshold: number) {
+        this.thresholdTypesAvailable = threshold;
+        this.options.currentThresholdType = SummaryChartOptions.thresholdTypes[this.thresholdTypesAvailable - 1];
+    }
 
     public get isNotFoundVisible(): boolean {
         return this.options.isNotFoundVisible;
@@ -100,6 +123,28 @@ export class SummaryChartOptionsComponent {
 
     public setCurrentSummaryFilterField(index: number): void {
         this.options.currentFieldIndex = index;
+        this.onOptionsChange.emit(this.options);
+    }
+
+    // Threshold methods
+    public trackThresholdFn(_index: number, threshold: IThresholdType) {
+        return threshold.threshold;
+    }
+
+    public isThresholdTypesAvailable(): boolean {
+        return this.thresholdTypesAvailable > 1;
+    }
+
+    public getThresholdTypes(): IThresholdType[] {
+        return SummaryChartOptions.thresholdTypes.slice(0, this.thresholdTypesAvailable);
+    }
+
+    public getCurrentThresholdTypeTitle(): string {
+        return this.options.currentThresholdType.title;
+    }
+
+    public setThreshold(threshold: IThresholdType): void {
+        this.options.currentThresholdType = threshold;
         this.onOptionsChange.emit(this.options);
     }
 }

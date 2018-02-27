@@ -1,3 +1,19 @@
-<div style="height: 600px">
-    <bar-chart-grouped [configuration]="barChartConfiguration" [stream]="stream"></bar-chart-grouped>
+<div class="ui grid fade slow element">
+    <div class="sixteen wide column">Hide:
+        <button class="ui tiny compact teal button" *ngFor="let sample of getCurrentTabProcessedSamples()"
+                [ngClass]="{'basic':isSampleHidden(sample)}"
+                (click)="toggleSampleHidden(sample)">
+            {{ sample }}
+        </button>
+    </div>
+    <div class="twelve wide column" style="height: 500px">
+        <bar-chart-grouped [configuration]="barChartConfiguration" [stream]="stream"></bar-chart-grouped>
+    </div>
+    <div class="four wide column">
+        <h4 class="ui header"><i class="options icon"></i>Options</h4>
+        <div class="ui divider"></div>
+        <summary-chart-options [options]="getCurrentTabSummaryChartOptions()"
+                               (onOptionsChange)="handleChangeOptionsFn($event)"
+                               [threshold]="threshold"></summary-chart-options>
+    </div>
 </div>

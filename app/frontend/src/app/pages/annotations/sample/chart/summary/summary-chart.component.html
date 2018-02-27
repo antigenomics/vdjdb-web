@@ -14,18 +14,6 @@
             <label>Pie chart</label>
         </div>
         <div class="ui divider"></div>
-        <summary-chart-options [options]="options" (onOptionsChange)="handleChangeOptionsFn($event)"></summary-chart-options>
-        <ng-container *ngIf="isThresholdTypesAvailable()">
-            <h4>Show</h4>
-            <div class="ui selection fluid upward dropdown" dropdown [content]="thresholdContent">
-                <span class="text">{{ getCurrentThresholdTypeTitle() }}</span>
-                <i class="dropdown icon"></i>
-                <div class="menu fast fade element" #thresholdContent>
-                    <div class="item" *ngFor="let threshold of getThresholdTypes(); trackBy: trackThresholdFn" (click)="setThreshold(threshold)">
-                        {{ threshold.title }}
-                    </div>
-                </div>
-            </div>
-        </ng-container>
+        <summary-chart-options [options]="options" (onOptionsChange)="handleChangeOptionsFn($event)" [threshold]="threshold"></summary-chart-options>
     </div>
 </div>
