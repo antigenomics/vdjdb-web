@@ -220,6 +220,9 @@ export class BarChartGrouped extends Chart<IChartGroupedDataEntry, IBarChartConf
             const dy = Math.max(BarChartGrouped.defaultMainXRotateDy, count * aDy + bDy);
             axis.selectAll('text')
                 .attr('transform', `translate(0,${dy}),rotate(-${angle})`);
+        } else {
+            axis.selectAll('text')
+                .attr('transform', `translate(0,0),rotate(0)`);
         }
     }
 

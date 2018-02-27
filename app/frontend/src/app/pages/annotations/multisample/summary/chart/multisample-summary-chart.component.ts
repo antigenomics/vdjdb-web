@@ -51,7 +51,10 @@ export class MultisampleSummaryChartComponent implements OnInit, OnDestroy {
 
     public barChartConfiguration: IBarChartConfiguration = {
         grid:      true,
-        container: { margin: { left: 60, right: 25, top: 100, bottom: 100 } }
+        container: { margin: { left: 60, right: 25, top: 100, bottom: 100 } },
+        tooltip:   {
+            value: MultisampleSummaryChartComponent.tooltipValueFn
+        }
     };
 
     @Input('tab')
@@ -243,5 +246,9 @@ export class MultisampleSummaryChartComponent implements OnInit, OnDestroy {
         }
 
         this.changeDetector.detectChanges();
+    }
+
+    private static tooltipValueFn(d: IChartDataEntry): string {
+        return d.value.toExponential(3);
     }
 }
