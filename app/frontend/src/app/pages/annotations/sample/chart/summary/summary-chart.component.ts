@@ -27,25 +27,12 @@ import { IChartDataEntry } from 'shared/charts/data/chart-data-entry';
 import { IPieChartConfiguration } from 'shared/charts/pie/pie-chart-configuration';
 import { Utils } from 'utils/utils';
 
-interface IThresholdType {
-    title: string;
-    threshold: number;
-}
-
 @Component({
     selector:        'div[summary-chart]',
     templateUrl:     './summary-chart.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SummaryChartComponent implements OnInit, OnDestroy {
-    private static readonly thresholdTypes: IThresholdType[] = [
-        { title: 'All', threshold: 10000 },
-        { title: 'Top 5', threshold: 5 },
-        { title: 'Top 10', threshold: 10 },
-        { title: 'Top 15', threshold: 15 },
-        { title: 'Top 20', threshold: 20 }
-    ];
-
     private static readonly _barChartConfiguration: IBarChartConfiguration = {
         axis:      {
             y: { title: 'Column values', dy: '-0.4em' },
@@ -71,7 +58,6 @@ export class SummaryChartComponent implements OnInit, OnDestroy {
 
     private isPie: boolean = false;
     private thresholdTypesAvailable: number = -1;
-    private currentThresholdType: IThresholdType = SummaryChartComponent.thresholdTypes[ 0 ];
     private data: SummaryCounters;
 
     public options: SummaryChartOptions = new SummaryChartOptions();
@@ -94,6 +80,10 @@ export class SummaryChartComponent implements OnInit, OnDestroy {
         this.updateStream(ChartEventType.UPDATE_DATA, this.options);
     }
 
+    public get threshold(): number {
+        return this.thresholdTypesAvailable;
+    }
+
     @Input('data')
     public set setData(data: SummaryCounters) {
         this.data = data;
@@ -110,28 +100,6 @@ export class SummaryChartComponent implements OnInit, OnDestroy {
 
     public handleChangeOptionsFn(options: SummaryChartOptions): void {
         this.updateStream(ChartEventType.UPDATE_DATA, options);
-    }
-
-    // Threshold methods
-    public trackThresholdFn(_index: number, threshold: IThresholdType) {
-        return threshold.threshold;
-    }
-
-    public isThresholdTypesAvailable(): boolean {
-        return this.thresholdTypesAvailable > 1;
-    }
-
-    public getThresholdTypes(): IThresholdType[] {
-        return SummaryChartComponent.thresholdTypes.slice(0, this.thresholdTypesAvailable);
-    }
-
-    public getCurrentThresholdTypeTitle(): string {
-        return this.currentThresholdType.title;
-    }
-
-    public setThreshold(threshold: IThresholdType): void {
-        this.currentThresholdType = threshold;
-        this.updateStream(ChartEventType.UPDATE_DATA, this.options);
     }
 
     public ngOnDestroy(): void {
@@ -158,7 +126,7 @@ export class SummaryChartComponent implements OnInit, OnDestroy {
         const currentFieldName: string = options.fieldTypes[ options.currentFieldIndex ].name;
         const counters = this.data.counters.find((c) => c.name === currentFieldName);
 
-        if (counters === undefined) {
+        if (!counters) {
             return [];
         }
 
@@ -167,8 +135,8 @@ export class SummaryChartComponent implements OnInit, OnDestroy {
         });
 
         data = data.sort((a, b) => b.value - a.value);
-        if (data.length > this.currentThresholdType.threshold) {
-            data = data.slice(0, this.currentThresholdType.threshold);
+        if (data.length > options.currentThresholdType.threshold) {
+            data = data.slice(0, options.currentThresholdType.threshold);
         }
 
         if (options.isNotFoundVisible) {
@@ -181,13 +149,14 @@ export class SummaryChartComponent implements OnInit, OnDestroy {
     private updateThresholdValues(): void {
         this.thresholdTypesAvailable = 1;
         const currentFieldName: string = this.options.fieldTypes[ this.options.currentFieldIndex ].name;
-        for (let i = 1; i < SummaryChartComponent.thresholdTypes.length; ++i) {
-            const counters = this.data.counters.find((c) => c.name === currentFieldName);
-            if (counters !== undefined && counters.counters.length > SummaryChartComponent.thresholdTypes[ i ].threshold) {
-                this.thresholdTypesAvailable += 1;
+        const counters = this.data.counters.find((c) => c.name === currentFieldName);
+        if (counters) {
+            for (let i = 1; i < SummaryChartOptions.thresholdTypes.length; ++i) {
+                if (counters.counters.length > SummaryChartOptions.thresholdTypes[ i ].threshold) {
+                    this.thresholdTypesAvailable += 1;
+                }
             }
         }
-        this.currentThresholdType = SummaryChartComponent.thresholdTypes[ this.thresholdTypesAvailable - 1 ];
     }
 
     private static tooltipValueFn(d: IChartDataEntry): string {

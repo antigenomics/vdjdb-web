@@ -101,6 +101,7 @@ export class AnnotationsSidebarComponent implements OnInit, OnDestroy {
         if (routed) {
             this._state.update(this.router.url);
         }
+        this.changeDetector.detectChanges();
     }
 
     public isSampleSelected(sample: SampleItem): boolean {

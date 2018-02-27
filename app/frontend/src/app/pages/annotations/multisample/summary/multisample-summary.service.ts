@@ -17,6 +17,7 @@
 
 import { Injectable } from '@angular/core';
 import { AnnotationsService } from 'pages/annotations/annotations.service';
+import { SummaryChartOptions } from 'pages/annotations/sample/chart/summary/options/summary-chart-options.component';
 import { SampleFilters } from 'pages/annotations/sample/filters/sample-filters';
 import { SummaryCounters } from 'pages/annotations/sample/table/intersection/summary/summary-counters';
 import { Observable } from 'rxjs/Observable';
@@ -58,6 +59,8 @@ export interface IMultisampleSummaryAnalysisTab {
     samples: SampleItem[];
     state: IMultisampleSummaryAnalysisTabState;
     counters: Map<string, SummaryCounters>;
+    options: SummaryChartOptions;
+    hiddenSamples: string[];
 }
 
 @Injectable()
@@ -180,14 +183,16 @@ export class MultisampleSummaryService {
             return;
         }
         this.tabs.push({
-            id:       this.tabs.length + 1,
-            title:    MultisampleSummaryService.tabsNames[ this.tabs.length ],
-            dirty:    false,
-            filters:  new SampleFilters(),
-            disabled: false,
-            samples:  [],
-            state:    IMultisampleSummaryAnalysisTabState.NOT_INITIALIZED,
-            counters: new Map()
+            id:            this.tabs.length + 1,
+            title:         MultisampleSummaryService.tabsNames[ this.tabs.length ],
+            dirty:         false,
+            filters:       new SampleFilters(),
+            disabled:      false,
+            samples:       [],
+            state:         IMultisampleSummaryAnalysisTabState.NOT_INITIALIZED,
+            counters:      new Map(),
+            options:       new SummaryChartOptions(),
+            hiddenSamples: []
         });
         this.activeTab = this.tabs[ this.tabs.length - 1 ];
     }
