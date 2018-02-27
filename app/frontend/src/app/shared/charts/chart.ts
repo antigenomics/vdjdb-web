@@ -48,6 +48,7 @@ export interface Chart<T, C> {
 }
 
 export class Chart<T, C> {
+    private static readonly createChartDelay: number = 100; // We need this to handle container view size
     private created: boolean = false;
     private dataStreamSubscription: Subscription;
     private debounceResizeListener = Utils.Time.debounce((data) => {
@@ -63,8 +64,11 @@ export class Chart<T, C> {
         this.dataStreamSubscription = this.dataStream.subscribe((event) => {
             this.ngZone.runOutsideAngular(() => {
                 if (!this.created) {
-                    this.create(event.data);
-                    this.created = true;
+                    window.setTimeout(() => {
+                        this.container.recalculateContainerViewSize();
+                        this.create(event.data);
+                        this.created = true;
+                    }, Chart.createChartDelay);
                 } else {
                     switch (event.type) {
                         case ChartEventType.UPDATE_DATA:

@@ -103,8 +103,12 @@ export class AnnotationsSidebarComponent implements OnInit, OnDestroy {
         }
     }
 
-    public isSampleSelected(sample: SampleItem) {
+    public isSampleSelected(sample: SampleItem): boolean {
         return this._state.metadata.get('sample') === sample.name;
+    }
+
+    public isAllSamplesSelected(): boolean {
+        return this._state.path.includes('multisample');
     }
 
     public getSamples(): SampleItem[] {

@@ -15,52 +15,18 @@
  *
  */
 
-import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, Renderer2 } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { ISampleChartComponentItem, SampleChartService } from 'pages/annotations/sample/chart/sample-chart.service';
 import { SampleRouteResolverComponent } from 'pages/annotations/sample/common/sample-route-resolver.component';
 import { SampleService } from 'pages/annotations/sample/sample.service';
-import { Utils } from 'utils/utils';
 
 @Component({
     selector:        'sample-chart',
     templateUrl:     './sample-chart.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class SampleChartComponent extends SampleRouteResolverComponent implements AfterViewInit, OnDestroy {
-    private resizeWindowListener: () => void;
-    private resizeDebouncedHandler = Utils.Time.debounce(() => {
-        this.sampleChartService.fireResizeEvent();
-    });
-
-    constructor(private sampleChartService: SampleChartService, private renderer: Renderer2,
-                sampleService: SampleService, activatedRoute: ActivatedRoute, changeDetector: ChangeDetectorRef) {
+export class SampleChartComponent extends SampleRouteResolverComponent {
+    constructor(sampleService: SampleService, activatedRoute: ActivatedRoute, changeDetector: ChangeDetectorRef) {
         super(activatedRoute.parent.data, activatedRoute.parent.snapshot, changeDetector, sampleService);
-    }
-
-    public ngAfterViewInit(): void {
-        this.resizeWindowListener = this.renderer.listen('window', 'resize', this.resizeDebouncedHandler);
-        // this.addChart('summary');
-    }
-
-    public addChart(type: string): void {
-        this.sampleChartService.addSampleChart(this.sample, type);
-    }
-
-    public removeChart(chart: ISampleChartComponentItem): void {
-        this.sampleChartService.removeSampleChart(this.sample, chart);
-    }
-
-    public getCharts(): ISampleChartComponentItem[] {
-        return this.sampleChartService.getSampleCharts(this.sample);
-    }
-
-    public trackChartFn(_index: number, item: ISampleChartComponentItem) {
-        return item.id;
-    }
-
-    public ngOnDestroy(): void {
-        super.ngOnDestroy();
-        this.resizeWindowListener();
     }
 }
