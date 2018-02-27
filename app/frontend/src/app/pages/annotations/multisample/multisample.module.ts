@@ -17,6 +17,7 @@
 
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { MultisampleInfoComponent } from 'pages/annotations/multisample/info/multisample-info.component';
 import { MultisampleRouting } from 'pages/annotations/multisample/multisample.routing';
 import { MultisampleSummaryChartComponent } from 'pages/annotations/multisample/summary/chart/multisample-summary-chart.component';
@@ -28,7 +29,7 @@ import { ChartsModule } from 'shared/charts/charts.module';
 import { ModalsModule } from 'shared/modals/modals.module';
 
 @NgModule({
-    imports:      [ CommonModule, ModalsModule, MultisampleRouting, SampleModule, SampleChartModule, ChartsModule ],
+    imports:      [ CommonModule, FormsModule, ModalsModule, MultisampleRouting, SampleModule, SampleChartModule, ChartsModule ],
     declarations: [ MultisampleInfoComponent, MultisampleSummaryComponent, MultisampleSummaryChartComponent ],
     providers:    [ MultisampleSummaryService ]
 })

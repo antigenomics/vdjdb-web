@@ -39,7 +39,9 @@ export class SummaryChartOptions {
         { title: 'Top 5', threshold: 5 },
         { title: 'Top 10', threshold: 10 },
         { title: 'Top 15', threshold: 15 },
-        { title: 'Top 20', threshold: 20 }
+        { title: 'Top 20', threshold: 20 },
+        { title: 'Top 25', threshold: 25 },
+        { title: 'Top 30', threshold: 30 }
     ];
 
     public normalizeTypes: INormalizeType[] = [
@@ -87,7 +89,7 @@ export class SummaryChartOptionsComponent {
     @Input('threshold')
     public set threshold(threshold: number) {
         this.thresholdTypesAvailable = threshold;
-        this.options.currentThresholdType = SummaryChartOptions.thresholdTypes[this.thresholdTypesAvailable - 1];
+        this.options.updateCurrentThresholdType(threshold);
     }
 
     public get isNotFoundVisible(): boolean {
