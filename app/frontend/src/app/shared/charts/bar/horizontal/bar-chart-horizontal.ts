@@ -120,30 +120,7 @@ export class BarChartHorizontal extends Chart<IChartDataEntry, IBarChartConfigur
     }
 
     public resize(data: IChartDataEntry[]): void {
-        const { svg, width, height } = this.container.getContainer();
-        const { x, xAxis } = this.createXAxis(width, height, data);
-        const { y, yAxis } = this.createYAxis(width, height, data);
-        const colors = ChartUtils.Color.generate(data);
-
-        svg.select('.x.axis')
-           .attr('transform', `translate(0, ${height})`)
-           .transition().duration(BarChartHorizontal.defaultTransitionDuration)
-           .call(xAxis);
-
-        svg.select('.y.axis')
-           .transition().duration(BarChartHorizontal.defaultTransitionDuration)
-           .call(yAxis);
-
-        const bars = svg.selectAll('.bar').data(data);
-
-        bars.transition().duration(BarChartHorizontal.defaultTransitionDuration)
-            .attr('y', (d) => y(d.name))
-            .attr('x', BarChartHorizontal.defaultXMargin)
-            .attr('height', y.bandwidth)
-            .attr('width', (d) => x(d.value))
-            .attr('fill', (d) => d.color ? d.color : colors(d.name));
-
-        this.bindTooltipEvents(bars);
+        this.update(data);
     }
 
     private createXAxis(width: number, height: number, data: IChartDataEntry[]): { x: ScaleLinear<number, number>, xAxis: any } {

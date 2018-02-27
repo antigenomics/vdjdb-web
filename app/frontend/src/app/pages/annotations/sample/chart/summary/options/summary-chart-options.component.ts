@@ -16,8 +16,6 @@
  */
 
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
-import { SummaryChartComponent } from 'pages/annotations/sample/chart/summary/summary-chart.component';
-import { ChartEventType } from 'shared/charts/chart-events';
 
 export interface IThresholdType {
     title: string;
@@ -65,6 +63,10 @@ export class SummaryChartOptions {
 
     public getCurrentSummaryFilterFieldType(): ISummaryFilterFieldType {
         return this.fieldTypes[this.currentFieldIndex];
+    }
+
+    public updateCurrentThresholdType(availableThresholdTypes: number): void {
+        this.currentThresholdType = SummaryChartOptions.thresholdTypes[availableThresholdTypes - 1];
     }
 }
 
