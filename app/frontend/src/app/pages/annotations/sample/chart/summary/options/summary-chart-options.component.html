@@ -1,0 +1,26 @@
+<div class="ui checkbox">
+    <input type="checkbox" [(ngModel)]="isNotFoundVisible">
+    <label>Show unannotated</label>
+</div>
+<br>
+<div class="ui checkbox">
+    <input type="checkbox" [(ngModel)]="isWeightedByReadCount">
+    <label>Weight by read count</label>
+</div>
+
+<h4>Column name</h4>
+<div class="ui selection fluid dropdown" dropdown [content]="columnNamesContent">
+    <span class="text">{{ getCurrentFieldTitle() }}</span>
+    <i class="dropdown icon"></i>
+    <div class="menu fast fade element" #columnNamesContent>
+        <div class="item" *ngFor="let field of getSummaryFilterFields(); index as i" (click)="setCurrentSummaryFilterField(i)">
+            {{ field.title }}
+        </div>
+    </div>
+</div>
+
+<h4>Normalize by</h4>
+<div class="ui checkbox" *ngFor="let type of options.normalizeTypes">
+    <input type="checkbox" [ngModel]="type.checked" (ngModelChange)="normalizeTypeChangeFn($event, type)">
+    <label>{{ type.title }}</label>
+</div>

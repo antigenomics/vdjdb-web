@@ -14,31 +14,7 @@
             <label>Pie chart</label>
         </div>
         <div class="ui divider"></div>
-        <div class="ui checkbox">
-            <input type="checkbox" [(ngModel)]="showNotFound">
-            <label>Show unannotated</label>
-        </div>
-        <br>
-        <div class="ui checkbox">
-            <input type="checkbox" [(ngModel)]="weighted">
-            <label>Weight by read count</label>
-        </div>
-
-        <h4>Column name</h4>
-        <div class="ui selection fluid dropdown" dropdown [content]="columnNamesContent">
-            <span class="text">{{ getCurrentFieldTitle() }}</span>
-            <i class="dropdown icon"></i>
-            <div class="menu fast fade element" #columnNamesContent>
-                <div class="item" *ngFor="let field of getFields(); index as i" (click)="setCurrentField(i)">
-                    {{ field }}
-                </div>
-            </div>
-        </div>
-        <h4>Normalize by</h4>
-        <div class="ui checkbox" *ngFor="let type of getNormalizeTypes()">
-            <input type="checkbox" (click)="switchNormalizeType()" [(ngModel)]="type.checked">
-            <label>{{ type.title }}</label>
-        </div>
+        <summary-chart-options [options]="options" (onOptionsChange)="handleChangeOptionsFn($event)"></summary-chart-options>
         <ng-container *ngIf="isThresholdTypesAvailable()">
             <h4>Show</h4>
             <div class="ui selection fluid upward dropdown" dropdown [content]="thresholdContent">

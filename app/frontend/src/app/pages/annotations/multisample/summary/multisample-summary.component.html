@@ -1,24 +1,24 @@
 <div class="ui fade slow element segment" *ngIf="!multisampleSummaryService.isConnected() && !multisampleSummaryService.isConnectionFailed()">
-    <div class="ui active centered inline massive loader"></div>
+    <div class="ui active centered inline text loader">Connecting</div>
 </div>
 
 <ng-container *ngIf="multisampleSummaryService.isConnected() && !multisampleSummaryService.isConnectionFailed()">
+    <!--<div class="ui fade slow element segments">-->
+        <!--<h3 class="ui top attached header">Multisample analysis tabs</h3>-->
+        <!--<div class="ui teal attached segment">-->
+            <!--<div class="ui secondary menu">-->
+                <!--<a class="item tab" [ngClass]="{'active':multisampleSummaryService.isTabActive(tab)}"-->
+                   <!--*ngFor="let tab of multisampleSummaryService.getTabs()" (click)="multisampleSummaryService.setActiveTab(tab)">-->
+                    <!--{{ tab.title }}-->
+                <!--</a>-->
+                <!--<button class="ui basic icon button" *ngIf="multisampleSummaryService.isNewTabAllowed()" (click)="multisampleSummaryService.addNewTab()">-->
+                    <!--<i class="icon plus"></i>-->
+                <!--</button>-->
+            <!--</div>-->
+        <!--</div>-->
+    <!--</div>-->
     <div class="ui fade slow element segments">
-        <h3 class="ui top attached header">Multisample analysis tabs</h3>
-        <div class="ui teal attached segment">
-            <div class="ui secondary menu">
-                <a class="item tab" [ngClass]="{'active':multisampleSummaryService.isTabActive(tab)}"
-                   *ngFor="let tab of multisampleSummaryService.getTabs()" (click)="multisampleSummaryService.setActiveTab(tab)">
-                    {{ tab.title }}
-                </a>
-                <button class="ui basic icon button" *ngIf="multisampleSummaryService.isNewTabAllowed()" (click)="multisampleSummaryService.addNewTab()">
-                    <i class="icon plus"></i>
-                </button>
-            </div>
-        </div>
-    </div>
-    <div class="ui fade slow element segments">
-        <h3 class="ui top attached header">Selected samples</h3>
+        <h3 class="ui top attached header">Select samples</h3>
         <div class="ui teal attached segment">
             <div class="ui secondary menu">
                 <a class="item tab" [ngClass]="{'active':multisampleSummaryService.isSampleSelected(sample)}"
@@ -34,7 +34,7 @@
         </div>
     </div>
     <div class="ui fade slow element segments">
-        <h3 class="ui top attached header">Filters</h3>
+        <h3 class="ui top attached header">Annotate all</h3>
         <div class="ui teal attached padded segment">
             <sample-filters [filters]="multisampleSummaryService.getCurrentTabFilters()"
                             [disabled]="multisampleSummaryService.isCurrentTabDisabled()"></sample-filters>

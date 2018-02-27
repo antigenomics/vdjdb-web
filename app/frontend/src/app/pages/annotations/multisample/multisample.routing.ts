@@ -16,11 +16,11 @@
  */
 
 import { RouterModule, Routes } from '@angular/router';
-import { MultisampleInfoComponent } from 'pages/annotations/multisample/info/multisample-info.component';
+// import { MultisampleInfoComponent } from 'pages/annotations/multisample/info/multisample-info.component';
 import { MultisampleSummaryComponent } from 'pages/annotations/multisample/summary/multisample-summary.component';
 
 const routes: Routes = [
-    { path: '', component: MultisampleInfoComponent },
+    { path: '', redirectTo: 'summary' },
     { path: 'summary', component: MultisampleSummaryComponent }
 ];
 
