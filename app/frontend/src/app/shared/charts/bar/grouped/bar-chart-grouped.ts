@@ -47,6 +47,9 @@ type BarsSelectionType = d3.Selection<BaseType, IGroupBarData, BaseType, IChartG
 type BarsTransitionType = d3.Transition<BaseType, IGroupBarData, BaseType, IChartGroupedDataEntry>;
 
 export class BarChartGrouped extends Chart<IChartGroupedDataEntry, IBarChartConfiguration> {
+    private static readonly defaultMainXRotateThreshold: number = 10;
+    private static readonly defaultMainXRotateMaxAngle: number = 65;
+    private static readonly defaultMainXRotateDy: number = -35;
     private static readonly defaultTransitionDuration: number = 750;
     private static readonly defaultPadding: number = 0.1;
 
@@ -64,7 +67,7 @@ export class BarChartGrouped extends Chart<IChartGroupedDataEntry, IBarChartConf
     public create(data: IChartGroupedDataEntry[]): void {
         const { svg, width, height } = this.container.getContainer();
         const { y, yAxis } = this.createYAxis(width, height, data);
-        const { mainX, mainXAxis } = this.createMainXAxis(width, data);
+        const { mainX, mainXAxis } = this.createMainXAxis(height, width, data);
 
         const groupsAxis = this.createGroupsXAxis(mainX, data);
 
@@ -85,9 +88,10 @@ export class BarChartGrouped extends Chart<IChartGroupedDataEntry, IBarChartConf
            .attr('dy', this.configuration.axis.y.dy)
            .text(this.configuration.axis.y.title);
 
-        svg.append('g')
-           .attr('class', 'x axis grouped main')
-           .call(mainXAxis as any);
+        const groupedMainAxis = svg.append('g')
+                                   .attr('class', 'x axis grouped main')
+                                   .call(mainXAxis as any);
+        this.rotateMainXAxis(data.length, groupedMainAxis);
 
         this.bindTooltipEvents(enterBars);
     }
@@ -95,7 +99,7 @@ export class BarChartGrouped extends Chart<IChartGroupedDataEntry, IBarChartConf
     public update(data: IChartGroupedDataEntry[]): void {
         const { svg, width, height } = this.container.getContainer();
         const { y, yAxis } = this.createYAxis(width, height, data);
-        const { mainX, mainXAxis } = this.createMainXAxis(width, data);
+        const { mainX, mainXAxis } = this.createMainXAxis(height, width, data);
 
         const groupsAxis = this.createGroupsXAxis(mainX, data);
         const groups = svg.selectAll('g.group').data(data);
@@ -132,9 +136,10 @@ export class BarChartGrouped extends Chart<IChartGroupedDataEntry, IBarChartConf
            .transition().duration(BarChartGrouped.defaultTransitionDuration)
            .call(yAxis);
 
-        svg.selectAll('.x.axis.grouped.main')
-           .transition().duration(BarChartGrouped.defaultTransitionDuration)
-           .call(mainXAxis);
+        const mainGroupedAxis = svg.selectAll('.x.axis.grouped.main')
+                                   .transition().duration(BarChartGrouped.defaultTransitionDuration)
+                                   .call(mainXAxis);
+        this.rotateMainXAxis(data.length, mainGroupedAxis);
 
         groups.exit().remove();
         bars.exit().remove();
@@ -204,9 +209,29 @@ export class BarChartGrouped extends Chart<IChartGroupedDataEntry, IBarChartConf
         return { y, yAxis };
     }
 
-    private createMainXAxis(width: number, data: IChartGroupedDataEntry[]): { mainX: ScaleBand<string>, mainXAxis: any } {
+    private rotateMainXAxis(count: number, axis: any): void {
+        if (count > BarChartGrouped.defaultMainXRotateThreshold) {
+            const aAngle = 2.6;
+            const bAngle = -26;
+            const angle = Math.min(BarChartGrouped.defaultMainXRotateMaxAngle, count * aAngle + bAngle);
+
+            const aDy = -0.4;
+            const bDy = -21;
+            const dy = Math.max(BarChartGrouped.defaultMainXRotateDy, count * aDy + bDy);
+            axis.selectAll('text')
+                .attr('transform', `translate(0,${dy}),rotate(-${angle})`);
+        }
+    }
+
+    private createMainXAxis(height: number, width: number, data: IChartGroupedDataEntry[]): { mainX: ScaleBand<string>, mainXAxis: any } {
         const mainX = d3.scaleBand().domain(data.map((d) => d.name)).padding(BarChartGrouped.defaultPadding).range([ 0, width ]);
         const mainXAxis = d3.axisTop(mainX);
+
+        if (this.configuration.grid) {
+            mainXAxis.tickSizeInner(-height);
+            mainXAxis.tickSizeOuter(0);
+        }
+
         return { mainX, mainXAxis };
     }
 

@@ -15,7 +15,7 @@
  *
  */
 
-import { ChangeDetectionStrategy, Component, Input, OnDestroy, OnInit, Renderer2 } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit, Renderer2 } from '@angular/core';
 import {
     IMultisampleSummaryAnalysisTab, IMultisampleSummaryAnalysisTabState, MultisampleSummaryService,
     MultisampleSummaryServiceEvents
@@ -46,10 +46,12 @@ export class MultisampleSummaryChartComponent implements OnInit, OnDestroy {
     private multisampleSummaryServiceEventsSubscription: Subscription;
     private currentTab: IMultisampleSummaryAnalysisTab;
     private thresholdTypesAvailable: number = -1;
+    private orderBySamples: boolean = true;
+    private showOnlyShared: boolean = false;
 
     public barChartConfiguration: IBarChartConfiguration = {
         grid:      true,
-        container: { margin: { left: 60, right: 25, top: 20, bottom: 100 } }
+        container: { margin: { left: 60, right: 25, top: 100, bottom: 100 } }
     };
 
     @Input('tab')
@@ -64,7 +66,26 @@ export class MultisampleSummaryChartComponent implements OnInit, OnDestroy {
         return this.thresholdTypesAvailable;
     }
 
-    constructor(private multisampleSummaryService: MultisampleSummaryService, private renderer: Renderer2) {
+    public get order(): boolean {
+        return this.orderBySamples;
+    }
+
+    public set order(order: boolean) {
+        this.orderBySamples = order;
+        this.updateStream(ChartEventType.UPDATE_DATA, this.currentTab.options);
+    }
+
+    public get shared(): boolean {
+        return this.showOnlyShared;
+    }
+
+    public set shared(shared: boolean) {
+        this.showOnlyShared = shared;
+        this.updateStream(ChartEventType.UPDATE_DATA, this.currentTab.options);
+    }
+
+    constructor(private multisampleSummaryService: MultisampleSummaryService, private renderer: Renderer2,
+                private changeDetector: ChangeDetectorRef) {
     }
 
     public ngOnInit(): void {
@@ -99,6 +120,10 @@ export class MultisampleSummaryChartComponent implements OnInit, OnDestroy {
         return this.currentTab.hiddenSamples.indexOf(sample) !== -1;
     }
 
+    public getNonHiddenSamplesCount(samples: string[]): number {
+        return samples.filter((s) => !this.isSampleHidden(s)).length;
+    }
+
     public handleChangeOptionsFn(options: SummaryChartOptions): void {
         this.updateStream(ChartEventType.UPDATE_DATA, options);
     }
@@ -114,8 +139,8 @@ export class MultisampleSummaryChartComponent implements OnInit, OnDestroy {
     }
 
     private createData(options: SummaryChartOptions): IChartGroupedDataEntry[] {
-        const data: IChartGroupedDataEntry[] = [];
         const currentCounterFieldName = options.getCurrentSummaryFilterFieldType().name;
+        let data: IChartGroupedDataEntry[] = [];
 
         const valueConverter: (c: SummaryClonotypeCounter) => number = (c) => {
             let value = (options.isWeightedByReadCount ? c.frequency : c.unique);
@@ -128,42 +153,95 @@ export class MultisampleSummaryChartComponent implements OnInit, OnDestroy {
             return value;
         };
 
-        this.currentTab.counters.forEach((value: SummaryCounters, key: string) => {
-            if (!this.isSampleHidden(key)) {
-                const counters = value.counters.find((c) => c.name === currentCounterFieldName);
-                let values = counters.counters.map((c) => ({ name: c.field, value: valueConverter(c) } as IChartDataEntry)).sort((a, b) => {
-                    return b.value - a.value;
+        if (this.orderBySamples) {
+            this.currentTab.counters.forEach((value: SummaryCounters, key: string) => {
+                if (!this.isSampleHidden(key)) {
+                    const counters = value.counters.find((c) => c.name === currentCounterFieldName);
+                    let values = counters.counters.map((c) => ({ name: c.field, value: valueConverter(c) } as IChartDataEntry)).sort((a, b) => {
+                        return b.value - a.value;
+                    });
+                    if (values.length > options.currentThresholdType.threshold) {
+                        values = values.slice(0, options.currentThresholdType.threshold);
+                    }
+                    if (options.isNotFoundVisible) {
+                        values.push({ name: 'Unannotated', value: valueConverter(value.notFoundCounter), color: 'rgba(40, 40, 40, 0.5)' });
+                    }
+                    if (counters) {
+                        data.push({ name: key, values });
+                    }
+                }
+            });
+        } else {
+            const fieldValues: Set<string> = new Set();
+            this.currentTab.counters.forEach((summaryCounter: SummaryCounters) => {
+                const fieldCounters = summaryCounter.counters.find((c) => c.name === currentCounterFieldName);
+                fieldCounters.counters.forEach((counter: SummaryClonotypeCounter) => {
+                    fieldValues.add(counter.field);
                 });
-                if (values.length > options.currentThresholdType.threshold) {
-                    values = values.slice(0, options.currentThresholdType.threshold);
-                }
-                if (options.isNotFoundVisible) {
-                    values.push({ name: 'Unannotated', value: valueConverter(value.notFoundCounter), color: 'rgba(40, 40, 40, 0.5)' });
-                }
-                if (counters) {
-                    data.push({ name: key, values: values.reverse() });
-                }
+            });
+
+            Array.from(fieldValues.values()).forEach((value) => {
+                const entries: IChartDataEntry[] = [];
+
+                Array.from(this.currentTab.counters.entries()).forEach((entry: [ string, SummaryCounters ]) => {
+                    const [ sample, summaryCounters ] = entry;
+                    if (!this.isSampleHidden(sample)) {
+                        const counters = summaryCounters.counters.find((c) => c.name === currentCounterFieldName);
+                        const index = counters.counters.map((c) => c.field).indexOf(value);
+                        if (index !== -1) {
+                            entries.push({ name: sample, value: valueConverter(counters.counters[ index ]) });
+                        }
+                    }
+                });
+
+                data.push({ name: value, values: entries });
+            });
+
+            if (this.showOnlyShared) {
+                const nonHiddenSamplesCount = this.getNonHiddenSamplesCount(Array.from(this.currentTab.counters.keys()));
+                data = data.filter((d) => d.values.length === nonHiddenSamplesCount);
             }
-        });
+
+            const reducer = (previous: number, current: IChartDataEntry) => {
+                return previous + current.value;
+            };
+
+            data = data.sort((a, b) => {
+                const aSummary = a.values.reduce(reducer, 0.0);
+                const bSummary = b.values.reduce(reducer, 0.0);
+
+                return bSummary - aSummary;
+            });
+
+            if (data.length > options.currentThresholdType.threshold) {
+                data = data.slice(0, options.currentThresholdType.threshold);
+            }
+        }
 
         return data;
     }
 
     private updateThresholdValues(): void {
         this.thresholdTypesAvailable = 1;
-        const currentFieldName: string = this.currentTab.options.getCurrentSummaryFilterFieldType().name;
-        this.currentTab.counters.forEach((value: SummaryCounters) => {
-            let localThresholdTypesAvailable = 1;
-            const counters = value.counters.find((c) => c.name === currentFieldName);
-            if (counters) {
-                for (let i = 1; i < SummaryChartOptions.thresholdTypes.length; ++i) {
-                    if (counters.counters.length > SummaryChartOptions.thresholdTypes[ i ].threshold) {
-                        localThresholdTypesAvailable += 1;
+
+        if (this.orderBySamples) {
+            const currentFieldName: string = this.currentTab.options.getCurrentSummaryFilterFieldType().name;
+            this.currentTab.counters.forEach((value: SummaryCounters) => {
+                let localThresholdTypesAvailable = 1;
+                const counters = value.counters.find((c) => c.name === currentFieldName);
+                if (counters) {
+                    for (const type of SummaryChartOptions.thresholdTypes) {
+                        if (counters.counters.length > type.threshold) {
+                            localThresholdTypesAvailable += 1;
+                        }
                     }
                 }
-            }
-            this.thresholdTypesAvailable = Math.max(this.thresholdTypesAvailable, localThresholdTypesAvailable);
-        });
-        // this.currentTab.options.updateCurrentThresholdType(this.thresholdTypesAvailable);
+                this.thresholdTypesAvailable = Math.max(this.thresholdTypesAvailable, localThresholdTypesAvailable);
+            });
+        } else {
+            this.thresholdTypesAvailable = SummaryChartOptions.thresholdTypes.length;
+        }
+
+        this.changeDetector.detectChanges();
     }
 }

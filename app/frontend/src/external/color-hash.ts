@@ -30,7 +30,7 @@ var BKDRHash = function(str: any) {
         if (hash > MAX_SAFE_INTEGER) {
             hash = parseInt((hash / seed2) as any);
         }
-        hash = hash * seed + str.charCodeAt(i);
+        hash = hash * seed + str.charCodeAt(i) * str.charCodeAt(i);
     }
     return hash;
 };

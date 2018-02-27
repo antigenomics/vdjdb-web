@@ -25,7 +25,7 @@ export namespace ChartUtils {
     export namespace Color {
 
         export function generate(data: IChartDataEntry[]): ScaleOrdinal<string, string> {
-            const colorHash = new ColorHash({lightness: 0.7});
+            const colorHash = new ColorHash({ lightness: [ 0.5, 0.6, 0.7 ], saturation: [ 0.6, 0.5, 0.4 ] });
             const categories: string[] = data.map((d) => d.color ? d.color : colorHash.hex(d.name));
             const names: string[] = data.map((d) => d.name);
 

@@ -151,8 +151,8 @@ export class SummaryChartComponent implements OnInit, OnDestroy {
         const currentFieldName: string = this.options.fieldTypes[ this.options.currentFieldIndex ].name;
         const counters = this.data.counters.find((c) => c.name === currentFieldName);
         if (counters) {
-            for (let i = 1; i < SummaryChartOptions.thresholdTypes.length; ++i) {
-                if (counters.counters.length > SummaryChartOptions.thresholdTypes[ i ].threshold) {
+            for (const type of SummaryChartOptions.thresholdTypes) {
+                if (counters.counters.length > type.threshold) {
                     this.thresholdTypesAvailable += 1;
                 }
             }
