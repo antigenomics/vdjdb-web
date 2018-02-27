@@ -126,6 +126,7 @@ export class MultisampleSummaryService {
         const tabID: number = this.activeTab.id;
         const filters: SampleFilters = this.activeTab.filters;
         const sampleNames: string[] = this.activeTab.samples.map((s) => s.name);
+
         this.connection.subscribeMessages({
             action: MultisampleSummaryServiceWebSocketActions.ANNOTATE,
             data:   new WebSocketRequestData()
@@ -167,6 +168,7 @@ export class MultisampleSummaryService {
                             this.notifications.info('Multisample analysis completed', `Tab '${tab.title}' annotated`);
                         }
 
+                        tab.hiddenSamples.splice(0, this.activeTab.hiddenSamples.length);
                         tab.dirty = true;
                     }
 
