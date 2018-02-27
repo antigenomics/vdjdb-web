@@ -164,5 +164,6 @@ export class MultisampleSummaryChartComponent implements OnInit, OnDestroy {
             }
             this.thresholdTypesAvailable = Math.max(this.thresholdTypesAvailable, localThresholdTypesAvailable);
         });
+        // this.currentTab.options.updateCurrentThresholdType(this.thresholdTypesAvailable);
     }
 }

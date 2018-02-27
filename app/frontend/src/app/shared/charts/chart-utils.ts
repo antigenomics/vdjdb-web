@@ -16,6 +16,7 @@
  */
 
 import { ScaleOrdinal } from 'd3-scale';
+import { ColorHash } from 'external/color-hash';
 import * as d3 from 'external/d3';
 import { IChartDataEntry } from 'shared/charts/data/chart-data-entry';
 
@@ -24,9 +25,15 @@ export namespace ChartUtils {
     export namespace Color {
 
         export function generate(data: IChartDataEntry[]): ScaleOrdinal<string, string> {
-            return d3.scaleOrdinal(
-                d3.schemeCategory20.map((c) => (d3.color(c).brighter(0.1).toString())) // tslint:disable-line:no-magic-numbers
-            ).domain(data.filter((d) => d.color === undefined).map((d) => d.name));
+            const colorHash = new ColorHash({lightness: 0.7});
+            const categories: string[] = data.map((d) => d.color ? d.color : colorHash.hex(d.name));
+            const names: string[] = data.map((d) => d.name);
+
+            return d3.scaleOrdinal(categories).domain(names);
+            //
+            // return d3.scaleOrdinal(
+            //     d3.schemeCategory20.map((c) => (d3.color(c).brighter(0.1).toString())) // tslint:disable-line:no-magic-numbers
+            // ).domain(data.filter((d) => d.color === undefined).map((d) => d.name));
         }
 
     }

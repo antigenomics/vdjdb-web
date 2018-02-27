@@ -157,6 +157,7 @@ export class SummaryChartComponent implements OnInit, OnDestroy {
                 }
             }
         }
+        this.options.updateCurrentThresholdType(this.thresholdTypesAvailable);
     }
 
     private static tooltipValueFn(d: IChartDataEntry): string {
