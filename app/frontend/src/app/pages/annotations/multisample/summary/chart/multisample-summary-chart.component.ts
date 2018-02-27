@@ -49,7 +49,7 @@ export class MultisampleSummaryChartComponent implements OnInit, OnDestroy {
 
     public barChartConfiguration: IBarChartConfiguration = {
         grid:      true,
-        container: { margin: { left: 25, right: 25, top: 20, bottom: 100 } }
+        container: { margin: { left: 60, right: 25, top: 20, bottom: 100 } }
     };
 
     @Input('tab')
