@@ -94,11 +94,37 @@ case class User(id: Long, login: String, email: String, verified: Boolean, folde
         }
     }
 
+    def addDemoSampleFile(name: String, extension: String, softwareType: String, file: File)
+                         (implicit sfp: SampleFileProvider, upp: UserPermissionsProvider, fmp: FileMetadataProvider,
+                          ec: ExecutionContext): Future[Either[Long, String]] = async {
+        val permissions = await(getPermissions)
+        if (permissions.isUploadAllowed) {
+            Right("Unable to create demo sample file, it is not a demo account")
+        } else {
+            val files = await(getSampleFiles)
+            if (files.exists(_.sampleName == name)) {
+                Right(s"Sample file $name already exist")
+            } else {
+                if (!file.isFile || !file.getParentFile.isDirectory) {
+                    Right(s"Bad file $name")
+                } else {
+                    val sampleFolderPath = file.getParentFile.getAbsolutePath
+                    val sampleFolder = file.getParentFile
+                    val metadataID = await(fmp.insert(name, extension, sampleFolderPath))
+                    val sampleFileID = await(sfp.insert(SampleFile(0, name, softwareType, metadataID, id)))
+                    Left(sampleFileID)
+                }
+            }
+        }
+    }
+
     def checkPassword(plain: String): Boolean = {
         BCrypt.checkpw(plain, password)
     }
 
-    private[authorization] def delete(implicit sfp: SampleFileProvider, ec: ExecutionContext): Future[AnyVal] = async {
+    private[authorization] def delete(implicit sfp: SampleFileProvider, ec: ExecutionContext): Future[AnyVal]
+
+    = async {
         val samples = await(getSampleFiles)
         samples.foreach { sample => sfp.delete(sample) }
         val folder = new File(folderPath)
