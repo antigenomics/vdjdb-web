@@ -40,6 +40,11 @@ export class AnnotationsInfoComponent implements OnInit, OnDestroy {
         });
     }
 
+    public checkFeaturesAvailability(): boolean {
+        const permissions = this.annotationsService.getUserPermissions();
+        return permissions.isUploadAllowed && permissions.isDeleteAllowed && permissions.isChangePasswordAllowed;
+    }
+
     public isInitialized(): boolean {
         return this.annotationsService.isInitialized();
     }
