@@ -60,7 +60,7 @@ class UserProvider @Inject()(@NamedDatabase("default") protected val dbConfigPro
 
     private final val table = TableQuery[UserTable]
 
-    if (usersConfiguration.createUsers.nonEmpty) {
+    if (usersConfiguration.enableDefaultUsers && usersConfiguration.createUsers.nonEmpty) {
         logger.info("Initial users: ")
         usersConfiguration.createUsers.foreach(user => async {
             val check = await(get(user._2))
