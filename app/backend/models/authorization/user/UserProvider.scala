@@ -26,8 +26,11 @@ import backend.models.authorization.forms.SignupForm
 import backend.models.authorization.permissions.{UserPermissions, UserPermissionsProvider}
 import backend.models.authorization.tokens.session.SessionTokenProvider
 import backend.models.authorization.tokens.verification.{VerificationToken, VerificationTokenConfiguration, VerificationTokenProvider}
+import backend.models.files.FileMetadataProvider
 import backend.models.files.sample.SampleFileProvider
 import backend.utils.{CommonUtils, TimeUtils}
+import com.antigenomics.vdjtools.misc.Software
+import org.apache.commons.io.FilenameUtils
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import play.db.NamedDatabase
 import slick.jdbc.JdbcProfile
@@ -45,11 +48,13 @@ import scala.concurrent.duration._
 @Singleton
 class UserProvider @Inject()(@NamedDatabase("default") protected val dbConfigProvider: DatabaseConfigProvider,
                              vtp: VerificationTokenProvider, stp: SessionTokenProvider)
-                            (implicit ec: ExecutionContext, conf: Configuration, system: ActorSystem, upp: UserPermissionsProvider, sfp: SampleFileProvider)
+                            (implicit ec: ExecutionContext, conf: Configuration, system: ActorSystem, upp: UserPermissionsProvider,
+                             sfp: SampleFileProvider, fmp: FileMetadataProvider)
     extends HasDatabaseConfigProvider[JdbcProfile] {
     private final val logger = LoggerFactory.getLogger(this.getClass)
     private final val configuration = conf.get[VerificationTokenConfiguration]("application.auth.verification")
     private final val usersConfiguration = conf.get[UserCreateConfiguration]("application.auth.common")
+    private final val demoUserConfiguration = conf.get[DemoUserConfiguration]("application.auth.demo")
 
     import dbConfig.profile.api._
 
@@ -60,12 +65,43 @@ class UserProvider @Inject()(@NamedDatabase("default") protected val dbConfigPro
         usersConfiguration.createUsers.foreach(user => async {
             val check = await(get(user._2))
             if (check.isEmpty) {
-                logger.info(s"User ${user._2} has been created")
                 verifyUser(await(createUser(user._1, user._2, user._3, user._4.toLong)))
+                logger.info(s"User ${user._2} has been created")
             } else {
                 logger.info(s"User ${user._2} already created")
             }
         })
+    }
+
+    if (demoUserConfiguration.enabled) async {
+        logger.info("Demo user is enabled")
+        val check = await(get(demoUserConfiguration.login))
+        if (check.isEmpty) {
+            val demoUser = await(verifyUser(await(createUser("vdjdb-demo",
+                demoUserConfiguration.login,
+                demoUserConfiguration.password,
+                UserPermissionsProvider.DEMO_ID))))
+            if (!demoUser.isEmpty) {
+                val demoFiles = new File(demoUserConfiguration.filesLocation)
+                if (demoFiles.exists && demoFiles.isDirectory) {
+                    demoFiles.listFiles.filter(_.isFile).foreach((file) => {
+                        val name = FilenameUtils.getBaseName(file.getName)
+                        val extension = FilenameUtils.getExtension(file.getName)
+                        demoUser.get.addDemoSampleFile(name, extension, Software.VDJtools.toString, file).map {
+                            case Left(sampleFileID) =>
+                                logger.info(s"Added demo sample file: $name")
+                            case Right(error) =>
+                                logger.warn(s"$error")
+                        }
+                    })
+                }
+                logger.info(s"Demo user has been created")
+            } else {
+                logger.info("Failed to create demo user")
+            }
+        } else {
+            logger.info(s"Demo user already created")
+        }
     }
 
     if (configuration.interval.getSeconds != 0) {
@@ -97,6 +133,8 @@ class UserProvider @Inject()(@NamedDatabase("default") protected val dbConfigPro
     def getAuthTokenSessionName: String = stp.getAuthTokenSessionName
 
     def getVerificationConfiguration: VerificationTokenConfiguration = configuration
+
+    def getDemoUserConfiguration: DemoUserConfiguration = demoUserConfiguration
 
     def getVerificationMethod: String = configuration.method
 

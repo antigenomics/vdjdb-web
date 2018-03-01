@@ -1,4 +1,5 @@
 authorization.forms.login.login = Login
+authorization.forms.login.demo = Demo
 authorization.forms.login.forgot = Forgot password?
 authorization.forms.login.back = Back to home
 authorization.forms.login.signup = Sign up

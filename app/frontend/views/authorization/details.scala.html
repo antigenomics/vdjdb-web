@@ -39,28 +39,30 @@
                             </tbody>
                         </table>
                     </div>
-                    <div class="six wide column">
-                        <h3 class="ui header">@messages("account.change.password.header")</h3>
-                        @helper.form(action = backend.controllers.routes.Account.changePassword(), args = 'class -> "ui form", 'id -> "change") {
-                            @if(form.hasGlobalErrors) {
-                                @frontend.views.html.authorization.forms.formErrors(form.globalErrors)
+                    @if(userDetails.permissions.isChangePasswordAllowed) {
+                        <div class="six wide column">
+                            <h3 class="ui header">@messages("account.change.password.header")</h3>
+                            @helper.form(action = backend.controllers.routes.Account.changePassword(), args = 'class -> "ui form", 'id -> "change") {
+                                @if(form.hasGlobalErrors) {
+                                    @frontend.views.html.authorization.forms.formErrors(form.globalErrors)
+                                }
+                                @if(flash.get("changed").nonEmpty) {
+                                    @frontend.views.html.authorization.forms.formSuccess(Seq(flash.get("changed").get))
+                                }
+                                @CSRF.formField
+                                @inputText(form("oldPassword"), args = 'icon -> "lock",
+                                    'placeholder -> messages("account.change.password.oldPasswordPlaceholder"),
+                                    'fieldType -> "password")
+                                @inputText(form("newPassword"), args = 'icon -> "lock",
+                                    'placeholder -> messages("account.change.password.newPasswordPlaceholder"),
+                                    'fieldType -> "password")
+                                @inputText(form("newPasswordRepeat"), args = 'icon -> "lock",
+                                    'placeholder -> messages("account.change.password.newPasswordRepeatPlaceholder"),
+                                    'fieldType -> "password")
+                                <button class="ui fluid large teal button" type="submit" form="change">@messages("account.change.password.button")</button>
                             }
-                            @if(flash.get("changed").nonEmpty) {
-                                @frontend.views.html.authorization.forms.formSuccess(Seq(flash.get("changed").get))
-                            }
-                            @CSRF.formField
-                            @inputText(form("oldPassword"), args = 'icon -> "lock",
-                                'placeholder -> messages("account.change.password.oldPasswordPlaceholder"),
-                                'fieldType -> "password")
-                            @inputText(form("newPassword"), args = 'icon -> "lock",
-                                'placeholder -> messages("account.change.password.newPasswordPlaceholder"),
-                                'fieldType -> "password")
-                            @inputText(form("newPasswordRepeat"), args = 'icon -> "lock",
-                                'placeholder -> messages("account.change.password.newPasswordRepeatPlaceholder"),
-                                'fieldType -> "password")
-                            <button class="ui fluid large teal button" type="submit" form="change">@messages("account.change.password.button")</button>
-                        }
-                    </div>
+                        </div>
+                    }
                 </div>
                 <div class="ui divider"></div>
                 <p class="cursor pointer">

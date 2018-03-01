@@ -13,6 +13,7 @@ import play.api.Environment
 import play.api.i18n.{Lang, Messages, MessagesApi}
 import play.api.mvc._
 import backend.actions.{SessionAction, UserRequestAction}
+import backend.models.authorization.permissions.UserPermissionsProvider
 import backend.models.authorization.tokens.reset.ResetTokenProvider
 import backend.utils.emails.EmailsService
 
@@ -21,7 +22,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class Authorization @Inject()(cc: ControllerComponents, messagesApi: MessagesApi, userRequestAction: UserRequestAction, emails: EmailsService)
                              (implicit ec: ExecutionContext,
                               up: UserProvider, vtp: VerificationTokenProvider, stp: SessionTokenProvider, rtp: ResetTokenProvider,
-                              environment: Environment, analytics: Analytics)
+                              environment: Environment, analytics: Analytics, upp: UserPermissionsProvider)
     extends AbstractController(cc) {
     private final val logger = LoggerFactory.getLogger(this.getClass)
     implicit val messages: Messages = messagesApi.preferred(Seq(Lang.defaultLang))
@@ -99,11 +100,14 @@ class Authorization @Inject()(cc: ControllerComponents, messagesApi: MessagesApi
             form => async {
                 val user = await(up.get(form.email))
                 if (user.nonEmpty) {
-                    val resetTokenStr = await(rtp.createResetToken(user.get))
-                    up.getVerificationMethod match {
-                        case "console" => logger.info(s"Reset token for ${form.email}: ${up.getVerificationServer}/reset/$resetTokenStr")
-                        case "email" => emails.sendResetTokenEmail(form.email, s"${up.getVerificationServer}/reset/$resetTokenStr")
-                        case method => logger.error(s"Unknown verification method $method")
+                    val permissions = await(user.get.getPermissions)
+                    if (permissions.isChangePasswordAllowed) {
+                        val resetTokenStr = await(rtp.createResetToken(user.get))
+                        up.getVerificationMethod match {
+                            case "console" => logger.info(s"Reset token for ${form.email}: ${up.getVerificationServer}/reset/$resetTokenStr")
+                            case "email" => emails.sendResetTokenEmail(form.email, s"${up.getVerificationServer}/reset/$resetTokenStr")
+                            case method => logger.error(s"Unknown verification method $method")
+                        }
                     }
                 }
                 Redirect(backend.controllers.routes.Authorization.login()).flashing("reset_request" -> "authorization.forms.reset.flashing.message")

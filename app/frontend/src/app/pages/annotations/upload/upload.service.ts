@@ -134,7 +134,7 @@ export class UploadService {
     public handlePermissionsErrors(item: FileItem): boolean {
         const permissions = this.annotationsService.getUserPermissions();
         if (!permissions.isUploadAllowed) {
-            item.setErrorStatus('Upload is not allowed for this account');
+            item.setErrorStatus('Uploading is not allowed for this account');
             return true;
         } else if (permissions.maxFilesCount >= 0) {
             const waitingFilesLength = this._files.filter((_item) => _item.status.isWaiting()).length;

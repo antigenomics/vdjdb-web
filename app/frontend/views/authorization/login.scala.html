@@ -2,7 +2,8 @@
 @import backend.utils.analytics.Analytics
 @import helper._
 @import backend.models.authorization.forms.LoginForm
-@(form: Form[LoginForm])(implicit environment: Environment, analytics: Analytics, request: Request[_], messages: Messages, flash: Flash)
+@import backend.models.authorization.user.UserProvider
+@(form: Form[LoginForm])(implicit environment: Environment, analytics: Analytics, request: Request[_], messages: Messages, flash: Flash, up: UserProvider)
 @implicitField = @{
     FieldConstructor(frontend.views.html.authorization.forms.input.f)
 }
@@ -10,46 +11,54 @@
 @frontend.views.html.main("VDJdb: login") {
     <div class="ui middle aligned center aligned auth grid">
         <div class="column left aligned">
-        @helper.form(action = backend.controllers.routes.Authorization.onLogin(), args = 'class -> "ui form", 'id -> "login") {
             <h3 class="ui top attached header">@messages("authorization.forms.login.login")</h3>
             <div class="ui attached segment teal padded">
-                @if(form.hasGlobalErrors) {
-                    @frontend.views.html.authorization.forms.formErrors(form.globalErrors)
+                @helper.form(action = backend.controllers.routes.Authorization.onLogin(), args = 'class -> "ui form", 'id -> "login") {
+                    @if(form.hasGlobalErrors) {
+                        @frontend.views.html.authorization.forms.formErrors(form.globalErrors)
+                    }
+                    @if(flash.get("verified").nonEmpty) {
+                        @frontend.views.html.authorization.forms.formSuccess(Seq(flash.get("verified").get))
+                    }
+                    @if(flash.get("created").nonEmpty) {
+                        @frontend.views.html.authorization.forms.formSuccess(Seq(flash.get("created").get))
+                    }
+                    @if(flash.get("reset_request").nonEmpty) {
+                        @frontend.views.html.authorization.forms.formSuccess(Seq(flash.get("reset_request").get))
+                    }
+                    @if(flash.get("reset").nonEmpty) {
+                        @frontend.views.html.authorization.forms.formSuccess(Seq(flash.get("reset").get))
+                    }
+                    @CSRF.formField
+                    @inputText(form("email"), args = 'icon -> "mail",
+                        'placeholder -> messages("authorization.forms.login.placeholder.email"),
+                        'fieldType -> "email")
+                    @inputText(form("password"), args = 'icon -> "lock",
+                        'placeholder -> messages("authorization.forms.login.placeholder.password"),
+                        'fieldType -> "password")
+                    <p class="cursor pointer">
+                        <a href="@backend.controllers.routes.Authorization.resetRequest()">@messages("authorization.forms.login.forgot")</a>
+                    </p>
+                    <button class="ui fluid large teal button" type="submit" form="login">@messages("authorization.forms.login.login")</button>
                 }
-                @if(flash.get("verified").nonEmpty) {
-                    @frontend.views.html.authorization.forms.formSuccess(Seq(flash.get("verified").get))
+                @if(up.getDemoUserConfiguration.enabled) {
+                    @helper.form(action = backend.controllers.routes.Authorization.onLogin(), args = 'id -> "demo-login") {
+                        @CSRF.formField
+                        <input name="email" value="@up.getDemoUserConfiguration.login" style="visibility: hidden">
+                        <input name="password" value="@up.getDemoUserConfiguration.password" style="visibility: hidden">
+                        <button class="ui fluid large violet button" type="submit" form="demo-login">@messages("authorization.forms.login.demo")</button>
+                    }
+                    <div class="ui divider"></div>
                 }
-                @if(flash.get("created").nonEmpty) {
-                    @frontend.views.html.authorization.forms.formSuccess(Seq(flash.get("created").get))
-                }
-                @if(flash.get("reset_request").nonEmpty) {
-                    @frontend.views.html.authorization.forms.formSuccess(Seq(flash.get("reset_request").get))
-                }
-                @if(flash.get("reset").nonEmpty) {
-                    @frontend.views.html.authorization.forms.formSuccess(Seq(flash.get("reset").get))
-                }
-                @CSRF.formField
-                @inputText(form("email"), args = 'icon -> "mail",
-                    'placeholder -> messages("authorization.forms.login.placeholder.email"),
-                    'fieldType -> "email")
-                @inputText(form("password"), args = 'icon -> "lock",
-                    'placeholder -> messages("authorization.forms.login.placeholder.password"),
-                    'fieldType -> "password")
-                <p class="cursor pointer">
-                    <a href="@backend.controllers.routes.Authorization.resetRequest()">@messages("authorization.forms.login.forgot")</a>
-                </p>
-                <button class="ui fluid large teal button" type="submit" form="login">@messages("authorization.forms.login.login")</button>
-                <div class="ui divider"></div>
                 <p>@messages("authorization.forms.login.signup.question")
                     <a class="cursor pointer" href="@backend.controllers.routes.Authorization.signup()" rel="noopener">@messages("authorization.forms.login.signup")</a>
                 </p>
                 <p class="cursor pointer">
                     <a href="@backend.controllers.routes.Application.index()" rel="noopener">
-                        @messages("authorization.forms.login.back")
+                    @messages("authorization.forms.login.back")
                     </a>
                 </p>
             </div>
-        }
         </div>
     </div>
 }
