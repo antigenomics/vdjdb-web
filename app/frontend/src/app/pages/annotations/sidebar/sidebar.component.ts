@@ -128,6 +128,14 @@ export class AnnotationsSidebarComponent implements OnInit, OnDestroy {
         return this._filesUploadingLabel;
     }
 
+    public isUploadingAllowed(): boolean {
+        return this.annotationsService.getUserPermissions().isUploadAllowed;
+    }
+
+    public isDeletingAllowed(): boolean {
+        return this.annotationsService.getUserPermissions().isDeleteAllowed;
+    }
+
     public deleteSample(sample: SampleItem): void {
         if (!this.annotationsService.getUserPermissions().isDeleteAllowed) {
             this.notifications.error('Delete', 'Deleting is not allowed for this account');
