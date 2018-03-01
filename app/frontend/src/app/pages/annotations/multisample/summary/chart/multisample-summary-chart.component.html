@@ -5,7 +5,7 @@
     <div class="four wide column">
         <h4 class="ui header"><i class="low vision icon"></i>Hide samples</h4>
         <div class="ui divider"></div>
-        <button class="ui tiny compact teal button" *ngFor="let sample of getCurrentTabProcessedSamples()"
+        <button class="ui tiny compact teal button" style="margin: 2px" *ngFor="let sample of getCurrentTabProcessedSamples()"
                 [ngClass]="{'basic':isSampleHidden(sample)}"
                 (click)="toggleSampleHidden(sample)">
             {{ sample }}
