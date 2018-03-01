@@ -109,7 +109,7 @@ export class BarChartGrouped extends Chart<IChartGroupedDataEntry, IBarChartConf
         this.setGroupAttributes(mainX, enterGroups);
 
         /* Creating bars for new groups */
-        const enterGroupsBars = this.appendBarsDataToGroups(enterGroups, groupsAxis);
+        const enterGroupsBars = this.appendBarsDataToGroups(enterGroups, groupsAxis, data.length - enterGroups.size());
         const enterGroupsEnterBars = enterGroupsBars.enter().append('rect');
         this.bindTooltipEvents(enterGroupsEnterBars);
         this.setBarAttributes(height, y, enterGroupsEnterBars);
@@ -169,10 +169,10 @@ export class BarChartGrouped extends Chart<IChartGroupedDataEntry, IBarChartConf
         });
     }
 
-    private appendBarsDataToGroups(groups: any, groupsAxis: IGroupAxisType[]): BarsSelectionType {
+    private appendBarsDataToGroups(groups: any, groupsAxis: IGroupAxisType[], shift: number = 0): BarsSelectionType {
         return groups.selectAll('rect')
                      .data((d: IChartGroupedDataEntry, i: number) => d.values.map((v) => ({
-                         name: d.name, data: v, colors: ChartUtils.Color.generate(d.values), x: groupsAxis[ i ].x
+                         name: d.name, data: v, colors: ChartUtils.Color.generate(d.values), x: groupsAxis[ i + shift ].x
                      } as IGroupBarData)));
     }
 
@@ -182,7 +182,7 @@ export class BarChartGrouped extends Chart<IChartGroupedDataEntry, IBarChartConf
             .attr('y', (d) => y(d.data.value))
             .attr('width', (d) => d.x.bandwidth())
             .attr('height', (d) => height - y(d.data.value))
-            .style('fill', (d) => d.data.color ? d.data.color : d.colors(d.data.name));
+            .style('fill', (d) => d.colors(d.data.name));
     }
 
     private setGroupAttributes(mainX: ScaleBand<string>, groups: GroupsSelectionType | GroupsTransitionType): void {
