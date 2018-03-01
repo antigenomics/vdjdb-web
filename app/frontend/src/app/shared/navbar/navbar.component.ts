@@ -26,12 +26,15 @@ import { Utils } from 'utils/utils';
 export class NavigationBarComponent {
     private _isLogged: boolean = false;
     private _userEmail: string = '';
+    private _userLogin: string = '';
 
     constructor(logger: LoggerService) {
         this._isLogged = Utils.Cookies.getCookie('logged') === 'true';
         this._userEmail = Utils.Cookies.getCookie('email');
-        if (this._userEmail !== undefined) {
-            logger.debug('Navbar email', this._userEmail);
+        this._userLogin = Utils.Cookies.getCookie('login');
+        if (this._userEmail !== undefined && this._userLogin !== undefined) {
+            logger.debug('User email', this._userEmail);
+            logger.debug('User login', this._userLogin);
         }
     }
 
@@ -41,5 +44,9 @@ export class NavigationBarComponent {
 
     public getUserEmail(): string {
         return this._userEmail;
+    }
+
+    public getUserLogin(): string {
+        return this._userLogin;
     }
 }

@@ -1,0 +1,22 @@
+@import play.api.Environment
+@import backend.utils.analytics.Analytics
+@()(implicit environment: Environment, analytics: Analytics, messages: Messages)
+
+@frontend.views.html.main("VDJdb: JavaScript required") {
+    <script>window.location.href = "/";</script>
+    <div class="ui middle aligned center aligned notfound grid">
+        <div class="column">
+            <div class="ui raised segment very padded">
+                <div class="ui grid">
+                    <div class="five wide column">
+                        <i class="blue massive warning icon"></i>
+                    </div>
+                    <div class="eleven wide column left aligned">
+                        <h2>@messages("noscript.header")</h2>
+                        <p>@messages("noscript.message")</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}

@@ -16,11 +16,11 @@
 
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
+import { AboutPageRouting } from 'pages/about/about.routing';
 import { AboutPageComponent } from './about.component';
 
 @NgModule({
-    imports:      [ CommonModule ],
-    declarations: [ AboutPageComponent ],
-    exports:      [ AboutPageComponent ]
+    imports:      [ CommonModule, AboutPageRouting ],
+    declarations: [ AboutPageComponent ]
 })
 export class AboutPageModule {}

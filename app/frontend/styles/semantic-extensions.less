@@ -14,6 +14,34 @@
  *     limitations under the License.
  */
 
+.ui.secondary.menu a.item.tab {
+  width: 150px;
+  text-align: center;
+  display: block;
+  transition: color 0s;
+}
+
+.ui.secondary.menu a.item.tab.active {
+  background: rgba(72, 175, 117, 0.8);
+  color: rgba(256, 256, 256, 1);
+}
+
+.ui.secondary.menu a.item.tab.active.waiting {
+  background: rgba(72, 175, 117, 0.4);
+  color: rgba(256, 256, 256, 0.8);
+}
+
+.ui.secondary.menu a.item.tab.active:hover {
+  background: rgba(72, 175, 117, 1.0);
+  color: rgba(256, 256, 256, 1);
+}
+
+.ui.secondary.menu a.item.tab.active.waiting:hover {
+  background: rgba(72, 175, 117, 0.4);
+  color: rgba(256, 256, 256, 0.8);
+  cursor: progress;
+}
+
 .ui.menu .dropdown.item .menu.padded {
   margin-top: 10px !important;
 }

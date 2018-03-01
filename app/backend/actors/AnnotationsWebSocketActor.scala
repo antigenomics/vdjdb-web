@@ -30,8 +30,6 @@ class AnnotationsWebSocketActor(out: ActorRef, limit: IpLimit, user: User, detai
     extends WebSocketActor(out, limit) {
     private val intersectionTableResults: mutable.HashMap[String, IntersectionTable] = new mutable.HashMap()
 
-
-
     def handleMessage(out: WebSocketOutActorRef, data: Option[JsValue]): Unit = {
         out.getAction match {
             case UserDetailsResponse.Action =>

@@ -58,6 +58,10 @@ export class ChartContainer {
         this._svg.attr('class', name);
     }
 
+    public styled(name: string, value: string): void {
+        this._svg.style(name, value);
+    }
+
     public getElementRef(): ElementRef {
         return this.element;
     }

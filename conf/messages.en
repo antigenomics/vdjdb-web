@@ -1,4 +1,5 @@
 authorization.forms.login.login = Login
+authorization.forms.login.demo = Demo
 authorization.forms.login.forgot = Forgot password?
 authorization.forms.login.back = Back to home
 authorization.forms.login.signup = Sign up
@@ -46,9 +47,12 @@ account.change.password.button = Change
 account.change.password.success = Your password has been changed successfully
 account.change.password.error.invalidOldPassword = Please check that you have entered your old password correctly
 
-notfound.message = Oops! Page not found.
-notfound.hint = We could not find the page you were looking for.
+notfound.header = Oops! Page not found.
+notfound.message = We could not find the page you were looking for.
 notfound.back = Back to home.
+
+noscript.header = JavaScript required
+noscript.message = We are sorry, but VDJdb website does not work properly without JavaScript enabled.
 
 internal.error = Internal server error. Please try later.
 

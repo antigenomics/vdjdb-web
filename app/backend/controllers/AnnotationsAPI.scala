@@ -22,7 +22,7 @@ import javax.inject.Inject
 import akka.actor.ActorSystem
 import akka.stream.Materializer
 import backend.actions.{SessionAction, UserRequest, UserRequestAction}
-import backend.actors.AnnotationsWebSocketActor
+import backend.actors.{AnnotationsWebSocketActor, MultisampleAnalysisWebSocketActor}
 import backend.models.authorization.permissions.UserPermissionsProvider
 import backend.models.authorization.user.UserProvider
 import backend.models.files.FileMetadataProvider
@@ -111,6 +111,28 @@ class AnnotationsAPI @Inject()(cc: ControllerComponents, userRequestAction: User
                             val details = await(user.get.getDetails)
                             Right(ActorFlow.actorRef { out =>
                                 AnnotationsWebSocketActor.props(out, limits.getLimit(request), user.get, details, database)
+                            })
+                        } else {
+                            Left(Forbidden)
+                        }
+                }
+            } else {
+                Left(Forbidden)
+            }
+        }
+    }
+
+    def multisample: WebSocket = WebSocket.acceptOrResult[JsValue, JsValue] { implicit request =>
+        async {
+            if (limits.allowConnection(request)) {
+                request.session.get(up.getAuthTokenSessionName) match {
+                    case None => Left(Forbidden)
+                    case Some(token) =>
+                        val user = await(up.getBySessionToken(token))
+                        if (user.nonEmpty) {
+                            val details = await(user.get.getDetails)
+                            Right(ActorFlow.actorRef { out =>
+                                MultisampleAnalysisWebSocketActor.props(out, limits.getLimit(request), user.get, details, database)
                             })
                         } else {
                             Left(Forbidden)

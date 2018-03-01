@@ -1,33 +1,6 @@
-<div class="ui fade slow element segments">
-    <h3 class="ui top attached header">Charts</h3>
-    <div class="ui teal attached padded segment">
-        <button class="ui button teal" (click)="addChart('summary')">Add summary chart</button>
+<div class="ui fade slow element segments" *ngIf="sample.table.isSummaryExist()">
+    <div class="ui top attached clearing segment">
+        <h3 class="ui header">Summary chart</h3>
     </div>
-</div>
-
-<div class="ui two column grid">
-    <div class="column" *ngFor="let chart of getCharts(); trackBy: trackChartFn">
-        <ng-container [ngSwitch]="chart.type">
-            <ng-container *ngSwitchCase="'summary'">
-                <div class="ui fade slow element segments">
-                    <div class="ui top attached clearing segment">
-                        <div class="ui grid">
-                            <div class="fifteen wide column">
-                                <h3 class="ui header">Summary</h3>
-                            </div>
-                            <div class="one wide column cursor pointer" dropdown [content]="commonChartSettgins">
-                                <i class="ui ellipsis vertical link icon"></i>
-                                <div class="ui dropdown item">
-                                    <div class="left menu fade element slow padded" tabindex="-1" #commonChartSettgins>
-                                        <a class="item" (click)="removeChart(chart)"><i class="trash outline icon"></i>Remove</a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="ui teal attached padded segment" summary-chart [data]="sample.table.getSummary()"></div>
-                </div>
-            </ng-container>
-        </ng-container>
-    </div>
+    <div class="ui teal attached padded segment" summary-chart [data]="sample.table.getSummary()"></div>
 </div>

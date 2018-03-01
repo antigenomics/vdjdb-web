@@ -21,7 +21,7 @@ import java.util
 
 import backend.server.ResultsTable
 import backend.server.annotations.api.annotate.SampleAnnotateRequest
-import backend.server.annotations.charts.summary.{SummaryClonotypeCounter, SummaryFieldCounter}
+import backend.server.annotations.charts.summary.{SummaryClonotypeCounter, SummaryCounters, SummaryFieldCounter}
 import backend.server.database.Database
 import com.antigenomics.vdjdb.scoring.SequenceSearcherPreset
 import com.antigenomics.vdjdb.stat.ClonotypeSearchSummary
@@ -32,7 +32,7 @@ import com.milaboratory.core.tree.TreeSearchParameters
 import scala.collection.JavaConverters._
 import scala.math.Ordering.String
 
-class IntersectionTable(var summary: Seq[SummaryFieldCounter] = Seq()) extends ResultsTable[IntersectionTableRow] {
+class IntersectionTable(var summary: Option[SummaryCounters] = None) extends ResultsTable[IntersectionTableRow] {
 
     def sort(columnIndex: Int, sortType: String): Unit = {
         if ((sortType == "desc" || sortType == "asc") && (columnIndex >= 0)) {
@@ -72,11 +72,14 @@ class IntersectionTable(var summary: Seq[SummaryFieldCounter] = Seq()) extends R
             .map(IntersectionTableRow.createFromSearchResult)
 
         val summary = new ClonotypeSearchSummary(results, sample, ClonotypeSearchSummary.FIELDS_STARBURST, instance)
-        this.summary = summary.fieldCounters.asScala.map { case (name, map) =>
+        val counters = summary.fieldCounters.asScala.map { case (name, map) =>
             SummaryFieldCounter(name, map.asScala.filter(v => v._2.getUnique != 0).map { case (field, value) =>
                 SummaryClonotypeCounter(field, value.getUnique, value.getDatabaseUnique, value.getFrequency)
             }.toSeq)
         }.toSeq
+
+        val nfc = summary.getNotFoundCounter
+        this.summary = Some(SummaryCounters(counters, SummaryClonotypeCounter("notFound", nfc.getUnique, nfc.getDatabaseUnique, nfc.getFrequency)))
 
         this.currentPage = 0
         this

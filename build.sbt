@@ -15,7 +15,7 @@ pipelineStages := Seq(digest)
 libraryDependencies ++= Seq(
     "com.antigenomics" % "vdjdb" % "1.1.7",
     "ch.qos.logback" % "logback-classic" % "1.2.3",
-    "com.typesafe.scala-logging" %% "scala-logging" % "3.7.2",
+    "com.typesafe.scala-logging" %% "scala-logging" % "3.8.0",
     "com.typesafe.play" %% "play-slick" % "3.0.3",
     "com.typesafe.play" %% "play-slick-evolutions" % "3.0.3",
     "com.h2database" % "h2" % "1.4.196",
@@ -23,6 +23,7 @@ libraryDependencies ++= Seq(
     "org.mindrot" % "jbcrypt" % "0.4",
     "com.typesafe.play" %% "play-mailer" % "6.0.1",
     "com.typesafe.play" %% "play-mailer-guice" % "6.0.1",
+    "eu.bitwalker" % "UserAgentUtils" % "1.21",
     guice,
     ws,
     filters
@@ -38,7 +39,7 @@ scalacOptions ++= Seq(
 )
 
 // Starts: Prevent documentation of API for production bundles
-sources in(Compile, doc) := Seq.empty
+sources in (Compile, doc) := Seq.empty
 mappings in (Compile, packageDoc) := Seq.empty
 publishArtifact in(Compile, packageDoc) := false
 // Ends.
@@ -112,4 +113,11 @@ javaOptions in Test ++= Seq(
     "-Dapplication.auth.init.skip=true"
 )
 libraryDependencies ++= Seq("org.scalatestplus.play" % "scalatestplus-play_2.12" % "3.1.2" % "test")
+// Ends.
+
+// Starts: Docker configuration
+
+dockerBaseImage := "anapsix/alpine-java"
+dockerEntrypoint := Seq("bin/vdjdb-server", "-Dconfig.file=/environment/application.conf")
+
 // Ends.

@@ -1,47 +1,19 @@
 <div class="ui grid">
-    <div class="twelve wide column" style="height: 400px">
-        <bar-chart [configuration]="configuration" [stream]="stream"></bar-chart>
+    <div class="twelve wide column fade slow element" style="height: 500px" *ngIf="!pie">
+        <bar-chart [configuration]="barChartConfiguration" [stream]="stream"></bar-chart>
+    </div>
+    <div class="twelve wide column fade slow element" style="height: 500px" *ngIf="pie">
+        <pie-chart [configuration]="pieChartConfiguration" [stream]="stream"></pie-chart>
     </div>
     <div class="four wide column">
         <h4 class="ui header"><i class="options icon"></i>Options</h4>
         <div class="ui divider"></div>
 
         <div class="ui checkbox">
-            <input type="checkbox" [(ngModel)]="weighted">
-            <label>Weighted</label>
+            <input type="checkbox" [(ngModel)]="pie">
+            <label>Pie chart</label>
         </div>
-
-        <h4>Column name</h4>
-        <div class="ui selection fluid dropdown" dropdown [content]="columnNamesContent">
-            <span class="text">{{ getCurrentFieldTitle() }}</span>
-            <i class="dropdown icon"></i>
-            <div class="menu fast fade element" #columnNamesContent>
-                <div class="item" *ngFor="let field of getFields(); index as i" (click)="setCurrentField(i)">
-                    {{ field }}
-                </div>
-            </div>
-        </div>
-        <h4>Normalize type</h4>
-        <div class="ui selection fluid dropdown" dropdown [content]="normalizeTypeContent">
-            <span class="text">{{ getCurrentNormalizeTypeShortTitle() }}</span>
-            <i class="dropdown icon"></i>
-            <div class="menu fast fade element" #normalizeTypeContent>
-                <div class="item" *ngFor="let type of getNormalizeTypes()" (click)="setNormalizeType(type)">
-                    {{ type.title }}
-                </div>
-            </div>
-        </div>
-        <ng-container *ngIf="isThresholdTypesAvailable()">
-            <h4>Threshold</h4>
-            <div class="ui selection fluid upward dropdown" dropdown [content]="thresholdContent">
-                <span class="text">{{ getCurrentThresholdTypeTitle() }}</span>
-                <i class="dropdown icon"></i>
-                <div class="menu fast fade element" #thresholdContent>
-                    <div class="item" *ngFor="let threshold of getThresholdTypes(); trackBy: trackThresholdFn" (click)="setThreshold(threshold)">
-                        {{ threshold.title }}
-                    </div>
-                </div>
-            </div>
-        </ng-container>
+        <div class="ui divider"></div>
+        <summary-chart-options [options]="options" (onOptionsChange)="handleChangeOptionsFn($event)" [threshold]="threshold"></summary-chart-options>
     </div>
 </div>

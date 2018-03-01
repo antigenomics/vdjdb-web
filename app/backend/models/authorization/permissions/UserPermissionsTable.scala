@@ -26,8 +26,9 @@ class UserPermissionsTable(tag: Tag) extends Table[UserPermissions](tag, UserPer
     def maxFileSize = column[Long]("MAX_FILE_SIZE")
     def isUploadAllowed = column[Boolean]("IS_UPLOAD_ALLOWED")
     def isDeleteAllowed = column[Boolean]("IS_DELETE_ALLOWED")
+    def isChangePasswordAllowed = column[Boolean]("IS_CHANGE_PASSWORD_ALLOWED")
 
-    def * = (id, maxFilesCount, maxFileSize, isUploadAllowed, isDeleteAllowed) <> (UserPermissions.tupled, UserPermissions.unapply)
+    def * = (id, maxFilesCount, maxFileSize, isUploadAllowed, isDeleteAllowed, isChangePasswordAllowed)<> (UserPermissions.tupled, UserPermissions.unapply)
 }
 
 object UserPermissionsTable {
