@@ -89,7 +89,7 @@ export class SearchTableService {
             const suggestionResponse = await suggestionsRequest;
             this.logger.debug('Suggestions', suggestionResponse);
             const suggestionsOptions = new FiltersOptions();
-            suggestionsOptions.add('ag.epitope.epitopeSuggestions', suggestionResponse.get('suggestion'));
+            suggestionsOptions.add('ag.epitope.epitopeSuggestions', suggestionResponse.get('suggestions'));
             this.filters.setOptions(suggestionsOptions.unpack());
 
             this.initialized = true;

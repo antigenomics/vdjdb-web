@@ -15,12 +15,22 @@
  *
  */
 
+import { NgZone } from '@angular/core';
 import { Observable } from 'rxjs/Observable';
+import { Subject } from 'rxjs/Subject';
 import { Subscription } from 'rxjs/Subscription';
 import { ChartEventType, IChartEvent } from 'shared/charts/chart-events';
 import { ChartContainer } from 'shared/charts/container/chart-container';
+import { IChartDataEntry } from 'shared/charts/data/chart-data-entry';
+import { IChartGroupedDataEntry } from 'shared/charts/data/chart-grouped-data-entry';
 import { ChartTooltip } from 'shared/charts/tooltip/chart-tooltip';
 import { Utils } from 'utils/utils';
+
+export type ChartStreamType = Subject<IChartEvent<IChartDataEntry>>;
+export type ChartInputStreamType = Observable<IChartEvent<IChartDataEntry>>;
+
+export type ChartGroupedStreamType = Subject<IChartEvent<IChartGroupedDataEntry>>;
+export type ChartInputGroupedStreamType = Observable<IChartEvent<IChartGroupedDataEntry>>;
 
 // tslint:disable-next-line:interface-name
 export interface Chart<T, C> {
@@ -38,6 +48,7 @@ export interface Chart<T, C> {
 }
 
 export class Chart<T, C> {
+    private static readonly createChartDelay: number = 100; // We need this to handle container view size
     private created: boolean = false;
     private dataStreamSubscription: Subscription;
     private debounceResizeListener = Utils.Time.debounce((data) => {
@@ -48,27 +59,33 @@ export class Chart<T, C> {
     protected tooltip: ChartTooltip;
 
     constructor(protected configuration: C, protected container: ChartContainer,
-                protected dataStream: Observable<IChartEvent<T>>) {
+                protected dataStream: Observable<IChartEvent<T>>, protected ngZone: NgZone) {
         this.configure(configuration);
         this.dataStreamSubscription = this.dataStream.subscribe((event) => {
-            if (!this.created) {
-                this.create(event.data);
-                this.created = true;
-            } else {
-                switch (event.type) {
-                    case ChartEventType.UPDATE_DATA:
-                        this.update(event.data);
-                        break;
-                    case ChartEventType.UPDATE_VALUES:
-                        this.updateValues(event.data);
-                        break;
-                    case ChartEventType.RESIZE:
-                        this.debounceResizeListener(event.data);
-                        break;
-                    default:
-                        break;
+            this.ngZone.runOutsideAngular(() => {
+                if (!this.created) {
+                    window.setTimeout(() => {
+                        this.container.recalculateContainerViewSize();
+                        this.create(event.data);
+                        this.created = true;
+                    }, Chart.createChartDelay);
+                } else {
+                    switch (event.type) {
+                        case ChartEventType.UPDATE_DATA:
+                            this.update(event.data);
+                            break;
+                        case ChartEventType.UPDATE_VALUES:
+                            this.updateValues(event.data);
+                            break;
+                        case ChartEventType.RESIZE:
+                            this.debounceResizeListener(event.data);
+                            break;
+                        default:
+                            break;
+                    }
                 }
-            }
+            });
+
         });
         this.tooltip = new ChartTooltip();
     }
@@ -81,26 +98,3 @@ export class Chart<T, C> {
         }
     }
 }
-
-// private bindTooltipEvents(selection: D3HTMLSelection): void {
-//     selection.on('mousemove', (d) => {
-//         this.tooltip
-//             .style('left', D3CurrentEvent.pageX - 50 + 'px')
-//             .style('top', D3CurrentEvent.pageY - 120 + 'px')
-//             .style('display', 'inline-block')
-//             .html(`Here will be some tooltip<br>Name: ${d.name}<br>Value: ${d.value}`);
-//     }).on('mouseout', (d) => {
-//         this.tooltip.style('display', 'none');
-//     });
-// }
-
-// this.tooltip = d3.select('body')
-//                  .append('div').attr('class', 'chart-tooltip fade element')
-//                  .style('position', 'absolute')
-//                  .style('display', 'none')
-//                  .style('min-width', '80px')
-//                  .style('height', 'auto')
-//                  .style('padding', '14px')
-//                  .style('background', 'none repeat scroll 0 0 #ffffff')
-//                  .style('border', '2px solid #48af75')
-//                  .style('text-align', 'left');

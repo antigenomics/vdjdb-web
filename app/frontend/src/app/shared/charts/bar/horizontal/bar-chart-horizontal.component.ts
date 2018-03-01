@@ -15,9 +15,10 @@
  *
  */
 
-import { AfterViewInit, Component, ElementRef, Input, OnDestroy, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, Input, NgZone, OnDestroy, ViewChild } from '@angular/core';
 import { createDefaultBarChartConfiguration, IBarChartConfiguration } from 'shared/charts/bar/bar-chart-configuration';
-import { BarChartHorizontal, BarChartInputStreamType } from 'shared/charts/bar/horizontal/bar-chart-horizontal';
+import { BarChartHorizontal } from 'shared/charts/bar/horizontal/bar-chart-horizontal';
+import { ChartInputStreamType } from 'shared/charts/chart';
 import { ChartContainer } from 'shared/charts/container/chart-container';
 import { Configuration } from 'utils/configuration/configuration';
 
@@ -33,17 +34,19 @@ export class BarChartHorizontalComponent implements AfterViewInit, OnDestroy {
     public configuration: IBarChartConfiguration = createDefaultBarChartConfiguration();
 
     @Input('stream')
-    public stream: BarChartInputStreamType;
+    public stream: ChartInputStreamType;
 
     @ViewChild('container', { read: ElementRef })
     public containerElementRef: ElementRef;
+
+    constructor(private ngZone: NgZone) {}
 
     public ngAfterViewInit(): void {
         const configuration = createDefaultBarChartConfiguration();
         Configuration.extend(configuration, this.configuration);
 
         const container = new ChartContainer(this.containerElementRef, configuration.container);
-        this.chart = new BarChartHorizontal(configuration, container, this.stream);
+        this.chart = new BarChartHorizontal(configuration, container, this.stream, this.ngZone);
     }
 
     public ngOnDestroy(): void {

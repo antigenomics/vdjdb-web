@@ -46,12 +46,14 @@ export class UserPermissions {
     public maxFileSize: number;
     public isUploadAllowed: boolean;
     public isDeleteAllowed: boolean;
+    public isChangePasswordAllowed: boolean;
 
-    constructor(maxFilesCount: number, maxFileSize: number, isUploadAllowed: boolean, isDeleteAllowed: boolean) {
+    constructor(maxFilesCount: number, maxFileSize: number, isUploadAllowed: boolean, isDeleteAllowed: boolean, isChangePasswordAllowed: boolean) {
         this.maxFilesCount = maxFilesCount;
         this.maxFileSize = maxFileSize;
         this.isUploadAllowed = isUploadAllowed;
         this.isDeleteAllowed = isDeleteAllowed;
+        this.isChangePasswordAllowed = isChangePasswordAllowed;
     }
 
     public getMaxFileSizeInBytes(): number {
@@ -61,7 +63,8 @@ export class UserPermissions {
     public static deserialize(input: any): UserPermissions {
         /* Disable tslint to prevent ClosureCompiler mangling */
         /* tslint:disable:no-string-literal */
-        return new UserPermissions(input['maxFilesCount'], input['maxFileSize'], input['isUploadAllowed'], input['isDeleteAllowed']);
+        return new UserPermissions(input['maxFilesCount'], input['maxFileSize'],
+            input['isUploadAllowed'], input['isDeleteAllowed'], input['isChangePasswordAllowed']);
         /* tslint:enable:no-string-literal */
     }
 }

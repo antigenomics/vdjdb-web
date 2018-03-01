@@ -1,8 +1,14 @@
 @import play.api.{Environment, Mode}
 @import backend.utils.analytics.Analytics
-@()(implicit environment: Environment, analytics: Analytics)
+@import eu.bitwalker.useragentutils.Browser
+@import backend.actions.UserRequest
+@import backend.actions.BrowserDetectionAction
+@()(implicit request: UserRequest[_], environment: Environment, analytics: Analytics)
 
 @frontend.views.html.main("VDJdb") {
+    <noscript>
+        <meta http-equiv="refresh" content="0;url=no-script">
+    </noscript>
     <application>
         <div class="load content">
             <div class="ui active centered inline massive loader"></div>
@@ -14,6 +20,9 @@
         <script type="application/javascript" src="develop/webpack/bundles/bundle.js" charset="utf-8"></script>
     } else {
         <script type="application/javascript" src="@routes.Assets.versioned("bundles/inline.bundle.js")" charset="utf-8"></script>
+        @if(request.attrs(BrowserDetectionAction.BROWSER_TYPED_KEY).getBrowser.getGroup.equals(Browser.IE)) {
+            <script type="application/javascript" src="@routes.Assets.versioned("bundles/polyfills-ie.bundle.js")" charset="utf-8"></script>
+        }
         <script type="application/javascript" src="@routes.Assets.versioned("bundles/polyfills.bundle.js")" charset="utf-8"></script>
         <script type="application/javascript" src="@routes.Assets.versioned("bundles/vendor.bundle.js")" charset="utf-8"></script>
         <script type="application/javascript" src="@routes.Assets.versioned("bundles/main.bundle.js")" charset="utf-8"></script>

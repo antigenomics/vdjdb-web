@@ -26,6 +26,7 @@ import { TableEntry } from './table-entry';
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TableEntryCenteredComponent extends TableEntry {
+
     @HostBinding('class.center')
     @HostBinding('class.aligned')
     public centered: boolean = true;

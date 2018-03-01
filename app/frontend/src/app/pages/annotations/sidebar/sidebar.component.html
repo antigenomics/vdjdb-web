@@ -3,7 +3,7 @@
         <div class="header">Notebook</div>
         <div class="menu">
             <a (click)="sidebarRoute('info')" class="item">Info</a>
-            <a (click)="sidebarRoute('upload')" class="item">
+            <a (click)="sidebarRoute('upload')" class="item" *ngIf="isUploadingAllowed()">
                 Upload
                 <div class="ui teal left label" *ngIf="isFilesUploading()">
                     <div class="ui active mini inverted inline loader"></div>
@@ -16,7 +16,7 @@
         <div class="menu" *ngIf="!isSamplesEmpty()">
             <a class="item" *ngFor="let sample of getSamples()" (click)="sidebarRoute('sample', sample.name, 'table')"
                [ngClass]="{'padded vertically border selected':isSampleSelected(sample)}">
-                <i class="trash icon" (click)="deleteSample(sample); $event.stopPropagation()"></i>{{ sample.name }}
+                <i class="trash icon" (click)="deleteSample(sample); $event.stopPropagation()" *ngIf="isDeletingAllowed()"></i>{{ sample.name }}
                 <div class="sample sub menu" *ngIf="isSampleSelected(sample)">
                     <div class="item padded horizontally" [ngClass]="{'selected':isSampleRouteContains('table')}"
                          (click)="sidebarRoute('sample', sample.name, 'table'); $event.stopPropagation()">Table</div>
@@ -24,15 +24,19 @@
                          (click)="sidebarRoute('sample', sample.name, 'chart'); $event.stopPropagation()">Charts</div>
                 </div>
             </a>
+            <a class="item" (click)="sidebarRoute('multisample', 'summary')"
+               [ngClass]="{'padded vertically border selected':isAllSamplesSelected()}">
+                All samples
+            </a>
         </div>
         <div class="menu" *ngIf="isSamplesEmpty()">
             <a class="item">There are no uploaded samples</a>
             <a class="item">Click 'upload' button to proceed</a>
         </div>
     </div>
-    <div class="item" *ngIf="!isSamplesEmpty()">
+    <div class="item" *ngIf="!isSamplesEmpty() && isDeletingAllowed()">
         <div class="header">Settings</div>
-        <div class="menu" *ngIf="!isSamplesEmpty()">
+        <div class="menu">
             <a class="item" (click)="deleteAllSamples()">Delete all</a>
         </div>
     </div>

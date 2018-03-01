@@ -101,10 +101,15 @@ export class AnnotationsSidebarComponent implements OnInit, OnDestroy {
         if (routed) {
             this._state.update(this.router.url);
         }
+        this.changeDetector.detectChanges();
     }
 
-    public isSampleSelected(sample: SampleItem) {
+    public isSampleSelected(sample: SampleItem): boolean {
         return this._state.metadata.get('sample') === sample.name;
+    }
+
+    public isAllSamplesSelected(): boolean {
+        return this._state.path.includes('multisample');
     }
 
     public getSamples(): SampleItem[] {
@@ -121,6 +126,14 @@ export class AnnotationsSidebarComponent implements OnInit, OnDestroy {
 
     public isFilesUploading(): boolean {
         return this._filesUploadingLabel;
+    }
+
+    public isUploadingAllowed(): boolean {
+        return this.annotationsService.getUserPermissions().isUploadAllowed;
+    }
+
+    public isDeletingAllowed(): boolean {
+        return this.annotationsService.getUserPermissions().isDeleteAllowed;
     }
 
     public deleteSample(sample: SampleItem): void {

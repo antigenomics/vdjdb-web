@@ -57,10 +57,12 @@ export class SetComponent implements OnInit {
     @Input()
     public inputUpperOnly: boolean = false;
 
-    @Input()
+    @Input('suggestions')
     public set suggestions(input: { [value: string]: SuggestionEntry[]; }) {
-        this._suggestionsAvailable = true;
-        this._suggestions = input;
+        if (Object.keys(input).length !== 0) {
+            this._suggestionsAvailable = true;
+            this._suggestions = input;
+        }
     }
 
     public get visibleSuggestions(): SuggestionEntry[] {
@@ -162,7 +164,7 @@ export class SetComponent implements OnInit {
             });
 
             const uniqueValues: string[] = [];
-            this._visibleSuggestions = suggestions.filter((entry: SuggestionEntry, _: number, __: SuggestionEntry[]) => {
+            this._visibleSuggestions = suggestions.filter((entry: SuggestionEntry) => {
                 if (uniqueValues.indexOf(entry.value) === -1 && selectedValues.indexOf(entry.value) === -1) {
                     uniqueValues.push(entry.value);
                     return true;
