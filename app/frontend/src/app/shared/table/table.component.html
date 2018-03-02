@@ -10,6 +10,7 @@
                         [found]="table.recordsFound" [total]="table.numberOfRecords"></table-info>
 
             <table-export *ngIf="!configuration.utils.export.disable"
+                          [exporting]="table.exporting"
                           [options]="configuration.utils.export.options" [formats]="configuration.utils.export.formats"
                           (exportEvent)="onExport.emit($event)"></table-export>
 

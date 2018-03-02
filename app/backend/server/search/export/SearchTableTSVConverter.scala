@@ -39,8 +39,10 @@ case class SearchTableTSVConverter()(implicit tfp: TemporaryFileProvider) extend
         options.foreach((option) => {
             option.name match {
                 case "paired_export" => {
-                    val pairedRows = SearchTable.getPairedRows(rows, database)
-                    pairedRows.foreach(row => content.append(row.entries.mkString(s"${row.metadata.pairedID}\t", "\t", "\r\n")))
+                    if (option.value) {
+                        val pairedRows = SearchTable.getPairedRows(rows, database)
+                        pairedRows.foreach(row => content.append(row.entries.mkString(s"${row.metadata.pairedID}\t", "\t", "\r\n")))
+                    }
                 }
                 case _ =>
             }

@@ -20,7 +20,7 @@ import {
     IMultisampleSummaryAnalysisTab, IMultisampleSummaryAnalysisTabState, MultisampleSummaryService,
     MultisampleSummaryServiceEvents
 } from 'pages/annotations/multisample/summary/multisample-summary.service';
-import { SummaryChartOptions } from 'pages/annotations/sample/chart/summary/options/summary-chart-options.component';
+import { ISummaryChartOptionsDisableCheckboxes, SummaryChartOptions } from 'pages/annotations/sample/chart/summary/options/summary-chart-options.component';
 import { SummaryClonotypeCounter } from 'pages/annotations/sample/table/intersection/summary/summary-clonotype-counter';
 import { SummaryCounters } from 'pages/annotations/sample/table/intersection/summary/summary-counters';
 import { ReplaySubject } from 'rxjs/ReplaySubject';
@@ -103,6 +103,10 @@ export class MultisampleSummaryChartComponent implements OnInit, OnDestroy {
 
     public getCurrentTabSummaryChartOptions(): SummaryChartOptions {
         return this.currentTab.options;
+    }
+
+    public getCurrentTabSummaryChartDisableCheckboxesOptions(): ISummaryChartOptionsDisableCheckboxes {
+        return { disableIsNotFoundVisible: !this.orderBySamples, disableIsWeightedByReadCount: false };
     }
 
     public getCurrentTabProcessedSamples(): string[] {

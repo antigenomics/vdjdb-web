@@ -21,6 +21,7 @@ import { SampleRouteResolverComponent } from 'pages/annotations/sample/common/sa
 import { SampleService } from 'pages/annotations/sample/sample.service';
 import { TableColumn } from 'shared/table/column/table-column';
 import { ITableConfigurationDescriptor } from 'shared/table/configuration/table-configuration';
+import { IExportFormat, IExportOptionFlag } from 'shared/table/export/table-export.component';
 
 @Component({
     selector:        'sample-table',
@@ -36,7 +37,10 @@ export class SampleTableComponent extends SampleRouteResolverComponent {
         utils:   {
             disable: false,
             info:    true,
-            export:  { disable: true }
+            export: {
+                formats: [ { name: 'tsv', title: 'TSV', icon: 'file text outline' } ],
+                options: [ { name: 'paired_export', title: 'Paired gene export', value: false } ]
+            }
         },
         size:    {
             header: {
@@ -62,6 +66,10 @@ export class SampleTableComponent extends SampleRouteResolverComponent {
         if (column.sortable) {
             this.sample.table.sort(column.name, this.getColumns().findIndex((c) => c.name === column.name));
         }
+    }
+
+    public async onExport(request: { format: IExportFormat, options: IExportOptionFlag[] }): Promise<void> {
+        return this.sampleService.exportTable(this.sample, request);
     }
 
     // noinspection JSMethodCanBeStatic

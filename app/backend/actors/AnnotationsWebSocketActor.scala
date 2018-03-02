@@ -5,16 +5,20 @@ import backend.models.authorization.permissions.UserPermissionsProvider
 import backend.models.authorization.user.{User, UserDetails}
 import backend.models.files.FileMetadataProvider
 import backend.models.files.sample.SampleFileProvider
+import backend.models.files.temporary.TemporaryFileProvider
 import backend.server.annotations.IntersectionTable
 import backend.server.annotations.api.annotate.{SampleAnnotateRequest, SampleAnnotateResponse}
+import backend.server.annotations.api.export.{AnnotationsExportDataRequest, AnnotationsExportDataResponse}
 import backend.server.annotations.api.matches.{IntersectionMatchesRequest, IntersectionMatchesResponse}
 import backend.server.annotations.api.sample.delete.{DeleteSampleRequest, DeleteSampleResponse}
 import backend.server.annotations.api.sample.software.AvailableSoftwareResponse
 import backend.server.annotations.api.sample.validate.{ValidateSampleRequest, ValidateSampleResponse}
 import backend.server.annotations.api.user.UserDetailsResponse
+import backend.server.annotations.export.IntersectionTableConverter
 import backend.server.database.Database
 import backend.server.database.api.metadata.DatabaseMetadataResponse
 import backend.server.limit.{IpLimit, RequestLimits}
+import backend.server.search.api.export.ExportDataResponse
 import com.antigenomics.vdjtools.io.SampleFileConnection
 import com.antigenomics.vdjtools.misc.Software
 import play.api.libs.json._
@@ -26,7 +30,7 @@ import scala.collection.mutable
 
 class AnnotationsWebSocketActor(out: ActorRef, limit: IpLimit, user: User, details: UserDetails, database: Database)
                                (implicit ec: ExecutionContext, as: ActorSystem, limits: RequestLimits,
-                                upp: UserPermissionsProvider, sfp: SampleFileProvider, fmp: FileMetadataProvider)
+                                upp: UserPermissionsProvider, sfp: SampleFileProvider, fmp: FileMetadataProvider, tfp: TemporaryFileProvider)
     extends WebSocketActor(out, limit) {
     private val intersectionTableResults: mutable.HashMap[String, IntersectionTable] = new mutable.HashMap()
 
@@ -94,6 +98,21 @@ class AnnotationsWebSocketActor(out: ActorRef, limit: IpLimit, user: User, detai
                 })
             case DatabaseMetadataResponse.Action =>
                 out.success(DatabaseMetadataResponse(database.getMetadata))
+            case AnnotationsExportDataResponse.Action =>
+                validateData(out, data, (exportRequest: AnnotationsExportDataRequest) => {
+                    val converter = IntersectionTableConverter.getConverter(exportRequest.format)
+                    if (converter.nonEmpty) {
+                        val table = intersectionTableResults.get(exportRequest.sampleName)
+                        if (table.nonEmpty) {
+                            converter.get.convert(table.get, database, exportRequest.options) onComplete {
+                                case Success(link) =>
+                                    out.success(AnnotationsExportDataResponse(link.getDownloadLink))
+                                case Failure(_) =>
+                                    out.warningMessage("Unable to export")
+                            }
+                        }
+                    }
+                })
             case _ =>
                 out.errorMessage("Invalid action")
         }
@@ -104,6 +123,6 @@ class AnnotationsWebSocketActor(out: ActorRef, limit: IpLimit, user: User, detai
 object AnnotationsWebSocketActor {
     def props(out: ActorRef, limit: IpLimit, user: User, details: UserDetails, database: Database)
              (implicit ec: ExecutionContext, as: ActorSystem, limits: RequestLimits,
-              upp: UserPermissionsProvider, sfp: SampleFileProvider, fmp: FileMetadataProvider): Props =
+              upp: UserPermissionsProvider, sfp: SampleFileProvider, fmp: FileMetadataProvider, tfp: TemporaryFileProvider): Props =
         Props(new AnnotationsWebSocketActor(out, limit, user, details, database))
 }

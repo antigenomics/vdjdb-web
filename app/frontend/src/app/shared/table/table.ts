@@ -55,6 +55,7 @@ export abstract class Table<R extends TableRow> {
 
     private _events: Subject<TableEvent> = new Subject();
 
+    private _exporting: boolean = false;
     private _loading: boolean = false;
     private _dirty: boolean = false;
     private _error: boolean = false;
@@ -131,10 +132,22 @@ export abstract class Table<R extends TableRow> {
         }
     }
 
+    public setExportStartStatus(): void {
+        this._exporting = true;
+    }
+
+    public setExportEndStatus(): void {
+        this._exporting = false;
+    }
+
     public abstract getRows(): R[];
 
     get events(): Subject<TableEvent> {
         return this._events;
+    }
+
+    get exporting(): boolean {
+        return this._exporting;
     }
 
     get loading(): boolean {

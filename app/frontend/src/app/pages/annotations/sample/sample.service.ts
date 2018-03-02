@@ -20,6 +20,7 @@ import { AnnotationsService } from 'pages/annotations/annotations.service';
 import { Observable } from 'rxjs/Observable';
 import { Subject } from 'rxjs/Subject';
 import { SampleItem } from 'shared/sample/sample-item';
+import { IExportFormat, IExportOptionFlag } from 'shared/table/export/table-export.component';
 import { WebSocketResponseData } from 'shared/websocket/websocket-response';
 import { NotificationService } from 'utils/notifications/notification.service';
 
@@ -36,6 +37,7 @@ export namespace SampleServiceEventType {
     export const EVENT_LOADING: number = 0;
     export const EVENT_SELECTED: number = 1;
     export const EVENT_UPDATED: number = 2;
+    export const EVENT_EXPORT: number = 3;
 }
 
 export class SampleServiceEvent {
@@ -112,6 +114,11 @@ export class SampleService {
         } else {
             this.notifications.info('Annotations', 'Sample is in proccesing state');
         }
+    }
+
+    public async exportTable(sample: SampleItem, request: { format: IExportFormat, options: IExportOptionFlag[] }): Promise<void> {
+        await this.annotationsService.exportTable(sample, request);
+        this._events.next(new SampleServiceEvent(sample.name, SampleServiceEventType.EVENT_EXPORT));
     }
 
     public getEvents(): Subject<SampleServiceEvent> {
