@@ -88,7 +88,7 @@ class AnnotationsAPI @Inject()(cc: ControllerComponents, userRequestAction: User
                         request.body.file("file").fold(ifEmpty = Future.successful(BadRequest("File is empty"))) { file =>
                             val name = FilenameUtils.getBaseName(form.name)
                             val software = form.software
-                            
+
                             var fileReference = file.ref
                             val extension: String = FilenameUtils.getExtension(form.name) match {
                                 case "zip" =>

@@ -15,6 +15,18 @@
  *
  */
 
+export type FileItemStatusErrorType = number;
+
+export namespace FileItemStatusErrorType {
+    export const NO_ERROR: number = 0;
+    export const UPLOAD_NOT_ALLOWED: number = 1;
+    export const MAX_FILES_COUNT_LIMIT_EXCEEDED: number = 1;
+    export const MAX_FILE_SIZE_LIMIT_EXCEEDED: number = 2;
+    export const INVALID_FILE_EXTENSION: number = 3;
+    export const VALIDATION_FAILED: number = 4;
+    export const INTERNAL_ERROR: number = 5;
+}
+
 export type FileItemStatusFlags = number;
 
 export namespace FileItemStatusFlags {
@@ -26,12 +38,14 @@ export namespace FileItemStatusFlags {
     export const LOADING: number = 1 << 4;
     export const UPLOADED: number = 1 << 5;
     export const ERROR: number = 1 << 6;
+    export const COMPRESSING: number = 1 << 7;
     /*tslint:enable:no-bitwise no-magic-numbers*/
 }
 
 export class FileItemStatus {
     private _flags: FileItemStatusFlags = FileItemStatusFlags.WAITING;
     private _errorStatus: string = '';
+    private _errorType: FileItemStatusErrorType = FileItemStatusErrorType.NO_ERROR;
 
     public isWaiting(): boolean {
         return this.checkStatusFlag(FileItemStatusFlags.WAITING);
@@ -62,8 +76,16 @@ export class FileItemStatus {
         return this.checkStatusFlag(FileItemStatusFlags.UPLOADED);
     }
 
+    public isCompressing(): boolean {
+        return this.checkStatusFlag(FileItemStatusFlags.COMPRESSING);
+    }
+
     public isError(): boolean {
         return this.checkStatusFlag(FileItemStatusFlags.ERROR);
+    }
+
+    public getErrorType(): FileItemStatusErrorType {
+        return this._errorType;
     }
 
     public isReadyForUpload(): boolean {
@@ -75,6 +97,14 @@ export class FileItemStatus {
             || this.checkStatusFlag(FileItemStatusFlags.DUPLICATE_FILE_NAME) === true;
     }
 
+    public setWaitingStatus(): void {
+        this.setSingleStatusFlag(FileItemStatusFlags.WAITING);
+    }
+
+    public setCompressingStatus(): void {
+        this.setSingleStatusFlag(FileItemStatusFlags.COMPRESSING);
+    }
+
     public setLoadingStatus(): void {
         this.setSingleStatusFlag(FileItemStatusFlags.LOADING);
     }
@@ -83,9 +113,10 @@ export class FileItemStatus {
         this.setSingleStatusFlag(FileItemStatusFlags.UPLOADED);
     }
 
-    public setErrorStatus(errorStatus: string): void {
+    public setErrorStatus(errorStatus: string, errorType: FileItemStatusErrorType): void {
         this.setSingleStatusFlag(FileItemStatusFlags.ERROR);
         this._errorStatus = errorStatus;
+        this._errorType = errorType;
     }
 
     public setInvalidNameStatus(): void {
@@ -112,6 +143,7 @@ export class FileItemStatus {
         this.unsetStatusFlag(FileItemStatusFlags.ERROR);
         this.setStatusFlag(FileItemStatusFlags.WAITING);
         this._errorStatus = '';
+        this._errorType = FileItemStatusErrorType.NO_ERROR;
     }
 
     public getLabelStatusClass(): string {
@@ -141,6 +173,8 @@ export class FileItemStatus {
             return 'Uploaded successfully';
         } else if (this.checkStatusFlag(FileItemStatusFlags.ERROR)) {
             return this._errorStatus;
+        } else if (this.checkStatusFlag(FileItemStatusFlags.COMPRESSING)) {
+            return 'Compressing';
         }
         return '';
     }

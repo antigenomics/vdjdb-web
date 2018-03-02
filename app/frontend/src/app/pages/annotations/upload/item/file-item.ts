@@ -17,12 +17,13 @@
 
 import { ReplaySubject } from 'rxjs/ReplaySubject';
 import { Utils } from 'utils/utils';
-import { FileItemStatus } from './file-item-status';
+import { FileItemStatus, FileItemStatusErrorType } from './file-item-status';
 
 export class FileItem {
     public static FULL_PROGRESS: number = 100;
     public static AVAILABLE_EXTENSIONS: string[] = [ 'txt', 'gz', 'zip' ];
 
+    public compressed?: Blob;
     public native: File;
     public baseName: string = '';
     public extension: string = '';
@@ -47,8 +48,8 @@ export class FileItem {
         this.progress.next(FileItem.FULL_PROGRESS);
     }
 
-    public setErrorStatus(error: string): void {
-        this.status.setErrorStatus(error);
+    public setErrorStatus(error: string, type: FileItemStatusErrorType): void {
+        this.status.setErrorStatus(error, type);
         this.progress.next(-1);
     }
 
@@ -61,11 +62,19 @@ export class FileItem {
         this.software = software;
     }
 
+    public setExtension(extension: string): void {
+        this.extension = extension;
+    }
+
     public getNativeFile(): File {
         return this.native;
     }
 
-    public getNameWithExtension(): string {
+    public getUploadBlob(): Blob {
+        return this.compressed !== undefined ? this.compressed : this.getNativeFile();
+    }
+
+    public getUploadBlobName(): string {
         return `${this.baseName}.${this.extension}`;
     }
 }
