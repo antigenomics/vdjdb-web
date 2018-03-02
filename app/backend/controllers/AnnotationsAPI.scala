@@ -17,6 +17,7 @@
 
 package backend.controllers
 
+import java.io.FileInputStream
 import javax.inject.Inject
 
 import akka.actor.ActorSystem
@@ -89,16 +90,10 @@ class AnnotationsAPI @Inject()(cc: ControllerComponents, userRequestAction: User
                             val name = FilenameUtils.getBaseName(form.name)
                             val software = form.software
 
-                            var fileReference = file.ref
-                            val extension: String = FilenameUtils.getExtension(form.name) match {
-                                case "zip" =>
-                                    fileReference = FileUtils.convertZipToGzip(file.ref)
-                                    file.ref.delete()
-                                    "gz"
-                                case s: String => s
-                            }
+                            val gzipped = FileUtils.convertToGzip(file.ref)
+                            val extension: String = "gz"
 
-                            request.user.get.addSampleFile(name, extension, software, fileReference).map {
+                            request.user.get.addSampleFile(name, extension, software, gzipped).map {
                                 case Left(sampleFileID) =>
                                     Ok(s"$sampleFileID")
                                 case Right(error) =>
