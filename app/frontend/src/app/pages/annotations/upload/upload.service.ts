@@ -16,6 +16,7 @@
  */
 
 import { Injectable } from '@angular/core';
+import { FileItemStatusErrorType } from 'pages/annotations/upload/item/file-item-status';
 import { Observable } from 'rxjs/Observable';
 import { Observer } from 'rxjs/Observer';
 import { ReplaySubject } from 'rxjs/ReplaySubject';
@@ -23,6 +24,8 @@ import { LoggerService } from 'utils/logger/logger.service';
 import { NotificationService } from 'utils/notifications/notification.service';
 import { AnnotationsService, AnnotationsServiceEvents } from '../annotations.service';
 import { FileItem } from './item/file-item';
+
+const gzip = require('gzip-js'); // tslint:disable-line:no-var-requires
 
 export class UploadStatus {
     public progress: number;
@@ -134,20 +137,24 @@ export class UploadService {
     public handlePermissionsErrors(item: FileItem): boolean {
         const permissions = this.annotationsService.getUserPermissions();
         if (!permissions.isUploadAllowed) {
-            item.setErrorStatus('Uploading is not allowed for this account');
+            item.setErrorStatus('Uploading is not allowed for this account', FileItemStatusErrorType.UPLOAD_NOT_ALLOWED);
             return true;
         }
         if (permissions.maxFilesCount >= 0) {
             const waitingFilesLength = this._files.filter((_item) => _item.status.isWaiting()).length;
             const sampleFilesLength = this.annotationsService.getSamples().length;
             if ((waitingFilesLength + sampleFilesLength) >= permissions.maxFilesCount) {
-                item.setErrorStatus('Max files count limit have been exceeded');
+                item.setErrorStatus('Max files count limit have been exceeded', FileItemStatusErrorType.MAX_FILES_COUNT_LIMIT_EXCEEDED);
                 return true;
             }
         }
-        if (permissions.maxFileSize >= 0 && item.getNativeFile().size >= permissions.getMaxFileSizeInBytes()) {
-            item.setErrorStatus('Max file size limit have been exceeded');
-            return true;
+        if (permissions.maxFileSize >= 0) {
+            if (item.compressed && item.compressed.size < permissions.getMaxFileSizeInBytes()) {
+                return false;
+            } else if (item.getNativeFile().size >= permissions.getMaxFileSizeInBytes()) {
+                item.setErrorStatus('Max file size limit have been exceeded', FileItemStatusErrorType.MAX_FILE_SIZE_LIMIT_EXCEEDED);
+                return true;
+            }
         }
         return false;
     }
@@ -155,7 +162,7 @@ export class UploadService {
     // noinspection JSMethodCanBeStatic
     public handleExtensionErrors(item: FileItem): boolean {
         if (FileItem.AVAILABLE_EXTENSIONS.indexOf(item.extension) === -1) {
-            item.setErrorStatus('Invalid file extension');
+            item.setErrorStatus('Invalid file extension', FileItemStatusErrorType.INVALID_FILE_EXTENSION);
             return true;
         }
         return false;
@@ -176,6 +183,20 @@ export class UploadService {
             checked.push(item);
         }
         this._events.next(UploadServiceEvent.STATE_REFRESHED);
+    }
+
+    public compress(item: FileItem): void {
+        item.status.setCompressingStatus();
+        const reader = new FileReader();
+        reader.onload = (event: Event) => {
+            const array = new Uint8Array((event.target as any).result);
+            const gzippedByteArray = new Uint8Array(gzip.zip(array));
+            const gzippedBlob = new Blob([gzippedByteArray], { type: 'application/x-gzip' });
+            item.compressed = gzippedBlob;
+            item.setExtension('gz');
+            this.updateErrors();
+        };
+        reader.readAsArrayBuffer(item.getNativeFile());
     }
 
     public remove(item: FileItem): void {
@@ -207,10 +228,10 @@ export class UploadService {
                             if (added) {
                                 file.setUploadedStatus();
                             } else {
-                                file.setErrorStatus('Validating failed');
+                                file.setErrorStatus('Validating failed', FileItemStatusErrorType.VALIDATION_FAILED);
                             }
                         } else if (status.error !== undefined) {
-                            file.setErrorStatus(status.error);
+                            file.setErrorStatus(status.error, FileItemStatusErrorType.INTERNAL_ERROR);
                         }
                         this.fireUploadingEndedEvent();
                     } else {
@@ -218,7 +239,7 @@ export class UploadService {
                     }
                 },
                 error:    (err: UploadStatus) => {
-                    file.setErrorStatus(err.error);
+                    file.setErrorStatus(err.error, FileItemStatusErrorType.INTERNAL_ERROR);
                     this.fireUploadingEndedEvent();
                 }
             });
@@ -276,8 +297,8 @@ export class UploadService {
 
         return Observable.create((observer: Observer<UploadStatus>) => {
             const formData: FormData = new FormData();
-            formData.append('file', file.getNativeFile());
-            formData.append('name', file.getNameWithExtension());
+            formData.append('file', file.getUploadBlob());
+            formData.append('name', file.getUploadBlobName());
             formData.append('software', file.software);
             const xhr = new XMLHttpRequest();
 

@@ -39,6 +39,9 @@
             <i class="remove icon"></i>
         </button>
     </div>
+    <div *ngIf="isCompressAvailable()">
+        <button class="ui tiny button" (click)="compress()">Compress</button>
+    </div>
     <div *ngIf="item.status.isLoading()">
         <div class="ui active small inline loader"></div>
     </div>

@@ -19,6 +19,7 @@ import {
     AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Input, OnDestroy, OnInit, Renderer2,
     ViewChild
 } from '@angular/core';
+import { FileItemStatusErrorType } from 'pages/annotations/upload/item/file-item-status';
 import { Subscription } from 'rxjs/Subscription';
 import { FileItem } from '../../item/file-item';
 import { UploadService, UploadServiceEvent } from '../../upload.service';
@@ -69,6 +70,15 @@ export class UploadTableRowComponent implements AfterViewInit, OnInit, OnDestroy
 
     public remove(): void {
         this.uploadService.remove(this.item);
+    }
+
+    public compress(): void {
+        this.uploadService.compress(this.item);
+    }
+
+    public isCompressAvailable(): boolean {
+        return (this.item.compressed === undefined) && (this.item.getNativeFile().type === 'text/plain')
+            && (this.item.status.isError()) && (this.item.status.getErrorType() === FileItemStatusErrorType.MAX_FILE_SIZE_LIMIT_EXCEEDED);
     }
 
     public handleName(newBaseName: string): void {
