@@ -7,7 +7,7 @@
     </div>
     <div class="ui attached secondary clearing segment">
         <input type="file" id="fileHandler" name="files[]" multiple (change)="handleNewFiles($event)"
-               accept="text/plain, application/x-compressed, application/x-gzip, multipart/x-gzip" style="display: none" />
+               accept="text/plain, application/x-compressed, application/x-gzip, multipart/x-gzip, application/x-zip-compressed, application/zip, multipart/x-zip" style="display: none" />
         <label for="fileHandler" class="ui teal button left floated">Add</label>
         <button class="ui button right floated" [ngClass]="{'disabled':!uploadService.isUploadedExist()}" (click)="uploadService.clearUploaded()">
             Clear uploaded

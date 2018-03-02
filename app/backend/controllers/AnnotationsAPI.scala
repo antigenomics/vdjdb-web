@@ -30,6 +30,7 @@ import backend.models.files.sample.{SampleFileForm, SampleFileProvider}
 import backend.server.database.Database
 import backend.server.limit.RequestLimits
 import backend.utils.analytics.Analytics
+import backend.utils.files.FileUtils
 import com.typesafe.config.ConfigMemorySize
 import org.apache.commons.io.FilenameUtils
 import play.api.i18n.{Lang, Messages, MessagesApi}
@@ -86,9 +87,18 @@ class AnnotationsAPI @Inject()(cc: ControllerComponents, userRequestAction: User
                     form => {
                         request.body.file("file").fold(ifEmpty = Future.successful(BadRequest("File is empty"))) { file =>
                             val name = FilenameUtils.getBaseName(form.name)
-                            val extension = FilenameUtils.getExtension(form.name)
                             val software = form.software
-                            request.user.get.addSampleFile(name, extension, software, file.ref).map {
+                            
+                            var fileReference = file.ref
+                            val extension: String = FilenameUtils.getExtension(form.name) match {
+                                case "zip" =>
+                                    fileReference = FileUtils.convertZipToGzip(file.ref)
+                                    file.ref.delete()
+                                    "gz"
+                                case s: String => s
+                            }
+
+                            request.user.get.addSampleFile(name, extension, software, fileReference).map {
                                 case Left(sampleFileID) =>
                                     Ok(s"$sampleFileID")
                                 case Right(error) =>

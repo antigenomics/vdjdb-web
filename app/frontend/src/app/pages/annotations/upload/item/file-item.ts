@@ -21,7 +21,7 @@ import { FileItemStatus } from './file-item-status';
 
 export class FileItem {
     public static FULL_PROGRESS: number = 100;
-    public static AVAILABLE_EXTENSIONS: string[] = [ 'txt', 'gz' ];
+    public static AVAILABLE_EXTENSIONS: string[] = [ 'txt', 'gz', 'zip' ];
 
     public native: File;
     public baseName: string = '';

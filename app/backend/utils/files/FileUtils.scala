@@ -16,13 +16,15 @@
 
 package backend.utils.files
 
-import java.io.File
+import java.io.{File, FileInputStream, FileOutputStream}
 import java.nio.file.StandardCopyOption.REPLACE_EXISTING
-import java.nio.file.{Files, Paths}
-import java.security.MessageDigest
-import java.nio.charset.Charset
 import java.nio.file.Files
+import java.security.MessageDigest
 import java.nio.file.Paths
+import java.util.zip.ZipInputStream
+import java.util.zip.GZIPOutputStream
+
+import play.api.libs.Files.TemporaryFile
 
 object FileUtils {
 
@@ -45,6 +47,32 @@ object FileUtils {
         val arr = Files readAllBytes (Paths get path)
         val checksum = MessageDigest.getInstance(t) digest arr
         checksum.map("%02X" format _).mkString
+    }
+
+    def convertZipToGzip(file: play.api.libs.Files.TemporaryFile): TemporaryFile = {
+        val zipInputStream = new ZipInputStream(new FileInputStream(file.getAbsoluteFile))
+        val zipEntry = zipInputStream.getNextEntry
+
+        //Assume that zip contains only one entry
+        val fileName = zipEntry.getName
+        val creator = play.api.libs.Files.SingletonTemporaryFileCreator
+
+        // GZIP output stream
+        val gzipOutputFile = creator.create(fileName, ".gzip")
+        val gzip = new GZIPOutputStream(new FileOutputStream(gzipOutputFile.getAbsoluteFile))
+
+        val buffer: Array[Byte] = new Array[Byte](1024)
+        var len: Int = zipInputStream.read(buffer)
+        while (len > 0) {
+            gzip.write(buffer, 0, len)
+            len = zipInputStream.read(buffer)
+        }
+        gzip.close()
+
+        zipInputStream.closeEntry()
+        zipInputStream.close()
+
+        gzipOutputFile
     }
 
 }
