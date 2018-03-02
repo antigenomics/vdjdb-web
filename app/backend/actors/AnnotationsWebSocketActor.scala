@@ -104,7 +104,7 @@ class AnnotationsWebSocketActor(out: ActorRef, limit: IpLimit, user: User, detai
                     if (converter.nonEmpty) {
                         val table = intersectionTableResults.get(exportRequest.sampleName)
                         if (table.nonEmpty) {
-                            converter.get.convert(table.get, database, exportRequest.options) onComplete {
+                            converter.get.convert(exportRequest.sampleName, table.get, database, exportRequest.options) onComplete {
                                 case Success(link) =>
                                     out.success(AnnotationsExportDataResponse(link.getDownloadLink))
                                 case Failure(_) =>

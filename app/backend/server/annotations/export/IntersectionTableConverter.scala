@@ -25,7 +25,7 @@ import backend.server.search.api.export.ExportOptionFlag
 import scala.concurrent.{ExecutionContext, Future}
 
 trait IntersectionTableConverter {
-    def convert(table: IntersectionTable, database: Database, options: Seq[ExportOptionFlag]): Future[TemporaryFileLink]
+    def convert(sampleName: String, table: IntersectionTable, database: Database, options: Seq[ExportOptionFlag]): Future[TemporaryFileLink]
     def getExtension: String
 }
 
