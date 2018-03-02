@@ -16,13 +16,12 @@
 
 package backend.utils.files
 
-import java.io.{File, FileInputStream, FileOutputStream}
+import java.io.{File, FileInputStream, FileOutputStream, InputStream}
 import java.nio.file.StandardCopyOption.REPLACE_EXISTING
 import java.nio.file.Files
 import java.security.MessageDigest
 import java.nio.file.Paths
-import java.util.zip.ZipInputStream
-import java.util.zip.GZIPOutputStream
+import java.util.zip._
 
 import play.api.libs.Files.TemporaryFile
 
@@ -49,6 +48,35 @@ object FileUtils {
         checksum.map("%02X" format _).mkString
     }
 
+    def isGZipped(file: File): Boolean = {
+        try {
+            val gzip = new GZIPInputStream(new FileInputStream(file))
+            gzip.close()
+            true
+        } catch {
+            case e: ZipException => false
+        }
+    }
+
+    def isZipped(file: File): Boolean = {
+        try {
+            val zipFile = new ZipFile(file)
+            true
+        } catch {
+            case e: ZipException => false
+        }
+    }
+
+    def convertToGzip(file: play.api.libs.Files.TemporaryFile): TemporaryFile = {
+        if (isGZipped(file.getAbsoluteFile)) {
+            file
+        } else {
+            val gzipped = if (isZipped(file.getAbsoluteFile)) convertZipToGzip(file) else convertPlainToGzip(file)
+            file.delete()
+            gzipped
+        }
+    }
+
     def convertZipToGzip(file: play.api.libs.Files.TemporaryFile): TemporaryFile = {
         val zipInputStream = new ZipInputStream(new FileInputStream(file.getAbsoluteFile))
         val zipEntry = zipInputStream.getNextEntry
@@ -58,11 +86,11 @@ object FileUtils {
         val creator = play.api.libs.Files.SingletonTemporaryFileCreator
 
         // GZIP output stream
-        val gzipOutputFile = creator.create(fileName, ".gzip")
+        val gzipOutputFile = creator.create(fileName, ".gz")
         val gzip = new GZIPOutputStream(new FileOutputStream(gzipOutputFile.getAbsoluteFile))
 
-        val buffer: Array[Byte] = new Array[Byte](1024)
-        var len: Int = zipInputStream.read(buffer)
+        val buffer = new Array[Byte](1024)
+        var len = zipInputStream.read(buffer)
         while (len > 0) {
             gzip.write(buffer, 0, len)
             len = zipInputStream.read(buffer)
@@ -73,6 +101,25 @@ object FileUtils {
         zipInputStream.close()
 
         gzipOutputFile
+    }
+
+    def convertPlainToGzip(file: play.api.libs.Files.TemporaryFile): TemporaryFile = {
+        val fileInputStream = new FileInputStream(file.getAbsoluteFile)
+        val creator = play.api.libs.Files.SingletonTemporaryFileCreator
+        // GZIP output stream
+        val outputFile = creator.create(file.getAbsoluteFile.getName, ".gz")
+        val gzip = new GZIPOutputStream(new FileOutputStream(outputFile.getAbsoluteFile))
+
+        val buffer = new Array[Byte](1024)
+        var len = fileInputStream.read(buffer)
+        while (len > 0) {
+            gzip.write(buffer, 0, len)
+            len = fileInputStream.read(buffer)
+        }
+        gzip.close()
+
+        fileInputStream.close()
+        outputFile
     }
 
 }

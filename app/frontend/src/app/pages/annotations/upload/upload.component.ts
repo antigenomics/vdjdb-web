@@ -15,7 +15,7 @@
  *       limitations under the License.
  */
 
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Subscription } from 'rxjs/Subscription';
 import { UploadService } from './upload.service';
 
@@ -27,6 +27,9 @@ import { UploadService } from './upload.service';
 export class AnnotationsUploadComponent implements OnInit, OnDestroy {
     private _uploadServiceEventsSubscription: Subscription;
 
+    @ViewChild('fileHandlerForm')
+    public fileHandlerForm: ElementRef;
+
     constructor(public uploadService: UploadService, private changeDetector: ChangeDetectorRef) {}
 
     public ngOnInit(): void {
@@ -37,6 +40,7 @@ export class AnnotationsUploadComponent implements OnInit, OnDestroy {
 
     public handleNewFiles(event: Event): void {
         this.uploadService.addItems((event.target as HTMLInputElement).files);
+        this.fileHandlerForm.nativeElement.reset();
     }
 
     public ngOnDestroy(): void {
