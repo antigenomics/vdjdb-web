@@ -136,14 +136,16 @@ export class UploadService {
         if (!permissions.isUploadAllowed) {
             item.setErrorStatus('Uploading is not allowed for this account');
             return true;
-        } else if (permissions.maxFilesCount >= 0) {
+        }
+        if (permissions.maxFilesCount >= 0) {
             const waitingFilesLength = this._files.filter((_item) => _item.status.isWaiting()).length;
             const sampleFilesLength = this.annotationsService.getSamples().length;
             if ((waitingFilesLength + sampleFilesLength) >= permissions.maxFilesCount) {
                 item.setErrorStatus('Max files count limit have been exceeded');
                 return true;
             }
-        } else if (permissions.maxFileSize >= 0 && item.getNativeFile().size >= permissions.getMaxFileSizeInBytes()) {
+        }
+        if (permissions.maxFileSize >= 0 && item.getNativeFile().size >= permissions.getMaxFileSizeInBytes()) {
             item.setErrorStatus('Max file size limit have been exceeded');
             return true;
         }
