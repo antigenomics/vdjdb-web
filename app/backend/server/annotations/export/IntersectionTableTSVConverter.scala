@@ -32,7 +32,7 @@ case class IntersectionTableTSVConverter()(implicit tfp: TemporaryFileProvider, 
     private def lift[T](futures: Seq[Future[T]]) = futures.map(_.map { Success(_) }.recover { case t => Failure(t) })
     private def waitAll[T](futures: Seq[Future[T]]) = Future.sequence(lift(futures))
 
-    override def convert(table: IntersectionTable, database: Database, options: Seq[ExportOptionFlag]): Future[TemporaryFileLink] = async {
+    override def convert(sampleName: String, table: IntersectionTable, database: Database, options: Seq[ExportOptionFlag]): Future[TemporaryFileLink] = async {
         val rows = table.getRows
 
         val databaseHeader = database.getMetadata.columns.map(column => column.title).mkString("complex.id\t", "\t", "\r\n")
@@ -76,7 +76,7 @@ case class IntersectionTableTSVConverter()(implicit tfp: TemporaryFileProvider, 
         val content = new StringBuilder()
         completedBuilders.foreach((builder) => content.append(builder.get.toString()))
 
-        await(tfp.createTemporaryFile("IntersectionTable", getExtension, content.toString()))
+        await(tfp.createTemporaryFile(s"${sampleName}_AnnotationsTable", getExtension, content.toString()))
     }
 
     override def getExtension: String = "tsv"
