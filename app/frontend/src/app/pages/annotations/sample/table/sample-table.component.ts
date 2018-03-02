@@ -58,18 +58,24 @@ export class SampleTableComponent extends SampleRouteResolverComponent {
         this.sample.table.updatePageSize(pageSize);
     }
 
+    public onColumnClick(column: TableColumn): void {
+        if (column.sortable) {
+            this.sample.table.sort(column.name, this.getColumns().findIndex((c) => c.name === column.name));
+        }
+    }
+
     // noinspection JSMethodCanBeStatic
     public getColumns(): TableColumn[] {
         return [
-            new TableColumn('details', 'Details', false, true),
-            new TableColumn('found', '# matches'),
-            new TableColumn('id', 'Rank'),
-            new TableColumn('freq', 'Frequency'),
-            new TableColumn('count', 'Count'),
-            new TableColumn('cdr3aa', 'CDR3aa'),
-            new TableColumn('v', 'V'),
-            new TableColumn('j', 'J'),
-            new TableColumn('tags', 'Tags', false, true)
+            new TableColumn('details', 'Details', false, false, true),
+            new TableColumn('found', '# matches', true),
+            new TableColumn('id', 'Rank', true),
+            new TableColumn('freq', 'Frequency', true),
+            new TableColumn('count', 'Count', true),
+            new TableColumn('cdr3aa', 'CDR3aa', true),
+            new TableColumn('v', 'V', true),
+            new TableColumn('j', 'J', true),
+            new TableColumn('tags', 'Tags', false, false, true)
         ];
     }
 

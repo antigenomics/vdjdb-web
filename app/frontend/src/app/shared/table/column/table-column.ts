@@ -18,6 +18,7 @@
 export class TableColumn {
     public readonly name: string;
     public readonly title: string;
+    public readonly sortable: boolean;
     public readonly skip: boolean;
     public readonly noEntry: boolean;
 
@@ -25,10 +26,11 @@ export class TableColumn {
     public readonly popupContent: string = '';
     public readonly popupFooter: string = '';
 
-    constructor(name: string, title: string, skip: boolean = false, noEntry: boolean = false,
+    constructor(name: string, title: string, sortable: boolean = true, skip: boolean = false, noEntry: boolean = false,
                 popup?: boolean, popupContent?: string, popupFooter?: string) {
         this.name = name;
         this.title = title;
+        this.sortable = sortable;
         this.skip = skip;
         this.noEntry = noEntry;
         if (popup !== undefined) {

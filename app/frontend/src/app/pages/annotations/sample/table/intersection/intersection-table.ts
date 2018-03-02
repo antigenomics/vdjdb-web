@@ -55,6 +55,38 @@ export class IntersectionTable extends Table<IntersectionTableRow> {
         this.updateRows(rows);
     }
 
+    public sort(columnName: string, columnIndex: number): void {
+        this.sortRule.update(columnName);
+        const rows = this.rows.sort((r1, r2) => {
+            const entry1 = r1.entries[ columnIndex - 1 ];
+            const entry2 = r2.entries[ columnIndex - 1 ];
+
+            if (!isNaN(parseFloat(entry1)) && !isNaN(parseFloat(entry2))) {
+                const f1 = parseFloat(entry1);
+                const f2 = parseFloat(entry2);
+                switch (this.sortRule.type) {
+                    case 'asc':
+                        if (f1 < f2) { return -1; } else if (f1 > f2) { return 1; } else { return 0; }
+                    case 'desc':
+                        if (f1 < f2) { return 1; } else if (f1 > f2) { return -1; } else { return 0; }
+                    default:
+                        return 0;
+                }
+            } else {
+                switch (this.sortRule.type) {
+                    case 'asc':
+                        return Number(r1.entries[ columnIndex ] <= r2.entries[ columnIndex ]);
+                    case 'desc':
+                        return Number(r1.entries[ columnIndex ] > r2.entries[ columnIndex ]);
+                    default:
+                        return 0;
+                }
+            }
+        });
+        this.updatePage(0);
+        this.updateRows(rows);
+    }
+
     public updateSummary(summary: SummaryCounters) {
         this._summary = summary;
     }

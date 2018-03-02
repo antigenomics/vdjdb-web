@@ -70,7 +70,7 @@ export class SearchPageComponent implements OnInit, OnDestroy {
     private fetchColumns(): void {
         const metadata = this.searchTableService.getMetadata();
         this.columns = metadata.columns.map((c) => {
-            return new TableColumn(c.name, c.title, false, false, true, c.comment, 'Click to sort column');
+            return new TableColumn(c.name, c.title, true, false, false, true, c.comment, 'Click to sort column');
         });
     }
 }
