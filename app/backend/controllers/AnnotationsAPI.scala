@@ -28,6 +28,7 @@ import backend.models.authorization.permissions.UserPermissionsProvider
 import backend.models.authorization.user.UserProvider
 import backend.models.files.FileMetadataProvider
 import backend.models.files.sample.{SampleFileForm, SampleFileProvider}
+import backend.models.files.temporary.TemporaryFileProvider
 import backend.server.database.Database
 import backend.server.limit.RequestLimits
 import backend.utils.analytics.Analytics
@@ -47,6 +48,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class AnnotationsAPI @Inject()(cc: ControllerComponents, userRequestAction: UserRequestAction,
                                conf: Configuration, messagesApi: MessagesApi, database: Database)
                               (implicit upp: UserPermissionsProvider, up: UserProvider, sfp: SampleFileProvider, fmp: FileMetadataProvider,
+                               tfp: TemporaryFileProvider,
                                as: ActorSystem, mat: Materializer, ec: ExecutionContext, limits: RequestLimits,
                                environment: Environment, analytics: Analytics)
     extends AbstractController(cc) {

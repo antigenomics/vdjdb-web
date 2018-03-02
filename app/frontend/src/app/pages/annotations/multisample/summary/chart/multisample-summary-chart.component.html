@@ -23,6 +23,7 @@
         </div>
         <div class="ui divider"></div>
         <summary-chart-options [options]="getCurrentTabSummaryChartOptions()"
+                               [disableCheckboxes]="getCurrentTabSummaryChartDisableCheckboxesOptions()"
                                (onOptionsChange)="handleChangeOptionsFn($event)"
                                [threshold]="threshold"></summary-chart-options>
     </div>

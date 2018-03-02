@@ -33,6 +33,11 @@ export interface ISummaryFilterFieldType {
     title: string;
 }
 
+export interface ISummaryChartOptionsDisableCheckboxes {
+    disableIsNotFoundVisible: boolean;
+    disableIsWeightedByReadCount: boolean;
+}
+
 export class SummaryChartOptions {
     public static readonly thresholdTypes: IThresholdType[] = [
         { title: 'All', threshold: 10000 },
@@ -45,8 +50,8 @@ export class SummaryChartOptions {
     ];
 
     public normalizeTypes: INormalizeType[] = [
-        { name: 'db', title: 'number of VDJdb records', checked: false },
-        { name: 'matches', title: 'number of clonotypes in sample', checked: false }
+        { name: 'db', title: 'number of corresponding VDJdb records', checked: false },
+        { name: 'matches', title: 'number of matched clonotypes in sample', checked: false }
     ];
 
     public fieldTypes: ISummaryFilterFieldType[] = [
@@ -82,6 +87,9 @@ export class SummaryChartOptionsComponent {
 
     @Input('options')
     public options: SummaryChartOptions;
+
+    @Input('disableCheckboxes')
+    public disableCheckboxes: ISummaryChartOptionsDisableCheckboxes = { disableIsNotFoundVisible: false, disableIsWeightedByReadCount: false };
 
     @Output('onOptionsChange')
     public onOptionsChange = new EventEmitter();

@@ -35,6 +35,9 @@ export interface IExportOptionFlag {
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TableExportComponent {
+    @Input('exporting')
+    public exporting: boolean;
+
     @Input('formats')
     public formats: IExportFormat[];
 

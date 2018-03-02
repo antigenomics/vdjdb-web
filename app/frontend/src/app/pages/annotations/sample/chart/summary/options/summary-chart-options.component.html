@@ -1,10 +1,10 @@
 <div class="ui checkbox">
-    <input type="checkbox" [(ngModel)]="isNotFoundVisible">
+    <input type="checkbox" [(ngModel)]="isNotFoundVisible" [disabled]="disableCheckboxes.disableIsNotFoundVisible">
     <label>Show unannotated</label>
 </div>
 <br>
 <div class="ui checkbox">
-    <input type="checkbox" [(ngModel)]="isWeightedByReadCount">
+    <input type="checkbox" [(ngModel)]="isWeightedByReadCount" [disabled]="disableCheckboxes.disableIsWeightedByReadCount">
     <label>Weight by read count</label>
 </div>
 

@@ -2,6 +2,7 @@
     <div class="ui container">
         <div class="header item"><h1>VDJdb</h1></div>
         <a route="/" class="item">Home</a>
+        <a route="/overview" class="item">Overview</a>
         <a route="/search" class="item">Browse</a>
 
         <a class="ui dropdown item" dropdown [content]="content" *ngIf="!isLogged()">
@@ -18,7 +19,6 @@
             Annotation
         </a>
 
-        <a route="/overview" class="item">Overview</a>
         <a route="/about" class="item">About</a>
 
 

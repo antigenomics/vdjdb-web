@@ -3,6 +3,6 @@
     <div class="ui teal attached segment" style="width: 100%; min-height: 200px;"
          table-component table-class="ui unstackable very compact celled stripped small table" [configuration]="configuration"
          [columns]="getColumns()" [table]="sample.table" (onPageChange)="onPageChange($event)" (onPageSizeChange)="onPageSizeChange($event)"
-         (onColumnClick)="onColumnClick($event)">
+         (onColumnClick)="onColumnClick($event)" (onExport)="onExport($event)">
     </div>
 </div>

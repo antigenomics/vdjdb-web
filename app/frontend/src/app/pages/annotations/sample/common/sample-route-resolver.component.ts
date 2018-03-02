@@ -40,7 +40,7 @@ export class SampleRouteResolverComponent implements OnInit, OnDestroy {
             this.changeDetector.detectChanges();
         });
         this._sampleServiceEventsSubscription = this.sampleService.getEvents().pipe(filter((event) => {
-            return event.type === SampleServiceEventType.EVENT_UPDATED && event.name === this.sample.name;
+            return event.type === SampleServiceEventType.EVENT_UPDATED && event.name === this.sample.name || event.type === SampleServiceEventType.EVENT_EXPORT;
         })).subscribe(() => {
             this.changeDetector.detectChanges();
         });

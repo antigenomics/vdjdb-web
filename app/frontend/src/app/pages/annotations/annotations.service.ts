@@ -21,12 +21,14 @@ import { IntersectionTableRow } from 'pages/annotations/sample/table/intersectio
 import { Observable } from 'rxjs/Observable';
 import { Subject } from 'rxjs/Subject';
 import { SampleItem } from 'shared/sample/sample-item';
+import { IExportFormat, IExportOptionFlag } from 'shared/table/export/table-export.component';
 import { User, UserPermissions } from 'shared/user/user';
-import { WebSocketConnection } from 'shared/websocket/websocket-connection';
+import { WebSocketConnection, WebSocketResponseStatus } from 'shared/websocket/websocket-connection';
 import { WebSocketRequestData } from 'shared/websocket/websocket-request';
 import { WebSocketResponseData } from 'shared/websocket/websocket-response';
 import { LoggerService } from 'utils/logger/logger.service';
 import { NotificationService } from 'utils/notifications/notification.service';
+import { Utils } from 'utils/utils';
 import { DatabaseMetadata } from '../search/database/database-metadata';
 import { FileItem } from './upload/item/file-item';
 
@@ -36,6 +38,8 @@ export namespace AnnotationsServiceEvents {
     export const INITIALIZED: number = 0;
     export const SAMPLE_ADDED: number = 1;
     export const SAMPLE_DELETED: number = 2;
+    export const SAMPLE_TABLE_EXPORT_START: number = 3;
+    export const SAMPLE_TABLE_EXPORT_END: number = 4;
 }
 
 export namespace AnnotationsServiceWebSocketActions {
@@ -46,6 +50,7 @@ export namespace AnnotationsServiceWebSocketActions {
     export const DELETE_SAMPLE: string = 'delete_sample';
     export const INTERSECT: string = 'intersect';
     export const DOWNLOAD_MATCHES: string = 'download_matches';
+    export const EXPORT: string = 'export';
 }
 
 @Injectable()
@@ -58,7 +63,7 @@ export class AnnotationsService {
 
     private connection: WebSocketConnection;
 
-    constructor(private logger: LoggerService, notifications: NotificationService) {
+    constructor(private logger: LoggerService, private notifications: NotificationService) {
         this.connection = new WebSocketConnection(logger, notifications, true);
         this.connection.onOpen(async () => {
 
@@ -148,6 +153,35 @@ export class AnnotationsService {
                     .add('rowIndex', row.index)
                     .unpack()
         });
+    }
+
+    public async exportTable(sample: SampleItem, request: { format: IExportFormat, options: IExportOptionFlag[] }): Promise<void> {
+        if (sample.table.exporting) {
+            this.notifications.warn('Export', 'Please wait until previous export file will be generated');
+            return;
+        } else {
+            const { format, options } = request;
+            this.logger.debug(`Export annotations for ${sample.name}`, format);
+            this._events.next(AnnotationsServiceEvents.SAMPLE_TABLE_EXPORT_START);
+            sample.table.setExportStartStatus();
+            const response = await this.connection.sendMessage({
+                action: AnnotationsServiceWebSocketActions.EXPORT,
+                data:   new WebSocketRequestData()
+                        .add('sampleName', sample.name)
+                        .add('format', format.name)
+                        .add('options', options)
+                        .unpack()
+            });
+            this.logger.debug(`Export annotations for ${sample.name}`, response);
+            if (response.get('status') === WebSocketResponseStatus.SUCCESS) {
+                Utils.File.download(response.get('link'));
+            } else {
+                this.notifications.warn('Export', response.get('message'));
+            }
+            sample.table.setExportEndStatus();
+            this._events.next(AnnotationsServiceEvents.SAMPLE_TABLE_EXPORT_END);
+            return;
+        }
     }
 
     public async addSample(file: FileItem): Promise<boolean> {
