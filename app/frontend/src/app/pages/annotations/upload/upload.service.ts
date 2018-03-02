@@ -16,6 +16,7 @@
  */
 
 import { Injectable } from '@angular/core';
+import * as gzip from 'gzip-js';
 import { FileItemStatusErrorType } from 'pages/annotations/upload/item/file-item-status';
 import { Observable } from 'rxjs/Observable';
 import { Observer } from 'rxjs/Observer';
@@ -24,8 +25,7 @@ import { LoggerService } from 'utils/logger/logger.service';
 import { NotificationService } from 'utils/notifications/notification.service';
 import { AnnotationsService, AnnotationsServiceEvents } from '../annotations.service';
 import { FileItem } from './item/file-item';
-
-const gzip = require('gzip-js'); // tslint:disable-line:no-var-requires
+// const gzip = require('gzip-js'); // tslint:disable-line:no-var-requires
 
 export class UploadStatus {
     public progress: number;

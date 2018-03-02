@@ -8,9 +8,6 @@
     </div>
 </td>
 <td>
-    {{ item.extension }}
-</td>
-<td>
     <div class="ui fluid dropdown" dropdown [content]="content" *ngIf="item.status.isWaiting()">
         <span class="text">{{ item.software }}</span>
         <i class="dropdown icon"></i>

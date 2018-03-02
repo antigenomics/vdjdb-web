@@ -3,15 +3,12 @@
         <table class="ui very compact very basic single line padded table">
             <thead>
             <tr>
-                <th class="three wide">
+                <th class="five wide">
                     <div class="ui pointing below red basic label fade element" *ngIf="showValidNameTooltip()">
                         File name can contain letters ('a-zA-Z'), numbers,   .  (dot),  -  (dash),  _  (underline) and + (plus) symbols. <br>
                         Also file name should have less than 40 symbols and should not be empty.
                     </div>
                     Name
-                </th>
-                <th class="two wide">
-                    Extension
                 </th>
                 <th class="two wide">
                     <div class="ui fluid dropdown" dropdown [content]="content">
