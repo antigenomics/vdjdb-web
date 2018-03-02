@@ -55,7 +55,9 @@ export class SearchTableComponent {
     }
 
     public async onColumnClick(column: TableColumn): Promise<void> {
-        return this.table.sort(column.name);
+        if (column.sortable) {
+            this.table.sort(column.name);
+        }
     }
 
     public async onExport(request: { format: IExportFormat, options: IExportOptionFlag[] }): Promise<void> {
