@@ -213,6 +213,8 @@ export class UploadService {
                             file.setErrorStatus(status.error);
                         }
                         this.fireUploadingEndedEvent();
+                    } else {
+                        file.progress.next(status.progress);
                     }
                 },
                 error:    (err: UploadStatus) => {
