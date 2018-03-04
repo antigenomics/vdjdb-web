@@ -39,7 +39,7 @@ export class SummaryChartComponent implements OnInit, OnDestroy {
             x: { tickFormat: '.1e', ticksCount: 5 }
         },
         grid:      true,
-        container: { margin: { left: 100, right: 25, top: 20, bottom: 20 } },
+        container: { margin: { left: 100, right: 25, top: 20, bottom: 20 }, canvas: false },
         tooltip:   {
             value: SummaryChartComponent.tooltipValueFn
         }

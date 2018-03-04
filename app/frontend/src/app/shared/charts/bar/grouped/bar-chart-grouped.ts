@@ -96,7 +96,7 @@ export class BarChartGrouped extends Chart<IChartGroupedDataEntry, IBarChartConf
         this.bindTooltipEvents(enterBars);
     }
 
-    public update(data: IChartGroupedDataEntry[]): void {
+    public update(data: IChartGroupedDataEntry[]): number {
         const { svg, width, height } = this.container.getContainer();
         const { y, yAxis } = this.createYAxis(width, height, data);
         const { mainX, mainXAxis } = this.createMainXAxis(height, width, data);
@@ -143,14 +143,16 @@ export class BarChartGrouped extends Chart<IChartGroupedDataEntry, IBarChartConf
 
         groups.exit().remove();
         bars.exit().remove();
+
+        return BarChartGrouped.defaultTransitionDuration;
     }
 
-    public updateValues(data: IChartGroupedDataEntry[]): void {
-        this.update(data);
+    public updateValues(data: IChartGroupedDataEntry[]): number {
+        return this.update(data);
     }
 
-    public resize(data: IChartGroupedDataEntry[]): void {
-        this.update(data);
+    public resize(data: IChartGroupedDataEntry[]): number {
+        return this.update(data);
     }
 
     private recreateGroupsAxis(svg: D3HTMLSelection, height: number, mainX: ScaleBand<string>, groupsAxis: IGroupAxisType[]): void {
@@ -182,7 +184,7 @@ export class BarChartGrouped extends Chart<IChartGroupedDataEntry, IBarChartConf
             .attr('y', (d) => y(d.data.value))
             .attr('width', (d) => d.x.bandwidth())
             .attr('height', (d) => height - y(d.data.value))
-            .style('fill', (d) => d.colors(d.data.name));
+            .attr('fill', (d) => d.colors(d.data.name));
     }
 
     private setGroupAttributes(mainX: ScaleBand<string>, groups: GroupsSelectionType | GroupsTransitionType): void {

@@ -79,7 +79,7 @@ export class PieChart extends Chart<IChartDataEntry, IPieChartConfiguration> {
         this.createLineLabels(radius, pieData);
     }
 
-    public update(data: IChartDataEntry[]): void {
+    public update(data: IChartDataEntry[]): number {
         const { width, height } = this.container.getContainer();
         const radius = Math.min(width, height) / 2;
         const oldData = this.pieChart.selectAll('path').data();
@@ -94,9 +94,11 @@ export class PieChart extends Chart<IChartDataEntry, IPieChartConfiguration> {
 
         this.updateLineLabels(radius, oldData, newData);
         this.createLineLabels(radius, newData);
+
+        return PieChart.ARC_ANIMATION_DURATION;
     }
 
-    public updateValues(data: IChartDataEntry[]): void {
+    public updateValues(data: IChartDataEntry[]): number {
         const { width, height } = this.container.getContainer();
         const radius = Math.min(width, height) / 2;
         const oldData = this.pieChart.selectAll('path').data();
@@ -106,12 +108,16 @@ export class PieChart extends Chart<IChartDataEntry, IPieChartConfiguration> {
         this.updatePaths(oldData, newData, colors);
         this.updateTextLabels(radius, oldData, newData);
         this.updateLineLabels(radius, oldData, newData);
+
+        return PieChart.ARC_ANIMATION_DURATION;
     }
 
-    public resize(data: IChartDataEntry[]): void {
+    public resize(data: IChartDataEntry[]): number {
         const { svg } = this.container.getContainer();
         svg.selectAll('g').remove();
         this.create(data);
+
+        return 0;
     }
 
     private createPaths(newData: any[], colors: (s: any) => any): void {

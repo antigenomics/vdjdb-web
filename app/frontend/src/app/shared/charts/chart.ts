@@ -16,6 +16,7 @@
  */
 
 import { NgZone } from '@angular/core';
+import * as d3 from 'external/d3';
 import { Observable } from 'rxjs/Observable';
 import { Subject } from 'rxjs/Subject';
 import { Subscription } from 'rxjs/Subscription';
@@ -38,11 +39,11 @@ export interface Chart<T, C> {
 
     create(data: T[]): void;
 
-    update(data: T[]): void;
+    update(data: T[]): number;
 
-    updateValues(data: T[]): void;
+    updateValues(data: T[]): number;
 
-    resize(data: T[]): void;
+    resize(data: T[]): number;
 
     destroy(): void;
 }
@@ -68,20 +69,31 @@ export class Chart<T, C> {
                         this.container.recalculateContainerViewSize();
                         this.create(event.data);
                         this.created = true;
+                        if (this.container.isCanvasBasedContainer()) {
+                            this.container.drawCanvas();
+                        }
                     }, Chart.createChartDelay);
                 } else {
+                    let duration: number = 0;
                     switch (event.type) {
                         case ChartEventType.UPDATE_DATA:
-                            this.update(event.data);
+                            duration = this.update(event.data);
                             break;
                         case ChartEventType.UPDATE_VALUES:
-                            this.updateValues(event.data);
+                            duration = this.updateValues(event.data);
                             break;
                         case ChartEventType.RESIZE:
-                            this.debounceResizeListener(event.data);
+                            duration = this.debounceResizeListener(event.data);
                             break;
                         default:
                             break;
+                    }
+                    if (this.container.isCanvasBasedContainer()) {
+                        const t = d3.timer((elapsed: number) => {
+                            this.container.drawCanvas();
+                            if (elapsed > duration) { t.stop(); }
+                        });
+
                     }
                 }
             });

@@ -30,8 +30,12 @@ export interface IChartContainerConfiguration {
     readonly width?: number;
     readonly height?: number;
     readonly margin?: IChartContainerMarginConfiguration;
+    readonly canvas?: boolean;
 }
 
 export function createDefaultChartContainerConfiguration(): IChartContainerConfiguration {
-    return { margin: createDefaultChartContainerMarginConfiguration() };
+    return {
+        margin: createDefaultChartContainerMarginConfiguration(),
+        canvas: false
+    };
 }

@@ -74,7 +74,7 @@ export class BarChartHorizontal extends Chart<IChartDataEntry, IBarChartConfigur
         this.bindTooltipEvents(bars);
     }
 
-    public update(data: IChartDataEntry[]): void {
+    public update(data: IChartDataEntry[]): number {
         const { svg, width, height } = this.container.getContainer();
         const { x, xAxis } = this.createXAxis(width, height, data);
         const { y, yAxis } = this.createYAxis(width, height, data);
@@ -104,9 +104,11 @@ export class BarChartHorizontal extends Chart<IChartDataEntry, IBarChartConfigur
            .call(yAxis);
 
         this.bindTooltipEvents(merged);
+
+        return BarChartHorizontal.defaultTransitionDuration;
     }
 
-    public updateValues(data: IChartDataEntry[]): void {
+    public updateValues(data: IChartDataEntry[]): number {
         const { svg, width, height } = this.container.getContainer();
         const { x, xAxis } = this.createXAxis(width, height, data);
 
@@ -117,10 +119,12 @@ export class BarChartHorizontal extends Chart<IChartDataEntry, IBarChartConfigur
         svg.select('.x.axis')
            .transition().duration(BarChartHorizontal.defaultTransitionDuration)
            .call(xAxis);
+
+        return BarChartHorizontal.defaultTransitionDuration;
     }
 
-    public resize(data: IChartDataEntry[]): void {
-        this.update(data);
+    public resize(data: IChartDataEntry[]): number {
+        return this.update(data);
     }
 
     private createXAxis(width: number, height: number, data: IChartDataEntry[]): { x: ScaleLinear<number, number>, xAxis: any } {

@@ -51,7 +51,7 @@ export class MultisampleSummaryChartComponent implements OnInit, OnDestroy {
 
     public barChartConfiguration: IBarChartConfiguration = {
         grid:      true,
-        container: { margin: { left: 60, right: 25, top: 100, bottom: 100 } },
+        container: { margin: { left: 60, right: 25, top: 100, bottom: 100 }, canvas: true },
         tooltip:   {
             value: MultisampleSummaryChartComponent.tooltipValueFn
         }
