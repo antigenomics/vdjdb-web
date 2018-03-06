@@ -47,7 +47,7 @@ class Application @Inject()(ws: WSClient, assets: Assets, configuration: Configu
     }
 
     def robots: Action[AnyContent] = {
-        assets.at(path = "public", "seo/robots.txt")
+        assets.at(path = "/public", "seo/robots.txt")
     }
 
     def authorizedIndex(route: String): Action[AnyContent] = (browserDetectionAction andThen userRequestAction andThen SessionAction.authorizedOnly) { implicit request =>
