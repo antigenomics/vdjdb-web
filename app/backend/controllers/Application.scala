@@ -46,6 +46,10 @@ class Application @Inject()(ws: WSClient, assets: Assets, configuration: Configu
         SessionAction.updateCookies(Ok(frontend.views.html.noScript()))
     }
 
+    def robots: Action[AnyContent] = {
+        assets.at(path = "public", "seo/robots.txt")
+    }
+
     def authorizedIndex(route: String): Action[AnyContent] = (browserDetectionAction andThen userRequestAction andThen SessionAction.authorizedOnly) { implicit request =>
         SessionAction.updateCookies(Ok(frontend.views.html.index()))
     }
@@ -70,7 +74,7 @@ class Application @Inject()(ws: WSClient, assets: Assets, configuration: Configu
             Ok(response.body).withHeaders(headers: _*).as(contentType)
         }
     } else {
-        throw new RuntimeException("Application.externalServer should not be used in production")
+        Action.apply(BadRequest(""))
     }
 
     def downloadTemporaryFile(link: String): Action[AnyContent] = Action.async { implicit request =>

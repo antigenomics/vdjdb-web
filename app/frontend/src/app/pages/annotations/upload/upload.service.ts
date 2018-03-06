@@ -25,7 +25,6 @@ import { LoggerService } from 'utils/logger/logger.service';
 import { NotificationService } from 'utils/notifications/notification.service';
 import { AnnotationsService, AnnotationsServiceEvents } from '../annotations.service';
 import { FileItem } from './item/file-item';
-// const gzip = require('gzip-js'); // tslint:disable-line:no-var-requires
 
 export class UploadStatus {
     public progress: number;
@@ -143,7 +142,7 @@ export class UploadService {
         if (permissions.maxFilesCount >= 0) {
             const waitingFilesLength = this._files.filter((_item) => _item.status.isWaiting()).length;
             const sampleFilesLength = this.annotationsService.getSamples().length;
-            if ((waitingFilesLength + sampleFilesLength) >= permissions.maxFilesCount) {
+            if ((waitingFilesLength + sampleFilesLength) > permissions.maxFilesCount) {
                 item.setErrorStatus('Max files count limit have been exceeded', FileItemStatusErrorType.MAX_FILES_COUNT_LIMIT_EXCEEDED);
                 return true;
             }

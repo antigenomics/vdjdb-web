@@ -1,0 +1,15 @@
+User-agent: *
+Disallow: /annotations/
+Disallow: /account/
+Disallow: /authorization/
+Disallow: /no-script
+Disallow: /temporary/
+Disallow: /develop/
+
+User-agent: Yandex
+Disallow: /annotations/
+Disallow: /account/
+Disallow: /authorization/
+Disallow: /no-script
+Disallow: /temporary/
+Disallow: /develop/

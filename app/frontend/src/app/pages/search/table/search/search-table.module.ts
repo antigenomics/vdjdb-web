@@ -17,6 +17,8 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { SearchTableEntryMHCComponent } from 'pages/search/table/search/entry/search-table-entry-mhc.component';
+import { SearchTableEntrySegmentComponent } from 'pages/search/table/search/entry/search-table-entry-segment.component';
 import { FiltersModule } from 'shared/filters/filters.module';
 import { ModalsModule } from 'shared/modals/modals.module';
 import { TableModule } from 'shared/table/table.module';
@@ -33,12 +35,16 @@ import { SearchTableService } from './search-table.service';
         SearchTableEntryMetaComponent,
         SearchTableEntryUrlComponent,
         SearchTableEntryGeneComponent,
-        SearchTableEntryCdrComponent ],
+        SearchTableEntryCdrComponent,
+        SearchTableEntrySegmentComponent,
+        SearchTableEntryMHCComponent ],
     exports:         [ SearchTableComponent ],
     entryComponents: [ SearchTableEntryMetaComponent,
         SearchTableEntryUrlComponent,
         SearchTableEntryGeneComponent,
-        SearchTableEntryCdrComponent ],
+        SearchTableEntryCdrComponent,
+        SearchTableEntrySegmentComponent,
+        SearchTableEntryMHCComponent ],
     providers:       [ SearchTableService ]
 })
 export class SearchTableModule {
