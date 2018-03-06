@@ -1,3 +1,3 @@
-<div class="ui tiny indicating progress active teal top-loader" [style.opacity]="visibility">
+<div class="ui tiny indicating progress active teal top-loader" [style.opacity]="visibility" *ngIf="isLoading()">
     <div class="bar" [style.transition-duration]="duration" [style.width]="progress"></div>
 </div>
