@@ -1,3 +1,3 @@
-<div class="load content" *ngIf="isLoading()">
-    <div class="ui active centered inline massive loader"></div>
+<div class="ui tiny indicating progress active teal top-loader" [style.opacity]="visibility">
+    <div class="bar" [style.transition-duration]="duration" [style.width]="progress"></div>
 </div>
