@@ -64,6 +64,10 @@ export class UploadTableRowComponent implements AfterViewInit, OnInit, OnDestroy
         });
     }
 
+    public getAvailableSoftwareTypes(): string[] {
+        return this.uploadService.getAvailableSoftwareTypes();
+    }
+
     public upload(): void {
         this.uploadService.upload(this.item);
     }

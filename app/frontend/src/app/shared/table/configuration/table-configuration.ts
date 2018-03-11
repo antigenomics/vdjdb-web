@@ -38,6 +38,10 @@ export interface ITableUtilsPaginationConfigurationDescriptor {
     readonly pageRange?: number;
 }
 
+export interface ITableUtilsInfoConfigurationDescriptor {
+    readonly disable?: boolean;
+}
+
 export interface ITableUtilsExportConfigurationDescriptor {
     readonly disable?: boolean;
     readonly formats?: IExportFormat[];
@@ -52,7 +56,7 @@ export interface ITableUtilsPageSizeConfigurationDescriptor {
 export interface ITableUtilsConfigurationDescriptor {
     readonly disable?: boolean;
     readonly pagination?: ITableUtilsPaginationConfigurationDescriptor;
-    readonly info?: boolean;
+    readonly info?: ITableUtilsInfoConfigurationDescriptor;
     readonly export?: ITableUtilsExportConfigurationDescriptor;
     readonly pageSize?: ITableUtilsPageSizeConfigurationDescriptor;
 }
@@ -61,7 +65,7 @@ function ITableUtilsConfigurationDefault(): ITableUtilsConfigurationDescriptor {
     return {
         disable:    false,
         pagination: { disable: false, pageRange: 5 },
-        info:       true,
+        info:       { disable: false },
         export:     { disable: false, formats: [], options: [] },
         pageSize:   { disable: false, sizes: [ 25, 50, 100 ] } // tslint:disable-line:no-magic-numbers
     };

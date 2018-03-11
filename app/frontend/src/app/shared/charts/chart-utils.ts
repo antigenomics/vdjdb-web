@@ -25,15 +25,11 @@ export namespace ChartUtils {
     export namespace Color {
 
         export function generate(data: IChartDataEntry[]): ScaleOrdinal<string, string> {
-            const colorHash = new ColorHash({ lightness: [ 0.5, 0.6, 0.7 ], saturation: [ 0.6, 0.5, 0.4 ] });
+            const colorHash = new ColorHash({ lightness: [ 0.5, 0.6, 0.7 ], saturation: [ 0.6, 0.5, 0.4 ] }); // tslint:disable-line:no-magic-numbers
             const categories: string[] = data.map((d) => d.color ? d.color : colorHash.hex(d.name));
             const names: string[] = data.map((d) => d.name);
 
             return d3.scaleOrdinal(categories).domain(names);
-            //
-            // return d3.scaleOrdinal(
-            //     d3.schemeCategory20.map((c) => (d3.color(c).brighter(0.1).toString())) // tslint:disable-line:no-magic-numbers
-            // ).domain(data.filter((d) => d.color === undefined).map((d) => d.name));
         }
 
     }

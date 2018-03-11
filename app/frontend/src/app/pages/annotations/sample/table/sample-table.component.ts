@@ -36,7 +36,6 @@ export class SampleTableComponent extends SampleRouteResolverComponent {
         },
         utils:   {
             disable: false,
-            info:    true,
             export: {
                 formats: [ { name: 'tsv', title: 'TSV', icon: 'file text outline' } ],
                 options: [ { name: 'paired_export', title: 'Paired gene export', value: false } ]

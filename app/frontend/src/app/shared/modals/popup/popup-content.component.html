@@ -26,13 +26,13 @@
                     </div>
                     <div class="column" *ngIf="!loading">
                         <div class="ui very basic fixed single line unstackable compact table">
-                            <thead *ngIf="getPopupContent().headers.length !== 0">
+                            <thead *ngIf="getPopupContentTable().headers.length !== 0">
                             <tr>
-                                <th class="one wide center aligned" *ngFor="let header of getPopupContent().headers"><span class="header">{{ header }}</span></th>
+                                <th class="one wide center aligned" *ngFor="let header of getPopupContentTable().headers"><span class="header">{{ header }}</span></th>
                             </tr>
                             </thead>
                             <tbody class="{{ popupClass }}">
-                            <tr class="center aligned" *ngFor="let row of getPopupContent().rows">
+                            <tr class="center aligned" *ngFor="let row of getPopupContentTable().rows">
                                 <td *ngFor="let entry of row">{{ entry }}</td>
                             </tr>
                             </tbody>
