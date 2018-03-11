@@ -5,6 +5,11 @@
     "module": "es2015",
     "types": [ ]
   },
+  "angularCompilerOptions": {
+    "strictInjectionParameters": true,
+    "fullTemplateTypeCheck": true,
+    "preserveWhitespaces": false
+  },
   "exclude": [
     "test.ts",
     "main.dev.ts",

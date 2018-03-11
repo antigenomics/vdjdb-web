@@ -103,6 +103,10 @@ export class PopupContentComponent implements AfterViewInit {
         return this._content;
     }
 
+    public getPopupContentTable(): PopupContentTable {
+        return this.getPopupContent() as PopupContentTable;
+    }
+
     public getHeaderContent(): string {
         return this._header;
     }

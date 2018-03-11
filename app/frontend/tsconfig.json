@@ -38,7 +38,7 @@
     "src/polyfills-ie.ts"
   ],
   "angularCompilerOptions": {
-    "strictMetadataEmit": true,
+    "strictInjectionParameters": true,
     "fullTemplateTypeCheck": true,
     "preserveWhitespaces": false
   },
