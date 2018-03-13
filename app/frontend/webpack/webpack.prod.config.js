@@ -45,7 +45,7 @@ defaultConfiguration.plugins.push(
             whitelist: [
                 'success', 'warning', 'error', 'info',
                 'circle', 'icon', 'violet', 'circular', 'circle',
-                'text', 'alignment', 'big', 'hover-inside-icon']
+                'text', 'alignment', 'big', 'hover-inside-icon', 'overview', 'pre', 'code' ]
         }
     })
 );
