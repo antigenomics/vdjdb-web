@@ -63,8 +63,14 @@ export class PopupContentComponent implements AfterViewInit {
     @Input('loading')
     public loading: boolean = false;
 
+    @Input('tableClass')
+    public tableClass: string = 'ui very basic fixed single line unstackable compact table';
+
     @Input('popupClass')
     public popupClass: string = '';
+
+    @Input('popupTableRowClass')
+    public popupTableRowClass: string = 'center aligned';
 
     @Input('content')
     set content(popupContent: string | string[] | PopupContentTable) {
@@ -92,6 +98,7 @@ export class PopupContentComponent implements AfterViewInit {
     public ngAfterViewInit(): void {
         this.positionElement();
         this.changeDetector.detectChanges();
+        this.changeDetector.detach();
     }
 
     public getPopupContent(): string[] | PopupContentTable {
@@ -143,7 +150,9 @@ export class PopupContentComponent implements AfterViewInit {
     }
 
     private getContentLength(): number {
-        if (this._content instanceof PopupContentTable) {
+        if (this._content === undefined) {
+            return 0;
+        } else if (this._content instanceof PopupContentTable) {
             return (this._content as PopupContentTable).rows.length;
         } else {
             return (this._content as string[]).length;
