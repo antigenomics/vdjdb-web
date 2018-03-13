@@ -17,4 +17,4 @@ Disallow: /develop/
 User-agent: Twitterbot
 Disallow: *
 
-Allow: /public/images
+Allow: /assets
