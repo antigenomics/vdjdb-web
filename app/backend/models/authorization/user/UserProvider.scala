@@ -81,7 +81,7 @@ class UserProvider @Inject()(@NamedDatabase("default") protected val dbConfigPro
                 demoUserConfiguration.login,
                 demoUserConfiguration.password,
                 UserPermissionsProvider.DEMO_ID))))
-            if (!demoUser.isEmpty) {
+            if (demoUser.isDefined) {
                 val demoFiles = new File(demoUserConfiguration.filesLocation)
                 if (demoFiles.exists && demoFiles.isDirectory) {
                     demoFiles.listFiles.filter(_.isFile).foreach((file) => {

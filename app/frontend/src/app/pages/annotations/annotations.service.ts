@@ -19,6 +19,7 @@ import { Injectable } from '@angular/core';
 import { SampleFilters } from 'pages/annotations/sample/filters/sample-filters';
 import { IntersectionTableRow } from 'pages/annotations/sample/table/intersection/row/intersection-table-row';
 import { Observable } from 'rxjs/Observable';
+import { filter } from 'rxjs/operators';
 import { Subject } from 'rxjs/Subject';
 import { SampleItem } from 'shared/sample/sample-item';
 import { IExportFormat, IExportOptionFlag } from 'shared/table/export/table-export.component';
@@ -38,8 +39,9 @@ export namespace AnnotationsServiceEvents {
     export const INITIALIZED: number = 0;
     export const SAMPLE_ADDED: number = 1;
     export const SAMPLE_DELETED: number = 2;
-    export const SAMPLE_TABLE_EXPORT_START: number = 3;
-    export const SAMPLE_TABLE_EXPORT_END: number = 4;
+    export const SAMPLE_UPDATED: number = 3;
+    export const SAMPLE_TABLE_EXPORT_START: number = 4;
+    export const SAMPLE_TABLE_EXPORT_END: number = 5;
 }
 
 export namespace AnnotationsServiceWebSocketActions {
@@ -47,6 +49,7 @@ export namespace AnnotationsServiceWebSocketActions {
     export const USER_DETAILS: string = 'details';
     export const AVAILABLE_SOFTWARE: string = 'available_software';
     export const VALIDATE_SAMPLE: string = 'validate_sample';
+    export const UPDATE_SAMPLE: string = 'update_sample';
     export const DELETE_SAMPLE: string = 'delete_sample';
     export const INTERSECT: string = 'intersect';
     export const DOWNLOAD_MATCHES: string = 'download_matches';
@@ -95,6 +98,15 @@ export class AnnotationsService {
             this._events.next(AnnotationsServiceEvents.INITIALIZED);
         });
         this.connection.connect('/api/annotations/connect');
+        this.connection.getMessages().pipe(filter((message: WebSocketResponseData) => {
+            return message.get('action') === AnnotationsServiceWebSocketActions.UPDATE_SAMPLE;
+        })).subscribe((message: WebSocketResponseData) => {
+            const sampleName = message.get('sampleName');
+            const sampleInfoReadsCount = message.get('readsCount');
+            const sampleInfoClonotypesCount = message.get('clonotypesCount');
+            this._user.updateSampleInfo(sampleName, sampleInfoReadsCount, sampleInfoClonotypesCount);
+            this._events.next(AnnotationsServiceEvents.SAMPLE_UPDATED);
+        });
     }
 
     public isInitialized(): boolean {
@@ -195,7 +207,7 @@ export class AnnotationsService {
         if (valid) {
             const user = this.getUser();
             if (!user.samples.some((sample) => sample.name === file.baseName)) {
-                user.samples.push(new SampleItem(file.baseName, file.software));
+                user.samples.push(new SampleItem(file.baseName, file.software, -1, -1));
                 this._events.next(AnnotationsServiceEvents.SAMPLE_ADDED);
             }
         }

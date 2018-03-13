@@ -22,16 +22,16 @@ import play.api.libs.json.{JsObject, Json, Writes}
 case class WebSocketOutActorRef(private val id: Int, private val action: String, private val out: ActorRef) {
     def getAction: String = action
 
-    def success[T](message: T)(implicit tWrites: Writes[T]): Unit = {
-        this.send(message, WebSocketOutActorRef.ResponseStatus.SUCCESS)
+    def success[T](message: T, action: String = getAction)(implicit tWrites: Writes[T]): Unit = {
+        this.send(message, WebSocketOutActorRef.ResponseStatus.SUCCESS, action)
     }
 
-    def warning[T](message: T)(implicit tWrites: Writes[T]): Unit = {
-        this.send(message, WebSocketOutActorRef.ResponseStatus.WARNING)
+    def warning[T](message: T, action: String = getAction)(implicit tWrites: Writes[T]): Unit = {
+        this.send(message, WebSocketOutActorRef.ResponseStatus.WARNING, action)
     }
 
-    def error[T](message: T)(implicit tWrites: Writes[T]): Unit = {
-        this.send(message, WebSocketOutActorRef.ResponseStatus.ERROR)
+    def error[T](message: T, action: String = getAction)(implicit tWrites: Writes[T]): Unit = {
+        this.send(message, WebSocketOutActorRef.ResponseStatus.ERROR, action)
     }
 
     def close(): Unit = {
@@ -58,7 +58,7 @@ case class WebSocketOutActorRef(private val id: Int, private val action: String,
         out ! Json.toJson(Json.obj("id" -> id, "action" -> action, "status" -> status, "message" -> message))
     }
 
-    private def send[T](message: T, status: String)(implicit tWrites: Writes[T]): Unit = {
+    private def send[T](message: T, status: String, action: String)(implicit tWrites: Writes[T]): Unit = {
         out ! Json.toJson(Json.obj("id" -> id, "status" -> status, "action" -> action) ++ tWrites.writes(message).as[JsObject])
     }
 }

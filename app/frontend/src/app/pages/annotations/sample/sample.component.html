@@ -1,7 +1,12 @@
 <div class="ui segments">
     <h3 class="ui top attached header">
         Sample {{ sample.name }}
-        <div class="sub header">Software: {{ sample.software }}</div>
+        <div class="sub header">Software: {{ sample.software }}
+            <ng-container *ngIf="sample.isSampleInfoExist()">
+                <span style="margin-left: 20px">Reads count: {{ sample.readsCount }}</span>
+                <span style="margin-left: 20px">Clonotypes count: {{ sample.clonotypesCount }}</span>
+            </ng-container>
+        </div>
     </h3>
     <div class="ui attached teal padded blurring segment">
         <sample-filters [filters]="sample.filters" [disabled]="sample.isProcessing()"></sample-filters>

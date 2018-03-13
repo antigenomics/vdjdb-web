@@ -109,4 +109,8 @@ class SampleFileProvider @Inject()(@NamedDatabase("default") protected val dbCon
     def insert(sample: SampleFile): Future[Long] = {
         db.run(table returning table.map(_.id) += sample)
     }
+
+    def updateSampleFileInfo(sample: SampleFile, readsCount: Long, clonotypesCount: Long): Future[Int] = {
+        db.run(table.filter(_.id === sample.id).map(s => (s.readsCount, s.clonotypesCount)).update((readsCount, clonotypesCount)))
+    }
 }

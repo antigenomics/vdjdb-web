@@ -30,6 +30,14 @@ export class User {
         this.permissions = permissions;
     }
 
+    public updateSampleInfo(sampleName: string, readsCount: number, clonotypesCount: number): void {
+        const sample = this.samples.find((s) => s.name === sampleName);
+        if (sample !== undefined) {
+            sample.readsCount = readsCount;
+            sample.clonotypesCount = clonotypesCount;
+        }
+    }
+
     public static deserialize(input: any): User {
         /* Disable tslint to prevent ClosureCompiler mangling */
         /* tslint:disable:no-string-literal */
