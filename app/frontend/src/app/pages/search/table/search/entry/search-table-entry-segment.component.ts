@@ -32,7 +32,7 @@ export class SearchTableEntrySegmentComponent extends TableEntry {
     public create(entry: string, _column: TableColumn, _columns: TableColumn[], _row: TableRow,
                   _hostViewContainer: ViewContainerRef, _resolver: ComponentFactoryResolver): void {
         this.entry = entry;
-        this.short = entry.replace(/\*01$/, '');
+        this.short = entry.replace(/\*.+$/, '');
     }
 
 }

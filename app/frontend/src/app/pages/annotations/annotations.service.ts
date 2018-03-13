@@ -98,7 +98,7 @@ export class AnnotationsService {
             this._events.next(AnnotationsServiceEvents.INITIALIZED);
         });
         this.connection.connect('/api/annotations/connect');
-        
+
         this.connection.getMessages()
             .pipe(filter((message: WebSocketResponseData) => message.get('action') === AnnotationsServiceWebSocketActions.UPDATE_SAMPLE))
             .subscribe((message: WebSocketResponseData) => {
