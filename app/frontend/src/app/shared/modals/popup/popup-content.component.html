@@ -7,7 +7,12 @@
     <div class="header">{{ getHeaderContent() }}</div>
     <div class="ui divider" *ngIf="getHeaderContent()"></div>
     <div class="content" *ngIf="display === 'paragraph'">
-        <p *ngFor="let paragraph of getPopupContent()">{{ paragraph }}</p>
+        <ng-container *ngIf="!loading">
+            <p *ngFor="let paragraph of getPopupContent()">{{ paragraph }}</p>
+        </ng-container>
+        <ng-container *ngIf="loading">
+            <div class="ui active centered inline text loader">Loading</div>
+        </ng-container>
     </div>
     <div class="content" *ngIf="display === 'list'">
         <div class="ui list">
@@ -25,14 +30,14 @@
                         <div class="ui active centered inline text loader">Loading</div>
                     </div>
                     <div class="column" *ngIf="!loading">
-                        <div class="ui very basic fixed single line unstackable compact table">
+                        <div class="{{ tableClass }}">
                             <thead *ngIf="getPopupContentTable().headers.length !== 0">
                             <tr>
                                 <th class="one wide center aligned" *ngFor="let header of getPopupContentTable().headers"><span class="header">{{ header }}</span></th>
                             </tr>
                             </thead>
                             <tbody class="{{ popupClass }}">
-                            <tr class="center aligned" *ngFor="let row of getPopupContentTable().rows">
+                            <tr class="{{ popupTableRowClass }}" *ngFor="let row of getPopupContentTable().rows">
                                 <td *ngFor="let entry of row">{{ entry }}</td>
                             </tr>
                             </tbody>

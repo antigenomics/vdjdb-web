@@ -63,8 +63,14 @@ export class PopupDirective implements AfterViewInit, OnDestroy {
     @Input('disabled')
     public disabled: boolean = false;
 
+    @Input('tableClass')
+    public tableClass: string = 'ui very basic fixed single line unstackable compact table';
+
     @Input('popupClass')
     public popupClass: string = '';
+
+    @Input('popupTableRowClass')
+    public popupTableRowClass: string = 'center aligned';
 
     constructor(private viewContainerRef: ViewContainerRef, private renderer: Renderer2,
                 private resolver: ComponentFactoryResolver) {}
@@ -90,9 +96,13 @@ export class PopupDirective implements AfterViewInit, OnDestroy {
             this._tooltip.instance.bottomShift = this.bottomShift;
             this._tooltip.instance.shiftStrategy = this.shiftStrategy;
             this._tooltip.instance.loading = this.loading;
+            this._tooltip.instance.tableClass = this.tableClass;
             this._tooltip.instance.popupClass = this.popupClass;
+            this._tooltip.instance.popupTableRowClass = this.popupTableRowClass;
             this._tooltip.instance.positionElement();
-            this._tooltip.instance.changeDetector.detectChanges();
+            if (!(this._tooltip.instance.changeDetector as any).destroyed) {
+                this._tooltip.instance.changeDetector.detectChanges();
+            }
         }
     }
 
