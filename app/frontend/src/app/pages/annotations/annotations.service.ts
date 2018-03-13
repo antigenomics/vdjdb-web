@@ -98,15 +98,16 @@ export class AnnotationsService {
             this._events.next(AnnotationsServiceEvents.INITIALIZED);
         });
         this.connection.connect('/api/annotations/connect');
-        this.connection.getMessages().pipe(filter((message: WebSocketResponseData) => {
-            return message.get('action') === AnnotationsServiceWebSocketActions.UPDATE_SAMPLE;
-        })).subscribe((message: WebSocketResponseData) => {
-            const sampleName = message.get('sampleName');
-            const sampleInfoReadsCount = message.get('readsCount');
-            const sampleInfoClonotypesCount = message.get('clonotypesCount');
-            this._user.updateSampleInfo(sampleName, sampleInfoReadsCount, sampleInfoClonotypesCount);
-            this._events.next(AnnotationsServiceEvents.SAMPLE_UPDATED);
-        });
+        
+        this.connection.getMessages()
+            .pipe(filter((message: WebSocketResponseData) => message.get('action') === AnnotationsServiceWebSocketActions.UPDATE_SAMPLE))
+            .subscribe((message: WebSocketResponseData) => {
+                const sampleName = message.get('sampleName');
+                const sampleInfoReadsCount = message.get('readsCount');
+                const sampleInfoClonotypesCount = message.get('clonotypesCount');
+                this._user.updateSampleInfo(sampleName, sampleInfoReadsCount, sampleInfoClonotypesCount);
+                this._events.next(AnnotationsServiceEvents.SAMPLE_UPDATED);
+            });
     }
 
     public isInitialized(): boolean {
@@ -145,15 +146,15 @@ export class AnnotationsService {
         this.connection.subscribeMessages({
             action: AnnotationsServiceWebSocketActions.INTERSECT,
             data:   new WebSocketRequestData()
-                    .add('sampleName', sample.name)
-                    .add('hammingDistance', filters.hammingDistance)
-                    .add('confidenceThreshold', filters.confidenceThreshold)
-                    .add('matchV', filters.matchV)
-                    .add('matchJ', filters.matchJ)
-                    .add('species', filters.species)
-                    .add('gene', filters.gene)
-                    .add('mhc', filters.mhc)
-                    .unpack()
+                        .add('sampleName', sample.name)
+                        .add('hammingDistance', filters.hammingDistance)
+                        .add('confidenceThreshold', filters.confidenceThreshold)
+                        .add('matchV', filters.matchV)
+                        .add('matchJ', filters.matchJ)
+                        .add('species', filters.species)
+                        .add('gene', filters.gene)
+                        .add('mhc', filters.mhc)
+                        .unpack()
         }, observerCallback);
     }
 
@@ -161,9 +162,9 @@ export class AnnotationsService {
         return this.connection.sendMessage({
             action: AnnotationsServiceWebSocketActions.DOWNLOAD_MATCHES,
             data:   new WebSocketRequestData()
-                    .add('sampleName', sample.name)
-                    .add('rowIndex', row.index)
-                    .unpack()
+                        .add('sampleName', sample.name)
+                        .add('rowIndex', row.index)
+                        .unpack()
         });
     }
 
@@ -179,10 +180,10 @@ export class AnnotationsService {
             const response = await this.connection.sendMessage({
                 action: AnnotationsServiceWebSocketActions.EXPORT,
                 data:   new WebSocketRequestData()
-                        .add('sampleName', sample.name)
-                        .add('format', format.name)
-                        .add('options', options)
-                        .unpack()
+                            .add('sampleName', sample.name)
+                            .add('format', format.name)
+                            .add('options', options)
+                            .unpack()
             });
             this.logger.debug(`Export annotations for ${sample.name}`, response);
             if (response.get('status') === WebSocketResponseStatus.SUCCESS) {
@@ -200,8 +201,8 @@ export class AnnotationsService {
         const response = await this.connection.sendMessage({
             action: AnnotationsServiceWebSocketActions.VALIDATE_SAMPLE,
             data:   new WebSocketRequestData()
-                    .add('name', file.baseName)
-                    .unpack()
+                        .add('name', file.baseName)
+                        .unpack()
         });
         const valid = response.isSuccess() && response.get('valid');
         if (valid) {
@@ -226,9 +227,9 @@ export class AnnotationsService {
         const response = await this.connection.sendMessage({
             action: AnnotationsServiceWebSocketActions.DELETE_SAMPLE,
             data:   new WebSocketRequestData()
-                    .add('name', sample === undefined ? '' : sample.name)
-                    .add('all', all)
-                    .unpack()
+                        .add('name', sample === undefined ? '' : sample.name)
+                        .add('all', all)
+                        .unpack()
         });
         const valid = response.isSuccess() && response.get('valid');
         if (valid) {
