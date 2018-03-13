@@ -84,17 +84,17 @@ class DatabaseAPI @Inject()(cc: ControllerComponents, database: Database, config
                             table.sort(database.getMetadata.getColumnIndex(columnName), sortType)
                         }
 
-                        var pageSize: Int = -1;
-                        var page: Int = -1;
-                        var pageCount: Int = -1;
-                        var rows: Seq[SearchTableRow] = Seq();
+                        var pageSize: Int = -1
+                        var page: Int = -1
+                        var pageCount: Int = -1
+                        var rows: Seq[SearchTableRow] = Seq()
 
                         if (data.get.page.nonEmpty) {
                             pageSize = data.get.pageSize.getOrElse(25)
                             page = data.get.page.get
                             table.setPageSize(pageSize)
                             pageCount = table.getPageCount
-                            rows = table.getPage(page);
+                            rows = table.getPage(page)
                         } else {
                             rows = table.getRows
                         }
@@ -102,7 +102,7 @@ class DatabaseAPI @Inject()(cc: ControllerComponents, database: Database, config
                         val paired = data.get.paired.getOrElse(false)
                         if (paired) {
                             val pairedRows = SearchTable.getPairedRows(rows, database)
-                            rows = (rows ++ pairedRows)
+                            rows = rows ++ pairedRows
                         }
 
                         Ok(toJson(SearchDataResponse(page, pageSize, pageCount, table.getRecordsFound, rows)))
