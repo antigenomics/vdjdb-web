@@ -28,10 +28,12 @@ class SampleFileTable(tag: Tag)(implicit fmp: FileMetadataProvider) extends Tabl
     def id = column[Long]("ID", O.PrimaryKey, O.AutoInc)
     def sampleName = column[String]("SAMPLE_NAME", O.Length(64))
     def software = column[String]("SOFTWARE", O.Length(64))
+    def readsCount = column[Long]("READS_COUNT")
+    def clonotypesCount = column[Long]("CLONOTYPES_COUNT")
     def metadataID = column[Long]("METADATA_ID")
     def userID = column[Long]("USER_ID")
 
-    def * = (id, sampleName, software, metadataID, userID) <> (SampleFile.tupled, SampleFile.unapply)
+    def * = (id, sampleName, software, readsCount, clonotypesCount, metadataID, userID) <> (SampleFile.tupled, SampleFile.unapply)
     def metadata = foreignKey("METADATA_FK", metadataID, fmp.getTable)(_.id,
         onUpdate = ForeignKeyAction.Cascade, onDelete = ForeignKeyAction.Cascade)
 }

@@ -22,7 +22,7 @@ import backend.models.files.{FileMetadata, FileMetadataProvider}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-case class SampleFile(id: Long, sampleName: String, software: String, metadataID: Long, userID: Long) {
+case class SampleFile(id: Long, sampleName: String, software: String, readsCount: Long, clonotypesCount: Long, metadataID: Long, userID: Long) {
     def getMetadata(implicit fmp: FileMetadataProvider, ec: ExecutionContext): Future[FileMetadata] = {
         fmp.get(metadataID).map(_.get)
     }
@@ -32,6 +32,12 @@ case class SampleFile(id: Long, sampleName: String, software: String, metadataID
     }
 
     def getDetails: SampleFileDetails = {
-        SampleFileDetails(sampleName, software)
+        SampleFileDetails(sampleName, software, readsCount, clonotypesCount)
+    }
+
+    def isSampleFileInfoEmpty: Boolean = readsCount == -1 || clonotypesCount == -1
+
+    def updateSampleFileInfo(readsCount: Long, clonotypesCount: Long)(implicit sfp: SampleFileProvider): Future[Int] = {
+        sfp.updateSampleFileInfo(this, readsCount, clonotypesCount)
     }
 }

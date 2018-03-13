@@ -17,4 +17,4 @@
 
 package backend.models.files.sample
 
-case class SampleFileDetails(name: String, software: String)
+case class SampleFileDetails(name: String, software: String, readsCount: Long, clonotypesCount: Long)

@@ -12,15 +12,16 @@ import backend.server.annotations.api.export.{AnnotationsExportDataRequest, Anno
 import backend.server.annotations.api.matches.{IntersectionMatchesRequest, IntersectionMatchesResponse}
 import backend.server.annotations.api.sample.delete.{DeleteSampleRequest, DeleteSampleResponse}
 import backend.server.annotations.api.sample.software.AvailableSoftwareResponse
+import backend.server.annotations.api.sample.update.UpdateSampleInfoResponse
 import backend.server.annotations.api.sample.validate.{ValidateSampleRequest, ValidateSampleResponse}
 import backend.server.annotations.api.user.UserDetailsResponse
 import backend.server.annotations.export.IntersectionTableConverter
 import backend.server.database.Database
 import backend.server.database.api.metadata.DatabaseMetadataResponse
 import backend.server.limit.{IpLimit, RequestLimits}
-import backend.server.search.api.export.ExportDataResponse
 import com.antigenomics.vdjtools.io.SampleFileConnection
 import com.antigenomics.vdjtools.misc.Software
+import org.slf4j.LoggerFactory
 import play.api.libs.json._
 
 import scala.concurrent.ExecutionContext
@@ -32,6 +33,7 @@ class AnnotationsWebSocketActor(out: ActorRef, limit: IpLimit, user: User, detai
                                (implicit ec: ExecutionContext, as: ActorSystem, limits: RequestLimits,
                                 upp: UserPermissionsProvider, sfp: SampleFileProvider, fmp: FileMetadataProvider, tfp: TemporaryFileProvider)
     extends WebSocketActor(out, limit) {
+    private final val logger = LoggerFactory.getLogger(this.getClass)
     private val intersectionTableResults: mutable.HashMap[String, IntersectionTable] = new mutable.HashMap()
 
     def handleMessage(out: WebSocketOutActorRef, data: Option[JsValue]): Unit = {
@@ -71,6 +73,18 @@ class AnnotationsWebSocketActor(out: ActorRef, limit: IpLimit, user: User, detai
                                 out.success(SampleAnnotateResponse.ParseState)
                                 val sampleFileConnection = new SampleFileConnection(file._2.path, Software.valueOf(file._1.software))
                                 val sample = sampleFileConnection.getSample
+
+                                if (file._1.isSampleFileInfoEmpty) {
+                                    val readsCount = sample.getCount
+                                    val clonotypesCount = sample.getDiversity.toLong
+                                    file._1.updateSampleFileInfo(readsCount, clonotypesCount).onComplete {
+                                        case Success(_) => out.success(
+                                            UpdateSampleInfoResponse(file._1.sampleName, readsCount, clonotypesCount),
+                                            UpdateSampleInfoResponse.Action)
+                                        case Failure(t) => logger.error(s"Update sample file info failed: ${t.getMessage}")
+                                    }
+                                }
+
                                 val table = new IntersectionTable()
                                 out.success(SampleAnnotateResponse.AnnotateState)
                                 table.update(intersectRequest, sample, database)

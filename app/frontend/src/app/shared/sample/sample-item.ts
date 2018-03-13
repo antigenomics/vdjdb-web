@@ -30,10 +30,14 @@ export class SampleItem {
 
     public readonly name: string;
     public readonly software: string;
+    public readsCount: number;
+    public clonotypesCount: number;
 
-    constructor(name: string, software: string) {
+    constructor(name: string, software: string, readsCount: number, clonotypesCount: number) {
         this.name = name;
         this.software = software;
+        this.readsCount = readsCount;
+        this.clonotypesCount = clonotypesCount;
     }
 
     public setData(data: ISampleItemData): void {
@@ -72,7 +76,11 @@ export class SampleItem {
         return this._processing;
     }
 
+    public isSampleInfoExist(): boolean {
+        return this.readsCount !== -1 && this.clonotypesCount !== -1;
+    }
+
     public static deserialize(o: any): SampleItem {
-        return new SampleItem(o[ 'name' ], o[ 'software' ]); // tslint:disable-line:no-string-literal
+        return new SampleItem(o[ 'name' ], o[ 'software' ], o[ 'readsCount' ], o[ 'clonotypesCount' ]); // tslint:disable-line:no-string-literal
     }
 }

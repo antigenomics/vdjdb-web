@@ -16,8 +16,9 @@
  */
 
 import { Injectable } from '@angular/core';
-import { AnnotationsService } from 'pages/annotations/annotations.service';
+import { AnnotationsService, AnnotationsServiceEvents } from 'pages/annotations/annotations.service';
 import { Observable } from 'rxjs/Observable';
+import { filter } from 'rxjs/operators';
 import { Subject } from 'rxjs/Subject';
 import { SampleItem } from 'shared/sample/sample-item';
 import { IExportFormat, IExportOptionFlag } from 'shared/table/export/table-export.component';
@@ -55,7 +56,13 @@ export class SampleService {
     private _currentSample: SampleItem;
     private _events: Subject<SampleServiceEvent> = new Subject();
 
-    constructor(private annotationsService: AnnotationsService, private notifications: NotificationService) {}
+    constructor(private annotationsService: AnnotationsService, private notifications: NotificationService) {
+        this.annotationsService.getEvents().pipe(filter((event: AnnotationsServiceEvents) => {
+            return event === AnnotationsServiceEvents.SAMPLE_UPDATED;
+        })).subscribe(() => {
+            this._events.next(new SampleServiceEvent('', SampleServiceEventType.EVENT_UPDATED));
+        });
+    }
 
     public setCurrentSample(sample: SampleItem): void {
         this._currentSample = sample;

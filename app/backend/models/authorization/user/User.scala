@@ -83,7 +83,7 @@ case class User(id: Long, login: String, email: String, verified: Boolean, folde
                         if (success) {
                             val metadataID = await(fmp.insert(name, extension, sampleFolderPath))
                             file.moveTo(Paths.get(s"$sampleFolderPath/$name.$extension"), replace = true)
-                            val sampleFileID = await(sfp.insert(SampleFile(0, name, softwareType, metadataID, id)))
+                            val sampleFileID = await(sfp.insert(SampleFile(0, name, softwareType, -1, -1, metadataID, id)))
                             Left(sampleFileID)
                         } else {
                             Right("Unable to create sample file (internal server error)")
@@ -111,7 +111,7 @@ case class User(id: Long, login: String, email: String, verified: Boolean, folde
                     val sampleFolderPath = file.getParentFile.getAbsolutePath
                     val sampleFolder = file.getParentFile
                     val metadataID = await(fmp.insert(name, extension, sampleFolderPath))
-                    val sampleFileID = await(sfp.insert(SampleFile(0, name, softwareType, metadataID, id)))
+                    val sampleFileID = await(sfp.insert(SampleFile(0, name, softwareType, -1, -1, metadataID, id)))
                     Left(sampleFileID)
                 }
             }
@@ -122,9 +122,7 @@ case class User(id: Long, login: String, email: String, verified: Boolean, folde
         BCrypt.checkpw(plain, password)
     }
 
-    private[authorization] def delete(implicit sfp: SampleFileProvider, ec: ExecutionContext): Future[AnyVal]
-
-    = async {
+    private[authorization] def delete(implicit sfp: SampleFileProvider, ec: ExecutionContext): Future[AnyVal] = async {
         val samples = await(getSampleFiles)
         samples.foreach { sample => sfp.delete(sample) }
         val folder = new File(folderPath)
