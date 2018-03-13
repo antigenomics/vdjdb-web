@@ -13,3 +13,8 @@ Disallow: /authorization/
 Disallow: /no-script
 Disallow: /temporary/
 Disallow: /develop/
+
+User-agent: Twitterbot
+Disallow: *
+
+Allow: /public/images
