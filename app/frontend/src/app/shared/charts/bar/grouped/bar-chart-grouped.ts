@@ -133,11 +133,9 @@ export class BarChartGrouped extends Chart<IChartGroupedDataEntry, IBarChartConf
         this.recreateGroupsAxis(svg, height, mainX, groupsAxis);
 
         svg.selectAll('.y.axis')
-           .transition().duration(BarChartGrouped.defaultTransitionDuration)
            .call(yAxis);
 
         const mainGroupedAxis = svg.selectAll('.x.axis.grouped.main')
-                                   .transition().duration(BarChartGrouped.defaultTransitionDuration)
                                    .call(mainXAxis);
         this.rotateMainXAxis(data.length, mainGroupedAxis);
 
@@ -158,7 +156,6 @@ export class BarChartGrouped extends Chart<IChartGroupedDataEntry, IBarChartConf
         groupsAxis.forEach((axis) => {
             svg.append('g')
                .attr('transform', `translate(${mainX(axis.name)},${height})`)
-               .transition().duration(BarChartGrouped.defaultTransitionDuration)
                .attr('class', 'x axis grouped secondary')
                .call(axis.xAxis)
                .selectAll('text')
