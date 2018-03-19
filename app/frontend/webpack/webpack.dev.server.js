@@ -18,8 +18,6 @@
 var webpack = require('webpack');
 var webpackDevServer = require('webpack-dev-server');
 var webpackConfig = require('./webpack.dev.config.js');
-const path = require('path');
-const buildPath = path.resolve(__dirname, '../../../public/bundles/');
 
 // Notify about the path where the server is running
 console.log('[Webpack] Server running at location: ' + __dirname);
@@ -31,7 +29,6 @@ var compiler = webpack(webpackConfig);
 // We give notice in the terminal when it starts bundling and
 // set the time it started
 compiler.plugin('compile', function () {
-    console.log('[Webpack] Bundling...');
     bundleStart = Date.now();
 });
 
@@ -64,3 +61,5 @@ var server = new webpackDevServer(compiler, {
 server.listen(8080, 'localhost', function () {
     console.log('[Webpack] Bundling project, please wait...');
 });
+
+// node node_modules/webpack-dev-server/bin/webpack-dev-server.js --config webpack/webpack.dev.config.js --output-public-path="/bundles/" --no-info --devtl=false --hot=false --inline=true --compress=true
