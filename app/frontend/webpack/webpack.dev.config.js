@@ -27,9 +27,9 @@ const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
 module.exports = {
     mode: 'development',
-    devtool: '#inline-source-map',
+    devtool: 'eval-cheap-module-source-map',
     entry: {
-        'styles': [ './styles/main.less' ],
+        'styles': [ 'webpack-dev-server/client?http://localhost:8080', './styles/main.less' ],
         'bundle.js': [ 'webpack-dev-server/client?http://localhost:8080', './src/main.dev.ts' ]
     },
     output: {
@@ -44,7 +44,8 @@ module.exports = {
             {
                 test: /\.ts(x?)$/,
                 exclude: [ /e2e/, /node_modules/ ],
-                loaders: [ 'awesome-typescript-loader', 'angular-router-loader', 'angular2-template-loader' ]
+                loaders: [ { loader: 'cache-loader', options: { cacheDirectory: path.resolve(__dirname, '../node_modules/.cache') } },
+                    'awesome-typescript-loader', 'angular-router-loader', 'angular2-template-loader' ]
             },
             {
                 test: /\.(component|styles)\.css$/,
@@ -99,9 +100,8 @@ module.exports = {
         }
     },
     plugins: [
-        new MiniCssExtractPlugin(),
+        new MiniCssExtractPlugin({ filename: 'styles.css' }),
         new CheckerPlugin(),
-        new HardSourceWebpackPlugin(),
         new webpack.DllReferencePlugin({ manifest: require(path.join(buildPath, 'polyfills-manifest.json')) }),
         new webpack.DllReferencePlugin({ manifest: require(path.join(buildPath, 'vendor-manifest.json')) }),
         new webpack.ContextReplacementPlugin(/angular([\\\/])core([\\\/])@angular/, path.resolve(__dirname, './src')),
