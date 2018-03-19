@@ -34,8 +34,9 @@ compiler.plugin('compile', function () {
 
 // We also give notice when it is done compiling, including the
 // time it took. Nice to have
-compiler.plugin('done', function () {
-    console.log('[Webpack] Bundled in ' + (Date.now() - bundleStart) + 'ms!');
+compiler.plugin('done', function (stats) {
+    const time = stats.endTime - stats.startTime;
+    console.log('[Webpack] Bundled in ' + time + 'ms!');
 });
 
 var server = new webpackDevServer(compiler, {
@@ -43,7 +44,7 @@ var server = new webpackDevServer(compiler, {
     // from the build path.
     publicPath: '/bundles/',
 
-    filename: new RegExp('^.+$'),
+    filename: new RegExp('^.+bundle\.js$'),
     lazy: true,
     hot: false,
     compress: true,
@@ -59,7 +60,7 @@ var server = new webpackDevServer(compiler, {
 // We fire up the development server and give notice in the terminal
 // that we are starting the initial bundle
 server.listen(8080, 'localhost', function () {
-    console.log('[Webpack] Bundling project, please wait...');
+    console.log('[Webpack] Running in lazy mode, recompilation on request');
 });
 
 // node node_modules/webpack-dev-server/bin/webpack-dev-server.js --config webpack/webpack.dev.config.js --output-public-path="/bundles/" --no-info --devtl=false --hot=false --inline=true --compress=true
