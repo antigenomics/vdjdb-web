@@ -18,6 +18,8 @@
 var webpack = require('webpack');
 var webpackDevServer = require('webpack-dev-server');
 var webpackConfig = require('./webpack.dev.config.js');
+const path = require('path');
+const buildPath = path.resolve(__dirname, '../../../public/bundles/');
 
 // Notify about the path where the server is running
 console.log('[Webpack] Server running at location: ' + __dirname);
@@ -44,9 +46,9 @@ var server = new webpackDevServer(compiler, {
     // from the build path.
     publicPath: '/bundles/',
 
-    filename: '*',
-    lazy: true,
-    hot: true,
+    // filename: 'bundle.js',
+    // lazy: false,
+    hot: false,
     compress: true,
     inline: true,
     // The rest is terminal configurations
