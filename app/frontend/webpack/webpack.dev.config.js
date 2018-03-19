@@ -27,7 +27,7 @@ const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
 module.exports = {
     mode: 'development',
-    devtool: 'eval-cheap-module-source-map',
+    devtool: false,
     entry: {
         'styles': [ 'webpack-dev-server/client?http://localhost:8080', './styles/main.less' ],
         'bundle.js': [ 'webpack-dev-server/client?http://localhost:8080', './src/main.dev.ts' ]
