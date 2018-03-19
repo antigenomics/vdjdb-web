@@ -20,8 +20,6 @@ console.log('Configuring frontend dll in development mode');
 const webpack = require('webpack');
 const path = require('path');
 const buildPath = path.resolve(__dirname, '../../../public/bundles/');
-const defaultConfiguration = Object.create(require('./webpack.base.config'));
-const UglifyJSDefaultConfiguration = Object.create(require('./webpack.uglify.config'))
 
 module.exports = {
     mode: 'production',

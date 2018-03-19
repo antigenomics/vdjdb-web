@@ -6,8 +6,7 @@
   "private": true,
   "scripts": {
     "develop:angular": "ng serve -dev --aot --vendor-chunk --watch --port 4200 --host localhost --live-reload=false --delete-output-path=false",
-    "develop:webpack": "node ./webpack/webpack.dev.server",
-    "develop:webpack:dev": "webpack --config ./webpack/webpack.dev.config.js",
+    "develop:webpack": "npm run develop:webpack:dll && node ./webpack/webpack.dev.server",
     "develop:webpack:dll": "webpack --config ./webpack/webpack.dll.config.js",
     "bundle": "npm run bundle:aot && npm run bundle:webpack && npm run bundle:stats && npm run bundle:clean:index",
     "bundle:aot": "ng build --aot -prod --extract-licenses --vendor-chunk --output-hashing=none --build-optimizer",
