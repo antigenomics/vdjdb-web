@@ -46,8 +46,8 @@ var server = new webpackDevServer(compiler, {
     // from the build path.
     publicPath: '/bundles/',
 
-    // filename: 'bundle.js',
-    // lazy: false,
+    filename: new RegExp('^.+$'),
+    lazy: true,
     hot: false,
     compress: true,
     inline: true,
