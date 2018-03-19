@@ -17,65 +17,94 @@
 
 console.log('Configuring frontend in development mode');
 
+const webpack = require('webpack');
 const path = require('path');
-const webpackMerge = require('webpack-merge'); // used to merge webpack configs
-const defaultConfiguration = Object.create(require('./webpack.base.config'));
-const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
-const UglifyJSDefaultConfiguration = Object.create(require('./webpack.uglify.config'))
-const { DllBundlesPlugin } = require('webpack-dll-bundles-plugin');
-const { TsConfigPathsPlugin, CheckerPlugin } = require('awesome-typescript-loader');
+const buildPath = path.resolve(__dirname, '../../../public/bundles/');
+const { CheckerPlugin } = require('awesome-typescript-loader');
+const TypeScriptConfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
 const HardSourceWebpackPlugin = require('hard-source-webpack-plugin');
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
-
-defaultConfiguration.entry[ 'bundle.js' ] = [
-    'webpack-dev-server/client?http://localhost:8080',
-    './src/main.dev.ts'
-];
-
-defaultConfiguration.module.rules.push({
-    test: /\.ts(x?)$/,
-    exclude: [ /e2e/, /node_modules/ ],
-    loaders: [ 'awesome-typescript-loader', 'angular-router-loader', 'angular2-template-loader' ]
-});
-
-defaultConfiguration.resolve.plugins = [
-    new TsConfigPathsPlugin()
-];
-
-defaultConfiguration.resolve.alias = {
-    'external': path.resolve(__dirname, '../src/external'),
-    'pages': path.resolve(__dirname, '../src/app/pages'),
-    'utils': path.resolve(__dirname, '../src/app/utils'),
-    'shared': path.resolve(__dirname, '../src/app/shared'),
-    'environments': path.resolve(__dirname, '../src/app/environments')
-};
-
-defaultConfiguration.plugins.push(new CheckerPlugin());
-defaultConfiguration.plugins.push(new HardSourceWebpackPlugin());
-defaultConfiguration.plugins.push(new DllBundlesPlugin({
-    bundles: {
-        polyfills: [
-            'core-js',
-            'reflect-metadata',
-            'zone.js'
-        ],
-        vendor: [
-            '@angular/compiler',
-            '@angular/platform-browser',
-            '@angular/platform-browser-dynamic',
-            '@angular/core',
-            '@angular/common',
-            '@angular/forms',
-            '@angular/router',
-            'rxjs',
-            'd3'
+module.exports = {
+    mode: 'development',
+    devtool: '#inline-source-map',
+    entry: {
+        'styles': [ './styles/main.less' ],
+        'bundle.js': [ 'webpack-dev-server/client?http://localhost:8080', './src/main.dev.ts' ]
+    },
+    output: {
+        path: buildPath,
+        filename: '[name]',
+        chunkFilename: '[name]-chunk.js',
+        sourceMapFilename: 'bundle.map',
+        publicPath: 'develop/webpack/bundles/'
+    },
+    module: {
+        rules: [
+            {
+                test: /\.ts(x?)$/,
+                exclude: [ /e2e/, /node_modules/ ],
+                loaders: [ 'awesome-typescript-loader', 'angular-router-loader', 'angular2-template-loader' ]
+            },
+            {
+                test: /\.(component|styles)\.css$/,
+                exclude: /node_modules/,
+                loaders: [ 'raw-loader' ]
+            },
+            {
+                test: /\.less$/,
+                exclude: /\.component\.css$/,
+                use: [
+                    { loader: MiniCssExtractPlugin.loader },
+                    { loader: "css-loader", options: { minimize: true } },
+                    { loader: "less-loader" } ]
+            },
+            {
+                test: /\.(woff|woff2|eot|ttf|svg)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
+                loader: 'file-loader',
+                options: {
+                    name: 'fonts/[name].[ext]',
+                    publicPath: '/assets/bundles/'
+                }
+            },
+            {
+                test: /\.html$/,
+                exclude: /node_modules/,
+                loaders: [ 'raw-loader' ]
+            },
+            {
+                test: /\.(png|gif)$/,
+                loader: 'url-loader?limit=1024&name=images/[name].[ext]!image-webpack-loader'
+            },
+            {
+                test: /\.jpg$/,
+                loader: 'file-loader',
+                options: {
+                    name: 'images/[name].[ext]'
+                }
+            }
         ]
     },
-    dllDir: './webpack/dll/',
-    webpackConfig: webpackMerge(defaultConfiguration, {
-        devtool: false,
-        plugins: [ new UglifyJSPlugin(UglifyJSDefaultConfiguration) ]
-    })
-}));
-
-module.exports = defaultConfiguration;
+    resolve: {
+        extensions: [ '.ts', '.tsx', '.js', '.json', '.css', '.less', '.html' ],
+        plugins: [
+            new TypeScriptConfigPathsPlugin({ configFile: path.resolve(__dirname, '../tsconfig.json') }),
+        ],
+        alias: {
+            'external': path.resolve(__dirname, '../src/external'),
+            'pages': path.resolve(__dirname, '../src/app/pages'),
+            'utils': path.resolve(__dirname, '../src/app/utils'),
+            'shared': path.resolve(__dirname, '../src/app/shared'),
+            'environments': path.resolve(__dirname, '../src/app/environments')
+        }
+    },
+    plugins: [
+        new MiniCssExtractPlugin(),
+        new CheckerPlugin(),
+        new HardSourceWebpackPlugin(),
+        new webpack.DllReferencePlugin({ manifest: require(path.join(buildPath, 'polyfills-manifest.json')) }),
+        new webpack.DllReferencePlugin({ manifest: require(path.join(buildPath, 'vendor-manifest.json')) }),
+        new webpack.ContextReplacementPlugin(/angular([\\\/])core([\\\/])@angular/, path.resolve(__dirname, './src')),
+        new webpack.ProvidePlugin({ 'fetch': 'imports?this=>global!exports?global.fetch!whatwg-fetch' })
+    ]
+};

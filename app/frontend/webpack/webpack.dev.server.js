@@ -15,10 +15,6 @@
  *
  */
 
-/**
- * Webpack server for development.
- */
-
 var webpack = require('webpack');
 var webpackDevServer = require('webpack-dev-server');
 var webpackConfig = require('./webpack.dev.config.js');
@@ -49,13 +45,14 @@ var server = new webpackDevServer(compiler, {
     // from the build path.
     publicPath: '/bundles/',
 
-    // Configure hot replacement
+    // filename: 'bundles/bundle.js',
+    // lazy: true,
     hot: false,
     compress: true,
     inline: true,
     // The rest is terminal configurations
     quiet: false,
-    noInfo: true,
+    noInfo: false,
     stats: {
         colors: true
     }
