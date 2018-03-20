@@ -16,6 +16,8 @@
  */
 
 import { ComponentFactory, ComponentFactoryResolver } from '@angular/core';
+import { MatchesTableEntryMatchScoreComponent } from 'pages/annotations/sample/table/intersection/matches/entry/matches-table-entry-match-score.component';
+import { MatchesTableEntryWeightComponent } from 'pages/annotations/sample/table/intersection/matches/entry/matches-table-entry-weight.component';
 import { SearchTableRow } from 'pages/search/table/search/row/search-table-row';
 import { TableColumn } from 'shared/table/column/table-column';
 import { TableEntry } from 'shared/table/entry/table-entry';
@@ -37,17 +39,25 @@ export class MatchRowAlignment {
 
 export class MatchTableRow extends SearchTableRow {
     public readonly alignment: MatchRowAlignment;
+    public readonly matchScore: number;
+    public readonly weight: number;
 
     constructor(match: any) {
         /* tslint:disable:no-string-literal */
         super(match[ 'row' ], true);
         this.alignment = new MatchRowAlignment(match[ 'alignment' ]);
+        this.matchScore = match[ 'matchScore' ];
+        this.weight = match[ 'weight' ];
         /* tslint:enable:no-string-literal */
     }
 
     public resolveComponentFactory(column: TableColumn, resolver: ComponentFactoryResolver): ComponentFactory<TableEntry> {
         if (column.name === 'alignment') {
             return resolver.resolveComponentFactory(MatchesTableEntryAlignmentComponent);
+        } else if (column.name === 'match-score' ) {
+            return resolver.resolveComponentFactory(MatchesTableEntryMatchScoreComponent);
+        } else if (column.name === 'weight' ) {
+            return resolver.resolveComponentFactory(MatchesTableEntryWeightComponent);
         } else {
             return super.resolveComponentFactory(column, resolver);
         }
