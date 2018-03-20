@@ -8,7 +8,7 @@ const ExtractTextPlugin = require("extract-text-webpack-plugin");
  * Base configuration object for Webpack
  */
 module.exports = {
-    devtool: '#inline-source-map',
+    devtool: false,
     entry: {
         'bundle.css': [
             './styles/main.less'
@@ -68,10 +68,7 @@ module.exports = {
     },
     plugins: [
         new ExtractTextPlugin('bundle.css'),
-        new webpack.ContextReplacementPlugin(
-            /angular([\\\/])core([\\\/])@angular/,
-            path.resolve(__dirname, './app')
-        ),
+        new webpack.ContextReplacementPlugin(/angular([\\\/])core([\\\/])@angular/, path.resolve(__dirname, './src')),
         new webpack.ProvidePlugin({
             'fetch': 'imports?this=>global!exports?global.fetch!whatwg-fetch'
         })

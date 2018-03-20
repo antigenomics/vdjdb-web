@@ -13,7 +13,7 @@ lazy val root = (project in file(".")).enablePlugins(PlayScala, LauncherJarPlugi
 pipelineStages := Seq(digest)
 
 libraryDependencies ++= Seq(
-    "com.antigenomics" % "vdjdb" % "1.1.7",
+    "com.antigenomics" % "vdjmatch" % "1.2.0-SNAPSHOT",
     "ch.qos.logback" % "logback-classic" % "1.2.3",
     "com.typesafe.scala-logging" %% "scala-logging" % "3.8.0",
     "com.typesafe.play" %% "play-slick" % "3.0.3",
@@ -76,6 +76,9 @@ frontendBuildAngular := frontendNPMTask("run bundle:aot")
 
 lazy val frontendBuildWebpack = taskKey[Unit]("Build webpack assets")
 frontendBuildWebpack := frontendNPMTask("run bundle:webpack")
+
+lazy val frontendBuildWebpackDLL = taskKey[Unit]("Build webpack development dlls")
+frontendBuildWebpackDLL := frontendNPMTask("run develop:webpack:dll")
 
 lazy val frontendBuild = taskKey[Unit]("Build frontend application")
 frontendBuild := frontendNPMTask("run bundle")
