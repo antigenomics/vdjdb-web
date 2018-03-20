@@ -42,6 +42,9 @@ export namespace AnnotationsServiceEvents {
     export const SAMPLE_UPDATED: number = 3;
     export const SAMPLE_TABLE_EXPORT_START: number = 4;
     export const SAMPLE_TABLE_EXPORT_END: number = 5;
+    export const UPLOAD_SERVICE_STATE_REFRESHED: number = 6;
+    export const UPLOAD_SERVICE_UPLOAD_STARTED: number = 7;
+    export const UPLOAD_SERVICE_UPLOAD_ENDED: number = 8;
 }
 
 export namespace AnnotationsServiceWebSocketActions {
@@ -116,6 +119,10 @@ export class AnnotationsService {
 
     public getEvents(): Subject<AnnotationsServiceEvents> {
         return this._events;
+    }
+
+    public fireEvent(event: AnnotationsServiceEvents): void {
+        this._events.next(event);
     }
 
     public getSamples(): SampleItem[] {
