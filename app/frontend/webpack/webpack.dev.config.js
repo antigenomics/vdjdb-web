@@ -18,11 +18,9 @@
 console.log('Configuring frontend in development mode');
 
 const path = require('path');
-const webpackMerge = require('webpack-merge'); // used to merge webpack configs
+const webpack = require('webpack');
+const buildPath = path.resolve(__dirname, '../../../public/bundles/');
 const defaultConfiguration = Object.create(require('./webpack.base.config'));
-const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
-const UglifyJSDefaultConfiguration = Object.create(require('./webpack.uglify.config'))
-const { DllBundlesPlugin } = require('webpack-dll-bundles-plugin');
 const { TsConfigPathsPlugin, CheckerPlugin } = require('awesome-typescript-loader');
 const HardSourceWebpackPlugin = require('hard-source-webpack-plugin');
 
@@ -52,30 +50,7 @@ defaultConfiguration.resolve.alias = {
 
 defaultConfiguration.plugins.push(new CheckerPlugin());
 defaultConfiguration.plugins.push(new HardSourceWebpackPlugin());
-defaultConfiguration.plugins.push(new DllBundlesPlugin({
-    bundles: {
-        polyfills: [
-            'core-js',
-            'reflect-metadata',
-            'zone.js'
-        ],
-        vendor: [
-            '@angular/compiler',
-            '@angular/platform-browser',
-            '@angular/platform-browser-dynamic',
-            '@angular/core',
-            '@angular/common',
-            '@angular/forms',
-            '@angular/router',
-            'rxjs',
-            'd3'
-        ]
-    },
-    dllDir: './webpack/dll/',
-    webpackConfig: webpackMerge(defaultConfiguration, {
-        devtool: false,
-        plugins: [ new UglifyJSPlugin(UglifyJSDefaultConfiguration) ]
-    })
-}));
+defaultConfiguration.plugins.push(new webpack.DllReferencePlugin({ manifest: require(path.join(buildPath, 'polyfills-manifest.json')) }));
+defaultConfiguration.plugins.push(new webpack.DllReferencePlugin({ manifest: require(path.join(buildPath, 'vendor-manifest.json')) }));
 
 module.exports = defaultConfiguration;
