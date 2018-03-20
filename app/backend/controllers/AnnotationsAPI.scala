@@ -17,7 +17,6 @@
 
 package backend.controllers
 
-import java.io.FileInputStream
 import javax.inject.Inject
 
 import akka.actor.ActorSystem

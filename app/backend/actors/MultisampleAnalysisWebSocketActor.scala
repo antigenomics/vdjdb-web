@@ -28,12 +28,14 @@ import backend.server.annotations.api.multisample.summary.{MultisampleSummaryAna
 import backend.server.annotations.charts.summary.{SummaryClonotypeCounter, SummaryCounters, SummaryFieldCounter}
 import backend.server.database.Database
 import backend.server.limit.{IpLimit, RequestLimits}
-import com.antigenomics.vdjdb.scoring.SequenceSearcherPreset
+import com.antigenomics.vdjdb.impl.ScoringBundle
+import com.antigenomics.vdjdb.impl.filter.DummyResultFilter
+import com.antigenomics.vdjdb.impl.weights.{DegreeWeightFunctionFactory, DummyWeightFunctionFactory}
+import com.antigenomics.vdjdb.sequence.SearchScope
 import com.antigenomics.vdjdb.stat.ClonotypeSearchSummary
 import com.antigenomics.vdjdb.text.{ExactTextFilter, TextFilter}
 import com.antigenomics.vdjtools.io.SampleFileConnection
 import com.antigenomics.vdjtools.misc.Software
-import com.milaboratory.core.tree.TreeSearchParameters
 import play.api.libs.json.JsValue
 
 import scala.collection.JavaConverters._
@@ -64,21 +66,22 @@ class MultisampleAnalysisWebSocketActor(out: ActorRef, limit: IpLimit, user: Use
                         (sampleName, sample)
                     })
 
-                    val treeSearchParameters = request.hammingDistance match {
-                        case 0 => new TreeSearchParameters(0, 0, 0)
-                        case 1 => TreeSearchParameters.ONE_MISMATCH
-                        case 2 => TreeSearchParameters.TWO_MISMATCHES
-                        case 3 => TreeSearchParameters.THREE_MISMATCHES
-                        case _ => new TreeSearchParameters(0, 0, 0)
+                    val scope = request.hammingDistance match {
+                        case 0 => new SearchScope(0, 0, 0, 0)
+                        case 1 => new SearchScope(1, 0, 0, 1)
+                        case 2 => new SearchScope(2, 0, 0, 2)
+                        case 3 => new SearchScope(3, 0, 0, 3)
+                        case _ => new SearchScope(0, 0, 0, 0)
                     }
-                    val searchParameters = new SequenceSearcherPreset(treeSearchParameters)
                     val filters = new util.ArrayList[TextFilter]()
                     if (request.mhc != "MHCI+II") {
                         filters.add(new ExactTextFilter("mhc.class", request.mhc, false))
                     }
 
                     val instance = database.getInstance.filter(filters)
-                        .asClonotypeDatabase(request.matchV, request.matchJ, searchParameters, request.species, request.gene, request.confidenceThreshold)
+                        .asClonotypeDatabase(request.species, request.gene, scope,
+                            ScoringBundle.getDUMMY, DegreeWeightFunctionFactory.DEFAULT, DummyResultFilter.INSTANCE,
+                            request.matchV, request.matchJ, request.confidenceThreshold)
 
                     val counters = samples.map((futureSample) => async {
                         val sample = await(futureSample)

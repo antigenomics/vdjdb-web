@@ -16,8 +16,8 @@
  */
 
 import {
-    ChangeDetectionStrategy, ChangeDetectorRef, Component, ComponentFactoryResolver, ComponentRef, OnDestroy, OnInit,
-    ViewContainerRef
+    ChangeDetectionStrategy, ChangeDetectorRef, Component, ComponentFactoryResolver, ComponentRef, ElementRef, EventEmitter,
+    OnDestroy, OnInit, Output, Renderer2, RendererStyleFlags2, ViewChild, ViewContainerRef
 } from '@angular/core';
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs/Subscription';
@@ -75,8 +75,18 @@ export class AnnotationsSidebarComponent implements OnInit, OnDestroy {
     private _uploadServiceEventsSubscription: Subscription;
     private _annotationsServiceEventsSubscription: Subscription;
     private _state: AnnotationsSidebarState;
+    private _hidden: boolean = false;
 
-    constructor(private uploadService: UploadService, private annotationsService: AnnotationsService,
+    @ViewChild('sidebar')
+    public sidebar: ElementRef;
+
+    @ViewChild('sidebarContent')
+    public sidebarContent: ElementRef;
+
+    @Output('visible')
+    public visible: EventEmitter<boolean> = new EventEmitter();
+
+    constructor(private uploadService: UploadService, private annotationsService: AnnotationsService, private renderer: Renderer2,
                 private hostViewContainer: ViewContainerRef, private resolver: ComponentFactoryResolver, private router: Router,
                 private changeDetector: ChangeDetectorRef, private logger: LoggerService, private notifications: NotificationService) {
         this._state = new AnnotationsSidebarState(this.router.url);
@@ -94,6 +104,28 @@ export class AnnotationsSidebarComponent implements OnInit, OnDestroy {
         this._annotationsServiceEventsSubscription = this.annotationsService.getEvents().subscribe(() => {
             this.changeDetector.detectChanges();
         });
+    }
+
+    public hide(): void {
+        this.visible.emit(false);
+        this.renderer.setStyle(this.sidebar.nativeElement, 'width', '40px', RendererStyleFlags2.Important);
+        this.renderer.setStyle(this.sidebarContent.nativeElement, 'display', 'none');
+        this._hidden = true;
+    }
+
+    public show(): void {
+        this.visible.emit(true);
+        this.renderer.setStyle(this.sidebar.nativeElement, 'width', '12.5%', RendererStyleFlags2.Important);
+        this.renderer.setStyle(this.sidebarContent.nativeElement, 'display', 'block');
+        this._hidden = false;
+    }
+
+    public swap(): void {
+        if (this._hidden) {
+            this.show();
+        } else {
+            this.hide();
+        }
     }
 
     public async sidebarRoute(link: string, ...args: string[]): Promise<void> {
