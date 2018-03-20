@@ -25,8 +25,7 @@ import { ModalComponent } from 'shared/modals/modal/modal.component';
 import { SampleItem } from 'shared/sample/sample-item';
 import { LoggerService } from 'utils/logger/logger.service';
 import { NotificationService } from 'utils/notifications/notification.service';
-import { AnnotationsService } from '../annotations.service';
-import { UploadService, UploadServiceEvent } from '../upload/upload.service';
+import { AnnotationsService, AnnotationsServiceEvents } from '../annotations.service';
 
 export class AnnotationsSidebarState {
     public path: string = '';
@@ -72,7 +71,6 @@ export class AnnotationsSidebarState {
 export class AnnotationsSidebarComponent implements OnInit, OnDestroy {
     private _confirmDeletingModalComponent: ComponentRef<ModalComponent>;
     private _filesUploadingLabel: boolean = false;
-    private _uploadServiceEventsSubscription: Subscription;
     private _annotationsServiceEventsSubscription: Subscription;
     private _state: AnnotationsSidebarState;
     private _hidden: boolean = false;
@@ -86,22 +84,19 @@ export class AnnotationsSidebarComponent implements OnInit, OnDestroy {
     @Output('visible')
     public visible: EventEmitter<boolean> = new EventEmitter();
 
-    constructor(private uploadService: UploadService, private annotationsService: AnnotationsService, private renderer: Renderer2,
+    constructor(private annotationsService: AnnotationsService, private renderer: Renderer2,
                 private hostViewContainer: ViewContainerRef, private resolver: ComponentFactoryResolver, private router: Router,
                 private changeDetector: ChangeDetectorRef, private logger: LoggerService, private notifications: NotificationService) {
         this._state = new AnnotationsSidebarState(this.router.url);
     }
 
     public ngOnInit(): void {
-        this._uploadServiceEventsSubscription = this.uploadService.getEvents().subscribe((event) => {
-            if (event === UploadServiceEvent.UPLOADING_STARTED) {
+        this._annotationsServiceEventsSubscription = this.annotationsService.getEvents().subscribe((event) => {
+            if (event === AnnotationsServiceEvents.UPLOAD_SERVICE_UPLOAD_STARTED) {
                 this._filesUploadingLabel = true;
-            } else if (event === UploadServiceEvent.UPLOADING_ENDED) {
+            } else if (event === AnnotationsServiceEvents.UPLOAD_SERVICE_UPLOAD_ENDED) {
                 this._filesUploadingLabel = false;
             }
-            this.changeDetector.detectChanges();
-        });
-        this._annotationsServiceEventsSubscription = this.annotationsService.getEvents().subscribe(() => {
             this.changeDetector.detectChanges();
         });
     }
@@ -221,7 +216,6 @@ export class AnnotationsSidebarComponent implements OnInit, OnDestroy {
     }
 
     public ngOnDestroy(): void {
-        this._uploadServiceEventsSubscription.unsubscribe();
         this._annotationsServiceEventsSubscription.unsubscribe();
         this.destroyConfirmDeletingModalComponent();
     }

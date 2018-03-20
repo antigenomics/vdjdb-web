@@ -26,10 +26,9 @@ import { SampleItemResolver } from './resolvers/sample.resolver';
 import { UserResolver } from './resolvers/user.resolver';
 import { SampleModule } from './sample/sample.module';
 import { AnnotationsSidebarComponent } from './sidebar/sidebar.component';
-import { UploadModule } from './upload/upload.module';
 
 @NgModule({
-    imports:      [ CommonModule, UploadModule, ModalsModule, SampleModule, AnnotationsRouting ],
+    imports:      [ CommonModule, ModalsModule, SampleModule, AnnotationsRouting ],
     declarations: [ AnnotationsPageComponent, AnnotationsSidebarComponent, AnnotationsInfoComponent ],
     exports:      [ AnnotationsPageComponent ],
     providers:    [ AnnotationsService, UserResolver, SampleItemResolver ]

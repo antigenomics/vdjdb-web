@@ -20,13 +20,14 @@ package backend.models.authorization.user
 import com.typesafe.config.Config
 import play.api.ConfigLoader
 
-case class UserCreateConfiguration(enableDefaultUsers: Boolean, createUsers: Seq[(String, String, String, String)], uploadLocation: String)
+case class UserCreateConfiguration(enableDefaultUsers: Boolean, clearDefaultUsers: Boolean, createUsers: Seq[(String, String, String, String)], uploadLocation: String)
 
 object UserCreateConfiguration {
     implicit val userCreateConfigurationLoader: ConfigLoader[UserCreateConfiguration] = (rootConfig: Config, path: String) => {
         val config = rootConfig.getConfig(path)
         UserCreateConfiguration(
             enableDefaultUsers = config.getBoolean("enableDefaultUsers"),
+            clearDefaultUsers = config.getBoolean("clearDefaultUsers"),
             createUsers = config.getConfigList("createUsers").toArray.map(p => {
                 val user = p.asInstanceOf[Config]
                 (user.getString("login"), user.getString("email"), user.getString("password"), user.getString("permissionsID"))
