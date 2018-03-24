@@ -69,6 +69,7 @@ export class AnnotationsSidebarState {
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AnnotationsSidebarComponent implements OnInit, OnDestroy {
+    private static readonly _displaySidebarContentDelay: number = 200;
     private _confirmDeletingModalComponent: ComponentRef<ModalComponent>;
     private _filesUploadingLabel: boolean = false;
     private _annotationsServiceEventsSubscription: Subscription;
@@ -105,6 +106,7 @@ export class AnnotationsSidebarComponent implements OnInit, OnDestroy {
         this.visible.emit(false);
         this.renderer.setStyle(this.sidebar.nativeElement, 'width', '40px', RendererStyleFlags2.Important);
         this.renderer.setStyle(this.sidebarContent.nativeElement, 'display', 'none');
+        this.renderer.setStyle(this.sidebarContent.nativeElement, 'opacity', '0');
         this._hidden = true;
     }
 
@@ -112,6 +114,9 @@ export class AnnotationsSidebarComponent implements OnInit, OnDestroy {
         this.visible.emit(true);
         this.renderer.setStyle(this.sidebar.nativeElement, 'width', '12.5%', RendererStyleFlags2.Important);
         this.renderer.setStyle(this.sidebarContent.nativeElement, 'display', 'block');
+        window.setTimeout(() => {
+            this.renderer.setStyle(this.sidebarContent.nativeElement, 'opacity', '1.0');
+        }, AnnotationsSidebarComponent._displaySidebarContentDelay);
         this._hidden = false;
     }
 
