@@ -17,42 +17,41 @@
 
 console.log('Configuring frontend dll in development mode');
 
-const webpack = require('webpack');
 const path = require('path');
-const buildPath = path.resolve(__dirname, '../../../public/bundles/');
+const base = require('./webpack.base.config');
+const webpack = require('webpack');
 
-module.exports = {
-    mode: 'production',
-    resolve: {
-        extensions: [ '.js' ]
-    },
-    entry: {
-        polyfills: [
-            'core-js',
-            'reflect-metadata',
-            'zone.js'
-        ],
-        vendor: [
-            '@angular/compiler',
-            '@angular/platform-browser',
-            '@angular/platform-browser-dynamic',
-            '@angular/core',
-            '@angular/common',
-            '@angular/forms',
-            '@angular/router',
-            'rxjs',
-            'd3'
-        ]
-    },
-    output: {
-        path: buildPath,
-        filename: "[name].dll.js",
-        library: "[name]_[hash]"
-    },
-    plugins: [
-        new webpack.DllPlugin({
-            path: path.join(buildPath, "[name]-manifest.json"),
-            name: "[name]_[hash]"
-        })
+const configuration = base.getBaseConfiguration();
+
+configuration.mode = 'production';
+configuration.resolve.extensions = [ '.js' ];
+configuration.entry = {
+    polyfills: [
+        'core-js',
+        'reflect-metadata',
+        'zone.js'
+    ],
+    vendor: [
+        '@angular/compiler',
+        '@angular/platform-browser',
+        '@angular/platform-browser-dynamic',
+        '@angular/core',
+        '@angular/common',
+        '@angular/forms',
+        '@angular/router',
+        'rxjs',
+        'd3',
+        'gzip-js'
     ]
 };
+
+configuration.output.filename = '[name].dll.js';
+configuration.output.library = '[name]_[hash]';
+configuration.plugins = [
+    new webpack.DllPlugin({
+        path: path.join(base.getBuildPath(), "[name]-manifest.json"),
+        name: "[name]_[hash]"
+    })
+];
+
+module.exports = configuration;

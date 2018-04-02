@@ -46,8 +46,9 @@ object SessionAction {
 
     def updateCookies[A](result: Result)(implicit userRequest: UserRequest[A], stp: SessionTokenProvider): Result = {
         if (userRequest.authorized) {
+            val session = userRequest.session + ((stp.getAuthTokenSessionName, userRequest.token.get.token))
             result
-                .withSession(userRequest.session + (stp.getAuthTokenSessionName, userRequest.token.get.token))
+                .withSession(session)
                 .withCookies(Cookie("logged", "true", httpOnly = false))
                 .withCookies(Cookie("email", userRequest.user.get.email, httpOnly = false))
                 .withCookies(Cookie("login", userRequest.user.get.login, httpOnly = false))

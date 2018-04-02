@@ -20,7 +20,6 @@ import * as gzip from 'gzip-js';
 import { FileItemStatusErrorType } from 'pages/annotations/upload/item/file-item-status';
 import { Observable } from 'rxjs/Observable';
 import { Observer } from 'rxjs/Observer';
-import { ReplaySubject } from 'rxjs/ReplaySubject';
 import { LoggerService } from 'utils/logger/logger.service';
 import { NotificationService } from 'utils/notifications/notification.service';
 import { AnnotationsService, AnnotationsServiceEvents } from '../annotations.service';
@@ -38,20 +37,11 @@ export class UploadStatus {
     }
 }
 
-export type UploadServiceEvent = number;
-
-export namespace UploadServiceEvent {
-    export const UPLOADING_STARTED = 1;
-    export const UPLOADING_ENDED = 2;
-    export const STATE_REFRESHED = 3;
-}
-
 @Injectable()
 export class UploadService {
     private static FULL_PROGRESS: number = 100;
     private static SUCCESS_HTTP_CODE: number = 200;
 
-    private _events: ReplaySubject<UploadServiceEvent> = new ReplaySubject(1);
     private _uploadingCount: number = 0;
     private _files: FileItem[] = [];
 
@@ -80,8 +70,8 @@ export class UploadService {
         return this.annotationsService.getAvailableSoftwareTypes();
     }
 
-    public getEvents(): Observable<UploadServiceEvent> {
-        return this._events;
+    public getEvents(): Observable<AnnotationsServiceEvents> {
+        return this.annotationsService.getEvents();
     }
 
     public getItems(): FileItem[] {
@@ -181,7 +171,7 @@ export class UploadService {
             }
             checked.push(item);
         }
-        this._events.next(UploadServiceEvent.STATE_REFRESHED);
+        this.annotationsService.fireEvent(AnnotationsServiceEvents.UPLOAD_SERVICE_STATE_REFRESHED);
     }
 
     public compress(item: FileItem): void {
@@ -252,7 +242,7 @@ export class UploadService {
 
     public clearUploaded(): void {
         this._files = this._files.filter((item) => !item.status.isUploaded());
-        this._events.next(UploadServiceEvent.STATE_REFRESHED);
+        this.annotationsService.fireEvent(AnnotationsServiceEvents.UPLOAD_SERVICE_STATE_REFRESHED);
     }
 
     public isRemovedExist(): boolean {
@@ -261,7 +251,7 @@ export class UploadService {
 
     public clearRemoved(): void {
         this._files = this._files.filter((item) => !item.status.isRemoved());
-        this._events.next(UploadServiceEvent.STATE_REFRESHED);
+        this.annotationsService.fireEvent(AnnotationsServiceEvents.UPLOAD_SERVICE_STATE_REFRESHED);
     }
 
     public isErroredExist(): boolean {
@@ -270,7 +260,7 @@ export class UploadService {
 
     public clearErrored(): void {
         this._files = this._files.filter((item) => !item.status.isError());
-        this._events.next(UploadServiceEvent.STATE_REFRESHED);
+        this.annotationsService.fireEvent(AnnotationsServiceEvents.UPLOAD_SERVICE_STATE_REFRESHED);
     }
 
     public setDefaultSoftware(software: string): void {
@@ -281,13 +271,13 @@ export class UploadService {
 
     private fireUploadingStartEvent(): void {
         this._uploadingCount += 1;
-        this._events.next(UploadServiceEvent.UPLOADING_STARTED);
+        this.annotationsService.fireEvent(AnnotationsServiceEvents.UPLOAD_SERVICE_UPLOAD_STARTED);
     }
 
     private fireUploadingEndedEvent(): void {
         this._uploadingCount -= 1;
         if (this._uploadingCount === 0) {
-            this._events.next(UploadServiceEvent.UPLOADING_ENDED);
+            this.annotationsService.fireEvent(AnnotationsServiceEvents.UPLOAD_SERVICE_UPLOAD_ENDED);
         }
     }
 

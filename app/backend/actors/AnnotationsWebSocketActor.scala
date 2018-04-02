@@ -92,7 +92,9 @@ class AnnotationsWebSocketActor(out: ActorRef, limit: IpLimit, user: User, detai
                                 intersectionTableResults += (file._1.sampleName -> table)
                                 out.success(SampleAnnotateResponse.CompletedState(table.getRows, table.summary))
                             } catch {
-                                case _: Exception => out.errorMessage("Unable to intersect")
+                                case e: Exception =>
+                                    e.printStackTrace()
+                                    out.errorMessage("Unable to intersect")
                             }
                         case None =>
                             out.errorMessage("Invalid file name")

@@ -19,10 +19,8 @@ package backend.server.database.filters
 import java.util
 
 import backend.server.database.Database
-import com.antigenomics.vdjdb.scoring.{DummyAlignmentScoring, SequenceSearcherPreset}
-import com.antigenomics.vdjdb.sequence.SequenceFilter
+import com.antigenomics.vdjdb.sequence.{DummyAlignmentScoring, SearchScope, SequenceFilter}
 import com.antigenomics.vdjdb.text._
-import com.milaboratory.core.tree.TreeSearchParameters
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable.ListBuffer
@@ -52,8 +50,8 @@ object DatabaseFilters {
                             val insertions = values(2).toInt
                             val deletions = values(3).toInt
                             val total = substitutions + insertions + deletions
-                            val preset: SequenceSearcherPreset = new SequenceSearcherPreset(new TreeSearchParameters(substitutions, deletions, insertions, total), DummyAlignmentScoring.INSTANCE)
-                            sequence.add(new SequenceFilter(filter.column, query, preset))
+                            val scope: SearchScope = new SearchScope(substitutions, deletions, insertions, total)
+                            sequence.add(new SequenceFilter(filter.column, query, scope, DummyAlignmentScoring.INSTANCE))
                         } else {
                             warnings += "Sequence filters can only be applied to 'cdr3' or 'antigen.epitope'"
                         }

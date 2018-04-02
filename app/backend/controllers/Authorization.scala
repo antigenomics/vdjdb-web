@@ -42,8 +42,9 @@ class Authorization @Inject()(cc: ControllerComponents, messagesApi: MessagesApi
                         if (user.verified) {
                             if (user.checkPassword(form.password)) {
                                 val sessionToken = await(stp.createSessionToken(user))
+                                val session = request.session + ((stp.getAuthTokenSessionName, sessionToken))
                                 Redirect(backend.controllers.routes.Application.index())
-                                    .withSession(request.session + (stp.getAuthTokenSessionName, sessionToken))
+                                    .withSession(session)
                             } else {
                                 BadRequest(frontend.views.html.authorization.login(LoginForm.loginFailedFormMapping))
                             }

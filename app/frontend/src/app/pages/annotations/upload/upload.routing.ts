@@ -15,22 +15,11 @@
  *
  */
 
-.wy-nav-content {
-    max-width: 1200px !important;
-}
+import { RouterModule, Routes } from '@angular/router';
+import { AnnotationsUploadComponent } from 'pages/annotations/upload/upload.component';
 
-p {
-    margin-bottom: 12px !important;
-}
+const routes: Routes = [
+    { path: '', component: AnnotationsUploadComponent }
+];
 
-td > .highlight-json > .highlight {
-    margin: 1px 0 1px 0 !important;
-}
-
-td > .line-block {
-    margin-left: 0px !important;
-}
-
-.wy-table-responsive > table {
-    width: 100%;
-}
+export const AnnotationsUploadRouting = RouterModule.forChild(routes); // tslint:disable-line:variable-name
