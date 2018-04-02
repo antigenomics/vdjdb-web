@@ -15,11 +15,40 @@
  *       limitations under the License.
  */
 
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, Renderer2, ViewChild } from '@angular/core';
 
 @Component({
     selector:        'annotations',
     templateUrl:     './annotations.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class AnnotationsPageComponent {}
+export class AnnotationsPageComponent {
+    private static readonly resizeEventDispatchTimeout: number = 250;
+
+    @ViewChild('pusher')
+    public pusher: ElementRef;
+
+    constructor(private renderer: Renderer2) {}
+
+    public onSidebarVisible(visible: boolean): void {
+        if (visible) {
+            this.onSidebarShown();
+        } else {
+            this.onSidebarHidden();
+        }
+    }
+
+    public onSidebarHidden(): void {
+        this.renderer.setStyle(this.pusher.nativeElement, 'margin-left', '40px');
+        window.setTimeout(() => {
+            window.dispatchEvent(new Event('resize'));
+        }, AnnotationsPageComponent.resizeEventDispatchTimeout);
+    }
+
+    public onSidebarShown(): void {
+        this.renderer.setStyle(this.pusher.nativeElement, 'margin-left', '12.5%');
+        window.setTimeout(() => {
+            window.dispatchEvent(new Event('resize'));
+        }, AnnotationsPageComponent.resizeEventDispatchTimeout);
+    }
+}

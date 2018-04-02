@@ -17,79 +17,41 @@
 
 console.log('Running webpack in production mode');
 
+const base = require('./webpack.base.config');
 const path = require('path');
-const buildPath = path.resolve(__dirname, '../../../public/bundles/');
 const glob = require('glob-all');
 const webpack = require('webpack');
-const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const PurifyCSSPlugin = require('purifycss-webpack');
 
-module.exports = {
-    mode: 'production',
-    optimization: { minimize: true },
-    devtool: false,
-    stats: 'errors-only',
-    entry: {
-        'styles': [ './styles/main.less' ],
-        'polyfills-ie.bundle.js': [ './src/polyfills-ie.js' ]
-    },
-    output: {
-        path: buildPath,
-        filename: '[name]',
-        chunkFilename: '[name]-chunk.js',
-    },
-    module: {
-        rules: [
-            {
-                test: /\.less$/,
-                exclude: /\.component\.css$/,
-                use: [
-                    { loader: MiniCssExtractPlugin.loader },
-                    { loader: "css-loader", options: { minimize: true } },
-                    { loader: "less-loader" } ]
-            },
-            {
-                test: /\.(woff|woff2|eot|ttf|svg)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
-                loader: 'file-loader',
-                options: {
-                    name: 'fonts/[name].[ext]',
-                    publicPath: '/assets/bundles/'
-                }
-            },
-            {
-                test: /\.(png|gif)$/,
-                loader: 'url-loader?limit=1024&name=images/[name].[ext]!image-webpack-loader'
-            },
-            {
-                test: /\.jpg$/,
-                loader: 'file-loader',
-                options: {
-                    name: 'images/[name].[ext]'
-                }
-            }
-        ]
-    },
-    resolve: {
-        extensions: [ '.js', '.css', '.less' ]
-    },
-    plugins: [
-        new webpack.NoEmitOnErrorsPlugin(),
-        new MiniCssExtractPlugin({ filename: 'styles.css' }),
-        new PurifyCSSPlugin({
-            paths: glob.sync([
-                path.join(__dirname, '../views/**/*.html'),
-                path.join(__dirname, '../src/app/**/*.html')
-            ]),
-            purifyOptions: {
-                info: true,
-                minify: true,
-                output: path.join(__dirname, '../../../public/bundles/bundle.min.css'),
-                whitelist: [
-                    'success', 'warning', 'error', 'info',
-                    'circle', 'icon', 'violet', 'circular', 'circle',
-                    'text', 'alignment', 'big', 'hover-inside-icon', 'overview', 'pre', 'code' ]
-            }
-        })
-    ]
+const configuration = base.getBaseConfiguration();
+
+configuration.mode = 'production';
+configuration.optimization = { minimize: true };
+configuration.stats = 'errors-only';
+configuration.entry = {
+    'styles.js': [ './styles/main.less' ],
+    'polyfills-ie.bundle.js': [ './src/polyfills-ie.js' ]
 };
 
+const plugins = [
+    new webpack.NoEmitOnErrorsPlugin(),
+    new PurifyCSSPlugin({
+        paths: glob.sync([
+            path.join(__dirname, '../views/**/*.html'),
+            path.join(__dirname, '../src/app/**/*.html')
+        ]),
+        purifyOptions: {
+            info: true,
+            minify: true,
+            output: path.join(base.getBuildPath(), 'bundle.min.css'),
+            whitelist: [
+                'success', 'warning', 'error', 'info',
+                'circle', 'icon', 'violet', 'circular', 'circle',
+                'text', 'alignment', 'big', 'hover-inside-icon', 'overview', 'pre', 'code' ]
+        }
+    })
+];
+
+configuration.plugins.push(...plugins);
+
+module.exports = configuration;

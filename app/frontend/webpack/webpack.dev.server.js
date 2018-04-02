@@ -44,6 +44,7 @@ var server = new webpackDevServer(compiler, {
     // from the build path.
     publicPath: '/bundles/',
 
+    // Configure hot replacement
     filename: new RegExp('^.+bundle\.js$'),
     lazy: true,
     hot: false,

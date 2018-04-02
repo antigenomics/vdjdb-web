@@ -1,6 +1,6 @@
 <div class="ui main content fade slow element soft-margin">
-    <annotations-sidebar></annotations-sidebar>
-    <div class="annotations pusher">
+    <annotations-sidebar (visible)="onSidebarVisible($event)"></annotations-sidebar>
+    <div class="annotations pusher" #pusher>
         <router-outlet></router-outlet>
     </div>
 </div>

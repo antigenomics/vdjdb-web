@@ -4,7 +4,7 @@ import play.sbt.PlayImport.PlayKeys.playRunHooks
 name := """VDJdb-server"""
 
 version := "2.2.2"
-scalaVersion := "2.12.4"
+scalaVersion := "2.12.5"
 
 resolvers += "Local Maven Repository" at Path.userHome.asFile.toURI.toURL + ".m2/repository"
 resolvers += Resolver.sonatypeRepo("releases")
@@ -13,12 +13,12 @@ lazy val root = (project in file(".")).enablePlugins(PlayScala, LauncherJarPlugi
 pipelineStages := Seq(digest)
 
 libraryDependencies ++= Seq(
-    "com.antigenomics" % "vdjdb" % "1.1.7",
+    "com.antigenomics" % "vdjmatch" % "1.2.0-SNAPSHOT",
     "ch.qos.logback" % "logback-classic" % "1.2.3",
     "com.typesafe.scala-logging" %% "scala-logging" % "3.8.0",
     "com.typesafe.play" %% "play-slick" % "3.0.3",
     "com.typesafe.play" %% "play-slick-evolutions" % "3.0.3",
-    "com.h2database" % "h2" % "1.4.196",
+    "com.h2database" % "h2" % "1.4.197",
     "org.scala-lang.modules" %% "scala-async" % "0.9.7",
     "org.mindrot" % "jbcrypt" % "0.4",
     "com.typesafe.play" %% "play-mailer" % "6.0.1",
@@ -30,11 +30,16 @@ libraryDependencies ++= Seq(
 )
 
 scalacOptions ++= Seq(
-    "–unchecked",
+    "-target:jvm-1.8",
+    "-encoding", "UTF-8",
+    "-unchecked",
+    "-deprecation",
+    "-Xfuture",
+    "-Yno-adapted-args",
+    "-Ywarn-dead-code",
+    "-Ywarn-numeric-widen",
     "-feature",
     "–optimise",
-    "-deprecation",
-    "-Ywarn-dead-code",
     "-Xfatal-warnings"
 )
 
@@ -76,6 +81,9 @@ frontendBuildAngular := frontendNPMTask("run bundle:aot")
 
 lazy val frontendBuildWebpack = taskKey[Unit]("Build webpack assets")
 frontendBuildWebpack := frontendNPMTask("run bundle:webpack")
+
+lazy val frontendBuildWebpackDLL = taskKey[Unit]("Build webpack development dlls")
+frontendBuildWebpackDLL := frontendNPMTask("run develop:webpack:dll")
 
 lazy val frontendBuild = taskKey[Unit]("Build frontend application")
 frontendBuild := frontendNPMTask("run bundle")

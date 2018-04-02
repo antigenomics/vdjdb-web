@@ -71,6 +71,15 @@ class UserProvider @Inject()(@NamedDatabase("default") protected val dbConfigPro
                 logger.info(s"User ${user._2} already created")
             }
         })
+    } else if (!usersConfiguration.enableDefaultUsers && usersConfiguration.clearDefaultUsers) {
+        logger.info("Clearing initial users: ")
+        usersConfiguration.createUsers.foreach(user => async {
+            val check = await(get(user._2))
+            if (check.isDefined) {
+                await(delete(check.get))
+                logger.info(s"User ${user._2} has been deleted")
+            }
+        })
     }
 
     if (demoUserConfiguration.enabled) async {

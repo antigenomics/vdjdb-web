@@ -36,6 +36,7 @@ export class PopupContentComponent implements AfterViewInit {
     private _content: string[] | PopupContentTable;
     private _header: string;
     private _footer: string;
+    private _width: number;
 
     public boundingRect: PopupBoundingRect = new PopupBoundingRect();
 
@@ -43,7 +44,9 @@ export class PopupContentComponent implements AfterViewInit {
     public hostElement: HTMLElement;
 
     @Input('width')
-    public width: number;
+    public set width(width: number) {
+        this._width = Number(width); // Workaround if Angular will pass the 'string' argument
+    }
 
     @Input('position')
     public position: 'left' | 'right' | 'top' | 'bottom';
@@ -146,7 +149,7 @@ export class PopupContentComponent implements AfterViewInit {
             default:
                 break;
         }
-        this.boundingRect.width = this.width + 'px';
+        this.boundingRect.width = this._width + 'px';
     }
 
     private getContentLength(): number {
@@ -182,7 +185,7 @@ export class PopupContentComponent implements AfterViewInit {
     }
 
     private positionLeft(hostBoundingRectangle: ClientRect, _: WindowViewport): void {
-        let left = hostBoundingRectangle.left - this.width - PopupContentComponent._magicConstant;
+        let left = hostBoundingRectangle.left - this._width - PopupContentComponent._magicConstant;
         const top = hostBoundingRectangle.top;
 
         if (left < 0) {
@@ -198,8 +201,8 @@ export class PopupContentComponent implements AfterViewInit {
         let left = hostBoundingRectangle.left + hostBoundingRectangle.width;
         const top = hostBoundingRectangle.top;
 
-        if ((left + this.width) > windowViewport.width) {
-            left = hostBoundingRectangle.left - this.width;
+        if ((left + this._width) > windowViewport.width) {
+            left = hostBoundingRectangle.left - this._width;
         }
 
         this.boundingRect.left = left + 'px';
@@ -208,10 +211,10 @@ export class PopupContentComponent implements AfterViewInit {
     }
 
     private positionTop(hostBoundingRectangle: ClientRect, windowViewport: WindowViewport): void {
-        let left = hostBoundingRectangle.left - (this.width / 2.0);
+        let left = hostBoundingRectangle.left - (this._width / 2.0);
         const bottom = windowViewport.height - hostBoundingRectangle.top;
 
-        const rightOverflow = (left + this.width + PopupContentComponent._magicConstant) - windowViewport.width;
+        const rightOverflow = (left + this._width + PopupContentComponent._magicConstant) - windowViewport.width;
         if (rightOverflow > 0) {
             left -= rightOverflow;
         }
@@ -226,10 +229,10 @@ export class PopupContentComponent implements AfterViewInit {
     }
 
     private positionBottom(hostBoundingRectangle: ClientRect, windowViewport: WindowViewport): void {
-        let left = hostBoundingRectangle.left - (this.width / 2.0);
+        let left = hostBoundingRectangle.left - (this._width / 2.0);
         const top = hostBoundingRectangle.top + hostBoundingRectangle.height;
 
-        const rightOverflow = (left + this.width + PopupContentComponent._magicConstant) - windowViewport.width;
+        const rightOverflow = (left + this._width + PopupContentComponent._magicConstant) - windowViewport.width;
         if (rightOverflow > 0) {
             left -= rightOverflow;
         }

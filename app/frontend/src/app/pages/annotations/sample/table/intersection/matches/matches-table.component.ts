@@ -56,7 +56,11 @@ export class MatchesTableComponent {
 
     public getColumns(): TableColumn[] {
         const skip: string[] = [ 'gene', 'cdr3', 'species' ];
-        const columns = [ new TableColumn('alignment', 'Alignment', false, false, true) ];
+        const columns = [
+            new TableColumn('alignment', 'Alignment', false, false, true),
+            new TableColumn('match-score', 'Match Score', true, false, true),
+            new TableColumn('weight', 'Weight', true, false, true)
+        ];
 
         return columns.concat(this.annotationsService.getDatabaseMetadata().columns.map((c) => {
             return new TableColumn(c.name, c.title, false, skip.indexOf(c.name) !== -1, false, true, c.comment, '');

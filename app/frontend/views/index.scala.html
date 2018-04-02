@@ -15,8 +15,8 @@
         </div>
     </application>
     @if(environment.mode == Mode.Dev) {
-        <script type="application/javascript" src="@routes.Assets.versioned("bundles/polyfills.dll.js")" charset="utf8"></script>
-        <script type="application/javascript" src="@routes.Assets.versioned("bundles/vendor.dll.js")" charset="utf8"></script>
+        <script type="application/javascript" src="@routes.Assets.versioned("bundles/polyfills.dll.js")" charset="utf-8"></script>
+        <script type="application/javascript" src="@routes.Assets.versioned("bundles/vendor.dll.js")" charset="utf-8"></script>
         <script type="application/javascript" src="develop/webpack/bundles/bundle.js" charset="utf-8"></script>
     } else {
         <script type="application/javascript" src="@routes.Assets.versioned("bundles/inline.bundle.js")" charset="utf-8"></script>

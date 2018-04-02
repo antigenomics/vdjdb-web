@@ -19,10 +19,11 @@ import {
     AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Input, OnDestroy, OnInit, Renderer2,
     ViewChild
 } from '@angular/core';
+import { AnnotationsServiceEvents } from 'pages/annotations/annotations.service';
 import { FileItemStatusErrorType } from 'pages/annotations/upload/item/file-item-status';
 import { Subscription } from 'rxjs/Subscription';
 import { FileItem } from '../../item/file-item';
-import { UploadService, UploadServiceEvent } from '../../upload.service';
+import { UploadService } from '../../upload.service';
 
 @Component({
     selector:        'tr[upload-table-row]',
@@ -47,7 +48,7 @@ export class UploadTableRowComponent implements AfterViewInit, OnInit, OnDestroy
 
     public ngOnInit(): void {
         this._stateSubscription = this.uploadService.getEvents().subscribe((event) => {
-            if (event === UploadServiceEvent.STATE_REFRESHED) {
+            if (event === AnnotationsServiceEvents.UPLOAD_SERVICE_STATE_REFRESHED) {
                 if (this.item) {
                     this.changeDetector.detectChanges();
                 }

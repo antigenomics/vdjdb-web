@@ -24,14 +24,13 @@ import { UserResolver } from 'pages/annotations/resolvers/user.resolver';
 import { SampleChartComponent } from 'pages/annotations/sample/chart/sample-chart.component';
 import { AnnotationsSampleComponent } from 'pages/annotations/sample/sample.component';
 import { SampleTableComponent } from 'pages/annotations/sample/table/sample-table.component';
-import { AnnotationsUploadComponent } from 'pages/annotations/upload/upload.component';
 
 const routes: Routes = [
     {
         path:     '', component: AnnotationsPageComponent, resolve: { user: UserResolver },
         children: [
             { path: 'info', component: AnnotationsInfoComponent },
-            { path: 'upload', component: AnnotationsUploadComponent },
+            { path: 'upload', loadChildren: 'pages/annotations/upload/upload.module#UploadModule' },
             {
                 path:     'sample/:sample', component: AnnotationsSampleComponent, resolve: { sample: SampleItemResolver },
                 children: [
