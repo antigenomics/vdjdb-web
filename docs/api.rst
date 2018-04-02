@@ -41,7 +41,7 @@ where ``ColumnInfo`` structured like this:
         "dataType":     String,       // Internal data type
         "title":        String,       // Formatted name
         "comment":      String,       // Column's description
-        "values":       Array[String] // An array of all possible values
+        "values":       Array[String] // An array of all possible values (if available)
     }
 
 Accessing specific column info
