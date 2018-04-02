@@ -30,3 +30,7 @@ td > .highlight-json > .highlight {
 td > .line-block {
     margin-left: 0px !important;
 }
+
+.wy-table-responsive > table {
+    width: 100%;
+}
