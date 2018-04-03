@@ -1,0 +1,16 @@
+<td>
+    <div class="ui fluid transparent left icon input" [ngClass]="{'error':!isTagNameValid()}" *ngIf="!tag.isSaved()">
+        <input placeholder="Enter tag name here" [ngModel]="tag.name" (ngModelChange)="handleTagName($event)">
+        <i class="write icon"></i>
+    </div>
+    <div *ngIf="tag.isSaved()">
+        {{ tag.name }}
+    </div>
+</td>
+<td>
+    <color-picker [disable]="tag.isSaved()"></color-picker>
+</td>
+<td>privet</td>
+<td>
+    <button class="ui tiny button" (click)="save()" *ngIf="!tag.isSaved()">Save</button>
+</td>

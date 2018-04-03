@@ -54,6 +54,10 @@ export class AnnotationsSidebarState {
         return false;
     }
 
+    public isSampleSelected(): boolean {
+        return this.metadata.has('sample');
+    }
+
     private parseSampleName(url: string): [string, string] {
         const sampleRoute = url.substring('sample/'.length);
         const additionalRouteIndex = sampleRoute.indexOf('/');
@@ -141,7 +145,11 @@ export class AnnotationsSidebarComponent implements OnInit, OnDestroy {
     }
 
     public isAllSamplesSelected(): boolean {
-        return this._state.path.includes('multisample');
+        return !this._state.isSampleSelected() && this._state.path.includes('multisample');
+    }
+
+    public isTagsPageSelected(): boolean {
+        return !this._state.isSampleSelected() && this._state.path.includes('tags');
     }
 
     public getSamples(): SampleItem[] {

@@ -8,6 +8,7 @@
 /app/frontend/e2e/*.map
 /app/frontend/coverage
 /app/frontend/webpack/dll
+/app/frontend/yarn.lock
 
 # Front end build artifacts
 /public/bundles

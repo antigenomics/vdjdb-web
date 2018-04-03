@@ -1,0 +1,23 @@
+<table class="ui very compact very basic single line padded table">
+    <thead>
+    <tr>
+        <th class="three wide">
+            <div class="ui pointing below blue basic label fade element" *ngIf="isTagNameHelpVisible()">
+                Tag name can contain letters ('a-zA-Z'), numbers,   .  (dot),  -  (dash),  _  (underline) and + (plus) symbols. <br>
+                Also tag name should have less than 40 symbols and should not be empty.
+            </div>
+            Name
+        </th>
+        <th class="one wide">
+            Color
+        </th>
+        <th class="ten wide">
+            Samples
+        </th>
+        <th class="two wide"></th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr tags-table-row [tag]="tag" *ngFor="let tag of getAvailableTags()"></tr>
+    </tbody>
+</table>

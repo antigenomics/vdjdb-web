@@ -1,0 +1,8 @@
+<div class="color-picker">
+    <a class="color" #inner>
+        <div class="inner" (click)="toggle()"></div>
+    </a>
+    <div class="picker" #picker>
+        <canvas width="150px" height="150px" #canvas (click)="pickColor($event)"></canvas>
+    </div>
+</div>
