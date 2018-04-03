@@ -8,7 +8,7 @@
     </div>
 </td>
 <td>
-    <color-picker [disable]="tag.isSaved()"></color-picker>
+    <color-picker [disable]="tag.isSaved()" [initial]="tag.color" (color)="pickColor($event)"></color-picker>
 </td>
 <td>privet</td>
 <td>

@@ -33,6 +33,10 @@ export class TagsTableRowComponent {
         return this.tagsService.isTagNameValid(this.tag);
     }
 
+    public pickColor(color: string): void {
+        this.tag.color = color;
+    }
+
     public save(): void {
         this.tagsService.save(this.tag);
     }
