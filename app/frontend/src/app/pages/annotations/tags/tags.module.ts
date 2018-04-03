@@ -18,16 +18,17 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { AnnotationsUploadRouting } from 'pages/annotations/upload/upload.routing';
-import { ModalsModule } from 'shared/modals/modals.module';
-import { UploadTableRowComponent } from './table/row/upload-table-row.component';
-import { UploadTableComponent } from './table/upload-table.component';
-import { AnnotationsUploadComponent } from './upload.component';
-import { UploadService } from './upload.service';
+import { TagsTableRowComponent } from 'pages/annotations/tags/table/row/tags-table-row.component';
+import { TagsTableComponent } from 'pages/annotations/tags/table/tags-table.component';
+import { TagsComponent } from 'pages/annotations/tags/tags.component';
+import { AnnotationsTagsRouting } from 'pages/annotations/tags/tags.routing';
+import { TagsService } from 'pages/annotations/tags/tags.service';
+import { ColorpickerModule } from 'shared/colorpicker/colorpicker.module';
 
 @NgModule({
-    imports:      [ CommonModule, FormsModule, ModalsModule, AnnotationsUploadRouting ],
-    declarations: [ AnnotationsUploadComponent, UploadTableComponent, UploadTableRowComponent ],
-    providers:    [ UploadService ]
+    imports:      [ CommonModule, FormsModule, ColorpickerModule, AnnotationsTagsRouting ],
+    declarations: [ TagsComponent, TagsTableComponent, TagsTableRowComponent ],
+    providers:    [ TagsService ]
 })
-export class UploadModule {}
+export class TagsPageModule {
+}

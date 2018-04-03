@@ -42,7 +42,8 @@ module.exports = {
             '@angular/forms',
             '@angular/router',
             'rxjs',
-            'd3'
+            'd3',
+            'gzip-js'
         ]
     },
     output: {

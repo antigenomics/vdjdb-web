@@ -36,6 +36,10 @@
                    [ngClass]="{'padded vertically border selected':isAllSamplesSelected()}">
                     All samples
                 </a>
+                <a class="item" (click)="sidebarRoute('tags')"
+                   [ngClass]="{'padded vertically border selected':isTagsPageSelected()}">
+                    Configure tags
+                </a>
             </div>
             <div class="menu" *ngIf="isSamplesEmpty()">
                 <a class="item">There are no uploaded samples</a>
