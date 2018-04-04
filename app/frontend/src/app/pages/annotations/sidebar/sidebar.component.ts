@@ -76,6 +76,7 @@ export class AnnotationsSidebarState {
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AnnotationsSidebarComponent implements OnInit, OnDestroy {
+    private static readonly _sittingsHideDelay: number = 200;
     private static readonly _settingsTopShift: number = -35;
     private static readonly _displaySidebarContentDelay: number = 200;
     private _confirmDeletingModalComponent: ComponentRef<ModalComponent>;
@@ -116,6 +117,7 @@ export class AnnotationsSidebarComponent implements OnInit, OnDestroy {
     }
 
     public hide(): void {
+        this.closeConfigureSample();
         this.visible.emit(false);
         this.renderer.setStyle(this.sidebar.nativeElement, 'width', '40px', RendererStyleFlags2.Important);
         this.renderer.setStyle(this.sidebarContent.nativeElement, 'display', 'none');
@@ -207,6 +209,9 @@ export class AnnotationsSidebarComponent implements OnInit, OnDestroy {
                 if (this.isSampleSelected(sample)) {
                     this.router.navigate([ 'annotations', 'info' ]);
                 }
+                if (this.settings.sample === sample) {
+                    this.closeConfigureSample();
+                }
             } else {
                 this.notifications.error('Delete', `Unable to delete ${sample.name} sample`);
             }
@@ -233,6 +238,7 @@ export class AnnotationsSidebarComponent implements OnInit, OnDestroy {
                 if (this._state.path.startsWith('sample')) {
                     this.router.navigate([ 'annotations', 'info' ]);
                 }
+                this.closeConfigureSample();
             } else {
                 this.notifications.error('Delete', `Unable to delete samples`);
             }
@@ -256,7 +262,7 @@ export class AnnotationsSidebarComponent implements OnInit, OnDestroy {
         this.renderer.setStyle(this.sidebarSettings.nativeElement, 'opacity', 0.0);
         window.setTimeout(() => {
             this.renderer.setStyle(this.sidebarSettings.nativeElement, 'display', 'none');
-        }, 200);
+        }, AnnotationsSidebarComponent._sittingsHideDelay);
     }
 
     public openConfigureSample(): void {
