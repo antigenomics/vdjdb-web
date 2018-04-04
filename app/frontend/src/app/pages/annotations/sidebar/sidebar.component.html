@@ -1,7 +1,7 @@
 <div class="ui fade element sidebar vertical menu with navbar visible" #sidebar>
     <div class="item sidebar-bars">
         <div class="right menu">
-            <a class="item sidebar-bars" (click)="swap()"><i class="ui icon bars"></i></a>
+            <a class="item sidebar-bars" (click)="toggle()"><i class="ui icon bars"></i></a>
         </div>
     </div>
     <div class="sidebar-content" #sidebarContent>
@@ -22,7 +22,8 @@
             <div class="menu" *ngIf="!isSamplesEmpty()">
                 <a class="item" *ngFor="let sample of getSamples()" (click)="sidebarRoute('sample', sample.name, 'table')"
                    [ngClass]="{'padded vertically border selected':isSampleSelected(sample)}">
-                    <i class="trash icon" (click)="deleteSample(sample); $event.stopPropagation()" *ngIf="isDeletingAllowed()"></i>{{ sample.name }}
+                    <i class="trash icon" (click)="deleteSample(sample); $event.stopPropagation()" *ngIf="isConfiguringAllowed()"></i>
+                    <i class="cogs icon" (click)="configureSample(sample, $event); $event.stopPropagation()" *ngIf="isDeletingAllowed()"></i>{{ sample.name }}
                     <div class="sample sub menu" *ngIf="isSampleSelected(sample)">
                         <div class="item padded horizontally" [ngClass]="{'selected':isSampleRouteContains('table')}"
                              (click)="sidebarRoute('sample', sample.name, 'table'); $event.stopPropagation()">Table
@@ -49,4 +50,39 @@
             </div>
         </div>
     </div>
+</div>
+<div class="ui vertical menu sidebar-settings" [style.top]="settings ? settings.top : 0.0" #sidebarSettings>
+    <ng-container *ngIf="settings">
+        <div class="item">
+            <div class="header">Name:</div>
+            <div class="menu">
+                <div class="item">
+                    <div class="ui fluid transparent left icon input">
+                        <input placeholder="Enter new sample name here" [(ngModel)]="settings.name">
+                        <i class="write icon"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="item">
+            <div class="header">Software:</div>
+            <div class="menu">
+                <div class="item">
+                    <div class="ui fluid dropdown" dropdown [content]="content">
+                        <span class="text">{{ settings.software }}</span>
+                        <i class="dropdown icon"></i>
+                        <div class="menu fast fade element" #content>
+                            <div class="item" *ngFor="let software of getAvailableSoftwareTypes()" (click)="settings.software=software;">
+                                {{ software }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="item">
+            <button class="ui basic tiny right floated button" (click)="closeConfigureSample()">Close</button>
+            <button class="ui teal tiny button">Save</button>
+        </div>
+    </ng-container>
 </div>
