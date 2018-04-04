@@ -17,6 +17,7 @@
 
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { AnnotationsRouting } from 'pages/annotations/annotations.routing';
 import { ModalsModule } from 'shared/modals/modals.module';
 import { AnnotationsPageComponent } from './annotations.component';
@@ -28,7 +29,7 @@ import { SampleModule } from './sample/sample.module';
 import { AnnotationsSidebarComponent } from './sidebar/sidebar.component';
 
 @NgModule({
-    imports:      [ CommonModule, ModalsModule, SampleModule, AnnotationsRouting ],
+    imports:      [ CommonModule, ModalsModule, FormsModule, SampleModule, AnnotationsRouting ],
     declarations: [ AnnotationsPageComponent, AnnotationsSidebarComponent, AnnotationsInfoComponent ],
     exports:      [ AnnotationsPageComponent ],
     providers:    [ AnnotationsService, UserResolver, SampleItemResolver ]
