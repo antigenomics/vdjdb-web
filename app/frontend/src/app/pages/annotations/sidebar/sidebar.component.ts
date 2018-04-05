@@ -263,6 +263,10 @@ export class AnnotationsSidebarComponent implements OnInit, OnDestroy {
         return true;
     }
 
+    public isSampleConfiguring(sample: SampleItem): boolean {
+        return this.settings !== undefined && this.settings.sample === sample;
+    }
+
     public configureSample(sample: SampleItem, event: MouseEvent): void {
         if (!this.annotationsService.getUserPermissions().isDeleteAllowed) {
             this.notifications.error('Sample update', 'Updating is not allowed for this account');
@@ -291,6 +295,7 @@ export class AnnotationsSidebarComponent implements OnInit, OnDestroy {
     }
 
     public closeConfigureSample(): void {
+        this.settings.sample = undefined;
         this.renderer.setStyle(this.sidebarSettings.nativeElement, 'opacity', 0.0);
         window.setTimeout(() => {
             this.renderer.setStyle(this.sidebarSettings.nativeElement, 'display', 'none');
