@@ -353,13 +353,29 @@ export class AnnotationsService {
             if (sample !== undefined) {
                 const index = user.samples.indexOf(sample);
                 if (index !== -1) {
+                    this.removeSampleFromTag(sample);
                     user.samples.splice(index, 1);
                 }
             } else if (all) {
                 user.samples.splice(0, user.samples.length);
+                user.tags.forEach((tag) => {
+                    tag.samples.splice(0, tag.samples.length);
+                });
             }
             this._events.next(AnnotationsServiceEvents.SAMPLE_DELETED);
         }
         return valid;
+    }
+
+    private removeSampleFromTag(sample: SampleItem): void {
+        if (sample !== undefined && sample.tagID !== -1) {
+            const tag = this.getTags().find((t) => t.id === sample.tagID);
+            if (tag !== undefined) {
+                const index = tag.samples.findIndex((s) => s.value === sample.name);
+                if (index !== -1) {
+                    tag.samples.splice(index, 1);
+                }
+            }
+        }
     }
 }

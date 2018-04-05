@@ -17,6 +17,9 @@
         <div class="ui label" *ngFor="let samples of tag.samples">
             {{ samples.value }}
         </div>
+        <ng-container *ngIf="tag.samples.length == 0">
+            Click on 'edit' button to tag samples
+        </ng-container>
     </ng-container>
 </td>
 <td>
