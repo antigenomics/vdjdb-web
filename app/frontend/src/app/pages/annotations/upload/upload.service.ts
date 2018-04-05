@@ -21,6 +21,7 @@ import { FileItemStatusErrorType } from 'pages/annotations/upload/item/file-item
 import { Observable } from 'rxjs/Observable';
 import { Observer } from 'rxjs/Observer';
 import { SampleItem } from 'shared/sample/sample-item';
+import { SampleTag } from 'shared/sample/sample-tag';
 import { LoggerService } from 'utils/logger/logger.service';
 import { NotificationService } from 'utils/notifications/notification.service';
 import { AnnotationsService, AnnotationsServiceEvents } from '../annotations.service';
@@ -89,6 +90,17 @@ export class UploadService {
 
     public isReadyForUploadExist(): boolean {
         return this._files.some((item) => item.status.isReadyForUpload());
+    }
+
+    public checkTagsAvailability(): void {
+        this._files.forEach((file) => {
+            if (file.tag !== undefined) {
+                const index = this.annotationsService.getTags().indexOf(file.tag);
+                if (index === -1) {
+                    file.tag = undefined;
+                }
+            }
+        });
     }
 
     public handleItemNameErrors(item: FileItem, baseName: string, from?: FileItem[]): boolean {
@@ -180,7 +192,7 @@ export class UploadService {
         reader.onload = (event: Event) => {
             const array = new Uint8Array((event.target as any).result);
             const gzippedByteArray = new Uint8Array(gzip.zip(array));
-            const gzippedBlob = new Blob([gzippedByteArray], { type: 'application/x-gzip' });
+            const gzippedBlob = new Blob([ gzippedByteArray ], { type: 'application/x-gzip' });
             item.compressed = gzippedBlob;
             item.setExtension('gz');
             this.updateErrors();
@@ -210,7 +222,7 @@ export class UploadService {
             this.fireUploadingStartEvent();
             const uploader = this.createUploader(file);
             uploader.subscribe({
-                next:     async (status) => {
+                next:  async (status) => {
                     if (status.loading === false) {
                         if (status.progress === UploadService.FULL_PROGRESS && status.error === undefined) {
                             const added = await this.annotationsService.addSample(file);
@@ -227,7 +239,7 @@ export class UploadService {
                         file.progress.next(status.progress);
                     }
                 },
-                error:    (err: UploadStatus) => {
+                error: (err: UploadStatus) => {
                     file.setErrorStatus(err.error, FileItemStatusErrorType.INTERNAL_ERROR);
                     this.fireUploadingEndedEvent();
                 }
@@ -267,6 +279,12 @@ export class UploadService {
         this._files
             .filter((item) => !(item.status.isError() || item.status.isRemoved() || item.status.isUploaded()))
             .forEach((item) => item.setSoftware(software));
+    }
+
+    public setDefaultTag(tag: SampleTag): void {
+        this._files
+            .filter((item) => !(item.status.isError() || item.status.isRemoved() || item.status.isUploaded()))
+            .forEach((item) => item.setTag(tag));
     }
 
     private fireUploadingStartEvent(): void {

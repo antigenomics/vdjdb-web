@@ -52,7 +52,10 @@ class AnnotationsWebSocketActor(out: ActorRef, limit: IpLimit, user: User, detai
                     user.getSampleFileByName(validateRequest.name) onComplete {
                         case Success(None) | Failure(_) =>
                             out.error(ValidateSampleResponse(false))
-                        case Success(Some(_)) =>
+                        case Success(Some(sample)) =>
+                            if (validateRequest.tagID != -1) {
+                                sample.updateSampleFileTagID(validateRequest.tagID)
+                            }
                             out.success(ValidateSampleResponse(true))
                     }
                 })

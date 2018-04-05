@@ -7,8 +7,30 @@
         {{ item.baseName }}
     </div>
 </td>
+<td *ngIf="isTagsExist()">
+    <div class="ui dropdown" dropdown [content]="content" *ngIf="item.status.isWaiting()">
+        <ng-container *ngIf="item.tag === undefined">
+            <span class="text">No tag selected</span>
+        </ng-container>
+        <ng-container *ngIf="item.tag !== undefined">
+            <span class="text">{{ item.tag.name }}</span>
+            <a class="ui empty circular sample-tag label" [style.background-color]="item.tag.color"></a>
+        </ng-container>
+        <i class="dropdown icon"></i>
+        <div class="menu fast fade element" #content>
+            <div class="item" *ngFor="let tag of getAvailableTags()" (click)="item.setTag(tag)">
+                {{ tag.name }}
+                <a class="ui empty circular sample-tag label" [style.background-color]="tag.color"></a>
+            </div>
+        </div>
+    </div>
+    <div *ngIf="!item.status.isWaiting()">
+        {{ item.tag.name }}
+        <a class="ui empty circular sample-tag label" [style.background-color]="item.tag.color"></a>
+    </div>
+</td>
 <td>
-    <div class="ui fluid dropdown" dropdown [content]="content" *ngIf="item.status.isWaiting()">
+    <div class="ui dropdown" dropdown [content]="content" *ngIf="item.status.isWaiting()">
         <span class="text">{{ item.software }}</span>
         <i class="dropdown icon"></i>
         <div class="menu fast fade element" #content>
