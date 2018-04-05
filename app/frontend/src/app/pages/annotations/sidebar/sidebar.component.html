@@ -23,7 +23,9 @@
                 <a class="item" *ngFor="let sample of getSamples()" (click)="sidebarRoute('sample', sample.name, 'table')"
                    [ngClass]="{'padded vertically border selected':isSampleSelected(sample), 'updating':isSampleConfiguring(sample)}">
                     <i class="trash icon" (click)="deleteSample(sample); $event.stopPropagation()" *ngIf="isConfiguringAllowed()"></i>
-                    <i class="cogs icon" (click)="configureSample(sample, $event); $event.stopPropagation()" *ngIf="isDeletingAllowed()"></i>{{ sample.name }}
+                    <i class="cogs icon" (click)="configureSample(sample, $event); $event.stopPropagation()" *ngIf="isDeletingAllowed()"></i>
+                    <a class="ui empty circular sample-tag label" *ngIf="sample.hasTag()" [style.background-color]="getSampleTag(sample).color"></a>
+                    {{ sample.name }}
                     <div class="sample sub menu" *ngIf="isSampleSelected(sample)">
                         <div class="item padded horizontally" [ngClass]="{'selected':isSampleRouteContains('table')}"
                              (click)="sidebarRoute('sample', sample.name, 'table'); $event.stopPropagation()">Table

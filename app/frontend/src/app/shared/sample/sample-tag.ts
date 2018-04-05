@@ -15,7 +15,12 @@
  *
  */
 
+import { SetEntry } from 'shared/filters/common/set/set-entry';
+import { SampleItem } from 'shared/sample/sample-item';
+import { Utils } from 'utils/utils';
+
 export class SampleTag {
+    private static readonly darkLimit: number = 0.54;
     private static readonly nameRegexp = /^[a-zA-Z0-9_.+-]{1,40}$/;
     private static readonly colorRegexp = /^rgb\([0-9]{1,3},[0-9]{1,3},[0-9]{1,3}\)$/;
 
@@ -23,14 +28,16 @@ export class SampleTag {
     public name: string;
     public color: string;
     public saved: boolean;
+    public samples: SetEntry[] = [];
     public editing: boolean = false;
     public loading: boolean = false;
 
-    constructor(id: number, name: string, color: string, saved: boolean = true) {
+    constructor(id: number, name: string, color: string, samples: SampleItem[], saved: boolean = true) {
         this.id = id;
         this.name = name;
         this.color = color;
         this.saved = saved;
+        this.samples = samples.filter((sample) => sample.tagID === id).map((sample) => new SetEntry(sample.name, sample.name, false));
     }
 
     public isSaved(): boolean {
@@ -45,6 +52,16 @@ export class SampleTag {
         return this.loading;
     }
 
+    public isDark(): boolean {
+        const { r, g, b } = Utils.Color.extractRGB(this.color);
+        const { l } = Utils.Color.convertRGBtoHSL(r, g, b);
+        return l < SampleTag.darkLimit;
+    }
+
+    public getTagFontColor(): string {
+        return this.isDark() ? 'white' : 'rgb(80, 80, 80)';
+    }
+
     public static isNameValid(name: string): boolean {
         return SampleTag.nameRegexp.test(name);
     }
@@ -53,7 +70,7 @@ export class SampleTag {
         return SampleTag.colorRegexp.test(color);
     }
 
-    public static deserialize(o: any): SampleTag {
-        return new SampleTag(o[ 'id' ], o[ 'name' ], o[ 'color' ]); // tslint:disable-line:no-string-literal
+    public static deserialize(o: any, samples: SampleItem[]): SampleTag {
+        return new SampleTag(o[ 'id' ], o[ 'name' ], o[ 'color' ], samples); // tslint:disable-line:no-string-literal
     }
 }

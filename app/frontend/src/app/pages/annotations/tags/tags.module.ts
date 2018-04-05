@@ -24,9 +24,10 @@ import { TagsComponent } from 'pages/annotations/tags/tags.component';
 import { AnnotationsTagsRouting } from 'pages/annotations/tags/tags.routing';
 import { TagsService } from 'pages/annotations/tags/tags.service';
 import { ColorpickerModule } from 'shared/colorpicker/colorpicker.module';
+import { FiltersCommonModule } from 'shared/filters/common/filters-common.module';
 
 @NgModule({
-    imports:      [ CommonModule, FormsModule, ColorpickerModule, AnnotationsTagsRouting ],
+    imports:      [ CommonModule, FormsModule, ColorpickerModule, FiltersCommonModule, AnnotationsTagsRouting ],
     declarations: [ TagsComponent, TagsTableComponent, TagsTableRowComponent ],
     providers:    [ TagsService ]
 })

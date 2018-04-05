@@ -157,7 +157,15 @@ class AnnotationsWebSocketActor(out: ActorRef, limit: IpLimit, user: User, detai
                 validateData(out, data, (createTagRequest: CreateTagRequest) => {
                     if (SampleTagTable.isNameValid(createTagRequest.name) && SampleTagTable.isColorValid(createTagRequest.color)) {
                         stp.insert(SampleTag(0, createTagRequest.name, createTagRequest.color, user.id)).onComplete {
-                            case Success(id) => out.success(CreateTagResponse(id))
+                            case Success(id) =>
+                                user.getSampleFiles.onComplete {
+                                    case Success(samples) =>
+                                        samples.filter((sample) => createTagRequest.samples.contains(sample.sampleName)).foreach((sample) => {
+                                            sample.updateSampleFileTagID(id)
+                                        })
+                                        out.success(CreateTagResponse(id))
+                                    case Failure(_) => out.errorMessage("An error occured during samples tagging")
+                                }
                             case Failure(_) => out.errorMessage("An error occured during tag creating")
                         }
                     } else {
@@ -165,25 +173,42 @@ class AnnotationsWebSocketActor(out: ActorRef, limit: IpLimit, user: User, detai
                     }
                 })
             case DeleteTagResponse.Action =>
-                validateData(out, data, (deleteTagResponse: DeleteTagRequest) => {
-                    stp.getByIdAndUser(deleteTagResponse.tagID, user).onComplete {
+                validateData(out, data, (deleteTagRequest: DeleteTagRequest) => {
+                    stp.getByIdAndUser(deleteTagRequest.tagID, user).onComplete {
                         case Success(Some(tag)) =>
-                            stp.delete(tag).onComplete {
-                                case Success(_) => out.success(DeleteTagResponse(deleteTagResponse.tagID))
-                                case _ => out.errorMessage("An error occured during tag deleting")
+                            user.getTaggedSampleFiles(tag.id).onComplete {
+                                case Success(samples) =>
+                                    samples.foreach((sample) => sample.updateSampleFileTagID(-1))
+                                    stp.delete(tag).onComplete {
+                                        case Success(_) =>
+                                            out.success(DeleteTagResponse(deleteTagRequest.tagID))
+                                        case _ => out.errorMessage("An error occured during tag deleting")
+                                    }
+                                case _ => out.errorMessage("An error occured during samples untagging")
                             }
                         case _ => out.errorMessage("Invalid request")
                     }
                 })
             case UpdateTagResponse.Action =>
-                validateData(out, data, (updateTagResponse: UpdateTagRequest) => {
-                    stp.getByIdAndUser(updateTagResponse.tagID, user).onComplete {
-                        case Success(Some(tag)) =>
-                            stp.update(tag, updateTagResponse.name, updateTagResponse.color).onComplete {
-                                case Success(_) => out.success(UpdateTagResponse(tag.id))
-                                case _ => out.errorMessage("An error occured during tag updating")
-                            }
-                        case _ => out.errorMessage("Invalid request")
+                validateData(out, data, (updateTagRequest: UpdateTagRequest) => async {
+                    val tag = await(stp.getByIdAndUser(updateTagRequest.tagID, user))
+                    if (tag.nonEmpty) {
+                        val update = await(stp.update(tag.get, updateTagRequest.name, updateTagRequest.color))
+                        if (update == 1) {
+                            val samplesFiles = await(user.getSampleFiles)
+                            // TODO Check if all updates are finished successfully
+                            samplesFiles.filter((sample) => sample.tagID == tag.get.id && !updateTagRequest.samples.contains(sample.sampleName)).foreach((sample) => {
+                                sample.updateSampleFileTagID(-1);
+                            })
+                            samplesFiles.filter((sample) => updateTagRequest.samples.contains(sample.sampleName)).foreach((sample) => {
+                                sample.updateSampleFileTagID(tag.get.id)
+                            })
+                            out.success(UpdateTagResponse(tag.get.id))
+                        } else {
+                            out.errorMessage("An error occured during tag updating")
+                        }
+                    } else {
+                        out.errorMessage("Invalid request")
                     }
                 })
             case _ =>

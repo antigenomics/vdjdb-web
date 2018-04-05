@@ -16,6 +16,7 @@
  */
 
 import { Component, Input } from '@angular/core';
+import { AnnotationsService } from 'pages/annotations/annotations.service';
 import { TagsService } from 'pages/annotations/tags/tags.service';
 import { SampleTag } from 'shared/sample/sample-tag';
 
@@ -27,7 +28,7 @@ export class TagsTableRowComponent {
     @Input('tag')
     public tag: SampleTag;
 
-    constructor(private tagsService: TagsService) {}
+    constructor(private tagsService: TagsService, private annotationsService: AnnotationsService) {}
 
     public isTagNameValid(): boolean {
         return this.tagsService.isTagNameValid(this.tag);
@@ -51,6 +52,12 @@ export class TagsTableRowComponent {
 
     public delete(): void {
         this.tagsService.delete(this.tag);
+    }
+
+    public getUserSamplesSetEntries(): string[] {
+        return this.annotationsService.getSamples().filter((sample) => sample.tagID === -1).map((sample) => {
+            return sample.name;
+        });
     }
 
     public handleTagName(name: string): void {

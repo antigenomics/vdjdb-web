@@ -29,7 +29,7 @@ export class User {
         this.login = login;
         this.email = email;
         this.samples = samples.map((sample) => SampleItem.deserialize(sample));
-        this.tags = tags.map((tag) => SampleTag.deserialize(tag));
+        this.tags = tags.map((tag) => SampleTag.deserialize(tag, this.samples));
         this.permissions = permissions;
     }
 

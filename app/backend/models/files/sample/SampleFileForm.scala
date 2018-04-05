@@ -30,6 +30,6 @@ object SampleFileForm {
     )(SampleFileForm.apply)(SampleFileForm.unapply) verifying("sample.file.form.invalid.software", { sampleFileForm =>
         Software.values().map(_.toString).contains(sampleFileForm.software)
     }) verifying("sample.file.form.invalid.name", { sampleFileForm =>
-        sampleFileForm.name.nonEmpty && sampleFileForm.name.matches("^[a-zA-Z0-9_.+-]{1,40}$")
+        sampleFileForm.name.nonEmpty && SampleFileTable.isSampleNameValid(sampleFileForm.name)
     }))
 }

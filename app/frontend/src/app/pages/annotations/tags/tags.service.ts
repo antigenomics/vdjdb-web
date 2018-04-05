@@ -37,10 +37,12 @@ export namespace TagsServiceEventType {
 
 @Injectable()
 export class TagsService {
+    private static readonly emptyTagID: number = -2;
     private events: Subject<TagsServiceEventType> = new Subject<TagsServiceEventType>();
 
     constructor(private logger: LoggerService, private annotationsService: AnnotationsService,
-                private notifications: NotificationService) {}
+                private notifications: NotificationService) {
+    }
 
     public getAvailableTags(): SampleTag[] {
         return this.annotationsService.getUser().tags;
@@ -63,7 +65,7 @@ export class TagsService {
     }
 
     public createNewTag(): void {
-        this.getAvailableTags().push(new SampleTag(-1, '', '', false));
+        this.getAvailableTags().push(new SampleTag(TagsService.emptyTagID, '', '', this.annotationsService.getSamples(), false));
         this.events.next(TagsServiceEventType.TAG_ADDED);
         this.logger.debug('TagsService', 'New tag added');
     }
