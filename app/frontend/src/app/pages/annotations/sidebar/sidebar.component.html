@@ -1,7 +1,7 @@
 <div class="ui fade element sidebar vertical menu with navbar visible" #sidebar>
     <div class="item sidebar-bars">
         <div class="right menu">
-            <a class="item sidebar-bars" (click)="swap()"><i class="ui icon bars"></i></a>
+            <a class="item sidebar-bars" (click)="toggle()"><i class="ui icon bars"></i></a>
         </div>
     </div>
     <div class="sidebar-content" #sidebarContent>
@@ -21,8 +21,9 @@
             <div class="header">Samples</div>
             <div class="menu" *ngIf="!isSamplesEmpty()">
                 <a class="item" *ngFor="let sample of getSamples()" (click)="sidebarRoute('sample', sample.name, 'table')"
-                   [ngClass]="{'padded vertically border selected':isSampleSelected(sample)}">
-                    <i class="trash icon" (click)="deleteSample(sample); $event.stopPropagation()" *ngIf="isDeletingAllowed()"></i>{{ sample.name }}
+                   [ngClass]="{'padded vertically border selected':isSampleSelected(sample), 'updating':isSampleConfiguring(sample)}">
+                    <i class="trash icon" (click)="deleteSample(sample); $event.stopPropagation()" *ngIf="isConfiguringAllowed()"></i>
+                    <i class="cogs icon" (click)="configureSample(sample, $event); $event.stopPropagation()" *ngIf="isDeletingAllowed()"></i>{{ sample.name }}
                     <div class="sample sub menu" *ngIf="isSampleSelected(sample)">
                         <div class="item padded horizontally" [ngClass]="{'selected':isSampleRouteContains('table')}"
                              (click)="sidebarRoute('sample', sample.name, 'table'); $event.stopPropagation()">Table
@@ -53,4 +54,44 @@
             </div>
         </div>
     </div>
+</div>
+<div class="ui vertical menu sidebar-settings" [style.top]="settings ? settings.top : 0.0" #sidebarSettings>
+    <ng-container *ngIf="settings">
+        <div class="item">
+            <div class="header">Name:</div>
+            <div class="menu">
+                <div class="item">
+                    <div class="ui fluid transparent left icon input" [ngClass]="{'error':!settings.isNameValid}">
+                        <input placeholder="Enter new sample name here" [ngModel]="settings.name" (ngModelChange)="handleConfigureNewName($event)">
+                        <div class="ui left pointing red basic label" style="position: absolute;left: 105%;width: 200px;top: -35px;" *ngIf="!settings.isNameValid">
+                            File name can contain letters ('a-zA-Z'), numbers, . (dot), - (dash), _ (underline) and + (plus) symbols. <br>
+                            Also file name should have less than 40 symbols and should not be empty.
+                        </div>
+                        <i class="write icon"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="item">
+            <div class="header">Software:</div>
+            <div class="menu">
+                <div class="item">
+                    <div class="ui fluid left pointing scrolling dropdown" dropdown [content]="content">
+                        <span class="text">{{ settings.software }}</span>
+                        <i class="left dropdown icon"></i>
+                        <div class="menu fast fade element" #content>
+                            <div class="item" *ngFor="let software of getAvailableSoftwareTypes()" (click)="settings.software=software;">
+                                {{ software }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="item">
+            <button class="ui basic tiny right floated button" (click)="closeConfigureSample()">Close</button>
+            <button class="ui teal tiny button" [ngClass]="{'loading':settings.saving, 'disabled':!settings.isNameValid}" (click)="saveConfigureSample()">Save
+            </button>
+        </div>
+    </ng-container>
 </div>
