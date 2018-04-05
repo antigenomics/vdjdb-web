@@ -3,38 +3,24 @@
 </div>
 
 <ng-container *ngIf="multisampleSummaryService.isConnected() && !multisampleSummaryService.isConnectionFailed()">
-    <!--<div class="ui fade slow element segments">-->
-        <!--<h3 class="ui top attached header">Multisample analysis tabs</h3>-->
-        <!--<div class="ui teal attached segment">-->
-            <!--<div class="ui secondary menu">-->
-                <!--<a class="item tab" [ngClass]="{'active':multisampleSummaryService.isTabActive(tab)}"-->
-                   <!--*ngFor="let tab of multisampleSummaryService.getTabs()" (click)="multisampleSummaryService.setActiveTab(tab)">-->
-                    <!--{{ tab.title }}-->
-                <!--</a>-->
-                <!--<button class="ui basic icon button" *ngIf="multisampleSummaryService.isNewTabAllowed()" (click)="multisampleSummaryService.addNewTab()">-->
-                    <!--<i class="icon plus"></i>-->
-                <!--</button>-->
-            <!--</div>-->
-        <!--</div>-->
-    <!--</div>-->
     <div class="ui fade slow element segments">
         <h3 class="ui top attached header">Select samples</h3>
         <div class="ui teal attached segment">
-            <button class="ui small teal padded button" style="margin: 5px; min-width: 100px" [ngClass]="{'basic':!multisampleSummaryService.isSampleSelected(sample)}"
+            <button class="ui small teal padded button" style="margin: 5px; min-width: 100px"
+                    [ngClass]="{'basic':!multisampleSummaryService.isSampleSelected(sample)}"
                     *ngFor="let sample of annotationsService.getSamples()" (click)="multisampleSummaryService.selectSample(sample)">
                 {{ sample.name }}
             </button>
-            <!--<div class="ui secondary menu">-->
-                <!--<a class="item tab" [ngClass]="{'active':multisampleSummaryService.isSampleSelected(sample)}"-->
-                   <!--*ngFor="let sample of annotationsService.getSamples()" (click)="multisampleSummaryService.selectSample(sample)">-->
-                    <!--{{ sample.name }}-->
-                <!--</a>-->
-            <!--</div>-->
         </div>
         <div class="ui attached secondary clearing segment" *ngIf="multisampleSummaryService.isConnected()">
-            <button class="ui button left floated" (click)="multisampleSummaryService.selectAllSamples()">Select all</button>
-            <button class="ui button left floated" (click)="multisampleSummaryService.deselectAllSamples()">Deselect all</button>
-            <button class="ui button left floated" (click)="multisampleSummaryService.invertSamplesSelection()">Invert</button>
+            <button class="ui button small left floated" (click)="multisampleSummaryService.selectAllSamples()">Select all</button>
+            <button class="ui button small left floated" (click)="multisampleSummaryService.deselectAllSamples()">Deselect all</button>
+            <button class="ui button small left floated" (click)="multisampleSummaryService.invertSamplesSelection()">Invert</button>
+            <button class="ui button small right floated" *ngFor="let tag of multisampleSummaryService.getSampleTags()"
+                    (click)="multisampleSummaryService.selectByTag(tag)">
+                Select by tag: {{ tag.name }}
+                <a class="ui empty circular label" [style.background-color]="tag.color"></a>
+            </button>
         </div>
     </div>
     <div class="ui fade slow element segments">

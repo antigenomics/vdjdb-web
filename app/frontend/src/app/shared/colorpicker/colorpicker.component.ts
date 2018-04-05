@@ -75,11 +75,13 @@ export class ColorpickerComponent implements AfterViewInit {
     public pickColor(event: MouseEvent): void {
         const offset = event.srcElement.getBoundingClientRect();
         const color = this.context.getImageData(event.clientX - offset.left, event.clientY - offset.top, 1, 1).data;
-        const rgb = `rgb(${color[ 0 ]},${color[ 1 ]},${color[ 2 ]})`;
 
-        this.renderer.setStyle(this.inner.nativeElement, 'background-color', rgb);
-        this.color.emit(rgb);
-        this.hide();
+        if (color[3] !== 0) {
+            const rgb = `rgb(${color[ 0 ]},${color[ 1 ]},${color[ 2 ]})`;
+            this.renderer.setStyle(this.inner.nativeElement, 'background-color', rgb);
+            this.color.emit(rgb);
+            this.hide();
+        }
     }
 
     private show(): void {

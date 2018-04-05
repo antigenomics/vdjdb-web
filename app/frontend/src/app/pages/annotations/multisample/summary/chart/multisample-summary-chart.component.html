@@ -12,6 +12,11 @@
         </button>
         <h4 class="ui header"><i class="options icon"></i>Options</h4>
         <div class="ui divider"></div>
+        <div class="ui checkbox" [ngClass]="{'disabled':order}">
+            <input type="checkbox" [(ngModel)]="tagsColors">
+            <label>Color by tags</label>
+        </div>
+        <br>
         <div class="ui checkbox">
             <input type="checkbox" [(ngModel)]="order">
             <label>Order by samples</label>

@@ -42,7 +42,7 @@ export class TagsComponent implements OnInit, OnDestroy {
             }
         });
         this._tagsServiceEventsSubscription = this.tagsService.getEvents().subscribe((event) => {
-            if (event === TagsServiceEventType.TAG_DELETING_END) {
+            if (event === TagsServiceEventType.TAG_DELETING_END || event === TagsServiceEventType.TAGS_UPDATED) {
                 this.changeDetector.detectChanges();
             }
         });
