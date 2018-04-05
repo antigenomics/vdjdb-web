@@ -31,6 +31,14 @@ export class User {
         this.samples = samples.map((sample) => SampleItem.deserialize(sample));
         this.tags = tags.map((tag) => SampleTag.deserialize(tag, this.samples));
         this.permissions = permissions;
+
+        // Check is tags are valid
+        this.samples.forEach((sample) => {
+            const index = this.tags.findIndex((tag) => tag.id === sample.tagID);
+            if (index === -1) {
+                sample.tagID = -1;
+            }
+        });
     }
 
     public updateSampleInfo(sampleName: string, readsCount: number, clonotypesCount: number): void {
