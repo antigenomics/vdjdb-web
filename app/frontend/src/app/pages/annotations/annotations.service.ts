@@ -21,6 +21,7 @@ import { IntersectionTableRow } from 'pages/annotations/sample/table/intersectio
 import { Observable } from 'rxjs/Observable';
 import { filter } from 'rxjs/operators';
 import { Subject } from 'rxjs/Subject';
+import { SetEntry } from 'shared/filters/common/set/set-entry';
 import { SampleItem } from 'shared/sample/sample-item';
 import { SampleTag } from 'shared/sample/sample-tag';
 import { IExportFormat, IExportOptionFlag } from 'shared/table/export/table-export.component';
@@ -33,7 +34,6 @@ import { NotificationService } from 'utils/notifications/notification.service';
 import { Utils } from 'utils/utils';
 import { DatabaseMetadata } from '../search/database/database-metadata';
 import { FileItem } from './upload/item/file-item';
-import { SetEntry } from 'shared/filters/common/set/set-entry';
 
 export type AnnotationsServiceEvents = number;
 
