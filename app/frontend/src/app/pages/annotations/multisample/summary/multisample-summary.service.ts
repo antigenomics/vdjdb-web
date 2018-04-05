@@ -156,7 +156,9 @@ export class MultisampleSummaryService {
                         sampleNames.forEach((name) => {
                             const summaryCounters = summary[ name ];
                             if (summaryCounters === undefined) {
-                                this.notifications.error('Multisample analysis error', `Missing data for sample ${name}`);
+                                this.notifications.error(
+                                    'Multisample analysis error',
+                                    `Missing data for sample ${name}. Check software type for this sample.`);
                             } else {
                                 tab.counters.set(name, new SummaryCounters(summaryCounters));
                             }

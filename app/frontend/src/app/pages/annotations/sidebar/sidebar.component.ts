@@ -29,8 +29,10 @@ import { AnnotationsService, AnnotationsServiceEvents } from '../annotations.ser
 
 export interface ISampleSettings {
     top: string;
+    isNameValid: boolean;
     name: string;
     software: string;
+    saving: boolean;
     sample: SampleItem;
 }
 
@@ -76,7 +78,7 @@ export class AnnotationsSidebarState {
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AnnotationsSidebarComponent implements OnInit, OnDestroy {
-    private static readonly _sittingsHideDelay: number = 200;
+    private static readonly _settingsHideDelay: number = 200;
     private static readonly _settingsTopShift: number = -35;
     private static readonly _displaySidebarContentDelay: number = 200;
     private _confirmDeletingModalComponent: ComponentRef<ModalComponent>;
@@ -248,21 +250,51 @@ export class AnnotationsSidebarComponent implements OnInit, OnDestroy {
         };
     }
 
+    public isConfigureNewSampleNameValid(): boolean {
+        if (!SampleItem.isNameValid(this.settings.name)) {
+            return false;
+        }
+        const duplicate = this.annotationsService.getSamples()
+            .filter((s) => s !== this.settings.sample)
+            .findIndex((s) => s.name === this.settings.name);
+        if (duplicate !== -1) {
+            return false;
+        }
+        return true;
+    }
+
     public configureSample(sample: SampleItem, event: MouseEvent): void {
         if (!this.annotationsService.getUserPermissions().isDeleteAllowed) {
-            this.notifications.error('Configuring', 'Configuring is not allowed for this account');
+            this.notifications.error('Sample update', 'Updating is not allowed for this account');
+            return;
+        }
+
+        if (this.settings && this.settings.saving) {
+            this.notifications.warn('Sample update', 'Wait until previous updating will be completed');
             return;
         }
 
         this.openConfigureSample();
-        this.settings = { top: `${event.clientY + AnnotationsSidebarComponent._settingsTopShift}px`, name: sample.name, software: sample.software, sample };
+        this.settings = {
+            top:         `${event.clientY + AnnotationsSidebarComponent._settingsTopShift}px`,
+            isNameValid: true,
+            name:        sample.name,
+            software:    sample.software,
+            saving:      false,
+            sample
+        };
+    }
+
+    public handleConfigureNewName(newName: string): void {
+        this.settings.name = newName;
+        this.settings.isNameValid = this.isConfigureNewSampleNameValid();
     }
 
     public closeConfigureSample(): void {
         this.renderer.setStyle(this.sidebarSettings.nativeElement, 'opacity', 0.0);
         window.setTimeout(() => {
             this.renderer.setStyle(this.sidebarSettings.nativeElement, 'display', 'none');
-        }, AnnotationsSidebarComponent._sittingsHideDelay);
+        }, AnnotationsSidebarComponent._settingsHideDelay);
     }
 
     public openConfigureSample(): void {
@@ -270,6 +302,30 @@ export class AnnotationsSidebarComponent implements OnInit, OnDestroy {
         window.setImmediate(() => {
             this.renderer.setStyle(this.sidebarSettings.nativeElement, 'opacity', 1.0);
         });
+    }
+
+    public async saveConfigureSample(): Promise<void> {
+        if (!this.settings.isNameValid) {
+            this.notifications.error('Sample update', 'New sample name is not valid');
+            return;
+        }
+
+        this.settings.saving = true;
+        this.changeDetector.detectChanges();
+
+        const success = await this.annotationsService.updateSampleProps(this.settings.sample, this.settings.name, this.settings.software);
+        if (!success) {
+            this.notifications.error('Sample update', 'An error occured during sample updating');
+        } else {
+            this.notifications.success('Sample update', 'Sample successfully updated');
+            window.setTimeout(() => {
+                this.closeConfigureSample();
+                this.changeDetector.detectChanges();
+            }, AnnotationsSidebarComponent._settingsHideDelay);
+        }
+
+        this.settings.saving = false;
+        this.changeDetector.detectChanges();
     }
 
     public ngOnDestroy(): void {
