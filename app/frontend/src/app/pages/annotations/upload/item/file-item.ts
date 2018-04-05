@@ -16,6 +16,7 @@
  */
 
 import { ReplaySubject } from 'rxjs/ReplaySubject';
+import { SampleTag } from 'shared/sample/sample-tag';
 import { Utils } from 'utils/utils';
 import { FileItemStatus, FileItemStatusErrorType } from './file-item-status';
 
@@ -28,6 +29,7 @@ export class FileItem {
     public baseName: string = '';
     public extension: string = '';
     public software: string = 'VDJtools';
+    public tag?: SampleTag;
     public progress: ReplaySubject<number> = new ReplaySubject(1);
     public status: FileItemStatus = new FileItemStatus();
 
@@ -60,6 +62,10 @@ export class FileItem {
 
     public setSoftware(software: string): void {
         this.software = software;
+    }
+
+    public setTag(tag: SampleTag): void {
+        this.tag = tag;
     }
 
     public setExtension(extension: string): void {

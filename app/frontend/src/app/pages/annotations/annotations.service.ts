@@ -33,6 +33,7 @@ import { NotificationService } from 'utils/notifications/notification.service';
 import { Utils } from 'utils/utils';
 import { DatabaseMetadata } from '../search/database/database-metadata';
 import { FileItem } from './upload/item/file-item';
+import { SetEntry } from 'shared/filters/common/set/set-entry';
 
 export type AnnotationsServiceEvents = number;
 
@@ -318,13 +319,19 @@ export class AnnotationsService {
             action: AnnotationsServiceWebSocketActions.VALIDATE_SAMPLE,
             data:   new WebSocketRequestData()
                         .add('name', file.baseName)
+                        .add('tagID', file.tag ? file.tag.id : -1)
                         .unpack()
         });
         const valid = response.isSuccess() && response.get('valid');
         if (valid) {
             const user = this.getUser();
             if (!user.samples.some((sample) => sample.name === file.baseName)) {
-                user.samples.push(new SampleItem(file.baseName, file.software, -1, -1, -1));
+                const sampleItem = new SampleItem(file.baseName, file.software, -1, -1, -1);
+                if (file.tag !== undefined) {
+                    sampleItem.tagID = file.tag.id;
+                    file.tag.samples.push(new SetEntry(sampleItem.name, sampleItem.name, false));
+                }
+                user.samples.push(sampleItem);
                 this._events.next(AnnotationsServiceEvents.SAMPLE_ADDED);
             }
         }

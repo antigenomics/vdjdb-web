@@ -19,9 +19,10 @@ import {
     AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Input, OnDestroy, OnInit, Renderer2,
     ViewChild
 } from '@angular/core';
-import { AnnotationsServiceEvents } from 'pages/annotations/annotations.service';
+import { AnnotationsService, AnnotationsServiceEvents } from 'pages/annotations/annotations.service';
 import { FileItemStatusErrorType } from 'pages/annotations/upload/item/file-item-status';
 import { Subscription } from 'rxjs/Subscription';
+import { SampleTag } from 'shared/sample/sample-tag';
 import { FileItem } from '../../item/file-item';
 import { UploadService } from '../../upload.service';
 
@@ -44,7 +45,8 @@ export class UploadTableRowComponent implements AfterViewInit, OnInit, OnDestroy
     @ViewChild('progressBar')
     public progressBar: ElementRef;
 
-    constructor(private uploadService: UploadService, private renderer: Renderer2, private changeDetector: ChangeDetectorRef) {}
+    constructor(private uploadService: UploadService, private annotationsService: AnnotationsService,
+                private renderer: Renderer2, private changeDetector: ChangeDetectorRef) {}
 
     public ngOnInit(): void {
         this._stateSubscription = this.uploadService.getEvents().subscribe((event) => {
@@ -67,6 +69,14 @@ export class UploadTableRowComponent implements AfterViewInit, OnInit, OnDestroy
 
     public getAvailableSoftwareTypes(): string[] {
         return this.uploadService.getAvailableSoftwareTypes();
+    }
+
+    public isTagsExist(): boolean {
+        return this.getAvailableTags().length !== 0;
+    }
+
+    public getAvailableTags(): SampleTag[] {
+        return this.annotationsService.getTags();
     }
 
     public upload(): void {
