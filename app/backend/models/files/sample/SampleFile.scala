@@ -19,8 +19,10 @@ package backend.models.files.sample
 
 import backend.models.authorization.user.{User, UserProvider}
 import backend.models.files.{FileMetadata, FileMetadataProvider}
+
 import scala.async.Async.{async, await}
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.matching.Regex
 
 case class SampleFile(id: Long, sampleName: String, software: String, readsCount: Long, clonotypesCount: Long, metadataID: Long, userID: Long) {
     def getMetadata(implicit fmp: FileMetadataProvider, ec: ExecutionContext): Future[FileMetadata] = {

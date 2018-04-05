@@ -17,11 +17,11 @@
 package backend.actions
 
 import javax.inject.Inject
-
 import backend.models.authorization.permissions.UserPermissionsProvider
 import backend.models.authorization.tokens.session.{SessionToken, SessionTokenProvider}
 import backend.models.authorization.user.{User, UserDetails, UserProvider}
 import backend.models.files.sample.SampleFileProvider
+import backend.models.files.sample.tags.SampleTagProvider
 import play.api.mvc._
 
 import scala.async.Async.await
@@ -33,7 +33,7 @@ class UserRequest[A](val authorized: Boolean, val user: Option[User], val detail
 
 class UserRequestAction @Inject()(val parser: BodyParsers.Default)
                                  (implicit val executionContext: ExecutionContext, stp: SessionTokenProvider,
-                                  up: UserProvider, upp: UserPermissionsProvider, sfp: SampleFileProvider)
+                                  up: UserProvider, upp: UserPermissionsProvider, sfp: SampleFileProvider, stsp: SampleTagProvider)
     extends ActionBuilder[UserRequest, AnyContent] with ActionTransformer[Request, UserRequest] {
 
     def transform[A](request: Request[A]): Future[UserRequest[A]] = scala.async.Async.async {

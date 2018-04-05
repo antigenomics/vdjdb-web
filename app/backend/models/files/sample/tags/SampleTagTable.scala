@@ -15,7 +15,7 @@
  *
  */
 
-package backend.models.files.sample
+package backend.models.files.sample.tags
 
 import backend.models.authorization.user.UserProvider
 import backend.models.files.FileMetadataProvider
@@ -25,31 +25,30 @@ import slick.lifted.Tag
 import scala.language.higherKinds
 import scala.util.matching.Regex
 
-class SampleFileTable(tag: Tag)(implicit fmp: FileMetadataProvider) extends Table[SampleFile](tag, SampleFileTable.TABLE_NAME){
+class SampleTagTable(tag: Tag) extends Table[SampleTag](tag, SampleTagTable.TABLE_NAME){
     def id = column[Long]("ID", O.PrimaryKey, O.AutoInc)
-    def sampleName = column[String]("SAMPLE_NAME", O.Length(64))
-    def software = column[String]("SOFTWARE", O.Length(64))
-    def readsCount = column[Long]("READS_COUNT")
-    def clonotypesCount = column[Long]("CLONOTYPES_COUNT")
-    def metadataID = column[Long]("METADATA_ID")
+    def name = column[String]("TAG_NAME", O.Length(64))
+    def color = column[String]("TAG_COLOR", O.Length(32))
     def userID = column[Long]("USER_ID")
 
-    def * = (id, sampleName, software, readsCount, clonotypesCount, metadataID, userID) <> (SampleFile.tupled, SampleFile.unapply)
-    def metadata = foreignKey("METADATA_FK", metadataID, fmp.getTable)(_.id,
-        onUpdate = ForeignKeyAction.Cascade, onDelete = ForeignKeyAction.Cascade)
+    def * = (id, name, color, userID) <> (SampleTag.tupled, SampleTag.unapply)
 }
 
-object SampleFileTable {
-    final val TABLE_NAME = "SAMPLE_FILE"
+object SampleTagTable {
+    final val TABLE_NAME = "SAMPLE_TAG"
 
-    implicit class SampleFileExtension[C[_]](q: Query[SampleFileTable, SampleFile, C]) {
-        def withMetadata(implicit fmp: FileMetadataProvider) = q.join(fmp.getTable).on(_.metadataID === _.id)
+    implicit class SampleTagExtension[C[_]](q: Query[SampleTagTable, SampleTag, C]) {
         def withUser(implicit up: UserProvider) = q.join(up.getTable).on(_.userID === _.id)
     }
 
     private final val namePattern: Regex = new Regex("^[a-zA-Z0-9_.+-]{1,40}$")
+    private final val colorPattern: Regex = new Regex("^rgb\\([0-9]{1,3},[0-9]{1,3},[0-9]{1,3}\\)$")
 
-    def isSampleNameValid(name: String): Boolean = {
+    def isNameValid(name: String): Boolean = {
         namePattern.pattern.matcher(name).matches
+    }
+
+    def isColorValid(color: String): Boolean = {
+        colorPattern.pattern.matcher(color).matches
     }
 }

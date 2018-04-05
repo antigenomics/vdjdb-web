@@ -62,7 +62,7 @@ export class AnnotationsSidebarState {
         }
         return false;
     }
-    
+
     public isSampleSelected(): boolean {
         return this.metadata.has('sample');
     }

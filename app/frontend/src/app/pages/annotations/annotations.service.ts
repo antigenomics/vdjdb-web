@@ -22,6 +22,7 @@ import { Observable } from 'rxjs/Observable';
 import { filter } from 'rxjs/operators';
 import { Subject } from 'rxjs/Subject';
 import { SampleItem } from 'shared/sample/sample-item';
+import { SampleTag } from 'shared/sample/sample-tag';
 import { IExportFormat, IExportOptionFlag } from 'shared/table/export/table-export.component';
 import { User, UserPermissions } from 'shared/user/user';
 import { WebSocketConnection, WebSocketResponseStatus } from 'shared/websocket/websocket-connection';
@@ -45,6 +46,7 @@ export namespace AnnotationsServiceEvents {
     export const UPLOAD_SERVICE_STATE_REFRESHED: number = 6;
     export const UPLOAD_SERVICE_UPLOAD_STARTED: number = 7;
     export const UPLOAD_SERVICE_UPLOAD_ENDED: number = 8;
+    export const SAMPLE_TAGS_UPDATED: number = 9;
 }
 
 export namespace AnnotationsServiceWebSocketActions {
@@ -58,6 +60,9 @@ export namespace AnnotationsServiceWebSocketActions {
     export const INTERSECT: string = 'intersect';
     export const DOWNLOAD_MATCHES: string = 'download_matches';
     export const EXPORT: string = 'export';
+    export const CREATE_TAG: string = 'create_tag';
+    export const DELETE_TAG: string = 'delete_tag';
+    export const UPDATE_TAG: string = 'update_tag';
 }
 
 @Injectable()
@@ -205,6 +210,58 @@ export class AnnotationsService {
         }
     }
 
+    public async saveTag(tag: SampleTag): Promise<boolean> {
+        const response = await this.connection.sendMessage({
+            action: AnnotationsServiceWebSocketActions.CREATE_TAG,
+            data:   new WebSocketRequestData()
+                        .add('name', tag.name)
+                        .add('color', tag.color)
+                        .unpack()
+        });
+
+        if (response.isSuccess()) {
+            tag.id = response.get('tagID');
+            tag.saved = true;
+            this._events.next(AnnotationsServiceEvents.SAMPLE_TAGS_UPDATED);
+        }
+
+        return response.isSuccess();
+    }
+
+    public async deleteTag(tag: SampleTag): Promise<boolean> {
+        const response = await this.connection.sendMessage({
+            action: AnnotationsServiceWebSocketActions.DELETE_TAG,
+            data:   new WebSocketRequestData()
+                        .add('tagID', tag.id)
+                        .unpack()
+        });
+
+        if (response.isSuccess()) {
+            const index = this._user.tags.indexOf(tag);
+            if (index !== -1) {
+                this._user.tags.splice(index, 1);
+            }
+            this._events.next(AnnotationsServiceEvents.SAMPLE_TAGS_UPDATED);
+        }
+
+        return response.isSuccess();
+    }
+
+    public async updateTag(tag: SampleTag): Promise<boolean> {
+        const response = await this.connection.sendMessage({
+            action: AnnotationsServiceWebSocketActions.UPDATE_TAG,
+            data:   new WebSocketRequestData()
+                        .add('tagID', tag.id)
+                        .add('name', tag.name)
+                        .add('color', tag.color)
+                        .unpack()
+        });
+        if (response.isSuccess()) {
+            this._events.next(AnnotationsServiceEvents.SAMPLE_TAGS_UPDATED);
+        }
+        return response.isSuccess();
+    }
+
     public async updateSampleProps(sample: SampleItem, newName: string, newSoftware: string): Promise<boolean> {
         const response = await this.connection.sendMessage({
             action: AnnotationsServiceWebSocketActions.UPDATE_SAMPLE_PROPS,
@@ -219,7 +276,7 @@ export class AnnotationsService {
             const newSampleName = response.get('newSampleName');
             const newSampleSoftware = response.get('newSampleSoftware');
 
-            this.getUser().samples.find((s) => s.name === prevSampleName).updateProps(newSampleName, newSampleSoftware);;
+            this.getUser().samples.find((s) => s.name === prevSampleName).updateProps(newSampleName, newSampleSoftware);
             this._events.next(AnnotationsServiceEvents.SAMPLE_UPDATED);
         }
         return response.isSuccess();

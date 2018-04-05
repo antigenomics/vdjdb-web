@@ -18,7 +18,6 @@
 package backend.controllers
 
 import javax.inject.Inject
-
 import akka.actor.ActorSystem
 import akka.stream.Materializer
 import backend.actions.{SessionAction, UserRequest, UserRequestAction}
@@ -26,7 +25,8 @@ import backend.actors.{AnnotationsWebSocketActor, MultisampleAnalysisWebSocketAc
 import backend.models.authorization.permissions.UserPermissionsProvider
 import backend.models.authorization.user.UserProvider
 import backend.models.files.FileMetadataProvider
-import backend.models.files.sample.{SampleFileForm, SampleFileProvider}
+import backend.models.files.sample.tags.SampleTagProvider
+import backend.models.files.sample.{SampleFile, SampleFileForm, SampleFileProvider, SampleFileTable}
 import backend.models.files.temporary.TemporaryFileProvider
 import backend.server.database.Database
 import backend.server.limit.RequestLimits
@@ -47,7 +47,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class AnnotationsAPI @Inject()(cc: ControllerComponents, userRequestAction: UserRequestAction,
                                conf: Configuration, messagesApi: MessagesApi, database: Database)
                               (implicit upp: UserPermissionsProvider, up: UserProvider, sfp: SampleFileProvider, fmp: FileMetadataProvider,
-                               tfp: TemporaryFileProvider,
+                               tfp: TemporaryFileProvider, stp: SampleTagProvider,
                                as: ActorSystem, mat: Materializer, ec: ExecutionContext, limits: RequestLimits,
                                environment: Environment, analytics: Analytics)
     extends AbstractController(cc) {
@@ -94,12 +94,16 @@ class AnnotationsAPI @Inject()(cc: ControllerComponents, userRequestAction: User
                             val gzipped = FileUtils.convertToGzip(file.ref)
                             val extension: String = "gz"
 
-                            request.user.get.addSampleFile(name, extension, software, gzipped).map {
-                                case Left(sampleFileID) =>
-                                    Ok(s"$sampleFileID")
-                                case Right(error) =>
-                                    file.ref.delete()
-                                    BadRequest(error)
+                            if (!SampleFileTable.isSampleNameValid(name)) {
+                                Future.successful(BadRequest("Invalid file name"))
+                            } else {
+                                request.user.get.addSampleFile(name, extension, software, gzipped).map {
+                                    case Left(sampleFileID) =>
+                                        Ok(s"$sampleFileID")
+                                    case Right(error) =>
+                                        file.ref.delete()
+                                        BadRequest(error)
+                                }
                             }
                         }
                     }

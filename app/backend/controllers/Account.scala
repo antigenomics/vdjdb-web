@@ -17,12 +17,12 @@
 package backend.controllers
 
 import javax.inject.Inject
-
 import backend.actions.{SessionAction, UserRequestAction}
 import backend.models.authorization.forms.ChangeForm
 import backend.models.authorization.permissions.UserPermissionsProvider
 import backend.models.authorization.user.UserProvider
 import backend.models.files.sample.SampleFileProvider
+import backend.models.files.sample.tags.SampleTagProvider
 import backend.utils.analytics.Analytics
 import org.slf4j.LoggerFactory
 import play.api.Environment
@@ -33,7 +33,7 @@ import scala.async.Async.{async, await}
 import scala.concurrent.ExecutionContext
 
 class Account @Inject()(cc: ControllerComponents, messagesApi: MessagesApi, userRequestAction: UserRequestAction)
-                       (implicit upp: UserPermissionsProvider, up: UserProvider, sfp: SampleFileProvider,
+                       (implicit upp: UserPermissionsProvider, up: UserProvider, sfp: SampleFileProvider, stp: SampleTagProvider,
                         ec: ExecutionContext, environment: Environment, analytics: Analytics)
     extends AbstractController(cc) {
     private final val logger = LoggerFactory.getLogger(this.getClass)

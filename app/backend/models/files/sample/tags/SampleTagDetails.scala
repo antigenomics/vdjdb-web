@@ -12,12 +12,9 @@
  *     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *     See the License for the specific language governing permissions and
  *     limitations under the License.
+ *
  */
 
-package backend.models.authorization.user
+package backend.models.files.sample.tags
 
-import backend.models.authorization.permissions.UserPermissions
-import backend.models.files.sample.SampleFileDetails
-import backend.models.files.sample.tags.SampleTagDetails
-
-case class UserDetails(email: String, login: String, files: Seq[SampleFileDetails], tags: Seq[SampleTagDetails], permissions: UserPermissions)
+case class SampleTagDetails(name: String, color: String, id: Long)
