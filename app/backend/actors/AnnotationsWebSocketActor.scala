@@ -2,7 +2,7 @@ package backend.actors
 
 import akka.actor.{ActorRef, ActorSystem, Props}
 import backend.models.authorization.permissions.UserPermissionsProvider
-import backend.models.authorization.user.{User, UserDetails}
+import backend.models.authorization.user.{User, UserDetails, UserProvider}
 import backend.models.files.FileMetadataProvider
 import backend.models.files.sample.SampleFileProvider
 import backend.models.files.temporary.TemporaryFileProvider
@@ -12,7 +12,8 @@ import backend.server.annotations.api.export.{AnnotationsExportDataRequest, Anno
 import backend.server.annotations.api.matches.{IntersectionMatchesRequest, IntersectionMatchesResponse}
 import backend.server.annotations.api.sample.delete.{DeleteSampleRequest, DeleteSampleResponse}
 import backend.server.annotations.api.sample.software.AvailableSoftwareResponse
-import backend.server.annotations.api.sample.update.UpdateSampleInfoResponse
+import backend.server.annotations.api.sample.update_props.{UpdateSamplePropsInfoRequest, UpdateSamplePropsInfoResponse}
+import backend.server.annotations.api.sample.update_stats.UpdateSampleStatsInfoResponse
 import backend.server.annotations.api.sample.validate.{ValidateSampleRequest, ValidateSampleResponse}
 import backend.server.annotations.api.user.UserDetailsResponse
 import backend.server.annotations.export.IntersectionTableConverter
@@ -30,7 +31,7 @@ import scala.async.Async.{async, await}
 import scala.collection.mutable
 
 class AnnotationsWebSocketActor(out: ActorRef, limit: IpLimit, user: User, details: UserDetails, database: Database)
-                               (implicit ec: ExecutionContext, as: ActorSystem, limits: RequestLimits,
+                               (implicit ec: ExecutionContext, as: ActorSystem, limits: RequestLimits, up: UserProvider,
                                 upp: UserPermissionsProvider, sfp: SampleFileProvider, fmp: FileMetadataProvider, tfp: TemporaryFileProvider)
     extends WebSocketActor(out, limit) {
     private final val logger = LoggerFactory.getLogger(this.getClass)
@@ -79,8 +80,8 @@ class AnnotationsWebSocketActor(out: ActorRef, limit: IpLimit, user: User, detai
                                     val clonotypesCount = sample.getDiversity.toLong
                                     file._1.updateSampleFileInfo(readsCount, clonotypesCount).onComplete {
                                         case Success(_) => out.success(
-                                            UpdateSampleInfoResponse(file._1.sampleName, readsCount, clonotypesCount),
-                                            UpdateSampleInfoResponse.Action)
+                                            UpdateSampleStatsInfoResponse(file._1.sampleName, readsCount, clonotypesCount),
+                                            UpdateSampleStatsInfoResponse.Action)
                                         case Failure(t) => logger.error(s"Update sample file info failed: ${t.getMessage}")
                                     }
                                 }
@@ -95,6 +96,25 @@ class AnnotationsWebSocketActor(out: ActorRef, limit: IpLimit, user: User, detai
                                 case e: Exception =>
                                     e.printStackTrace()
                                     out.errorMessage("Unable to intersect")
+                            }
+                        case None =>
+                            out.errorMessage("Invalid file name")
+                    }
+                })
+            case UpdateSamplePropsInfoResponse.Action =>
+                validateData(out, data, (updateSamplePropsRequest: UpdateSamplePropsInfoRequest) => async {
+                    val sampleFile = await(user.getSampleFileByName(updateSamplePropsRequest.prevSampleName))
+                    sampleFile match {
+                        case Some(sample) =>
+                            sample.updateSampleFileProps(updateSamplePropsRequest.newSampleName, updateSamplePropsRequest.newSampleSoftware).onComplete {
+                                case Success(_) =>
+                                    out.success(UpdateSamplePropsInfoResponse(
+                                        updateSamplePropsRequest.prevSampleName,
+                                        updateSamplePropsRequest.newSampleName,
+                                        updateSamplePropsRequest.newSampleSoftware
+                                    ))
+                                case Failure(_) =>
+                                    out.errorMessage("An error occured during sample updating")
                             }
                         case None =>
                             out.errorMessage("Invalid file name")
@@ -138,7 +158,7 @@ class AnnotationsWebSocketActor(out: ActorRef, limit: IpLimit, user: User, detai
 
 object AnnotationsWebSocketActor {
     def props(out: ActorRef, limit: IpLimit, user: User, details: UserDetails, database: Database)
-             (implicit ec: ExecutionContext, as: ActorSystem, limits: RequestLimits,
+             (implicit ec: ExecutionContext, as: ActorSystem, limits: RequestLimits, up: UserProvider,
               upp: UserPermissionsProvider, sfp: SampleFileProvider, fmp: FileMetadataProvider, tfp: TemporaryFileProvider): Props =
         Props(new AnnotationsWebSocketActor(out, limit, user, details, database))
 }

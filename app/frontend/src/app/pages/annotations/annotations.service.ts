@@ -52,7 +52,8 @@ export namespace AnnotationsServiceWebSocketActions {
     export const USER_DETAILS: string = 'details';
     export const AVAILABLE_SOFTWARE: string = 'available_software';
     export const VALIDATE_SAMPLE: string = 'validate_sample';
-    export const UPDATE_SAMPLE: string = 'update_sample';
+    export const UPDATE_SAMPLE_STATS: string = 'update_sample_stats';
+    export const UPDATE_SAMPLE_PROPS: string = 'update_sample_props';
     export const DELETE_SAMPLE: string = 'delete_sample';
     export const INTERSECT: string = 'intersect';
     export const DOWNLOAD_MATCHES: string = 'download_matches';
@@ -103,7 +104,7 @@ export class AnnotationsService {
         this.connection.connect('/api/annotations/connect');
 
         this.connection.getMessages()
-            .pipe(filter((message: WebSocketResponseData) => message.get('action') === AnnotationsServiceWebSocketActions.UPDATE_SAMPLE))
+            .pipe(filter((message: WebSocketResponseData) => message.get('action') === AnnotationsServiceWebSocketActions.UPDATE_SAMPLE_STATS))
             .subscribe((message: WebSocketResponseData) => {
                 const sampleName = message.get('sampleName');
                 const sampleInfoReadsCount = message.get('readsCount');
@@ -202,6 +203,26 @@ export class AnnotationsService {
             this._events.next(AnnotationsServiceEvents.SAMPLE_TABLE_EXPORT_END);
             return;
         }
+    }
+
+    public async updateSampleProps(sample: SampleItem, newName: string, newSoftware: string): Promise<boolean> {
+        const response = await this.connection.sendMessage({
+            action: AnnotationsServiceWebSocketActions.UPDATE_SAMPLE_PROPS,
+            data:   new WebSocketRequestData()
+                        .add('prevSampleName', sample.name)
+                        .add('newSampleName', newName)
+                        .add('newSampleSoftware', newSoftware)
+                        .unpack()
+        });
+        if (response.isSuccess()) {
+            const prevSampleName = response.get('prevSampleName');
+            const newSampleName = response.get('newSampleName');
+            const newSampleSoftware = response.get('newSampleSoftware');
+
+            this.getUser().samples.find((s) => s.name === prevSampleName).updateProps(newSampleName, newSampleSoftware);;
+            this._events.next(AnnotationsServiceEvents.SAMPLE_UPDATED);
+        }
+        return response.isSuccess();
     }
 
     public async addSample(file: FileItem): Promise<boolean> {

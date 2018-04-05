@@ -24,9 +24,9 @@ import { Utils } from 'utils/utils';
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class NavigationBarComponent {
-    private _isLogged: boolean = false;
-    private _userEmail: string = '';
-    private _userLogin: string = '';
+    private readonly _isLogged: boolean = false;
+    private readonly _userEmail: string = '';
+    private readonly _userLogin: string = '';
 
     constructor(logger: LoggerService) {
         this._isLogged = Utils.Cookies.getCookie('logged') === 'true';

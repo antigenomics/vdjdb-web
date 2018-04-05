@@ -61,6 +61,10 @@
   font-size: 1.0em;
 }
 
+.ui.sidebar.menu .item .menu .updating.item {
+  border-right: 4px solid #1678c2;
+}
+
 .ui.sidebar.menu .item .menu .padded.vertically.item {
   margin-top: 10px;
   margin-bottom: 10px;
@@ -89,7 +93,15 @@
   display: none;
 }
 
+.ui.sidebar.menu .item .menu .item .cogs.icon {
+  display: none;
+}
+
 .ui.sidebar.menu .item .menu .item:hover .trash.icon {
+  display: block;
+}
+
+.ui.sidebar.menu .item .menu .item:hover .cogs.icon {
   display: block;
 }
 
@@ -101,6 +113,19 @@
 .sample.sub.menu .item:hover {
   font-weight: bolder;
   color: rgba(0, 0, 0, 0.87);
+}
+
+.ui.menu.sidebar-settings {
+  position: fixed;
+  left: 13.0%;
+  z-index: 15;
+  font-size: medium;
+  opacity: 0.0;
+  display: none;
+  -webkit-transition: top 0.2s ease-in-out, opacity 0.2s ease-in-out !important;
+  -moz-transition: top 0.2s ease-in-out, opacity 0.2s ease-in-out !important;
+  -ms-transition: top 0.2s ease-in-out, opacity 0.2s ease-in-out !important;
+  transition: top 0.2s ease-in-out, opacity 0.2s ease-in-out !important;
 }
 
 .ui.vertical.menu {
