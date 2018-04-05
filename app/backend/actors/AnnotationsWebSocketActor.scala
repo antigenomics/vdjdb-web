@@ -5,6 +5,7 @@ import backend.models.authorization.permissions.UserPermissionsProvider
 import backend.models.authorization.user.{User, UserDetails, UserProvider}
 import backend.models.files.FileMetadataProvider
 import backend.models.files.sample.SampleFileProvider
+import backend.models.files.sample.tags.{SampleTag, SampleTagProvider, SampleTagTable}
 import backend.models.files.temporary.TemporaryFileProvider
 import backend.server.annotations.IntersectionTable
 import backend.server.annotations.api.annotate.{SampleAnnotateRequest, SampleAnnotateResponse}
@@ -15,6 +16,9 @@ import backend.server.annotations.api.sample.software.AvailableSoftwareResponse
 import backend.server.annotations.api.sample.update_props.{UpdateSamplePropsInfoRequest, UpdateSamplePropsInfoResponse}
 import backend.server.annotations.api.sample.update_stats.UpdateSampleStatsInfoResponse
 import backend.server.annotations.api.sample.validate.{ValidateSampleRequest, ValidateSampleResponse}
+import backend.server.annotations.api.tag.create.{CreateTagRequest, CreateTagResponse}
+import backend.server.annotations.api.tag.delete.{DeleteTagRequest, DeleteTagResponse}
+import backend.server.annotations.api.tag.update.{UpdateTagRequest, UpdateTagResponse}
 import backend.server.annotations.api.user.UserDetailsResponse
 import backend.server.annotations.export.IntersectionTableConverter
 import backend.server.database.Database
@@ -31,7 +35,7 @@ import scala.async.Async.{async, await}
 import scala.collection.mutable
 
 class AnnotationsWebSocketActor(out: ActorRef, limit: IpLimit, user: User, details: UserDetails, database: Database)
-                               (implicit ec: ExecutionContext, as: ActorSystem, limits: RequestLimits, up: UserProvider,
+                               (implicit ec: ExecutionContext, as: ActorSystem, limits: RequestLimits, up: UserProvider, stp: SampleTagProvider,
                                 upp: UserPermissionsProvider, sfp: SampleFileProvider, fmp: FileMetadataProvider, tfp: TemporaryFileProvider)
     extends WebSocketActor(out, limit) {
     private final val logger = LoggerFactory.getLogger(this.getClass)
@@ -149,6 +153,39 @@ class AnnotationsWebSocketActor(out: ActorRef, limit: IpLimit, user: User, detai
                         }
                     }
                 })
+            case CreateTagResponse.Action =>
+                validateData(out, data, (createTagRequest: CreateTagRequest) => {
+                    if (SampleTagTable.isNameValid(createTagRequest.name) && SampleTagTable.isColorValid(createTagRequest.color)) {
+                        stp.insert(SampleTag(0, createTagRequest.name, createTagRequest.color, user.id)).onComplete {
+                            case Success(id) => out.success(CreateTagResponse(id))
+                            case Failure(_) => out.errorMessage("An error occured during tag creating")
+                        }
+                    } else {
+                        out.errorMessage("Invalid request")
+                    }
+                })
+            case DeleteTagResponse.Action =>
+                validateData(out, data, (deleteTagResponse: DeleteTagRequest) => {
+                    stp.getByIdAndUser(deleteTagResponse.tagID, user).onComplete {
+                        case Success(Some(tag)) =>
+                            stp.delete(tag).onComplete {
+                                case Success(_) => out.success(DeleteTagResponse(deleteTagResponse.tagID))
+                                case _ => out.errorMessage("An error occured during tag deleting")
+                            }
+                        case _ => out.errorMessage("Invalid request")
+                    }
+                })
+            case UpdateTagResponse.Action =>
+                validateData(out, data, (updateTagResponse: UpdateTagRequest) => {
+                    stp.getByIdAndUser(updateTagResponse.tagID, user).onComplete {
+                        case Success(Some(tag)) =>
+                            stp.update(tag, updateTagResponse.name, updateTagResponse.color).onComplete {
+                                case Success(_) => out.success(UpdateTagResponse(tag.id))
+                                case _ => out.errorMessage("An error occured during tag updating")
+                            }
+                        case _ => out.errorMessage("Invalid request")
+                    }
+                })
             case _ =>
                 out.errorMessage("Invalid action")
         }
@@ -158,7 +195,7 @@ class AnnotationsWebSocketActor(out: ActorRef, limit: IpLimit, user: User, detai
 
 object AnnotationsWebSocketActor {
     def props(out: ActorRef, limit: IpLimit, user: User, details: UserDetails, database: Database)
-             (implicit ec: ExecutionContext, as: ActorSystem, limits: RequestLimits, up: UserProvider,
+             (implicit ec: ExecutionContext, as: ActorSystem, limits: RequestLimits, up: UserProvider, stp: SampleTagProvider,
               upp: UserPermissionsProvider, sfp: SampleFileProvider, fmp: FileMetadataProvider, tfp: TemporaryFileProvider): Props =
         Props(new AnnotationsWebSocketActor(out, limit, user, details, database))
 }

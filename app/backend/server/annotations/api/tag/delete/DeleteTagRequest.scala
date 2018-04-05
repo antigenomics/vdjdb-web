@@ -15,12 +15,12 @@
  *
  */
 
-export class SampleTag {
-    public name: string = '';
-    public color: string = '';
-    public saved: boolean = false;
+package backend.server.annotations.api.tag.delete
 
-    public isSaved(): boolean {
-        return this.saved;
-    }
+import play.api.libs.json.{Json, Reads}
+
+case class DeleteTagRequest(tagID: Long)
+
+object DeleteTagRequest {
+    implicit val deleteTagRequestReads: Reads[DeleteTagRequest] = Json.reads[DeleteTagRequest]
 }

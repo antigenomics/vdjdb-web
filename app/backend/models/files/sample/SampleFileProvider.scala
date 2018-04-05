@@ -17,11 +17,10 @@
 
 package backend.models.files.sample
 
-import java.io.File
 import javax.inject.{Inject, Singleton}
 
 import akka.actor.ActorSystem
-import backend.models.authorization.user.{User, UserProvider}
+import backend.models.authorization.user.User
 import backend.models.files.{FileMetadata, FileMetadataProvider}
 import org.slf4j.LoggerFactory
 import play.api.Configuration

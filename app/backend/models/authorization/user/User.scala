@@ -21,6 +21,7 @@ import java.io.File
 import java.nio.file.Paths
 
 import backend.models.authorization.permissions.{UserPermissions, UserPermissionsProvider}
+import backend.models.files.sample.tags.{SampleTag, SampleTagProvider}
 import backend.models.files.{FileMetadata, FileMetadataProvider}
 import backend.models.files.sample.{SampleFile, SampleFileProvider}
 import backend.utils.CommonUtils
@@ -40,6 +41,10 @@ case class User(id: Long, login: String, email: String, verified: Boolean, folde
         sfp.getByUserID(id)
     }
 
+    def getSampleTags(implicit stp: SampleTagProvider, ec: ExecutionContext): Future[Seq[SampleTag]] = {
+        stp.getByUserID(id)
+    }
+
     def getSampleFileByName(name: String)(implicit sfp: SampleFileProvider, ec: ExecutionContext): Future[Option[SampleFile]] = {
         sfp.getByUserIDAndName(id, name)
     }
@@ -54,10 +59,11 @@ case class User(id: Long, login: String, email: String, verified: Boolean, folde
         sfp.getByUserIDWithMetadata(id)
     }
 
-    def getDetails(implicit upp: UserPermissionsProvider, sfp: SampleFileProvider, ec: ExecutionContext): Future[UserDetails] = async {
+    def getDetails(implicit upp: UserPermissionsProvider, sfp: SampleFileProvider, stp: SampleTagProvider, ec: ExecutionContext): Future[UserDetails] = async {
         val permissions = getPermissions
-        val files = getSampleFiles
-        UserDetails(email, login, await(files).map(_.getDetails), await(permissions))
+        val fileDetails = getSampleFiles.map(_.map(_.getDetails))
+        val tagsDetails = getSampleTags.map(_.map(_.getDetails))
+        UserDetails(email, login, await(fileDetails), await(tagsDetails), await(permissions))
     }
 
     def addSampleFile(name: String, extension: String, softwareType: String, file: Files.TemporaryFile)

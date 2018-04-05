@@ -12,12 +12,15 @@
  *     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *     See the License for the specific language governing permissions and
  *     limitations under the License.
+ *
  */
 
-package backend.models.authorization.user
+package backend.server.annotations.api.tag.update
 
-import backend.models.authorization.permissions.UserPermissions
-import backend.models.files.sample.SampleFileDetails
-import backend.models.files.sample.tags.SampleTagDetails
+import play.api.libs.json.{Json, Reads}
 
-case class UserDetails(email: String, login: String, files: Seq[SampleFileDetails], tags: Seq[SampleTagDetails], permissions: UserPermissions)
+case class UpdateTagRequest(tagID: Long, name: String, color: String)
+
+object UpdateTagRequest {
+    implicit val updateTagRequestReads: Reads[UpdateTagRequest] = Json.reads[UpdateTagRequest]
+}

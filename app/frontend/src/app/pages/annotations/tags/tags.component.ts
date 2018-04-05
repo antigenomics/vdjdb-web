@@ -17,7 +17,7 @@
 
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { AnnotationsService, AnnotationsServiceEvents } from 'pages/annotations/annotations.service';
-import { TagsService } from 'pages/annotations/tags/tags.service';
+import { TagsService, TagsServiceEventType } from 'pages/annotations/tags/tags.service';
 import { Subscription } from 'rxjs/Subscription';
 
 @Component({
@@ -27,6 +27,7 @@ import { Subscription } from 'rxjs/Subscription';
 })
 export class TagsComponent implements OnInit, OnDestroy {
     private _annotationsServiceEventsSubscription: Subscription;
+    private _tagsServiceEventsSubscription: Subscription;
 
     constructor(private annotationsService: AnnotationsService, private tagsService: TagsService, private changeDetector: ChangeDetectorRef) {
     }
@@ -38,6 +39,11 @@ export class TagsComponent implements OnInit, OnDestroy {
                     this.changeDetector.detectChanges();
                     break;
                 default:
+            }
+        });
+        this._tagsServiceEventsSubscription = this.tagsService.getEvents().subscribe((event) => {
+            if (event === TagsServiceEventType.TAG_DELETING_END) {
+                this.changeDetector.detectChanges();
             }
         });
     }
@@ -56,5 +62,6 @@ export class TagsComponent implements OnInit, OnDestroy {
 
     public ngOnDestroy(): void {
         this._annotationsServiceEventsSubscription.unsubscribe();
+        this._tagsServiceEventsSubscription.unsubscribe();
     }
 }

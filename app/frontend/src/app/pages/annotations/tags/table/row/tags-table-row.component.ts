@@ -16,8 +16,8 @@
  */
 
 import { Component, Input } from '@angular/core';
-import { SampleTag } from 'pages/annotations/tags/tag';
 import { TagsService } from 'pages/annotations/tags/tags.service';
+import { SampleTag } from 'shared/sample/sample-tag';
 
 @Component({
     selector: 'tr[tags-table-row]',
@@ -39,6 +39,18 @@ export class TagsTableRowComponent {
 
     public save(): void {
         this.tagsService.save(this.tag);
+    }
+
+    public edit(): void {
+        this.tagsService.edit(this.tag);
+    }
+
+    public update(): void {
+        this.tagsService.update(this.tag);
+    }
+
+    public delete(): void {
+        this.tagsService.delete(this.tag);
     }
 
     public handleTagName(name: string): void {

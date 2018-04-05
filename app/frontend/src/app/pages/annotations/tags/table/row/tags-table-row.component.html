@@ -1,16 +1,19 @@
 <td>
-    <div class="ui fluid transparent left icon input" [ngClass]="{'error':!isTagNameValid()}" *ngIf="!tag.isSaved()">
+    <div class="ui fluid transparent left icon input" [ngClass]="{'error':!isTagNameValid()}" *ngIf="!tag.isSaved() || tag.isEditing()">
         <input placeholder="Enter tag name here" [ngModel]="tag.name" (ngModelChange)="handleTagName($event)">
         <i class="write icon"></i>
     </div>
-    <div *ngIf="tag.isSaved()">
+    <div *ngIf="tag.isSaved() && !tag.isEditing()">
         {{ tag.name }}
     </div>
 </td>
 <td>
-    <color-picker [disable]="tag.isSaved()" [initial]="tag.color" (color)="pickColor($event)"></color-picker>
+    <color-picker [disable]="tag.isSaved() && !tag.isEditing()" [initial]="tag.color" (color)="pickColor($event)"></color-picker>
 </td>
 <td>privet</td>
 <td>
-    <button class="ui tiny button" (click)="save()" *ngIf="!tag.isSaved()">Save</button>
+    <button class="ui tiny button" (click)="save()" *ngIf="!tag.isSaved()" [ngClass]="{'disabled':!isTagNameValid(), 'loading':tag.isLoading()}">Save</button>
+    <button class="ui tiny button" (click)="edit()" *ngIf="tag.isSaved() && !tag.isEditing()" [ngClass]="{'loading':tag.isLoading()}">Edit</button>
+    <button class="ui tiny button" (click)="update()" *ngIf="tag.isSaved() && tag.isEditing()" [ngClass]="{'loading':tag.isLoading()}">Update</button>
+    <button class="ui tiny button" (click)="delete()" *ngIf="tag.isSaved() && !tag.isEditing()" [ngClass]="{'loading':tag.isLoading()}">Delete</button>
 </td>

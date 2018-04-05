@@ -16,9 +16,9 @@
  */
 
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
-import { SampleTag } from 'pages/annotations/tags/tag';
 import { TagsService } from 'pages/annotations/tags/tags.service';
 import { Subscription } from 'rxjs/Subscription';
+import { SampleTag } from 'shared/sample/sample-tag';
 
 @Component({
     selector: 'tags-table',
