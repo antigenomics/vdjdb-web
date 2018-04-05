@@ -54,7 +54,11 @@ class AnnotationsWebSocketActor(out: ActorRef, limit: IpLimit, user: User, detai
                             out.error(ValidateSampleResponse(false))
                         case Success(Some(sample)) =>
                             if (validateRequest.tagID != -1) {
-                                sample.updateSampleFileTagID(validateRequest.tagID)
+                                stp.getByIdAndUser(validateRequest.tagID, user).onComplete {
+                                    case Success(Some(tag)) =>
+                                        sample.updateSampleFileTagID(tag.id)
+                                    case _ =>
+                                }
                             }
                             out.success(ValidateSampleResponse(true))
                     }
