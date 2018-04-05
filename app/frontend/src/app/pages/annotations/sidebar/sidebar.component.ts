@@ -224,7 +224,7 @@ export class AnnotationsSidebarComponent implements OnInit, OnDestroy {
                 if (this.isSampleSelected(sample)) {
                     this.router.navigate([ 'annotations', 'info' ]);
                 }
-                if (this.settings.sample === sample) {
+                if (this.settings !== undefined && this.settings.sample === sample) {
                     this.closeConfigureSample();
                 }
             } else {

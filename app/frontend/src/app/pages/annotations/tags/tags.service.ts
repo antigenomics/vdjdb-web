@@ -44,9 +44,11 @@ export class TagsService {
 
     constructor(private logger: LoggerService, private annotationsService: AnnotationsService,
                 private notifications: NotificationService) {
-        this.annotationsService.getEvents().pipe(filter((event) => event === AnnotationsServiceEvents.SAMPLE_UPDATED)).subscribe(() => {
+        this.annotationsService.getEvents().pipe(filter((event) => {
+            return event === AnnotationsServiceEvents.SAMPLE_UPDATED || event === AnnotationsServiceEvents.SAMPLE_DELETED;
+        })).subscribe(() => {
             this.events.next(TagsServiceEventType.TAGS_UPDATED);
-        })
+        });
     }
 
     public getAvailableTags(): SampleTag[] {
