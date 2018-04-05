@@ -16,8 +16,9 @@
  */
 
 import { Injectable } from '@angular/core';
-import { AnnotationsService } from 'pages/annotations/annotations.service';
+import { AnnotationsService, AnnotationsServiceEvents } from 'pages/annotations/annotations.service';
 import { Observable } from 'rxjs/Observable';
+import { filter } from 'rxjs/operators';
 import { Subject } from 'rxjs/Subject';
 import { SampleTag } from 'shared/sample/sample-tag';
 import { LoggerService } from 'utils/logger/logger.service';
@@ -26,6 +27,7 @@ import { NotificationService } from 'utils/notifications/notification.service';
 export type TagsServiceEventType = number;
 
 export namespace TagsServiceEventType {
+    export const TAGS_UPDATED: number = 2;
     export const TAG_ADDED: number = 1;
     export const TAG_SAVING_START: number = 2;
     export const TAG_SAVING_END: number = 3;
@@ -42,6 +44,9 @@ export class TagsService {
 
     constructor(private logger: LoggerService, private annotationsService: AnnotationsService,
                 private notifications: NotificationService) {
+        this.annotationsService.getEvents().pipe(filter((event) => event === AnnotationsServiceEvents.SAMPLE_UPDATED)).subscribe(() => {
+            this.events.next(TagsServiceEventType.TAGS_UPDATED);
+        })
     }
 
     public getAvailableTags(): SampleTag[] {

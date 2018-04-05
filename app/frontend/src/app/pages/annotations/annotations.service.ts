@@ -135,12 +135,21 @@ export class AnnotationsService {
         return this._user ? this._user.samples : [];
     }
 
+    public getTags(): SampleTag[] {
+        return this._user ? this._user.tags : [];
+    }
+
     public getSample(name: string): SampleItem {
         return this._user ? this._user.samples.find((sample) => sample.name === name) : undefined;
     }
 
     public getSampleTag(sample: SampleItem): SampleTag {
         return sample.hasTag() ? this._user.tags.find((tag) => tag.id === sample.tagID) : undefined;
+    }
+
+    public getSampleTagByName(sampleName: string): SampleTag {
+        const sample = this.getSamples().find((s) => s.name === sampleName);
+        return sample ? this.getSampleTag(sample) : undefined;
     }
 
     public getUserPermissions(): UserPermissions {
@@ -288,7 +297,17 @@ export class AnnotationsService {
             const newSampleName = response.get('newSampleName');
             const newSampleSoftware = response.get('newSampleSoftware');
 
-            this.getUser().samples.find((s) => s.name === prevSampleName).updateProps(newSampleName, newSampleSoftware);
+            const find = this.getUser().samples.find((s) => s.name === prevSampleName);
+            find.updateProps(newSampleName, newSampleSoftware);
+            if (sample.tagID !== -1) {
+                const tag = this.getSampleTag(find);
+                const entry = tag.samples.find((s) => s.value === prevSampleName);
+                if (entry !== undefined) {
+                    entry.value = newSampleName;
+                    entry.display = newSampleName;
+                }
+            }
+
             this._events.next(AnnotationsServiceEvents.SAMPLE_UPDATED);
         }
         return response.isSuccess();

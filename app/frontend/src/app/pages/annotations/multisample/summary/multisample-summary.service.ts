@@ -23,6 +23,7 @@ import { SummaryCounters } from 'pages/annotations/sample/table/intersection/sum
 import { Observable } from 'rxjs/Observable';
 import { Subject } from 'rxjs/Subject';
 import { SampleItem } from 'shared/sample/sample-item';
+import { SampleTag } from 'shared/sample/sample-tag';
 import { WebSocketConnection } from 'shared/websocket/websocket-connection';
 import { WebSocketRequestData } from 'shared/websocket/websocket-request';
 import { WebSocketResponseData } from 'shared/websocket/websocket-response';
@@ -103,6 +104,15 @@ export class MultisampleSummaryService {
         return this.events.asObservable();
     }
 
+    public getSampleTags(): SampleTag[] {
+        return this.annotationsService.getTags();
+    }
+
+    public getSampleTagColor(sampleName: string): string {
+        const tag = this.annotationsService.getSampleTagByName(sampleName);
+        return tag ? tag.color : undefined;
+    }
+
     public isConnected(): boolean {
         return this.connected;
     }
@@ -130,16 +140,16 @@ export class MultisampleSummaryService {
         this.connection.subscribeMessages({
             action: MultisampleSummaryServiceWebSocketActions.ANNOTATE,
             data:   new WebSocketRequestData()
-                    .add('tabID', tabID)
-                    .add('sampleNames', sampleNames)
-                    .add('hammingDistance', filters.hammingDistance)
-                    .add('confidenceThreshold', filters.confidenceThreshold)
-                    .add('matchV', filters.matchV)
-                    .add('matchJ', filters.matchJ)
-                    .add('species', filters.species)
-                    .add('gene', filters.gene)
-                    .add('mhc', filters.mhc)
-                    .unpack()
+                        .add('tabID', tabID)
+                        .add('sampleNames', sampleNames)
+                        .add('hammingDistance', filters.hammingDistance)
+                        .add('confidenceThreshold', filters.confidenceThreshold)
+                        .add('matchV', filters.matchV)
+                        .add('matchJ', filters.matchJ)
+                        .add('species', filters.species)
+                        .add('gene', filters.gene)
+                        .add('mhc', filters.mhc)
+                        .unpack()
         }, (messages: Observable<WebSocketResponseData>) => {
             const messagesSubscription = messages.subscribe((message) => {
                 if (message.isSuccess()) {
@@ -242,6 +252,14 @@ export class MultisampleSummaryService {
         this.annotationsService.getSamples().forEach((availableSample) => {
             if (!this.isSampleSelected(availableSample)) {
                 this.selectSample(availableSample);
+            }
+        });
+    }
+
+    public selectByTag(tag: SampleTag): void {
+        this.annotationsService.getSamples().filter((sample) => sample.tagID === tag.id).forEach((sample) => {
+            if (!this.isSampleSelected(sample)) {
+                this.selectSample(sample);
             }
         });
     }
