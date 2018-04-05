@@ -21,7 +21,7 @@
             <div class="header">Samples</div>
             <div class="menu" *ngIf="!isSamplesEmpty()">
                 <a class="item" *ngFor="let sample of getSamples()" (click)="sidebarRoute('sample', sample.name, 'table')"
-                   [ngClass]="{'padded vertically border selected':isSampleSelected(sample)}">
+                   [ngClass]="{'padded vertically border selected':isSampleSelected(sample), 'updating':isSampleConfiguring(sample)}">
                     <i class="trash icon" (click)="deleteSample(sample); $event.stopPropagation()" *ngIf="isConfiguringAllowed()"></i>
                     <i class="cogs icon" (click)="configureSample(sample, $event); $event.stopPropagation()" *ngIf="isDeletingAllowed()"></i>{{ sample.name }}
                     <div class="sample sub menu" *ngIf="isSampleSelected(sample)">
