@@ -20,6 +20,7 @@ import * as gzip from 'gzip-js';
 import { FileItemStatusErrorType } from 'pages/annotations/upload/item/file-item-status';
 import { Observable } from 'rxjs/Observable';
 import { Observer } from 'rxjs/Observer';
+import { SampleItem } from 'shared/sample/sample-item';
 import { LoggerService } from 'utils/logger/logger.service';
 import { NotificationService } from 'utils/notifications/notification.service';
 import { AnnotationsService, AnnotationsServiceEvents } from '../annotations.service';
@@ -95,9 +96,8 @@ export class UploadService {
         item.status.setUniqueNameStatus();
 
         let error = false;
-        const regexp = /^[a-zA-Z0-9_.+-]{1,40}$/;
-        const testBaseName = regexp.test(baseName);
-        const testBaseNameWithExtension = regexp.test(`${baseName}.${item.extension}`);
+        const testBaseName = SampleItem.isNameValid(baseName);
+        const testBaseNameWithExtension = SampleItem.isNameValid(`${baseName}.${item.extension}`);
         if (!testBaseName || !testBaseNameWithExtension) {
             item.status.setInvalidNameStatus();
             error = true;

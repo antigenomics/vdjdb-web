@@ -24,12 +24,14 @@ export interface ISampleItemData {
 }
 
 export class SampleItem {
+    private static readonly nameRegexp = /^[a-zA-Z0-9_.+-]{1,40}$/;
+
     private _data: ISampleItemData;
     private _processingLabel: string = '';
     private _processing: boolean = false;
 
-    public readonly name: string;
-    public readonly software: string;
+    public name: string;
+    public software: string;
     public readsCount: number;
     public clonotypesCount: number;
 
@@ -38,6 +40,11 @@ export class SampleItem {
         this.software = software;
         this.readsCount = readsCount;
         this.clonotypesCount = clonotypesCount;
+    }
+
+    public updateProps(newName: string, newSoftware: string): void {
+        this.name = newName;
+        this.software = newSoftware;
     }
 
     public setData(data: ISampleItemData): void {
@@ -78,6 +85,10 @@ export class SampleItem {
 
     public isSampleInfoExist(): boolean {
         return this.readsCount !== -1 && this.clonotypesCount !== -1;
+    }
+
+    public static isNameValid(name: string): boolean {
+        return SampleItem.nameRegexp.test(name);
     }
 
     public static deserialize(o: any): SampleItem {

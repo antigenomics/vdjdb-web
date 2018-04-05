@@ -1,7 +1,7 @@
 import scala.sys.process._
 import play.sbt.PlayImport.PlayKeys.playRunHooks
 
-name := """VDJdb-server"""
+name := """VDJdb-web"""
 
 version := "2.2.2"
 scalaVersion := "2.12.5"

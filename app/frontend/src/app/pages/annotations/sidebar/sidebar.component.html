@@ -57,8 +57,12 @@
             <div class="header">Name:</div>
             <div class="menu">
                 <div class="item">
-                    <div class="ui fluid transparent left icon input">
-                        <input placeholder="Enter new sample name here" [(ngModel)]="settings.name">
+                    <div class="ui fluid transparent left icon input" [ngClass]="{'error':!settings.isNameValid}">
+                        <input placeholder="Enter new sample name here" [ngModel]="settings.name" (ngModelChange)="handleConfigureNewName($event)">
+                        <div class="ui left pointing red basic label" style="position: absolute;left: 105%;width: 200px;top: -35px;" *ngIf="!settings.isNameValid">
+                            File name can contain letters ('a-zA-Z'), numbers, . (dot), - (dash), _ (underline) and + (plus) symbols. <br>
+                            Also file name should have less than 40 symbols and should not be empty.
+                        </div>
                         <i class="write icon"></i>
                     </div>
                 </div>
@@ -68,7 +72,7 @@
             <div class="header">Software:</div>
             <div class="menu">
                 <div class="item">
-                    <div class="ui fluid dropdown" dropdown [content]="content">
+                    <div class="ui fluid scrolling dropdown" dropdown [content]="content">
                         <span class="text">{{ settings.software }}</span>
                         <i class="dropdown icon"></i>
                         <div class="menu fast fade element" #content>
@@ -82,7 +86,8 @@
         </div>
         <div class="item">
             <button class="ui basic tiny right floated button" (click)="closeConfigureSample()">Close</button>
-            <button class="ui teal tiny button">Save</button>
+            <button class="ui teal tiny button" [ngClass]="{'loading':settings.saving, 'disabled':!settings.isNameValid}" (click)="saveConfigureSample()">Save
+            </button>
         </div>
     </ng-container>
 </div>
