@@ -41,6 +41,10 @@ case class User(id: Long, login: String, email: String, verified: Boolean, folde
         sfp.getByUserID(id)
     }
 
+    def getTaggedSampleFiles(tagID: Long)(implicit sfp: SampleFileProvider, ec: ExecutionContext): Future[Seq[SampleFile]] = {
+        sfp.getByUserAndTagID(this, tagID)
+    }
+
     def getSampleTags(implicit stp: SampleTagProvider, ec: ExecutionContext): Future[Seq[SampleTag]] = {
         stp.getByUserID(id)
     }
@@ -89,7 +93,7 @@ case class User(id: Long, login: String, email: String, verified: Boolean, folde
                         if (success) {
                             val metadataID = await(fmp.insert(name, extension, sampleFolderPath))
                             file.moveTo(Paths.get(s"$sampleFolderPath/$name.$extension"), replace = true)
-                            val sampleFileID = await(sfp.insert(SampleFile(0, name, softwareType, -1, -1, metadataID, id)))
+                            val sampleFileID = await(sfp.insert(SampleFile(0, name, softwareType, -1, -1, metadataID, id, -1)))
                             Left(sampleFileID)
                         } else {
                             Right("Unable to create sample file (internal server error)")
@@ -117,7 +121,7 @@ case class User(id: Long, login: String, email: String, verified: Boolean, folde
                     val sampleFolderPath = file.getParentFile.getAbsolutePath
                     val sampleFolder = file.getParentFile
                     val metadataID = await(fmp.insert(name, extension, sampleFolderPath))
-                    val sampleFileID = await(sfp.insert(SampleFile(0, name, softwareType, -1, -1, metadataID, id)))
+                    val sampleFileID = await(sfp.insert(SampleFile(0, name, softwareType, -1, -1, metadataID, id, -1)))
                     Left(sampleFileID)
                 }
             }

@@ -33,8 +33,9 @@ class SampleFileTable(tag: Tag)(implicit fmp: FileMetadataProvider) extends Tabl
     def clonotypesCount = column[Long]("CLONOTYPES_COUNT")
     def metadataID = column[Long]("METADATA_ID")
     def userID = column[Long]("USER_ID")
+    def tagID = column[Long]("TAG_ID")
 
-    def * = (id, sampleName, software, readsCount, clonotypesCount, metadataID, userID) <> (SampleFile.tupled, SampleFile.unapply)
+    def * = (id, sampleName, software, readsCount, clonotypesCount, metadataID, userID, tagID) <> (SampleFile.tupled, SampleFile.unapply)
     def metadata = foreignKey("METADATA_FK", metadataID, fmp.getTable)(_.id,
         onUpdate = ForeignKeyAction.Cascade, onDelete = ForeignKeyAction.Cascade)
 }

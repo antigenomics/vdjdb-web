@@ -80,6 +80,10 @@ class SampleFileProvider @Inject()(@NamedDatabase("default") protected val dbCon
         getByUserIDWithMetadata(user.id)
     }
 
+    def getByUserAndTagID(user: User, tagID: Long): Future[Seq[SampleFile]] = {
+        db.run(table.filter((sample) => sample.userID === user.id && sample.tagID === tagID).result)
+    }
+
     def delete(file: SampleFile): Future[Int] = {
         fmp.delete(file.metadataID)
     }
@@ -115,5 +119,9 @@ class SampleFileProvider @Inject()(@NamedDatabase("default") protected val dbCon
 
     def updateSampleFileProps(sample: SampleFile, newSampleName: String, newSoftware: String): Future[Int] = {
         db.run(table.filter(_.id === sample.id).map(s => (s.sampleName, s.software)).update((newSampleName, newSoftware)))
+    }
+
+    def updateSampleFileTagID(sample: SampleFile, tagID: Long): Future[Int] = {
+        db.run(table.filter(_.id === sample.id).map(s => s.tagID).update(tagID))
     }
 }

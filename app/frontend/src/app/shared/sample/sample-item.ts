@@ -34,12 +34,14 @@ export class SampleItem {
     public software: string;
     public readsCount: number;
     public clonotypesCount: number;
+    public tagID: number;
 
-    constructor(name: string, software: string, readsCount: number, clonotypesCount: number) {
+    constructor(name: string, software: string, readsCount: number, clonotypesCount: number, tagID: number) {
         this.name = name;
         this.software = software;
         this.readsCount = readsCount;
         this.clonotypesCount = clonotypesCount;
+        this.tagID = tagID;
     }
 
     public updateProps(newName: string, newSoftware: string): void {
@@ -49,6 +51,10 @@ export class SampleItem {
 
     public setData(data: ISampleItemData): void {
         this._data = data;
+    }
+
+    public hasTag(): boolean {
+        return this.tagID !== -1;
     }
 
     public hasData(): boolean {
@@ -92,6 +98,6 @@ export class SampleItem {
     }
 
     public static deserialize(o: any): SampleItem {
-        return new SampleItem(o[ 'name' ], o[ 'software' ], o[ 'readsCount' ], o[ 'clonotypesCount' ]); // tslint:disable-line:no-string-literal
+        return new SampleItem(o[ 'name' ], o[ 'software' ], o[ 'readsCount' ], o[ 'clonotypesCount' ], o[ 'tagID' ]); // tslint:disable-line:no-string-literal
     }
 }

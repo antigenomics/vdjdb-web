@@ -14,7 +14,6 @@
  *        limitations under the License.
  *
  */
-
 console.log('Running webpack in production mode');
 
 const path = require('path');
@@ -43,7 +42,7 @@ defaultConfiguration.plugins.push(
             minify: true,
             output: path.join(__dirname, '../../../public/bundles/bundle.min.css'),
             whitelist: [
-                'success', 'warning', 'error', 'info',
+                'success', 'warning', 'error', 'info', 'checkmark', 'box', 'sign', 'remove',
                 'circle', 'icon', 'violet', 'circular', 'circle',
                 'text', 'alignment', 'big', 'hover-inside-icon', 'overview', 'pre', 'code' ]
         }

@@ -22,12 +22,15 @@ import { SetEntry } from './set-entry';
 })
 export class AutocompletePipe implements PipeTransform {
 
-    public transform(values: string[], model: string, alreadySelected: SetEntry[]): SetEntry[] {
-        let result: SetEntry[] = [{
-            value: model,
-            display: 'Search substring: ' + model,
-            disabled: false
-        }];
+    public transform(values: string[], model: string, alreadySelected: SetEntry[], substringDisabled: boolean): SetEntry[] {
+        let result: SetEntry[] = [ ];
+        if (!substringDisabled) {
+            result.push({
+                value: model,
+                display: 'Search substring: ' + model,
+                disabled: false
+            });
+        }
         if (model === undefined || model === '') {
             result = values.map((value: string) => ({ value, display: value, disabled: false }));
         } else {

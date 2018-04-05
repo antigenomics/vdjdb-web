@@ -139,6 +139,10 @@ export class AnnotationsService {
         return this._user ? this._user.samples.find((sample) => sample.name === name) : undefined;
     }
 
+    public getSampleTag(sample: SampleItem): SampleTag {
+        return sample.hasTag() ? this._user.tags.find((tag) => tag.id === sample.tagID) : undefined;
+    }
+
     public getUserPermissions(): UserPermissions {
         return this._user ? this._user.permissions : undefined;
     }
@@ -211,17 +215,20 @@ export class AnnotationsService {
     }
 
     public async saveTag(tag: SampleTag): Promise<boolean> {
+        const samples = tag.samples.map((e) => e.value);
         const response = await this.connection.sendMessage({
             action: AnnotationsServiceWebSocketActions.CREATE_TAG,
             data:   new WebSocketRequestData()
                         .add('name', tag.name)
                         .add('color', tag.color)
+                        .add('samples', samples)
                         .unpack()
         });
 
         if (response.isSuccess()) {
             tag.id = response.get('tagID');
             tag.saved = true;
+            this._user.samples.filter((sample) => samples.includes(sample.name)).forEach((sample) => sample.tagID = tag.id);
             this._events.next(AnnotationsServiceEvents.SAMPLE_TAGS_UPDATED);
         }
 
@@ -241,6 +248,7 @@ export class AnnotationsService {
             if (index !== -1) {
                 this._user.tags.splice(index, 1);
             }
+            this._user.samples.filter((sample) => sample.tagID === tag.id).forEach((sample) => sample.tagID = -1);
             this._events.next(AnnotationsServiceEvents.SAMPLE_TAGS_UPDATED);
         }
 
@@ -248,15 +256,19 @@ export class AnnotationsService {
     }
 
     public async updateTag(tag: SampleTag): Promise<boolean> {
+        const samples = tag.samples.map((e) => e.value);
         const response = await this.connection.sendMessage({
             action: AnnotationsServiceWebSocketActions.UPDATE_TAG,
             data:   new WebSocketRequestData()
                         .add('tagID', tag.id)
                         .add('name', tag.name)
                         .add('color', tag.color)
+                        .add('samples', samples)
                         .unpack()
         });
         if (response.isSuccess()) {
+            this._user.samples.filter((sample) => sample.tagID === tag.id && !samples.includes(sample.name)).forEach((sample) => sample.tagID = -1);
+            this._user.samples.filter((sample) => samples.includes(sample.name)).forEach((sample) => sample.tagID = tag.id);
             this._events.next(AnnotationsServiceEvents.SAMPLE_TAGS_UPDATED);
         }
         return response.isSuccess();
@@ -293,7 +305,7 @@ export class AnnotationsService {
         if (valid) {
             const user = this.getUser();
             if (!user.samples.some((sample) => sample.name === file.baseName)) {
-                user.samples.push(new SampleItem(file.baseName, file.software, -1, -1));
+                user.samples.push(new SampleItem(file.baseName, file.software, -1, -1, -1));
                 this._events.next(AnnotationsServiceEvents.SAMPLE_ADDED);
             }
         }

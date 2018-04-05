@@ -23,6 +23,7 @@ import { Router } from '@angular/router';
 import { Subscription } from 'rxjs/Subscription';
 import { ModalComponent } from 'shared/modals/modal/modal.component';
 import { SampleItem } from 'shared/sample/sample-item';
+import { SampleTag } from 'shared/sample/sample-tag';
 import { LoggerService } from 'utils/logger/logger.service';
 import { NotificationService } from 'utils/notifications/notification.service';
 import { AnnotationsService, AnnotationsServiceEvents } from '../annotations.service';
@@ -178,6 +179,10 @@ export class AnnotationsSidebarComponent implements OnInit, OnDestroy {
         return this.annotationsService.getSamples();
     }
 
+    public getSampleTag(sample: SampleItem): SampleTag {
+        return this.annotationsService.getSampleTag(sample);
+    }
+
     public isSamplesEmpty(): boolean {
         return this.getSamples().length === 0;
     }
@@ -303,7 +308,9 @@ export class AnnotationsSidebarComponent implements OnInit, OnDestroy {
     }
 
     public closeConfigureSample(): void {
-        this.settings.sample = undefined;
+        if (this.settings) {
+            this.settings.sample = undefined;
+        }
         this.renderer.setStyle(this.sidebarSettings.nativeElement, 'opacity', 0.0);
         window.setTimeout(() => {
             this.renderer.setStyle(this.sidebarSettings.nativeElement, 'display', 'none');

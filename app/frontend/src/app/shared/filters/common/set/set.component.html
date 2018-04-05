@@ -1,5 +1,5 @@
 <!--suppress HtmlFormInputWithoutLabel -->
-<div class="ui fluid search dropdown compact selection multiple" [ngClass]="{ 'active visible' : isSearchVisible() }" (click)="focus()">
+<div class="ui fluid search dropdown compact selection multiple" [ngClass]="{ 'active visible' : isSearchVisible(), 'disabled': isSearchDisabled() }" (click)="focus()">
     <i class="dropdown icon"></i>
     <a class="ui label visible" style="display: inline-block !important;" *ngFor="let entry of selected">
         {{ entry.display }}
@@ -19,7 +19,7 @@
     </select>
 
     <div class="menu visible fade element" tabindex="-1" style="display: block !important;" *ngIf="isSearchVisible()">
-        <div class="item" *ngFor="let entry of values | autocomplete:inputText:selected" (mousedown)="append(entry)">{{ entry.display }}</div>
+        <div class="item" *ngFor="let entry of values | autocomplete:inputText:selected:substringDisabled" (mousedown)="append(entry)">{{ entry.display }}</div>
     </div>
 </div>
 <div *ngIf="isSuggestionAvailable()">

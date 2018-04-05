@@ -37,6 +37,10 @@ import 'zone.js/dist/zone';  // Included with Angular CLI.
  * APPLICATION IMPORTS
  */
 
+if (!window.setImmediate) {
+    window.setImmediate = (callback: any) => window.setTimeout(callback, 0);
+}
+
 /**
  * Date, currency, decimal and percent pipes.
  * Needed for: All but Chrome, Firefox, Edge, IE11 and Safari 10

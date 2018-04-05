@@ -22,9 +22,8 @@ import backend.models.files.{FileMetadata, FileMetadataProvider}
 
 import scala.async.Async.{async, await}
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.matching.Regex
 
-case class SampleFile(id: Long, sampleName: String, software: String, readsCount: Long, clonotypesCount: Long, metadataID: Long, userID: Long) {
+case class SampleFile(id: Long, sampleName: String, software: String, readsCount: Long, clonotypesCount: Long, metadataID: Long, userID: Long, tagID: Long) {
     def getMetadata(implicit fmp: FileMetadataProvider, ec: ExecutionContext): Future[FileMetadata] = {
         fmp.get(metadataID).map(_.get)
     }
@@ -34,7 +33,7 @@ case class SampleFile(id: Long, sampleName: String, software: String, readsCount
     }
 
     def getDetails: SampleFileDetails = {
-        SampleFileDetails(sampleName, software, readsCount, clonotypesCount)
+        SampleFileDetails(sampleName, software, readsCount, clonotypesCount, tagID)
     }
 
     def isSampleFileInfoEmpty: Boolean = readsCount == -1 || clonotypesCount == -1
@@ -51,5 +50,9 @@ case class SampleFile(id: Long, sampleName: String, software: String, readsCount
         } else {
             await(sfp.updateSampleFileProps(this, newSampleName, newSoftware))
         }
+    }
+
+    def updateSampleFileTagID(tagID: Long)(implicit sfp: SampleFileProvider): Future[Int] = {
+        sfp.updateSampleFileTagID(this, tagID)
     }
 }

@@ -19,7 +19,7 @@ package backend.server.annotations.api.tag.create
 
 import play.api.libs.json.{Json, Reads}
 
-case class CreateTagRequest(name: String, color: String)
+case class CreateTagRequest(name: String, color: String, samples: Seq[String])
 
 object CreateTagRequest {
     implicit val createTagRequestReads: Reads[CreateTagRequest] = Json.reads[CreateTagRequest]
