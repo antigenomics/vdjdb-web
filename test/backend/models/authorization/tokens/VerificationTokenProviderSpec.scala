@@ -14,7 +14,7 @@
  *     limitations under the License.
  */
 
-package backend.models.authorization.token
+package backend.models.authorization.tokens
 
 import backend.models.authorization.tokens.verification.{VerificationTokenProvider, VerificationTokenTable}
 import backend.models.authorization.user.UserProvider

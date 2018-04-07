@@ -14,7 +14,7 @@
  *     limitations under the License.
  */
 
-package backend.models.authorization.token
+package backend.models.authorization.tokens
 
 import backend.models.{DatabaseProviderTestSpec, SQLDatabaseTestTag}
 import backend.models.authorization.tokens.reset.{ResetTokenProvider, ResetTokenTable}
