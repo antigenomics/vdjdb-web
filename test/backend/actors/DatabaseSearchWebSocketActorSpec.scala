@@ -136,6 +136,7 @@ class DatabaseSearchWebSocketActorSpec extends ActorsTestSpec {
 
                 val file = await(tfp.getWithMetadata(unpackedLink))
                 file should not be empty
+                file.get._2.checkIfExist shouldEqual true
                 file.get._2.extension shouldEqual SearchTableConverter.getConverter(converter).get.getExtension
 
                 val _ = await(tfp.deleteTemporaryFile(unpackedLink))

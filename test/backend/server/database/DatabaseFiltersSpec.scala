@@ -26,7 +26,7 @@ class DatabaseFiltersSpec extends BaseTestSpecWithApplication {
 
     "DatabaseFilters" should {
 
-        "be able to create filters from request" in {
+        "be able to create filters from request" taggedAs DatabaseTestTag in {
             val request: List[DatabaseFilterRequest] = List(
                 DatabaseFilterRequest("gene", DatabaseFilterType.Exact, negative = false, "TRA"),
                 DatabaseFilterRequest("v.segm", DatabaseFilterType.ExactSet, negative = false, "TRBV9,TRBV10"),
@@ -88,7 +88,7 @@ class DatabaseFiltersSpec extends BaseTestSpecWithApplication {
             filters.sequence.get(1).getSearchScope.getTreeSearchParameters.getMaxDeletions shouldEqual 2
         }
 
-        "create warnings for invalid request" in {
+        "create warnings for invalid request" taggedAs DatabaseTestTag in {
             val request: List[DatabaseFilterRequest] = List(
                 DatabaseFilterRequest("abracadabra", DatabaseFilterType.Exact, negative = false, "test"),
                 DatabaseFilterRequest("cdr3", "invalidType", negative = true, "test"),

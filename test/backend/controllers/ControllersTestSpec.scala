@@ -19,6 +19,7 @@ package backend.controllers
 
 import akka.stream.Materializer
 import backend.BaseTestSpecWithApplication
+import backend.models.authorization.permissions.UserPermissionsProvider
 import backend.models.authorization.tokens.reset.ResetTokenProvider
 import backend.models.authorization.tokens.session.SessionTokenProvider
 import backend.models.authorization.tokens.verification.VerificationTokenProvider
@@ -40,95 +41,123 @@ abstract class ControllersTestSpec extends BaseTestSpecWithApplication with Resu
     lazy implicit val rtp: ResetTokenProvider = app.injector.instanceOf[ResetTokenProvider]
 
     trait NonExistentUser {
-        private final val _nonExistentUserCredentials = new {
+        private final val _credentials = new {
             lazy val login: String = "controllers-test-nonexistent"
             lazy val email: String = "controllers-test-nonexistent@mail.com"
             lazy val password: String = "controllers-test-nonexistent"
         }
 
-        private final val _isExist = Await.result(up.get(_nonExistentUserCredentials.email), Duration.Inf)
+        private final val _isExist = Await.result(up.get(_credentials.email), Duration.Inf)
 
-        _isExist should be (empty)
+        _isExist should be(empty)
 
-        final val credentials = _nonExistentUserCredentials
+        final val credentials = _credentials
     }
 
     trait UnverifiedUser {
-        private final val _unverifiedUserCredentials = new {
+        private final val _credentials = new {
             lazy val login: String = "controllers-test-unverified"
             lazy val email: String = "controllers-test-unverified@mail.com"
             lazy val password: String = "controllers-test-unverified"
         }
 
-        private final val _verificationToken = Await.result(
-            up.createUser(_unverifiedUserCredentials.login, _unverifiedUserCredentials.email, _unverifiedUserCredentials.password), Duration.Inf
-        )
-        private final val _unverifiedUser = Await.result(
-            up.get(_verificationToken.userID), Duration.Inf
-        )
+        private final val _isAlreadyExist = Await.result(up.get(_credentials.email), Duration.Inf)
+        private final val _unverifiedUser = if (_isAlreadyExist.nonEmpty) _isAlreadyExist.get else {
+            val token = Await.result(up.createUser(_credentials.login, _credentials.email, _credentials.password), Duration.Inf)
+            val user = Await.result(up.get(_credentials.email), Duration.Inf)
+            user should not be empty
+            user.get
+        }
 
-        _unverifiedUser should not be empty
-        _unverifiedUser.get.login shouldEqual _unverifiedUserCredentials.login
-        _unverifiedUser.get.email shouldEqual _unverifiedUserCredentials.email
-        _unverifiedUser.get.verified shouldEqual false
+        _unverifiedUser.login shouldEqual _credentials.login
+        _unverifiedUser.email shouldEqual _credentials.email
+        _unverifiedUser.verified shouldEqual false
 
-        final val user = _unverifiedUser.get
-        final val credentials = _unverifiedUserCredentials
+        final val user = _unverifiedUser
+        final val credentials = _credentials
     }
 
     trait VerifiedUser {
-        private final val _verifiedUserCredentials = new {
+        private final val _credentials = new {
             lazy val login: String = "controllers-test-verified"
             lazy val email: String = "controllers-test-verified@mail.com"
             lazy val password: String = "controllers-test-verified"
         }
 
-        private final val _verificationToken = Await.result(
-            up.createUser(_verifiedUserCredentials.login, _verifiedUserCredentials.email, _verifiedUserCredentials.password), Duration.Inf
-        )
-        private final val _verifiedUser = Await.result(
-            up.verifyUser(_verificationToken), Duration.Inf
-        )
+        private final val _isAlreadyExist = Await.result(up.get(_credentials.email), Duration.Inf)
+        private final val _verifiedUser = if (_isAlreadyExist.nonEmpty) _isAlreadyExist.get else {
+            val token = Await.result(up.createUser(_credentials.login, _credentials.email, _credentials.password), Duration.Inf)
+            val user = Await.result(up.verifyUser(token), Duration.Inf)
+            user should not be empty
+            user.get
+        }
 
-        _verifiedUser should not be empty
-        _verifiedUser.get.login shouldEqual _verifiedUserCredentials.login
-        _verifiedUser.get.email shouldEqual _verifiedUserCredentials.email
-        _verifiedUser.get.verified shouldEqual true
+        _verifiedUser.login shouldEqual _credentials.login
+        _verifiedUser.email shouldEqual _credentials.email
+        _verifiedUser.verified shouldEqual true
 
-        final val user = _verifiedUser.get
-        final val credentials = _verifiedUserCredentials
+        final val user = _verifiedUser
+        final val credentials = _credentials
     }
 
     trait LoggedUser {
-        private final val _loggedUserCredentials = new {
+        private final val _credentials = new {
             lazy val login: String = "controllers-test-logged"
             lazy val email: String = "controllers-test-logged@mail.com"
             lazy val password: String = "controllers-test-logged"
         }
 
-        private final val _verificationToken = Await.result(
-            up.createUser(_loggedUserCredentials.login, _loggedUserCredentials.email, _loggedUserCredentials.password), Duration.Inf
-        )
-        private final val _loggedUser = Await.result(
-            up.verifyUser(_verificationToken), Duration.Inf
-        )
+        private final val _isAlreadyExist = Await.result(up.get(_credentials.email), Duration.Inf)
+        private final val _loggedUser = if (_isAlreadyExist.nonEmpty) _isAlreadyExist.get else {
+            val token = Await.result(up.createUser(_credentials.login, _credentials.email, _credentials.password), Duration.Inf)
+            val user = Await.result(up.verifyUser(token), Duration.Inf)
+            user should not be empty
+            user.get
+        }
 
-        _loggedUser should not be empty
-        _loggedUser.get.login shouldEqual _loggedUserCredentials.login
-        _loggedUser.get.email shouldEqual _loggedUserCredentials.email
-        _loggedUser.get.verified shouldEqual true
+        _loggedUser.login shouldEqual _credentials.login
+        _loggedUser.email shouldEqual _credentials.email
+        _loggedUser.verified shouldEqual true
 
-        final val user = _loggedUser.get
+        final val user = _loggedUser
         final val loggedUserSessionToken = Await.result(stp.createSessionToken(user), Duration.Inf)
-        final val credentials = _loggedUserCredentials
+        final val credentials = _credentials
 
         loggedUserSessionToken should have length 255
     }
+
+    trait DemoUser {
+        private final val _credentials = new {
+            lazy val login: String = "controllers-test-demo"
+            lazy val email: String = "controllers-test-demo@mail.com"
+            lazy val password: String = "controllers-test-demo"
+        }
+
+        private final val _isAlreadyExist = Await.result(up.get(_credentials.email), Duration.Inf)
+        private final val _demoUser = if (_isAlreadyExist.nonEmpty) _isAlreadyExist.get else {
+            val token = Await.result(up.createUser(_credentials.login, _credentials.email, _credentials.password, UserPermissionsProvider.DEMO_ID), Duration.Inf)
+            val user = Await.result(up.verifyUser(token), Duration.Inf)
+            user should not be empty
+            user.get
+        }
+
+        _demoUser.login shouldEqual _credentials.login
+        _demoUser.email shouldEqual _credentials.email
+        _demoUser.verified shouldEqual true
+
+        final val user = _demoUser
+        final val demoUserSessionToken = Await.result(stp.createSessionToken(user), Duration.Inf)
+        final val credentials = _credentials
+
+        demoUserSessionToken should have length 255
+    }
+
 
     final val fixtures = new {
         lazy val nonExistentUser: NonExistentUser = new NonExistentUser {}
         lazy val unverifiedUser: UnverifiedUser = new UnverifiedUser {}
         lazy val verifiedUser: VerifiedUser = new VerifiedUser {}
         lazy val loggedUser: LoggedUser = new LoggedUser {}
+        lazy val demoUser: DemoUser = new DemoUser {}
     }
 }
