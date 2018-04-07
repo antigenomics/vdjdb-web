@@ -16,12 +16,12 @@
 
 package backend.server.search.api.export
 
-import play.api.libs.json.{Json, Writes}
+import play.api.libs.json.{Json, Format}
 
 case class ExportDataResponse(link: String)
 
 object ExportDataResponse {
     final val Action: String = "export"
 
-    implicit val exportDataResponseWrites: Writes[ExportDataResponse] = Json.writes[ExportDataResponse]
+    implicit val exportDataResponseFormat: Format[ExportDataResponse] = Json.format[ExportDataResponse]
 }

@@ -17,14 +17,14 @@
 package backend.server.database
 
 import com.antigenomics.vdjdb.db.Column
-import play.api.libs.json.{Json, OWrites}
+import play.api.libs.json.{Format, Json}
 
 import scala.collection.JavaConverters._
 
 case class DatabaseColumnInfo(name: String, columnType: String, visible: Boolean, dataType: String, title: String, comment: String, values: List[String])
 
 object DatabaseColumnInfo {
-    implicit val columnWrapperWrites: OWrites[DatabaseColumnInfo] = Json.writes[DatabaseColumnInfo]
+    implicit val columnWrapperFormat: Format[DatabaseColumnInfo] = Json.format[DatabaseColumnInfo]
 
     def createInfoFromColumn(column: Column): DatabaseColumnInfo = {
         val name: String = column.getName

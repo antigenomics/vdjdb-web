@@ -17,12 +17,12 @@
 package backend.server.search
 
 import com.antigenomics.vdjdb.db.Row
-import play.api.libs.json.{Json, OWrites}
+import play.api.libs.json.{Format, Json}
 
 case class SearchTableRowMetadata(pairedID: String, cdr3vEnd: Int, cdr3jStart: Int)
 
 object SearchTableRowMetadata {
-    implicit val searchTableRowMetadataWrites: OWrites[SearchTableRowMetadata] = Json.writes[SearchTableRowMetadata]
+    implicit val searchTableRowMetadataFormat: Format[SearchTableRowMetadata] = Json.format[SearchTableRowMetadata]
 
     def createFromRow(r: Row) : SearchTableRowMetadata = {
         val cdr3fix = Json.parse(r.getAt("cdr3fix").getValue)

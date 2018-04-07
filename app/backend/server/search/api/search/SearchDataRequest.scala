@@ -17,12 +17,13 @@
 package backend.server.search.api.search
 
 import backend.server.database.filters.DatabaseFilterRequest
-import play.api.libs.json.{JsSuccess, JsValue, Reads}
+import play.api.libs.json._
 
 case class SearchDataRequest(filters: Option[List[DatabaseFilterRequest]], page: Option[Int], pageSize: Option[Int],
                              sort: Option[String], paired: Option[Boolean], reconnect: Option[Boolean])
 
 object SearchDataRequest {
+    implicit val searchTableResultsDataRequestWrites: Writes[SearchDataRequest] = Json.writes[SearchDataRequest]
     implicit val searchTableResultsDataRequestReads: Reads[SearchDataRequest] = (json: JsValue) =>
         JsSuccess(SearchDataRequest(
             (json \ "filters").asOpt[List[DatabaseFilterRequest]],

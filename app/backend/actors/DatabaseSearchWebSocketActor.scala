@@ -47,7 +47,7 @@ class DatabaseSearchWebSocketActor(out: ActorRef, limit: IpLimit, database: Data
                 validateData(out, data, (suggestionsRequest: DatabaseColumnSuggestionsRequest) => {
                     database.getSuggestions(suggestionsRequest.column) match {
                         case Some(suggestions) => out.success(suggestions)
-                        case None => out.errorMessage("Invalid suggestions request")
+                        case None => out.errorMessage(DatabaseSearchWebSocketActor.invalidSuggestionsRequestMessage)
                     }
                 })
             case SearchDataResponse.Action =>
@@ -106,17 +106,21 @@ class DatabaseSearchWebSocketActor(out: ActorRef, limit: IpLimit, database: Data
                             case Success(link) =>
                                 out.success(ExportDataResponse(link.getDownloadLink))
                             case Failure(_) =>
-                                out.warningMessage("Unable to export")
+                                out.warningMessage(DatabaseSearchWebSocketActor.unableToExportRequestMessage)
                         }
                     }
                 })
             case _ =>
-                out.errorMessage("Invalid action")
+                out.errorMessage(DatabaseSearchWebSocketActor.invalidActionMessage)
         }
     }
 }
 
 object DatabaseSearchWebSocketActor {
+    final val invalidSuggestionsRequestMessage: String = "Invalid suggestions request"
+    final val unableToExportRequestMessage: String = "Unable to export"
+    final val invalidActionMessage: String = "Invalid action"
+
     def props(out: ActorRef, limit: IpLimit, database: Database)
              (implicit ec: ExecutionContext, as: ActorSystem, limits: RequestLimits, tfp: TemporaryFileProvider): Props =
         Props(new DatabaseSearchWebSocketActor(out, limit, database))

@@ -17,12 +17,12 @@
 package backend.server.search.api.search
 
 import backend.server.search.SearchTableRow
-import play.api.libs.json.{Json, Writes}
+import play.api.libs.json.{Format, Json}
 
 case class SearchDataResponse(page: Int, pageSize: Int, pageCount: Int, recordsFound: Int, rows: Seq[SearchTableRow])
 
 object SearchDataResponse {
     final val Action: String = "search"
 
-    implicit val searchTableResultsFilterResponseWrites: Writes[SearchDataResponse] = Json.writes[SearchDataResponse]
+    implicit val searchTableResultsFilterResponseFormat: Format[SearchDataResponse] = Json.format[SearchDataResponse]
 }
