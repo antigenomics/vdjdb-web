@@ -16,10 +16,10 @@
 
 package backend.server.search.api.paired
 
-import play.api.libs.json.{Json, Reads}
+import play.api.libs.json.{Json, Format}
 
 case class PairedDataRequest(pairedID: String, gene: String)
 
 object PairedDataRequest {
-    implicit val pairedDataRequestReads: Reads[PairedDataRequest] = Json.reads[PairedDataRequest]
+    implicit val pairedDataRequestFormat: Format[PairedDataRequest] = Json.format[PairedDataRequest]
 }
