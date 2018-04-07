@@ -58,17 +58,33 @@ abstract class ActorsTestSpec extends TestKit(ActorSystem("ActorsTestSpec")) wit
         expectMessageOfType(WebSocketOutActorRef.ResponseStatus.SUCCESS, action)
     }
 
+    def expectWarningMessageOfType[T](action: String)(implicit probe: TestProbe, typeReads: Reads[T]): T = {
+        expectMessageOfType(WebSocketOutActorRef.ResponseStatus.WARNING, action)
+    }
+
     def expectErrorMessageOfType[T](action: String)(implicit probe: TestProbe, typeReads: Reads[T]): T = {
         expectMessageOfType(WebSocketOutActorRef.ResponseStatus.ERROR, action)
     }
 
-    def expectErrorMessage(action: String)(implicit probe: TestProbe): String = {
+    def expectMessage(action: String, status: String)(implicit probe: TestProbe): String = {
         val responseJson = probe.expectMsgClass(classOf[JsValue])
         (responseJson \ "id").asOpt[Int] should not be empty
         (responseJson \ "action").asOpt[String] shouldEqual Some(action)
-        (responseJson \ "status").asOpt[String] shouldEqual Some(WebSocketOutActorRef.ResponseStatus.ERROR)
+        (responseJson \ "status").asOpt[String] shouldEqual Some(status)
         (responseJson \ "message").asOpt[String] should not be empty
         (responseJson \ "message").as[String]
+    }
+
+    def expectSuccessMessage(action: String)(implicit probe: TestProbe): String = {
+        expectMessage(action, WebSocketOutActorRef.ResponseStatus.SUCCESS)
+    }
+
+    def expectWarningMessage(action: String)(implicit probe: TestProbe): String = {
+        expectMessage(action, WebSocketOutActorRef.ResponseStatus.WARNING)
+    }
+
+    def expectErrorMessage(action: String)(implicit probe: TestProbe): String = {
+        expectMessage(action, WebSocketOutActorRef.ResponseStatus.ERROR)
     }
 
     def expectHandshakeMessage(action: String)(implicit probe: TestProbe): Assertion = {
