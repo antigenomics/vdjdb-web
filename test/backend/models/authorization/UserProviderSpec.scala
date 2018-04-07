@@ -22,7 +22,7 @@ import java.nio.file.Paths
 
 import backend.models.{DatabaseProviderTestSpec, SQLDatabaseTestTag}
 import backend.models.authorization.permissions.UserPermissionsProvider
-import backend.models.authorization.user.UserProvider
+import backend.models.authorization.user.{UserProvider, UserTable}
 import backend.models.authorization.tokens.verification.VerificationTokenProvider
 import backend.models.files.FileMetadataProvider
 import backend.models.files.sample.SampleFileProvider
@@ -39,6 +39,10 @@ class UserProviderSpec extends DatabaseProviderTestSpec {
     lazy implicit val sampleFileProvider: SampleFileProvider = app.injector.instanceOf[SampleFileProvider]
 
     "UserProvider" should {
+
+        "have proper table name" taggedAs SQLDatabaseTestTag in {
+            userProvider.getTable.baseTableRow.tableName shouldEqual UserTable.TABLE_NAME
+        }
 
         "be able to create not-verified user" taggedAs SQLDatabaseTestTag in {
             async {

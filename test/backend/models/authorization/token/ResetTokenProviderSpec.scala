@@ -17,7 +17,7 @@
 package backend.models.authorization.token
 
 import backend.models.{DatabaseProviderTestSpec, SQLDatabaseTestTag}
-import backend.models.authorization.tokens.reset.ResetTokenProvider
+import backend.models.authorization.tokens.reset.{ResetTokenProvider, ResetTokenTable}
 import backend.models.authorization.user.UserProvider
 import backend.utils.TimeUtils
 
@@ -44,6 +44,10 @@ class ResetTokenProviderSpec extends DatabaseProviderTestSpec {
     }
 
     "Reset token provider" should {
+
+        "have proper table name" taggedAs SQLDatabaseTestTag in {
+            resetTokenProvider.getTable.baseTableRow.tableName shouldEqual ResetTokenTable.TABLE_NAME
+        }
 
         "be able to create reset token for user" taggedAs SQLDatabaseTestTag in {
             async {

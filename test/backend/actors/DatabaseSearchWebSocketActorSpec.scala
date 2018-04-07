@@ -48,6 +48,11 @@ class DatabaseSearchWebSocketActorSpec extends ActorsTestSpec {
             Succeeded
         }
 
+        "be able to ping websocket" taggedAs ActorsTestTag in {
+            ws ! createClientRequest(WebSocketOutActorRef.PingAction, None)
+            expectHandshakeMessage(WebSocketOutActorRef.PingAction)
+        }
+
         "be able to response with database metadata" taggedAs ActorsTestTag in {
             ws ! createClientRequest(DatabaseMetadataResponse.Action, None)
             val metadataResponse = expectSuccessMessageOfType[DatabaseMetadataResponse](DatabaseMetadataResponse.Action)

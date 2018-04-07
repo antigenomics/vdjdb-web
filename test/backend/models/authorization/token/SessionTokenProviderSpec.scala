@@ -16,7 +16,7 @@
 
 package backend.models.authorization.token
 
-import backend.models.authorization.tokens.session.SessionTokenProvider
+import backend.models.authorization.tokens.session.{SessionTokenProvider, SessionTokenTable}
 import backend.models.authorization.user.UserProvider
 import backend.models.{DatabaseProviderTestSpec, SQLDatabaseTestTag}
 
@@ -28,6 +28,10 @@ class SessionTokenProviderSpec extends DatabaseProviderTestSpec {
 
 
     "SessionTokenProvider" should {
+        "have proper table name" taggedAs SQLDatabaseTestTag in {
+            sessionTokenProvider.getTable.baseTableRow.tableName shouldEqual SessionTokenTable.TABLE_NAME
+        }
+
         "be able to create session for verified user" taggedAs SQLDatabaseTestTag in {
             async {
                 val token = await(userProvider.createUser("login", "sessionmail1@mail.com", "123456"))

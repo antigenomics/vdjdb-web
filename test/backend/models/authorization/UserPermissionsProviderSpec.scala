@@ -18,13 +18,18 @@
 package backend.models.authorization
 
 import backend.models.{DatabaseProviderTestSpec, SQLDatabaseTestTag}
-import backend.models.authorization.permissions.UserPermissionsProvider
+import backend.models.authorization.permissions.{UserPermissionsProvider, UserPermissionsTable}
+
 import scala.async.Async.{async, await}
 
 class UserPermissionsProviderSpec extends DatabaseProviderTestSpec {
     lazy implicit val userPermissionsProvider: UserPermissionsProvider = app.injector.instanceOf[UserPermissionsProvider]
 
     "UserPermissionsProvider" should {
+
+        "have proper table name" taggedAs SQLDatabaseTestTag in {
+            userPermissionsProvider.getTable.baseTableRow.tableName shouldEqual UserPermissionsTable.TABLE_NAME
+        }
 
         "create default entries" taggedAs SQLDatabaseTestTag in {
             async {
