@@ -76,16 +76,16 @@ class DatabaseFiltersSpec extends BaseTestSpecWithApplication {
             filters.sequence.get(0) shouldBe a [SequenceFilter]
             filters.sequence.get(0).getColumnId shouldEqual "cdr3"
             filters.sequence.get(0).getQuery.toString shouldEqual "CASLAPGATNEKLF"
-            filters.sequence.get(0).getTreeSearchParameters.getMaxSubstitutions shouldEqual 1
-            filters.sequence.get(0).getTreeSearchParameters.getMaxInsertions shouldEqual 2
-            filters.sequence.get(0).getTreeSearchParameters.getMaxDeletions shouldEqual 3
+            filters.sequence.get(0).getSearchScope.getTreeSearchParameters.getMaxSubstitutions shouldEqual 1
+            filters.sequence.get(0).getSearchScope.getTreeSearchParameters.getMaxInsertions shouldEqual 2
+            filters.sequence.get(0).getSearchScope.getTreeSearchParameters.getMaxDeletions shouldEqual 3
 
             filters.sequence.get(1) shouldBe a [SequenceFilter]
             filters.sequence.get(1).getColumnId shouldEqual "antigen.epitope"
             filters.sequence.get(1).getQuery.toString shouldEqual "LLFGYAVYV"
-            filters.sequence.get(1).getTreeSearchParameters.getMaxSubstitutions shouldEqual 2
-            filters.sequence.get(1).getTreeSearchParameters.getMaxInsertions shouldEqual 2
-            filters.sequence.get(1).getTreeSearchParameters.getMaxDeletions shouldEqual 2
+            filters.sequence.get(1).getSearchScope.getTreeSearchParameters.getMaxSubstitutions shouldEqual 2
+            filters.sequence.get(1).getSearchScope.getTreeSearchParameters.getMaxInsertions shouldEqual 2
+            filters.sequence.get(1).getSearchScope.getTreeSearchParameters.getMaxDeletions shouldEqual 2
         }
 
         "create warnings for invalid request" in {

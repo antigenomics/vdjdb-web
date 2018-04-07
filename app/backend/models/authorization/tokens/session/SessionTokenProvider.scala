@@ -18,14 +18,15 @@
 package backend.models.authorization.tokens.session
 
 import java.sql.Timestamp
-import javax.inject.{Inject, Singleton}
 
-import akka.actor.ActorSystem
+import javax.inject.{Inject, Singleton}
+import akka.actor.{ActorSystem, Cancellable}
 import backend.models.authorization.user.{User, UserProvider}
 import backend.utils.{CommonUtils, TimeUtils}
 import org.slf4j.LoggerFactory
 import play.api.Configuration
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
+import play.api.inject.ApplicationLifecycle
 import play.db.NamedDatabase
 import slick.jdbc.JdbcProfile
 import slick.jdbc.meta.MTable
@@ -36,18 +37,18 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Failure
 
 @Singleton
-class SessionTokenProvider @Inject()(@NamedDatabase("default") protected val dbConfigProvider: DatabaseConfigProvider)
-                           (implicit ec: ExecutionContext, conf: Configuration, system: ActorSystem)
+class SessionTokenProvider @Inject()(@NamedDatabase("default") protected val dbConfigProvider: DatabaseConfigProvider, lifecycle: ApplicationLifecycle)
+                                    (implicit ec: ExecutionContext, conf: Configuration, system: ActorSystem)
     extends HasDatabaseConfigProvider[JdbcProfile] {
     private final val logger = LoggerFactory.getLogger(this.getClass)
     private final val configuration = conf.get[SessionTokenConfiguration]("application.auth.session")
     private final val AUTH_TOKEN_SESSION_NAME = "auth_token"
 
     import dbConfig.profile.api._
-    private final val table = TableQuery[SessionTokenTable]
 
-    if (configuration.interval.getSeconds != 0) {
-        system.scheduler.schedule(configuration.interval.getSeconds seconds, configuration.interval.getSeconds seconds) {
+    private final val table = TableQuery[SessionTokenTable]
+    private final val deleteScheduler: Option[Cancellable] = Option(configuration.interval.getSeconds != 0).collect {
+        case true => system.scheduler.schedule(configuration.interval.getSeconds seconds, configuration.interval.getSeconds seconds) {
             deleteExpired onComplete {
                 case Failure(ex) =>
                     logger.warn("Cannot delete expired session tokens", ex)
@@ -55,6 +56,8 @@ class SessionTokenProvider @Inject()(@NamedDatabase("default") protected val dbC
             }
         }
     }
+
+    lifecycle.addStopHook { () => Future.successful(deleteScheduler.foreach(_.cancel())) }
 
     def getAuthTokenSessionName: String = AUTH_TOKEN_SESSION_NAME
 
