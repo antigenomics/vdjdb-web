@@ -61,6 +61,8 @@ class SessionTokenProvider @Inject()(@NamedDatabase("default") protected val dbC
 
     def getAuthTokenSessionName: String = AUTH_TOKEN_SESSION_NAME
 
+    def getTable: TableQuery[SessionTokenTable] = table
+
     def getAll: Future[Seq[SessionToken]] = db.run(table.result)
 
     def get(id: Long): Future[Option[SessionToken]] = {

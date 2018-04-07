@@ -64,6 +64,9 @@ case class WebSocketOutActorRef(private val id: Int, private val action: String,
 }
 
 object WebSocketOutActorRef {
+    final val PingAction: String = "ping"
+    final val InvalidRequestMessage: String = "Invalid request"
+
     object ResponseStatus {
         final val SUCCESS: String = "success"
         final val WARNING: String = "warning"

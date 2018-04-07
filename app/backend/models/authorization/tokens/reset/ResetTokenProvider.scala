@@ -57,6 +57,8 @@ class ResetTokenProvider @Inject()(@NamedDatabase("default") protected val dbCon
 
     lifecycle.addStopHook { () => Future.successful(deleteScheduler.foreach(_.cancel())) }
 
+    def getTable: TableQuery[ResetTokenTable] = table
+
     def getAll: Future[Seq[ResetToken]] = db.run(table.result)
 
     def get(id: Long): Future[Option[ResetToken]] = {
