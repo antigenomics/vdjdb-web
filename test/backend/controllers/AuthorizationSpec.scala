@@ -232,13 +232,50 @@ class AuthorizationSpec extends ControllersTestSpec {
             status(nonEqualPasswordsResult) shouldEqual BAD_REQUEST
             contentAsString(nonEqualPasswordsResult) should include (messages("authorization.forms.signup.failed.workaround.3"))
 
+            val dummyChar: String = "d"
             //Invalid field: too small password
             val tooSmallPasswordRequest = FakeRequest()
-                .withFormUrlEncodedBody("email" -> "email@mail.com", "password" -> "p", "repeatPassword" -> "p", "login" -> "login")
+                .withFormUrlEncodedBody("email" -> "email@mail.com",
+                    "password" -> dummyChar * (SignupForm.PASSWORD_MIN_LENGTH - 1),
+                    "repeatPassword" -> dummyChar * (SignupForm.PASSWORD_MIN_LENGTH - 1), "login" -> "login")
                 .withCSRFToken
             val tooSmallPasswordResult = controller.onSignup(tooSmallPasswordRequest)
             status(tooSmallPasswordResult) shouldEqual BAD_REQUEST
             contentAsString(tooSmallPasswordResult) should include (messages("error.minLength", SignupForm.PASSWORD_MIN_LENGTH))
+
+            //Invalid field: too big password
+            val tooBigPasswordRequest = FakeRequest()
+                .withFormUrlEncodedBody("email" -> "email@mail.com",
+                    "password" -> dummyChar * (SignupForm.PASSWORD_MAX_LENGTH + 1),
+                    "repeatPassword" -> dummyChar * (SignupForm.PASSWORD_MAX_LENGTH + 1), "login" -> "login")
+                .withCSRFToken
+            val tooBigPasswordResult = controller.onSignup(tooBigPasswordRequest)
+            status(tooBigPasswordResult) shouldEqual BAD_REQUEST
+            contentAsString(tooBigPasswordResult) should include (messages("error.maxLength", SignupForm.PASSWORD_MAX_LENGTH))
+
+            //Invalid field: too big email
+            val tooBigEmailRequest = FakeRequest()
+                .withFormUrlEncodedBody("email" -> ((dummyChar * SignupForm.EMAIL_MAX_LENGTH + 1) + "@mail.com"),
+                    "password" -> "password", "repeatPassword" -> "password", "login" -> "login").withCSRFToken
+            val tooBigEmailResult = controller.onSignup(tooBigEmailRequest)
+            status(tooBigEmailResult) shouldEqual BAD_REQUEST
+            contentAsString(tooBigEmailResult) should include (messages("authorization.forms.signup.failed.workaround.4"))
+
+            //Invalid field: too big login
+            val tooBigLoginRequest = FakeRequest()
+                .withFormUrlEncodedBody("email" -> "email@mail.com",
+                    "password" -> "password", "repeatPassword" -> "password", "login" -> dummyChar * (SignupForm.LOGIN_MAX_LENGTH + 1)).withCSRFToken
+            val tooBigLoginResult = controller.onSignup(tooBigLoginRequest)
+            status(tooBigLoginResult) shouldEqual BAD_REQUEST
+            contentAsString(tooBigLoginResult) should include (messages("error.maxLength", SignupForm.LOGIN_MAX_LENGTH))
+
+            //Invalid field: empty login
+            val emptyLoginRequest = FakeRequest()
+                .withFormUrlEncodedBody("email" -> "email@mail.com",
+                    "password" -> "password", "repeatPassword" -> "password", "login" -> "").withCSRFToken
+            val emptyLoginResult = controller.onSignup(emptyLoginRequest)
+            status(emptyLoginResult) shouldEqual BAD_REQUEST
+            contentAsString(emptyLoginResult) should include (messages("error.required"))
         }
 
         "forbid to signup with the same email" in {

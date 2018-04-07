@@ -17,7 +17,6 @@
 
 package backend.actors
 
-import akka.actor.Props
 import akka.testkit.TestProbe
 import backend.models.files.temporary.{TemporaryFileLink, TemporaryFileProvider}
 import backend.server.ResultsTable
@@ -39,7 +38,7 @@ class DatabaseSearchWebSocketActorSpec extends ActorsTestSpec {
     lazy implicit val tfp: TemporaryFileProvider = app.injector.instanceOf[TemporaryFileProvider]
     lazy implicit val database: Database = app.injector.instanceOf[Database]
     lazy implicit val probe = TestProbe()
-    lazy implicit val ws = system.actorOf(Props(new DatabaseSearchWebSocketActor(probe.ref, fakeLimit, database)))
+    lazy implicit val ws = system.actorOf(DatabaseSearchWebSocketActor.props(probe.ref, fakeLimit, database))
 
     "DatabaseSearchWebSocketActor" should {
         "be able to handle invalid messages" taggedAs ActorsTestTag in {
@@ -108,6 +107,14 @@ class DatabaseSearchWebSocketActorSpec extends ActorsTestSpec {
 
             ws ! createClientRequest(SearchDataResponse.Action, Some(SearchDataRequest(Some(filters), None, None, None, None, Some(true))))
             expectHandshakeMessage(SearchDataResponse.Action)
+
+            val filtersWithWarning: List[DatabaseFilterRequest] = List(DatabaseFilterRequest("invalid-column", DatabaseFilterType.Exact, negative = false, "TRA"))
+            ws ! createClientRequest(SearchDataResponse.Action, Some(SearchDataRequest(Some(filtersWithWarning), None, None, None, None, None)))
+            val warningMessage = expectWarningMessage(SearchDataResponse.Action)
+            warningMessage should include ("Invalid column name")
+
+            expectSuccessMessageOfType[SearchDataResponse](SearchDataResponse.Action)
+            Succeeded
         }
 
         "be able to response with paired records" taggedAs ActorsTestTag in {
