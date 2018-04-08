@@ -24,7 +24,7 @@ import backend.server.limit.{IpLimit, RequestLimits}
 import org.scalatest.{Assertion, Assertions, BeforeAndAfterAll}
 import play.api.{Application, Mode}
 import play.api.inject.guice.GuiceApplicationBuilder
-import play.api.libs.json.{JsValue, Json, Reads, Writes}
+import play.api.libs.json._
 
 import scala.async.Async.{async, await}
 import scala.concurrent.duration.Duration

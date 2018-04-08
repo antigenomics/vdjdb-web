@@ -46,10 +46,10 @@ abstract class WebSocketActor(out: ActorRef, limit: IpLimit)(implicit as: ActorS
                 case success: JsSuccess[T] =>
                     callback(success.get)
                 case _: JsError =>
-                    out.errorMessage("Invalid request (data)")
+                    out.errorMessage(WebSocketOutActorRef.InvalidDataRequestMessage)
             }
         } else {
-            out.errorMessage("Empty data field")
+            out.errorMessage(WebSocketOutActorRef.InvalidMissingDataRequestMessage)
         }
     }
 }
