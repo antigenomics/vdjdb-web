@@ -28,8 +28,10 @@ export interface IFileItemStats {
 }
 
 export class FileItem {
-    public static FULL_PROGRESS: number = 100;
-    public static AVAILABLE_EXTENSIONS: string[] = [ 'txt', 'gz', 'zip' ];
+    private static readonly BYTES_IN_MB: number = 1048576;
+
+    public static readonly FULL_PROGRESS: number = 100;
+    public static readonly AVAILABLE_EXTENSIONS: string[] = [ 'txt', 'gz', 'zip' ];
 
     public compressed?: Blob;
     public native: File;
@@ -98,6 +100,10 @@ export class FileItem {
 
     public getUploadBlob(): Blob {
         return this.compressed !== undefined ? this.compressed : this.getNativeFile();
+    }
+
+    public getSizeInMB(): number {
+        return this.compressed ? this.compressed.size / FileItem.BYTES_IN_MB : this.native.size / FileItem.BYTES_IN_MB;
     }
 
     public getUploadBlobName(): string {
