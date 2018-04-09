@@ -28,14 +28,12 @@ import { SearchTableService } from './table/search/search-table.service';
     templateUrl: './search.component.html'
 })
 export class SearchPageComponent implements OnInit, OnDestroy {
-    private static readonly SEARCH_DATABASE_GOAL: string = 'search-database-goal';
-
     public columns: TableColumn[] = [];
     public table: SearchTable;
 
-    constructor(private searchTableService: SearchTableService, private filters: FiltersService, private analytics: AnalyticsService,
-                logger: LoggerService, notifications: NotificationService) {
-        this.table = new SearchTable(searchTableService, filters, logger, notifications);
+    constructor(private searchTableService: SearchTableService, private filters: FiltersService,
+                logger: LoggerService, notifications: NotificationService, analytics: AnalyticsService) {
+        this.table = new SearchTable(searchTableService, filters, analytics, logger, notifications);
         if (this.searchTableService.isInitialized()) {
             this.fetchColumns();
             this.table.updateNumberOfRecords(this.searchTableService.getMetadata().numberOfRecords);
@@ -55,7 +53,6 @@ export class SearchPageComponent implements OnInit, OnDestroy {
     }
 
     public search(): void {
-        this.analytics.reachGoal(SearchPageComponent.SEARCH_DATABASE_GOAL);
         this.table.update();
     }
 

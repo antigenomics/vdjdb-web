@@ -23,6 +23,7 @@ import { Subject } from 'rxjs/Subject';
 import { SampleItem } from 'shared/sample/sample-item';
 import { IExportFormat, IExportOptionFlag } from 'shared/table/export/table-export.component';
 import { WebSocketResponseData } from 'shared/websocket/websocket-response';
+import { AnalyticsService } from 'utils/analytics/analytics.service';
 import { NotificationService } from 'utils/notifications/notification.service';
 
 export namespace SampleServiceUpdateState {
@@ -53,10 +54,14 @@ export class SampleServiceEvent {
 
 @Injectable()
 export class SampleService {
+    private static readonly SAMPLE_ANNOTATE_GOAL: string = 'sample-annotate-goal';
+    private static readonly SAMPLE_ANNOTATE_EXPORT_GOAL: string = 'sample-annotate-export-goal';
+
     private _currentSample: SampleItem;
     private _events: Subject<SampleServiceEvent> = new Subject();
 
-    constructor(private annotationsService: AnnotationsService, private notifications: NotificationService) {
+    constructor(private annotationsService: AnnotationsService, private analytics: AnalyticsService,
+                private notifications: NotificationService) {
         this.annotationsService.getEvents().pipe(filter((event: AnnotationsServiceEvents) => {
             return event === AnnotationsServiceEvents.SAMPLE_UPDATED;
         })).subscribe(() => {
@@ -105,6 +110,7 @@ export class SampleService {
                                 if (this._currentSample.name !== sample.name) {
                                     this.notifications.success('Annotations', `Sample ${sample.name} has been successfully annotated`);
                                 }
+                                this.analytics.reachGoal(SampleService.SAMPLE_ANNOTATE_GOAL, filters);
                                 break;
                             default:
                         }
@@ -126,6 +132,7 @@ export class SampleService {
     public async exportTable(sample: SampleItem, request: { format: IExportFormat, options: IExportOptionFlag[] }): Promise<void> {
         await this.annotationsService.exportTable(sample, request);
         this._events.next(new SampleServiceEvent(sample.name, SampleServiceEventType.EVENT_EXPORT));
+        this.analytics.reachGoal(SampleService.SAMPLE_ANNOTATE_EXPORT_GOAL, request);
     }
 
     public getEvents(): Subject<SampleServiceEvent> {

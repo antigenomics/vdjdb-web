@@ -220,7 +220,7 @@ export class UploadService {
             return;
         }
 
-        this.analytics.reachGoal(UploadService.FILE_UPLOAD_GOAL);
+        this.analytics.reachGoal(UploadService.FILE_UPLOAD_GOAL, file.getFileItemStats());
 
         if (file.status.isReadyForUpload()) {
             file.status.setLoadingStatus();

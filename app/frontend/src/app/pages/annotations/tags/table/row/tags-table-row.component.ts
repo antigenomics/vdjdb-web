@@ -42,6 +42,10 @@ export class TagsTableRowComponent {
         this.tagsService.save(this.tag);
     }
 
+    public remove(): void {
+        this.tagsService.remove(this.tag);
+    }
+
     public edit(): void {
         this.tagsService.edit(this.tag);
     }

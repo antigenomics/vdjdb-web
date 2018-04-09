@@ -108,6 +108,17 @@ export class TagsService {
         }
     }
 
+    public async remove(tag: SampleTag): Promise<void> {
+        this.logger.debug('TagsService', `Removing tag`);
+        this.logger.debug('TagsService', tag);
+        this.events.next(TagsServiceEventType.TAG_DELETING_START);
+        const index = this.getAvailableTags().indexOf(tag);
+        if (index !== -1) {
+            this.getAvailableTags().splice(index, 1);
+        }
+        this.events.next(TagsServiceEventType.TAG_DELETING_END);
+    }
+
     public async delete(tag: SampleTag): Promise<void> {
         this.logger.debug('TagsService', `Attempt to delete tag`);
         this.logger.debug('TagsService', tag);
