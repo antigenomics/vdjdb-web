@@ -32,21 +32,21 @@ export class AnalyticsService {
         });
     }
 
-    public reachGoal(target: string, params?: any): void {
+    public async reachGoal(target: string, params?: any): Promise<void> {
         this.logger.debug('AnalyticsService', `Goal reached: ${target}`);
         if (this.yandexMetrikaTools) {
             this.yandexMetrikaTools.reachGoal(target, params);
         }
     }
 
-    public hit(url: string): void {
+    public async hit(url: string): Promise<void> {
         this.logger.debug('AnalyticsService', `Hit: ${url}`);
         if (this.yandexMetrikaTools) {
             this.yandexMetrikaTools.hit(url);
         }
     }
 
-    public extLink(url: string): void {
+    public async extLink(url: string): Promise<void> {
         this.logger.debug('AnalyticsService', `External link: ${url}`);
         if (this.yandexMetrikaTools) {
             this.yandexMetrikaTools.extLink(url);
