@@ -13,11 +13,14 @@
             <span class="text">No tag selected</span>
         </ng-container>
         <ng-container *ngIf="item.tag !== undefined">
-            <span class="text">{{ item.tag.name }}</span>
+            <span class="text">{{ item.getTagName() }}</span>
             <a class="ui empty circular sample-tag label" [style.background-color]="item.getTagColor()"></a>
         </ng-container>
         <i class="dropdown icon"></i>
         <div class="menu fast fade element" #content>
+            <div class="item" (click)="item.removeTag()">
+                Empty tag
+            </div>
             <div class="item" *ngFor="let tag of getAvailableTags()" (click)="item.setTag(tag)">
                 {{ tag.name }}
                 <a class="ui empty circular sample-tag label" [style.background-color]="tag.color"></a>
@@ -25,7 +28,7 @@
         </div>
     </div>
     <div *ngIf="!item.status.isWaiting()">
-        {{ item.tag.name }}
+        {{ item.getTagName() }}
         <a class="ui empty circular sample-tag label" [style.background-color]="item.getTagColor()"></a>
     </div>
 </td>
