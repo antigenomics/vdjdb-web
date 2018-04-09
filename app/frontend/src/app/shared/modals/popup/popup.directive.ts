@@ -79,11 +79,12 @@ export class PopupDirective implements AfterViewInit, OnDestroy {
         this.bindEnterEvents();
     }
 
-    public updateView(): void {
+    public updateView(visible?: boolean): void {
         if (this._tooltip && this.disabled) {
             this.unbindEvents();
             this._tooltip.destroy();
         } else if (this._tooltip && this._tooltip.instance) {
+            this._visible = visible !== undefined ? visible : this._visible;
             this.bindEnterEvents();
             this._tooltip.instance.hostElement = this.viewContainerRef.element.nativeElement;
             this._tooltip.instance.content = this.popupContent;
