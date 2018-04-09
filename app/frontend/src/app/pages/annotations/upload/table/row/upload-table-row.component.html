@@ -9,10 +9,10 @@
 </td>
 <td *ngIf="isTagsExist()">
     <div class="ui dropdown" dropdown [content]="content" *ngIf="item.status.isWaiting()">
-        <ng-container *ngIf="item.tag === undefined">
+        <ng-container *ngIf="!item.hasTag()">
             <span class="text">No tag selected</span>
         </ng-container>
-        <ng-container *ngIf="item.tag !== undefined">
+        <ng-container *ngIf="item.hasTag()">
             <span class="text">{{ item.getTagName() }}</span>
             <a class="ui empty circular sample-tag label" [style.background-color]="item.getTagColor()"></a>
         </ng-container>

@@ -1,11 +1,10 @@
-@import play.api.{Environment, Mode}
 @import backend.utils.analytics.Analytics
-@()(implicit environment: Environment, analytics: Analytics)
-@* @if(environment.mode != Mode.Dev) { *@
+@()(implicit analytics: Analytics)
+@if(analytics.isAnalyticsEnabled) {
     @if(analytics.isYandexAnalyticsAvailable) {
         @frontend.views.html.analytics.yandex(analytics.getYandexAnalyticsID)
     }
     @if(analytics.isGoogleAnalyticsAvailable) {
         @frontend.views.html.analytics.google(analytics.getGoogleAnalyticsID)
     }
-@* } *@
+}

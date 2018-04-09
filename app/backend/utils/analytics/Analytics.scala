@@ -23,6 +23,8 @@ import play.api.Configuration
 case class Analytics @Inject() (configuration: Configuration) {
     private val analyticsConfiguration = configuration.get[AnalyticsConfiguration]("application.analytics")
 
+    def isAnalyticsEnabled: Boolean = analyticsConfiguration.enabled
+
     def isYandexAnalyticsAvailable: Boolean = analyticsConfiguration.yandexID != "none"
 
     def getYandexAnalyticsID: String = analyticsConfiguration.yandexID
