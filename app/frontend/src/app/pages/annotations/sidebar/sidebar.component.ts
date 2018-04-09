@@ -121,9 +121,15 @@ export class AnnotationsSidebarComponent implements OnInit, OnDestroy {
                 this._filesUploadingLabel = false;
             } else if (event === AnnotationsServiceEvents.SAMPLE_TAGS_UPDATED) {
                 if (this.settings !== undefined) {
-                    const isSettingsTagIDAvailable = this.annotationsService.getTags().findIndex((t) => t.id === this.settings.tagID);
-                    if (isSettingsTagIDAvailable === -1) {
-                        this.settings.tagID = -1;
+                    if (this.settings.tagID !== -1) {
+                        const isSettingsTagIDAvailable = this.annotationsService.getTags().findIndex((t) => t.id === this.settings.tagID);
+                        if (isSettingsTagIDAvailable === -1) {
+                            this.settings.tagID = -1;
+                        }
+                    } else {
+                        if (this.settings.sample.tagID !== -1) {
+                            this.settings.tagID = this.settings.sample.tagID;
+                        }
                     }
                 }
             }
@@ -315,6 +321,10 @@ export class AnnotationsSidebarComponent implements OnInit, OnDestroy {
 
     public getConfigureSampleTagName(): string {
         return this.settings.tagID < 0 ? 'No tag selected' : this.annotationsService.getSampleTagName(this.settings.tagID);
+    }
+
+    public getConfigureSampleTagColor(): string {
+        return this.settings.tagID < 0 ? 'rgba(0, 0, 0, 0)' : this.annotationsService.getSampleTagColor(this.settings.tagID);
     }
 
     public getConfigureSampleAvailableTags(): SampleTag[] {

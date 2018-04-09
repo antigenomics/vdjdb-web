@@ -25,15 +25,20 @@ import { Table } from 'shared/table/table';
 import { WebSocketConnection, WebSocketResponseStatus } from 'shared/websocket/websocket-connection';
 import { WebSocketRequestData } from 'shared/websocket/websocket-request';
 import { WebSocketResponseData } from 'shared/websocket/websocket-response';
+import { AnalyticsService } from 'utils/analytics/analytics.service';
 import { LoggerService } from 'utils/logger/logger.service';
 import { NotificationService } from 'utils/notifications/notification.service';
 import { Utils } from 'utils/utils';
 import { SearchTableRow } from './row/search-table-row';
 
 export class SearchTable extends Table<SearchTableRow> {
+    private static readonly SEARCH_DATABASE_GOAL: string = 'search-database-goal';
+    private static readonly EXPORT_DATABASE_GOAL: string = 'export-database-goal';
+    private static readonly CHANGE_PAGE_TABLE_GOAL: string = 'change-page-table-goal';
+
     private needReconnectEventSubscription: Subscription;
 
-    constructor(private searchTableService: SearchTableService, private filters: FiltersService,
+    constructor(private searchTableService: SearchTableService, private filters: FiltersService, private analytics: AnalyticsService,
                 private logger: LoggerService, private notifications: NotificationService) {
         super();
         const last = this.searchTableService.getLastResponse();
@@ -79,6 +84,7 @@ export class SearchTable extends Table<SearchTableRow> {
             });
 
             this.logger.debug('Search', response);
+            this.analytics.reachGoal(SearchTable.SEARCH_DATABASE_GOAL, ifilters);
             this.updateFromResponse(response);
             this.sortRule.clear();
         } else {
@@ -114,6 +120,7 @@ export class SearchTable extends Table<SearchTableRow> {
                     .unpack()
         });
         this.logger.debug('Page change', response);
+        this.analytics.reachGoal(SearchTable.CHANGE_PAGE_TABLE_GOAL, page);
         this.updateFromResponse(response);
     }
 
@@ -130,6 +137,7 @@ export class SearchTable extends Table<SearchTableRow> {
         });
         this.logger.debug('Export', response);
         if (response.get('status') === WebSocketResponseStatus.SUCCESS) {
+            this.analytics.reachGoal(SearchTable.EXPORT_DATABASE_GOAL, request);
             Utils.File.download(response.get('link'));
         } else {
             this.notifications.warn('Export', response.get('message'));

@@ -21,8 +21,8 @@ export class YandexMetrikaTools {
         this.counter = (window as any)['yaCounter' + id];
     }
 
-    public reachGoal(target: string): void {
-        this.counter.reachGoal(target);
+    public reachGoal(target: string, params?: any): void {
+        this.counter.reachGoal(target, params);
     }
 
     public hit(url: string): void {

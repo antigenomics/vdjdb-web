@@ -20,6 +20,13 @@ import { SampleTag } from 'shared/sample/sample-tag';
 import { Utils } from 'utils/utils';
 import { FileItemStatus, FileItemStatusErrorType } from './file-item-status';
 
+export interface IFileItemStats {
+    readonly name: string;
+    readonly extension: string;
+    readonly software: string;
+    readonly size: number;
+}
+
 export class FileItem {
     public static FULL_PROGRESS: number = 100;
     public static AVAILABLE_EXTENSIONS: string[] = [ 'txt', 'gz', 'zip' ];
@@ -43,6 +50,15 @@ export class FileItem {
             this.baseName = Utils.File.baseName(this.baseName);
             nextExt = Utils.File.extension(this.baseName);
         }
+    }
+
+    public getFileItemStats(): IFileItemStats {
+        return {
+            name: this.baseName,
+            extension: this.extension,
+            software: this.software,
+            size: this.compressed ? this.compressed.size : this.native.size
+        };
     }
 
     public setUploadedStatus(): void {

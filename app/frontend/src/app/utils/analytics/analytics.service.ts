@@ -32,10 +32,10 @@ export class AnalyticsService {
         });
     }
 
-    public reachGoal(target: string): void {
+    public reachGoal(target: string, params?: any): void {
         this.logger.debug('AnalyticsService', `Goal reached: ${target}`);
         if (this.yandexMetrikaTools) {
-            this.yandexMetrikaTools.reachGoal(target);
+            this.yandexMetrikaTools.reachGoal(target, params);
         }
     }
 

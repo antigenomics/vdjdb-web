@@ -149,6 +149,11 @@ export class AnnotationsService {
         return tag ? tag.name : '';
     }
 
+    public getSampleTagColor(tagID: number): string {
+        const tag = this._user.tags.find((t) => t.id === tagID);
+        return tag ? tag.color : '';
+    }
+
     public getSampleTag(sample: SampleItem): SampleTag {
         return sample.hasTag() ? this._user.tags.find((tag) => tag.id === sample.tagID) : undefined;
     }
