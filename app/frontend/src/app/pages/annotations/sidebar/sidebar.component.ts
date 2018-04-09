@@ -26,6 +26,7 @@ import { SampleItem } from 'shared/sample/sample-item';
 import { SampleTag } from 'shared/sample/sample-tag';
 import { LoggerService } from 'utils/logger/logger.service';
 import { NotificationService } from 'utils/notifications/notification.service';
+import { LocalStorageService } from 'utils/storage/local-storage.service';
 import { AnnotationsService, AnnotationsServiceEvents } from '../annotations.service';
 
 export interface ISampleSettings {
@@ -69,7 +70,7 @@ export class AnnotationsSidebarState {
         return this.metadata.has('sample');
     }
 
-    private parseSampleName(url: string): [string, string] {
+    private parseSampleName(url: string): [ string, string ] {
         const sampleRoute = url.substring('sample/'.length);
         const additionalRouteIndex = sampleRoute.indexOf('/');
         const sampleName = sampleRoute.substring(0, additionalRouteIndex === -1 ? sampleRoute.length : additionalRouteIndex);
@@ -102,15 +103,26 @@ export class AnnotationsSidebarComponent implements OnInit, OnDestroy {
     @ViewChild('sidebarSettings')
     public sidebarSettings: ElementRef;
 
+    @ViewChild('sortSettings')
+    public sortSettings: ElementRef;
+
     @Output('visible')
     public visible: EventEmitter<boolean> = new EventEmitter();
 
+    public sortCloseHandler: () => void;
+    public isSortVisible: boolean = false;
+    public sort: 'names' | 'tags' = 'names';
     public settings: ISampleSettings;
 
-    constructor(private annotationsService: AnnotationsService, private renderer: Renderer2,
+    constructor(private annotationsService: AnnotationsService, private renderer: Renderer2, private localStorage: LocalStorageService,
                 private hostViewContainer: ViewContainerRef, private resolver: ComponentFactoryResolver, private router: Router,
                 private changeDetector: ChangeDetectorRef, private logger: LoggerService, private notifications: NotificationService) {
         this._state = new AnnotationsSidebarState(this.router.url);
+
+        const savedLocalSortState = this.localStorage.get<'names' | 'tags'>('sidebar:sort');
+        if (savedLocalSortState !== undefined) {
+            this.setSortType(savedLocalSortState, false);
+        }
     }
 
     public ngOnInit(): void {
@@ -131,6 +143,10 @@ export class AnnotationsSidebarComponent implements OnInit, OnDestroy {
                             this.settings.tagID = this.settings.sample.tagID;
                         }
                     }
+                }
+                if (!this.isConfigureSampleTagsAvailable()) {
+                    this.isSortVisible = false;
+                    this.setSortType('names');
                 }
             }
             this.changeDetector.detectChanges();
@@ -190,7 +206,32 @@ export class AnnotationsSidebarComponent implements OnInit, OnDestroy {
     }
 
     public getSamples(): SampleItem[] {
-        return this.annotationsService.getSamples();
+        const samples = this.annotationsService.getSamples();
+        switch (this.sort) {
+            case 'names':
+                return samples.sort((s1, s2) => s1.name.localeCompare(s2.name));
+            case 'tags':
+                return samples.sort((s1, s2) => {
+                    if (s1.hasTag() && s2.hasTag()) {
+                        const c = s1.tagID - s2.tagID;
+                        if (c === 0) {
+                            return s1.name.localeCompare(s2.name);
+                        } else {
+                            return c;
+                        }
+                    } else if (s1.hasTag() && !s2.hasTag()) {
+                        return -1;
+                    } else if (!s1.hasTag() && s2.hasTag()) {
+                        return 1;
+                    } else if (!s1.hasTag() && !s2.hasTag()) {
+                        return s1.name.localeCompare(s2.name);
+                    }
+                    return 0;
+                });
+            default:
+                return samples.sort((s1, s2) => s1.name.localeCompare(s2.name));
+        }
+
     }
 
     public getSampleTag(sample: SampleItem): SampleTag {
@@ -277,6 +318,34 @@ export class AnnotationsSidebarComponent implements OnInit, OnDestroy {
         };
     }
 
+    public toggleSortVisibility(): void {
+        if (this.isSortVisible) {
+            this.renderer.setStyle(this.sortSettings.nativeElement, 'opacity', 0.0);
+            window.setTimeout(() => {
+                this.renderer.setStyle(this.sortSettings.nativeElement, 'display', 'none');
+            }, AnnotationsSidebarComponent._settingsHideDelay);
+            this.isSortVisible = false;
+        } else {
+            this.renderer.setStyle(this.sortSettings.nativeElement, 'display', 'block');
+            window.setImmediate(() => {
+                this.renderer.setStyle(this.sortSettings.nativeElement, 'opacity', 1.0);
+                this.isSortVisible = true;
+            });
+            window.addEventListener('click', () => {
+                this.toggleSortVisibility();
+            }, { once: true });
+        }
+    }
+
+    public setSortType(type: 'names' | 'tags', saveLocal: boolean = true): void {
+        if (this.sort !== type) {
+            this.sort = type;
+            if (saveLocal) {
+                this.localStorage.save('sidebar:sort', type);
+            }
+        }
+    }
+
     public isConfigureNewSampleNameValid(): boolean {
         if (!SampleItem.isNameValid(this.settings.name)) {
             return false;
@@ -309,7 +378,7 @@ export class AnnotationsSidebarComponent implements OnInit, OnDestroy {
             isNameValid: true,
             name:        sample.name,
             software:    sample.software,
-            tagID: sample.tagID,
+            tagID:       sample.tagID,
             saving:      false,
             sample
         };

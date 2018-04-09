@@ -50,6 +50,28 @@
   top: 51px !important;
 }
 
+.ui.sidebar.menu .item .header .sort.icon {
+  float: right;
+  text-align: center;
+  margin-top: 0.15em;
+  margin-right: -0.1em;
+  color: rgba(0, 0, 0, 0.5);
+}
+
+.ui.sidebar.menu .item .header .sort.icon:hover {
+  color: rgba(0, 0, 0, 0.75);
+  cursor: pointer;
+}
+
+.ui.sidebar.menu .item .header .sort-helper {
+  float: right;
+  text-align: center;
+}
+
+.ui.sidebar.menu .item .header:hover .sort-helper {
+  color: rgba(0, 0, 0, 0.75);
+}
+
 .ui.sidebar.menu .item .menu .selected.item {
   font-weight: bolder;
   color: rgba(0, 0, 0, 0.87);
@@ -130,6 +152,11 @@
   -moz-transition: top 0.2s ease-in-out, opacity 0.2s ease-in-out !important;
   -ms-transition: top 0.2s ease-in-out, opacity 0.2s ease-in-out !important;
   transition: top 0.2s ease-in-out, opacity 0.2s ease-in-out !important;
+}
+
+.ui.menu.sidebar-settings .item .menu .item.hover:hover {
+  background: rgba(0,0,0,.03);
+  color: rgba(0,0,0,.95);
 }
 
 .ui.vertical.menu {

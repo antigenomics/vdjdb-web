@@ -26,6 +26,7 @@ import { ClipboardService } from 'utils/clipboard/clipboard.service';
 import { LoaderModule } from 'utils/loader/loader.module';
 import { LoggerService } from 'utils/logger/logger.service';
 import { NotificationModule } from 'utils/notifications/notification.module';
+import { LocalStorageService } from 'utils/storage/local-storage.service';
 import { ApplicationComponent } from './application.component';
 import { ApplicationRouting } from './application.routing';
 
@@ -33,7 +34,7 @@ import { ApplicationRouting } from './application.routing';
     imports:      [ BrowserModule, CommonModule, ApplicationRouting, HomePageModule, OverviewPageModule, SearchPageModule,
                     NotificationModule, NavigationBarModule, LoaderModule ],
     declarations: [ ApplicationComponent ],
-    providers:    [ LoggerService, ClipboardService, AnalyticsService ],
+    providers:    [ LoggerService, ClipboardService, AnalyticsService, LocalStorageService ],
     bootstrap:    [ ApplicationComponent ]
 })
 export class ApplicationModule {
