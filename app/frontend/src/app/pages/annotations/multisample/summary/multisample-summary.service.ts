@@ -27,6 +27,7 @@ import { SampleTag } from 'shared/sample/sample-tag';
 import { WebSocketConnection } from 'shared/websocket/websocket-connection';
 import { WebSocketRequestData } from 'shared/websocket/websocket-request';
 import { WebSocketResponseData } from 'shared/websocket/websocket-response';
+import { AnalyticsService } from 'utils/analytics/analytics.service';
 import { LoggerService } from 'utils/logger/logger.service';
 import { NotificationService } from 'utils/notifications/notification.service';
 
@@ -66,8 +67,9 @@ export interface IMultisampleSummaryAnalysisTab {
 
 @Injectable()
 export class MultisampleSummaryService {
-    private static readonly maxTabsAvailable: number = 5;
-    private static readonly tabsNames: string[] = [ 'First', 'Second', 'Third', 'Fourth', 'Fifth' ];
+    private static readonly ALL_SAMPLES_ANNOTATE_GOAL: string = 'all-samples-annotate-goal';
+    private static readonly MAX_TABS_AVAILABLE: number = 5;
+    private static readonly TABS_NAMES: string[] = [ 'First', 'Second', 'Third', 'Fourth', 'Fifth' ];
 
     private events: Subject<MultisampleSummaryServiceEvents> = new Subject();
 
@@ -78,7 +80,7 @@ export class MultisampleSummaryService {
     private connectionFailed: boolean = false;
     private connection: WebSocketConnection;
 
-    constructor(private annotationsService: AnnotationsService,
+    constructor(private annotationsService: AnnotationsService, private analytics: AnalyticsService,
                 private logger: LoggerService, private notifications: NotificationService) {
         this.connection = this.connection = new WebSocketConnection(logger, notifications, true);
         this.connection.onOpen(async () => {
@@ -131,6 +133,7 @@ export class MultisampleSummaryService {
             return;
         }
 
+        this.analytics.reachGoal(MultisampleSummaryService.ALL_SAMPLES_ANNOTATE_GOAL);
         this.activeTab.state = IMultisampleSummaryAnalysisTabState.CONNECTING;
 
         const tabID: number = this.activeTab.id;
@@ -193,12 +196,12 @@ export class MultisampleSummaryService {
     }
 
     public addNewTab(): void {
-        if (this.tabs.length >= MultisampleSummaryService.maxTabsAvailable) {
+        if (this.tabs.length >= MultisampleSummaryService.MAX_TABS_AVAILABLE) {
             return;
         }
         this.tabs.push({
             id:            this.tabs.length + 1,
-            title:         MultisampleSummaryService.tabsNames[ this.tabs.length ],
+            title:         MultisampleSummaryService.TABS_NAMES[ this.tabs.length ],
             dirty:         false,
             filters:       new SampleFilters(),
             disabled:      false,
@@ -225,7 +228,7 @@ export class MultisampleSummaryService {
     }
 
     public isNewTabAllowed(): boolean {
-        return this.tabs.length < MultisampleSummaryService.maxTabsAvailable;
+        return this.tabs.length < MultisampleSummaryService.MAX_TABS_AVAILABLE;
     }
 
     public getCurrentTabFilters(): SampleFilters {

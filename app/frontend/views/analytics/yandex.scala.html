@@ -12,6 +12,10 @@
                         accurateTrackBounce: true,
                         webvisor: true
                     });
+                    w.analytics = {
+                        yandexID: '@yandexID'
+                    };
+                    w.dispatchEvent(new Event('analytics'))
                 } catch (e) {
                 }
             });

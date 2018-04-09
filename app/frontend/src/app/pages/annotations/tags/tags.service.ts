@@ -21,6 +21,7 @@ import { Observable } from 'rxjs/Observable';
 import { filter } from 'rxjs/operators';
 import { Subject } from 'rxjs/Subject';
 import { SampleTag } from 'shared/sample/sample-tag';
+import { AnalyticsService } from 'utils/analytics/analytics.service';
 import { LoggerService } from 'utils/logger/logger.service';
 import { NotificationService } from 'utils/notifications/notification.service';
 
@@ -39,11 +40,12 @@ export namespace TagsServiceEventType {
 
 @Injectable()
 export class TagsService {
-    private static readonly emptyTagID: number = -2;
+    private static readonly TAG_CREATED_GOAL: string = 'tag-create-goal';
+    private static readonly EMPTY_TAG_ID: number = -2;
     private events: Subject<TagsServiceEventType> = new Subject<TagsServiceEventType>();
 
     constructor(private logger: LoggerService, private annotationsService: AnnotationsService,
-                private notifications: NotificationService) {
+                private notifications: NotificationService, private analytics: AnalyticsService) {
         this.annotationsService.getEvents().pipe(filter((event) => {
             return event === AnnotationsServiceEvents.SAMPLE_UPDATED || event === AnnotationsServiceEvents.SAMPLE_DELETED;
         })).subscribe(() => {
@@ -64,7 +66,7 @@ export class TagsService {
     }
 
     public createNewTag(): void {
-        this.getAvailableTags().push(new SampleTag(TagsService.emptyTagID, '', '', this.annotationsService.getSamples(), false));
+        this.getAvailableTags().push(new SampleTag(TagsService.EMPTY_TAG_ID, '', '', this.annotationsService.getSamples(), false));
         this.events.next(TagsServiceEventType.TAG_ADDED);
         this.logger.debug('TagsService', 'New tag added');
     }
@@ -100,6 +102,7 @@ export class TagsService {
                     }
                     tag.loading = false;
                     this.events.next(TagsServiceEventType.TAG_SAVING_END);
+                    this.analytics.reachGoal(TagsService.TAG_CREATED_GOAL);
                 }
             }
         }

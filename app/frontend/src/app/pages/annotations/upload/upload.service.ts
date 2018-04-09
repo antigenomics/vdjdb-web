@@ -22,6 +22,7 @@ import { Observable } from 'rxjs/Observable';
 import { Observer } from 'rxjs/Observer';
 import { SampleItem } from 'shared/sample/sample-item';
 import { SampleTag } from 'shared/sample/sample-tag';
+import { AnalyticsService } from 'utils/analytics/analytics.service';
 import { LoggerService } from 'utils/logger/logger.service';
 import { NotificationService } from 'utils/notifications/notification.service';
 import { AnnotationsService, AnnotationsServiceEvents } from '../annotations.service';
@@ -41,13 +42,15 @@ export class UploadStatus {
 
 @Injectable()
 export class UploadService {
-    private static FULL_PROGRESS: number = 100;
-    private static SUCCESS_HTTP_CODE: number = 200;
+    private static readonly FILE_UPLOAD_GOAL: string = 'file-upload-goal';
+    private static readonly FULL_PROGRESS: number = 100;
+    private static readonly SUCCESS_HTTP_CODE: number = 200;
 
     private _uploadingCount: number = 0;
     private _files: FileItem[] = [];
 
-    constructor(private logger: LoggerService, private annotationsService: AnnotationsService, private notifications: NotificationService) {
+    constructor(private logger: LoggerService, private annotationsService: AnnotationsService,
+                private notifications: NotificationService, private analytics: AnalyticsService) {
         this.annotationsService.getEvents().subscribe((event: AnnotationsServiceEvents) => {
             switch (event) {
                 case AnnotationsServiceEvents.SAMPLE_DELETED:
@@ -216,6 +219,9 @@ export class UploadService {
             this.notifications.error('Upload', 'Uploading is not allowed for this account');
             return;
         }
+
+        this.analytics.reachGoal(UploadService.FILE_UPLOAD_GOAL);
+
         if (file.status.isReadyForUpload()) {
             file.status.setLoadingStatus();
 
