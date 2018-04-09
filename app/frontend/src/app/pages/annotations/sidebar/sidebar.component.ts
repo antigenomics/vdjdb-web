@@ -127,7 +127,7 @@ export class AnnotationsSidebarComponent implements OnInit, OnDestroy {
                             this.settings.tagID = -1;
                         }
                     } else {
-                        if (this.settings.sample.tagID !== -1) {
+                        if (this.settings.sample !== undefined && this.settings.sample.tagID !== -1) {
                             this.settings.tagID = this.settings.sample.tagID;
                         }
                     }
