@@ -22,14 +22,14 @@
         <div class="item">
             <div class="header">
                 Samples
-                <i class="ui small sort icon" *ngIf="isConfigureSampleTagsAvailable()" (click)="toggleSortVisibility()"></i>
+                <i class="ui small sort icon" *ngIf="!isTagsEmpty()" (click)="toggleSortVisibility()"></i>
             </div>
             <div class="menu" *ngIf="!isSamplesEmpty()">
                 <a class="item"></a>
                 <a class="item" *ngFor="let sample of getSamples()" (click)="sidebarRoute('sample', sample.name, 'table')"
-                   [ngClass]="{'padded vertically border selected':isSampleSelected(sample), 'updating':isSampleConfiguring(sample)}">
-                    <i class="trash icon" (click)="deleteSample(sample); $event.stopPropagation()" *ngIf="isConfiguringAllowed()"></i>
-                    <i class="cogs icon" (click)="configureSample(sample, $event); $event.stopPropagation()" *ngIf="isDeletingAllowed()"></i>
+                   [ngClass]="{'padded vertically border selected':isSampleSelected(sample), 'updating':isSampleUpdating(sample)}">
+                    <i class="trash icon" (click)="deleteSample(sample); $event.stopPropagation()" *ngIf="isDeletingAllowed()"></i>
+                    <i class="cogs icon" (click)="updateSample(sample, $event); $event.stopPropagation()" *ngIf="isUpdatingAllowed()"></i>
                     <a class="ui empty circular sample-tag label" *ngIf="sample.hasTag()" [style.background-color]="getSampleTag(sample).color"></a>
                     {{ sample.name }}
                     <div class="sample sub menu" *ngIf="isSampleSelected(sample)">
@@ -63,76 +63,5 @@
         </div>
     </div>
 </div>
-<div class="ui vertical menu sidebar-settings" [style.top]="settings ? settings.top : 0.0" #sidebarSettings>
-    <ng-container *ngIf="settings">
-        <div class="item">
-            <div class="header">Name:</div>
-            <div class="menu">
-                <div class="item">
-                    <div class="ui fluid transparent left icon input" [ngClass]="{'error':!settings.isNameValid}">
-                        <input placeholder="Enter new sample name here" [ngModel]="settings.name" (ngModelChange)="handleConfigureNewName($event)">
-                        <div class="ui left pointing red basic label" style="position: absolute;left: 105%;width: 200px;top: -35px;"
-                             *ngIf="!settings.isNameValid">
-                            File name can contain letters ('a-zA-Z'), numbers, . (dot), - (dash), _ (underline) and + (plus) symbols. <br>
-                            Also file name should have less than 40 symbols and should not be empty.
-                        </div>
-                        <i class="write icon"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="item">
-            <div class="header">Software:</div>
-            <div class="menu">
-                <div class="item">
-                    <div class="ui fluid left pointing scrolling dropdown" dropdown [content]="content">
-                        <span class="text">{{ settings.software }}</span>
-                        <i class="left dropdown icon"></i>
-                        <div class="menu fast fade element" #content>
-                            <div class="item" *ngFor="let software of getAvailableSoftwareTypes()" (click)="settings.software=software;">
-                                {{ software }}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="item" *ngIf="isConfigureSampleTagsAvailable()">
-            <div class="header">Tag:</div>
-            <div class="menu">
-                <div class="item">
-                    <div class="ui fluid left pointing scrolling dropdown" dropdown [content]="content">
-                        <span class="text">
-                            {{ getConfigureSampleTagName() }}
-                            <a class="ui empty circular sample-tag label" [style.background-color]="getConfigureSampleTagColor()"></a>
-                        </span>
-                        <i class="left dropdown icon"></i>
-                        <div class="menu fast fade element" #content>
-                            <div class="item" (click)="settings.tagID=-1;">
-                                Empty tag
-                            </div>
-                            <div class="item" *ngFor="let tag of getConfigureSampleAvailableTags()" (click)="settings.tagID=tag.id;">
-                                {{ tag.name }}
-                                <a class="ui empty circular sample-tag label" [style.background-color]="tag.color"></a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="item">
-            <button class="ui basic tiny right floated button" (click)="closeConfigureSample()">Close</button>
-            <button class="ui teal tiny button" [ngClass]="{'loading':settings.saving, 'disabled':!settings.isNameValid}" (click)="saveConfigureSample()">Save
-            </button>
-        </div>
-    </ng-container>
-</div>
-<div class="ui vertical menu sidebar-settings" style="top: 150px; width: 100px;" #sortSettings>
-    <div class="item">
-        <div class="header">Sort by:</div>
-        <div class="menu">
-            <div class="hover item cursor pointer" (click)="setSortType('names')">Names</div>
-            <div class="hover item cursor pointer" (click)="setSortType('tags')">Tags</div>
-        </div>
-    </div>
-</div>
+<update-sample-modal (onClosed)="detectStateChanges()"></update-sample-modal>
+<sort-modal (onSortChange)="detectStateChanges()"></sort-modal>
