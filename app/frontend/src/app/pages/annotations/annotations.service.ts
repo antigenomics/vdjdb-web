@@ -137,11 +137,16 @@ export class AnnotationsService {
     }
 
     public getTags(): SampleTag[] {
-        return this._user ? this._user.tags : [];
+        return this._user ? this._user.tags.filter((t) => t.saved) : [];
     }
 
     public getSample(name: string): SampleItem {
         return this._user ? this._user.samples.find((sample) => sample.name === name) : undefined;
+    }
+
+    public getSampleTagName(tagID: number): string {
+        const tag = this._user.tags.find((t) => t.id === tagID);
+        return tag ? tag.name : '';
     }
 
     public getSampleTag(sample: SampleItem): SampleTag {
@@ -284,28 +289,40 @@ export class AnnotationsService {
         return response.isSuccess();
     }
 
-    public async updateSampleProps(sample: SampleItem, newName: string, newSoftware: string): Promise<boolean> {
+    public async updateSampleProps(sample: SampleItem, newName: string, newSoftware: string, newTagID: number): Promise<boolean> {
         const response = await this.connection.sendMessage({
             action: AnnotationsServiceWebSocketActions.UPDATE_SAMPLE_PROPS,
             data:   new WebSocketRequestData()
                         .add('prevSampleName', sample.name)
                         .add('newSampleName', newName)
                         .add('newSampleSoftware', newSoftware)
+                        .add('newTagID', newTagID)
                         .unpack()
         });
         if (response.isSuccess()) {
             const prevSampleName = response.get('prevSampleName');
             const newSampleName = response.get('newSampleName');
             const newSampleSoftware = response.get('newSampleSoftware');
+            const newTagIDR = response.get('newTagID');
 
             const find = this.getUser().samples.find((s) => s.name === prevSampleName);
-            find.updateProps(newSampleName, newSampleSoftware);
+
+            if (sample.tagID !== -1 && newTagID !== sample.tagID) {
+                const tag = this.getSampleTag(sample);
+                const index = tag.samples.findIndex((s) => s.value === prevSampleName);
+                if (index !== -1) {
+                    tag.samples.splice(index, 1);
+                }
+            }
+            find.updateProps(newSampleName, newSampleSoftware, newTagIDR);
             if (sample.tagID !== -1) {
                 const tag = this.getSampleTag(find);
                 const entry = tag.samples.find((s) => s.value === prevSampleName);
                 if (entry !== undefined) {
                     entry.value = newSampleName;
                     entry.display = newSampleName;
+                } else {
+                    tag.samples.push(new SetEntry(newSampleName, newSampleName, false));
                 }
             }
 

@@ -113,16 +113,17 @@ class AnnotationsWebSocketActor(out: ActorRef, limit: IpLimit, user: User, detai
                     }
                 })
             case UpdateSamplePropsInfoResponse.Action =>
-                validateData(out, data, (updateSamplePropsRequest: UpdateSamplePropsInfoRequest) => async {
-                    val sampleFile = await(user.getSampleFileByName(updateSamplePropsRequest.prevSampleName))
+                validateData(out, data, (request: UpdateSamplePropsInfoRequest) => async {
+                    val sampleFile = await(user.getSampleFileByName(request.prevSampleName))
                     sampleFile match {
                         case Some(sample) =>
-                            sample.updateSampleFileProps(updateSamplePropsRequest.newSampleName, updateSamplePropsRequest.newSampleSoftware).onComplete {
+                            sample.updateSampleFileProps(request.newSampleName, request.newSampleSoftware, request.newTagID).onComplete {
                                 case Success(_) =>
                                     out.success(UpdateSamplePropsInfoResponse(
-                                        updateSamplePropsRequest.prevSampleName,
-                                        updateSamplePropsRequest.newSampleName,
-                                        updateSamplePropsRequest.newSampleSoftware
+                                        request.prevSampleName,
+                                        request.newSampleName,
+                                        request.newSampleSoftware,
+                                        request.newTagID
                                     ))
                                 case Failure(_) =>
                                     out.errorMessage("An error occured during sample updating")

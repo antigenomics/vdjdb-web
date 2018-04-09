@@ -59,16 +59,8 @@ export class TagsService {
         return this.events;
     }
 
-    public isTagNameValid(tag: SampleTag): boolean {
-        return SampleTag.isNameValid(tag.name);
-    }
-
-    public isTagColorValid(tag: SampleTag): boolean {
-        return SampleTag.isColorValid(tag.color);
-    }
-
     public isTagNameHelpVisible(): boolean {
-        return this.getAvailableTags().reduce((previous, tag) => previous || !this.isTagNameValid(tag), false);
+        return this.getAvailableTags().reduce((previous, tag) => previous || !SampleTag.isNameValid(tag.name), false);
     }
 
     public createNewTag(): void {
@@ -87,12 +79,12 @@ export class TagsService {
             this.logger.debug('TagsService', `Failed to save tag ${tag.name}. It is already saving`);
             this.notifications.warn('Tags', `Wait until ${tag.name} will be saved`);
         } else {
-            const nameValid = this.isTagNameValid(tag);
+            const nameValid = SampleTag.isNameValid(tag.name);
             if (!nameValid) {
                 this.logger.debug('TagsService', `Failed to save tag ${tag.name}. Invalid name`);
                 this.notifications.error('Tags', `Invalid tag name: ${tag.name}`);
             } else {
-                const colorValid = this.isTagColorValid(tag);
+                const colorValid = SampleTag.isColorValid(tag.color);
                 if (!colorValid) {
                     this.logger.debug('TagsService', `Failed to save tag ${tag.name}. Invalid color`);
                     this.notifications.error('Tags', `Select tag color: ${tag.name}`);

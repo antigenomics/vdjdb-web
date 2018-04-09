@@ -18,6 +18,7 @@
 package backend.models.files.sample
 
 import backend.models.authorization.user.{User, UserProvider}
+import backend.models.files.sample.tags.SampleTagProvider
 import backend.models.files.{FileMetadata, FileMetadataProvider}
 
 import scala.async.Async.{async, await}
@@ -42,13 +43,15 @@ case class SampleFile(id: Long, sampleName: String, software: String, readsCount
         sfp.updateSampleFileInfo(this, readsCount, clonotypesCount)
     }
 
-    def updateSampleFileProps(newSampleName: String, newSoftware: String)(implicit sfp: SampleFileProvider, up: UserProvider, ec: ExecutionContext): Future[Int] = async {
+    def updateSampleFileProps(newSampleName: String, newSoftware: String, newTagID: Long)
+                             (implicit sfp: SampleFileProvider, stp: SampleTagProvider, up: UserProvider, ec: ExecutionContext): Future[Int] = async {
         val files = await(this.getUser.flatMap(_.getSampleFiles))
         val duplicate = files.filter(_ != this).find(_.sampleName == newSampleName)
         if (duplicate.nonEmpty) {
             await(Future.failed[Int](new Exception("Duplicate found")))
         } else {
-            await(sfp.updateSampleFileProps(this, newSampleName, newSoftware))
+            val tag = await(stp.getByIdAndUser(newTagID, await(this.getUser)))
+            await(sfp.updateSampleFileProps(this, newSampleName, newSoftware, if (tag.nonEmpty) newTagID else -1))
         }
     }
 

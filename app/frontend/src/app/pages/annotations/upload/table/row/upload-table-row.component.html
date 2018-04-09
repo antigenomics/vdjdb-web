@@ -14,7 +14,7 @@
         </ng-container>
         <ng-container *ngIf="item.tag !== undefined">
             <span class="text">{{ item.tag.name }}</span>
-            <a class="ui empty circular sample-tag label" [style.background-color]="item.tag.color"></a>
+            <a class="ui empty circular sample-tag label" [style.background-color]="item.getTagColor()"></a>
         </ng-container>
         <i class="dropdown icon"></i>
         <div class="menu fast fade element" #content>
@@ -26,7 +26,7 @@
     </div>
     <div *ngIf="!item.status.isWaiting()">
         {{ item.tag.name }}
-        <a class="ui empty circular sample-tag label" [style.background-color]="item.tag.color"></a>
+        <a class="ui empty circular sample-tag label" [style.background-color]="item.getTagColor()"></a>
     </div>
 </td>
 <td>

@@ -68,6 +68,10 @@ export class FileItem {
         this.tag = tag;
     }
 
+    public getTagColor(): string {
+        return this.tag !== undefined ? this.tag.color : undefined;
+    }
+
     public setExtension(extension: string): void {
         this.extension = extension;
     }

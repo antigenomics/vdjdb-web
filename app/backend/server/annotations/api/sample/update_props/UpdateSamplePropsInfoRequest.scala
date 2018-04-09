@@ -19,7 +19,7 @@ package backend.server.annotations.api.sample.update_props
 
 import play.api.libs.json.{Json, Reads}
 
-case class UpdateSamplePropsInfoRequest(prevSampleName: String, newSampleName: String, newSampleSoftware: String)
+case class UpdateSamplePropsInfoRequest(prevSampleName: String, newSampleName: String, newSampleSoftware: String, newTagID: Long)
 
 object UpdateSamplePropsInfoRequest {
     implicit val updateSamplePropsInfoRequestReads: Reads[UpdateSamplePropsInfoRequest] = Json.reads[UpdateSamplePropsInfoRequest]
