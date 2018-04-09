@@ -82,12 +82,20 @@ export class FileItem {
         this.software = software;
     }
 
+    public removeTag(): void {
+        this.tag = undefined;
+    }
+
     public setTag(tag: SampleTag): void {
         this.tag = tag;
     }
 
+    public getTagName(): string {
+        return this.tag !== undefined ? this.tag.name : 'No tag selected';
+    }
+
     public getTagColor(): string {
-        return this.tag !== undefined ? this.tag.color : undefined;
+        return this.tag !== undefined ? this.tag.color : 'rgba(0, 0, 0, 0)';
     }
 
     public setExtension(extension: string): void {
