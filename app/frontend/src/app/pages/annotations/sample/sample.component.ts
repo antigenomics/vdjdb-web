@@ -19,6 +19,7 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component } from '@angular/
 import { ActivatedRoute } from '@angular/router';
 import { SampleRouteResolverComponent } from 'pages/annotations/sample/common/sample-route-resolver.component';
 import { SampleService } from 'pages/annotations/sample/sample.service';
+import { AnalyticsService } from 'utils/analytics/analytics.service';
 
 @Component({
     selector:        'sample',
@@ -26,12 +27,14 @@ import { SampleService } from 'pages/annotations/sample/sample.service';
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AnnotationsSampleComponent extends SampleRouteResolverComponent {
+    private static readonly SAMPLE_ANNOTATE_GOAL: string = 'sample-annotate-goal';
 
-    constructor(sampleService: SampleService, activatedRoute: ActivatedRoute, changeDetector: ChangeDetectorRef) {
+    constructor(sampleService: SampleService, activatedRoute: ActivatedRoute, changeDetector: ChangeDetectorRef, private analytics: AnalyticsService) {
         super(activatedRoute.data, activatedRoute.snapshot, changeDetector, sampleService);
     }
 
     public intersect(): void {
+        this.analytics.reachGoal(AnnotationsSampleComponent.SAMPLE_ANNOTATE_GOAL);
         this.sampleService.intersect(this.sample);
     }
 

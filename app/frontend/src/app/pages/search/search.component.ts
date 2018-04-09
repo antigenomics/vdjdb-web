@@ -18,6 +18,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { SearchTable } from 'pages/search/table/search/search-table';
 import { FiltersService } from 'shared/filters/filters.service';
 import { TableColumn } from 'shared/table/column/table-column';
+import { AnalyticsService } from 'utils/analytics/analytics.service';
 import { LoggerService } from 'utils/logger/logger.service';
 import { NotificationService } from 'utils/notifications/notification.service';
 import { SearchTableService } from './table/search/search-table.service';
@@ -27,10 +28,12 @@ import { SearchTableService } from './table/search/search-table.service';
     templateUrl: './search.component.html'
 })
 export class SearchPageComponent implements OnInit, OnDestroy {
+    private static readonly SEARCH_DATABASE_GOAL: string = 'search-database-goal';
+
     public columns: TableColumn[] = [];
     public table: SearchTable;
 
-    constructor(private searchTableService: SearchTableService, private filters: FiltersService,
+    constructor(private searchTableService: SearchTableService, private filters: FiltersService, private analytics: AnalyticsService,
                 logger: LoggerService, notifications: NotificationService) {
         this.table = new SearchTable(searchTableService, filters, logger, notifications);
         if (this.searchTableService.isInitialized()) {
@@ -52,6 +55,7 @@ export class SearchPageComponent implements OnInit, OnDestroy {
     }
 
     public search(): void {
+        this.analytics.reachGoal(SearchPageComponent.SEARCH_DATABASE_GOAL);
         this.table.update();
     }
 
