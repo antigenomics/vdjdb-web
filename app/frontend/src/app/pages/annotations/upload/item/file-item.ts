@@ -82,6 +82,10 @@ export class FileItem {
         this.software = software;
     }
 
+    public hasTag(): boolean {
+        return this.tag !== undefined;
+    }
+
     public removeTag(): void {
         this.tag = undefined;
     }
