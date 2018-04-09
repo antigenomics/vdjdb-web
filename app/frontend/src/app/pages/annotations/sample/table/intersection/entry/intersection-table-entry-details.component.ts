@@ -93,11 +93,11 @@ export class IntersectionTableEntryDetailsComponent extends TableEntry implement
             table.updateRows(this._row.matches);
 
             this._matchesComponent.instance.table = table;
-            this.updatePopup();
         } else if (this._matchesComponent) {
             this._matchesComponent.destroy();
             this._matchesComponent = undefined;
         }
+        this.updatePopup(false);
     }
 
     public create(_entry: string, _column: TableColumn, _columns: TableColumn[], row: IntersectionTableRow,
@@ -132,9 +132,9 @@ export class IntersectionTableEntryDetailsComponent extends TableEntry implement
         return new PopupContentTable(headers, rows);
     }
 
-    private updatePopup(): void {
+    private updatePopup(visible?: boolean): void {
         this.changeDetector.detectChanges();
-        this._directive.updateView();
+        this._directive.updateView(visible);
     }
 
     get loading(): boolean {
