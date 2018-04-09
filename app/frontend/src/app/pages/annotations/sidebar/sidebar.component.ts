@@ -20,24 +20,15 @@ import {
     OnDestroy, OnInit, Output, Renderer2, RendererStyleFlags2, ViewChild, ViewContainerRef
 } from '@angular/core';
 import { Router } from '@angular/router';
+import { SortModalComponent } from 'pages/annotations/sidebar/sort_modal/sort-modal.component';
+import { UpdateSampleModalComponent } from 'pages/annotations/sidebar/update_sample_modal/update-sample-modal.component';
 import { Subscription } from 'rxjs/Subscription';
 import { ModalComponent } from 'shared/modals/modal/modal.component';
 import { SampleItem } from 'shared/sample/sample-item';
 import { SampleTag } from 'shared/sample/sample-tag';
 import { LoggerService } from 'utils/logger/logger.service';
 import { NotificationService } from 'utils/notifications/notification.service';
-import { LocalStorageService } from 'utils/storage/local-storage.service';
 import { AnnotationsService, AnnotationsServiceEvents } from '../annotations.service';
-
-export interface ISampleSettings {
-    top: string;
-    isNameValid: boolean;
-    name: string;
-    software: string;
-    tagID: number;
-    saving: boolean;
-    sample: SampleItem;
-}
 
 export class AnnotationsSidebarState {
     public path: string = '';
@@ -85,8 +76,6 @@ export class AnnotationsSidebarState {
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AnnotationsSidebarComponent implements OnInit, OnDestroy {
-    private static readonly _settingsHideDelay: number = 200;
-    private static readonly _settingsTopShift: number = -35;
     private static readonly _displaySidebarContentDelay: number = 200;
     private _confirmDeletingModalComponent: ComponentRef<ModalComponent>;
     private _filesUploadingLabel: boolean = false;
@@ -100,29 +89,19 @@ export class AnnotationsSidebarComponent implements OnInit, OnDestroy {
     @ViewChild('sidebarContent')
     public sidebarContent: ElementRef;
 
-    @ViewChild('sidebarSettings')
-    public sidebarSettings: ElementRef;
+    @ViewChild(UpdateSampleModalComponent)
+    public updateSampleModal: UpdateSampleModalComponent;
 
-    @ViewChild('sortSettings')
-    public sortSettings: ElementRef;
+    @ViewChild(SortModalComponent)
+    public sortModal: SortModalComponent;
 
     @Output('visible')
     public visible: EventEmitter<boolean> = new EventEmitter();
 
-    public sortCloseHandler: () => void;
-    public isSortVisible: boolean = false;
-    public sort: 'names' | 'tags' = 'names';
-    public settings: ISampleSettings;
-
-    constructor(private annotationsService: AnnotationsService, private renderer: Renderer2, private localStorage: LocalStorageService,
+    constructor(private annotationsService: AnnotationsService, private renderer: Renderer2,
                 private hostViewContainer: ViewContainerRef, private resolver: ComponentFactoryResolver, private router: Router,
                 private changeDetector: ChangeDetectorRef, private logger: LoggerService, private notifications: NotificationService) {
         this._state = new AnnotationsSidebarState(this.router.url);
-
-        const savedLocalSortState = this.localStorage.get<'names' | 'tags'>('sidebar:sort');
-        if (savedLocalSortState !== undefined) {
-            this.setSortType(savedLocalSortState, false);
-        }
     }
 
     public ngOnInit(): void {
@@ -132,21 +111,8 @@ export class AnnotationsSidebarComponent implements OnInit, OnDestroy {
             } else if (event === AnnotationsServiceEvents.UPLOAD_SERVICE_UPLOAD_ENDED) {
                 this._filesUploadingLabel = false;
             } else if (event === AnnotationsServiceEvents.SAMPLE_TAGS_UPDATED) {
-                if (this.settings !== undefined) {
-                    if (this.settings.tagID !== -1) {
-                        const isSettingsTagIDAvailable = this.annotationsService.getTags().findIndex((t) => t.id === this.settings.tagID);
-                        if (isSettingsTagIDAvailable === -1) {
-                            this.settings.tagID = -1;
-                        }
-                    } else {
-                        if (this.settings.sample !== undefined && this.settings.sample.tagID !== -1) {
-                            this.settings.tagID = this.settings.sample.tagID;
-                        }
-                    }
-                }
-                if (!this.isConfigureSampleTagsAvailable()) {
-                    this.isSortVisible = false;
-                    this.setSortType('names');
+                if (this.isTagsEmpty()) {
+                    this.sortModal.setSortBy('names');
                 }
             }
             this.changeDetector.detectChanges();
@@ -154,7 +120,7 @@ export class AnnotationsSidebarComponent implements OnInit, OnDestroy {
     }
 
     public hide(): void {
-        this.closeConfigureSample();
+        this.updateSampleModal.close();
         this.visible.emit(false);
         this.renderer.setStyle(this.sidebar.nativeElement, 'width', '40px', RendererStyleFlags2.Important);
         this.renderer.setStyle(this.sidebarContent.nativeElement, 'display', 'none');
@@ -185,7 +151,7 @@ export class AnnotationsSidebarComponent implements OnInit, OnDestroy {
         if (routed) {
             this._state.update(this.router.url);
         }
-        this.closeConfigureSample();
+        this.updateSampleModal.close();
         this.changeDetector.detectChanges();
     }
 
@@ -207,7 +173,7 @@ export class AnnotationsSidebarComponent implements OnInit, OnDestroy {
 
     public getSamples(): SampleItem[] {
         const samples = this.annotationsService.getSamples();
-        switch (this.sort) {
+        switch (this.sortModal.sortBy) {
             case 'names':
                 return samples.sort((s1, s2) => s1.name.localeCompare(s2.name));
             case 'tags':
@@ -242,6 +208,10 @@ export class AnnotationsSidebarComponent implements OnInit, OnDestroy {
         return this.getSamples().length === 0;
     }
 
+    public isTagsEmpty(): boolean {
+        return this.annotationsService.getTags().length === 0;
+    }
+
     public isSampleRouteContains(route: string): boolean {
         return this._state.isRouteContains(route);
     }
@@ -258,8 +228,12 @@ export class AnnotationsSidebarComponent implements OnInit, OnDestroy {
         return this.annotationsService.getUserPermissions().isDeleteAllowed;
     }
 
-    public isConfiguringAllowed(): boolean {
+    public isUpdatingAllowed(): boolean {
         return this.annotationsService.getUserPermissions().isDeleteAllowed;
+    }
+
+    public isSampleUpdating(sample: SampleItem): boolean {
+        return this.updateSampleModal.isSampleUpdating(sample);
     }
 
     public deleteSample(sample: SampleItem): void {
@@ -279,9 +253,7 @@ export class AnnotationsSidebarComponent implements OnInit, OnDestroy {
                 if (this.isSampleSelected(sample)) {
                     this.router.navigate([ 'annotations', 'info' ]);
                 }
-                if (this.settings !== undefined && this.settings.sample === sample) {
-                    this.closeConfigureSample();
-                }
+                this.updateSampleModal.close();
             } else {
                 this.notifications.error('Delete', `Unable to delete ${sample.name} sample`);
             }
@@ -308,7 +280,7 @@ export class AnnotationsSidebarComponent implements OnInit, OnDestroy {
                 if (this._state.path.startsWith('sample')) {
                     this.router.navigate([ 'annotations', 'info' ]);
                 }
-                this.closeConfigureSample();
+                this.updateSampleModal.close();
             } else {
                 this.notifications.error('Delete', `Unable to delete samples`);
             }
@@ -318,131 +290,19 @@ export class AnnotationsSidebarComponent implements OnInit, OnDestroy {
         };
     }
 
-    public toggleSortVisibility(): void {
-        if (this.isSortVisible) {
-            this.renderer.setStyle(this.sortSettings.nativeElement, 'opacity', 0.0);
-            window.setTimeout(() => {
-                this.renderer.setStyle(this.sortSettings.nativeElement, 'display', 'none');
-            }, AnnotationsSidebarComponent._settingsHideDelay);
-            this.isSortVisible = false;
-        } else {
-            this.renderer.setStyle(this.sortSettings.nativeElement, 'display', 'block');
-            window.setImmediate(() => {
-                this.renderer.setStyle(this.sortSettings.nativeElement, 'opacity', 1.0);
-                this.isSortVisible = true;
-            });
-            window.addEventListener('click', () => {
-                this.toggleSortVisibility();
-            }, { once: true });
-        }
-    }
-
-    public setSortType(type: 'names' | 'tags', saveLocal: boolean = true): void {
-        if (this.sort !== type) {
-            this.sort = type;
-            if (saveLocal) {
-                this.localStorage.save('sidebar:sort', type);
-            }
-        }
-    }
-
-    public isConfigureNewSampleNameValid(): boolean {
-        if (!SampleItem.isNameValid(this.settings.name)) {
-            return false;
-        }
-        const duplicate = this.annotationsService.getSamples()
-            .filter((s) => s !== this.settings.sample)
-            .findIndex((s) => s.name === this.settings.name);
-        return duplicate === -1;
-
-    }
-
-    public isSampleConfiguring(sample: SampleItem): boolean {
-        return this.settings !== undefined && this.settings.sample === sample;
-    }
-
-    public configureSample(sample: SampleItem, event: MouseEvent): void {
+    public updateSample(sample: SampleItem, event: MouseEvent): void {
         if (!this.annotationsService.getUserPermissions().isDeleteAllowed) {
             this.notifications.error('Sample update', 'Updating is not allowed for this account');
             return;
         }
-
-        if (this.settings && this.settings.saving) {
-            this.notifications.warn('Sample update', 'Wait until previous updating will be completed');
-            return;
-        }
-
-        this.openConfigureSample();
-        this.settings = {
-            top:         `${event.clientY + AnnotationsSidebarComponent._settingsTopShift}px`,
-            isNameValid: true,
-            name:        sample.name,
-            software:    sample.software,
-            tagID:       sample.tagID,
-            saving:      false,
-            sample
-        };
+        this.updateSampleModal.update(sample, event.clientY);
     }
 
-    public isConfigureSampleTagsAvailable(): boolean {
-        return this.annotationsService.getTags().length !== 0;
+    public toggleSortVisibility(): void {
+        this.sortModal.toggle();
     }
 
-    public getConfigureSampleTagName(): string {
-        return this.settings.tagID < 0 ? 'No tag selected' : this.annotationsService.getSampleTagName(this.settings.tagID);
-    }
-
-    public getConfigureSampleTagColor(): string {
-        return this.settings.tagID < 0 ? 'rgba(0, 0, 0, 0)' : this.annotationsService.getSampleTagColor(this.settings.tagID);
-    }
-
-    public getConfigureSampleAvailableTags(): SampleTag[] {
-        return this.annotationsService.getTags();
-    }
-
-    public handleConfigureNewName(newName: string): void {
-        this.settings.name = newName;
-        this.settings.isNameValid = this.isConfigureNewSampleNameValid();
-    }
-
-    public closeConfigureSample(): void {
-        if (this.settings) {
-            this.settings.sample = undefined;
-        }
-        this.renderer.setStyle(this.sidebarSettings.nativeElement, 'opacity', 0.0);
-        window.setTimeout(() => {
-            this.renderer.setStyle(this.sidebarSettings.nativeElement, 'display', 'none');
-        }, AnnotationsSidebarComponent._settingsHideDelay);
-    }
-
-    public openConfigureSample(): void {
-        this.renderer.setStyle(this.sidebarSettings.nativeElement, 'display', 'block');
-        window.setImmediate(() => {
-            this.renderer.setStyle(this.sidebarSettings.nativeElement, 'opacity', 1.0);
-        });
-    }
-
-    public async saveConfigureSample(): Promise<void> {
-        if (!this.settings.isNameValid) {
-            this.notifications.error('Sample update', 'New sample name is not valid');
-            return;
-        }
-
-        this.settings.saving = true;
-        this.changeDetector.detectChanges();
-
-        const success = await this.annotationsService.updateSampleProps(this.settings.sample, this.settings.name, this.settings.software, this.settings.tagID);
-        if (!success) {
-            this.notifications.error('Sample update', 'An error occured during sample updating');
-        } else {
-            this.notifications.success('Sample update', 'Sample successfully updated');
-            window.setTimeout(() => {
-                this.closeConfigureSample();
-                this.changeDetector.detectChanges();
-            }, AnnotationsSidebarComponent._settingsHideDelay);
-        }
-
-        this.settings.saving = false;
+    public detectStateChanges(): void {
         this.changeDetector.detectChanges();
     }
 
