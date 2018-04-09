@@ -117,8 +117,8 @@ class SampleFileProvider @Inject()(@NamedDatabase("default") protected val dbCon
         db.run(table.filter(_.id === sample.id).map(s => (s.readsCount, s.clonotypesCount)).update((readsCount, clonotypesCount)))
     }
 
-    def updateSampleFileProps(sample: SampleFile, newSampleName: String, newSoftware: String): Future[Int] = {
-        db.run(table.filter(_.id === sample.id).map(s => (s.sampleName, s.software)).update((newSampleName, newSoftware)))
+    def updateSampleFileProps(sample: SampleFile, newSampleName: String, newSoftware: String, newTagID: Long): Future[Int] = {
+        db.run(table.filter(_.id === sample.id).map(s => (s.sampleName, s.software, s.tagID)).update((newSampleName, newSoftware, newTagID)))
     }
 
     def updateSampleFileTagID(sample: SampleFile, tagID: Long): Future[Int] = {

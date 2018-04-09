@@ -58,7 +58,7 @@ class TemporaryFileProvider @Inject()(@NamedDatabase("default") protected val db
     }
 
     lifecycle.addStopHook { () => Future.successful(deleteScheduler.foreach(_.cancel())) }
-    
+
     def getTable: TableQuery[TemporaryFileTable] = table
 
     def getTemporaryFilesDirectoryPath: String = configuration.path

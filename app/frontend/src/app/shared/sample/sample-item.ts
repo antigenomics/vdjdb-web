@@ -44,9 +44,10 @@ export class SampleItem {
         this.tagID = tagID;
     }
 
-    public updateProps(newName: string, newSoftware: string): void {
+    public updateProps(newName: string, newSoftware: string, newTagID: number): void {
         this.name = newName;
         this.software = newSoftware;
+        this.tagID = newTagID;
     }
 
     public setData(data: ISampleItemData): void {

@@ -31,7 +31,7 @@ export class TagsTableRowComponent {
     constructor(private tagsService: TagsService, private annotationsService: AnnotationsService) {}
 
     public isTagNameValid(): boolean {
-        return this.tagsService.isTagNameValid(this.tag);
+        return SampleTag.isNameValid(this.tag.name);
     }
 
     public pickColor(color: string): void {

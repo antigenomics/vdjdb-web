@@ -33,6 +33,7 @@ export interface ISampleSettings {
     isNameValid: boolean;
     name: string;
     software: string;
+    tagID: number;
     saving: boolean;
     sample: SampleItem;
 }
@@ -118,6 +119,13 @@ export class AnnotationsSidebarComponent implements OnInit, OnDestroy {
                 this._filesUploadingLabel = true;
             } else if (event === AnnotationsServiceEvents.UPLOAD_SERVICE_UPLOAD_ENDED) {
                 this._filesUploadingLabel = false;
+            } else if (event === AnnotationsServiceEvents.SAMPLE_TAGS_UPDATED) {
+                if (this.settings !== undefined) {
+                    const isSettingsTagIDAvailable = this.annotationsService.getTags().findIndex((t) => t.id === this.settings.tagID);
+                    if (isSettingsTagIDAvailable === -1) {
+                        this.settings.tagID = -1;
+                    }
+                }
             }
             this.changeDetector.detectChanges();
         });
@@ -270,10 +278,8 @@ export class AnnotationsSidebarComponent implements OnInit, OnDestroy {
         const duplicate = this.annotationsService.getSamples()
             .filter((s) => s !== this.settings.sample)
             .findIndex((s) => s.name === this.settings.name);
-        if (duplicate !== -1) {
-            return false;
-        }
-        return true;
+        return duplicate === -1;
+
     }
 
     public isSampleConfiguring(sample: SampleItem): boolean {
@@ -297,9 +303,22 @@ export class AnnotationsSidebarComponent implements OnInit, OnDestroy {
             isNameValid: true,
             name:        sample.name,
             software:    sample.software,
+            tagID: sample.tagID,
             saving:      false,
             sample
         };
+    }
+
+    public isConfigureSampleTagsAvailable(): boolean {
+        return this.annotationsService.getTags().length !== 0;
+    }
+
+    public getConfigureSampleTagName(): string {
+        return this.settings.tagID < 0 ? 'No tag selected' : this.annotationsService.getSampleTagName(this.settings.tagID);
+    }
+
+    public getConfigureSampleAvailableTags(): SampleTag[] {
+        return this.annotationsService.getTags();
     }
 
     public handleConfigureNewName(newName: string): void {
@@ -333,7 +352,7 @@ export class AnnotationsSidebarComponent implements OnInit, OnDestroy {
         this.settings.saving = true;
         this.changeDetector.detectChanges();
 
-        const success = await this.annotationsService.updateSampleProps(this.settings.sample, this.settings.name, this.settings.software);
+        const success = await this.annotationsService.updateSampleProps(this.settings.sample, this.settings.name, this.settings.software, this.settings.tagID);
         if (!success) {
             this.notifications.error('Sample update', 'An error occured during sample updating');
         } else {
