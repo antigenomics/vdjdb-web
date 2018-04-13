@@ -13,7 +13,7 @@ lazy val root = (project in file(".")).enablePlugins(PlayScala, LauncherJarPlugi
 pipelineStages := Seq(digest)
 
 libraryDependencies ++= Seq(
-    "com.antigenomics" % "vdjmatch" % "1.2.0",
+    "com.antigenomics" % "vdjmatch" % "1.2.1-SNAPSHOT",
     "ch.qos.logback" % "logback-classic" % "1.2.3",
     "com.typesafe.scala-logging" %% "scala-logging" % "3.8.0",
     "com.typesafe.play" %% "play-slick" % "3.0.3",
