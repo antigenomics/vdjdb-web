@@ -20,7 +20,7 @@ package backend.server.annotations.api.multisample.summary
 import play.api.libs.json.{Json, Reads}
 
 case class MultisampleSummaryAnalysisRequest(tabID: Int, sampleNames: Seq[String],
-                                             hammingDistance: Int, confidenceThreshold: Int,
+                                             hammingDistance: Int, confidenceThreshold: Int, minEpitopeSize: Int,
                                              matchV: Boolean, matchJ: Boolean,
                                              species: String, gene: String, mhc: String) {}
 

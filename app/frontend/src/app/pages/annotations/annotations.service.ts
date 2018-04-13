@@ -185,6 +185,7 @@ export class AnnotationsService {
             data:   new WebSocketRequestData()
                         .add('sampleName', sample.name)
                         .add('hammingDistance', filters.hammingDistance)
+                        .add('minEpitopeSize', filters.minEpitopeSize)
                         .add('confidenceThreshold', filters.confidenceThreshold)
                         .add('matchV', filters.matchV)
                         .add('matchJ', filters.matchJ)

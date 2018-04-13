@@ -146,6 +146,7 @@ export class MultisampleSummaryService {
                         .add('tabID', tabID)
                         .add('sampleNames', sampleNames)
                         .add('hammingDistance', filters.hammingDistance)
+                        .add('minEpitopeSize', filters.minEpitopeSize)
                         .add('confidenceThreshold', filters.confidenceThreshold)
                         .add('matchV', filters.matchV)
                         .add('matchJ', filters.matchJ)
