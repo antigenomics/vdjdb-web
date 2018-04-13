@@ -25,6 +25,7 @@ import { PopupContentTable } from 'shared/modals/popup/popup-content-table';
 import { PopupDirective } from 'shared/modals/popup/popup.directive';
 import { TableColumn } from 'shared/table/column/table-column';
 import { TableEntry } from 'shared/table/entry/table-entry';
+import { AnalyticsService } from 'utils/analytics/analytics.service';
 import { LoggerService } from 'utils/logger/logger.service';
 import { MatchesTable } from '../matches/matches-table';
 import { MatchesTableComponent } from '../matches/matches-table.component';
@@ -42,6 +43,7 @@ import { IntersectionTableRow } from '../row/intersection-table-row';
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class IntersectionTableEntryDetailsComponent extends TableEntry implements OnDestroy {
+    private static readonly SHOW_MATCHES_GOAL: string = 'annotate-show-matches-goal';
     private static readonly _maxMatchesInQuickView: number = 10;
 
     private _loading: boolean = false;
@@ -60,7 +62,7 @@ export class IntersectionTableEntryDetailsComponent extends TableEntry implement
     public quickView: PopupContentTable;
 
     constructor(private logger: LoggerService, private changeDetector: ChangeDetectorRef, private sampleService: SampleService,
-                private annotationsService: AnnotationsService, private resolver: ComponentFactoryResolver) {
+                private annotationsService: AnnotationsService, private resolver: ComponentFactoryResolver, private analytics: AnalyticsService) {
         super();
     }
 
@@ -91,8 +93,9 @@ export class IntersectionTableEntryDetailsComponent extends TableEntry implement
 
             const table = new MatchesTable();
             table.updateRows(this._row.matches);
-
             this._matchesComponent.instance.table = table;
+
+            this.analytics.reachGoal(IntersectionTableEntryDetailsComponent.SHOW_MATCHES_GOAL);
         } else if (this._matchesComponent) {
             this._matchesComponent.destroy();
             this._matchesComponent = undefined;

@@ -18,11 +18,13 @@ export class YandexMetrikaTools {
     private counter: any;
 
     constructor(id: string) {
-        this.counter = (window as any)['yaCounter' + id];
+        this.counter = (window as any)[ 'yaCounter' + id ];
     }
 
     public reachGoal(target: string, params?: any): void {
-        this.counter.reachGoal(target, params);
+        const data: { [ index: string ]: any } = {};
+        data[ target ] = params;
+        this.counter.reachGoal(target, data);
     }
 
     public hit(url: string): void {
