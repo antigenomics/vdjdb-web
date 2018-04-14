@@ -15,7 +15,59 @@
  *
  */
 
+export interface IDatabaseQueryParams {
+    species: string;
+    gene: string;
+    mhc: string;
+    confidenceThreshold: number;
+    minEpitopeSize: number;
+}
+
+export interface ISearchScopeHammingDistance {
+    substitutions: number;
+    insertions: number;
+    deletions: number;
+    total: number;
+}
+
+export interface ISearchScope {
+    matchV: boolean;
+    matchJ: boolean;
+    hammingDistance: ISearchScopeHammingDistance;
+}
+
+export type IAnnotateScoringType = number;
+
+export namespace IAnnotateScoringType {
+    export const SIMPLE: number = 0;
+    export const VDJMATCH: number = 1;
+}
+
+export interface IVDJMatchScoringHitFilteringOptions {
+    propabilityThreshold: number;
+    topHitsCount: number;
+    weightByInfo: boolean;
+}
+
+export interface IVDJMatchScoringOptions {
+    exhaustiveAlignment: number;
+    scoringMode: number;
+    hitFiltering: IVDJMatchScoringHitFilteringOptions;
+}
+
+export interface IAnnotateScoring {
+    type: IAnnotateScoringType;
+    vdjmatch: IVDJMatchScoringOptions;
+}
+
 export class SampleFilters {
+    public databaseQueryParams: IDatabaseQueryParams = { species: 'HomoSapiens', gene: 'TRB', mhc: 'MHCI+II', confidenceThreshold: 0, minEpitopeSize: 0 };
+    public searchScope: ISearchScope = { matchV: false, matchJ: false, hammingDistance: { substitutions: 0, insertions: 0, deletions: 0, total: 0 } };
+    public scoring: IAnnotateScoring = {
+        type: IAnnotateScoringType.VDJMATCH, vdjmatch: {
+            exhaustiveAlignment: 0, scoringMode: 0, hitFiltering: { propabilityThreshold: 0, topHitsCount: 0, weightByInfo: false }
+        }
+    };
     public hammingDistance: number = 0;
     public confidenceThreshold: number = 0;
     public minEpitopeSize: number = 0;
