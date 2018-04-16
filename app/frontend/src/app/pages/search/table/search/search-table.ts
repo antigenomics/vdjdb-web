@@ -16,8 +16,8 @@
  */
 
 import { SearchTableService, SearchTableServiceEvents, SearchTableWebSocketActions } from 'pages/search/table/search/search-table.service';
+import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
-import { Subscription } from 'rxjs/Subscription';
 import { Filter } from 'shared/filters/filters';
 import { FiltersService } from 'shared/filters/filters.service';
 import { IExportFormat, IExportOptionFlag } from 'shared/table/export/table-export.component';

@@ -29,9 +29,9 @@ if (fs.existsSync(pathToBundle + '/bundle.css')) {
 }
 
 const types = [
-    { name: 'bundle-js', test: (file) => file.endsWith('bundle.js') && !file.includes('polyfills') },
-    { name: 'bundle-css', test: (file) => file.endsWith('css') },
-    { name: 'module-js', test: (file) => file.endsWith('chunk.js') },
+    { name: 'core', test: (file) => file.includes('runtime') || file.includes('main') || file.includes('vendor') },
+    { name: 'modules', test: (file) => !Number.isNaN(Number(file.split('.')[0])) },
+    { name: 'styles', test: (file) => file.endsWith('css') },
     { name: 'polyfills', test: (file) => file.includes('polyfills') },
     { name: 'unknown', test: () => true }
 ];
@@ -52,21 +52,21 @@ const lengthReducer = (prev, file, key) => {
 };
 
 const rowDelimeterLengths = {
-    name:       bundleFiles.reduce((prev, file) => lengthReducer(prev, file, 'name'), 0),
-    size:       bundleFiles.reduce((prev, file) => lengthReducer(prev, file, 'size'), 0),
+    name: bundleFiles.reduce((prev, file) => lengthReducer(prev, file, 'name'), 0),
+    size: bundleFiles.reduce((prev, file) => lengthReducer(prev, file, 'size'), 0),
     compressed: bundleFiles.reduce((prev, file) => lengthReducer(prev, file, 'compressed'), 0),
-    type:       bundleFiles.reduce((prev, file) => lengthReducer(prev, file, 'type'), 0)
+    type: bundleFiles.reduce((prev, file) => lengthReducer(prev, file, 'type'), 0)
 };
 
 const createFillerRow = (delimiter) => ({
-    Name:       ''.padStart(rowDelimeterLengths.name, delimiter),
-    Size:       ''.padStart(rowDelimeterLengths.size, delimiter),
+    Name: ''.padStart(rowDelimeterLengths.name, delimiter),
+    Size: ''.padStart(rowDelimeterLengths.size, delimiter),
     Compressed: ''.padStart(rowDelimeterLengths.compressed, delimiter),
-    Type:       ''.padStart(rowDelimeterLengths.type, delimiter)
+    Type: ''.padStart(rowDelimeterLengths.type, delimiter)
 });
 
 const fillerRows = {
-    empty:  createFillerRow(''),
+    empty: createFillerRow(''),
     dashed: createFillerRow('-')
 }
 
@@ -78,10 +78,10 @@ types.forEach((type) => {
         const typeFilteredFiles = bundleFiles.filter((file) => file.type.name === type.name);
         typeFilteredFiles.sort((a, b) => a.size < b.size).forEach((file) => {
             rows.push({
-                Name:       file.name,
-                Size:       memorySizePrettifier(file.size, 'size'),
+                Name: file.name,
+                Size: memorySizePrettifier(file.size, 'size'),
                 Compressed: memorySizePrettifier(file.compressed, 'compressed'),
-                Type:       file.type.name
+                Type: file.type.name
             })
         });
         rows.push(fillerRows.dashed);
@@ -91,10 +91,10 @@ types.forEach((type) => {
 rows.push(fillerRows.empty);
 
 const totalStatisticTypes = [
-    { name: 'Application (start)',   types: [ 'bundle-js', 'bundle-css' ] },
-    { name: 'Application (modules)', types: [ 'module-js' ] },
-    { name: 'Application (total)',   types: [ 'bundle-js', 'bundle-css', 'module-js' ] },
-    { name: 'Polyfills',             types: [ 'polyfills' ] }
+    { name: 'Application (start)', types: ['core', 'styles'] },
+    { name: 'Application (modules)', types: ['modules'] },
+    { name: 'Application (total)', types: ['core', 'styles', 'modules'] },
+    { name: 'Polyfills', types: ['polyfills'] }
 ];
 
 totalStatisticTypes.forEach((statistic) => {
@@ -102,9 +102,9 @@ totalStatisticTypes.forEach((statistic) => {
     const size = filtered.reduce((prev, file) => prev + file.size, 0);
     const compressed = filtered.reduce((prev, file) => prev + file.compressed, 0);
     rows.push({
-        'Name':         statistic.name,
-        'Size':         memorySizePrettifier(size, 'size'),
-        'Compressed':   memorySizePrettifier(compressed, 'compressed')
+        'Name': statistic.name,
+        'Size': memorySizePrettifier(size, 'size'),
+        'Compressed': memorySizePrettifier(compressed, 'compressed')
     })
 })
 

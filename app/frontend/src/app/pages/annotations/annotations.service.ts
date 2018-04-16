@@ -18,9 +18,8 @@
 import { Injectable } from '@angular/core';
 import { SampleFilters } from 'pages/annotations/sample/filters/sample-filters';
 import { IntersectionTableRow } from 'pages/annotations/sample/table/intersection/row/intersection-table-row';
-import { Observable } from 'rxjs/Observable';
+import { Observable, Subject } from 'rxjs';
 import { filter } from 'rxjs/operators';
-import { Subject } from 'rxjs/Subject';
 import { SetEntry } from 'shared/filters/common/set/set-entry';
 import { SampleItem } from 'shared/sample/sample-item';
 import { SampleTag } from 'shared/sample/sample-tag';

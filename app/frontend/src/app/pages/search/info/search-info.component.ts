@@ -15,7 +15,7 @@
  */
 
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy } from '@angular/core';
-import { Subscription } from 'rxjs/Subscription';
+import { Subscription } from 'rxjs';
 import { FiltersService, FiltersServiceEventType } from 'shared/filters/filters.service';
 
 @Component({
@@ -28,12 +28,11 @@ export class SearchInfoComponent implements OnDestroy {
     private _resetEvent: Subscription;
 
     constructor(private filters: FiltersService, private changeDetector: ChangeDetectorRef) {
-        this._resetEvent = this.filters.getEvents()
-                               .subscribe((event: FiltersServiceEventType) => {
-                                   if (event === FiltersServiceEventType.RESET) {
-                                       this.changeDetector.detectChanges();
-                                   }
-                               });
+        this._resetEvent = this.filters.getEvents().subscribe((event: FiltersServiceEventType) => {
+            if (event === FiltersServiceEventType.RESET) {
+                this.changeDetector.detectChanges();
+            }
+        });
     }
 
     public isCurrentState(state: string): boolean {

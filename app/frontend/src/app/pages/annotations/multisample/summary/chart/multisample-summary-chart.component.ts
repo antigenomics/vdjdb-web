@@ -23,8 +23,7 @@ import {
 import { ISummaryChartOptionsDisableCheckboxes, SummaryChartOptions } from 'pages/annotations/sample/chart/summary/options/summary-chart-options.component';
 import { SummaryClonotypeCounter } from 'pages/annotations/sample/table/intersection/summary/summary-clonotype-counter';
 import { SummaryCounters } from 'pages/annotations/sample/table/intersection/summary/summary-counters';
-import { ReplaySubject } from 'rxjs/ReplaySubject';
-import { Subscription } from 'rxjs/Subscription';
+import { ReplaySubject, Subscription } from 'rxjs';
 import { IBarChartConfiguration } from 'shared/charts/bar/bar-chart-configuration';
 import { ChartGroupedStreamType } from 'shared/charts/chart';
 import { ChartEventType } from 'shared/charts/chart-events';

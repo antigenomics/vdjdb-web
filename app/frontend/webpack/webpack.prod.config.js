@@ -29,7 +29,7 @@ configuration.optimization = { minimize: true };
 configuration.stats = 'errors-only';
 configuration.entry = {
     'styles.js': [ './styles/main.less' ],
-    'polyfills-ie.bundle.js': [ './src/polyfills-ie.js' ]
+    'polyfills-ie.js': [ './src/polyfills-ie.js' ]
 };
 
 const plugins = [

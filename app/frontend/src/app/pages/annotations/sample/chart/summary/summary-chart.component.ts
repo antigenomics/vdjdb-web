@@ -19,7 +19,7 @@ import { ChangeDetectionStrategy, Component, Input, OnDestroy, OnInit, Renderer2
 import { SummaryChartOptions } from 'pages/annotations/sample/chart/summary/options/summary-chart-options.component';
 import { SummaryClonotypeCounter } from 'pages/annotations/sample/table/intersection/summary/summary-clonotype-counter';
 import { SummaryCounters } from 'pages/annotations/sample/table/intersection/summary/summary-counters';
-import { ReplaySubject } from 'rxjs/ReplaySubject';
+import { ReplaySubject } from 'rxjs';
 import { IBarChartConfiguration } from 'shared/charts/bar/bar-chart-configuration';
 import { ChartStreamType } from 'shared/charts/chart';
 import { ChartEventType } from 'shared/charts/chart-events';

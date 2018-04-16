@@ -15,7 +15,7 @@
  *
  */
 
-import { Subject } from 'rxjs/Subject';
+import { Subject } from 'rxjs';
 import { TableRow } from './row/table-row';
 
 export type TableEvent = number;

@@ -15,9 +15,8 @@
  */
 
 import { environment } from 'environments/environment';
-import { Observable } from 'rxjs/Observable';
+import { Observable, Subject } from 'rxjs';
 import { filter, map, take } from 'rxjs/operators';
-import { Subject } from 'rxjs/Subject';
 import { LoggerService } from 'utils/logger/logger.service';
 import { NotificationService } from 'utils/notifications/notification.service';
 import { Utils } from 'utils/utils';

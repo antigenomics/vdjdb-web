@@ -17,9 +17,8 @@
 
 import { Injectable } from '@angular/core';
 import { AnnotationsService, AnnotationsServiceEvents } from 'pages/annotations/annotations.service';
-import { Observable } from 'rxjs/Observable';
+import { Observable, Subject } from 'rxjs';
 import { filter } from 'rxjs/operators';
-import { Subject } from 'rxjs/Subject';
 import { SampleItem } from 'shared/sample/sample-item';
 import { IExportFormat, IExportOptionFlag } from 'shared/table/export/table-export.component';
 import { WebSocketResponseData } from 'shared/websocket/websocket-response';

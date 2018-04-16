@@ -18,9 +18,8 @@
 import { ChangeDetectorRef, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRouteSnapshot, Data } from '@angular/router';
 import { SampleService, SampleServiceEventType } from 'pages/annotations/sample/sample.service';
-import { Observable } from 'rxjs/Observable';
+import { Observable, Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
-import { Subscription } from 'rxjs/Subscription';
 import { SampleItem } from 'shared/sample/sample-item';
 
 export class SampleRouteResolverComponent implements OnInit, OnDestroy {
