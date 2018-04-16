@@ -16,18 +16,29 @@
  */
 
 import { ReplaySubject } from 'rxjs/ReplaySubject';
+import { SampleTag } from 'shared/sample/sample-tag';
 import { Utils } from 'utils/utils';
 import { FileItemStatus, FileItemStatusErrorType } from './file-item-status';
 
+export interface IFileItemStats {
+    readonly name: string;
+    readonly extension: string;
+    readonly software: string;
+    readonly size: number;
+}
+
 export class FileItem {
-    public static FULL_PROGRESS: number = 100;
-    public static AVAILABLE_EXTENSIONS: string[] = [ 'txt', 'gz', 'zip' ];
+    private static readonly BYTES_IN_MB: number = 1048576;
+
+    public static readonly FULL_PROGRESS: number = 100;
+    public static readonly AVAILABLE_EXTENSIONS: string[] = [ 'txt', 'gz', 'zip' ];
 
     public compressed?: Blob;
     public native: File;
     public baseName: string = '';
     public extension: string = '';
     public software: string = 'VDJtools';
+    public tag?: SampleTag;
     public progress: ReplaySubject<number> = new ReplaySubject(1);
     public status: FileItemStatus = new FileItemStatus();
 
@@ -41,6 +52,15 @@ export class FileItem {
             this.baseName = Utils.File.baseName(this.baseName);
             nextExt = Utils.File.extension(this.baseName);
         }
+    }
+
+    public getFileItemStats(): IFileItemStats {
+        return {
+            name: this.baseName,
+            extension: this.extension,
+            software: this.software,
+            size: this.compressed ? this.compressed.size : this.native.size
+        };
     }
 
     public setUploadedStatus(): void {
@@ -62,6 +82,26 @@ export class FileItem {
         this.software = software;
     }
 
+    public hasTag(): boolean {
+        return this.tag !== undefined;
+    }
+
+    public removeTag(): void {
+        this.tag = undefined;
+    }
+
+    public setTag(tag: SampleTag): void {
+        this.tag = tag;
+    }
+
+    public getTagName(): string {
+        return this.tag !== undefined ? this.tag.name : 'No tag selected';
+    }
+
+    public getTagColor(): string {
+        return this.tag !== undefined ? this.tag.color : 'rgba(0, 0, 0, 0)';
+    }
+
     public setExtension(extension: string): void {
         this.extension = extension;
     }
@@ -72,6 +112,10 @@ export class FileItem {
 
     public getUploadBlob(): Blob {
         return this.compressed !== undefined ? this.compressed : this.getNativeFile();
+    }
+
+    public getSizeInMB(): number {
+        return this.compressed ? this.compressed.size / FileItem.BYTES_IN_MB : this.native.size / FileItem.BYTES_IN_MB;
     }
 
     public getUploadBlobName(): string {

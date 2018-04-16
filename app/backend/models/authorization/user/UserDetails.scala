@@ -18,5 +18,6 @@ package backend.models.authorization.user
 
 import backend.models.authorization.permissions.UserPermissions
 import backend.models.files.sample.SampleFileDetails
+import backend.models.files.sample.tags.SampleTagDetails
 
-case class UserDetails(email: String, login: String, files: Seq[SampleFileDetails], permissions: UserPermissions)
+case class UserDetails(email: String, login: String, files: Seq[SampleFileDetails], tags: Seq[SampleTagDetails], permissions: UserPermissions)

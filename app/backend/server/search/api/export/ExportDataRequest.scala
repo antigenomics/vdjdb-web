@@ -16,13 +16,13 @@
 
 package backend.server.search.api.export
 
-import play.api.libs.json.{Json, Reads}
+import play.api.libs.json.{Format, Json}
 
 case class ExportOptionFlag(name: String, title: String, value: Boolean)
 
 case class ExportDataRequest(format: String, options: Seq[ExportOptionFlag])
 
 object ExportDataRequest {
-    implicit val exportOptionFlagReads: Reads[ExportOptionFlag] = Json.reads[ExportOptionFlag]
-    implicit val exportDataRequestReads: Reads[ExportDataRequest] = Json.reads[ExportDataRequest]
+    implicit val exportOptionFlagFormat: Format[ExportOptionFlag] = Json.format[ExportOptionFlag]
+    implicit val exportDataRequestFormat: Format[ExportDataRequest] = Json.format[ExportDataRequest]
 }

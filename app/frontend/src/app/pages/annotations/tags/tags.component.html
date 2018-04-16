@@ -1,0 +1,19 @@
+<div class="ui fade slow element segments">
+    <h3 class="ui top attached header">
+        Configure tags
+    </h3>
+    <div class="ui attached segment teal padded">
+        <div class="ui active inverted dimmer" *ngIf="!isInitialized()">
+            <div class="ui text loader">Connecting</div>
+        </div>
+        <p>Here you can create and configure tags for your T-cell receptor repertoire sequencing data files and use it for charts coloring.</p>
+        <p>To proceed with the tags, click on the <b>Add tag</b> button.</p>
+    </div>
+    <div class="ui attached secondary clearing segment">
+        <button class="ui teal button left floated" (click)="addTag()">Add tag</button>
+    </div>
+</div>
+
+<div class="ui fade element padded segment" *ngIf="isInitialized() && isTagsTableVisible()">
+    <tags-table></tags-table>
+</div>

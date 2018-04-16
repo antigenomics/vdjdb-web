@@ -1,0 +1,31 @@
+<td>
+    <div class="ui fluid transparent left icon input" [ngClass]="{'error':!isTagNameValid()}" *ngIf="!tag.isSaved() || tag.isEditing()">
+        <input placeholder="Enter tag name here" [ngModel]="tag.name" (ngModelChange)="handleTagName($event)">
+        <i class="write icon"></i>
+    </div>
+    <div *ngIf="tag.isSaved() && !tag.isEditing()">
+        {{ tag.name }}
+    </div>
+</td>
+<td>
+    <color-picker [disable]="tag.isSaved() && !tag.isEditing()" [initial]="tag.color" (color)="pickColor($event)"></color-picker>
+</td>
+<td>
+    <set [(selected)]="tag.samples" [disabled]="tag.isSaved() && !tag.isEditing()" [values]="getUserSamplesSetEntries()" [substringDisabled]="true"
+         placeholder="List of tagged samples, start typing to see suggestions..." *ngIf="!tag.isSaved() || tag.isEditing()"></set>
+    <ng-container *ngIf="tag.isSaved() && !tag.isEditing()">
+        <div class="ui basic label" *ngFor="let samples of tag.samples">
+            {{ samples.value }}
+        </div>
+        <ng-container *ngIf="tag.samples.length == 0">
+            Click on 'edit' button to tag samples
+        </ng-container>
+    </ng-container>
+</td>
+<td>
+    <button class="ui teal tiny button" (click)="save()" *ngIf="!tag.isSaved()" [ngClass]="{'disabled':!isTagNameValid(), 'loading':tag.isLoading()}">Save</button>
+    <button class="ui orange tiny button" (click)="remove()" *ngIf="!tag.isSaved() && !tag.isLoading()">Remove</button>
+    <button class="ui blue tiny button" (click)="edit()" *ngIf="tag.isSaved() && !tag.isEditing()" [ngClass]="{'loading':tag.isLoading()}">Edit</button>
+    <button class="ui blue tiny button" (click)="update()" *ngIf="tag.isSaved() && tag.isEditing()" [ngClass]="{'loading':tag.isLoading()}">Update</button>
+    <button class="ui orange tiny button" (click)="delete()" *ngIf="tag.isSaved() && !tag.isEditing()" [ngClass]="{'loading':tag.isLoading()}">Delete</button>
+</td>

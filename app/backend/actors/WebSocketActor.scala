@@ -21,13 +21,13 @@ abstract class WebSocketActor(out: ActorRef, limit: IpLimit)(implicit as: ActorS
                             case Some(action) =>
                                 val webSocketOutActorRef = WebSocketOutActorRef(request.id, action, out)
                                 action match {
-                                    case "ping" => webSocketOutActorRef.handshake()
+                                    case WebSocketOutActorRef.PingAction => webSocketOutActorRef.handshake()
                                     case _ => handleMessage(webSocketOutActorRef, request.data)
                                 }
                             case None =>
                         }
                     case _: JsError =>
-                        out ! Json.toJson("Invalid request")
+                        out ! Json.toJson(WebSocketOutActorRef.InvalidRequestMessage)
                 }
                 val timeEnd: Long = System.currentTimeMillis
                 val timeSpent = timeEnd - timeStart
@@ -46,10 +46,10 @@ abstract class WebSocketActor(out: ActorRef, limit: IpLimit)(implicit as: ActorS
                 case success: JsSuccess[T] =>
                     callback(success.get)
                 case _: JsError =>
-                    out.errorMessage("Invalid request (data)")
+                    out.errorMessage(WebSocketOutActorRef.InvalidDataRequestMessage)
             }
         } else {
-            out.errorMessage("Empty data field")
+            out.errorMessage(WebSocketOutActorRef.InvalidMissingDataRequestMessage)
         }
     }
 }

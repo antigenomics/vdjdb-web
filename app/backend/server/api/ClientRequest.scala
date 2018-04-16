@@ -16,11 +16,12 @@
 
 package backend.server.api
 
-import play.api.libs.json.{JsError, JsSuccess, JsValue, Reads}
+import play.api.libs.json._
 
 case class ClientRequest(id: Int, action: Option[String], data: Option[JsValue])
 
 object ClientRequest {
+    implicit val clientRequestWrites: Writes[ClientRequest] = Json.writes[ClientRequest]
     implicit val clientRequestReads: Reads[ClientRequest] = (json: JsValue) => {
         if ((json \ "id").isEmpty) {
             JsError()

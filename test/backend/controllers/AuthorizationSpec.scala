@@ -18,68 +18,16 @@
 package backend.controllers
 
 import backend.models.authorization.forms.SignupForm
-import backend.models.authorization.tokens.reset.ResetTokenProvider
-import backend.models.authorization.tokens.session.SessionTokenProvider
-import backend.models.authorization.user.UserProvider
-import backend.models.authorization.tokens.verification.VerificationTokenProvider
 import play.api.mvc.DiscardingCookie
 import play.api.test._
 import play.api.test.Helpers._
 import play.api.test.CSRFTokenHelper._
 
 import scala.async.Async.{async, await}
-import scala.concurrent.Await
-import scala.concurrent.duration.Duration
 import scala.language.reflectiveCalls
 
 class AuthorizationSpec extends ControllersTestSpec {
     implicit lazy val controller: Authorization = app.injector.instanceOf[Authorization]
-    implicit lazy val up: UserProvider = app.injector.instanceOf[UserProvider]
-    implicit lazy val vtp: VerificationTokenProvider = app.injector.instanceOf[VerificationTokenProvider]
-    implicit lazy val stp: SessionTokenProvider = app.injector.instanceOf[SessionTokenProvider]
-    implicit lazy val rtp: ResetTokenProvider = app.injector.instanceOf[ResetTokenProvider]
-
-    trait UnverifiedUser {
-        private final val _verificationToken = Await.result(up.createUser("unverifieduser", "unverifieduser@mail.com", "unverifieduser"), Duration.Inf)
-        private final val _unverifiedUser = Await.result(up.get(_verificationToken.userID), Duration.Inf)
-
-        _unverifiedUser should not be empty
-
-        final val user = _unverifiedUser.get
-    }
-
-    trait VerifiedUser {
-        private final val _verificationToken = Await.result(up.createUser("vefifieduser", "verifieduser@mail.com", "verifieduser"), Duration.Inf)
-        private final val _verifiedUser = Await.result(up.verifyUser(_verificationToken), Duration.Inf)
-
-        _verifiedUser should not be empty
-        _verifiedUser.get.verified shouldEqual true
-
-        final val user = _verifiedUser.get
-        final val password = "verifieduser"
-    }
-
-    trait LoggedUser {
-        private final val _verificationToken = Await.result(up.createUser("loggeduser", "loggeduser@mail.com", "loggeduser"), Duration.Inf)
-        private final val _loggedUser = Await.result(up.verifyUser(_verificationToken), Duration.Inf)
-
-        _loggedUser should not be empty
-        _loggedUser.get.verified shouldEqual true
-
-        final val user = _loggedUser.get
-        final val loggedUserSessionToken = Await.result(stp.createSessionToken(user), Duration.Inf)
-        final val password = "loggeduser"
-
-        loggedUserSessionToken should have length 255
-    }
-
-    //noinspection TypeAnnotation
-    final val fixtures =
-        new {
-            lazy val unverifiedUser: UnverifiedUser = new UnverifiedUser {}
-            lazy val verifiedUser: VerifiedUser = new VerifiedUser {}
-            lazy val loggedUser: LoggedUser = new LoggedUser {}
-        }
 
     "Authorization#login" should {
         "render login page" taggedAs ControllersTestTag in {
@@ -134,9 +82,10 @@ class AuthorizationSpec extends ControllersTestSpec {
         }
 
         "forbid to login with invalid credentials" taggedAs ControllersTestTag in {
-            //val result = controller
+            val f = fixtures
+            val nonexistentUser = f.nonExistentUser
             val invalidCredentialsRequest = FakeRequest()
-                .withFormUrlEncodedBody("email" -> "test@mail.com", "password" -> "password")
+                .withFormUrlEncodedBody("email" -> nonexistentUser.credentials.email, "password" -> nonexistentUser.credentials.password)
                 .withCSRFToken
             val result = controller.onLogin(invalidCredentialsRequest)
             val body = contentAsString(result)
@@ -147,16 +96,15 @@ class AuthorizationSpec extends ControllersTestSpec {
         }
 
         "forbid to login for an unverified users" taggedAs ControllersTestTag in {
-            async {
-                val _ = await(up.createUser("login", "test@mail.com", "password"))
-                val newUserRequest = FakeRequest()
-                    .withFormUrlEncodedBody("email" -> "test@mail.com", "password" -> "password")
-                    .withCSRFToken
-                val result = controller.onLogin(newUserRequest)
+            val f = fixtures
+            val unverifiedUser = f.unverifiedUser
+            val newUserRequest = FakeRequest()
+                .withFormUrlEncodedBody("email" -> unverifiedUser.credentials.email, "password" -> unverifiedUser.credentials.password)
+                .withCSRFToken
+            val result = controller.onLogin(newUserRequest)
 
-                status(result) shouldEqual BAD_REQUEST
-                contentAsString(result) should include (messages("authorization.forms.login.failed.unverified"))
-            }
+            status(result) shouldEqual BAD_REQUEST
+            contentAsString(result) should include (messages("authorization.forms.login.failed.unverified"))
         }
 
         "be able to create session for verified user" taggedAs ControllersTestTag in {
@@ -164,7 +112,7 @@ class AuthorizationSpec extends ControllersTestSpec {
                 val f = fixtures
                 val verifiedUser = f.verifiedUser
                 val verifiedUserRequest = FakeRequest()
-                    .withFormUrlEncodedBody("email" -> verifiedUser.user.email, "password" -> verifiedUser.password)
+                    .withFormUrlEncodedBody("email" -> verifiedUser.user.email, "password" -> verifiedUser.credentials.password)
                     .withCSRFToken
 
                 val result = controller.onLogin(verifiedUserRequest)
@@ -199,7 +147,7 @@ class AuthorizationSpec extends ControllersTestSpec {
                 val f = fixtures
                 val verifiedUser = f.verifiedUser
                 val verifiedUserRequestWithInvalidPassword = FakeRequest()
-                    .withFormUrlEncodedBody("email" -> verifiedUser.user.email, "password" -> (verifiedUser.password + "invalidpart"))
+                    .withFormUrlEncodedBody("email" -> verifiedUser.user.email, "password" -> (verifiedUser.credentials.password + "invalidpart"))
                     .withCSRFToken
 
                 val result = controller.onLogin(verifiedUserRequestWithInvalidPassword)
@@ -284,13 +232,50 @@ class AuthorizationSpec extends ControllersTestSpec {
             status(nonEqualPasswordsResult) shouldEqual BAD_REQUEST
             contentAsString(nonEqualPasswordsResult) should include (messages("authorization.forms.signup.failed.workaround.3"))
 
+            val dummyChar: String = "d"
             //Invalid field: too small password
             val tooSmallPasswordRequest = FakeRequest()
-                .withFormUrlEncodedBody("email" -> "email@mail.com", "password" -> "p", "repeatPassword" -> "p", "login" -> "login")
+                .withFormUrlEncodedBody("email" -> "email@mail.com",
+                    "password" -> dummyChar * (SignupForm.PASSWORD_MIN_LENGTH - 1),
+                    "repeatPassword" -> dummyChar * (SignupForm.PASSWORD_MIN_LENGTH - 1), "login" -> "login")
                 .withCSRFToken
             val tooSmallPasswordResult = controller.onSignup(tooSmallPasswordRequest)
             status(tooSmallPasswordResult) shouldEqual BAD_REQUEST
             contentAsString(tooSmallPasswordResult) should include (messages("error.minLength", SignupForm.PASSWORD_MIN_LENGTH))
+
+            //Invalid field: too big password
+            val tooBigPasswordRequest = FakeRequest()
+                .withFormUrlEncodedBody("email" -> "email@mail.com",
+                    "password" -> dummyChar * (SignupForm.PASSWORD_MAX_LENGTH + 1),
+                    "repeatPassword" -> dummyChar * (SignupForm.PASSWORD_MAX_LENGTH + 1), "login" -> "login")
+                .withCSRFToken
+            val tooBigPasswordResult = controller.onSignup(tooBigPasswordRequest)
+            status(tooBigPasswordResult) shouldEqual BAD_REQUEST
+            contentAsString(tooBigPasswordResult) should include (messages("error.maxLength", SignupForm.PASSWORD_MAX_LENGTH))
+
+            //Invalid field: too big email
+            val tooBigEmailRequest = FakeRequest()
+                .withFormUrlEncodedBody("email" -> ((dummyChar * SignupForm.EMAIL_MAX_LENGTH + 1) + "@mail.com"),
+                    "password" -> "password", "repeatPassword" -> "password", "login" -> "login").withCSRFToken
+            val tooBigEmailResult = controller.onSignup(tooBigEmailRequest)
+            status(tooBigEmailResult) shouldEqual BAD_REQUEST
+            contentAsString(tooBigEmailResult) should include (messages("authorization.forms.signup.failed.workaround.4"))
+
+            //Invalid field: too big login
+            val tooBigLoginRequest = FakeRequest()
+                .withFormUrlEncodedBody("email" -> "email@mail.com",
+                    "password" -> "password", "repeatPassword" -> "password", "login" -> dummyChar * (SignupForm.LOGIN_MAX_LENGTH + 1)).withCSRFToken
+            val tooBigLoginResult = controller.onSignup(tooBigLoginRequest)
+            status(tooBigLoginResult) shouldEqual BAD_REQUEST
+            contentAsString(tooBigLoginResult) should include (messages("error.maxLength", SignupForm.LOGIN_MAX_LENGTH))
+
+            //Invalid field: empty login
+            val emptyLoginRequest = FakeRequest()
+                .withFormUrlEncodedBody("email" -> "email@mail.com",
+                    "password" -> "password", "repeatPassword" -> "password", "login" -> "").withCSRFToken
+            val emptyLoginResult = controller.onSignup(emptyLoginRequest)
+            status(emptyLoginResult) shouldEqual BAD_REQUEST
+            contentAsString(emptyLoginResult) should include (messages("error.required"))
         }
 
         "forbid to signup with the same email" in {
@@ -310,8 +295,18 @@ class AuthorizationSpec extends ControllersTestSpec {
 
         "be able to create new user" in {
             async {
+                val newUserCredentials = new {
+                    lazy val login: String = "Authorization#onSignup#login"
+                    lazy val email: String = "Authorization#onSignup#email@mail.com"
+                    lazy val password: String = "Authorization#onSignup#password"
+                }
+
                 val validRequest = FakeRequest()
-                    .withFormUrlEncodedBody("email" -> "validemail@mail.com", "login" -> "login", "password" -> "password", "repeatPassword" -> "password")
+                    .withFormUrlEncodedBody(
+                        "email" -> newUserCredentials.email,
+                        "login" -> newUserCredentials.login,
+                        "password" -> newUserCredentials.password,
+                        "repeatPassword" -> newUserCredentials.password)
                     .withCSRFToken
 
                 val validResult = controller.onSignup(validRequest)
@@ -319,11 +314,11 @@ class AuthorizationSpec extends ControllersTestSpec {
                 status(validResult) shouldEqual SEE_OTHER
                 flash(validResult).data should contain key "created"
 
-                val user = await(up.get("validemail@mail.com"))
+                val user = await(up.get(newUserCredentials.email))
 
                 user should not be empty
-                user.get.email shouldEqual "validemail@mail.com"
-                user.get.login shouldEqual "login"
+                user.get.email shouldEqual newUserCredentials.email
+                user.get.login shouldEqual newUserCredentials.login
 
                 if (up.isVerificationRequired) {
                     user.get.verified shouldEqual false
@@ -358,8 +353,10 @@ class AuthorizationSpec extends ControllersTestSpec {
 
     "Authorization#onResetRequest" should {
         "redirect with message after request for invalid email" taggedAs ControllersTestTag in {
+            val f = fixtures
+            val nonExistentUser = f.nonExistentUser
             val resetRequest = FakeRequest()
-                .withFormUrlEncodedBody("email" -> "dummy@mail.com")
+                .withFormUrlEncodedBody("email" -> nonExistentUser.credentials.email)
                 .withCSRFToken
 
             val result = controller.onResetRequest.apply(resetRequest)
@@ -483,13 +480,24 @@ class AuthorizationSpec extends ControllersTestSpec {
 
         "be able to reset password with valid token" taggedAs ControllersTestTag in {
             async {
-                val verificationToken = await(up.createUser("onReset", "onReset@mail.com", "12345678"))
+                val resetUserCredentials = new {
+                    lazy val login: String = "Authorization#onReset#login"
+                    lazy val email: String = "Authorization#onReset#email@mail.com"
+                    lazy val password: String = "Authorization#onReset#password"
+                    lazy val resetPassword: String = "Authorization#onReset#reset-password"
+                }
+                val verificationToken = await(up.createUser(
+                    resetUserCredentials.login, resetUserCredentials.email, resetUserCredentials.password)
+                )
+
                 val user = await(up.verifyUser(verificationToken))
                 user should not be empty
-                user.get.checkPassword("12345678") shouldEqual true
+                user.get.checkPassword(resetUserCredentials.password) shouldEqual true
 
                 val tokenStr = await(rtp.createResetToken(user.get))
-                val request = FakeRequest().withFormUrlEncodedBody("newPassword" -> "87654321", "newPasswordRepeat" -> "87654321").withCSRFToken
+                val request = FakeRequest().withFormUrlEncodedBody(
+                    "newPassword" -> resetUserCredentials.resetPassword, "newPasswordRepeat" -> resetUserCredentials.resetPassword)
+                    .withCSRFToken
 
                 val result = controller.onReset(tokenStr).apply(request)
 
@@ -502,7 +510,7 @@ class AuthorizationSpec extends ControllersTestSpec {
 
                 val userAfterReset = await(up.get(user.get.email))
                 userAfterReset should not be empty
-                userAfterReset.get.checkPassword("87654321") shouldEqual true
+                userAfterReset.get.checkPassword(resetUserCredentials.resetPassword) shouldEqual true
             }
         }
     }
@@ -510,7 +518,14 @@ class AuthorizationSpec extends ControllersTestSpec {
     "Authorization#verifyWithToken" should {
         "verify user with valid token" taggedAs ControllersTestTag in {
             async {
-                val verificationToken = await(up.createUser("login", "verifyme@mail.com", "password"))
+                val verifyMeUserCredentials = new {
+                    lazy val login: String = "Authorization#verifyWithToken#login"
+                    lazy val email: String = "Authorization#verifyWithToken@mail.com"
+                    lazy val password: String = "Authorization#verifyWithToken#password"
+                }
+                val verificationToken = await(up.createUser(
+                    verifyMeUserCredentials.login, verifyMeUserCredentials.email, verifyMeUserCredentials.password)
+                )
                 val result = controller.verifyWithToken(verificationToken.token).apply(FakeRequest())
                 status(result) shouldEqual SEE_OTHER
                 redirectLocation(result) should not be empty
@@ -545,7 +560,7 @@ class AuthorizationSpec extends ControllersTestSpec {
             val f = fixtures
             val verifiedUser = f.verifiedUser
             val verifiedUserRequest = FakeRequest()
-                .withFormUrlEncodedBody("email" -> verifiedUser.user.email, "password" -> verifiedUser.password)
+                .withFormUrlEncodedBody("email" -> verifiedUser.user.email, "password" -> verifiedUser.credentials.password)
 
             val result = controller.onLogin(verifiedUserRequest)
 

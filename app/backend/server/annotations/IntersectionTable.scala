@@ -66,7 +66,7 @@ class IntersectionTable(var summary: Option[SummaryCounters] = None) extends Res
         val instance = database.getInstance.filter(filters)
             .asClonotypeDatabase(request.species, request.gene, scope,
                 ScoringBundle.getDUMMY, DegreeWeightFunctionFactory.DEFAULT, DummyResultFilter.INSTANCE,
-                request.matchV, request.matchJ, request.confidenceThreshold)
+                request.matchV, request.matchJ, request.confidenceThreshold, request.minEpitopeSize)
 
         val results = instance.search(sample)
         this.rows = results

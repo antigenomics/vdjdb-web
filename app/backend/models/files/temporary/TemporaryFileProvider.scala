@@ -19,14 +19,15 @@ package backend.models.files.temporary
 import java.io.{File, PrintWriter}
 import java.sql.Timestamp
 import java.time.Duration
-import javax.inject.{Inject, Singleton}
 
-import akka.actor.ActorSystem
+import javax.inject.{Inject, Singleton}
+import akka.actor.{ActorSystem, Cancellable}
 import backend.models.files.{FileMetadata, FileMetadataProvider}
 import backend.utils.{CommonUtils, TimeUtils}
 import org.slf4j.LoggerFactory
 import play.api.Configuration
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
+import play.api.inject.ApplicationLifecycle
 import play.db.NamedDatabase
 import slick.jdbc.JdbcProfile
 import slick.jdbc.meta.MTable
@@ -38,7 +39,7 @@ import scala.util.Failure
 import scala.async.Async.{async, await}
 
 @Singleton
-class TemporaryFileProvider @Inject()(@NamedDatabase("default") protected val dbConfigProvider: DatabaseConfigProvider)
+class TemporaryFileProvider @Inject()(@NamedDatabase("default") protected val dbConfigProvider: DatabaseConfigProvider, lifecycle: ApplicationLifecycle)
                                     (implicit ec: ExecutionContext, conf: Configuration, system: ActorSystem, fmp: FileMetadataProvider)
     extends HasDatabaseConfigProvider[JdbcProfile] {
     private final val logger = LoggerFactory.getLogger(this.getClass)
@@ -46,15 +47,17 @@ class TemporaryFileProvider @Inject()(@NamedDatabase("default") protected val db
     import dbConfig.profile.api._
     private final val table = TableQuery[TemporaryFileTable]
 
-    if (configuration.interval.getSeconds != 0) {
-        system.scheduler.schedule(configuration.interval.getSeconds seconds, configuration.interval.getSeconds seconds) {
+    private final val deleteScheduler: Option[Cancellable] = Option(configuration.interval.getSeconds != 0).collect {
+        case true => system.scheduler.schedule(configuration.interval.getSeconds seconds, configuration.interval.getSeconds seconds) {
             deleteExpired onComplete {
                 case Failure(ex) =>
-                    logger.warn("Cannot delete temporary files", ex)
+                    logger.warn("Cannot delete expired temporary files", ex)
                 case _ =>
             }
         }
     }
+
+    lifecycle.addStopHook { () => Future.successful(deleteScheduler.foreach(_.cancel())) }
 
     def getTable: TableQuery[TemporaryFileTable] = table
 

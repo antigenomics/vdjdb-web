@@ -81,7 +81,7 @@ class MultisampleAnalysisWebSocketActor(out: ActorRef, limit: IpLimit, user: Use
                     val instance = database.getInstance.filter(filters)
                         .asClonotypeDatabase(request.species, request.gene, scope,
                             ScoringBundle.getDUMMY, DegreeWeightFunctionFactory.DEFAULT, DummyResultFilter.INSTANCE,
-                            request.matchV, request.matchJ, request.confidenceThreshold)
+                            request.matchV, request.matchJ, request.confidenceThreshold, request.minEpitopeSize)
 
                     val counters = samples.map((futureSample) => async {
                         val sample = await(futureSample)

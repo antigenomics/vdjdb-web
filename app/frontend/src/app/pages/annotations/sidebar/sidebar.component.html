@@ -1,7 +1,9 @@
 <div class="ui fade element sidebar vertical menu with navbar visible" #sidebar>
     <div class="item sidebar-bars">
         <div class="right menu">
-            <a class="item sidebar-bars" (click)="swap()"><i class="ui icon bars"></i></a>
+            <a class="item sidebar-bars" (click)="toggle()">
+                <i class="ui icon bars"></i>
+            </a>
         </div>
     </div>
     <div class="sidebar-content" #sidebarContent>
@@ -18,11 +20,18 @@
             </div>
         </div>
         <div class="item">
-            <div class="header">Samples</div>
+            <div class="header">
+                Samples
+                <i class="ui small sort icon" *ngIf="!isTagsEmpty()" (click)="toggleSortVisibility()"></i>
+            </div>
             <div class="menu" *ngIf="!isSamplesEmpty()">
+                <a class="item"></a>
                 <a class="item" *ngFor="let sample of getSamples()" (click)="sidebarRoute('sample', sample.name, 'table')"
-                   [ngClass]="{'padded vertically border selected':isSampleSelected(sample)}">
-                    <i class="trash icon" (click)="deleteSample(sample); $event.stopPropagation()" *ngIf="isDeletingAllowed()"></i>{{ sample.name }}
+                   [ngClass]="{'padded vertically border selected':isSampleSelected(sample), 'updating':isSampleUpdating(sample)}">
+                    <i class="trash icon" (click)="deleteSample(sample); $event.stopPropagation()" *ngIf="isDeletingAllowed()"></i>
+                    <i class="cogs icon" (click)="updateSample(sample, $event); $event.stopPropagation()" *ngIf="isUpdatingAllowed()"></i>
+                    <a class="ui empty circular sample-tag label" *ngIf="sample.hasTag()" [style.background-color]="getSampleTag(sample).color"></a>
+                    {{ sample.name }}
                     <div class="sample sub menu" *ngIf="isSampleSelected(sample)">
                         <div class="item padded horizontally" [ngClass]="{'selected':isSampleRouteContains('table')}"
                              (click)="sidebarRoute('sample', sample.name, 'table'); $event.stopPropagation()">Table
@@ -35,6 +44,10 @@
                 <a class="item" (click)="sidebarRoute('multisample', 'summary')"
                    [ngClass]="{'padded vertically border selected':isAllSamplesSelected()}">
                     All samples
+                </a>
+                <a class="item" (click)="sidebarRoute('tags')"
+                   [ngClass]="{'padded vertically border selected':isTagsPageSelected()}">
+                    Configure tags
                 </a>
             </div>
             <div class="menu" *ngIf="isSamplesEmpty()">
@@ -50,3 +63,5 @@
         </div>
     </div>
 </div>
+<update-sample-modal (onClosed)="detectStateChanges()"></update-sample-modal>
+<sort-modal (onSortChange)="detectStateChanges()"></sort-modal>

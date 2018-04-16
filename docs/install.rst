@@ -78,31 +78,33 @@ SBT console supports some utility functions which can be executed in the followi
 
 Available commands:
 
-+--------------------------------------+---------------------------------------+
-| Command                              | Description                           |
-+======================================+=======================================+
-| build                                | Build VDJdb application               |
-+--------------------------------------+---------------------------------------+
-| backendBuild                         | Build VDJdb backend only              |
-+--------------------------------------+---------------------------------------+
-| backendTest                          | Test VDJdb backend                    |
-+--------------------------------------+---------------------------------------+
-| frontendBuild                        | Build VDJdb frontend bundle only      |
-+--------------------------------------+---------------------------------------+
-| frontendBuildAngular                 | Build VDJdb frontend javascript code  |
-+--------------------------------------+---------------------------------------+
-| frontendBuildWebpack                 | Build VDJdb frontend styles           |
-+--------------------------------------+---------------------------------------+
-| frontendCleanDependencies            | Clean frontend dependencies           |
-+--------------------------------------+---------------------------------------+
-| frontendCleanCache                   | Clean frontend cache                  |
-+--------------------------------------+---------------------------------------+
-| frontendCleanBuild                   | Clean frontend build                  |
-+--------------------------------------+---------------------------------------+
-| frontendInstallDependencies          | Install frontend dependencies         |
-+--------------------------------------+---------------------------------------+
-| frontendOutdated                     | Check frontend dependencies updates   |
-+--------------------------------------+---------------------------------------+
++--------------------------------------+-----------------------------------------+
+| Command                              | Description                             |
++======================================+=========================================+
+| build                                | Build VDJdb application                 |
++--------------------------------------+-----------------------------------------+
+| backendBuild                         | Build VDJdb backend only                |
++--------------------------------------+-----------------------------------------+
+| backendTest                          | Test VDJdb backend                      |
++--------------------------------------+-----------------------------------------+
+| frontendBuild                        | Build VDJdb frontend bundle only        |
++--------------------------------------+-----------------------------------------+
+| frontendBuildAngular                 | Build VDJdb frontend javascript code    |
++--------------------------------------+-----------------------------------------+
+| frontendBuildWebpack                 | Build VDJdb frontend styles             |
++--------------------------------------+-----------------------------------------+
+| frontendBuildWebpackDLL              | Build VDJdb frontend dll's (development)|
++--------------------------------------+-----------------------------------------+
+| frontendCleanDependencies            | Clean frontend dependencies             |
++--------------------------------------+-----------------------------------------+
+| frontendCleanCache                   | Clean frontend cache                    |
++--------------------------------------+-----------------------------------------+
+| frontendCleanBuild                   | Clean frontend build                    |
++--------------------------------------+-----------------------------------------+
+| frontendInstallDependencies          | Install frontend dependencies           |
++--------------------------------------+-----------------------------------------+
+| frontendOutdated                     | Check frontend dependencies updates     |
++--------------------------------------+-----------------------------------------+
 
 .. warning::
 

@@ -1,7 +1,7 @@
 import scala.sys.process._
 import play.sbt.PlayImport.PlayKeys.playRunHooks
 
-name := """VDJdb-server"""
+name := """VDJdb-web"""
 
 version := "2.2.2"
 scalaVersion := "2.12.5"
@@ -13,7 +13,7 @@ lazy val root = (project in file(".")).enablePlugins(PlayScala, LauncherJarPlugi
 pipelineStages := Seq(digest)
 
 libraryDependencies ++= Seq(
-    "com.antigenomics" % "vdjmatch" % "1.2.0-SNAPSHOT",
+    "com.antigenomics" % "vdjmatch" % "1.2.1-SNAPSHOT",
     "ch.qos.logback" % "logback-classic" % "1.2.3",
     "com.typesafe.scala-logging" %% "scala-logging" % "3.8.0",
     "com.typesafe.play" %% "play-slick" % "3.0.3",
@@ -24,6 +24,7 @@ libraryDependencies ++= Seq(
     "com.typesafe.play" %% "play-mailer" % "6.0.1",
     "com.typesafe.play" %% "play-mailer-guice" % "6.0.1",
     "eu.bitwalker" % "UserAgentUtils" % "1.21",
+    "com.typesafe.akka" %% "akka-testkit" % "2.5.11" % Test,
     guice,
     ws,
     filters

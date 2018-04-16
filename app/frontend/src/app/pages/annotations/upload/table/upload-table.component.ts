@@ -17,6 +17,7 @@
 
 import { ChangeDetectionStrategy, ElementRef, HostBinding, HostListener, Renderer2, ViewChild } from '@angular/core';
 import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { AnnotationsService } from 'pages/annotations/annotations.service';
 import { Subscription } from 'rxjs/Subscription';
 import { UploadService } from '../upload.service';
 
@@ -32,13 +33,15 @@ export class UploadTableComponent implements OnInit, OnDestroy {
     @ViewChild('dragArea')
     public dragArea: ElementRef;
 
-    constructor(public uploadService: UploadService, private changeDetector: ChangeDetectorRef, private renderer: Renderer2) {
+    constructor(public uploadService: UploadService, public annotationsService: AnnotationsService,
+                private changeDetector: ChangeDetectorRef, private renderer: Renderer2) {
     }
 
     public ngOnInit(): void {
         this._stateSubscription = this.uploadService.getEvents().subscribe(() => {
             this.changeDetector.detectChanges();
         });
+        this.uploadService.checkTagsAvailability();
     }
 
     public showValidNameTooltip(): boolean {
@@ -75,6 +78,10 @@ export class UploadTableComponent implements OnInit, OnDestroy {
         this.disableDragStyle(event);
         event.stopPropagation();
         this.uploadService.addItems((event as any).dataTransfer.files);
+    }
+
+    public isTagsExist(): boolean {
+        return this.annotationsService.getTags().length !== 0;
     }
 
     public ngOnDestroy(): void {

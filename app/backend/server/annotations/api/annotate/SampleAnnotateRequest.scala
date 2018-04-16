@@ -19,8 +19,7 @@ package backend.server.annotations.api.annotate
 
 import play.api.libs.json.{Json, Reads}
 
-case class SampleAnnotateRequest(sampleName: String,
-                                 hammingDistance: Int, confidenceThreshold: Int,
+case class SampleAnnotateRequest(sampleName: String, hammingDistance: Int, confidenceThreshold: Int, minEpitopeSize: Int,
                                  matchV: Boolean, matchJ: Boolean,
                                  species: String, gene: String, mhc: String)
 

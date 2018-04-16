@@ -20,6 +20,7 @@ import akka.actor.{ActorRef, PoisonPill}
 import play.api.libs.json.{JsObject, Json, Writes}
 
 case class WebSocketOutActorRef(private val id: Int, private val action: String, private val out: ActorRef) {
+
     def getAction: String = action
 
     def success[T](message: T, action: String = getAction)(implicit tWrites: Writes[T]): Unit = {
@@ -64,6 +65,11 @@ case class WebSocketOutActorRef(private val id: Int, private val action: String,
 }
 
 object WebSocketOutActorRef {
+    final val PingAction: String = "ping"
+    final val InvalidRequestMessage: String = "Invalid request"
+    final val InvalidDataRequestMessage: String = "Invalid request, unable to validate data type"
+    final val InvalidMissingDataRequestMessage: String = "Invalid request, missing data property"
+
     object ResponseStatus {
         final val SUCCESS: String = "success"
         final val WARNING: String = "warning"

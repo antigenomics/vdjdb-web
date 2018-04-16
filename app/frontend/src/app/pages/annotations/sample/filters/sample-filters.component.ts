@@ -25,6 +25,7 @@ import { SampleFilters } from 'pages/annotations/sample/filters/sample-filters';
 export class AnnotationsFiltersComponent {
     private static hammingDistanceRange = { min: 0, max: 3 };
     private static confidenceThresholdRange = { min: 0, max: 3 };
+    private static epitopeSizeRange = { min: 0, max: 1000 };
 
     @Input('filters')
     public filters: SampleFilters;
@@ -35,31 +36,29 @@ export class AnnotationsFiltersComponent {
     constructor(private changeDetector: ChangeDetectorRef) {}
 
     public checkHammingDistance(distance: number): void {
-        this.filters.hammingDistance = -1;
-        this.changeDetector.detectChanges();
-        if (isNaN(Number(distance)) || distance === null || distance === undefined) {
-            this.filters.hammingDistance = AnnotationsFiltersComponent.hammingDistanceRange.min;
-        } else if (distance >  AnnotationsFiltersComponent.hammingDistanceRange.max) {
-            this.filters.hammingDistance =  AnnotationsFiltersComponent.hammingDistanceRange.max;
-        } else if (distance < AnnotationsFiltersComponent.hammingDistanceRange.min) {
-            this.filters.hammingDistance = AnnotationsFiltersComponent.hammingDistanceRange.min;
-        } else {
-            this.filters.hammingDistance = distance;
-        }
-        this.changeDetector.detectChanges();
+        this.checkRange('hammingDistance', AnnotationsFiltersComponent.hammingDistanceRange, distance);
     }
 
     public checkConfidenceThreshold(threshold: number): void {
-        this.filters.confidenceThreshold = -1;
+        this.checkRange('confidenceThreshold', AnnotationsFiltersComponent.confidenceThresholdRange, threshold);
+    }
+
+    public checkMinEpitopeSize(size: number): void {
+        this.checkRange('minEpitopeSize', AnnotationsFiltersComponent.epitopeSizeRange, size);
+    }
+
+    private checkRange(name: string, range: { min: number, max: number }, value: number): void {
+        const filters = this.filters as any;
+        filters[name] = -1;
         this.changeDetector.detectChanges();
-        if (isNaN(Number(threshold)) || threshold === null || threshold === undefined) {
-            this.filters.confidenceThreshold = AnnotationsFiltersComponent.confidenceThresholdRange.min;
-        } else if (threshold >  AnnotationsFiltersComponent.confidenceThresholdRange.max) {
-            this.filters.confidenceThreshold =  AnnotationsFiltersComponent.confidenceThresholdRange.max;
-        } else if (threshold < AnnotationsFiltersComponent.confidenceThresholdRange.min) {
-            this.filters.confidenceThreshold = AnnotationsFiltersComponent.confidenceThresholdRange.min;
+        if (isNaN(Number(value)) || value === null || value === undefined) {
+            filters[name] = range.min;
+        } else if (value >  range.max) {
+            filters[name] =  range.max;
+        } else if (value < range.min) {
+            filters[name] = range.min;
         } else {
-            this.filters.confidenceThreshold = threshold;
+            filters[name] = value;
         }
         this.changeDetector.detectChanges();
     }

@@ -23,17 +23,20 @@ import play.api.data.Forms._
 case class SignupForm(login: String, email: String, password: String, repeatPassword: String)
 
 object SignupForm {
-    final val EMAIL_MAX_LENGTH = 64
+    final val EMAIL_MAX_LENGTH = 128
+    final val LOGIN_MAX_LENGTH = 64
     final val PASSWORD_MIN_LENGTH = 6
     final val PASSWORD_MAX_LENGTH = 50
 
     implicit val signupFormMapping: Form[SignupForm] = Form(mapping(
-        "login" -> nonEmptyText(maxLength = EMAIL_MAX_LENGTH),
+        "login" -> nonEmptyText(maxLength = LOGIN_MAX_LENGTH),
         "email" -> email,
         "password" -> nonEmptyText(minLength = PASSWORD_MIN_LENGTH, maxLength = PASSWORD_MAX_LENGTH),
         "repeatPassword" -> nonEmptyText(minLength = PASSWORD_MIN_LENGTH, maxLength = PASSWORD_MAX_LENGTH)
     )(SignupForm.apply)(SignupForm.unapply) verifying("authorization.forms.signup.failed.workaround.3", { signupForm =>
         signupForm.password == signupForm.repeatPassword
+    }) verifying("authorization.forms.signup.failed.workaround.4", { signupForm =>
+        signupForm.email.length < SignupForm.EMAIL_MAX_LENGTH
     }))
 
     final val signupFailedFormMapping: Form[SignupForm] =

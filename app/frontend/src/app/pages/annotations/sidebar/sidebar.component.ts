@@ -20,9 +20,12 @@ import {
     OnDestroy, OnInit, Output, Renderer2, RendererStyleFlags2, ViewChild, ViewContainerRef
 } from '@angular/core';
 import { Router } from '@angular/router';
+import { SortModalComponent } from 'pages/annotations/sidebar/sort_modal/sort-modal.component';
+import { UpdateSampleModalComponent } from 'pages/annotations/sidebar/update_sample_modal/update-sample-modal.component';
 import { Subscription } from 'rxjs/Subscription';
 import { ModalComponent } from 'shared/modals/modal/modal.component';
 import { SampleItem } from 'shared/sample/sample-item';
+import { SampleTag } from 'shared/sample/sample-tag';
 import { LoggerService } from 'utils/logger/logger.service';
 import { NotificationService } from 'utils/notifications/notification.service';
 import { AnnotationsService, AnnotationsServiceEvents } from '../annotations.service';
@@ -54,7 +57,11 @@ export class AnnotationsSidebarState {
         return false;
     }
 
-    private parseSampleName(url: string): [string, string] {
+    public isSampleSelected(): boolean {
+        return this.metadata.has('sample');
+    }
+
+    private parseSampleName(url: string): [ string, string ] {
         const sampleRoute = url.substring('sample/'.length);
         const additionalRouteIndex = sampleRoute.indexOf('/');
         const sampleName = sampleRoute.substring(0, additionalRouteIndex === -1 ? sampleRoute.length : additionalRouteIndex);
@@ -82,6 +89,12 @@ export class AnnotationsSidebarComponent implements OnInit, OnDestroy {
     @ViewChild('sidebarContent')
     public sidebarContent: ElementRef;
 
+    @ViewChild(UpdateSampleModalComponent)
+    public updateSampleModal: UpdateSampleModalComponent;
+
+    @ViewChild(SortModalComponent)
+    public sortModal: SortModalComponent;
+
     @Output('visible')
     public visible: EventEmitter<boolean> = new EventEmitter();
 
@@ -97,12 +110,17 @@ export class AnnotationsSidebarComponent implements OnInit, OnDestroy {
                 this._filesUploadingLabel = true;
             } else if (event === AnnotationsServiceEvents.UPLOAD_SERVICE_UPLOAD_ENDED) {
                 this._filesUploadingLabel = false;
+            } else if (event === AnnotationsServiceEvents.SAMPLE_TAGS_UPDATED) {
+                if (this.isTagsEmpty()) {
+                    this.sortModal.setSortBy('names');
+                }
             }
             this.changeDetector.detectChanges();
         });
     }
 
     public hide(): void {
+        this.updateSampleModal.close();
         this.visible.emit(false);
         this.renderer.setStyle(this.sidebar.nativeElement, 'width', '40px', RendererStyleFlags2.Important);
         this.renderer.setStyle(this.sidebarContent.nativeElement, 'display', 'none');
@@ -120,7 +138,7 @@ export class AnnotationsSidebarComponent implements OnInit, OnDestroy {
         this._hidden = false;
     }
 
-    public swap(): void {
+    public toggle(): void {
         if (this._hidden) {
             this.show();
         } else {
@@ -129,11 +147,16 @@ export class AnnotationsSidebarComponent implements OnInit, OnDestroy {
     }
 
     public async sidebarRoute(link: string, ...args: string[]): Promise<void> {
-        const routed = await this.router.navigate(['annotations', link].concat(args));
+        const routed = await this.router.navigate([ 'annotations', link ].concat(args));
         if (routed) {
             this._state.update(this.router.url);
         }
+        this.updateSampleModal.close();
         this.changeDetector.detectChanges();
+    }
+
+    public getAvailableSoftwareTypes(): string[] {
+        return this.annotationsService.getAvailableSoftwareTypes();
     }
 
     public isSampleSelected(sample: SampleItem): boolean {
@@ -141,15 +164,52 @@ export class AnnotationsSidebarComponent implements OnInit, OnDestroy {
     }
 
     public isAllSamplesSelected(): boolean {
-        return this._state.path.includes('multisample');
+        return !this._state.isSampleSelected() && this._state.path.includes('multisample');
+    }
+
+    public isTagsPageSelected(): boolean {
+        return !this._state.isSampleSelected() && this._state.path.includes('tags');
     }
 
     public getSamples(): SampleItem[] {
-        return this.annotationsService.getSamples();
+        const samples = this.annotationsService.getSamples();
+        switch (this.sortModal.sortBy) {
+            case 'names':
+                return samples.sort((s1, s2) => s1.name.localeCompare(s2.name));
+            case 'tags':
+                return samples.sort((s1, s2) => {
+                    if (s1.hasTag() && s2.hasTag()) {
+                        const c = s1.tagID - s2.tagID;
+                        if (c === 0) {
+                            return s1.name.localeCompare(s2.name);
+                        } else {
+                            return c;
+                        }
+                    } else if (s1.hasTag() && !s2.hasTag()) {
+                        return -1;
+                    } else if (!s1.hasTag() && s2.hasTag()) {
+                        return 1;
+                    } else if (!s1.hasTag() && !s2.hasTag()) {
+                        return s1.name.localeCompare(s2.name);
+                    }
+                    return 0;
+                });
+            default:
+                return samples.sort((s1, s2) => s1.name.localeCompare(s2.name));
+        }
+
+    }
+
+    public getSampleTag(sample: SampleItem): SampleTag {
+        return this.annotationsService.getSampleTag(sample);
     }
 
     public isSamplesEmpty(): boolean {
         return this.getSamples().length === 0;
+    }
+
+    public isTagsEmpty(): boolean {
+        return this.annotationsService.getTags().length === 0;
     }
 
     public isSampleRouteContains(route: string): boolean {
@@ -168,6 +228,14 @@ export class AnnotationsSidebarComponent implements OnInit, OnDestroy {
         return this.annotationsService.getUserPermissions().isDeleteAllowed;
     }
 
+    public isUpdatingAllowed(): boolean {
+        return this.annotationsService.getUserPermissions().isDeleteAllowed;
+    }
+
+    public isSampleUpdating(sample: SampleItem): boolean {
+        return this.updateSampleModal.isSampleUpdating(sample);
+    }
+
     public deleteSample(sample: SampleItem): void {
         if (!this.annotationsService.getUserPermissions().isDeleteAllowed) {
             this.notifications.error('Delete', 'Deleting is not allowed for this account');
@@ -183,8 +251,9 @@ export class AnnotationsSidebarComponent implements OnInit, OnDestroy {
             if (deleted) {
                 this.notifications.info('Delete', `Sample ${sample.name} has been deleted`);
                 if (this.isSampleSelected(sample)) {
-                    this.router.navigate(['annotations', 'info']);
+                    this.router.navigate([ 'annotations', 'info' ]);
                 }
+                this.updateSampleModal.close();
             } else {
                 this.notifications.error('Delete', `Unable to delete ${sample.name} sample`);
             }
@@ -209,8 +278,9 @@ export class AnnotationsSidebarComponent implements OnInit, OnDestroy {
             if (deleted) {
                 this.notifications.info('Delete', `All samples have been deleted`);
                 if (this._state.path.startsWith('sample')) {
-                    this.router.navigate(['annotations', 'info']);
+                    this.router.navigate([ 'annotations', 'info' ]);
                 }
+                this.updateSampleModal.close();
             } else {
                 this.notifications.error('Delete', `Unable to delete samples`);
             }
@@ -218,6 +288,22 @@ export class AnnotationsSidebarComponent implements OnInit, OnDestroy {
         this._confirmDeletingModalComponent.instance.hideCallback = async () => {
             this.destroyConfirmDeletingModalComponent();
         };
+    }
+
+    public updateSample(sample: SampleItem, event: MouseEvent): void {
+        if (!this.annotationsService.getUserPermissions().isDeleteAllowed) {
+            this.notifications.error('Sample update', 'Updating is not allowed for this account');
+            return;
+        }
+        this.updateSampleModal.update(sample, event.clientY);
+    }
+
+    public toggleSortVisibility(): void {
+        this.sortModal.toggle();
+    }
+
+    public detectStateChanges(): void {
+        this.changeDetector.detectChanges();
     }
 
     public ngOnDestroy(): void {

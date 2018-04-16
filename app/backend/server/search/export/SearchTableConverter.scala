@@ -29,6 +29,7 @@ trait SearchTableConverter {
 }
 
 object SearchTableConverter {
+    def getAvailableConverters: Seq[String] = Seq("tsv")
     def getConverter(converterType: String)(implicit tfp: TemporaryFileProvider): Option[SearchTableConverter] = {
         converterType match {
             case "tsv" => Some(SearchTableTSVConverter())

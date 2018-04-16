@@ -16,6 +16,7 @@
 
 import { Directive, HostListener, Input } from '@angular/core';
 import { Router } from '@angular/router';
+import { AnalyticsService } from 'utils/analytics/analytics.service';
 import { Utils } from 'utils/utils';
 
 @Directive({
@@ -28,10 +29,11 @@ export class RouteDirective {
     @Input('external')
     public external: boolean = false;
 
-    constructor(private router: Router) {}
+    constructor(private router: Router, private analytics: AnalyticsService) {}
 
     @HostListener('click')
     public onRouteChange(): void {
+        this.analytics.hit(this.routeURL);
         if (this.external) {
             document.location.href = this.routeURL;
         } else {

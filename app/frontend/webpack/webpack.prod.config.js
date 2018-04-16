@@ -14,7 +14,6 @@
  *        limitations under the License.
  *
  */
-
 console.log('Running webpack in production mode');
 
 const base = require('./webpack.base.config');
@@ -45,7 +44,7 @@ const plugins = [
             minify: true,
             output: path.join(base.getBuildPath(), 'bundle.min.css'),
             whitelist: [
-                'success', 'warning', 'error', 'info',
+                'success', 'warning', 'error', 'info', 'checkmark', 'box', 'sign', 'remove',
                 'circle', 'icon', 'violet', 'circular', 'circle',
                 'text', 'alignment', 'big', 'hover-inside-icon', 'overview', 'pre', 'code' ]
         }

@@ -89,6 +89,14 @@
                 <input [attr.disabled]="disabled?'':null" type="number" min="0" max="3" [ngModel]="filters.hammingDistance" (ngModelChange)="checkHammingDistance($event)">
             </div>
         </div>
+        <div class="column">
+            <b>Min Epitope size</b>
+        </div>
+        <div class="two wide column">
+            <div class="ui input fluid">
+                <input [attr.disabled]="disabled?'':null" type="number" min="0" max="1000" [ngModel]="filters.minEpitopeSize" (ngModelChange)="checkMinEpitopeSize($event)">
+            </div>
+        </div>
     </div>
 </div>
 

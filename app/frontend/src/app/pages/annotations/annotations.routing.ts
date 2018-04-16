@@ -39,6 +39,7 @@ const routes: Routes = [
                 ]
             },
             { path: 'multisample', loadChildren: 'pages/annotations/multisample/multisample.module#MultisamplePageModule' },
+            { path: 'tags', loadChildren: 'pages/annotations/tags/tags.module#TagsPageModule' },
             { path: '**', redirectTo: 'info' }
         ]
     }

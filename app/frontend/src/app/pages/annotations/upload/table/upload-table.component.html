@@ -3,15 +3,28 @@
         <table class="ui very compact very basic single line padded table">
             <thead>
             <tr>
-                <th class="five wide">
+                <th class="three wide">
                     <div class="ui pointing below red basic label fade element" *ngIf="showValidNameTooltip()">
                         File name can contain letters ('a-zA-Z'), numbers,   .  (dot),  -  (dash),  _  (underline) and + (plus) symbols. <br>
                         Also file name should have less than 40 symbols and should not be empty.
                     </div>
                     Name
                 </th>
+                <th class="two wide" *ngIf="isTagsExist()">
+                    <div class="ui dropdown" dropdown [content]="content">
+                        <span class="text">Tag</span>
+                        <i class="dropdown icon"></i>
+                        <div class="menu fast fade element" #content>
+                            <div class="item" *ngFor="let tag of annotationsService.getTags()"
+                                 (click)="uploadService.setDefaultTag(tag)">
+                                {{ tag.name }}
+                                <a class="ui empty circular sample-tag label" [style.background-color]="tag.color"></a>
+                            </div>
+                        </div>
+                    </div>
+                </th>
                 <th class="two wide">
-                    <div class="ui fluid dropdown" dropdown [content]="content">
+                    <div class="ui dropdown" dropdown [content]="content">
                         <span class="text">Software</span>
                         <i class="dropdown icon"></i>
                         <div class="menu fast fade element" #content>

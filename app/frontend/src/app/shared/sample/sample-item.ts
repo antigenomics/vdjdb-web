@@ -24,24 +24,38 @@ export interface ISampleItemData {
 }
 
 export class SampleItem {
+    private static readonly nameRegexp = /^[a-zA-Z0-9_.+-]{1,40}$/;
+
     private _data: ISampleItemData;
     private _processingLabel: string = '';
     private _processing: boolean = false;
 
-    public readonly name: string;
-    public readonly software: string;
+    public name: string;
+    public software: string;
     public readsCount: number;
     public clonotypesCount: number;
+    public tagID: number;
 
-    constructor(name: string, software: string, readsCount: number, clonotypesCount: number) {
+    constructor(name: string, software: string, readsCount: number, clonotypesCount: number, tagID: number) {
         this.name = name;
         this.software = software;
         this.readsCount = readsCount;
         this.clonotypesCount = clonotypesCount;
+        this.tagID = tagID;
+    }
+
+    public updateProps(newName: string, newSoftware: string, newTagID: number): void {
+        this.name = newName;
+        this.software = newSoftware;
+        this.tagID = newTagID;
     }
 
     public setData(data: ISampleItemData): void {
         this._data = data;
+    }
+
+    public hasTag(): boolean {
+        return this.tagID !== -1;
     }
 
     public hasData(): boolean {
@@ -80,7 +94,11 @@ export class SampleItem {
         return this.readsCount !== -1 && this.clonotypesCount !== -1;
     }
 
+    public static isNameValid(name: string): boolean {
+        return SampleItem.nameRegexp.test(name);
+    }
+
     public static deserialize(o: any): SampleItem {
-        return new SampleItem(o[ 'name' ], o[ 'software' ], o[ 'readsCount' ], o[ 'clonotypesCount' ]); // tslint:disable-line:no-string-literal
+        return new SampleItem(o[ 'name' ], o[ 'software' ], o[ 'readsCount' ], o[ 'clonotypesCount' ], o[ 'tagID' ]); // tslint:disable-line:no-string-literal
     }
 }

@@ -17,11 +17,10 @@
 
 package backend.models.files.sample
 
-import java.io.File
 import javax.inject.{Inject, Singleton}
 
 import akka.actor.ActorSystem
-import backend.models.authorization.user.{User, UserProvider}
+import backend.models.authorization.user.User
 import backend.models.files.{FileMetadata, FileMetadataProvider}
 import org.slf4j.LoggerFactory
 import play.api.Configuration
@@ -81,6 +80,10 @@ class SampleFileProvider @Inject()(@NamedDatabase("default") protected val dbCon
         getByUserIDWithMetadata(user.id)
     }
 
+    def getByUserAndTagID(user: User, tagID: Long): Future[Seq[SampleFile]] = {
+        db.run(table.filter((sample) => sample.userID === user.id && sample.tagID === tagID).result)
+    }
+
     def delete(file: SampleFile): Future[Int] = {
         fmp.delete(file.metadataID)
     }
@@ -112,5 +115,13 @@ class SampleFileProvider @Inject()(@NamedDatabase("default") protected val dbCon
 
     def updateSampleFileInfo(sample: SampleFile, readsCount: Long, clonotypesCount: Long): Future[Int] = {
         db.run(table.filter(_.id === sample.id).map(s => (s.readsCount, s.clonotypesCount)).update((readsCount, clonotypesCount)))
+    }
+
+    def updateSampleFileProps(sample: SampleFile, newSampleName: String, newSoftware: String, newTagID: Long): Future[Int] = {
+        db.run(table.filter(_.id === sample.id).map(s => (s.sampleName, s.software, s.tagID)).update((newSampleName, newSoftware, newTagID)))
+    }
+
+    def updateSampleFileTagID(sample: SampleFile, tagID: Long): Future[Int] = {
+        db.run(table.filter(_.id === sample.id).map(s => s.tagID).update(tagID))
     }
 }

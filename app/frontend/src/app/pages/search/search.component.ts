@@ -18,6 +18,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { SearchTable } from 'pages/search/table/search/search-table';
 import { FiltersService } from 'shared/filters/filters.service';
 import { TableColumn } from 'shared/table/column/table-column';
+import { AnalyticsService } from 'utils/analytics/analytics.service';
 import { LoggerService } from 'utils/logger/logger.service';
 import { NotificationService } from 'utils/notifications/notification.service';
 import { SearchTableService } from './table/search/search-table.service';
@@ -31,8 +32,8 @@ export class SearchPageComponent implements OnInit, OnDestroy {
     public table: SearchTable;
 
     constructor(private searchTableService: SearchTableService, private filters: FiltersService,
-                logger: LoggerService, notifications: NotificationService) {
-        this.table = new SearchTable(searchTableService, filters, logger, notifications);
+                logger: LoggerService, notifications: NotificationService, analytics: AnalyticsService) {
+        this.table = new SearchTable(searchTableService, filters, analytics, logger, notifications);
         if (this.searchTableService.isInitialized()) {
             this.fetchColumns();
             this.table.updateNumberOfRecords(this.searchTableService.getMetadata().numberOfRecords);
