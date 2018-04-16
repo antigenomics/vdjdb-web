@@ -20,7 +20,7 @@ import { ActivatedRouteSnapshot, Resolve, RouterStateSnapshot } from '@angular/r
 import { SampleFilters } from 'pages/annotations/sample/filters/sample-filters';
 import { SampleService } from 'pages/annotations/sample/sample.service';
 import { IntersectionTable } from 'pages/annotations/sample/table/intersection/intersection-table';
-import { Observable } from 'rxjs/Observable';
+import { Observable } from 'rxjs';
 import { filter, take } from 'rxjs/operators';
 import { SampleItem } from 'shared/sample/sample-item';
 import { LoggerService } from 'utils/logger/logger.service';

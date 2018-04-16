@@ -19,7 +19,7 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnIni
 import { ActivationEnd, ActivationStart, ChildActivationEnd, ChildActivationStart,
     GuardsCheckEnd, GuardsCheckStart, NavigationEnd, NavigationStart, ResolveEnd,
     ResolveStart, RouteConfigLoadEnd, RouteConfigLoadStart, Router, RoutesRecognized } from '@angular/router';
-import { Subscription } from 'rxjs/Subscription';
+import { Subscription } from 'rxjs';
 
 @Component({
     selector:        'loader',

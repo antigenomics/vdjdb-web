@@ -15,9 +15,8 @@
  */
 
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs/Observable';
+import { Observable, Subject } from 'rxjs';
 import { filter, take } from 'rxjs/operators';
-import { Subject } from 'rxjs/Subject';
 import { FiltersOptions } from 'shared/filters/filters';
 import { FiltersService } from 'shared/filters/filters.service';
 import { WebSocketConnection } from 'shared/websocket/websocket-connection';
@@ -95,7 +94,7 @@ export class SearchTableService {
             this.initialized = true;
             this.events.next(SearchTableServiceEvents.INITIALIZED);
         });
-        this.connection.getMessages().pipe(filter((message) => {
+        this.connection.getMessages().pipe(filter((message: WebSocketResponseData) => {
             return message.isSuccess() && message.get('action') === SearchTableWebSocketActions.SEARCH;
         })).subscribe((message: WebSocketResponseData) => {
             this.lastResponse = message;

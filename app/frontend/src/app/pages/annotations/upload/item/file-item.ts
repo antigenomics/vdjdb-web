@@ -15,7 +15,7 @@
  *       limitations under the License.
  */
 
-import { ReplaySubject } from 'rxjs/ReplaySubject';
+import { ReplaySubject } from 'rxjs';
 import { SampleTag } from 'shared/sample/sample-tag';
 import { Utils } from 'utils/utils';
 import { FileItemStatus, FileItemStatusErrorType } from './file-item-status';

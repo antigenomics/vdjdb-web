@@ -17,9 +17,8 @@
 
 import { Injectable } from '@angular/core';
 import { AnnotationsService, AnnotationsServiceEvents } from 'pages/annotations/annotations.service';
-import { Observable } from 'rxjs/Observable';
+import { Observable, Subject } from 'rxjs';
 import { filter } from 'rxjs/operators';
-import { Subject } from 'rxjs/Subject';
 import { SampleTag } from 'shared/sample/sample-tag';
 import { AnalyticsService } from 'utils/analytics/analytics.service';
 import { LoggerService } from 'utils/logger/logger.service';

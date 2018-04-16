@@ -18,8 +18,7 @@
 import { Injectable } from '@angular/core';
 import * as gzip from 'gzip-js';
 import { FileItemStatusErrorType } from 'pages/annotations/upload/item/file-item-status';
-import { Observable } from 'rxjs/Observable';
-import { Observer } from 'rxjs/Observer';
+import { Observable, Observer } from 'rxjs';
 import { SampleItem } from 'shared/sample/sample-item';
 import { SampleTag } from 'shared/sample/sample-tag';
 import { AnalyticsService } from 'utils/analytics/analytics.service';
@@ -228,7 +227,7 @@ export class UploadService {
             this.fireUploadingStartEvent();
             const uploader = this.createUploader(file);
             uploader.subscribe({
-                next:  async (status) => {
+                next:  async (status: UploadStatus) => {
                     if (status.loading === false) {
                         if (status.progress === UploadService.FULL_PROGRESS && status.error === undefined) {
                             const added = await this.annotationsService.addSample(file);

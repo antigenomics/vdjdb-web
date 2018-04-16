@@ -16,7 +16,7 @@
  */
 
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
-import { Subscription } from 'rxjs/Subscription';
+import { Subscription } from 'rxjs';
 import { AnnotationsService, AnnotationsServiceEvents } from '../annotations.service';
 
 @Component({

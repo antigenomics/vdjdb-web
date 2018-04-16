@@ -21,7 +21,7 @@ import {
 } from '@angular/core';
 import { AnnotationsService, AnnotationsServiceEvents } from 'pages/annotations/annotations.service';
 import { FileItemStatusErrorType } from 'pages/annotations/upload/item/file-item-status';
-import { Subscription } from 'rxjs/Subscription';
+import { Subscription } from 'rxjs';
 import { SampleTag } from 'shared/sample/sample-tag';
 import { FileItem } from '../../item/file-item';
 import { UploadService } from '../../upload.service';

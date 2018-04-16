@@ -18,7 +18,7 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { AnnotationsService, AnnotationsServiceEvents } from 'pages/annotations/annotations.service';
 import { TagsService, TagsServiceEventType } from 'pages/annotations/tags/tags.service';
-import { Subscription } from 'rxjs/Subscription';
+import { Subscription } from 'rxjs';
 
 @Component({
     selector:        'tags',
