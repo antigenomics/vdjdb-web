@@ -21,6 +21,7 @@ import java.io.File
 import java.nio.file.Paths
 
 import backend.models.authorization.permissions.{UserPermissions, UserPermissionsProvider}
+import backend.models.files.sample.tags.{SampleTag, SampleTagProvider}
 import backend.models.files.{FileMetadata, FileMetadataProvider}
 import backend.models.files.sample.{SampleFile, SampleFileProvider}
 import backend.utils.CommonUtils
@@ -40,6 +41,14 @@ case class User(id: Long, login: String, email: String, verified: Boolean, folde
         sfp.getByUserID(id)
     }
 
+    def getTaggedSampleFiles(tagID: Long)(implicit sfp: SampleFileProvider, ec: ExecutionContext): Future[Seq[SampleFile]] = {
+        sfp.getByUserAndTagID(this, tagID)
+    }
+
+    def getSampleTags(implicit stp: SampleTagProvider, ec: ExecutionContext): Future[Seq[SampleTag]] = {
+        stp.getByUserID(id)
+    }
+
     def getSampleFileByName(name: String)(implicit sfp: SampleFileProvider, ec: ExecutionContext): Future[Option[SampleFile]] = {
         sfp.getByUserIDAndName(id, name)
     }
@@ -54,10 +63,11 @@ case class User(id: Long, login: String, email: String, verified: Boolean, folde
         sfp.getByUserIDWithMetadata(id)
     }
 
-    def getDetails(implicit upp: UserPermissionsProvider, sfp: SampleFileProvider, ec: ExecutionContext): Future[UserDetails] = async {
+    def getDetails(implicit upp: UserPermissionsProvider, sfp: SampleFileProvider, stp: SampleTagProvider, ec: ExecutionContext): Future[UserDetails] = async {
         val permissions = getPermissions
-        val files = getSampleFiles
-        UserDetails(email, login, await(files).map(_.getDetails), await(permissions))
+        val fileDetails = getSampleFiles.map(_.map(_.getDetails))
+        val tagsDetails = getSampleTags.map(_.map(_.getDetails))
+        UserDetails(email, login, await(fileDetails), await(tagsDetails), await(permissions))
     }
 
     def addSampleFile(name: String, extension: String, softwareType: String, file: Files.TemporaryFile)
@@ -83,7 +93,7 @@ case class User(id: Long, login: String, email: String, verified: Boolean, folde
                         if (success) {
                             val metadataID = await(fmp.insert(name, extension, sampleFolderPath))
                             file.moveTo(Paths.get(s"$sampleFolderPath/$name.$extension"), replace = true)
-                            val sampleFileID = await(sfp.insert(SampleFile(0, name, softwareType, -1, -1, metadataID, id)))
+                            val sampleFileID = await(sfp.insert(SampleFile(0, name, softwareType, -1, -1, metadataID, id, -1)))
                             Left(sampleFileID)
                         } else {
                             Right("Unable to create sample file (internal server error)")
@@ -111,7 +121,7 @@ case class User(id: Long, login: String, email: String, verified: Boolean, folde
                     val sampleFolderPath = file.getParentFile.getAbsolutePath
                     val sampleFolder = file.getParentFile
                     val metadataID = await(fmp.insert(name, extension, sampleFolderPath))
-                    val sampleFileID = await(sfp.insert(SampleFile(0, name, softwareType, -1, -1, metadataID, id)))
+                    val sampleFileID = await(sfp.insert(SampleFile(0, name, softwareType, -1, -1, metadataID, id, -1)))
                     Left(sampleFileID)
                 }
             }

@@ -19,7 +19,7 @@ package backend.server.annotations.api.sample.validate
 
 import play.api.libs.json.{Json, Reads}
 
-case class ValidateSampleRequest(name: String)
+case class ValidateSampleRequest(name: String, tagID: Long)
 
 object ValidateSampleRequest {
     implicit val validateSampleRequestReads: Reads[ValidateSampleRequest] = Json.reads[ValidateSampleRequest]

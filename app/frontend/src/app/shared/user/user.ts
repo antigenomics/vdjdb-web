@@ -16,18 +16,29 @@
  */
 
 import { SampleItem } from '../sample/sample-item';
+import { SampleTag } from '../sample/sample-tag';
 
 export class User {
     public login: string;
     public email: string;
     public samples: SampleItem[];
+    public tags: SampleTag[];
     public permissions: UserPermissions;
 
-    constructor(login: string, email: string, samples: any[], permissions: UserPermissions) {
+    constructor(login: string, email: string, samples: any[], tags: any[], permissions: UserPermissions) {
         this.login = login;
         this.email = email;
         this.samples = samples.map((sample) => SampleItem.deserialize(sample));
+        this.tags = tags.map((tag) => SampleTag.deserialize(tag, this.samples));
         this.permissions = permissions;
+
+        // Check is tags are valid
+        this.samples.forEach((sample) => {
+            const index = this.tags.findIndex((tag) => tag.id === sample.tagID);
+            if (index === -1) {
+                sample.tagID = -1;
+            }
+        });
     }
 
     public updateSampleInfo(sampleName: string, readsCount: number, clonotypesCount: number): void {
@@ -41,7 +52,7 @@ export class User {
     public static deserialize(input: any): User {
         /* Disable tslint to prevent ClosureCompiler mangling */
         /* tslint:disable:no-string-literal */
-        return new User(input['login'], input['email'], input['files'], UserPermissions.deserialize(input['permissions']));
+        return new User(input[ 'login' ], input[ 'email' ], input[ 'files' ], input[ 'tags' ], UserPermissions.deserialize(input[ 'permissions' ]));
         /* tslint:enable:no-string-literal */
     }
 }
@@ -71,8 +82,8 @@ export class UserPermissions {
     public static deserialize(input: any): UserPermissions {
         /* Disable tslint to prevent ClosureCompiler mangling */
         /* tslint:disable:no-string-literal */
-        return new UserPermissions(input['maxFilesCount'], input['maxFileSize'],
-            input['isUploadAllowed'], input['isDeleteAllowed'], input['isChangePasswordAllowed']);
+        return new UserPermissions(input[ 'maxFilesCount' ], input[ 'maxFileSize' ],
+            input[ 'isUploadAllowed' ], input[ 'isDeleteAllowed' ], input[ 'isChangePasswordAllowed' ]);
         /* tslint:enable:no-string-literal */
     }
 }

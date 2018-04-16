@@ -28,7 +28,6 @@ import { UploadService } from './upload.service';
 @NgModule({
     imports:      [ CommonModule, FormsModule, ModalsModule, AnnotationsUploadRouting ],
     declarations: [ AnnotationsUploadComponent, UploadTableComponent, UploadTableRowComponent ],
-    exports:      [ AnnotationsUploadComponent, UploadTableComponent, UploadTableRowComponent ],
     providers:    [ UploadService ]
 })
 export class UploadModule {}

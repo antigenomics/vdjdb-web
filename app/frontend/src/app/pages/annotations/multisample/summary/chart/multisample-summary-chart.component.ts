@@ -46,6 +46,7 @@ export class MultisampleSummaryChartComponent implements OnInit, OnDestroy {
     private multisampleSummaryServiceEventsSubscription: Subscription;
     private currentTab: IMultisampleSummaryAnalysisTab;
     private thresholdTypesAvailable: number = -1;
+    private colorByTags: boolean = false;
     private orderBySamples: boolean = true;
     private showOnlyShared: boolean = false;
 
@@ -67,6 +68,15 @@ export class MultisampleSummaryChartComponent implements OnInit, OnDestroy {
 
     public get threshold(): number {
         return this.thresholdTypesAvailable;
+    }
+
+    public get tagsColors(): boolean {
+        return this.colorByTags;
+    }
+
+    public set tagsColors(byTags: boolean) {
+        this.colorByTags = byTags;
+        this.updateStream(ChartEventType.UPDATE_DATA, this.currentTab.options);
     }
 
     public get order(): boolean {
@@ -196,7 +206,11 @@ export class MultisampleSummaryChartComponent implements OnInit, OnDestroy {
                         const counters = summaryCounters.counters.find((c) => c.name === currentCounterFieldName);
                         const index = counters.counters.map((c) => c.field).indexOf(value);
                         if (index !== -1) {
-                            entries.push({ name: sample, value: valueConverter(counters.counters[ index ]) });
+                            let color: string;
+                            if (this.colorByTags) {
+                                color = this.multisampleSummaryService.getSampleTagColor(sample);
+                            }
+                            entries.push({ name: sample, value: valueConverter(counters.counters[ index ]), color });
                         }
                     }
                 });

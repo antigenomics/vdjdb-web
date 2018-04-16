@@ -20,7 +20,7 @@ import java.io.File
 import java.sql.Timestamp
 import java.util.Date
 
-import backend.models.files.temporary.TemporaryFileProvider
+import backend.models.files.temporary.{TemporaryFileProvider, TemporaryFileTable}
 import backend.models.{DatabaseProviderTestSpec, SQLDatabaseTestTag}
 
 import scala.io.Source
@@ -32,6 +32,10 @@ class TemporaryFileProviderSpec extends DatabaseProviderTestSpec {
     lazy implicit val fileMetadataProvider: FileMetadataProvider = app.injector.instanceOf[FileMetadataProvider]
 
     "TemporaryFileProvider" should {
+
+        "have proper table name"  taggedAs SQLDatabaseTestTag in {
+            temporaryFileProvider.getTable.baseTableRow.tableName shouldEqual TemporaryFileTable.TABLE_NAME
+        }
 
         "get empty list" taggedAs SQLDatabaseTestTag in {
             async {

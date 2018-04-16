@@ -66,7 +66,7 @@ class SearchTableSpec extends BaseTestSpecWithApplication {
 
             val minusPageRows = table.getPage(-1)
             table.getCurrentPage shouldBe 0
-            minusPageRows should have size table.getPageSize
+            minusPageRows should have size table.getPageSize.toLong
 
             val invalidPageNumberRows = table.getPage(table.getPageCount + 10)
             invalidPageNumberRows should have size 0

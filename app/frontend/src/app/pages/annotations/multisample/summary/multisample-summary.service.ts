@@ -23,9 +23,11 @@ import { SummaryCounters } from 'pages/annotations/sample/table/intersection/sum
 import { Observable } from 'rxjs/Observable';
 import { Subject } from 'rxjs/Subject';
 import { SampleItem } from 'shared/sample/sample-item';
+import { SampleTag } from 'shared/sample/sample-tag';
 import { WebSocketConnection } from 'shared/websocket/websocket-connection';
 import { WebSocketRequestData } from 'shared/websocket/websocket-request';
 import { WebSocketResponseData } from 'shared/websocket/websocket-response';
+import { AnalyticsService } from 'utils/analytics/analytics.service';
 import { LoggerService } from 'utils/logger/logger.service';
 import { NotificationService } from 'utils/notifications/notification.service';
 
@@ -65,8 +67,9 @@ export interface IMultisampleSummaryAnalysisTab {
 
 @Injectable()
 export class MultisampleSummaryService {
-    private static readonly maxTabsAvailable: number = 5;
-    private static readonly tabsNames: string[] = [ 'First', 'Second', 'Third', 'Fourth', 'Fifth' ];
+    private static readonly ALL_SAMPLES_ANNOTATE_GOAL: string = 'all-samples-annotate-goal';
+    private static readonly MAX_TABS_AVAILABLE: number = 5;
+    private static readonly TABS_NAMES: string[] = [ 'First', 'Second', 'Third', 'Fourth', 'Fifth' ];
 
     private events: Subject<MultisampleSummaryServiceEvents> = new Subject();
 
@@ -77,7 +80,7 @@ export class MultisampleSummaryService {
     private connectionFailed: boolean = false;
     private connection: WebSocketConnection;
 
-    constructor(private annotationsService: AnnotationsService,
+    constructor(private annotationsService: AnnotationsService, private analytics: AnalyticsService,
                 private logger: LoggerService, private notifications: NotificationService) {
         this.connection = this.connection = new WebSocketConnection(logger, notifications, true);
         this.connection.onOpen(async () => {
@@ -103,6 +106,15 @@ export class MultisampleSummaryService {
         return this.events.asObservable();
     }
 
+    public getSampleTags(): SampleTag[] {
+        return this.annotationsService.getTags();
+    }
+
+    public getSampleTagColor(sampleName: string): string {
+        const tag = this.annotationsService.getSampleTagByName(sampleName);
+        return tag ? tag.color : undefined;
+    }
+
     public isConnected(): boolean {
         return this.connected;
     }
@@ -121,6 +133,7 @@ export class MultisampleSummaryService {
             return;
         }
 
+        this.analytics.reachGoal(MultisampleSummaryService.ALL_SAMPLES_ANNOTATE_GOAL);
         this.activeTab.state = IMultisampleSummaryAnalysisTabState.CONNECTING;
 
         const tabID: number = this.activeTab.id;
@@ -130,16 +143,17 @@ export class MultisampleSummaryService {
         this.connection.subscribeMessages({
             action: MultisampleSummaryServiceWebSocketActions.ANNOTATE,
             data:   new WebSocketRequestData()
-                    .add('tabID', tabID)
-                    .add('sampleNames', sampleNames)
-                    .add('hammingDistance', filters.hammingDistance)
-                    .add('confidenceThreshold', filters.confidenceThreshold)
-                    .add('matchV', filters.matchV)
-                    .add('matchJ', filters.matchJ)
-                    .add('species', filters.species)
-                    .add('gene', filters.gene)
-                    .add('mhc', filters.mhc)
-                    .unpack()
+                        .add('tabID', tabID)
+                        .add('sampleNames', sampleNames)
+                        .add('hammingDistance', filters.hammingDistance)
+                        .add('minEpitopeSize', filters.minEpitopeSize)
+                        .add('confidenceThreshold', filters.confidenceThreshold)
+                        .add('matchV', filters.matchV)
+                        .add('matchJ', filters.matchJ)
+                        .add('species', filters.species)
+                        .add('gene', filters.gene)
+                        .add('mhc', filters.mhc)
+                        .unpack()
         }, (messages: Observable<WebSocketResponseData>) => {
             const messagesSubscription = messages.subscribe((message) => {
                 if (message.isSuccess()) {
@@ -156,7 +170,9 @@ export class MultisampleSummaryService {
                         sampleNames.forEach((name) => {
                             const summaryCounters = summary[ name ];
                             if (summaryCounters === undefined) {
-                                this.notifications.error('Multisample analysis error', `Missing data for sample ${name}`);
+                                this.notifications.error(
+                                    'Multisample analysis error',
+                                    `Missing data for sample ${name}. Check software type for this sample.`);
                             } else {
                                 tab.counters.set(name, new SummaryCounters(summaryCounters));
                             }
@@ -181,12 +197,12 @@ export class MultisampleSummaryService {
     }
 
     public addNewTab(): void {
-        if (this.tabs.length >= MultisampleSummaryService.maxTabsAvailable) {
+        if (this.tabs.length >= MultisampleSummaryService.MAX_TABS_AVAILABLE) {
             return;
         }
         this.tabs.push({
             id:            this.tabs.length + 1,
-            title:         MultisampleSummaryService.tabsNames[ this.tabs.length ],
+            title:         MultisampleSummaryService.TABS_NAMES[ this.tabs.length ],
             dirty:         false,
             filters:       new SampleFilters(),
             disabled:      false,
@@ -213,7 +229,7 @@ export class MultisampleSummaryService {
     }
 
     public isNewTabAllowed(): boolean {
-        return this.tabs.length < MultisampleSummaryService.maxTabsAvailable;
+        return this.tabs.length < MultisampleSummaryService.MAX_TABS_AVAILABLE;
     }
 
     public getCurrentTabFilters(): SampleFilters {
@@ -240,6 +256,14 @@ export class MultisampleSummaryService {
         this.annotationsService.getSamples().forEach((availableSample) => {
             if (!this.isSampleSelected(availableSample)) {
                 this.selectSample(availableSample);
+            }
+        });
+    }
+
+    public selectByTag(tag: SampleTag): void {
+        this.annotationsService.getSamples().filter((sample) => sample.tagID === tag.id).forEach((sample) => {
+            if (!this.isSampleSelected(sample)) {
+                this.selectSample(sample);
             }
         });
     }

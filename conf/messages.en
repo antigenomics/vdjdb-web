@@ -27,6 +27,7 @@ authorization.forms.signup.failed.message = Please check that you have entered v
 authorization.forms.signup.failed.workaround.1 = Login (user name) field should not be blank
 authorization.forms.signup.failed.workaround.2 = E-mail address field should be a valid email
 authorization.forms.signup.failed.workaround.3 = Passwords should match
+authorization.forms.signup.failed.workaround.4 = E-mail address is too long
 authorization.forms.signup.failed.alreadyExists = User already exists. Click forgot password link if you don't remember your credentials
 
 authorization.forms.reset.reset = Reset

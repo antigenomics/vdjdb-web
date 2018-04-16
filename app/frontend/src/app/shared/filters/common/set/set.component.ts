@@ -57,6 +57,12 @@ export class SetComponent implements OnInit {
     @Input()
     public inputUpperOnly: boolean = false;
 
+    @Input()
+    public disabled: boolean = false;
+
+    @Input()
+    public substringDisabled: boolean = false;
+
     @Input('suggestions')
     public set suggestions(input: { [value: string]: SuggestionEntry[]; }) {
         if (Object.keys(input).length !== 0) {
@@ -91,7 +97,7 @@ export class SetComponent implements OnInit {
                 const filtered = this.values.filter((entry: string) => {
                     return entry.indexOf(this.inputText) !== -1;
                 });
-                if (filtered.length !== 0) {
+                if (filtered.length !== 0 && !this.substringDisabled) {
                     this.append({ value: this.inputText, display: 'Search substring: ' + this.inputText, disabled: false });
                 } else {
                     this.change('');
@@ -128,8 +134,12 @@ export class SetComponent implements OnInit {
         return this.inputText.length === 0 && this._selected.length === 0;
     }
 
-    public isSearchVisible() {
+    public isSearchVisible(): boolean {
         return this._searchVisible && this.values.length !== 0;
+    }
+
+    public isSearchDisabled(): boolean {
+        return this.disabled;
     }
 
     public showSuggestions(): void {

@@ -21,10 +21,12 @@ import { HomePageModule } from 'pages/home/home.module';
 import { OverviewPageModule } from 'pages/overview/overview.module';
 import { SearchPageModule } from 'pages/search/search.module';
 import { NavigationBarModule } from 'shared/navbar/navbar.module';
+import { AnalyticsService } from 'utils/analytics/analytics.service';
 import { ClipboardService } from 'utils/clipboard/clipboard.service';
 import { LoaderModule } from 'utils/loader/loader.module';
 import { LoggerService } from 'utils/logger/logger.service';
 import { NotificationModule } from 'utils/notifications/notification.module';
+import { LocalStorageService } from 'utils/storage/local-storage.service';
 import { ApplicationComponent } from './application.component';
 import { ApplicationRouting } from './application.routing';
 
@@ -32,7 +34,7 @@ import { ApplicationRouting } from './application.routing';
     imports:      [ BrowserModule, CommonModule, ApplicationRouting, HomePageModule, OverviewPageModule, SearchPageModule,
                     NotificationModule, NavigationBarModule, LoaderModule ],
     declarations: [ ApplicationComponent ],
-    providers:    [ LoggerService, ClipboardService ],
+    providers:    [ LoggerService, ClipboardService, AnalyticsService, LocalStorageService ],
     bootstrap:    [ ApplicationComponent ]
 })
 export class ApplicationModule {

@@ -18,12 +18,12 @@ package backend.server.database
 
 import java.io.{File, FileInputStream}
 import java.nio.file.{Files, Paths}
-import javax.inject.{Inject, Singleton}
 
+import javax.inject.{Inject, Singleton}
 import backend.server.database.api.suggestions.{DatabaseColumnSuggestion, DatabaseColumnSuggestionsResponse}
 import com.antigenomics.vdjdb.web.EpitopeSuggestionGenerator
 import com.antigenomics.vdjdb.{Util, VdjdbInstance}
-import com.typesafe.scalalogging._
+import com.typesafe.scalalogging.Logger
 import org.slf4j.LoggerFactory
 import play.api.Configuration
 
@@ -51,6 +51,8 @@ case class Database @Inject() (configuration: Configuration) {
             None
         }
     }
+
+    def getSuggestionsAvailableColumns: Seq[String] = Seq("antigen.epitope")
 
     def getSuggestions(column: String): Option[DatabaseColumnSuggestionsResponse] = {
         if (suggestions.contains(column)) {

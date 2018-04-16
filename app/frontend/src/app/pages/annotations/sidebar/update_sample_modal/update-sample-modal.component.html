@@ -1,0 +1,60 @@
+<div class="ui vertical menu sidebar-settings" [style.top]="top" #modal>
+    <ng-container *ngIf="isVisible()">
+        <div class="item">
+            <div class="header">Name:</div>
+            <div class="menu">
+                <div class="item">
+                    <div class="ui fluid transparent left icon input" [ngClass]="{'error':!isNewNameValid()}">
+                        <input placeholder="Enter new sample name here" [(ngModel)]="sampleNewProps.newName">
+                        <div class="ui left pointing red basic label" style="position: absolute;left: 105%;width: 200px;top: -35px;" *ngIf="!isNewNameValid()">
+                            File name can contain letters ('a-zA-Z'), numbers, . (dot), - (dash), _ (underline) and + (plus) symbols. <br>
+                            Also file name should have less than 40 symbols and should not be empty.
+                        </div>
+                        <i class="write icon"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="item">
+            <div class="header">Software:</div>
+            <div class="menu">
+                <div class="item">
+                    <div class="ui fluid left pointing scrolling dropdown" dropdown [content]="content">
+                        <span class="text">{{ sampleNewProps.newSoftware }}</span>
+                        <i class="left dropdown icon"></i>
+                        <div class="menu fast fade element" #content>
+                            <div class="item" *ngFor="let software of getAvailableSoftwareTypes()" (click)="setNewSoftware(software)">
+                                {{ software }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="item" *ngIf="isSampleTagsAvailable()">
+            <div class="header">Tag:</div>
+            <div class="menu">
+                <div class="item">
+                    <div class="ui fluid left pointing scrolling dropdown" dropdown [content]="content">
+                        <span class="text">
+                            {{ getSampleNewPropsTagName() }}
+                            <a class="ui empty circular sample-tag label" [style.background-color]="getSampleNewPropsTagColor()"></a>
+                        </span>
+                        <i class="left dropdown icon"></i>
+                        <div class="menu fast fade element" #content>
+                            <div class="item" (click)="setNewTagID(-1)">Empty tag</div>
+                            <div class="item" *ngFor="let tag of getAvailableSampleTags()" (click)="setNewTagID(tag.id)">
+                                {{ tag.name }}
+                                <a class="ui empty circular sample-tag label" [style.background-color]="tag.color"></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="item">
+            <button class="ui basic tiny right floated button" (click)="close()">Close</button>
+            <button class="ui teal tiny button" [ngClass]="{'loading':saving, 'disabled':!isNewNameValid()}" (click)="save()">Save</button>
+        </div>
+    </ng-container>
+</div>

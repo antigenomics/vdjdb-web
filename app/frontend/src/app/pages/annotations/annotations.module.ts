@@ -18,18 +18,17 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { AnnotationsRouting } from 'pages/annotations/annotations.routing';
-import { ModalsModule } from 'shared/modals/modals.module';
+import { AnnotationsSidebarModule } from 'pages/annotations/sidebar/sidebar.module';
 import { AnnotationsPageComponent } from './annotations.component';
 import { AnnotationsService } from './annotations.service';
 import { AnnotationsInfoComponent } from './info/annotations-info.component';
 import { SampleItemResolver } from './resolvers/sample.resolver';
 import { UserResolver } from './resolvers/user.resolver';
 import { SampleModule } from './sample/sample.module';
-import { AnnotationsSidebarComponent } from './sidebar/sidebar.component';
 
 @NgModule({
-    imports:      [ CommonModule, ModalsModule, SampleModule, AnnotationsRouting ],
-    declarations: [ AnnotationsPageComponent, AnnotationsSidebarComponent, AnnotationsInfoComponent ],
+    imports:      [ CommonModule, AnnotationsSidebarModule, SampleModule, AnnotationsRouting ],
+    declarations: [ AnnotationsPageComponent, AnnotationsInfoComponent ],
     exports:      [ AnnotationsPageComponent ],
     providers:    [ AnnotationsService, UserResolver, SampleItemResolver ]
 })

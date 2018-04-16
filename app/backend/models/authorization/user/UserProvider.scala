@@ -19,9 +19,9 @@ package backend.models.authorization.user
 
 import java.io.File
 import java.sql.Timestamp
-import javax.inject.{Inject, Singleton}
 
-import akka.actor.ActorSystem
+import javax.inject.{Inject, Singleton}
+import akka.actor.{ActorSystem, Cancellable}
 import backend.models.authorization.forms.SignupForm
 import backend.models.authorization.permissions.{UserPermissions, UserPermissionsProvider}
 import backend.models.authorization.tokens.session.SessionTokenProvider
@@ -37,6 +37,7 @@ import slick.jdbc.JdbcProfile
 import org.mindrot.jbcrypt.BCrypt
 import org.slf4j.LoggerFactory
 import play.api.Configuration
+import play.api.inject.ApplicationLifecycle
 import slick.jdbc.meta.MTable
 
 import scala.async.Async.{async, await}
@@ -47,7 +48,7 @@ import scala.concurrent.duration._
 
 @Singleton
 class UserProvider @Inject()(@NamedDatabase("default") protected val dbConfigProvider: DatabaseConfigProvider,
-                             vtp: VerificationTokenProvider, stp: SessionTokenProvider)
+                             vtp: VerificationTokenProvider, stp: SessionTokenProvider, lifecycle: ApplicationLifecycle)
                             (implicit ec: ExecutionContext, conf: Configuration, system: ActorSystem, upp: UserPermissionsProvider,
                              sfp: SampleFileProvider, fmp: FileMetadataProvider)
     extends HasDatabaseConfigProvider[JdbcProfile] {
@@ -113,8 +114,8 @@ class UserProvider @Inject()(@NamedDatabase("default") protected val dbConfigPro
         }
     }
 
-    if (configuration.interval.getSeconds != 0) {
-        system.scheduler.schedule(configuration.interval.getSeconds seconds, configuration.interval.getSeconds seconds) {
+    private final val deleteScheduler: Option[Cancellable] = Option(configuration.interval.getSeconds != 0).collect {
+        case true => system.scheduler.schedule(configuration.interval.getSeconds seconds, configuration.interval.getSeconds seconds) {
             deleteUnverified onComplete {
                 case Failure(ex) =>
                     logger.warn("Cannot delete unverified users", ex)
@@ -122,6 +123,8 @@ class UserProvider @Inject()(@NamedDatabase("default") protected val dbConfigPro
             }
         }
     }
+
+    lifecycle.addStopHook { () => Future.successful(deleteScheduler.foreach(_.cancel())) }
 
     getAll onComplete {
         case Success(users) =>

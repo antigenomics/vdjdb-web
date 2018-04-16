@@ -18,14 +18,15 @@
 package backend.models.authorization.tokens.reset
 
 import java.sql.Timestamp
-import javax.inject.{Inject, Singleton}
 
-import akka.actor.ActorSystem
+import javax.inject.{Inject, Singleton}
+import akka.actor.{ActorSystem, Cancellable}
 import backend.models.authorization.user.{User, UserProvider}
 import backend.utils.{CommonUtils, TimeUtils}
 import org.slf4j.LoggerFactory
 import play.api.Configuration
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
+import play.api.inject.ApplicationLifecycle
 import play.db.NamedDatabase
 import slick.jdbc.JdbcProfile
 import slick.jdbc.meta.MTable
@@ -36,7 +37,7 @@ import scala.language.postfixOps
 import scala.concurrent.duration._
 
 @Singleton
-class ResetTokenProvider @Inject()(@NamedDatabase("default") protected val dbConfigProvider: DatabaseConfigProvider)
+class ResetTokenProvider @Inject()(@NamedDatabase("default") protected val dbConfigProvider: DatabaseConfigProvider, lifecycle: ApplicationLifecycle)
                                     (implicit ec: ExecutionContext, conf: Configuration, system: ActorSystem)
     extends HasDatabaseConfigProvider[JdbcProfile] {
     private final val logger = LoggerFactory.getLogger(this.getClass)
@@ -44,9 +45,8 @@ class ResetTokenProvider @Inject()(@NamedDatabase("default") protected val dbCon
 
     import dbConfig.profile.api._
     private final val table = TableQuery[ResetTokenTable]
-
-    if (configuration.interval.getSeconds != 0) {
-        system.scheduler.schedule(configuration.interval.getSeconds seconds, configuration.interval.getSeconds seconds) {
+    private final val deleteScheduler: Option[Cancellable] = Option(configuration.interval.getSeconds != 0).collect {
+        case true => system.scheduler.schedule(configuration.interval.getSeconds seconds, configuration.interval.getSeconds seconds) {
             deleteExpired onComplete {
                 case Failure(ex) =>
                     logger.warn("Cannot delete expired reset tokens", ex)
@@ -54,6 +54,10 @@ class ResetTokenProvider @Inject()(@NamedDatabase("default") protected val dbCon
             }
         }
     }
+
+    lifecycle.addStopHook { () => Future.successful(deleteScheduler.foreach(_.cancel())) }
+
+    def getTable: TableQuery[ResetTokenTable] = table
 
     def getAll: Future[Seq[ResetToken]] = db.run(table.result)
 

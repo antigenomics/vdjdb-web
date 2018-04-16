@@ -14,9 +14,9 @@
  *     limitations under the License.
  */
 
-package backend.models.authorization.token
+package backend.models.authorization.tokens
 
-import backend.models.authorization.tokens.verification.VerificationTokenProvider
+import backend.models.authorization.tokens.verification.{VerificationTokenProvider, VerificationTokenTable}
 import backend.models.authorization.user.UserProvider
 import backend.models.{DatabaseProviderTestSpec, SQLDatabaseTestTag}
 
@@ -27,6 +27,10 @@ class VerificationTokenProviderSpec extends DatabaseProviderTestSpec {
     implicit lazy val verificationTokenProvider: VerificationTokenProvider = app.injector.instanceOf[VerificationTokenProvider]
 
     "VerificationTokenProvider" should {
+
+        "have proper table name" taggedAs SQLDatabaseTestTag in {
+            verificationTokenProvider.getTable.baseTableRow.tableName shouldEqual VerificationTokenTable.TABLE_NAME
+        }
 
         "be able to create verification token for new user" taggedAs SQLDatabaseTestTag in {
             async {

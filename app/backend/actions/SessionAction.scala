@@ -22,13 +22,15 @@ import play.api.mvc._
 import scala.concurrent.{ExecutionContext, Future}
 
 object SessionAction {
+    final val redirectLoadtion = backend.controllers.routes.Application.index()
+
     def authorizedOnly(implicit ec: ExecutionContext): ActionFilter[UserRequest] = new ActionFilter[UserRequest] {
         override protected def executionContext: ExecutionContext = ec
         override protected def filter[A](request: UserRequest[A]): Future[Option[Result]] = Future.successful {
             if (request.authorized) {
                 None
             } else {
-                Some(Results.Redirect(backend.controllers.routes.Application.index()))
+                Some(Results.Redirect(redirectLoadtion))
             }
         }
     }
@@ -37,7 +39,7 @@ object SessionAction {
         override protected def executionContext: ExecutionContext = ec
         override protected def filter[A](request: UserRequest[A]): Future[Option[Result]] = Future.successful {
             if (request.authorized) {
-                Some(Results.Redirect(backend.controllers.routes.Application.index()))
+                Some(Results.Redirect(redirectLoadtion))
             } else {
                 None
             }

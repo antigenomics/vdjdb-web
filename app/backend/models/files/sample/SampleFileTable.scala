@@ -23,6 +23,7 @@ import slick.jdbc.H2Profile.api._
 import slick.lifted.Tag
 
 import scala.language.higherKinds
+import scala.util.matching.Regex
 
 class SampleFileTable(tag: Tag)(implicit fmp: FileMetadataProvider) extends Table[SampleFile](tag, SampleFileTable.TABLE_NAME){
     def id = column[Long]("ID", O.PrimaryKey, O.AutoInc)
@@ -32,8 +33,9 @@ class SampleFileTable(tag: Tag)(implicit fmp: FileMetadataProvider) extends Tabl
     def clonotypesCount = column[Long]("CLONOTYPES_COUNT")
     def metadataID = column[Long]("METADATA_ID")
     def userID = column[Long]("USER_ID")
+    def tagID = column[Long]("TAG_ID")
 
-    def * = (id, sampleName, software, readsCount, clonotypesCount, metadataID, userID) <> (SampleFile.tupled, SampleFile.unapply)
+    def * = (id, sampleName, software, readsCount, clonotypesCount, metadataID, userID, tagID) <> (SampleFile.tupled, SampleFile.unapply)
     def metadata = foreignKey("METADATA_FK", metadataID, fmp.getTable)(_.id,
         onUpdate = ForeignKeyAction.Cascade, onDelete = ForeignKeyAction.Cascade)
 }
@@ -44,5 +46,11 @@ object SampleFileTable {
     implicit class SampleFileExtension[C[_]](q: Query[SampleFileTable, SampleFile, C]) {
         def withMetadata(implicit fmp: FileMetadataProvider) = q.join(fmp.getTable).on(_.metadataID === _.id)
         def withUser(implicit up: UserProvider) = q.join(up.getTable).on(_.userID === _.id)
+    }
+
+    private final val namePattern: Regex = new Regex("^[a-zA-Z0-9_.+-]{1,40}$")
+
+    def isSampleNameValid(name: String): Boolean = {
+        namePattern.pattern.matcher(name).matches
     }
 }

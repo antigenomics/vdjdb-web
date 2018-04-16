@@ -21,7 +21,9 @@ import { IntersectionTableRow } from 'pages/annotations/sample/table/intersectio
 import { Observable } from 'rxjs/Observable';
 import { filter } from 'rxjs/operators';
 import { Subject } from 'rxjs/Subject';
+import { SetEntry } from 'shared/filters/common/set/set-entry';
 import { SampleItem } from 'shared/sample/sample-item';
+import { SampleTag } from 'shared/sample/sample-tag';
 import { IExportFormat, IExportOptionFlag } from 'shared/table/export/table-export.component';
 import { User, UserPermissions } from 'shared/user/user';
 import { WebSocketConnection, WebSocketResponseStatus } from 'shared/websocket/websocket-connection';
@@ -45,6 +47,7 @@ export namespace AnnotationsServiceEvents {
     export const UPLOAD_SERVICE_STATE_REFRESHED: number = 6;
     export const UPLOAD_SERVICE_UPLOAD_STARTED: number = 7;
     export const UPLOAD_SERVICE_UPLOAD_ENDED: number = 8;
+    export const SAMPLE_TAGS_UPDATED: number = 9;
 }
 
 export namespace AnnotationsServiceWebSocketActions {
@@ -52,11 +55,15 @@ export namespace AnnotationsServiceWebSocketActions {
     export const USER_DETAILS: string = 'details';
     export const AVAILABLE_SOFTWARE: string = 'available_software';
     export const VALIDATE_SAMPLE: string = 'validate_sample';
-    export const UPDATE_SAMPLE: string = 'update_sample';
+    export const UPDATE_SAMPLE_STATS: string = 'update_sample_stats';
+    export const UPDATE_SAMPLE_PROPS: string = 'update_sample_props';
     export const DELETE_SAMPLE: string = 'delete_sample';
     export const INTERSECT: string = 'intersect';
     export const DOWNLOAD_MATCHES: string = 'download_matches';
     export const EXPORT: string = 'export';
+    export const CREATE_TAG: string = 'create_tag';
+    export const DELETE_TAG: string = 'delete_tag';
+    export const UPDATE_TAG: string = 'update_tag';
 }
 
 @Injectable()
@@ -103,7 +110,7 @@ export class AnnotationsService {
         this.connection.connect('/api/annotations/connect');
 
         this.connection.getMessages()
-            .pipe(filter((message: WebSocketResponseData) => message.get('action') === AnnotationsServiceWebSocketActions.UPDATE_SAMPLE))
+            .pipe(filter((message: WebSocketResponseData) => message.get('action') === AnnotationsServiceWebSocketActions.UPDATE_SAMPLE_STATS))
             .subscribe((message: WebSocketResponseData) => {
                 const sampleName = message.get('sampleName');
                 const sampleInfoReadsCount = message.get('readsCount');
@@ -129,8 +136,31 @@ export class AnnotationsService {
         return this._user ? this._user.samples : [];
     }
 
+    public getTags(): SampleTag[] {
+        return this._user ? this._user.tags.filter((t) => t.saved) : [];
+    }
+
     public getSample(name: string): SampleItem {
         return this._user ? this._user.samples.find((sample) => sample.name === name) : undefined;
+    }
+
+    public getSampleTagName(tagID: number): string {
+        const tag = this._user.tags.find((t) => t.id === tagID);
+        return tag ? tag.name : '';
+    }
+
+    public getSampleTagColor(tagID: number): string {
+        const tag = this._user.tags.find((t) => t.id === tagID);
+        return tag ? tag.color : '';
+    }
+
+    public getSampleTag(sample: SampleItem): SampleTag {
+        return sample.hasTag() ? this._user.tags.find((tag) => tag.id === sample.tagID) : undefined;
+    }
+
+    public getSampleTagByName(sampleName: string): SampleTag {
+        const sample = this.getSamples().find((s) => s.name === sampleName);
+        return sample ? this.getSampleTag(sample) : undefined;
     }
 
     public getUserPermissions(): UserPermissions {
@@ -155,6 +185,7 @@ export class AnnotationsService {
             data:   new WebSocketRequestData()
                         .add('sampleName', sample.name)
                         .add('hammingDistance', filters.hammingDistance)
+                        .add('minEpitopeSize', filters.minEpitopeSize)
                         .add('confidenceThreshold', filters.confidenceThreshold)
                         .add('matchV', filters.matchV)
                         .add('matchJ', filters.matchJ)
@@ -204,18 +235,126 @@ export class AnnotationsService {
         }
     }
 
+    public async saveTag(tag: SampleTag): Promise<boolean> {
+        const samples = tag.samples.map((e) => e.value);
+        const response = await this.connection.sendMessage({
+            action: AnnotationsServiceWebSocketActions.CREATE_TAG,
+            data:   new WebSocketRequestData()
+                        .add('name', tag.name)
+                        .add('color', tag.color)
+                        .add('samples', samples)
+                        .unpack()
+        });
+
+        if (response.isSuccess()) {
+            tag.id = response.get('tagID');
+            tag.saved = true;
+            this._user.samples.filter((sample) => samples.includes(sample.name)).forEach((sample) => sample.tagID = tag.id);
+            this._events.next(AnnotationsServiceEvents.SAMPLE_TAGS_UPDATED);
+        }
+
+        return response.isSuccess();
+    }
+
+    public async deleteTag(tag: SampleTag): Promise<boolean> {
+        const response = await this.connection.sendMessage({
+            action: AnnotationsServiceWebSocketActions.DELETE_TAG,
+            data:   new WebSocketRequestData()
+                        .add('tagID', tag.id)
+                        .unpack()
+        });
+
+        if (response.isSuccess()) {
+            const index = this._user.tags.indexOf(tag);
+            if (index !== -1) {
+                this._user.tags.splice(index, 1);
+            }
+            this._user.samples.filter((sample) => sample.tagID === tag.id).forEach((sample) => sample.tagID = -1);
+            this._events.next(AnnotationsServiceEvents.SAMPLE_TAGS_UPDATED);
+        }
+
+        return response.isSuccess();
+    }
+
+    public async updateTag(tag: SampleTag): Promise<boolean> {
+        const samples = tag.samples.map((e) => e.value);
+        const response = await this.connection.sendMessage({
+            action: AnnotationsServiceWebSocketActions.UPDATE_TAG,
+            data:   new WebSocketRequestData()
+                        .add('tagID', tag.id)
+                        .add('name', tag.name)
+                        .add('color', tag.color)
+                        .add('samples', samples)
+                        .unpack()
+        });
+        if (response.isSuccess()) {
+            this._user.samples.filter((sample) => sample.tagID === tag.id && !samples.includes(sample.name)).forEach((sample) => sample.tagID = -1);
+            this._user.samples.filter((sample) => samples.includes(sample.name)).forEach((sample) => sample.tagID = tag.id);
+            this._events.next(AnnotationsServiceEvents.SAMPLE_TAGS_UPDATED);
+        }
+        return response.isSuccess();
+    }
+
+    public async updateSampleProps(sample: SampleItem, newName: string, newSoftware: string, newTagID: number): Promise<boolean> {
+        const response = await this.connection.sendMessage({
+            action: AnnotationsServiceWebSocketActions.UPDATE_SAMPLE_PROPS,
+            data:   new WebSocketRequestData()
+                        .add('prevSampleName', sample.name)
+                        .add('newSampleName', newName)
+                        .add('newSampleSoftware', newSoftware)
+                        .add('newTagID', newTagID)
+                        .unpack()
+        });
+        if (response.isSuccess()) {
+            const prevSampleName = response.get('prevSampleName');
+            const newSampleName = response.get('newSampleName');
+            const newSampleSoftware = response.get('newSampleSoftware');
+            const newTagIDR = response.get('newTagID');
+
+            const find = this.getUser().samples.find((s) => s.name === prevSampleName);
+
+            if (sample.tagID !== -1 && newTagID !== sample.tagID) {
+                const tag = this.getSampleTag(sample);
+                const index = tag.samples.findIndex((s) => s.value === prevSampleName);
+                if (index !== -1) {
+                    tag.samples.splice(index, 1);
+                }
+            }
+            find.updateProps(newSampleName, newSampleSoftware, newTagIDR);
+            if (sample.tagID !== -1) {
+                const tag = this.getSampleTag(find);
+                const entry = tag.samples.find((s) => s.value === prevSampleName);
+                if (entry !== undefined) {
+                    entry.value = newSampleName;
+                    entry.display = newSampleName;
+                } else {
+                    tag.samples.push(new SetEntry(newSampleName, newSampleName, false));
+                }
+            }
+
+            this._events.next(AnnotationsServiceEvents.SAMPLE_UPDATED);
+        }
+        return response.isSuccess();
+    }
+
     public async addSample(file: FileItem): Promise<boolean> {
         const response = await this.connection.sendMessage({
             action: AnnotationsServiceWebSocketActions.VALIDATE_SAMPLE,
             data:   new WebSocketRequestData()
                         .add('name', file.baseName)
+                        .add('tagID', file.tag ? file.tag.id : -1)
                         .unpack()
         });
         const valid = response.isSuccess() && response.get('valid');
         if (valid) {
             const user = this.getUser();
             if (!user.samples.some((sample) => sample.name === file.baseName)) {
-                user.samples.push(new SampleItem(file.baseName, file.software, -1, -1));
+                const sampleItem = new SampleItem(file.baseName, file.software, -1, -1, -1);
+                if (file.tag !== undefined) {
+                    sampleItem.tagID = file.tag.id;
+                    file.tag.samples.push(new SetEntry(sampleItem.name, sampleItem.name, false));
+                }
+                user.samples.push(sampleItem);
                 this._events.next(AnnotationsServiceEvents.SAMPLE_ADDED);
             }
         }
@@ -244,13 +383,29 @@ export class AnnotationsService {
             if (sample !== undefined) {
                 const index = user.samples.indexOf(sample);
                 if (index !== -1) {
+                    this.removeSampleFromTag(sample);
                     user.samples.splice(index, 1);
                 }
             } else if (all) {
                 user.samples.splice(0, user.samples.length);
+                user.tags.forEach((tag) => {
+                    tag.samples.splice(0, tag.samples.length);
+                });
             }
             this._events.next(AnnotationsServiceEvents.SAMPLE_DELETED);
         }
         return valid;
+    }
+
+    private removeSampleFromTag(sample: SampleItem): void {
+        if (sample !== undefined && sample.tagID !== -1) {
+            const tag = this.getTags().find((t) => t.id === sample.tagID);
+            if (tag !== undefined) {
+                const index = tag.samples.findIndex((s) => s.value === sample.name);
+                if (index !== -1) {
+                    tag.samples.splice(index, 1);
+                }
+            }
+        }
     }
 }

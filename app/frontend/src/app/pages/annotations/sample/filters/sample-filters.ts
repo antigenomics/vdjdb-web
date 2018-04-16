@@ -18,6 +18,7 @@
 export class SampleFilters {
     public hammingDistance: number = 0;
     public confidenceThreshold: number = 0;
+    public minEpitopeSize: number = 0;
     public matchV: boolean = false;
     public matchJ: boolean = false;
     public species: string = 'HomoSapiens';
