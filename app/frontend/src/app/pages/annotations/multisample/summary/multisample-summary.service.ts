@@ -17,6 +17,7 @@
 
 import { Injectable } from '@angular/core';
 import { AnnotationsService } from 'pages/annotations/annotations.service';
+import { AnnotationsFilters } from 'pages/annotations/filters/annotations-filters';
 import { SummaryChartOptions } from 'pages/annotations/sample/chart/summary/options/summary-chart-options.component';
 import { SummaryCounters } from 'pages/annotations/sample/table/intersection/summary/summary-counters';
 import { Observable } from 'rxjs/Observable';
@@ -29,7 +30,6 @@ import { WebSocketResponseData } from 'shared/websocket/websocket-response';
 import { AnalyticsService } from 'utils/analytics/analytics.service';
 import { LoggerService } from 'utils/logger/logger.service';
 import { NotificationService } from 'utils/notifications/notification.service';
-import { AnnotationsFilters } from 'pages/annotations/filters/annotations-filters';
 
 export type MultisampleSummaryServiceEvents = number;
 
