@@ -73,7 +73,7 @@ export class ScoringVDJMatchComponent implements OnInit {
     public checkTopHitsCount(value: number): void {
         this.filters.scoring.vdjmatch.hitFiltering.topHitsCount = -1;
         this.changeDetector.detectChanges();
-        this.filters.scoring.vdjmatch.hitFiltering.topHitsCount = this.filters.validateRange(AnnotationsFilters.scoringModeRange, value);
+        this.filters.scoring.vdjmatch.hitFiltering.topHitsCount = this.filters.validateRange(AnnotationsFilters.topHitsCountRange, value);
         this.changeDetector.detectChanges();
     }
 }
