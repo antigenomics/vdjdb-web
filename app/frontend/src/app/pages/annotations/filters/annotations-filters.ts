@@ -47,6 +47,7 @@ export namespace IAnnotateScoringType {
 
 export interface IVDJMatchScoringHitFilteringOptions {
     propabilityThreshold: number;
+    bestHit: boolean;
     topHitsCount: number;
     weightByInfo: boolean;
 }
@@ -68,12 +69,13 @@ export class AnnotationsFilters {
     public static epitopeSizeRange = { min: 0, max: 1000 };
     public static exhaustiveAlignmentRange = { min: 0, max: 2 };
     public static scoringModeRange = { min: 0, max: 1 };
+    public static topHitsCountRange = { min: 1, max: 100 };
 
     public databaseQueryParams: IDatabaseQueryParams = { species: 'HomoSapiens', gene: 'TRB', mhc: 'MHCI+II', confidenceThreshold: 0, minEpitopeSize: 10 };
     public searchScope: ISearchScope = { matchV: false, matchJ: false, hammingDistance: { substitutions: 0, insertions: 0, deletions: 0, total: 0 } };
     public scoring: IAnnotateScoring = {
         type: IAnnotateScoringType.VDJMATCH, vdjmatch: {
-            exhaustiveAlignment: 1, scoringMode: 1, hitFiltering: { propabilityThreshold: 50, topHitsCount: 0, weightByInfo: false }
+            exhaustiveAlignment: 1, scoringMode: 1, hitFiltering: { propabilityThreshold: 50, bestHit: false, topHitsCount: 5, weightByInfo: false }
         }
     };
 
