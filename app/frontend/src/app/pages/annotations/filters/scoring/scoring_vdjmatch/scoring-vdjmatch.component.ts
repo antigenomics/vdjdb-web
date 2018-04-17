@@ -43,6 +43,14 @@ export class ScoringVDJMatchComponent implements OnInit {
         return this.disabled ? '' : undefined;
     }
 
+    public isBestHitSelected(): boolean {
+        return this.filters.scoring.vdjmatch.hitFiltering.bestHit;
+    }
+
+    public setBestHit(value: boolean): void {
+        this.filters.scoring.vdjmatch.hitFiltering.bestHit = value;
+    }
+
     public checkSliderModel(model: SliderRangeModel): void {
         this.filters.scoring.vdjmatch.hitFiltering.propabilityThreshold = model.max;
         this.sliderModel.max = model.max;
@@ -59,6 +67,13 @@ export class ScoringVDJMatchComponent implements OnInit {
         this.filters.scoring.vdjmatch.scoringMode = -1;
         this.changeDetector.detectChanges();
         this.filters.scoring.vdjmatch.scoringMode = this.filters.validateRange(AnnotationsFilters.scoringModeRange, value);
+        this.changeDetector.detectChanges();
+    }
+
+    public checkTopHitsCount(value: number): void {
+        this.filters.scoring.vdjmatch.hitFiltering.topHitsCount = -1;
+        this.changeDetector.detectChanges();
+        this.filters.scoring.vdjmatch.hitFiltering.topHitsCount = this.filters.validateRange(AnnotationsFilters.scoringModeRange, value);
         this.changeDetector.detectChanges();
     }
 }

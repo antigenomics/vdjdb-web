@@ -43,8 +43,8 @@
         </div>
         <div class="ui grid">
             <div class="ui row middle aligned">
-                <div class="six wide column filters label"><b>Propability threshold</b></div>
-                <div class="nine wide column">
+                <div class="four wide column filters label"><b>Propability threshold</b></div>
+                <div class="eleven wide column">
                     <!-- Annotations filters help: scoring mode -->
                     <i class="fitted filters corner help icon"
                        popup="Drops hits with a score less than the specified threshold. For VDJmatch scoring the range of scores is [0, 100]
@@ -59,8 +59,38 @@
                 </div>
             </div>
             <div class="row middle aligned">
-                <div class="six wide column filters label"><b>Weighting</b></div>
-                <div class="nine wide column">
+                <div class="four wide column filters label"><b>Select</b></div>
+                <div class="eleven wide column">
+                    <!-- Annotations filters help: select best hits -->
+                    <i class="fitted filters corner help icon"
+                       popup="Select best n hits by score"
+                       header="Select best hits"
+                       footer="Default is select 5 best hits">
+                    </i>
+                    <div class="grouped fields">
+                        <div class="field">
+                            <div class="ui radio checkbox cursor pointer" (click)="setBestHit(true)">
+                                <input [attr.disabled]="isDisabled()" type="radio" name="hits" [attr.checked]="isBestHitSelected()?'checked':null">
+                                <label>best hit</label>
+                            </div>
+                        </div>
+                        <div class="field" style="margin-top: 0.2em">
+                            <div class="ui radio checkbox cursor pointer" (click)="setBestHit(false)">
+                                <input [attr.disabled]="isDisabled()" type="radio" name="hits" [attr.checked]="!isBestHitSelected()?'checked':null">
+                                <label>top
+                                    <div class="ui mini input">
+                                        <input [attr.disabled]="isDisabled()" type="number" min="1" max="100" style="padding: 0.2em 1em !important;"
+                                               [ngModel]="filters.scoring.vdjmatch.hitFiltering.topHitsCount"
+                                               (ngModelChange)="checkTopHitsCount($event)">
+                                    </div> hits</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row middle aligned">
+                <div class="four wide column filters label"><b>Weighting</b></div>
+                <div class="eleven wide column">
                     <!-- Annotations filters help: weight by info -->
                     <i class="fitted filters corner help icon"
                        popup="Weight database hits by their 'informativeness', i.e. the log probability of them being matched by chance."
