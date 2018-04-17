@@ -1,0 +1,75 @@
+<!--
+  ~     Copyright 2017 Bagaev Dmitry
+  ~
+  ~     Licensed under the Apache License, Version 2.0 (the "License");
+  ~     you may not use this file except in compliance with the License.
+  ~     You may obtain a copy of the License at
+  ~
+  ~         http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~     Unless required by applicable law or agreed to in writing, software
+  ~     distributed under the License is distributed on an "AS IS" BASIS,
+  ~     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~     See the License for the specific language governing permissions and
+  ~     limitations under the License.
+  ~
+  -->
+
+<div class="ui horizontal divider">
+    Search scope
+</div>
+<div class="ui grid">
+    <div class="ui row middle aligned">
+        <div class="four wide column">
+            <b>Segment match rule</b>
+        </div>
+        <div class="five wide column">
+            <div class="ui checkbox">
+                <input [attr.disabled]="isDisabled()" type="checkbox" [(ngModel)]="filters.searchScope.matchV">
+                <label>Match V</label>
+            </div>
+            <br>
+            <div class="ui checkbox">
+                <input [attr.disabled]="isDisabled()" type="checkbox" [(ngModel)]="filters.searchScope.matchJ">
+                <label>Match J</label>
+            </div>
+        </div>
+    </div>
+    <div class="ui row middle aligned">
+        <div class="four wide column">
+            <b>Hamming distance</b>
+        </div>
+        <div class="three wide column">
+            Substitutions
+            <div class="ui input fluid">
+                <input [attr.disabled]="isDisabled()" type="number"
+                       [ngModel]="filters.searchScope.hammingDistance.substitutions"
+                       (ngModelChange)="checkHammingDistance($event, 'substitutions')">
+            </div>
+        </div>
+        <div class="three wide column" *ngIf="isIndelsAllowed()">
+            Insertions
+            <div class="ui input fluid">
+                <input [attr.disabled]="isDisabled()" type="number"
+                       [ngModel]="filters.searchScope.hammingDistance.insertions"
+                       (ngModelChange)="checkHammingDistance($event, 'insertions')">
+            </div>
+        </div>
+        <div class="three wide column" *ngIf="isIndelsAllowed()">
+            Deletions
+            <div class="ui input fluid">
+                <input [attr.disabled]="isDisabled()" type="number"
+                       [ngModel]="filters.searchScope.hammingDistance.deletions"
+                       (ngModelChange)="checkHammingDistance($event, 'deletions')">
+            </div>
+        </div>
+        <div class="three wide column" *ngIf="isIndelsAllowed()">
+            Total
+            <div class="ui input fluid">
+                <input [attr.disabled]="isDisabled()" type="number"
+                       [ngModel]="filters.searchScope.hammingDistance.total"
+                       (ngModelChange)="checkHammingDistance($event, 'total')">
+            </div>
+        </div>
+    </div>
+</div>

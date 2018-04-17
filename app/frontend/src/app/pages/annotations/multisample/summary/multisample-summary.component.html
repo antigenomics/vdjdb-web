@@ -26,8 +26,8 @@
     <div class="ui fade slow element segments">
         <h3 class="ui top attached header">Annotate all</h3>
         <div class="ui teal attached padded segment">
-            <sample-filters [filters]="multisampleSummaryService.getCurrentTabFilters()"
-                            [disabled]="multisampleSummaryService.isCurrentTabDisabled()"></sample-filters>
+            <annotations-filters [filters]="multisampleSummaryService.getCurrentTabFilters()"
+                            [disabled]="multisampleSummaryService.isCurrentTabDisabled()"></annotations-filters>
         </div>
         <div class="ui attached secondary clearing segment">
             <button class="ui teal button left floated" (click)="multisampleSummaryService.annotate()">Annotate</button>

@@ -16,7 +16,7 @@
  */
 
 import { Injectable } from '@angular/core';
-import { SampleFilters } from 'pages/annotations/sample/filters/sample-filters';
+import { AnnotationsFilters } from 'pages/annotations/filters/annotations-filters';
 import { IntersectionTableRow } from 'pages/annotations/sample/table/intersection/row/intersection-table-row';
 import { Observable } from 'rxjs/Observable';
 import { filter } from 'rxjs/operators';
@@ -179,19 +179,14 @@ export class AnnotationsService {
         return this._databaseMetadata;
     }
 
-    public intersect(sample: SampleItem, filters: SampleFilters, observerCallback: (o: Observable<WebSocketResponseData>) => void): void {
+    public intersect(sample: SampleItem, filters: AnnotationsFilters, observerCallback: (o: Observable<WebSocketResponseData>) => void): void {
         this.connection.subscribeMessages({
             action: AnnotationsServiceWebSocketActions.INTERSECT,
             data:   new WebSocketRequestData()
                         .add('sampleName', sample.name)
-                        .add('hammingDistance', filters.hammingDistance)
-                        .add('minEpitopeSize', filters.minEpitopeSize)
-                        .add('confidenceThreshold', filters.confidenceThreshold)
-                        .add('matchV', filters.matchV)
-                        .add('matchJ', filters.matchJ)
-                        .add('species', filters.species)
-                        .add('gene', filters.gene)
-                        .add('mhc', filters.mhc)
+                        .add('databaseQueryParams', filters.databaseQueryParams)
+                        .add('searchScope', filters.searchScope)
+                        .add('scoring', filters.scoring)
                         .unpack()
         }, observerCallback);
     }
