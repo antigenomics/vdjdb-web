@@ -1,0 +1,78 @@
+<div class="ui grid">
+    <div class="six wide column">
+        <div class="ui horizontal divider">
+            VDJMatch scoring options
+        </div>
+        <div class="ui grid">
+            <div class="ui row middle aligned">
+                <div class="eight wide column filters label"><b>Exhaustive alignment</b></div>
+                <div class="six wide column">
+                    <!-- Annotations filters help: exhaustive alignment -->
+                    <i class="fitted filters corner help icon"
+                       popup="Perform exhaustive CDR3 alignment: 0 - no (fast), 1 - check and select best alignment for smallest edit distance,
+                           2 - select best alignment across all edit distances within search scope (slow)."
+                       header="Exhaustive alignment"
+                       footer="Default is 1">
+                    </i>
+                    <div class="ui input fluid">
+                        <input [attr.disabled]="isDisabled()" type="number" min="0" max="2"
+                               [ngModel]="filters.scoring.vdjmatch.exhaustiveAlignment" (ngModelChange)="checkExhaustiveAlignment($event)">
+                    </div>
+                </div>
+            </div>
+            <div class="ui row middle aligned">
+                <div class="eight wide column filters label"><b>Scoring mode</b></div>
+                <div class="six wide column">
+                    <!-- Annotations filters help: scoring mode -->
+                    <i class="fitted filters corner help icon"
+                       popup="Either 0: scores mismatches only (faster) or 1: compute scoring for whole sequences (slower). "
+                       header="Scoring mode"
+                       footer="Default is 1">
+                    </i>
+                    <div class="ui input fluid">
+                        <input [attr.disabled]="isDisabled()" type="number" min="0" max="1"
+                               [ngModel]="filters.scoring.vdjmatch.scoringMode" (ngModelChange)="checkScoringMode($event)">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="ten wide column">
+        <div class="ui horizontal divider">
+            Hit filtering & weigthing
+        </div>
+        <div class="ui grid">
+            <div class="ui row middle aligned">
+                <div class="six wide column filters label"><b>Propability threshold</b></div>
+                <div class="nine wide column">
+                    <!-- Annotations filters help: scoring mode -->
+                    <i class="fitted filters corner help icon"
+                       popup="Drops hits with a score less than the specified threshold. For VDJmatch scoring the range of scores is [0, 100]
+                       and the recommended value for the threshold lies in the range of 10-50.
+                       Filtered records will be removed from output annotation files and will not affect the resulting summary statistics."
+                       header="Propability threshold"
+                       footer="Default is 50">
+                    </i>
+                    <div style="width: 75%">
+                        <slider [min]="0" [max]="100" [single]="true" [model]="sliderModel" (modelChange)="checkSliderModel($event)"></slider>
+                    </div>
+                </div>
+            </div>
+            <div class="row middle aligned">
+                <div class="six wide column filters label"><b>Weighting</b></div>
+                <div class="nine wide column">
+                    <!-- Annotations filters help: weight by info -->
+                    <i class="fitted filters corner help icon"
+                       popup="Weight database hits by their 'informativeness', i.e. the log probability of them being matched by chance."
+                       header="Weight by informativeness"
+                       footer="Default is false">
+                    </i>
+                    <div class="ui checkbox">
+                        <input [attr.disabled]="isDisabled()" type="checkbox" [(ngModel)]="filters.scoring.vdjmatch.hitFiltering.weightByInfo">
+                        <label>Weight by informativeness</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -12,19 +12,18 @@
  *     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *     See the License for the specific language governing permissions and
  *     limitations under the License.
- *
+ *  
  */
 
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input } from '@angular/core';
-import { environment } from 'environments/environment';
 import { AnnotationsFilters } from 'pages/annotations/filters/annotations-filters';
 
 @Component({
-    selector: 'search-scope',
-    templateUrl: './search-scope.component.html',
+    selector:        'scoring-type',
+    templateUrl:     './scoring-type.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class SearchScopeComponent {
+export class ScoringTypeComponent {
     @Input('filters')
     public filters: AnnotationsFilters;
 
@@ -37,15 +36,8 @@ export class SearchScopeComponent {
         return this.disabled ? '' : undefined;
     }
 
-    public isIndelsAllowed(): boolean {
-        return environment.application.annotations.filters.hammingDistance.allowIndels;
-    }
-
-    public checkHammingDistance(distance: number, type: string): void {
-        const hammingDistance = this.filters.searchScope.hammingDistance as any;
-        hammingDistance[type] = -1;
-        this.changeDetector.detectChanges();
-        hammingDistance[type] = this.filters.validateRange(AnnotationsFilters.hammingDistanceRange, distance);
+    public changeTypeVDJMatch(): void {
+        this.filters.setScoringTypeVDJMatch();
         this.changeDetector.detectChanges();
     }
 }

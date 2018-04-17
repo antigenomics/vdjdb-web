@@ -143,6 +143,9 @@ export class SliderComponent implements OnInit {
     @Input()
     public max: number;
 
+    @Input()
+    public single: boolean = false;
+
     @ViewChild('sliderElement')
     public sliderElement: ElementRef;
 
@@ -168,6 +171,10 @@ export class SliderComponent implements OnInit {
         this.left = new SliderItem(this, this._model.min);
         this.right = new SliderItem(this, this._model.max);
         this.changeDetector.detectChanges();
+    }
+
+    public isSingle(): boolean {
+        return this.single;
     }
 
     public updateModel(): void {

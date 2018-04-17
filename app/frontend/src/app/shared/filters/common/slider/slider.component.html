@@ -5,15 +5,15 @@
     <span class="bar-wrapper">
         <span class="bar selection" [style.left]="getItemsMinLeftOffset()" [style.width]="getItemsPositionDifference()"></span>
     </span>
-    <span class="pointer" [style.left]="left.getOffset()" (mousedown)="left.onMouseDown()"></span>
+    <span class="pointer" [style.left]="left.getOffset()" (mousedown)="left.onMouseDown()" *ngIf="!isSingle()"></span>
     <span class="pointer" [style.left]="right.getOffset()" (mousedown)="right.onMouseDown()"></span>
-    <span class="number" [style.left]="left.getOffset()">{{ left.value }}</span>
+    <span class="number" [style.left]="left.getOffset()" *ngIf="!isSingle()">{{ left.value }}</span>
     <span class="number" [style.left]="right.getOffset()">{{ right.value }}</span>
-    <span class="number limit" *ngIf="isLimitVisible(left, min)" style="left: 0">{{ min }}</span>
+    <span class="number limit" *ngIf="isLimitVisible(left, min) || isSingle()" style="left: 0">{{ min }}</span>
     <span class="number limit" *ngIf="isLimitVisible(right, max)" style="left: 100%">{{ max }}</span>
 </div>
 <div *ngIf="touchScreen">
-    <div class="ui buttons">
+    <div class="ui buttons" *ngIf="!isSingle()">
         <button class="ui icon button" (click)="increment(left)">
             <i class="plus icon"></i>
         </button>

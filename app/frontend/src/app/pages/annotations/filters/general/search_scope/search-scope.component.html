@@ -20,9 +20,7 @@
 </div>
 <div class="ui grid">
     <div class="ui row middle aligned">
-        <div class="four wide column">
-            <b>Segment match rule</b>
-        </div>
+        <div class="four wide column filters label"><b>Segment match rule</b></div>
         <div class="five wide column">
             <div class="ui checkbox">
                 <input [attr.disabled]="isDisabled()" type="checkbox" [(ngModel)]="filters.searchScope.matchV">
@@ -36,9 +34,7 @@
         </div>
     </div>
     <div class="ui row middle aligned">
-        <div class="four wide column">
-            <b>Hamming distance</b>
-        </div>
+        <div class="four wide column filters label"><b>Hamming distance</b></div>
         <div class="three wide column">
             Substitutions
             <div class="ui input fluid">

@@ -4,17 +4,13 @@
     <p>The second MHC allele is only meaningful for MHC class II and is set to B2M (beta 2 microglobulin) for MHC class I records.</p>">
 </filters-header>
 <div class="ui grid middle aligned">
-    <div class="three wide column">
-        <b>First chain allele(s)</b>
-    </div>
+    <div class="three wide column filters label"><b>First chain allele(s)</b></div>
     <div class="twelve wide column">
         <set [(selected)]="mhc.haplotype.firstChainSelected"
              [values]="mhc.haplotype.firstChainValues"
              placeholder="List of MHC alleles, start typing to see suggestions..."></set>
     </div>
-    <div class="three wide column">
-        <b>Second chain allele(s)</b>
-    </div>
+    <div class="three wide column filters label"><b>Second chain allele(s)</b></div>
     <div class="twelve wide column">
         <set [(selected)]="mhc.haplotype.secondChainSelected"
              [values]="mhc.haplotype.secondChainValues"
