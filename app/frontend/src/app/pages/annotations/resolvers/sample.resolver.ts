@@ -17,7 +17,7 @@
 
 import { Injectable } from '@angular/core';
 import { ActivatedRouteSnapshot, Resolve, RouterStateSnapshot } from '@angular/router';
-import { SampleFilters } from 'pages/annotations/sample/filters/sample-filters';
+import { AnnotationsFilters } from 'pages/annotations/filters/annotations-filters';
 import { SampleService } from 'pages/annotations/sample/sample.service';
 import { IntersectionTable } from 'pages/annotations/sample/table/intersection/intersection-table';
 import { Observable } from 'rxjs/Observable';
@@ -47,7 +47,7 @@ export class SampleItemResolver implements Resolve<SampleItem> {
     private getSample(route: ActivatedRouteSnapshot): SampleItem {
         const sample = this.annotationService.getSample(route.paramMap.get('sample'));
         if (!sample.hasData()) {
-            sample.setData({ table: new IntersectionTable(), filters: new SampleFilters() });
+            sample.setData({ table: new IntersectionTable(), filters: new AnnotationsFilters() });
         }
         this.sampleService.setCurrentSample(sample);
         this.logger.debug('SampleItemResolver: resolved', sample);

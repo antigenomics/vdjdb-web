@@ -18,19 +18,15 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
-import { AnnotationsFiltersModule } from 'pages/annotations/filters/annotations-filters.module';
-import { SampleChartModule } from 'pages/annotations/sample/chart/sample-chart.module';
-import { AnnotationsSampleComponent } from 'pages/annotations/sample/sample.component';
-import { SampleService } from 'pages/annotations/sample/sample.service';
-import { SampleTableModule } from 'pages/annotations/sample/table/sample-table.module';
+import { AnnotationsFiltersComponent } from 'pages/annotations/filters/annotations-filters.component';
+import { DatabaseQueryParamsComponent } from 'pages/annotations/filters/database_query_params/database-query-params.component';
+import { SearchScopeComponent } from 'pages/annotations/filters/search_scope/search-scope.component';
 import { ModalsModule } from 'shared/modals/modals.module';
 
 @NgModule({
-    imports:      [ CommonModule, FormsModule, RouterModule, ModalsModule, AnnotationsFiltersModule, SampleTableModule, SampleChartModule ],
-    declarations: [ AnnotationsSampleComponent ],
-    providers:    [ SampleService ]
+    imports:      [ CommonModule, FormsModule, ModalsModule ],
+    declarations: [ AnnotationsFiltersComponent, DatabaseQueryParamsComponent, SearchScopeComponent ],
+    exports:      [ AnnotationsFiltersComponent ]
 })
-export class SampleModule {
-
+export class AnnotationsFiltersModule {
 }

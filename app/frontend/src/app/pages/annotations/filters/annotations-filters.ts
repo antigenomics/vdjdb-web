@@ -15,6 +15,8 @@
  *
  */
 
+import { environment } from 'environments/environment';
+
 export interface IDatabaseQueryParams {
     species: string;
     gene: string;
@@ -60,20 +62,28 @@ export interface IAnnotateScoring {
     vdjmatch: IVDJMatchScoringOptions;
 }
 
-export class SampleFilters {
-    public databaseQueryParams: IDatabaseQueryParams = { species: 'HomoSapiens', gene: 'TRB', mhc: 'MHCI+II', confidenceThreshold: 0, minEpitopeSize: 0 };
+export class AnnotationsFilters {
+    public static hammingDistanceRange = environment.application.annotations.filters.hammingDistance.range;
+    public static confidenceThresholdRange = { min: 0, max: 3 };
+    public static epitopeSizeRange = { min: 0, max: 1000 };
+
+    public databaseQueryParams: IDatabaseQueryParams = { species: 'HomoSapiens', gene: 'TRB', mhc: 'MHCI+II', confidenceThreshold: 0, minEpitopeSize: 10 };
     public searchScope: ISearchScope = { matchV: false, matchJ: false, hammingDistance: { substitutions: 0, insertions: 0, deletions: 0, total: 0 } };
     public scoring: IAnnotateScoring = {
         type: IAnnotateScoringType.VDJMATCH, vdjmatch: {
             exhaustiveAlignment: 0, scoringMode: 0, hitFiltering: { propabilityThreshold: 0, topHitsCount: 0, weightByInfo: false }
         }
     };
-    public hammingDistance: number = 0;
-    public confidenceThreshold: number = 0;
-    public minEpitopeSize: number = 0;
-    public matchV: boolean = false;
-    public matchJ: boolean = false;
-    public species: string = 'HomoSapiens';
-    public gene: string = 'TRB';
-    public mhc: string = 'MHCI+II';
+
+    public validateRange(range: { min: number, max: number }, value: number): number {
+        if (isNaN(Number(value)) || value === null || value === undefined) {
+            return range.min;
+        } else if (value > range.max) {
+            return range.max;
+        } else if (value < range.min) {
+            return range.min;
+        } else {
+            return value;
+        }
+    }
 }

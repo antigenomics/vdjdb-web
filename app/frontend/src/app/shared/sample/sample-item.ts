@@ -15,11 +15,11 @@
  *
  */
 
-import { SampleFilters } from 'pages/annotations/sample/filters/sample-filters';
+import { AnnotationsFilters } from 'pages/annotations/filters/annotations-filters';
 import { IntersectionTable } from 'pages/annotations/sample/table/intersection/intersection-table';
 
 export interface ISampleItemData {
-    readonly filters: SampleFilters;
+    readonly filters: AnnotationsFilters;
     readonly table: IntersectionTable;
 }
 
@@ -70,7 +70,7 @@ export class SampleItem {
         return this._data.table;
     }
 
-    public get filters(): SampleFilters {
+    public get filters(): AnnotationsFilters {
         return this._data.filters;
     }
 

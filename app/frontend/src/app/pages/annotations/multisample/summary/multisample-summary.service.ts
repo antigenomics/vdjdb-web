@@ -18,7 +18,6 @@
 import { Injectable } from '@angular/core';
 import { AnnotationsService } from 'pages/annotations/annotations.service';
 import { SummaryChartOptions } from 'pages/annotations/sample/chart/summary/options/summary-chart-options.component';
-import { SampleFilters } from 'pages/annotations/sample/filters/sample-filters';
 import { SummaryCounters } from 'pages/annotations/sample/table/intersection/summary/summary-counters';
 import { Observable } from 'rxjs/Observable';
 import { Subject } from 'rxjs/Subject';
@@ -30,6 +29,7 @@ import { WebSocketResponseData } from 'shared/websocket/websocket-response';
 import { AnalyticsService } from 'utils/analytics/analytics.service';
 import { LoggerService } from 'utils/logger/logger.service';
 import { NotificationService } from 'utils/notifications/notification.service';
+import { AnnotationsFilters } from 'pages/annotations/filters/annotations-filters';
 
 export type MultisampleSummaryServiceEvents = number;
 
@@ -56,7 +56,7 @@ export interface IMultisampleSummaryAnalysisTab {
     id: number;
     title: string;
     dirty: boolean;
-    filters: SampleFilters;
+    filters: AnnotationsFilters;
     disabled: boolean;
     samples: SampleItem[];
     state: IMultisampleSummaryAnalysisTabState;
@@ -136,8 +136,9 @@ export class MultisampleSummaryService {
         this.analytics.reachGoal(MultisampleSummaryService.ALL_SAMPLES_ANNOTATE_GOAL);
         this.activeTab.state = IMultisampleSummaryAnalysisTabState.CONNECTING;
 
+        const activeTab = this.activeTab;
         const tabID: number = this.activeTab.id;
-        const filters: SampleFilters = this.activeTab.filters;
+        const filters: AnnotationsFilters = this.activeTab.filters;
         const sampleNames: string[] = this.activeTab.samples.map((s) => s.name);
 
         this.connection.subscribeMessages({
@@ -145,14 +146,9 @@ export class MultisampleSummaryService {
             data:   new WebSocketRequestData()
                         .add('tabID', tabID)
                         .add('sampleNames', sampleNames)
-                        .add('hammingDistance', filters.hammingDistance)
-                        .add('minEpitopeSize', filters.minEpitopeSize)
-                        .add('confidenceThreshold', filters.confidenceThreshold)
-                        .add('matchV', filters.matchV)
-                        .add('matchJ', filters.matchJ)
-                        .add('species', filters.species)
-                        .add('gene', filters.gene)
-                        .add('mhc', filters.mhc)
+                        .add('databaseQueryParams', filters.databaseQueryParams)
+                        .add('searchScope', filters.searchScope)
+                        .add('scoring', filters.scoring)
                         .unpack()
         }, (messages: Observable<WebSocketResponseData>) => {
             const messagesSubscription = messages.subscribe((message) => {
@@ -191,6 +187,11 @@ export class MultisampleSummaryService {
                     if (this.activeTab === tab) {
                         this.events.next(MultisampleSummaryServiceEvents.CURRENT_TAB_UPDATED);
                     }
+                } else if (message.isError()) {
+                    messagesSubscription.unsubscribe();
+                    this.notifications.error('Multisample analysis', message.get('message'));
+                    activeTab.state = IMultisampleSummaryAnalysisTabState.NOT_INITIALIZED;
+                    this.events.next(MultisampleSummaryServiceEvents.CURRENT_TAB_UPDATED);
                 }
             });
         });
@@ -204,7 +205,7 @@ export class MultisampleSummaryService {
             id:            this.tabs.length + 1,
             title:         MultisampleSummaryService.TABS_NAMES[ this.tabs.length ],
             dirty:         false,
-            filters:       new SampleFilters(),
+            filters:       new AnnotationsFilters(),
             disabled:      false,
             samples:       [],
             state:         IMultisampleSummaryAnalysisTabState.NOT_INITIALIZED,
@@ -232,7 +233,7 @@ export class MultisampleSummaryService {
         return this.tabs.length < MultisampleSummaryService.MAX_TABS_AVAILABLE;
     }
 
-    public getCurrentTabFilters(): SampleFilters {
+    public getCurrentTabFilters(): AnnotationsFilters {
         return this.activeTab.filters;
     }
 
