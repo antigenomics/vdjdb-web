@@ -66,12 +66,14 @@ export class AnnotationsFilters {
     public static hammingDistanceRange = environment.application.annotations.filters.hammingDistance.range;
     public static confidenceThresholdRange = { min: 0, max: 3 };
     public static epitopeSizeRange = { min: 0, max: 1000 };
+    public static exhaustiveAlignmentRange = { min: 0, max: 2 };
+    public static scoringModeRange = { min: 0, max: 1 };
 
     public databaseQueryParams: IDatabaseQueryParams = { species: 'HomoSapiens', gene: 'TRB', mhc: 'MHCI+II', confidenceThreshold: 0, minEpitopeSize: 10 };
     public searchScope: ISearchScope = { matchV: false, matchJ: false, hammingDistance: { substitutions: 0, insertions: 0, deletions: 0, total: 0 } };
     public scoring: IAnnotateScoring = {
         type: IAnnotateScoringType.VDJMATCH, vdjmatch: {
-            exhaustiveAlignment: 0, scoringMode: 0, hitFiltering: { propabilityThreshold: 0, topHitsCount: 0, weightByInfo: false }
+            exhaustiveAlignment: 1, scoringMode: 1, hitFiltering: { propabilityThreshold: 50, topHitsCount: 0, weightByInfo: false }
         }
     };
 
@@ -85,5 +87,21 @@ export class AnnotationsFilters {
         } else {
             return value;
         }
+    }
+
+    public isScoringTypeSimple(): boolean {
+        return this.scoring.type === IAnnotateScoringType.SIMPLE;
+    }
+
+    public setScoringTypeSimple(): void {
+        this.scoring.type = IAnnotateScoringType.SIMPLE;
+    }
+
+    public isScoringTypeVDJMatch(): boolean {
+        return this.scoring.type === IAnnotateScoringType.VDJMATCH;
+    }
+
+    public setScoringTypeVDJMatch(): void {
+        this.scoring.type = IAnnotateScoringType.VDJMATCH;
     }
 }
