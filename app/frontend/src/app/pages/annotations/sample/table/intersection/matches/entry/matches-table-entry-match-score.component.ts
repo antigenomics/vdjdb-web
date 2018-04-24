@@ -27,10 +27,10 @@ import { MatchTableRow } from '../row/match-table-row';
     preserveWhitespaces: false
 })
 export class MatchesTableEntryMatchScoreComponent extends TableEntry {
-    public matchScore: number;
+    public matchScore: string;
 
     public create(_entry: string, _column: TableColumn, _columns: TableColumn[], row: MatchTableRow,
                   _hostViewContainer: ViewContainerRef, _resolver: ComponentFactoryResolver): void {
-        this.matchScore = row.matchScore;
+        this.matchScore = row.matchScore.toPrecision(3);
     }
 }

@@ -16,6 +16,20 @@
 
 export namespace Utils {
 
+    export namespace String {
+        export function hashCode(s: string): number {
+            const l = s.length;
+            let h = 0;
+            let i = 0;
+            if ( l > 0 ) {
+                while (i < l) {
+                    h = (h << 5) - h + s.charCodeAt(i++) | 0; // tslint:disable-line:no-magic-numbers no-bitwise
+                }
+            }
+            return h;
+        }
+    }
+
     export namespace Array {
         export function clear<T>(array: T[]): void {
             array.splice(0, array.length);

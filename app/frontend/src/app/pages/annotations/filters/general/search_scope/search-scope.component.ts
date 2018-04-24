@@ -46,6 +46,9 @@ export class SearchScopeComponent {
         hammingDistance[type] = -1;
         this.changeDetector.detectChanges();
         hammingDistance[type] = this.filters.validateRange(AnnotationsFilters.hammingDistanceRange, distance);
+        if (!this.isIndelsAllowed()) {
+            hammingDistance.total = hammingDistance.substitutions;
+        }
         this.changeDetector.detectChanges();
     }
 }
