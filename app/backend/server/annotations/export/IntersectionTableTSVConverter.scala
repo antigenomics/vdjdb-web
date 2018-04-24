@@ -47,7 +47,7 @@ case class IntersectionTableTSVConverter()(implicit tfp: TemporaryFileProvider, 
 
             intersectionRow.matches.foreach((m) => {
                 rowContent.append(intersectionRow.entries.mkString("", "\t", s"\t${meta.cdr3nt}\t${meta.vEnd}\t${meta.jStart}\t"))
-                rowContent.append(m.row.entries.mkString(s"${m.row.metadata.pairedID}\t", "\t", "\r\n"))
+                rowContent.append(m.row.entries.mkString(s"${m.row.metadata.pairedID}\t${m.matchScore}\t${m.weight}\t", "\t", "\r\n"))
             })
 
             options.foreach((option) => {
@@ -59,7 +59,7 @@ case class IntersectionTableTSVConverter()(implicit tfp: TemporaryFileProvider, 
 
                             pairedRows.foreach((row) => {
                                 rowContent.append(intersectionRow.entries.mkString("", "\t", s"\t${meta.cdr3nt}\t${meta.vEnd}\t${meta.jStart}\t"))
-                                rowContent.append(row.entries.mkString(s"${row.metadata.pairedID}\t", "\t", "\r\n"))
+                                rowContent.append(row.entries.mkString(s"${row.metadata.pairedID}\tUndefined (paired)\tUndefined (paired)\t", "\t", "\r\n"))
                             })
                         }
                     case _ =>
@@ -72,7 +72,7 @@ case class IntersectionTableTSVConverter()(implicit tfp: TemporaryFileProvider, 
         val completedBuilders = await(waitAll(builders)).filter(_.isSuccess)
 
         val sampleHeader = IntersectionTableRow.getColumnNames.map((n) => s"$n (Sample)").mkString("", "\t", "\tCDR3nt (Sample)\tvEnd (Sample)\tjStart (Sample)\t")
-        val databaseHeader = database.getMetadata.columns.map(column => s"${column.title} (DB)").mkString("complex.id (DB)\t", "\t", "\r\n")
+        val databaseHeader = database.getMetadata.columns.map(column => s"${column.title} (DB)").mkString("complex.id (DB)\tMatch Score\tWeight\t", "\t", "\r\n")
 
         val content = new StringBuilder()
         content.append(sampleHeader)
