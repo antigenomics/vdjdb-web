@@ -21,11 +21,12 @@ import java.util
 
 import backend.server.ResultsTable
 import backend.server.annotations.api.annotate.SampleAnnotateRequest
+import backend.server.annotations.api.filters.{AnnotationsAnnotateScoring, AnnotationsDatabaseQueryParams, AnnotationsSearchScope}
 import backend.server.annotations.charts.summary.{SummaryClonotypeCounter, SummaryCounters, SummaryFieldCounter}
 import backend.server.database.Database
-import com.antigenomics.vdjdb.impl.ScoringBundle
-import com.antigenomics.vdjdb.impl.filter.{DummyResultFilter, ResultFilter}
-import com.antigenomics.vdjdb.impl.weights.{DegreeWeightFunction, DegreeWeightFunctionFactory, DummyWeightFunctionFactory, WeightFunctionFactory}
+import com.antigenomics.vdjdb.impl.{ClonotypeDatabase, ScoringBundle, ScoringProvider}
+import com.antigenomics.vdjdb.impl.filter.{DummyResultFilter, MaxScoreResultFilter, TopNResultFilter}
+import com.antigenomics.vdjdb.impl.weights.{DegreeWeightFunctionFactory, DummyWeightFunctionFactory}
 import com.antigenomics.vdjdb.sequence.SearchScope
 import com.antigenomics.vdjdb.stat.ClonotypeSearchSummary
 import com.antigenomics.vdjdb.text.{ExactTextFilter, TextFilter}
@@ -50,23 +51,7 @@ class IntersectionTable(var summary: Option[SummaryCounters] = None) extends Res
     }
 
     def update(request: SampleAnnotateRequest, sample: Sample, database: Database): IntersectionTable = {
-        val scope = request.hammingDistance match {
-            case 0 => new SearchScope(0, 0, 0, 0)
-            case 1 => new SearchScope(1, 0, 0, 1)
-            case 2 => new SearchScope(2, 0, 0, 2)
-            case 3 => new SearchScope(3, 0, 0, 3)
-            case _ => new SearchScope(0, 0, 0, 0)
-        }
-
-        val filters = new util.ArrayList[TextFilter]()
-        if (request.mhc != "MHCI+II") {
-            filters.add(new ExactTextFilter("mhc.class", request.mhc, false))
-        }
-
-        val instance = database.getInstance.filter(filters)
-            .asClonotypeDatabase(request.species, request.gene, scope,
-                ScoringBundle.getDUMMY, DegreeWeightFunctionFactory.DEFAULT, DummyResultFilter.INSTANCE,
-                request.matchV, request.matchJ, request.confidenceThreshold, request.minEpitopeSize)
+        val instance = IntersectionTable.createClonotypeDatabase(database, request.databaseQueryParams, request.searchScope, request.scoring)
 
         val results = instance.search(sample)
         this.rows = results
@@ -87,5 +72,45 @@ class IntersectionTable(var summary: Option[SummaryCounters] = None) extends Res
 
         this.currentPage = 0
         this
+    }
+}
+
+object IntersectionTable {
+    def createClonotypeDatabase(database: Database, parameters: AnnotationsDatabaseQueryParams,
+                                searchScope: AnnotationsSearchScope, scoring: AnnotationsAnnotateScoring): ClonotypeDatabase = {
+        val hdistance = searchScope.hammingDistance
+        val scope = new SearchScope(hdistance.substitutions, hdistance.deletions, hdistance.insertions, hdistance.total,
+            scoring.`type` == AnnotationsAnnotateScoring.VDJMATCH && scoring.vdjmatch.exhaustiveAlignment > 0,
+            scoring.`type` == AnnotationsAnnotateScoring.VDJMATCH && scoring.vdjmatch.exhaustiveAlignment < 2)
+        val filters = new util.ArrayList[TextFilter]()
+        if (parameters.mhc != "MHCI+II") {
+            filters.add(new ExactTextFilter("mhc.class", parameters.mhc, false))
+        }
+
+        println(scoring.vdjmatch)
+
+        val scoringBundle = scoring.`type` match {
+            case AnnotationsAnnotateScoring.VDJMATCH => ScoringProvider.loadScoringBundle(parameters.species, parameters.gene, scoring.vdjmatch.scoringMode == 0)
+            case _ => ScoringBundle.getDUMMY
+        }
+
+        val weightFunction = scoring.`type` match {
+            case AnnotationsAnnotateScoring.VDJMATCH =>
+                if (scoring.vdjmatch.hitFiltering.weightByInfo) DegreeWeightFunctionFactory.DEFAULT else DummyWeightFunctionFactory.INSTANCE
+            case _ => DummyWeightFunctionFactory.INSTANCE
+        }
+
+        val resultFilter = scoring.`type` match {
+            case AnnotationsAnnotateScoring.VDJMATCH =>
+                if (scoring.vdjmatch.hitFiltering.bestHit) {
+                    new MaxScoreResultFilter(scoring.vdjmatch.hitFiltering.probabilityThreshold / 100.0f)
+                } else {
+                    new TopNResultFilter(scoring.vdjmatch.hitFiltering.probabilityThreshold / 100.0f, scoring.vdjmatch.hitFiltering.topHitsCount)
+                }
+            case _ => DummyResultFilter.INSTANCE
+        }
+
+        database.getInstance.filter(filters).asClonotypeDatabase(parameters.species, parameters.gene, scope, scoringBundle,
+            weightFunction, resultFilter, searchScope.matchV, searchScope.matchJ, parameters.confidenceThreshold, parameters.minEpitopeSize)
     }
 }

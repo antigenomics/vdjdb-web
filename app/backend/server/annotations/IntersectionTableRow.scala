@@ -31,7 +31,8 @@ object IntersectionTableRow {
     implicit val intersectTableRowWrites: Writes[IntersectionTableRow] = (o: IntersectionTableRow) => Json.obj(
         "entries" -> o.entries,
         "metadata" -> o.metadata,
-        "tags" -> o.tags
+        "tags" -> o.tags,
+        "hash" -> o.hashCode()
     )
 
     def getColumnNames: Seq[String] = IntersectionTableRow.columnNames
@@ -43,7 +44,6 @@ object IntersectionTableRow {
         val tags = tagsFields.map(field => {
             field -> createTagsFromClonotypeSearchResults(results, field)
         }).toMap
-
         IntersectionTableRow(
             Seq(results.size.toString, id.toString,
                 clonotype.getFreq.toString, clonotype.getCount.toString,

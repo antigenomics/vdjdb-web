@@ -46,7 +46,7 @@ export namespace IAnnotateScoringType {
 }
 
 export interface IVDJMatchScoringHitFilteringOptions {
-    propabilityThreshold: number;
+    probabilityThreshold: number;
     bestHit: boolean;
     topHitsCount: number;
     weightByInfo: boolean;
@@ -75,7 +75,7 @@ export class AnnotationsFilters {
     public searchScope: ISearchScope = { matchV: false, matchJ: false, hammingDistance: { substitutions: 0, insertions: 0, deletions: 0, total: 0 } };
     public scoring: IAnnotateScoring = {
         type: IAnnotateScoringType.VDJMATCH, vdjmatch: {
-            exhaustiveAlignment: 1, scoringMode: 1, hitFiltering: { propabilityThreshold: 50, bestHit: false, topHitsCount: 5, weightByInfo: false }
+            exhaustiveAlignment: 1, scoringMode: 1, hitFiltering: { probabilityThreshold: 50, bestHit: false, topHitsCount: 5, weightByInfo: false }
         }
     };
 

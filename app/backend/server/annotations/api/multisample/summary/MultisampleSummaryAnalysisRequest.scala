@@ -17,12 +17,11 @@
 
 package backend.server.annotations.api.multisample.summary
 
+import backend.server.annotations.api.filters.{AnnotationsAnnotateScoring, AnnotationsDatabaseQueryParams, AnnotationsSearchScope}
 import play.api.libs.json.{Json, Reads}
 
-case class MultisampleSummaryAnalysisRequest(tabID: Int, sampleNames: Seq[String],
-                                             hammingDistance: Int, confidenceThreshold: Int, minEpitopeSize: Int,
-                                             matchV: Boolean, matchJ: Boolean,
-                                             species: String, gene: String, mhc: String) {}
+case class MultisampleSummaryAnalysisRequest(tabID: Int, sampleNames: Seq[String], databaseQueryParams: AnnotationsDatabaseQueryParams,
+                                             searchScope: AnnotationsSearchScope, scoring: AnnotationsAnnotateScoring) {}
 
 object MultisampleSummaryAnalysisRequest {
     implicit val multisampleSummaryAnalysisRequestReads: Reads[MultisampleSummaryAnalysisRequest] = Json.reads[MultisampleSummaryAnalysisRequest]

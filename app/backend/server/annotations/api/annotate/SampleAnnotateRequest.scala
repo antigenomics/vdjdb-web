@@ -17,11 +17,11 @@
 
 package backend.server.annotations.api.annotate
 
+import backend.server.annotations.api.filters.{AnnotationsAnnotateScoring, AnnotationsDatabaseQueryParams, AnnotationsSearchScope}
 import play.api.libs.json.{Json, Reads}
 
-case class SampleAnnotateRequest(sampleName: String, hammingDistance: Int, confidenceThreshold: Int, minEpitopeSize: Int,
-                                 matchV: Boolean, matchJ: Boolean,
-                                 species: String, gene: String, mhc: String)
+case class SampleAnnotateRequest(sampleName: String, databaseQueryParams: AnnotationsDatabaseQueryParams,
+                                 searchScope: AnnotationsSearchScope, scoring: AnnotationsAnnotateScoring)
 
 object SampleAnnotateRequest {
     implicit val sampleIntersectionRequestReads: Reads[SampleAnnotateRequest] = Json.reads[SampleAnnotateRequest]

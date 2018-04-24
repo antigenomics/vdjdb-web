@@ -36,7 +36,7 @@ export class ScoringVDJMatchComponent implements OnInit {
     constructor(private changeDetector: ChangeDetectorRef) {}
 
     public ngOnInit(): void {
-        this.sliderModel = new SliderRangeModel(0, this.filters.scoring.vdjmatch.hitFiltering.propabilityThreshold);
+        this.sliderModel = new SliderRangeModel(0, this.filters.scoring.vdjmatch.hitFiltering.probabilityThreshold);
     }
 
     public isDisabled() {
@@ -52,7 +52,7 @@ export class ScoringVDJMatchComponent implements OnInit {
     }
 
     public checkSliderModel(model: SliderRangeModel): void {
-        this.filters.scoring.vdjmatch.hitFiltering.propabilityThreshold = model.max;
+        this.filters.scoring.vdjmatch.hitFiltering.probabilityThreshold = model.max;
         this.sliderModel.max = model.max;
     }
 
