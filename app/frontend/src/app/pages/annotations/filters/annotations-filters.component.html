@@ -1,0 +1,26 @@
+<div class="ui grid stackable">
+    <div class="four wide column">
+        <div class="ui two item menu">
+            <a class="item" [class.active]="isCurrentState('general')" (click)="setCurrentState('general')">General</a>
+            <a class="item" [class.active]="isCurrentState('scoring')" (click)="setCurrentState('scoring')">Scoring</a>
+        </div>
+    </div>
+</div>
+<div class="ui grid stackable" style="min-width: 1000px; !important; min-height: 240px">
+    <div class="row fade element" *ngIf="isCurrentState('general')">
+        <div class="eight wide column">
+            <database-query-params [filters]="filters" [disabled]="disabled"></database-query-params>
+        </div>
+        <div class="eight wide column">
+            <search-scope [filters]="filters" [disabled]="disabled"></search-scope>
+        </div>
+    </div>
+    <div class="row fade element" *ngIf="isCurrentState('scoring')">
+        <div class="four wide column">
+            <scoring-type [filters]="filters" [disabled]="disabled"></scoring-type>
+        </div>
+        <div class="twelve wide column fade element" *ngIf="filters.isScoringTypeVDJMatch()">
+            <scoring-vdjmatch [filters]="filters" [disabled]="disabled"></scoring-vdjmatch>
+        </div>
+    </div>
+</div>

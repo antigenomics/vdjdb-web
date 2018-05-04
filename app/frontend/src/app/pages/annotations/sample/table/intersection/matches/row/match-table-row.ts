@@ -51,6 +51,10 @@ export class MatchTableRow extends SearchTableRow {
         /* tslint:enable:no-string-literal */
     }
 
+    public hash(): string {
+        return `${super.hash()}${this.matchScore}${this.weight}${this.alignment.markup}${this.alignment.seq1String}${this.alignment.seq2String}`;
+    }
+
     public resolveComponentFactory(column: TableColumn, resolver: ComponentFactoryResolver): ComponentFactory<TableEntry> {
         if (column.name === 'alignment') {
             return resolver.resolveComponentFactory(MatchesTableEntryAlignmentComponent);

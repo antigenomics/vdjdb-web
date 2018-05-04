@@ -4,17 +4,13 @@
 </filters-header>
 
 <div class="ui grid middle aligned">
-    <div class="three wide column">
-        <b>Reference(s)</b>
-    </div>
+    <div class="three wide column filters label"><b>Reference(s)</b></div>
     <div class="twelve wide column">
         <set [(selected)]="meta.general.referencesSelected"
              [values]="meta.general.referencesValues"
              placeholder="List of reference IDs, start typing to see suggestions..."></set>
     </div>
-    <div class="three wide column">
-        <b>Assay type</b>
-    </div>
+    <div class="three wide column filters label"><b>Assay type</b></div>
     <div class="four wide column">
         <div class="ui checkbox">
             <input [(ngModel)]="meta.general.methodSort" type="checkbox">
@@ -32,9 +28,7 @@
         </div>
     </div>
     <div class="one wide column"></div>
-    <div class="three wide column">
-        <b>Sequencing</b>
-    </div>
+    <div class="three wide column filters label"><b>Sequencing</b></div>
     <div class="four wide column">
         <div class="ui checkbox">
             <input [(ngModel)]="meta.general.seqSanger" type="checkbox">

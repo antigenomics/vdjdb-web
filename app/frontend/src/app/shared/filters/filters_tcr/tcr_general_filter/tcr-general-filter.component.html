@@ -2,9 +2,7 @@
                 headerHelp="Search for specified parent species of a TCR and receptor chain (alpha or beta). You can also specify to show only records that have both TCR alpha and beta chain sequences (paired records)">
 </filters-header>
 <div class="ui grid middle aligned">
-    <div class="three wide column">
-        <b>Species</b>
-    </div>
+    <div class="three wide column filters label"><b>Species</b></div>
     <div class="three wide column">
         <div class="ui checkbox">
             <input [(ngModel)]="tcr.general.human" type="checkbox">
@@ -22,9 +20,7 @@
         </div>
     </div>
     <div class="one wide column"></div>
-    <div class="three wide column">
-        <b>Gene (chain)</b>
-    </div>
+    <div class="three wide column filters label"><b>Gene (chain)</b></div>
     <div class="four wide column">
         <div class="ui checkbox">
             <input [(ngModel)]="tcr.general.tra" type="checkbox">

@@ -27,7 +27,7 @@ import { IntersectionTableEntryTagsComponent } from '../entry/intersection-table
 import { MatchTableRow } from '../matches/row/match-table-row';
 
 export interface IntersectionTableRowTags {
-    [field: string]: string[];
+    [ field: string ]: string[];
 }
 
 export class IntersectionTableRowMetadata {
@@ -45,6 +45,8 @@ export class IntersectionTableRowMetadata {
 }
 
 export class IntersectionTableRow extends TableRow {
+    private readonly rhash: number;
+
     public readonly entries: string[];
     public readonly index: number;
     public readonly tags: IntersectionTableRowTags;
@@ -57,6 +59,7 @@ export class IntersectionTableRow extends TableRow {
     constructor(row: any, index: number) {
         /* tslint:disable:no-string-literal */
         super();
+        this.rhash = row[ 'hash' ];
         this.entries = row[ 'entries' ];
         this.index = index;
         this.tags = row[ 'tags' ];
@@ -65,7 +68,7 @@ export class IntersectionTableRow extends TableRow {
     }
 
     public hash(): string {
-        return `${this.entries[2]}${this.entries[4]}`; // tslint:disable-line:no-magic-numbers
+        return `${this.entries[ 2 ]}${this.entries[ 4 ]}${this.rhash}`; // tslint:disable-line:no-magic-numbers
     }
 
     public getEntries(): string[] {

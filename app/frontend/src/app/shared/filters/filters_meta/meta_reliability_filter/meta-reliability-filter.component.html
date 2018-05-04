@@ -4,9 +4,7 @@
 </filters-header>
 
 <div class="ui grid middle aligned">
-    <div class="three wide column">
-        <b>Minimal confidence score</b>
-    </div>
+    <div class="three wide column filters label"><b>Minimal confidence score</b></div>
     <div class="four wide column">
         <div class="ui input fluid">
             <input class="form-control" value="0" type="number" [attr.min]="meta.reliability.confidenceScoreMin" [attr.max]="meta.reliability.confidenceScoreMax"
@@ -14,9 +12,7 @@
         </div>
     </div>
     <div class="two wide column"></div>
-    <div class="two wide column">
-        <b>Spurious CDR3</b>
-    </div>
+    <div class="two wide column filters label"><b>Spurious CDR3</b></div>
     <div class="five wide column">
         <div class="ui checkbox">
             <input [(ngModel)]="meta.reliability.nonCanonical" type="checkbox">
