@@ -19,17 +19,16 @@ import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
+import { AnnotationsFiltersModule } from 'pages/annotations/filters/annotations-filters.module';
 import { SampleChartModule } from 'pages/annotations/sample/chart/sample-chart.module';
-import { AnnotationsFiltersComponent } from 'pages/annotations/sample/filters/sample-filters.component';
 import { AnnotationsSampleComponent } from 'pages/annotations/sample/sample.component';
 import { SampleService } from 'pages/annotations/sample/sample.service';
 import { SampleTableModule } from 'pages/annotations/sample/table/sample-table.module';
 import { ModalsModule } from 'shared/modals/modals.module';
 
 @NgModule({
-    imports:      [ CommonModule, FormsModule, RouterModule, ModalsModule, SampleTableModule, SampleChartModule ],
-    declarations: [ AnnotationsSampleComponent, AnnotationsFiltersComponent ],
-    exports:      [ AnnotationsFiltersComponent ],
+    imports:      [ CommonModule, FormsModule, RouterModule, ModalsModule, AnnotationsFiltersModule, SampleTableModule, SampleChartModule ],
+    declarations: [ AnnotationsSampleComponent ],
     providers:    [ SampleService ]
 })
 export class SampleModule {

@@ -48,7 +48,7 @@ export class AnnotationsSampleComponent extends SampleRouteResolverComponent {
     }
 
     public isErrorBarVisible(): boolean {
-        return this.sample.table.dirty && this.sample.table.error;
+        return this.sample.table.dirty && this.sample.table.error && !this.sample.table.loading;
     }
 
     public isRouterOutletHidden(): boolean {

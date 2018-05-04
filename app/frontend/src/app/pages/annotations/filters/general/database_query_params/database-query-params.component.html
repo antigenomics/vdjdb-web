@@ -1,0 +1,74 @@
+<div class="ui horizontal divider">
+    Database query parameters
+</div>
+<div class="ui grid">
+    <div class="ui row middle aligned">
+        <div class="two wide column filters label"><b>Species</b></div>
+        <div class="five wide column">
+            <div class="ui fluid selection dropdown" [ngClass]="{'disabled':disabled}" dropdown [content]="speciescontent">
+                <span class="text">{{ filters.databaseQueryParams.species }}</span>
+                <i class="dropdown icon"></i>
+                <div class="menu fast fade element" #speciescontent>
+                    <div class="item" (click)="filters.databaseQueryParams.species='HomoSapiens'">HomoSapiens</div>
+                    <div class="item" (click)="filters.databaseQueryParams.species='MacacaMulatta'">MacacaMulatta</div>
+                    <div class="item" (click)="filters.databaseQueryParams.species='MusMusculus'">MusMusculus</div>
+                </div>
+            </div>
+        </div>
+        <div class="one wide column"></div>
+        <div class="four wide column filters label"><b>Confidence score threshold</b></div>
+        <div class="four wide column">
+            <!-- Annotations filters help: confidence score threshold-->
+            <i class="fitted filters corner help icon"
+               popup="VDJdb confidence level threshold, from 0 (lowest) to 3 (highest)"
+               header="Confidence score threshold"
+               footer="Default is 0">
+            </i>
+            <div class="ui input fluid">
+                <input [attr.disabled]="isDisabled()" type="number" min="0" max="3" [ngModel]="filters.databaseQueryParams.confidenceThreshold"
+                       (ngModelChange)="checkConfidenceThreshold($event)">
+            </div>
+        </div>
+    </div>
+    <div class="ui row middle aligned">
+        <div class="two wide column filters label"><b>Gene</b></div>
+        <div class="five wide column">
+            <div class="ui fluid selection dropdown" [ngClass]="{'disabled':disabled}" dropdown [content]="genecontent">
+                <span class="text">{{ filters.databaseQueryParams.gene }}</span>
+                <i class="dropdown icon"></i>
+                <div class="menu fast fade element" #genecontent>
+                    <div class="item" (click)="filters.databaseQueryParams.gene='TRA'">TRA</div>
+                    <div class="item" (click)="filters.databaseQueryParams.gene='TRB'">TRB</div>
+                </div>
+            </div>
+        </div>
+        <div class="one wide column"></div>
+        <div class="four wide column filters label"><b>Minimal epitope size</b></div>
+        <div class="four wide column">
+            <!-- Annotations filters help: minimal epitope size-->
+            <i class="fitted filters corner help icon"
+               popup="Minimal number of unique CDR3 sequences per epitope in VDJdb, filters underrepresented epitopes."
+               header="Minimal epitope size"
+               footer="Default is 10">
+            </i>
+            <div class="ui input fluid">
+                <input [attr.disabled]="isDisabled()" type="number" min="0" max="1000" [ngModel]="filters.databaseQueryParams.minEpitopeSize"
+                       (ngModelChange)="checkMinEpitopeSize($event)">
+            </div>
+        </div>
+    </div>
+    <div class="ui row middle aligned">
+        <div class="two wide column filters label"><b>MHC</b></div>
+        <div class="five wide column">
+            <div class="ui fluid selection dropdown" [ngClass]="{'disabled':disabled}" dropdown [content]="mhccontent">
+                <span class="text">{{ filters.databaseQueryParams.mhc }}</span>
+                <i class="dropdown icon"></i>
+                <div class="menu fast fade element" #mhccontent>
+                    <div class="item" (click)="filters.databaseQueryParams.mhc='MHCI'">MHCI</div>
+                    <div class="item" (click)="filters.databaseQueryParams.mhc='MHCII'">MHCII</div>
+                    <div class="item" (click)="filters.databaseQueryParams.mhc='MHCI+II'">MHCI+II</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -9,7 +9,7 @@
         </div>
     </h3>
     <div class="ui attached teal padded blurring segment">
-        <sample-filters [filters]="sample.filters" [disabled]="sample.isProcessing()"></sample-filters>
+        <annotations-filters [filters]="sample.filters" [disabled]="sample.isProcessing()"></annotations-filters>
     </div>
     <div class="ui attached secondary clearing segment">
         <button class="ui teal button left floated" [ngClass]="{'loading':sample.isProcessing()}" (click)="intersect()">Annotate</button>

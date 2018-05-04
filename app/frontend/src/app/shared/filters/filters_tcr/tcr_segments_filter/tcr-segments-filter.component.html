@@ -4,18 +4,14 @@
        'TRBV7-2' will match 'TRBV7-2*01, TRBV7-2*02, ...', etc.</p>">
 </filters-header>
 <div class="ui grid middle aligned">
-    <div class="four wide column">
-        <b>Variable segment(s)</b>
-    </div>
+    <div class="four wide column filters label"><b>Variable segment(s)</b></div>
     <div class="eleven wide column">
         <set [(selected)]="tcr.segments.vSegmentSelected"
              [values]="tcr.segments.vSegmentValues"
              [inputUpperOnly]="true"
              placeholder="List of V segments, start typing to see suggestions..."></set>
     </div>
-    <div class="four wide column">
-        <b>Joining segment(s)</b>
-    </div>
+    <div class="four wide column filters label"><b>Joining segment(s)</b></div>
     <div class="eleven wide column">
         <set [(selected)]="tcr.segments.jSegmentSelected"
              [values]="tcr.segments.jSegmentValues"

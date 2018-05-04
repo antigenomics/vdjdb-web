@@ -1,0 +1,17 @@
+<div class="ui horizontal divider">
+    Scoring type
+</div>
+<div class="grouped fields">
+    <div class="field">
+        <div class="ui radio checkbox cursor pointer" (click)="filters.setScoringTypeSimple()">
+            <input [attr.disabled]="isDisabled()" type="radio" name="scoring" [attr.checked]="filters.isScoringTypeSimple()?'checked':null">
+            <label>Simple</label>
+        </div>
+    </div>
+    <div class="field">
+        <div class="ui radio checkbox cursor pointer" (click)="filters.setScoringTypeVDJMatch()">
+            <input [attr.disabled]="isDisabled()" type="radio" name="scoring" [attr.checked]="filters.isScoringTypeVDJMatch()?'checked':null">
+            <label>VDJMatch</label>
+        </div>
+    </div>
+</div>

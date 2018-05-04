@@ -24,6 +24,7 @@ import backend.models.authorization.permissions.UserPermissionsProvider
 import backend.models.authorization.user.{User, UserDetails}
 import backend.models.files.FileMetadataProvider
 import backend.models.files.sample.SampleFileProvider
+import backend.server.annotations.IntersectionTable
 import backend.server.annotations.api.multisample.summary.{MultisampleSummaryAnalysisRequest, MultisampleSummaryAnalysisResponse}
 import backend.server.annotations.charts.summary.{SummaryClonotypeCounter, SummaryCounters, SummaryFieldCounter}
 import backend.server.database.Database
@@ -66,22 +67,7 @@ class MultisampleAnalysisWebSocketActor(out: ActorRef, limit: IpLimit, user: Use
                         (sampleName, sample)
                     })
 
-                    val scope = request.hammingDistance match {
-                        case 0 => new SearchScope(0, 0, 0, 0)
-                        case 1 => new SearchScope(1, 0, 0, 1)
-                        case 2 => new SearchScope(2, 0, 0, 2)
-                        case 3 => new SearchScope(3, 0, 0, 3)
-                        case _ => new SearchScope(0, 0, 0, 0)
-                    }
-                    val filters = new util.ArrayList[TextFilter]()
-                    if (request.mhc != "MHCI+II") {
-                        filters.add(new ExactTextFilter("mhc.class", request.mhc, false))
-                    }
-
-                    val instance = database.getInstance.filter(filters)
-                        .asClonotypeDatabase(request.species, request.gene, scope,
-                            ScoringBundle.getDUMMY, DegreeWeightFunctionFactory.DEFAULT, DummyResultFilter.INSTANCE,
-                            request.matchV, request.matchJ, request.confidenceThreshold, request.minEpitopeSize)
+                    val instance = IntersectionTable.createClonotypeDatabase(database, request.databaseQueryParams, request.searchScope, request.scoring)
 
                     val counters = samples.map((futureSample) => async {
                         val sample = await(futureSample)

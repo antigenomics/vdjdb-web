@@ -4,5 +4,15 @@
 // The list of which env maps to which file can be found in `.angular-cli.json`.
 
 export const environment = {
-  production: false
+    production:  false,
+    application: {
+        annotations: {
+            filters: {
+                hammingDistance: {
+                    allowIndels: true,
+                    range:       { min: 0, max: 5 }
+                }
+            }
+        }
+    }
 };

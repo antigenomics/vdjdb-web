@@ -5,9 +5,7 @@ for 'CASSLaPGATNEKLFF', 'CASSLsPGATNEKLFF' and 'CASSLrPGATNEKLFF'. By default th
 search.</p>">
 </filters-header>
 <div class="ui grid middle aligned">
-    <div class="three wide column">
-        <b>Sequence or pattern</b>
-    </div>
+    <div class="three wide column filters label"><b>Sequence or pattern</b></div>
     <div class="twelve wide column">
         <div class="ui right labeled fluid input" [ngClass]="{'error':!tcr.cdr3.isPatternValid()}">
             <input placeholder="Amino acid pattern, e.g. CSAR[DE]GTGNGYTF or CSARDXTGNGYTF."
@@ -20,15 +18,11 @@ search.</p>">
             </div>
         </div>
     </div>
-    <div class="three wide column">
-        <b>CDR3 Length</b>
-    </div>
+    <div class="three wide column filters label"><b>CDR3 Length</b></div>
     <div class="eleven wide column">
         <slider [min]="tcr.cdr3.lengthMin" [max]="tcr.cdr3.lengthMax" [(model)]="tcr.cdr3.length"></slider>
     </div>
-    <div class="three wide column">
-        <b>By Levenstein distance</b>
-    </div>
+    <div class="three wide column filters label"> <b>By Levenstein distance</b></div>
     <div class="twelve wide column">
         <div class="ui fluid input" [ngClass]="{'error':!tcr.cdr3.isLevensteinValid()}">
             <input placeholder="Complete amino acid sequence, e.g. CASSLAPGATNEKLFF." [ngModel]="tcr.cdr3.levenstein" (ngModelChange)="tcr.cdr3.checkLevenstein($event)">

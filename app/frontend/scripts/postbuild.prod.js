@@ -1,3 +1,5 @@
+
+
 /*
  *     Copyright 2017 Bagaev Dmitry
  *
@@ -15,13 +17,13 @@
  *
  */
 
-export class SampleFilters {
-    public hammingDistance: number = 0;
-    public confidenceThreshold: number = 0;
-    public minEpitopeSize: number = 0;
-    public matchV: boolean = false;
-    public matchJ: boolean = false;
-    public species: string = 'HomoSapiens';
-    public gene: string = 'TRB';
-    public mhc: string = 'MHCI+II';
-}
+const fs = require("fs");
+const path = require('path');
+const glob = require('glob');
+const pathToBundle = path.resolve(__dirname, '../../../public/bundles/');
+
+const names = [ 'main.', 'runtime.', 'polyfills.' ];
+const files = glob.sync(pathToBundle + '/*.@(js|css)').filter((file) => names.some((name) => file.includes(name))).map((path) => {
+    return { basename: path.replace(/\\/g, '/').replace(/.*\//, ''), dirname: path.replace(/\\/g, '/').replace(/\/[^\/]*$/, ''), path: path }
+})
+files.forEach((file) => fs.renameSync(file.path, file.dirname + '/' + names.find((n) => file.basename.includes(n)) + 'js'))

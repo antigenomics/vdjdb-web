@@ -3,17 +3,13 @@
        It is possible select multiple species/genes</p>">
 </filters-header>
 <div class="ui grid middle aligned">
-    <div class="three wide column">
-        <b>Source species</b>
-    </div>
+    <div class="three wide column filters label"><b>Source species</b></div>
     <div class="twelve wide column">
         <set [(selected)]="ag.origin.speciesSelected"
              [values]="ag.origin.speciesValues"
              placeholder="List of antigen species, start typing to see suggestions..."></set>
     </div>
-    <div class="three wide column">
-        <b>Parent gene</b>
-    </div>
+    <div class="three wide column filters label"><b>Parent gene</b></div>
     <div class="twelve wide column">
         <set [(selected)]="ag.origin.genesSelected"
              [values]="ag.origin.genesValues"
