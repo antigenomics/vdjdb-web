@@ -87,8 +87,6 @@ object IntersectionTable {
             filters.add(new ExactTextFilter("mhc.class", parameters.mhc, false))
         }
 
-        println(scoring.vdjmatch)
-
         val scoringBundle = scoring.`type` match {
             case AnnotationsAnnotateScoring.VDJMATCH => ScoringProvider.loadScoringBundle(parameters.species, parameters.gene, scoring.vdjmatch.scoringMode == 0)
             case _ => ScoringBundle.getDUMMY
