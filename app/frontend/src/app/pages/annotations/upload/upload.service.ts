@@ -26,6 +26,7 @@ import { LoggerService } from 'utils/logger/logger.service';
 import { NotificationService } from 'utils/notifications/notification.service';
 import { AnnotationsService, AnnotationsServiceEvents } from '../annotations.service';
 import { FileItem } from './item/file-item';
+import { UploadModule } from 'pages/annotations/upload/upload.module';
 
 export class UploadStatus {
     public progress: number;
@@ -39,7 +40,9 @@ export class UploadStatus {
     }
 }
 
-@Injectable()
+@Injectable({
+    providedIn: UploadModule
+})
 export class UploadService {
     private static readonly FILE_UPLOAD_GOAL: string = 'file-upload-goal';
     private static readonly FULL_PROGRESS: number = 100;

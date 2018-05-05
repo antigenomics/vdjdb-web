@@ -18,7 +18,9 @@ import { Injectable } from '@angular/core';
 import { YandexMetrikaTools } from 'utils/analytics/yandex.metrika';
 import { LoggerService } from 'utils/logger/logger.service';
 
-@Injectable()
+@Injectable({
+    providedIn: 'root'
+})
 export class AnalyticsService {
     private yandexMetrikaTools: YandexMetrikaTools;
 

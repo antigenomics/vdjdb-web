@@ -18,7 +18,9 @@
 import { Injectable } from '@angular/core';
 import { LoggerService } from 'utils/logger/logger.service';
 
-@Injectable()
+@Injectable({
+    providedIn: 'root'
+})
 export class LocalStorageService {
     private readonly isLocalStorageAvailable: boolean;
 
