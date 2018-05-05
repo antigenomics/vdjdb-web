@@ -18,8 +18,11 @@
 import { Injectable } from '@angular/core';
 import { LoggerService } from 'utils/logger/logger.service';
 import { Utils } from 'utils/utils';
+import { OverviewPageModule } from 'pages/overview/overview.module';
 
-@Injectable()
+@Injectable({
+    providedIn: OverviewPageModule
+})
 export class OverviewService {
     private static readonly _rejectedMessage: string = 'Security issue, please try again later';
     private static readonly _failedMessage: string = 'Failed to download overview, please try again later';

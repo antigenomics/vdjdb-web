@@ -23,6 +23,7 @@ import { SampleTag } from 'shared/sample/sample-tag';
 import { AnalyticsService } from 'utils/analytics/analytics.service';
 import { LoggerService } from 'utils/logger/logger.service';
 import { NotificationService } from 'utils/notifications/notification.service';
+import { TagsPageModule } from 'pages/annotations/tags/tags.module';
 
 export type TagsServiceEventType = number;
 
@@ -37,7 +38,9 @@ export namespace TagsServiceEventType {
     export const TAG_UPDATING_END: number = 7;
 }
 
-@Injectable()
+@Injectable({
+    providedIn: TagsPageModule
+})
 export class TagsService {
     private static readonly TAG_CREATED_GOAL: string = 'tag-create-goal';
     private static readonly EMPTY_TAG_ID: number = -2;

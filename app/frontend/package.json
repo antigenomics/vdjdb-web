@@ -15,7 +15,7 @@
     "bundle:stats": "node ./scripts/stats.prod.js",
     "bundle:clean:index": "rimraf ../../public/bundles/index.html",
     "bundle:clean:public": "rimraf ../../public/bundles/*",
-    "lint": "ng lint --type-check --force --format stylish",
+    "lint": "ng lint --type-check --force --format stylish vdjdb-frontend",
     "help": "ng help",
     "help:serve": "ng help serve",
     "help:build": "ng help build",
