@@ -25,9 +25,7 @@ export namespace NotificationServiceEventType {
     export const DELETE: number = 1;
 }
 
-@Injectable({
-    providedIn: 'root'
-})
+@Injectable()
 export class NotificationService {
     private _notifications: NotificationItem[] = [];
     private _notificationEvents: EventEmitter<NotificationServiceEventType> = new EventEmitter(true);

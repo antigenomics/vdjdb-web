@@ -16,9 +16,9 @@
 
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 
-export class Contributors {
-    public title: string;
-    public names: string[];
+export interface IContributors {
+    title: string;
+    names: string[];
 }
 
 @Component({
@@ -27,7 +27,7 @@ export class Contributors {
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AboutPageComponent {
-    public contributors: Contributors[] = [
+    public contributors: IContributors[] = [
         {
             title: 'Utrecht Universty',
             names: [ 'Renske Vroomans', 'Ewald Van Dyk', 'Can Kesmir' ]

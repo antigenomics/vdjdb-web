@@ -25,7 +25,6 @@ import { WebSocketResponseData } from 'shared/websocket/websocket-response';
 import { LoggerService } from 'utils/logger/logger.service';
 import { NotificationService } from 'utils/notifications/notification.service';
 import { DatabaseMetadata } from '../../database/database-metadata';
-import { SearchTableModule } from 'pages/search/table/search/search-table.module';
 
 export type SearchTableWebSocketActions = string;
 
@@ -45,9 +44,7 @@ export namespace SearchTableServiceEvents {
     export const RECONNECTED: number = 2;
 }
 
-@Injectable({
-    providedIn: SearchTableModule
-})
+@Injectable()
 export class SearchTableService {
     private lastResponse: WebSocketResponseData;
     private events: Subject<SearchTableServiceEvents> = new Subject();
