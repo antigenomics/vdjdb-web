@@ -17,9 +17,7 @@
 import { Injectable } from '@angular/core';
 import { LoggerService } from '../logger/logger.service';
 
-@Injectable({
-    providedIn: 'root'
-})
+@Injectable()
 export class ClipboardService {
 
     constructor(private logger: LoggerService) {}

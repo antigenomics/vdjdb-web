@@ -37,6 +37,8 @@ export class PopupContentComponent implements AfterViewInit {
     private _header: string;
     private _footer: string;
     private _width: number;
+    private _topShift: number;
+    private _bottomShift: number;
 
     public boundingRect: PopupBoundingRect = new PopupBoundingRect();
 
@@ -55,10 +57,14 @@ export class PopupContentComponent implements AfterViewInit {
     public display: 'paragraph' | 'list' | 'colored-text' | 'table' = 'paragraph';
 
     @Input('topShift')
-    public topShift: number = 0;
+    public set topShift(shift: number) {
+        this._topShift = Number(shift);
+    }
 
     @Input('bottomShift')
-    public bottomShift: number = 0;
+    public set bottomShift(shift: number) {
+        this._bottomShift = Number(shift);
+    }
 
     @Input('shiftStrategy')
     public shiftStrategy: 'absolute' | 'per-item';
@@ -165,22 +171,22 @@ export class PopupContentComponent implements AfterViewInit {
     private getTopShift(): number {
         switch (this.shiftStrategy) {
             case 'absolute':
-                return this.topShift;
+                return this._topShift;
             case 'per-item':
-                return this.topShift * this.getContentLength();
+                return this._topShift * this.getContentLength();
             default:
-                return this.topShift;
+                return this._topShift;
         }
     }
 
     private getBottomShift(): number {
         switch (this.shiftStrategy) {
             case 'absolute':
-                return this.bottomShift;
+                return this._bottomShift;
             case 'per-item':
-                return this.bottomShift * this.getContentLength();
+                return this._bottomShift * this.getContentLength();
             default:
-                return this.bottomShift;
+                return this._bottomShift;
         }
     }
 

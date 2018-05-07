@@ -33,7 +33,6 @@ import { NotificationService } from 'utils/notifications/notification.service';
 import { Utils } from 'utils/utils';
 import { DatabaseMetadata } from '../search/database/database-metadata';
 import { FileItem } from './upload/item/file-item';
-import { AnnotationsPageModule } from 'pages/annotations/annotations.module';
 
 export type AnnotationsServiceEvents = number;
 
@@ -66,9 +65,7 @@ export namespace AnnotationsServiceWebSocketActions {
     export const UPDATE_TAG: string = 'update_tag';
 }
 
-@Injectable({
-    providedIn: AnnotationsPageModule
-})
+@Injectable()
 export class AnnotationsService {
     private _events: Subject<AnnotationsServiceEvents> = new Subject();
     private _initialized: boolean = false;

@@ -24,7 +24,6 @@ import { IExportFormat, IExportOptionFlag } from 'shared/table/export/table-expo
 import { WebSocketResponseData } from 'shared/websocket/websocket-response';
 import { AnalyticsService } from 'utils/analytics/analytics.service';
 import { NotificationService } from 'utils/notifications/notification.service';
-import { SampleModule } from 'pages/annotations/sample/sample.module';
 
 export namespace SampleServiceUpdateState {
     export const PARSE: string = 'parse';
@@ -52,9 +51,7 @@ export class SampleServiceEvent {
     }
 }
 
-@Injectable({
-    providedIn: SampleModule
-})
+@Injectable()
 export class SampleService {
     private static readonly SAMPLE_ANNOTATE_GOAL: string = 'sample-annotate-goal';
     private static readonly SAMPLE_ANNOTATE_EXPORT_GOAL: string = 'sample-annotate-export-goal';

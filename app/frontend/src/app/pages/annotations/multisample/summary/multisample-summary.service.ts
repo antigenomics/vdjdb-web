@@ -29,7 +29,6 @@ import { WebSocketResponseData } from 'shared/websocket/websocket-response';
 import { AnalyticsService } from 'utils/analytics/analytics.service';
 import { LoggerService } from 'utils/logger/logger.service';
 import { NotificationService } from 'utils/notifications/notification.service';
-import { MultisamplePageModule } from 'pages/annotations/multisample/multisample.module';
 
 export type MultisampleSummaryServiceEvents = number;
 
@@ -65,9 +64,7 @@ export interface IMultisampleSummaryAnalysisTab {
     hiddenSamples: string[];
 }
 
-@Injectable({
-    providedIn: MultisamplePageModule
-})
+@Injectable()
 export class MultisampleSummaryService {
     private static readonly ALL_SAMPLES_ANNOTATE_GOAL: string = 'all-samples-annotate-goal';
     private static readonly MAX_TABS_AVAILABLE: number = 5;
