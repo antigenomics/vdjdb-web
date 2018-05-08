@@ -16,7 +16,7 @@
  */
 
 import { Injectable } from '@angular/core';
-import { ActivatedRouteSnapshot, Resolve, RouterStateSnapshot } from '@angular/router';
+import { ActivatedRouteSnapshot, Resolve, Router, RouterStateSnapshot } from '@angular/router';
 import { AnnotationsFilters } from 'pages/annotations/filters/annotations-filters';
 import { SampleService } from 'pages/annotations/sample/sample.service';
 import { IntersectionTable } from 'pages/annotations/sample/table/intersection/intersection-table';
@@ -28,29 +28,33 @@ import { AnnotationsService, AnnotationsServiceEvents } from '../annotations.ser
 
 @Injectable()
 export class SampleItemResolver implements Resolve<SampleItem> {
-    constructor(private annotationService: AnnotationsService, private sampleService: SampleService, private logger: LoggerService) {}
+    constructor(private annotationService: AnnotationsService, private router: Router,
+                private sampleService: SampleService, private logger: LoggerService) { }
 
     public resolve(route: ActivatedRouteSnapshot, _state: RouterStateSnapshot): Observable<SampleItem> | Promise<SampleItem> | SampleItem {
         return new Promise<SampleItem>((resolve) => {
             if (this.annotationService.isInitialized()) {
                 resolve(this.getSample(route));
             } else {
-                this.annotationService.getEvents().pipe(filter((event) => {
-                    return event === AnnotationsServiceEvents.INITIALIZED;
-                }), take(1)).subscribe(() => {
+                this.annotationService.getEvents().pipe(filter((event) => event === AnnotationsServiceEvents.INITIALIZED), take(1)).subscribe(() => {
                     resolve(this.getSample(route));
                 });
             }
         });
     }
 
-    private getSample(route: ActivatedRouteSnapshot): SampleItem {
+    private getSample(route: ActivatedRouteSnapshot): SampleItem | undefined {
         const sample = this.annotationService.getSample(route.paramMap.get('sample'));
-        if (!sample.hasData()) {
-            sample.setData({ table: new IntersectionTable(), filters: new AnnotationsFilters() });
+        if (sample === undefined) {
+            this.router.navigate(['/']);
+            return undefined;
+        } else {
+            if (!sample.hasData()) {
+                sample.setData({ table: new IntersectionTable(), filters: new AnnotationsFilters() });
+            }
+            this.sampleService.setCurrentSample(sample);
+            this.logger.debug('SampleItemResolver: resolved', sample);
+            return sample;
         }
-        this.sampleService.setCurrentSample(sample);
-        this.logger.debug('SampleItemResolver: resolved', sample);
-        return sample;
     }
 }
