@@ -75,9 +75,9 @@ export class IntersectionTable extends Table<IntersectionTableRow> {
             } else {
                 switch (this.sortRule.type) {
                     case 'asc':
-                        return Number(r1.entries[ columnIndex ] <= r2.entries[ columnIndex ]);
+                        return r1.entries[columnIndex].localeCompare(r2.entries[columnIndex]);
                     case 'desc':
-                        return Number(r1.entries[ columnIndex ] > r2.entries[ columnIndex ]);
+                        return -r1.entries[columnIndex].localeCompare(r2.entries[columnIndex]);
                     default:
                         return 0;
                 }
