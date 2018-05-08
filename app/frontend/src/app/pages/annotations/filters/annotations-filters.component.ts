@@ -24,7 +24,7 @@ import { AnnotationsFilters } from 'pages/annotations/filters/annotations-filter
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AnnotationsFiltersComponent {
-    private currentState: string = 'general';
+    private currentState: 'general' | 'scoring' = 'general';
 
     @Input('filters')
     public filters: AnnotationsFilters;
@@ -32,7 +32,7 @@ export class AnnotationsFiltersComponent {
     @Input('disabled')
     public disabled: boolean;
 
-    public setCurrentState(state: string): void {
+    public setCurrentState(state: 'general' | 'scoring'): void {
         this.currentState = state;
     }
 

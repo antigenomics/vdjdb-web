@@ -15,7 +15,7 @@
  *
  */
 
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input } from '@angular/core';
 import { AnnotationsFilters } from 'pages/annotations/filters/annotations-filters';
 import { SliderRangeModel } from 'shared/filters/common/slider/slider.component';
 
@@ -24,36 +24,41 @@ import { SliderRangeModel } from 'shared/filters/common/slider/slider.component'
     templateUrl: './scoring-vdjmatch.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ScoringVDJMatchComponent implements OnInit {
-    public sliderModel: SliderRangeModel;
+export class ScoringVDJMatchComponent {
+    private _filters: AnnotationsFilters;
+
+    public slider: SliderRangeModel;
 
     @Input('filters')
-    public filters: AnnotationsFilters;
+    public set filters(filters: AnnotationsFilters) {
+        this._filters = filters;
+        this.slider = new SliderRangeModel(0, this.filters.scoring.vdjmatch.hitFiltering.probabilityThreshold);
+    }
+
+    public get filters(): AnnotationsFilters {
+        return this._filters;
+    }
 
     @Input('disabled')
     public disabled: boolean;
 
-    constructor(private changeDetector: ChangeDetectorRef) {}
-
-    public ngOnInit(): void {
-        this.sliderModel = new SliderRangeModel(0, this.filters.scoring.vdjmatch.hitFiltering.probabilityThreshold);
-    }
+    constructor(private changeDetector: ChangeDetectorRef) { }
 
     public isDisabled() {
         return this.disabled ? '' : undefined;
     }
 
-    public isBestHitSelected(): boolean {
-        return this.filters.scoring.vdjmatch.hitFiltering.bestHit;
+    public isHitType(type: string): boolean {
+        return this.filters.scoring.vdjmatch.hitFiltering.hitType === type;
     }
 
-    public setBestHit(value: boolean): void {
-        this.filters.scoring.vdjmatch.hitFiltering.bestHit = value;
+    public setHitType(type: 'best' | 'top' | 'all'): void {
+        this.filters.scoring.vdjmatch.hitFiltering.hitType = type;
     }
 
-    public checkSliderModel(model: SliderRangeModel): void {
+    public checkSlider(model: SliderRangeModel): void {
         this.filters.scoring.vdjmatch.hitFiltering.probabilityThreshold = model.max;
-        this.sliderModel.max = model.max;
+        this.slider.max = model.max;
     }
 
     public checkExhaustiveAlignment(value: number): void {

@@ -100,10 +100,11 @@ object IntersectionTable {
 
         val resultFilter = scoring.`type` match {
             case AnnotationsAnnotateScoring.VDJMATCH =>
-                if (scoring.vdjmatch.hitFiltering.bestHit) {
-                    new MaxScoreResultFilter(scoring.vdjmatch.hitFiltering.probabilityThreshold / 100.0f)
-                } else {
-                    new TopNResultFilter(scoring.vdjmatch.hitFiltering.probabilityThreshold / 100.0f, scoring.vdjmatch.hitFiltering.topHitsCount)
+                scoring.vdjmatch.hitFiltering.hitType match {
+                    case "best" => new MaxScoreResultFilter(scoring.vdjmatch.hitFiltering.probabilityThreshold / 100.0f)
+                    case "top" => new TopNResultFilter(scoring.vdjmatch.hitFiltering.probabilityThreshold / 100.0f, scoring.vdjmatch.hitFiltering.topHitsCount)
+                    case "all" => new TopNResultFilter(scoring.vdjmatch.hitFiltering.probabilityThreshold / 100.0f, 1000)
+                    case _ => DummyResultFilter.INSTANCE
                 }
             case _ => DummyResultFilter.INSTANCE
         }

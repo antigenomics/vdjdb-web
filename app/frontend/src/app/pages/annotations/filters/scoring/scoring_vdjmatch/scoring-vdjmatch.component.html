@@ -54,7 +54,7 @@
                        footer="Default is 50">
                     </i>
                     <div style="width: 75%">
-                        <slider [min]="0" [max]="100" [single]="true" [model]="sliderModel" (modelChange)="checkSliderModel($event)"></slider>
+                        <slider [min]="0" [max]="100" [single]="true" [model]="slider" (modelChange)="checkSlider($event)"></slider>
                     </div>
                 </div>
             </div>
@@ -69,20 +69,26 @@
                     </i>
                     <div class="grouped fields">
                         <div class="field">
-                            <div class="ui radio checkbox cursor pointer" (click)="setBestHit(true)">
-                                <input [attr.disabled]="isDisabled()" type="radio" name="hits" [attr.checked]="isBestHitSelected()?'checked':null">
+                            <div class="ui radio checkbox cursor pointer" (click)="setHitType('best')">
+                                <input [attr.disabled]="isDisabled()" type="radio" name="hits" [checked]="isHitType('best')">
                                 <label>best hit</label>
                             </div>
                         </div>
                         <div class="field" style="margin-top: 0.2em">
-                            <div class="ui radio checkbox cursor pointer" (click)="setBestHit(false)">
-                                <input [attr.disabled]="isDisabled()" type="radio" name="hits" [attr.checked]="!isBestHitSelected()?'checked':null">
+                            <div class="ui radio checkbox cursor pointer" (click)="setHitType('top')">
+                                <input [attr.disabled]="isDisabled()" type="radio" name="hits" [checked]="isHitType('top')">
                                 <label>top
                                     <div class="ui mini input">
                                         <input [attr.disabled]="isDisabled()" type="number" min="1" max="100" style="padding: 0.2em 1em !important;"
                                                [ngModel]="filters.scoring.vdjmatch.hitFiltering.topHitsCount"
                                                (ngModelChange)="checkTopHitsCount($event)">
                                     </div> hits</label>
+                            </div>
+                        </div>
+                        <div class="field" style="margin-top: 0.2em">
+                            <div class="ui radio checkbox cursor pointer" (click)="setHitType('all')">
+                                <input [attr.disabled]="isDisabled()" type="radio" name="hits" [checked]="isHitType('all')">
+                                <label>all</label>
                             </div>
                         </div>
                     </div>
