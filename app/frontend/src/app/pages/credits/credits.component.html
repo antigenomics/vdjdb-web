@@ -1,0 +1,56 @@
+<div class="ui main content container text fade slow element" style="max-width: 850px !important;">
+    <div class="ui raised segments">
+        <h3 class="ui top attached header centered">Concept and design</h3>
+        <div class="ui attached segment teal padded">
+            Initial concept: Dr. Shugay, Dr. Zvyagin and Prof. Chudakov.
+
+            <br> VDJdb web browser application (VDJdb-server) is developed and maintained by Dmitry Bagaev (
+            <a href="https://github.com/bvdmitri" target="_blank" rel="noopener">@bvdmitri</a>).
+
+            <br> Standalone API for VDJdb and database management system (VDJdb-standalone and VDJdb-db) is developed
+            and maintained
+            by Mikhail Shugay (
+            <a href="https://github.com/mikessh" target="_blank" rel="noopener">@mikessh</a>).
+        </div>
+    </div>
+    <div class="ui raised segment">
+        <h3 class="ui header centered">Contributors</h3>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(2, 1fr); grid-gap: 10px; grid-auto-rows: 1fr">
+        <div style="display: none"></div>
+        <div class="ui raised segment padded" *ngFor="let contributor of contributors">
+            <h4>{{ contributor.title }}</h4>
+            <div class="ui divider"></div>
+            <p>{{ joinNames(contributor.names) }}</p>
+        </div>
+        <div style="display: none"></div>
+    </div>
+    <div class="ui raised segments">
+        <h3 class="ui top attached header centered">Funding</h3>
+        <div class="ui attached segment teal padded">
+            <p>VDJdb database is a collaborative effort supported by Pirogov Russian National Research Medical
+                University (
+                <a href="http://rsmu.ru/home_en.html" target="_blank" rel="noopener">RNRMU</a>) and Horizon2020 Advanced
+                bioinformatics platform for PERsonalized cancer IMmunotherapy (
+                <a href="http://aperim.eu" target="_blank" rel="noopener">APERIM</a>) project.
+            </p>
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); grid-gap: 10px;">
+                <div style="grid-row: span 2 / auto;">
+                    <a href="http://rsmu.ru/home_en.html" target="_blank" rel="noopener">
+                        <img class="ui fluid image" src="assets/images/rnimu.jpg" alt="RNIMU">
+                    </a>
+                </div>
+                <div>
+                    <a href="http://aperim.eu" target="_blank" rel="noopener">
+                        <img class="ui fluid image" src="assets/images/aperim-banner.png" alt="APERIM">
+                    </a>
+                </div>
+                <div>
+                    <a href="https://www.ceitec.eu" target="_blank" rel="noopener">
+                        <img class="ui fluid image" src="assets/images/ceitec-banner.gif" alt="CEITEC">
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

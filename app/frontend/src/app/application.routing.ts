@@ -22,10 +22,12 @@ import { SearchPageComponent } from 'pages/search/search.component';
 
 const routes: Routes = [
     { path: '', component: HomePageComponent },
-    { path: 'about', loadChildren: 'pages/about/about.module#AboutPageModule' },
     { path: 'overview', component: OverviewPageComponent },
     { path: 'search', component: SearchPageComponent },
-    { path: 'annotations', loadChildren: 'pages/annotations/annotations.module#AnnotationsPageModule' }
+    { path: 'annotations', loadChildren: 'pages/annotations/annotations.module#AnnotationsPageModule' },
+    { path: 'about', loadChildren: 'pages/about/about.module#AboutPageModule' },
+    { path: 'links', loadChildren: 'pages/links/links.module#LinksPageModule' },
+    { path: 'credits', loadChildren: 'pages/credits/credits.module#CreditsPageModule' }
 ];
 
 export const ApplicationRouting = RouterModule.forRoot(routes); // tslint:disable-line:variable-name
