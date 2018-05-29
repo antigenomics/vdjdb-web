@@ -6,12 +6,12 @@
         </div>
     </div>
 </div>
-<div class="ui grid stackable" style="min-width: 1000px !important; min-height: 275px">
+<div class="ui grid stackable" style="min-height: 275px">
     <div class="row fade element" *ngIf="isCurrentState('general')">
-        <div class="eight wide column">
+        <div class="nine wide column">
             <database-query-params [filters]="filters" [disabled]="disabled"></database-query-params>
         </div>
-        <div class="eight wide column">
+        <div class="seven wide column">
             <search-scope [filters]="filters" [disabled]="disabled"></search-scope>
         </div>
     </div>
