@@ -1,12 +1,12 @@
 <div class="ui grid">
-    <div class="six wide column">
+    <div class="eight wide column">
         <div class="ui horizontal divider">
             VDJMatch scoring options
         </div>
         <div class="ui grid">
             <div class="ui row middle aligned">
-                <div class="eight wide column filters label"><b>Exhaustive alignment</b></div>
-                <div class="six wide column">
+                <div class="six wide column filters label"><b>Exhaustive alignment</b></div>
+                <div class="ten wide column">
                     <!-- Annotations filters help: exhaustive alignment -->
                     <i class="fitted filters corner help icon"
                        popup="Perform exhaustive CDR3 alignment: 0 - no (fast), 1 - check and select best alignment for smallest edit distance,
@@ -14,30 +14,39 @@
                        header="Exhaustive alignment"
                        footer="Default is 1">
                     </i>
-                    <div class="ui input fluid">
-                        <input [attr.disabled]="isDisabled()" type="number" min="0" max="2"
-                               [ngModel]="filters.scoring.vdjmatch.exhaustiveAlignment" (ngModelChange)="checkExhaustiveAlignment($event)">
+                    <div class="ui fluid selection dropdown" [ngClass]="{'disabled':isDisabled()}" dropdown [content]="exhaustivecontent">
+                        <span class="text">{{ getExhaustiveAlignmentShortTitle(filters.scoring.vdjmatch.exhaustiveAlignment) }}</span>
+                        <i class="dropdown icon"></i>
+                        <div class="menu fast fade element" #exhaustivecontent>
+                            <div class="item" (click)="checkExhaustiveAlignment(0)">Disabled (fast)</div>
+                            <div class="item" (click)="checkExhaustiveAlignment(1)">Check and select best alignment for smallest edit distance</div>
+                            <div class="item" (click)="checkExhaustiveAlignment(2)">Select best alignment across all edit distances within search scope (slow)</div>
+                        </div>
                     </div>
                 </div>
             </div>
             <div class="ui row middle aligned">
-                <div class="eight wide column filters label"><b>Scoring mode</b></div>
-                <div class="six wide column">
+                <div class="six wide column filters label"><b>Scoring mode</b></div>
+                <div class="ten wide column">
                     <!-- Annotations filters help: scoring mode -->
                     <i class="fitted filters corner help icon"
                        popup="Either 0: scores mismatches only (faster) or 1: compute scoring for whole sequences (slower). "
                        header="Scoring mode"
                        footer="Default is 1">
                     </i>
-                    <div class="ui input fluid">
-                        <input [attr.disabled]="isDisabled()" type="number" min="0" max="1"
-                               [ngModel]="filters.scoring.vdjmatch.scoringMode" (ngModelChange)="checkScoringMode($event)">
+                    <div class="ui fluid selection dropdown" [ngClass]="{'disabled':isDisabled()}" dropdown [content]="scoringmodecontent">
+                        <span class="text">{{ getScoringModeShortTitle(filters.scoring.vdjmatch.scoringMode) }}</span>
+                        <i class="dropdown icon"></i>
+                        <div class="menu fast fade element" #scoringmodecontent>
+                            <div class="item" (click)="checkScoringMode(0)">Scores mismatches only (faster)</div>
+                            <div class="item" (click)="checkScoringMode(1)">Compute scoring for whole sequences (slower)</div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    <div class="ten wide column">
+    <div class="eight wide column">
         <div class="ui horizontal divider">
             Hit filtering & weigthing
         </div>
