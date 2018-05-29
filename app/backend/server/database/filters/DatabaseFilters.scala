@@ -25,15 +25,16 @@ import com.antigenomics.vdjdb.text._
 import scala.collection.JavaConverters._
 import scala.collection.mutable.ListBuffer
 
-case class DatabaseFilters(text: util.ArrayList[TextFilter], sequence: util.ArrayList[SequenceFilter], warnings: List[String])
+case class DatabaseFilters(text: util.ArrayList[TextFilter], sequence: util.ArrayList[SequenceFilter], options: Seq[(String, Boolean)], warnings: Seq[String])
 
 object DatabaseFilters {
     def createFromRequest(request: List[DatabaseFilterRequest], database: Database): DatabaseFilters = {
         val warnings = ListBuffer[String]()
         val text = new util.ArrayList[TextFilter]()
         val sequence = new util.ArrayList[SequenceFilter]()
+        val options = request.filter(_.column.startsWith("option:")).map(f => (f.column.stripPrefix("option:"), f.value.toBoolean))
 
-        request.foreach((filter: DatabaseFilterRequest) => {
+        request.filter(!_.column.startsWith("option:")).foreach((filter: DatabaseFilterRequest) => {
             if (database.getInstance.getDbInstance.getColumns.asScala.exists(_.getName == filter.column)) {
                 filter.filterType match {
                     case DatabaseFilterType.Exact => text.add(new ExactTextFilter(filter.column, filter.value, filter.negative))
@@ -62,7 +63,7 @@ object DatabaseFilters {
                 warnings += ("Invalid column name: " + filter.column)
             }
         })
-        DatabaseFilters(text, sequence, warnings.toList)
+        DatabaseFilters(text, sequence, options, warnings)
     }
 
 }

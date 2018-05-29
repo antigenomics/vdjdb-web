@@ -40,7 +40,13 @@ class SearchTable extends ResultsTable[SearchTableRow] {
 
     def update(filters: DatabaseFilters, database: Database): SearchTable = {
         val results = database.getInstance.getDbInstance.search(filters.text, filters.sequence)
-        this.rows = results.asScala.map(r => SearchTableRow.createFromRow(r.getRow)).toList
+        this.rows = results.asScala.map(r => SearchTableRow.createFromRow(r.getRow))
+        filters.options.foreach {
+            case ("append-paired", enabled) => if (enabled) {
+                this.rows = this.rows ++ SearchTable.getPairedRows(this.rows, database)
+            }
+            case _ =>
+        }
         this.currentPage = 0
         this
     }
@@ -48,7 +54,7 @@ class SearchTable extends ResultsTable[SearchTableRow] {
 
 object SearchTable {
     def getPairedRows(rows: Seq[SearchTableRow], database: Database): Seq[SearchTableRow] = {
-        val rowsWithPaired = rows.filter((r) => !(r.metadata.pairedID == "0"))
+        val rowsWithPaired = rows.filter(r => !(r.metadata.pairedID == "0"))
         val complexFilter = rowsWithPaired.map(_.metadata.pairedID).mkString(",")
         val pairedFilterRequest: List[DatabaseFilterRequest] =
             List(DatabaseFilterRequest("complex.id", DatabaseFilterType.ExactSet, negative = false, complexFilter))

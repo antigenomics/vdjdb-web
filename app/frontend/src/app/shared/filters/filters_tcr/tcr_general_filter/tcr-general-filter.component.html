@@ -1,5 +1,7 @@
 <filters-header headerTitle="General"
-                headerHelp="Search for specified parent species of a TCR and receptor chain (alpha or beta). You can also specify to show only records that have both TCR alpha and beta chain sequences (paired records)">
+                headerHelp="Search for specified parent species of a TCR and receptor chain (alpha or beta).
+                You can also specify to show only records that have both TCR alpha and beta chain sequences (paired records).
+                'Append paired records' option will force appending all paired records for filtered entries, including ones not matching the filters settings.">
 </filters-header>
 <div class="ui grid middle aligned">
     <div class="three wide column filters label"><b>Species</b></div>
@@ -35,6 +37,11 @@
         <div class="ui checkbox">
             <input [(ngModel)]="tcr.general.pairedOnly" type="checkbox">
             <label>Only paired records</label>
+        </div>
+        <br>
+        <div class="ui checkbox">
+            <input [(ngModel)]="tcr.general.appendPaired" type="checkbox">
+            <label>Append paired records</label>
         </div>
     </div>
 </div>

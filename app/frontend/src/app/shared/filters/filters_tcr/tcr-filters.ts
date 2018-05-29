@@ -85,6 +85,7 @@ export class TCRGeneralFilter implements FilterInterface {
     }
 
     public pairedOnly: boolean;
+    public appendPaired: boolean;
 
     public human: boolean;
     public monkey: boolean;
@@ -98,6 +99,7 @@ export class TCRGeneralFilter implements FilterInterface {
         this.tra = false;
         this.trb = true;
         this.pairedOnly = false;
+        this.appendPaired = false;
     }
 
     public setOptions(_: IFiltersOptions): void {
@@ -122,6 +124,9 @@ export class TCRGeneralFilter implements FilterInterface {
         }
         if (this.pairedOnly === true) {
             filters.push(new Filter('complex.id', FilterType.EXACT, true, '0'));
+        }
+        if (this.appendPaired === true) {
+            filters.push(new Filter('option:append-paired', FilterType.EXACT, false, 'true'));
         }
     }
 
