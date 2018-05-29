@@ -6,6 +6,8 @@
 GET         /                                         backend.controllers.Application.index
 GET         /search                                   backend.controllers.Application.index
 GET         /overview                                 backend.controllers.Application.index
+GET         /links                                    backend.controllers.Application.index
+GET         /credits                                  backend.controllers.Application.index
 GET         /about                                    backend.controllers.Application.index
 GET         /no-script                                backend.controllers.Application.onNoScript
 GET         /robots.txt                               backend.controllers.Application.robots
