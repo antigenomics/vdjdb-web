@@ -62,7 +62,7 @@ export class SearchTable extends Table<SearchTableRow> {
     public async update(): Promise<void> {
         if (this.loading) {
             this.notifications.warn('Search', 'Loading');
-            throw new Error('Cannot update while loading table');
+            return;
         }
 
         await this.checkConnection(false);
@@ -182,7 +182,7 @@ export class SearchTable extends Table<SearchTableRow> {
                 this.startLoading();
             }
             if (this.getConnection().isDisconnected()) {
-                this.notifications.info('Database', 'Reconnecting...');
+                // this.notifications.info('Database', 'Reconnecting...');
                 this.logger.warn('Database', 'Reconnecting...');
                 this.getConnection().onOpen(async () => {
                     if (reInitOnBadConnection) {
@@ -212,9 +212,17 @@ export class SearchTable extends Table<SearchTableRow> {
                     }
                     resolve();
                 });
+                this.getConnection().onError(() => {
+                    // noinspection JSIgnoredPromiseFromCall
+                    this.checkConnection();
+                });
                 const reconnectSuccess = this.getConnection().reconnect();
                 if (!reconnectSuccess) {
-                    this.notifications.error('Database', 'Unable to reconnect, please check your internet connection');
+                    this.notifications.error(
+                        'Database',
+                        'Unable to reconnect, server is unreachable. Please refresh the page and try again.',
+                        1000 * 60 * 60 * 24 // tslint:disable-line:no-magic-numbers
+                    );
                 }
             } else {
                 resolve();

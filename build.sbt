@@ -4,7 +4,7 @@ import play.sbt.PlayImport.PlayKeys.playRunHooks
 name := """VDJdb-web"""
 
 version := "2.2.2"
-scalaVersion := "2.12.5"
+scalaVersion := "2.12.6"
 
 resolvers += "Local Maven Repository" at Path.userHome.asFile.toURI.toURL + ".m2/repository"
 resolvers += Resolver.sonatypeRepo("releases")
@@ -15,7 +15,7 @@ pipelineStages := Seq(digest)
 libraryDependencies ++= Seq(
     "com.antigenomics" % "vdjmatch" % "1.2.1-SNAPSHOT.1",
     "ch.qos.logback" % "logback-classic" % "1.2.3",
-    "com.typesafe.scala-logging" %% "scala-logging" % "3.8.0",
+    "com.typesafe.scala-logging" %% "scala-logging" % "3.9.0",
     "com.typesafe.play" %% "play-slick" % "3.0.3",
     "com.typesafe.play" %% "play-slick-evolutions" % "3.0.3",
     "com.h2database" % "h2" % "1.4.197",

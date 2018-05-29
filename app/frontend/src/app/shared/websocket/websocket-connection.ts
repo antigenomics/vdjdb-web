@@ -48,7 +48,7 @@ export class WebSocketRequestMessage {
 
 export class WebSocketConnection {
     private static pingConnectionTimeout: number = 30000;
-    private static maxReconnectAttempts: number = 1000;
+    private static maxReconnectAttempts: number = 15;
 
     private _uniqueMessageID: number = 0;
     private _currentReconnectAttempt: number = 0;
@@ -162,7 +162,7 @@ export class WebSocketConnection {
     private send(message: WebSocketRequestMessage): Promise<boolean> {
         return new Promise((resolve) => {
             if (this.isDisconnected() && this.enableReconnect) {
-                this.notifications.info('WebSocket', 'Reconnecting...');
+                // this.notifications.info('WebSocket', 'Reconnecting...');
                 this.onOpen(() => {
                     this._connection.send(JSON.stringify(message));
                 });
@@ -177,7 +177,7 @@ export class WebSocketConnection {
                 this._connection.send(JSON.stringify(message));
                 resolve(true);
             } else {
-                this.notifications.error('WebSocket closed', 'Connection closed');
+                // this.notifications.error('WebSocket closed', 'Connection closed');
                 resolve(false);
             }
         });
