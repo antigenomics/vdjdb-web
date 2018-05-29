@@ -68,11 +68,28 @@ export class ScoringVDJMatchComponent {
         this.changeDetector.detectChanges();
     }
 
+    public getExhaustiveAlignmentShortTitle(value: number): string {
+        switch (value) {
+            case 0: return 'Disabled';
+            case 1: return 'Best alignment for smallest edit distance';
+            case 2: return 'Best alignment across all edit distances';
+            default: return '';
+        }
+    }
+
     public checkScoringMode(value: number): void {
         this.filters.scoring.vdjmatch.scoringMode = -1;
         this.changeDetector.detectChanges();
         this.filters.scoring.vdjmatch.scoringMode = this.filters.validateRange(AnnotationsFilters.scoringModeRange, value);
         this.changeDetector.detectChanges();
+    }
+
+    public getScoringModeShortTitle(value: number): string {
+        switch (value) {
+            case 0: return 'Scores mismatches only';
+            case 1: return 'Compute score for whole sequences';
+            default: return '';
+        }
     }
 
     public checkTopHitsCount(value: number): void {
