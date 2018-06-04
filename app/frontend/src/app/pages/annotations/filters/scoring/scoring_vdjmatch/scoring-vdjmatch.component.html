@@ -9,18 +9,19 @@
                 <div class="ten wide column">
                     <!-- Annotations filters help: exhaustive alignment -->
                     <i class="fitted filters corner help icon"
-                       popup="Perform exhaustive CDR3 alignment: 0 - no (fast), 1 - check and select best alignment for smallest edit distance,
-                           2 - select best alignment across all edit distances within search scope (slow)."
+                       popup="Perform exhaustive CDR3 alignment: 'disabled' - selects first alignment across hits with smallest edit distance (fastest),
+                       'greedy' - selects the alignment having best score across hits with smallest edit distance,
+                       'exhaustive' - select the alignment having best score across hits with edit distances within the specified search scope (slowest)."
                        header="Exhaustive alignment"
-                       footer="Default is 1">
+                       footer="Default is 'greedy'">
                     </i>
                     <div class="ui fluid selection dropdown" [ngClass]="{'disabled':isDisabled()}" dropdown [content]="exhaustivecontent">
                         <span class="text">{{ getExhaustiveAlignmentShortTitle(filters.scoring.vdjmatch.exhaustiveAlignment) }}</span>
                         <i class="dropdown icon"></i>
                         <div class="menu fast fade element" #exhaustivecontent>
-                            <div class="item" (click)="checkExhaustiveAlignment(0)">Disabled (fast)</div>
-                            <div class="item" (click)="checkExhaustiveAlignment(1)">Check and select best alignment for smallest edit distance</div>
-                            <div class="item" (click)="checkExhaustiveAlignment(2)">Select best alignment across all edit distances within search scope (slow)</div>
+                            <div class="item" (click)="checkExhaustiveAlignment(0)">Disabled/take first alignment (fast)</div>
+                            <div class="item" (click)="checkExhaustiveAlignment(1)">Best alignment for hits with smallest edit distance</div>
+                            <div class="item" (click)="checkExhaustiveAlignment(2)">Best alignment across all hits within search scope (slow)</div>
                         </div>
                     </div>
                 </div>
@@ -30,16 +31,18 @@
                 <div class="ten wide column">
                     <!-- Annotations filters help: scoring mode -->
                     <i class="fitted filters corner help icon"
-                       popup="Either 0: scores mismatches only (faster) or 1: compute scoring for whole sequences (slower). "
+                       popup="Scoring rule selection: 'partial' - computes score for mismatches only, uses modified scoring matrix (faster);
+                       or 'full' - compute base scores for both sequences (s11 and s22, alignment to itself),
+                       the alignment score (s12) and uses [s12 - max(s11, s22)] as the final score, uses unmodified scoring matrix (slower)."
                        header="Scoring mode"
-                       footer="Default is 1">
+                       footer="Default is 'full'">
                     </i>
                     <div class="ui fluid selection dropdown" [ngClass]="{'disabled':isDisabled()}" dropdown [content]="scoringmodecontent">
                         <span class="text">{{ getScoringModeShortTitle(filters.scoring.vdjmatch.scoringMode) }}</span>
                         <i class="dropdown icon"></i>
                         <div class="menu fast fade element" #scoringmodecontent>
                             <div class="item" (click)="checkScoringMode(0)">Scores mismatches only (faster)</div>
-                            <div class="item" (click)="checkScoringMode(1)">Compute scoring for whole sequences (slower)</div>
+                            <div class="item" (click)="checkScoringMode(1)">Compute full alignment scores (slower)</div>
                         </div>
                     </div>
                 </div>
@@ -54,10 +57,10 @@
             <div class="ui row middle aligned">
                 <div class="four wide column filters label"><b>Probability threshold</b></div>
                 <div class="eleven wide column">
-                    <!-- Annotations filters help: scoring mode -->
+                    <!-- Annotations filters help: propability threshold -->
                     <i class="fitted filters corner help icon"
-                       popup="Drops hits with a score less than the specified threshold. For VDJmatch scoring the range of scores is [0, 100]
-                       and the recommended value for the threshold lies in the range of 10-50.
+                       popup="Drops hits with the final (aggregated) score less than the specified threshold.
+                       For VDJmatch scoring the range of scores is [0, 100] and the recommended value for the threshold lies in the range of 10-50.
                        Filtered records will be removed from output annotation files and will not affect the resulting summary statistics."
                        header="Probability threshold"
                        footer="Default is 50">
@@ -72,9 +75,10 @@
                 <div class="eleven wide column">
                     <!-- Annotations filters help: select best hits -->
                     <i class="fitted filters corner help icon"
-                       popup="Select best n hits by score"
-                       header="Select best hits"
-                       footer="Default is select 3 best hits">
+                       popup="Select top hits by score. One can choose either to output only the best hit (in case of ties all best hits will be in the output),
+                       best N hits (in case of ties will select top hits at random) and all hits (not recommended)."
+                       header="Top hits"
+                       footer="Default is to select top 3 hits">
                     </i>
                     <div class="grouped fields">
                         <div class="field">
@@ -108,9 +112,11 @@
                 <div class="eleven wide column">
                     <!-- Annotations filters help: weight by info -->
                     <i class="fitted filters corner help icon"
-                       popup="Weight database hits by their 'informativeness', i.e. the log probability of them being matched by chance."
+                       popup="Weight database hits by their 'informativeness', computed as the log probability of them being matched by chance under
+                       a given search scope. Informativeness scores are pre-computed by querying the VDJdb database against itself
+                       and excluding hits between TCRs specific to the same epitopes."
                        header="Weight by informativeness"
-                       footer="Default is false">
+                       footer="Default is off">
                     </i>
                     <div class="ui checkbox">
                         <input [attr.disabled]="isDisabled()" type="checkbox" [(ngModel)]="filters.scoring.vdjmatch.hitFiltering.weightByInfo">
