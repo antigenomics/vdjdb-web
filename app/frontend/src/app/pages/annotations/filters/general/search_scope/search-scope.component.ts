@@ -34,7 +34,7 @@ export class SearchScopeComponent {
     constructor(private changeDetector: ChangeDetectorRef) {}
 
     public isDisabled() {
-        return this.disabled ? '' : undefined;
+        return this.disabled ? true : undefined;
     }
 
     public isIndelsAllowed(): boolean {

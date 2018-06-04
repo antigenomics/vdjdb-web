@@ -45,7 +45,7 @@ export class ScoringVDJMatchComponent {
     constructor(private changeDetector: ChangeDetectorRef) { }
 
     public isDisabled() {
-        return this.disabled ? '' : undefined;
+        return this.disabled ? true : undefined;
     }
 
     public isHitType(type: string): boolean {

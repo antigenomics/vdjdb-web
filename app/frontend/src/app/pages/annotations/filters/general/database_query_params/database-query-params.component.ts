@@ -33,7 +33,7 @@ export class DatabaseQueryParamsComponent {
     constructor(private changeDetector: ChangeDetectorRef) {}
 
     public isDisabled() {
-        return this.disabled ? '' : undefined;
+        return this.disabled ? true : undefined;
     }
 
     public checkConfidenceThreshold(threshold: number): void {

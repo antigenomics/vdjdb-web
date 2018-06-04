@@ -144,6 +144,9 @@ export class SliderComponent implements OnInit {
     public max: number;
 
     @Input()
+    public disabled: boolean;
+
+    @Input()
     public single: boolean = false;
 
     @ViewChild('sliderElement')
@@ -181,6 +184,12 @@ export class SliderComponent implements OnInit {
         this._model.min = Math.min(this.left.value, this.right.value);
         this._model.max = Math.max(this.left.value, this.right.value);
         this.modelChange.emit(this._model);
+    }
+
+    public onMouseDown(item: SliderItem): void {
+        if (this.disabled === undefined || !this.disabled) {
+            item.onMouseDown();
+        }
     }
 
     public getItemsPositionDifference(): string {

@@ -33,7 +33,7 @@ export class ScoringTypeComponent {
     constructor(private changeDetector: ChangeDetectorRef) {}
 
     public isDisabled() {
-        return this.disabled ? '' : undefined;
+        return this.disabled ? true : undefined;
     }
 
     public changeTypeVDJMatch(): void {
