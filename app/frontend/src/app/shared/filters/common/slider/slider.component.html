@@ -5,8 +5,8 @@
     <span class="bar-wrapper">
         <span class="bar selection" [style.left]="getItemsMinLeftOffset()" [style.width]="getItemsPositionDifference()"></span>
     </span>
-    <span class="pointer" [style.left]="left.getOffset()" (mousedown)="left.onMouseDown()" *ngIf="!isSingle()"></span>
-    <span class="pointer" [style.left]="right.getOffset()" (mousedown)="right.onMouseDown()"></span>
+    <span class="pointer" [style.left]="left.getOffset()" (mousedown)="onMouseDown(left)" *ngIf="!isSingle()"></span>
+    <span class="pointer" [style.left]="right.getOffset()" (mousedown)="onMouseDown(right)"></span>
     <span class="number" [style.left]="left.getOffset()" *ngIf="!isSingle()">{{ left.value }}</span>
     <span class="number" [style.left]="right.getOffset()">{{ right.value }}</span>
     <span class="number limit" *ngIf="isLimitVisible(left, min) || isSingle()" style="left: 0">{{ min }}</span>
@@ -14,20 +14,20 @@
 </div>
 <div *ngIf="touchScreen">
     <div class="ui buttons" *ngIf="!isSingle()">
-        <button class="ui icon button" (click)="increment(left)">
+        <button class="ui icon button" (click)="increment(left)" [ngClass]="{'disabled':disabled}">
             <i class="plus icon"></i>
         </button>
         <button class="ui button">Min {{ left.value }}</button>
-        <button class="ui icon button" (click)="decrement(left)">
+        <button class="ui icon button" (click)="decrement(left)" [ngClass]="{'disabled':disabled}">
             <i class="minus icon"></i>
         </button>
     </div>
     <div class="ui buttons">
-        <button class="ui icon button" (click)="increment(right)">
+        <button class="ui icon button" (click)="increment(right)" [ngClass]="{'disabled':disabled}">
             <i class="plus icon"></i>
         </button>
         <button class="ui button">Max {{ right.value }}</button>
-        <button class="ui icon button" (click)="decrement(right)">
+        <button class="ui icon button" (click)="decrement(right)" [ngClass]="{'disabled':disabled}">
             <i class="minus icon"></i>
         </button>
     </div>
