@@ -87,7 +87,7 @@ export class ScoringVDJMatchComponent {
     public getScoringModeShortTitle(value: number): string {
         switch (value) {
             case 0: return 'Scores mismatches only';
-            case 1: return 'Compute score for whole sequences';
+            case 1: return 'Compute full alignment scores';
             default: return '';
         }
     }

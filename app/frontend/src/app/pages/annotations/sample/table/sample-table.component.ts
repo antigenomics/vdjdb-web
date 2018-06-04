@@ -36,7 +36,7 @@ export class SampleTableComponent extends SampleRouteResolverComponent {
         },
         utils:   {
             disable: false,
-            export: {
+            export:  {
                 formats: [ { name: 'tsv', title: 'TSV', icon: 'file text outline' } ],
                 options: [ { name: 'paired_export', title: 'Paired gene export', value: false } ]
             }
@@ -75,14 +75,14 @@ export class SampleTableComponent extends SampleRouteResolverComponent {
     public getColumns(): TableColumn[] {
         return [
             new TableColumn('details', 'Details', false, false, true),
-            new TableColumn('found', '# matches', true),
-            new TableColumn('id', 'Rank', true),
-            new TableColumn('freq', 'Frequency', true),
-            new TableColumn('count', 'Count', true),
-            new TableColumn('cdr3aa', 'CDR3aa', true),
-            new TableColumn('v', 'V', true),
-            new TableColumn('j', 'J', true),
-            new TableColumn('tags', 'Tags', false, false, true)
+            new TableColumn('found', '# matches', true, false, false, true, 'Number of unique VDJdb records matched by a given clonotype'),
+            new TableColumn('id', 'Rank', true, false, false, true, 'Clonotype rank in the sample'),
+            new TableColumn('freq', 'Frequency', true, false, false, true, 'Clonotype frequency in the sample'),
+            new TableColumn('count', 'Count', true, false, false, true, 'Clonotype count in the sample'),
+            new TableColumn('cdr3aa', 'CDR3', true, false, false, true, 'Amino acid sequence of the CDR3 region'),
+            new TableColumn('v', 'V', true, false, false, true, 'Variable segment'),
+            new TableColumn('j', 'J', true, false, false, true, 'Joining segment'),
+            new TableColumn('tags', 'Tags', false, false, true, true, 'Brief description of HLA/parent species/epitopes matches')
         ];
     }
 

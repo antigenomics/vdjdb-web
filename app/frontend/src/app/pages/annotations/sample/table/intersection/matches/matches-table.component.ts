@@ -57,8 +57,8 @@ export class MatchesTableComponent {
     public getColumns(): TableColumn[] {
         const skip: string[] = [ 'gene', 'cdr3', 'species' ];
         const columns = [
-            new TableColumn('alignment', 'Alignment', false, false, true),
-            new TableColumn('match-score', 'Match Score', true, false, true),
+            new TableColumn('alignment', 'Alignment', false, false, true, true, 'Alignment of query (top) and VDJdb hit (bottom) CDR3 sequences'),
+            new TableColumn('match-score', 'Match Score', true, false, true, true, 'Final aggregate score of the TCR alignment between query and VDJdb hit'),
             new TableColumn('weight', 'Weight', true, false, true)
         ];
 
