@@ -127,7 +127,8 @@ libraryDependencies ++= Seq("org.scalatestplus.play" % "scalatestplus-play_2.12"
 // Starts: Docker configuration
 
 dockerBaseImage := "anapsix/alpine-java"
-dockerEntrypoint := Seq("bin/vdjdb-web", "-Dconfig.file=/opt/docker/environment/application.conf", "-Dpidfile.path=NULL")
-dockerExposedVolumes := Seq("/opt/docker/environment")
+dockerEntrypoint := Seq("bin/vdjdb-web", "-Dconfig.file=/opt/docker/conf/application.conf", "-Dpidfile.path=/dev/null")
+dockerExposedPorts := Seq(9000)
+dockerExposedVolumes := Seq("/opt/docker/conf", "/opt/docker/samples", "/opt/docker/demo", "/opt/docker/database", "/opt/docker/vdjdb-db")
 
 // Ends.
