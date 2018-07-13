@@ -126,9 +126,21 @@ libraryDependencies ++= Seq("org.scalatestplus.play" % "scalatestplus-play_2.12"
 
 // Starts: Docker configuration
 
+packageName in Docker := "vdjdb-web"
+version in Docker := version.value
+maintainer in Docker := "bvdmitri"
+
+defaultLinuxInstallLocation in Docker := "/home/vdjdb"
+
 dockerBaseImage := "anapsix/alpine-java"
-dockerEntrypoint := Seq("bin/vdjdb-web", "-Dconfig.file=/opt/docker/conf/application.conf", "-Dpidfile.path=/dev/null")
+dockerEntrypoint := Seq("bin/vdjdb-web", "-Dconfig.file=/home/vdjdb/environment/application.conf", "-Dpidfile.path=/dev/null")
 dockerExposedPorts := Seq(9000)
-dockerExposedVolumes := Seq("/opt/docker/conf", "/opt/docker/samples", "/opt/docker/demo", "/opt/docker/database", "/opt/docker/vdjdb-db")
+dockerExposedVolumes := Seq("/home/vdjdb/environment",
+                            "/home/vdjdb/Users/Samples",
+                            "/home/vdjdb/demo-dataset",
+                            "/home/vdjdb/h2",
+                            "/home/vdjdb/vdjdb-db")
+
+dockerUsername := Some("bvdmitri")
 
 // Ends.
