@@ -23,7 +23,6 @@ import { WebSocketConnection } from 'shared/websocket/websocket-connection';
 import { WebSocketRequestData } from 'shared/websocket/websocket-request';
 import { WebSocketResponseData } from 'shared/websocket/websocket-response';
 import { LoggerService } from 'utils/logger/logger.service';
-import { NotificationService } from 'utils/notifications/notification.service';
 import { DatabaseMetadata } from '../../database/database-metadata';
 
 export type SearchTableWebSocketActions = string;
@@ -54,8 +53,8 @@ export class SearchTableService {
 
     private connection: WebSocketConnection;
 
-    constructor(private filters: FiltersService, private logger: LoggerService, notifications: NotificationService) {
-        this.connection = new WebSocketConnection(logger, notifications, false);
+    constructor(private filters: FiltersService, private logger: LoggerService) {
+        this.connection = new WebSocketConnection(logger, false);
         this.connection.onOpen(async () => {
             const metadataRequest = this.connection.sendMessage({
                 action: SearchTableWebSocketActions.METADATA

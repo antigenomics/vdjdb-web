@@ -17,16 +17,18 @@
 package backend.controllers
 
 import java.io.File
-import javax.inject._
 
+import javax.inject._
 import backend.actions.{BrowserDetectionAction, SessionAction, UserRequestAction}
 import backend.models.authorization.tokens.session.SessionTokenProvider
 import backend.models.authorization.user.UserProvider
 import backend.models.files.temporary.TemporaryFileProvider
 import backend.utils.analytics.Analytics
+import buildinfo.BuildInfo
 import controllers._
 import play.api._
 import play.api.i18n.{Lang, Messages, MessagesApi}
+import play.api.libs.json.Json
 import play.api.libs.ws._
 import play.api.mvc._
 
@@ -48,6 +50,12 @@ class Application @Inject()(ws: WSClient, assets: Assets, configuration: Configu
 
     def robots: Action[AnyContent] = {
         assets.at(path = "/public", "seo/robots.txt")
+    }
+
+    def buildInfo: Action[AnyContent] = Action.async {
+        Future.successful {
+            Ok(Json.parse(BuildInfo.toJson))
+        }
     }
 
     def authorizedIndex(route: String): Action[AnyContent] = (browserDetectionAction andThen userRequestAction andThen SessionAction.authorizedOnly) { implicit request =>

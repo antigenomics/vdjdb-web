@@ -18,7 +18,6 @@ import { environment } from 'environments/environment';
 import { Observable, Subject } from 'rxjs';
 import { filter, map, take } from 'rxjs/operators';
 import { LoggerService } from 'utils/logger/logger.service';
-import { NotificationService } from 'utils/notifications/notification.service';
 import { Utils } from 'utils/utils';
 import { IWebSocketRequestData } from './websocket-request';
 import { IWebSocketResponseData, WebSocketResponseData } from './websocket-response';
@@ -63,8 +62,7 @@ export class WebSocketConnection {
     private _onErrorCallback: (event: Event) => void;
     private _onCloseCallback: (event: CloseEvent) => void;
 
-    constructor(private logger: LoggerService, private notifications: NotificationService, private enableReconnect?: boolean) {
-    }
+    constructor(private logger: LoggerService, private enableReconnect?: boolean) {}
 
     public isDisconnected(): boolean {
         return this._connectionStatus === WebSocketConnectionStatus.CLOSED;
@@ -162,22 +160,14 @@ export class WebSocketConnection {
     private send(message: WebSocketRequestMessage): Promise<boolean> {
         return new Promise((resolve) => {
             if (this.isDisconnected() && this.enableReconnect) {
-                // this.notifications.info('WebSocket', 'Reconnecting...');
                 this.onOpen(() => {
                     this._connection.send(JSON.stringify(message));
                 });
-                if (!this.reconnect()) {
-                    this.notifications.error('WebSocket closed', 'Unable to reconnect, please check your internet connection');
-                    resolve(false);
-                } else {
-                    this.notifications.success('WebSocket', 'Successfully reconnected to server');
-                    resolve(true);
-                }
+                resolve(this.reconnect());
             } else if (this.isConnected()) {
                 this._connection.send(JSON.stringify(message));
                 resolve(true);
             } else {
-                // this.notifications.error('WebSocket closed', 'Connection closed');
                 resolve(false);
             }
         });

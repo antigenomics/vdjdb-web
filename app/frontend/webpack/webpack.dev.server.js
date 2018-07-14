@@ -46,8 +46,8 @@ var server = new webpackDevServer(compiler, {
 
     // Configure hot replacement
     filename: new RegExp('^.+bundle\.js$'),
-    lazy: true,
-    hot: false,
+    // lazy: true,
+    // hot: false,
     compress: true,
     inline: true,
     // The rest is terminal configurations

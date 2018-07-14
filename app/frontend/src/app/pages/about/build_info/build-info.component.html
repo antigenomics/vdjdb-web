@@ -1,0 +1,4 @@
+<div class="ui active centered inline loader" *ngIf="loading; else loaded"></div>
+<ng-template #loaded>
+    Server: {{ info.name }}:{{ info.version }} - built at: {{ info.builtAt }}
+</ng-template>
