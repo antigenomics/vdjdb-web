@@ -3,13 +3,22 @@ import play.sbt.PlayImport.PlayKeys.playRunHooks
 
 name := """VDJdb-web"""
 
-version := "2.3.0"
+version := "2.3.1"
 scalaVersion := "2.12.6"
+
+val now = System.currentTimeMillis()
+val dtf = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm")
+val currentTime = dtf.format(new java.util.Date(now))
 
 resolvers += "Local Maven Repository" at Path.userHome.asFile.toURI.toURL + ".m2/repository"
 resolvers += Resolver.sonatypeRepo("releases")
 
-lazy val root = (project in file(".")).enablePlugins(PlayScala, LauncherJarPlugin, SbtWeb)
+lazy val root = (project in file("."))
+    .enablePlugins(PlayScala, LauncherJarPlugin, SbtWeb, BuildInfoPlugin)
+    .settings(buildInfoKeys := Seq[BuildInfoKey](name, version, "builtAt" -> { currentTime }))
+
+buildInfoOptions += BuildInfoOption.ToJson
+
 pipelineStages := Seq(digest)
 
 libraryDependencies ++= Seq(
@@ -93,7 +102,6 @@ lazy val frontendOutdated = taskKey[Unit]("Check frontend dependencies updates")
 frontendOutdated := frontendNPMTask("outdated")
 
 // Ends.
-
 
 
 addCommandAlias("backendBuild", "dist")

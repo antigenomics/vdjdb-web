@@ -81,7 +81,7 @@ export class MultisampleSummaryService {
 
     constructor(private annotationsService: AnnotationsService, private analytics: AnalyticsService,
                 private logger: LoggerService, private notifications: NotificationService) {
-        this.connection = this.connection = new WebSocketConnection(logger, notifications, true);
+        this.connection = this.connection = new WebSocketConnection(logger, true);
         this.connection.onOpen(async () => {
             this.logger.debug('Multisample summary', 'Connected');
             this.addNewTab();

@@ -11,6 +11,7 @@ GET         /credits                                  backend.controllers.Applic
 GET         /about                                    backend.controllers.Application.index
 GET         /no-script                                backend.controllers.Application.onNoScript
 GET         /robots.txt                               backend.controllers.Application.robots
+GET         /buildInfo                                backend.controllers.Application.buildInfo
 
 GET         /annotations                              controllers.Default.redirect(to = "/annotations/info")
 GET         /annotations/*route                       backend.controllers.Application.authorizedIndex(route: String)

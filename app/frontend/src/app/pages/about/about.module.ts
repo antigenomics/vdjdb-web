@@ -17,10 +17,11 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { AboutPageRouting } from 'pages/about/about.routing';
+import { BuildInfoComponent } from 'pages/about/build_info/build-info.component';
 import { AboutPageComponent } from './about.component';
 
 @NgModule({
     imports:      [ CommonModule, AboutPageRouting ],
-    declarations: [ AboutPageComponent ]
+    declarations: [ AboutPageComponent, BuildInfoComponent ]
 })
 export class AboutPageModule {}

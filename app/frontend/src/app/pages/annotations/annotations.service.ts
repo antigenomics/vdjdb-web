@@ -76,7 +76,7 @@ export class AnnotationsService {
     private connection: WebSocketConnection;
 
     constructor(private logger: LoggerService, private notifications: NotificationService) {
-        this.connection = new WebSocketConnection(logger, notifications, true);
+        this.connection = new WebSocketConnection(logger, true);
         this.connection.onOpen(async () => {
 
             const userDetailsRequest = this.connection.sendMessage({
