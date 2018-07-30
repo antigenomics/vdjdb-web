@@ -12,6 +12,7 @@ val currentTime = dtf.format(new java.util.Date(now))
 
 resolvers += "Local Maven Repository" at Path.userHome.asFile.toURI.toURL + ".m2/repository"
 resolvers += Resolver.sonatypeRepo("releases")
+resolvers += "jitpack" at "https://jitpack.io"
 
 lazy val root = (project in file("."))
     .enablePlugins(PlayScala, LauncherJarPlugin, SbtWeb, BuildInfoPlugin)
@@ -22,7 +23,7 @@ buildInfoOptions += BuildInfoOption.ToJson
 pipelineStages := Seq(digest)
 
 libraryDependencies ++= Seq(
-    "com.antigenomics" % "vdjmatch" % "1.2.1-SNAPSHOT.1",
+    "com.antigenomics" % "vdjmatch" % "1.2.1-SNAPSHOT",
     "ch.qos.logback" % "logback-classic" % "1.2.3",
     "com.typesafe.scala-logging" %% "scala-logging" % "3.9.0",
     "com.typesafe.play" %% "play-slick" % "3.0.3",
