@@ -12,6 +12,7 @@
 /docs/_build
 
 npm-debug.log
+package-lock.json
 
 /logs
 /target
@@ -26,3 +27,5 @@ npm-debug.log
 /RUNNING_PID
 /build
 /test/frontend/dll
+
+logs
