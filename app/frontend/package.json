@@ -5,7 +5,7 @@
   "license": "Apache 2.0",
   "private": true,
   "scripts": {
-    "serve": "ng serve --disable-host-check --aot --live-reload=false --port 4200 --host localhost --vendor-source-map=false",
+    "serve": "ng serve --disable-host-check --live-reload=false --port 4200 --host localhost --vendor-source-map=false",
     "build": "npm run build:ng && npm run build:optimize && npm run build:stats",
     "build:ng": "ng build --prod --deploy-url /assets/bundles/",
     "build:optimize": "node ./scripts/optimize.prod.js",
