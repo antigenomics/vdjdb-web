@@ -1,15 +1,17 @@
 {
   "name": "vdjdb-frontend",
-  "version": "2.3.1",
+  "version": "2.3.2",
   "description": "Frontend application for VDJdb-server",
   "license": "Apache 2.0",
   "private": true,
   "scripts": {
-    "serve": "ng serve",
+    "serve": "ng serve --disable-host-check --aot --live-reload=false --port 4200 --host localhost --vendor-source-map=false",
     "build": "npm run build:ng && npm run build:optimize && npm run build:stats",
     "build:ng": "ng build --prod",
     "build:optimize": "node ./scripts/optimize.prod.js",
     "build:stats": "node ./scripts/stats.prod.js",
+    "clean:node_modules": "rimraf node_modules/",
+    "clean:build": "rimraf ../../public/bundles/*",
     "lint": "ng lint --type-check --force --format stylish vdjdb-frontend"
   },
   "author": "Dmitry Bagaev",
@@ -57,7 +59,8 @@
     "protractor": "5.4.0",
     "ts-node": "7.0.0",
     "tslint": "5.11.0",
-    "typescript": "2.9.2"
+    "typescript": "2.9.2",
+    "rimraf": "2.6.2"
   },
   "engines": {
     "node": ">= 10",

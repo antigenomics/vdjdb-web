@@ -19,8 +19,8 @@ import java.net.InetSocketAddress
 import scala.sys.process._
 import play.sbt.PlayRunHook
 
-object WebpackServer {
-    private final val webpackTask: String = "develop:webpack"
+object AngularServer {
+    private final val task: String = "serve"
 
     def apply(base: File): PlayRunHook = {
         object WebpackServerScript extends PlayRunHook {
@@ -32,9 +32,9 @@ object WebpackServer {
 
             private def createWebpackProcess(): ProcessBuilder =
                 if (System.getProperty("os.name").toUpperCase().contains("WIN"))
-                    Process(s"cmd /c npm run $webpackTask", base)
+                    Process(s"cmd /c yarn run $task", base)
                 else
-                    Process(s"npm run $webpackTask", base)
+                    Process(s"yarn run $task", base)
         }
         WebpackServerScript
     }

@@ -41,9 +41,5 @@
     "strictInjectionParameters": true,
     "fullTemplateTypeCheck": true,
     "preserveWhitespaces": false
-  },
-  "awesomeTypescriptLoaderOptions": {
-    "useCache": true,
-    "cacheDirectory": "node_modules/.cache/.awcache"
   }
 }
