@@ -7,7 +7,7 @@
   "scripts": {
     "serve": "ng serve --disable-host-check --aot --live-reload=false --port 4200 --host localhost --vendor-source-map=false",
     "build": "npm run build:ng && npm run build:optimize && npm run build:stats",
-    "build:ng": "ng build --prod",
+    "build:ng": "ng build --prod --deploy-url /assets/bundles/",
     "build:optimize": "node ./scripts/optimize.prod.js",
     "build:stats": "node ./scripts/stats.prod.js",
     "clean:node_modules": "rimraf node_modules/",

@@ -64,7 +64,7 @@ publishArtifact in(Compile, packageDoc) := false
 
 lazy val isWindows = System.getProperty("os.name").toUpperCase().contains("WIN")
 lazy val frontendApplicationPath = if (isWindows) "app\\frontend" else "./app/frontend"
-lazy val yarn: String = if (isWindows) "cmd /c yarn " else "yarn"
+lazy val yarn: String = if (isWindows) "cmd /c yarn " else "yarn "
 
 def frontendYarnTask(task: String): Unit = {
     println(s"Executing yarn task: $task")
