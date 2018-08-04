@@ -15,9 +15,11 @@
         </div>
     </application>
     @if(environment.mode == Mode.Dev) {
-        <script type="application/javascript" src="@routes.Assets.versioned("bundles/polyfills.dll.js")" charset="utf-8"></script>
-        <script type="application/javascript" src="@routes.Assets.versioned("bundles/vendor.dll.js")" charset="utf-8"></script>
-        <script type="application/javascript" src="develop/webpack/bundles/bundle.js" charset="utf-8"></script>
+        <script type="application/javascript" src="develop/angular/cached/assets/bundles/polyfills.js" charset="utf-8"></script>
+        <script type="application/javascript" src="develop/angular/cached/assets/bundles/runtime.js" charset="utf-8"></script>
+        <script type="application/javascript" src="develop/angular/cached/assets/bundles/styles.js" charset="utf-8"></script>
+        <script type="application/javascript" src="develop/angular/cached/assets/bundles/vendor.js" charset="utf-8"></script>
+        <script type="application/javascript" src="develop/angular/assets/bundles/main.js" charset="utf-8"></script>
     } else {
         @if(request.attrs(BrowserDetectionAction.BROWSER_TYPED_KEY).getBrowser.getGroup.equals(Browser.IE)) {
             <script type="application/javascript" src="@routes.Assets.versioned("bundles/polyfills-ie.js")" charset="utf-8"></script>

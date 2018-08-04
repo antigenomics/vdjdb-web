@@ -48,6 +48,7 @@ Front-end dependencies
 """"""""""""""""""""""
 
 * `Node.js <https://nodejs.org/en/>`__
+* `Yarn <https://yarnpkg.com/lang/en/>`__
 
 Compiling
 """""""""
@@ -89,15 +90,7 @@ Available commands:
 +--------------------------------------+-----------------------------------------+
 | frontendBuild                        | Build VDJdb frontend bundle only        |
 +--------------------------------------+-----------------------------------------+
-| frontendBuildAngular                 | Build VDJdb frontend javascript code    |
-+--------------------------------------+-----------------------------------------+
-| frontendBuildWebpack                 | Build VDJdb frontend styles             |
-+--------------------------------------+-----------------------------------------+
-| frontendBuildWebpackDLL              | Build VDJdb frontend dll's (development)|
-+--------------------------------------+-----------------------------------------+
 | frontendCleanDependencies            | Clean frontend dependencies             |
-+--------------------------------------+-----------------------------------------+
-| frontendCleanCache                   | Clean frontend cache                    |
 +--------------------------------------+-----------------------------------------+
 | frontendCleanBuild                   | Clean frontend build                    |
 +--------------------------------------+-----------------------------------------+

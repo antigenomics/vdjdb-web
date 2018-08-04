@@ -62,8 +62,6 @@ class Application @Inject()(ws: WSClient, assets: Assets, configuration: Configu
         SessionAction.updateCookies(Ok(frontend.views.html.index()))
     }
 
-    def webpack(file: String, cache: Boolean): Action[AnyContent] = externalServer(file, cache, "8080")
-
     def angular(file: String, cache: Boolean): Action[AnyContent] = externalServer(file, cache, "4200")
 
     def externalServer(file: String, cache: Boolean, path: String): Action[AnyContent] = if (environment.mode == Mode.Dev) Action.async { implicit request =>
