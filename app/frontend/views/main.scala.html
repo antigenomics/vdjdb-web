@@ -42,9 +42,7 @@
         <title>@title</title>
         <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        @if(environment.mode == Mode.Dev) {
-
-        } else {
+        @if(environment.mode == Mode.Prod) {
             <link type="text/css" href="@routes.Assets.versioned("bundles/styles.css")" rel="stylesheet">
         }
     </head>
