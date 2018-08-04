@@ -15,9 +15,9 @@
     },
     "clean": "dist/"
   },
-  "components": ["reset", "site", "button", "container", "divider", "header", "icon", "image", "input", "label", "list", "loader", "segment", "form", "grid", "menu", "message", "table", "card", "checkbox", "dimmer", "dropdown", "modal", "popup", "progress", "sidebar", "sticky", "tab"],
+  "components": ["reset", "site", "button", "container", "divider", "header", "icon", "image", "input", "label", "list", "loader", "segment", "form", "grid", "menu", "message", "table", "card", "checkbox", "dimmer", "dropdown", "modal", "popup", "progress", "sidebar"],
   "permission": false,
   "autoInstall": true,
   "rtl": false,
-  "version": "2.3.3"
+  "version": "2.2.14"
 }
