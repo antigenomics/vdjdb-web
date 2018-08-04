@@ -18,7 +18,7 @@
             "namedChunks": true,
             "polyfills": "src/polyfills.ts",
             "assets": [],
-            "styles": [],
+            "styles": [ "styles/semantic/dist/semantic.min.css", "styles/semantic-extensions.css", "styles/main.css" ],
             "scripts": [],
             "deployUrl": "/assets/bundles/"
           },
