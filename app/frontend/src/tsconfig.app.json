@@ -1,18 +1,14 @@
 {
   "extends": "../tsconfig.json",
   "compilerOptions": {
-    "outDir": "../out-tsc/app",
     "module": "es2015",
-    "types": [ ]
+    "paths": {
+      "external/*": [ "src/external/*" ],
+      "pages/*": [ "src/app/pages/*" ],
+      "shared/*": [ "src/app/shared/*" ],
+      "utils/*": [ "src/app/utils/*" ],
+      "environments/*": [ "src/environments/*" ]
+    }
   },
-  "angularCompilerOptions": {
-    "strictInjectionParameters": true,
-    "fullTemplateTypeCheck": true,
-    "preserveWhitespaces": false
-  },
-  "exclude": [
-    "test.ts",
-    "main.dev.ts",
-    "**/*.spec.ts"
-  ]
+  "exclude": [ "**/*.spec.ts" ]
 }

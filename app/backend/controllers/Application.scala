@@ -67,11 +67,7 @@ class Application @Inject()(ws: WSClient, assets: Assets, configuration: Configu
     def externalServer(file: String, cache: Boolean, path: String): Action[AnyContent] = if (environment.mode == Mode.Dev) Action.async { implicit request =>
         ws.url(s"http://localhost$path/$file").get().map { response =>
             val contentType = response.headers.get("Content-Type").flatMap(_.headOption).getOrElse("application/octet-stream")
-            var headers = response.headers
-                .toSeq.filter(p =>
-                List("Content-Type", "Content-Length")
-                    .indexOf(p._1) < 0)
-                .map(p => (p._1, p._2.mkString))
+            var headers = response.headers.toSeq.map(p => (p._1, p._2.mkString))
             if (cache) {
                 headers = headers ++: Seq(("Cache-Control", s"private, max-age=$cacheControlTimeout"))
             } else {
