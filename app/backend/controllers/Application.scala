@@ -77,7 +77,7 @@ class Application @Inject()(ws: WSClient, assets: Assets, configuration: Configu
             } else {
                 headers = headers ++: Seq(("Cache-Control", s"no-cache, no-store, must-revalidate"))
             }
-            Ok(response.body).withHeaders(headers: _*).as(contentType)
+            Ok(response.bodyAsBytes).withHeaders(headers: _*).as(contentType)
         }
     } else {
         Action.apply(BadRequest(""))
