@@ -9,6 +9,7 @@ scalaVersion := "2.12.6"
 val now = System.currentTimeMillis()
 val dtf = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm")
 val currentTime = dtf.format(new java.util.Date(now))
+val commitHash = Process("git rev-parse HEAD").!!.stripLineEnd
 
 resolvers += "Local Maven Repository" at Path.userHome.asFile.toURI.toURL + ".m2/repository"
 resolvers += Resolver.sonatypeRepo("releases")
@@ -16,7 +17,7 @@ resolvers += "jitpack" at "https://jitpack.io"
 
 lazy val root = (project in file("."))
     .enablePlugins(PlayScala, LauncherJarPlugin, SbtWeb, BuildInfoPlugin)
-    .settings(buildInfoKeys := Seq[BuildInfoKey](name, version, "builtAt" -> { currentTime }))
+    .settings(buildInfoKeys := Seq[BuildInfoKey](name, version, "builtAt" -> currentTime, "commitHash" -> commitHash))
 
 buildInfoOptions += BuildInfoOption.ToJson
 
