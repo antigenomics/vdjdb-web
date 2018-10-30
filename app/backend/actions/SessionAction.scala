@@ -16,6 +16,8 @@
 
 package backend.actions
 
+import java.net.URLEncoder
+
 import backend.models.authorization.tokens.session.SessionTokenProvider
 import play.api.mvc._
 
@@ -51,9 +53,9 @@ object SessionAction {
             val session = userRequest.session + ((stp.getAuthTokenSessionName, userRequest.token.get.token))
             result
                 .withSession(session)
-                .withCookies(Cookie("logged", "true", httpOnly = false))
-                .withCookies(Cookie("email", userRequest.user.get.email, httpOnly = false))
-                .withCookies(Cookie("login", userRequest.user.get.login, httpOnly = false))
+                .withCookies(Cookie("logged", URLEncoder.encode("true", "UTF-8"), httpOnly = false))
+                .withCookies(Cookie("email", URLEncoder.encode(userRequest.user.get.email, "UTF-8"), httpOnly = false))
+                .withCookies(Cookie("login", URLEncoder.encode(userRequest.user.get.login, "UTF-8"), httpOnly = false))
         } else {
             SessionAction.clearSessionAndDiscardCookies(result)
         }

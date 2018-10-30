@@ -23,7 +23,7 @@ buildInfoOptions += BuildInfoOption.ToJson
 pipelineStages := Seq(digest)
 
 libraryDependencies ++= Seq(
-    "com.antigenomics" % "vdjmatch" % "1.2.1-SNAPSHOT",
+    "com.antigenomics" % "vdjmatch" % "1.2.2",
     "ch.qos.logback" % "logback-classic" % "1.2.3",
     "com.typesafe.scala-logging" %% "scala-logging" % "3.9.0",
     "com.typesafe.play" %% "play-slick" % "3.0.3",
