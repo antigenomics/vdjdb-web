@@ -26,37 +26,84 @@ import scala.io.Source
 
 @Singleton
 class Motifs @Inject()(configuration: Configuration, database: Database) {
-    private final val metadata: MotifsMetadata = Motifs.parseMotifsCollection(database.getMotifFile)
+    private final val header: Map[String, Int] = Motifs.parseMotifsHeader(database.getMotifFile)
+    private final val metadata: MotifsMetadata = Motifs.parseMotifsCollection(database.getMotifFile, header)
 
     def getMetadata: MotifsMetadata = metadata
-
 }
 
 object Motifs {
 
-    def parseMotifsCollection(motifsFile: Option[File]): MotifsMetadata = {
-        val SpeciesPosition = 0
-        val GenePosition = 5
-        val MHCClassPosition = 3
-        val MHCAPosition = 1
+    val SPECIES_HEADER_NAME = "species"
+    val GENE_HEADER_NAME = "gene"
+    val MHC_CLASS_HEADER_NAME = "mhc.class"
+    val MHC_A_HEADER_NAME = "mhc.a"
+    val MHC_B_HEADER_NAME = "mhc.b"
+    val EPITOPE_HEADER_NAME = "epitope"
+    val CLUSTER_ID_HEADER_NAME = "cid"
+    val CLUSTER_SIZE_HEADER_NAME = "csz"
+    val AA_CHAR_HEADER_NAME = "aa"
+    val AA_CHAR_POSITION_HEADER_NAME = "pos"
+    val LEN_HEADER_NAME = "len"
+    val COUNT_HEADER_NAME = "count"
+    val FREQ_HEADER_NAME = "freq"
+    val INFORMATIVENESS_HEADER_NAME = "I"
+    val HEIGHT_HEADER_NAME = "height"
 
+    val HEADER_NAMES = List(
+        SPECIES_HEADER_NAME,
+        GENE_HEADER_NAME,
+        MHC_CLASS_HEADER_NAME,
+        MHC_A_HEADER_NAME,
+        MHC_B_HEADER_NAME,
+        EPITOPE_HEADER_NAME,
+        CLUSTER_ID_HEADER_NAME,
+        CLUSTER_SIZE_HEADER_NAME,
+        AA_CHAR_HEADER_NAME,
+        AA_CHAR_POSITION_HEADER_NAME,
+        LEN_HEADER_NAME,
+        COUNT_HEADER_NAME,
+        FREQ_HEADER_NAME,
+        INFORMATIVENESS_HEADER_NAME,
+        HEIGHT_HEADER_NAME,
+    )
+
+    def parseMotifsHeader(motifsFile: Option[File]): Map[String, Int] = {
+        motifsFile match {
+            case Some(file) =>
+                val header = Source.fromFile(file).getLines().next().split("\t")
+                HEADER_NAMES.map(name => name -> header.indexOf(name)).toMap
+            case None => Map()
+        }
+    }
+
+    def parseMotifsCollection(motifsFile: Option[File], header: Map[String, Int]): MotifsMetadata = {
         motifsFile match {
             case Some(file) =>
                 val metadata = Source.fromFile(file)
-                    .getLines.drop(1)                               // Drop header
-                    .toStream                                       // Stream execution
+                    .getLines.drop(1) // Drop header
+                    .toStream // Stream execution
                     .map(line => line.toString.split("\t")) // Split tab-delimited lines
-                    .groupBy(_(SpeciesPosition))                    // Group by species
+                    .groupBy(_ (header(SPECIES_HEADER_NAME))) // Group by species
                     .map(species =>
-                        species._1 -> species._2.groupBy(_(GenePosition))                // Group by gene
-                            .map(gene => gene._1 -> gene._2.groupBy(_(MHCClassPosition)) // Group by MHC.class
-                                .map(mhc => mhc._1 -> mhc._2.groupBy(_(MHCAPosition)))   // Group by MHC.A
-                            )
+                    species._1 -> species._2.groupBy(_ (header(GENE_HEADER_NAME))) // Group by gene
+                        .map(gene => gene._1 -> gene._2.groupBy(_ (header(MHC_CLASS_HEADER_NAME))) // Group by MHC.class
+                        .map(mhc => mhc._1 -> mhc._2.groupBy(_ (header(MHC_A_HEADER_NAME)))) // Group by MHC.A
                     )
+                )
 
-                println(metadata)
-                MotifsMetadata(entries = List(MotifsMetadataEntry("blabla", "blablabla", "gene", List())))
-            case None => MotifsMetadata(entries = List())
+                val entries = metadata.flatMap {
+                    case (species, genes) => genes.flatMap {
+                        case (gene, mhcs) => mhcs.flatMap {
+                            case (mhc, mhcas) => mhcas.map {
+                                case (mhca, stream) => MotifsMetadataEntry.fromStream(header, species, gene, mhc, mhca, stream)
+                            }
+                        }
+                    }
+                }.toSeq
+
+                MotifsMetadata(entries)
+            case None => MotifsMetadata(entries = Seq())
         }
     }
 

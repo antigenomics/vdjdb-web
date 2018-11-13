@@ -18,8 +18,21 @@ package backend.server.motifs
 
 import play.api.libs.json.{Format, Json}
 
-case class MotifEpitope(epitope: String, mhca: String, mhcb: String, clusters: List[MotifCluster])
+case class MotifEpitope(epitope: String, mhca: String, mhcb: String, clusters: Seq[MotifCluster])
 
 object MotifEpitope {
     implicit val motifEpitopeFormat: Format[MotifEpitope] = Json.format[MotifEpitope]
+
+    def fromStream(header: Map[String, Int], stream: Stream[Array[String]]): Seq[MotifEpitope] = {
+        val mhca = stream.map(_(header(Motifs.MHC_A_HEADER_NAME))).toSet
+
+        require(mhca.size == 1)
+
+        stream.groupBy(_(header(Motifs.EPITOPE_HEADER_NAME))).flatMap {
+            case (epitope, epitopeStream) =>
+                epitopeStream.groupBy(_(header(Motifs.MHC_B_HEADER_NAME))).map {
+                    case (mhcb, s) => MotifEpitope(epitope, mhca.head, mhcb, MotifCluster.fromStream(header, s))
+                }
+        }.toSeq
+    }
 }
