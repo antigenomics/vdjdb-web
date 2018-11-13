@@ -18,7 +18,7 @@ package backend.server.motifs
 
 import play.api.libs.json.{Format, Json}
 
-case class MotifsMetadata(entries: List[MotifsMetadataEntry])
+case class MotifsMetadata(entries: Seq[MotifsMetadataEntry])
 
 object MotifsMetadata {
     implicit val motifsMetadataFormat: Format[MotifsMetadata] = Json.format[MotifsMetadata]

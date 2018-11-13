@@ -18,8 +18,19 @@ package backend.server.motifs
 
 import play.api.libs.json.{Format, Json}
 
-case class MotifCluster(cid: String, length: Int, entries: List[MotifClusterEntry])
+case class MotifCluster(cid: String, size: Int, entries: Seq[MotifClusterEntry])
 
 object MotifCluster {
     implicit val motifCluster: Format[MotifCluster] = Json.format[MotifCluster]
+
+    def fromStream(header: Map[String, Int], stream: Stream[Array[String]]): Seq[MotifCluster] = {
+        stream.groupBy(_ (header(Motifs.CLUSTER_ID_HEADER_NAME))).map {
+            case (cid, s) =>
+                val csz = s.map(_(header(Motifs.CLUSTER_SIZE_HEADER_NAME))).toSet
+
+                require(csz.size == 1)
+
+                MotifCluster(cid, csz.head.toInt, MotifClusterEntry.fromStream(header, s))
+        }.toSeq
+    }
 }
