@@ -1,5 +1,5 @@
 /*
- *     Copyright 2017 Bagaev Dmitry
+ *     Copyright 2017-2018 Bagaev Dmitry
  *
  *     Licensed under the Apache License, Version 2.0 (the "License");
  *     you may not use this file except in compliance with the License.
@@ -12,39 +12,34 @@
  *     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *     See the License for the specific language governing permissions and
  *     limitations under the License.
- *
  */
 
 import { createDefaultChartContainerConfiguration, IChartContainerConfiguration } from 'shared/charts/container/chart-container-configuration';
 import { createDefaultChartTooltipConfiguration, IChartTooltipConfiguration } from 'shared/charts/tooltip/chart-tooltip.configuration';
 
-export interface IBarChartAxisConfiguration {
+export interface ISeqLogoAxisConfiguration {
   title?: string;
   dx?: string;
   dy?: string;
-  tickFormat?: string;
-  ticksCount?: number;
 }
 
-function createDefaultAxisConfiguration(): IBarChartAxisConfiguration {
+function createDefaultAxisConfiguration(): ISeqLogoAxisConfiguration {
   return {};
 }
 
-export interface IBarChartConfiguration {
+export interface ISeqLogoChartConfiguration {
   container?: IChartContainerConfiguration;
   tooltip?: IChartTooltipConfiguration;
-  grid?: boolean;
   axis?: {
-    x?: IBarChartAxisConfiguration,
-    y?: IBarChartAxisConfiguration
-  };
+    x?: ISeqLogoAxisConfiguration,
+    y?: ISeqLogoAxisConfiguration
+  }
 }
 
-export function createDefaultBarChartConfiguration(): IBarChartConfiguration {
+export function createDefaultSeqLogoConfiguration(): ISeqLogoChartConfiguration {
   return {
     container: createDefaultChartContainerConfiguration(),
     tooltip:   createDefaultChartTooltipConfiguration(),
-    grid:      false,
     axis:      {
       x: createDefaultAxisConfiguration(),
       y: createDefaultAxisConfiguration()

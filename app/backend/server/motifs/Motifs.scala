@@ -88,16 +88,16 @@ object Motifs {
                     .map(species =>
                     species._1 -> species._2.groupBy(_ (header(GENE_HEADER_NAME))) // Group by gene
                         .map(gene => gene._1 -> gene._2.groupBy(_ (header(MHC_CLASS_HEADER_NAME))) // Group by MHC.class
-                        .map(mhc => mhc._1 -> mhc._2.groupBy(_ (header(MHC_A_HEADER_NAME)))) // Group by MHC.A
+                        .map(mhcclass => mhcclass._1 -> mhcclass._2.groupBy(_ (header(MHC_A_HEADER_NAME)))) // Group by MHC group (for now it is just MHC.A)
                     )
                 )
 
                 val entries = metadata.flatMap {
                     case (species, genes) => genes.flatMap {
-                        case (gene, mhcs) => mhcs.flatMap {
-                            case (mhc, mhcas) => mhcas.map {
-                                case (mhca, stream) => MotifsMetadataEntry.fromStream(header, species, gene, mhc, mhca, stream)
-                            }
+                        case (gene, mhcclasses) => mhcclasses.flatMap {
+                            case (mhcclass, mhcgroups) => mhcgroups.map {
+                                case (mhcgroup, stream) => MotifsMetadataEntry.fromStream(header, species, gene, mhcclass, mhcgroup, stream)
+                            }.toSeq
                         }
                     }
                 }.toSeq
