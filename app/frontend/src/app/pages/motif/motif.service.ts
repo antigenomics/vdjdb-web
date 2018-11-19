@@ -15,6 +15,8 @@
  */
 
 import { Injectable } from '@angular/core';
+import { MotifsMetadata } from 'pages/motif/motif';
+import { Observable, ReplaySubject, Subject } from 'rxjs';
 import { WebSocketConnection } from 'shared/websocket/websocket-connection';
 import { LoggerService } from 'utils/logger/logger.service';
 
@@ -24,19 +26,39 @@ export namespace MotifsServiceWebSocketActions {
 
 @Injectable()
 export class MotifService {
-
   private connection: WebSocketConnection;
+
+  private isMetadataLoaded: boolean = false;
+  private isMetadataLoading: boolean = false;
+  private metadata: Subject<MotifsMetadata> = new ReplaySubject(1);
 
   constructor(private logger: LoggerService) {
     this.connection = new WebSocketConnection(logger, true);
-    this.connection.connect('/api/motifs/connect');
   }
 
   public async load(): Promise<void> {
-    const metadata = await this.connection.sendMessage({
-      action: MotifsServiceWebSocketActions.METADATA
-    });
-    this.logger.debug('Motif', metadata.get('metadata'));
+    if (!this.isMetadataLoaded && !this.isMetadataLoading) {
+      this.isMetadataLoading = true;
+      this.connection.onOpen(async () => {
+        this.logger.debug('Motifs', 'Loading metadata for the first time');
+        const request = await this.connection.sendMessage({
+          action: MotifsServiceWebSocketActions.METADATA
+        });
+        const meta = request.get<MotifsMetadata>('metadata');
+        this.metadata.next(meta);
+        this.logger.debug('Motifs', meta);
+        this.isMetadataLoaded = true;
+        this.isMetadataLoading = false;
+      });
+      this.connection.onError(() => {
+        this.isMetadataLoading = false;
+      });
+      this.connection.connect('/api/motifs/connect');
+    }
+  }
+
+  public getMetadata(): Observable<MotifsMetadata> {
+    return this.metadata.asObservable();
   }
 
 }

@@ -18,24 +18,12 @@ package backend.server.motifs
 
 import play.api.libs.json.{Format, Json}
 
-//case class MotifsMetadataSpeciesEntry(species: String, genes: Seq[MotifsMetadataGeneEntry])
-//
-//case class MotifsMetadataGeneEntry(gene: String, mhcs: Seq[MotifsMetadataMHCEntry])
-//
-//case class MotifsMetadataMHCEntry(mhc: String, mhcas: Seq[MotifsMetadataMHCAEntry])
-//
-//case class MotifsMetadataMHCAEntry(mhca: String, entries: Option[Seq[MotifsMetadataEntry]])
-
-case class MotifsMetadataEntry(species: String, gene: String, mhc: String, mhca: String, epitopes: Seq[MotifEpitope])
+case class MotifsMetadataEntry(species: String, gene: String, mhcclass: String, mhcgroup: String, epitopes: Seq[MotifEpitope])
 
 object MotifsMetadataEntry {
     implicit val motifsMetadataEntry: Format[MotifsMetadataEntry] = Json.format[MotifsMetadataEntry]
-//    implicit val motifsMetadataMHCAEntry: Format[MotifsMetadataMHCAEntry] = Json.format[MotifsMetadataMHCAEntry]
-//    implicit val motifsMetadataMHCEntry: Format[MotifsMetadataMHCEntry] = Json.format[MotifsMetadataMHCEntry]
-//    implicit val motifsMetadataGeneEntry: Format[MotifsMetadataGeneEntry] = Json.format[MotifsMetadataGeneEntry]
-//    implicit val motifsMetadataSpeciesEntry: Format[MotifsMetadataSpeciesEntry] = Json.format[MotifsMetadataSpeciesEntry]
 
-    def fromStream(header: Map[String, Int], species: String, gene: String, mhc: String, mhca: String, stream: Stream[Array[String]]): MotifsMetadataEntry = {
-        MotifsMetadataEntry(species, gene, mhc, mhca, MotifEpitope.fromStream(header, stream))
+    def fromStream(header: Map[String, Int], species: String, gene: String, mhcclass: String, mhcgroup: String, stream: Stream[Array[String]]): MotifsMetadataEntry = {
+        MotifsMetadataEntry(species, gene, mhcclass, mhcgroup, MotifEpitope.fromStream(header, stream))
     }
 }
