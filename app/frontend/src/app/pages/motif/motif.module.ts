@@ -20,10 +20,11 @@ import { NgModule } from '@angular/core';
 import { MotifPageComponent } from 'pages/motif/motif.component';
 import { MotifPageRouting } from 'pages/motif/motif.routing';
 import { MotifService } from 'pages/motif/motif.service';
-import { ChartsModule } from 'shared/charts/charts.module';
+import { MotifSearchTreeModule } from 'pages/motif/motif_search_tree/motif-search-tree.module';
+import { MotifsContainerModule } from 'pages/motif/motifs_container/motifs-container.module';
 
 @NgModule({
-  imports:      [ CommonModule, MotifPageRouting, ChartsModule ],
+  imports:      [ CommonModule, MotifPageRouting, MotifSearchTreeModule, MotifsContainerModule ],
   declarations: [ MotifPageComponent ],
   exports:      [ MotifPageComponent ],
   providers:    [ MotifService ]

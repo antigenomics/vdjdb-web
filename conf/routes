@@ -27,6 +27,7 @@ POST        /api/database/search                        backend.controllers.Data
 GET         /api/database/connect                       backend.controllers.DatabaseAPI.connect
 
 # Motifs API
+GET         /api/motifs/metadata                        backend.controllers.MotifsAPI.getMetadata
 GET         /api/motifs/connect                         backend.controllers.MotifsAPI.connect
 
 # Authorization API

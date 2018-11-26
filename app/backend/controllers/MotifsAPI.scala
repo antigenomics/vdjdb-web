@@ -24,14 +24,21 @@ import backend.server.motifs.Motifs
 import javax.inject._
 import play.api.Configuration
 import play.api.libs.json.JsValue
+import play.api.libs.json.Json.toJson
 import play.api.libs.streams.ActorFlow
-import play.api.mvc.{AbstractController, ControllerComponents, WebSocket}
+import play.api.mvc._
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class MotifsAPI @Inject()(cc: ControllerComponents, motifs: Motifs, configuration: Configuration)
                          (implicit as: ActorSystem, mat: Materializer, ec: ExecutionContext, limits: RequestLimits)
     extends AbstractController(cc) {
+
+    def getMetadata: Action[AnyContent] = Action.async {
+        Future.successful {
+            Ok(toJson(motifs.getMetadata))
+        }
+    }
 
     def connect: WebSocket = WebSocket.acceptOrResult[JsValue, JsValue] { implicit request =>
         Future.successful(if (limits.allowConnection(request)) {

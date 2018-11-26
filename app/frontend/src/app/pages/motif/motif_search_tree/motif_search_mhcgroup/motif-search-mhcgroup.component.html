@@ -1,0 +1,13 @@
+<i class="right angle icon" *ngIf="!mhcgroup.isOpened" (click)="open()" style="cursor: pointer"></i>
+<i class="down angle icon" *ngIf="mhcgroup.isOpened" (click)="close()" style="cursor: pointer"></i>
+<div class="content">
+    <div class="header">{{ mhcgroup.mhcgroup }}</div>
+    <div class="list" *ngIf="mhcgroup.isOpened">
+        <div class="item" *ngFor="let epitope of mhcgroup.epitopes" (click)="switchEpitope(epitope)" style="cursor: pointer">
+            <div class="content">
+                <div class="header" [ngStyle]="{'color':epitope.isSelected ? '#48af75' : 'black'}">{{ epitope.epitope }}</div>
+                <div class="description">{{ epitope.clusters.length }} clusters</div>
+            </div>
+        </div>
+    </div>
+</div>

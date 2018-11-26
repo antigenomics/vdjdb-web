@@ -35,6 +35,7 @@ export interface MotifCluster {
 }
 
 export interface MotifEpitope {
+  isSelected?: boolean;
   readonly epitope: string;
   readonly clusters: MotifCluster[];
 }
