@@ -14,11 +14,15 @@
  *     limitations under the License.
  */
 
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { MotifSearchTree } from 'pages/motif/motif_search_tree/motif-search-tree';
 
 @Component({
   selector:        'motif-search-tree',
   templateUrl:     './motif-search-tree.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class MotifSearchTreeComponent {}
+export class MotifSearchTreeComponent {
+  @Input('tree')
+  public tree: MotifSearchTree;
+}

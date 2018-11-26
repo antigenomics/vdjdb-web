@@ -14,13 +14,32 @@
  *     limitations under the License.
  */
 
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { ReplaySubject } from 'rxjs';
+import { ChartEventType } from 'shared/charts/chart-events';
+import { MotifCluster } from '../../motif';
 
 @Component({
-  selector:        'motif-segment',
-  templateUrl:     './motif-segment.component.html',
+  selector:        'motif-cluster',
+  templateUrl:     './motif-cluster.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class MotifSegmentComponent {
-  
+export class MotifClusterComponent {
+  public cluster: MotifCluster;
+  public stream = new ReplaySubject(1);
+
+  @Input('cluster')
+  public set setCluster(cluster: MotifCluster) {
+    this.cluster = cluster;
+    const data = cluster.entries.map((entry) => {
+      return {
+        pos:   entry.pos,
+        chars: entry.aa.map((a) => ({ c: a.aa, h: a.H })).sort((d1, d2) => d1.h > d2.h ? -1 : d1.h < d2.h ? 1 : 0)
+      };
+    });
+    this.stream.next({
+      type: ChartEventType.INITIAL_DATA,
+      data: data
+    });
+  }
 }

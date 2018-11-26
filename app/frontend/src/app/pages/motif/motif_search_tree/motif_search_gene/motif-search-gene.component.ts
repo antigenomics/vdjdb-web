@@ -14,15 +14,27 @@
  *     limitations under the License.
  */
 
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input } from '@angular/core';
 import { MotifSearchTreeGene } from 'pages/motif/motif_search_tree/motif-search-tree';
 
 @Component({
-  selector:        'div[motif-search-genes]',
-  templateUrl:     './motif-search-genes.component.html',
+  selector:        'div[motif-search-gene]',
+  templateUrl:     './motif-search-gene.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class MotifSearchGenesComponent {
+export class MotifSearchGeneComponent {
   @Input('gene')
   public gene: MotifSearchTreeGene;
+
+  constructor(private changeDetector: ChangeDetectorRef) {}
+
+  public open(): void {
+    this.gene.isOpened = true;
+    this.changeDetector.detectChanges();
+  }
+
+  public close(): void {
+    this.gene.isOpened = false;
+    this.changeDetector.detectChanges();
+  }
 }

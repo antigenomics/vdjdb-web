@@ -15,44 +15,29 @@
  */
 
 
-import { AfterViewInit, ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
-import { MotifsMetadata } from 'pages/motif/motif';
+import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import { MotifEpitope } from 'pages/motif/motif';
 import { MotifService } from 'pages/motif/motif.service';
-import { ReplaySubject } from 'rxjs';
-import { take } from 'rxjs/operators';
-import { ChartEventType } from 'shared/charts/chart-events';
-import { ISeqLogoChartDataEntry, SeqLogoChartStreamType } from 'shared/charts/seqlogo/seqlogo-chart';
+import { MotifSearchTree } from 'pages/motif/motif_search_tree/motif-search-tree';
+import { Observable } from 'rxjs';
 
 @Component({
   selector:        'motif',
   templateUrl:     './motif.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class MotifPageComponent implements OnInit, AfterViewInit {
+export class MotifPageComponent implements OnInit {
+  public readonly tree: Observable<MotifSearchTree>;
+  public readonly selected: Observable<MotifEpitope[]>;
 
-  public stream: SeqLogoChartStreamType = new ReplaySubject(1);
-
-  constructor(private motifService: MotifService) {}
+  constructor(private motifService: MotifService) {
+    this.tree = motifService.getTree();
+    this.selected = motifService.getSelected();
+  }
 
   public ngOnInit(): void {
     // noinspection JSIgnoredPromiseFromCall
     this.motifService.load();
-  }
-
-  public ngAfterViewInit(): void {
-    this.motifService.getMetadata().pipe(take(1)).subscribe((metadata: MotifsMetadata) => {
-      const data: ISeqLogoChartDataEntry[] = metadata.entries[ 0 ].epitopes[ 0 ].clusters[ 0 ].entries.map((entry) => {
-        return {
-          pos:   entry.pos,
-          chars: entry.aa.map((a) => ({ c: a.aa, h: a.H })).sort((d1, d2) => d1.h > d2.h ? -1 : d1.h < d2.h ? 1 : 0)
-        };
-      });
-      console.log(data);
-      this.stream.next({
-        type: ChartEventType.INITIAL_DATA,
-        data: data
-      });
-    });
   }
 
 }
