@@ -7,7 +7,7 @@
     FieldConstructor(frontend.views.html.authorization.forms.input.f)
 }
 
-@frontend.views.html.main("VDJdb: reset") {
+@frontend.views.html.authorization.auth_main("VDJdb: reset") {
     <div class="ui middle aligned center aligned auth grid">
         <div class="column left aligned">
         @helper.form(action = backend.controllers.routes.Authorization.onResetRequest(), args = 'class -> "ui form", 'id -> "reset") {
