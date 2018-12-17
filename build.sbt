@@ -3,8 +3,8 @@ import play.sbt.PlayImport.PlayKeys.playRunHooks
 
 name := """VDJdb-web"""
 
-version := "2.4.0-beta.0"
-scalaVersion := "2.12.8"
+version := "2.3.5"
+scalaVersion := "2.12.7"
 
 val now = System.currentTimeMillis()
 val dtf = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm")

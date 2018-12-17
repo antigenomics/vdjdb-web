@@ -25,6 +25,7 @@ import backend.models.files.sample.tags.{SampleTag, SampleTagProvider}
 import backend.models.files.{FileMetadata, FileMetadataProvider}
 import backend.models.files.sample.{SampleFile, SampleFileProvider}
 import backend.utils.CommonUtils
+import backend.utils.files.FileUtils
 import org.mindrot.jbcrypt.BCrypt
 import play.api.libs.Files
 
@@ -92,7 +93,8 @@ case class User(id: Long, login: String, email: String, verified: Boolean, folde
                         val success = sampleFolder.mkdirs()
                         if (success) {
                             val metadataID = await(fmp.insert(name, extension, sampleFolderPath))
-                            file.moveTo(Paths.get(s"$sampleFolderPath/$name.$extension"), replace = true)
+                            FileUtils.copyFile(file.path.toString, s"$sampleFolderPath/$name.$extension")
+                            file.deleteOnExit()
                             val sampleFileID = await(sfp.insert(SampleFile(0, name, softwareType, -1, -1, metadataID, id, -1)))
                             Left(sampleFileID)
                         } else {
