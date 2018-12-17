@@ -54,8 +54,7 @@ export class ColorpickerComponent implements AfterViewInit {
     @Output('color')
     public color = new EventEmitter<string>();
 
-    constructor(private renderer: Renderer2) {
-    }
+    constructor(private renderer: Renderer2) {}
 
     public ngAfterViewInit(): void {
         if (!this.disabled) {
@@ -88,11 +87,11 @@ export class ColorpickerComponent implements AfterViewInit {
         if (!this.disabled) {
             this.renderer.setStyle(this.picker.nativeElement, 'display', 'block');
             this.renderer.setStyle(this.inner.nativeElement, 'z-index', '12');
-            window.setImmediate(() => {
+            setImmediate(() => {
                 this.renderer.setStyle(this.picker.nativeElement, 'opacity', 1.0);
             });
             this.visible = true;
-            window.setImmediate(() => {
+            setImmediate(() => {
                 if (this.outsideClickListener === undefined) {
                     this.outsideClickListener = this.renderer.listen('window', 'click', () => {
                         this.hide();
@@ -104,7 +103,7 @@ export class ColorpickerComponent implements AfterViewInit {
 
     private hide(): void {
         this.renderer.setStyle(this.picker.nativeElement, 'opacity', 0.0);
-        window.setTimeout(() => {
+        setTimeout(() => {
             this.renderer.setStyle(this.picker.nativeElement, 'display', 'none');
             this.renderer.setStyle(this.inner.nativeElement, 'z-index', '10');
         }, ColorpickerComponent.hidingDelay);
