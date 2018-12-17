@@ -49,17 +49,17 @@ export class SortModalComponent {
     public toggle(): void {
         if (this.visible) {
             this.renderer.setStyle(this.modal.nativeElement, 'opacity', 0.0);
-            window.setTimeout(() => {
+            setTimeout(() => {
                 this.renderer.setStyle(this.modal.nativeElement, 'display', 'none');
             }, SortModalComponent.hideDelay);
             this.visible = false;
         } else {
             this.renderer.setStyle(this.modal.nativeElement, 'display', 'block');
-            window.setImmediate(() => {
+            setImmediate(() => {
                 this.renderer.setStyle(this.modal.nativeElement, 'opacity', 1.0);
                 this.visible = true;
             });
-            window.addEventListener('click', () => {
+            addEventListener('click', () => {
                 this.toggle();
             }, { once: true });
         }

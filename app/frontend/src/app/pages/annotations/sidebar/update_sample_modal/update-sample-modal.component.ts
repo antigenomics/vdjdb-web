@@ -163,7 +163,7 @@ export class UpdateSampleModalComponent implements OnInit, OnDestroy {
 
     private show(): void {
         this.renderer.setStyle(this.modal.nativeElement, 'display', 'block');
-        window.setImmediate(() => {
+        setImmediate(() => {
             this.renderer.setStyle(this.modal.nativeElement, 'opacity', 1.0);
         });
     }
@@ -172,7 +172,7 @@ export class UpdateSampleModalComponent implements OnInit, OnDestroy {
         this.updating = false;
         this.onClosed.emit();
         this.renderer.setStyle(this.modal.nativeElement, 'opacity', 0.0);
-        window.setTimeout(() => {
+        setTimeout(() => {
             this.renderer.setStyle(this.modal.nativeElement, 'display', 'none');
             this.sampleNewProps = undefined;
             this.changeDetector.detectChanges();
