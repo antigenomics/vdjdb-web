@@ -25,8 +25,8 @@ export class WebSocketResponseData {
         this._data = data;
     }
 
-    public get(key: string): any {
-        return this._data[ key ];
+    public get<T = any>(key: string): T {
+        return this._data[ key ] as T;
     }
 
     public status(): string {

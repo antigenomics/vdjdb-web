@@ -52,6 +52,15 @@ case class Database @Inject() (configuration: Configuration) {
         }
     }
 
+    def getMotifFile: Option[File] = {
+        val motifsFile = new File(getLocation + "/" + "vdjdb_motifs.txt")
+        if (motifsFile.exists()) {
+            Some(motifsFile)
+        } else {
+            None
+        }
+    }
+
     def getSuggestionsAvailableColumns: Seq[String] = Seq("antigen.epitope")
 
     def getSuggestions(column: String): Option[DatabaseColumnSuggestionsResponse] = {

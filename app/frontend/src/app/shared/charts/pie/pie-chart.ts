@@ -123,7 +123,7 @@ export class PieChart extends Chart<IChartDataEntry, IPieChartConfiguration> {
             .attr('class', 'arc')
             .style('fill', (d) => d.data.color !== undefined ? d.data.color : (colors(d.data.name)));
 
-        this.bindTooltipEvents(newPaths.merge(paths));
+        this.bindTooltipEvents(newPaths.merge(paths as any));
     }
 
     private updatePaths(oldData: any[], newData: any[], colors: (s: any) => any): void {
