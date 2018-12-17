@@ -322,7 +322,7 @@ export class UploadService {
             };
             xhr.upload.addEventListener('progress', progressEventListener);
 
-            const errorEventListener = (error: ErrorEvent) => {
+            const errorEventListener: EventListener = (error: Event) => {
                 const request = error.target as XMLHttpRequest;
                 this.logger.debug('FileUploaderService: error', error);
                 observer.error(new UploadStatus(-1, false, request.responseText));

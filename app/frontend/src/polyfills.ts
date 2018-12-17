@@ -31,6 +31,6 @@ import 'zone.js/dist/zone';
  * APPLICATION IMPORTS
  */
 
-if (!window.setImmediate) {
-    window.setImmediate = (callback: any) => window.setTimeout(callback, 0);
+if (!(window as any).setImmediate) {
+    (window as any).setImmediate = (callback: any) => window.setTimeout(callback, 0);
 }
