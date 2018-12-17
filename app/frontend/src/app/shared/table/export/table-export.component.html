@@ -18,10 +18,10 @@
                 </div>
                 <ng-container *ngFor="let option of options; trackBy: trackOptionFn">
                     <a class="item" *ngIf="!option.value" (click)="option.value=true">
-                        <i class="radio icon"></i> {{ option.title }} (disabled)
+                        <i class="circle outline icon"></i> {{ option.title }} (disabled)
                     </a>
                     <a class="item" *ngIf="option.value" (click)="option.value=false">
-                        <i class="selected radio icon"></i> {{ option.title }} (enabled)
+                        <i class="check circle outline icon"></i> {{ option.title }} (enabled)
                     </a>
                 </ng-container>
             </ng-container>

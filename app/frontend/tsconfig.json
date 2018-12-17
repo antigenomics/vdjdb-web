@@ -22,28 +22,15 @@
     "alwaysStrict": true,
     "strictFunctionTypes": true,
     "lib": [ "es2017", "dom" ],
-    "baseUrl": ".",
-    "paths": {
-      "external/*": [ "src/external/*" ],
-      "pages/*": [ "src/app/pages/*" ],
-      "shared/*": [ "src/app/shared/*" ],
-      "utils/*": [ "src/app/utils/*" ],
-      "environments/*": [ "src/environments/*" ]
-    }
+    "baseUrl": "."
   },
   "exclude": [
     "node_modules",
-    "e2e",
-    "src/main.ts",
-    "src/polyfills-ie.ts"
+    "e2e"
   ],
   "angularCompilerOptions": {
     "strictInjectionParameters": true,
     "fullTemplateTypeCheck": true,
     "preserveWhitespaces": false
-  },
-  "awesomeTypescriptLoaderOptions": {
-    "useCache": true,
-    "cacheDirectory": "node_modules/.cache/.awcache"
   }
 }
