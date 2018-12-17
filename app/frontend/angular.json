@@ -17,10 +17,16 @@
             "showCircularDependencies": false,
             "namedChunks": true,
             "polyfills": "src/polyfills.ts",
-            "assets": [],
-            "styles": [],
-            "scripts": [],
-            "deployUrl": "/assets/bundles/"
+            "assets": [
+              {
+                "input": "src/styles/semantic/src/themes/default/assets/fonts/",
+                "glob": "icons.*",
+                "output": "."
+              }
+            ],
+            "styles": [ "styles/semantic/dist/semantic.min.css", "styles/semantic-extensions.css", "styles/main.css" ],
+            "scripts": [ ],
+            "deployUrl": "/develop/angular/"
           },
           "configurations": {
             "production": {

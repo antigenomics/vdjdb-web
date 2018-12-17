@@ -1,0 +1,13 @@
+semantic/*
+
+# Semantic site variables
+#   Globals
+!semantic/src/site/globals/site.variables
+
+#   Collections
+!semantic/src/site/collections/menu.variables
+!semantic/src/site/collections/table.variables
+
+#   Modules
+!semantic/src/site/modules/popup.variables
+

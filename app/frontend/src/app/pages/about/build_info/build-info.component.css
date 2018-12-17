@@ -1,0 +1,19 @@
+a.hash-link {
+    color: rgba(0,0,0,.6);
+}
+
+a.hash-link:link {
+    text-decoration: none;
+}
+
+a.hash-link:visited {
+    text-decoration: none;
+}
+
+a.hash-link:hover {
+    text-decoration: underline;
+}
+
+a.hash-link:active {
+    text-decoration: underline;
+}
