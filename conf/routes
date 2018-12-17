@@ -3,55 +3,60 @@
 # ~~~~
 
 # Home page
-GET         /                                         backend.controllers.Application.index
-GET         /search                                   backend.controllers.Application.index
-GET         /overview                                 backend.controllers.Application.index
-GET         /links                                    backend.controllers.Application.index
-GET         /credits                                  backend.controllers.Application.index
-GET         /about                                    backend.controllers.Application.index
-GET         /no-script                                backend.controllers.Application.onNoScript
-GET         /robots.txt                               backend.controllers.Application.robots
-GET         /buildInfo                                backend.controllers.Application.buildInfo
+GET         /                                           backend.controllers.Application.index
+GET         /search                                     backend.controllers.Application.index
+GET         /overview                                   backend.controllers.Application.index
+GET         /motif                                      backend.controllers.Application.index
+GET         /links                                      backend.controllers.Application.index
+GET         /credits                                    backend.controllers.Application.index
+GET         /about                                      backend.controllers.Application.index
+GET         /no-script                                  backend.controllers.Application.onNoScript
+GET         /robots.txt                                 backend.controllers.Application.robots
+GET         /buildInfo                                  backend.controllers.Application.buildInfo
 
-GET         /annotations                              controllers.Default.redirect(to = "/annotations/info")
-GET         /annotations/*route                       backend.controllers.Application.authorizedIndex(route: String)
+GET         /annotations                                controllers.Default.redirect(to = "/annotations/info")
+GET         /annotations/*route                         backend.controllers.Application.authorizedIndex(route: String)
 
-GET         /temporary/:link                          backend.controllers.Application.downloadTemporaryFile(link)
+GET         /temporary/:link                            backend.controllers.Application.downloadTemporaryFile(link)
 
 # Database API
-GET         /api/database/summary                     backend.controllers.DatabaseAPI.summary
-GET         /api/database/meta                        backend.controllers.DatabaseAPI.meta
-GET         /api/database/meta/columns/:column        backend.controllers.DatabaseAPI.columnInfo(column: String)
-POST        /api/database/search                      backend.controllers.DatabaseAPI.search
-GET         /api/database/connect                     backend.controllers.DatabaseAPI.connect
+GET         /api/database/summary                       backend.controllers.DatabaseAPI.summary
+GET         /api/database/meta                          backend.controllers.DatabaseAPI.meta
+GET         /api/database/meta/columns/:column          backend.controllers.DatabaseAPI.columnInfo(column: String)
+POST        /api/database/search                        backend.controllers.DatabaseAPI.search
+GET         /api/database/connect                       backend.controllers.DatabaseAPI.connect
+
+# Motifs API
+GET         /api/motifs/metadata                        backend.controllers.MotifsAPI.getMetadata
+GET         /api/motifs/connect                         backend.controllers.MotifsAPI.connect
 
 # Authorization API
-GET         /authorization/login                      backend.controllers.Authorization.login
-POST        /authorization/login                      backend.controllers.Authorization.onLogin
-GET         /authorization/signup                     backend.controllers.Authorization.signup
-POST        /authorization/signup                     backend.controllers.Authorization.onSignup
-GET         /authorization/reset                      backend.controllers.Authorization.resetRequest
-POST        /authorization/reset                      backend.controllers.Authorization.onResetRequest
+GET         /authorization/login                        backend.controllers.Authorization.login
+POST        /authorization/login                        backend.controllers.Authorization.onLogin
+GET         /authorization/signup                       backend.controllers.Authorization.signup
+POST        /authorization/signup                       backend.controllers.Authorization.onSignup
+GET         /authorization/reset                        backend.controllers.Authorization.resetRequest
+POST        /authorization/reset                        backend.controllers.Authorization.onResetRequest
 
-GET         /authorization/reset/:token               backend.controllers.Authorization.reset(token)
-POST        /authorization/reset/:token               backend.controllers.Authorization.onReset(token)
+GET         /authorization/reset/:token                 backend.controllers.Authorization.reset(token)
+POST        /authorization/reset/:token                 backend.controllers.Authorization.onReset(token)
 
-GET         /authorization/verify/:token              backend.controllers.Authorization.verifyWithToken(token)
-GET         /authorization/logout                     backend.controllers.Authorization.logout
+GET         /authorization/verify/:token                backend.controllers.Authorization.verifyWithToken(token)
+GET         /authorization/logout                       backend.controllers.Authorization.logout
 
 #Account API
-GET         /account/details                          backend.controllers.Account.detailsPage
-POST        /account/details/changePassword           backend.controllers.Account.changePassword
+GET         /account/details                            backend.controllers.Account.detailsPage
+POST        /account/details/changePassword             backend.controllers.Account.changePassword
 
 #Annotations API
 + nocsrf
-POST        /api/annotations/upload                   backend.controllers.AnnotationsAPI.uploadFile
-GET         /api/annotations/connect                  backend.controllers.AnnotationsAPI.connect
-GET         /api/annotations/multisample/connect      backend.controllers.AnnotationsAPI.multisample
+POST        /api/annotations/upload                     backend.controllers.AnnotationsAPI.uploadFile
+GET         /api/annotations/connect                    backend.controllers.AnnotationsAPI.connect
+GET         /api/annotations/multisample/connect        backend.controllers.AnnotationsAPI.multisample
 
 # Map static resources from the /public folder to the /assets URL path
-GET         /assets/*file                             controllers.Assets.versioned(path="/public", file: Asset)
+GET         /assets/*file                               controllers.Assets.versioned(path="/public", file: Asset)
 
 # Bundle files generated by Angular-cli
-GET         /develop/angular/cached/*file             backend.controllers.Application.angular(file, cache: Boolean ?= true)
-GET         /develop/angular/*file                    backend.controllers.Application.angular(file, cache: Boolean ?= false)
+GET         /develop/angular/cached/*file               backend.controllers.Application.angular(file, cache: Boolean ?= true)
+GET         /develop/angular/*file                      backend.controllers.Application.angular(file, cache: Boolean ?= false)

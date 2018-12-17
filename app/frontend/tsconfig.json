@@ -20,7 +20,7 @@
     "noUnusedParameters": true,
     "noUnusedLocals": true,
     "alwaysStrict": true,
-    "strictFunctionTypes": true,
+    "strictFunctionTypes": false,
     "lib": [ "es2017", "dom" ],
     "baseUrl": "."
   },

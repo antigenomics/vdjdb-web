@@ -1,0 +1,8 @@
+<i class="right angle icon" *ngIf="!gene.isOpened" (click)="open()" style="cursor: pointer"></i>
+<i class="down angle icon" *ngIf="gene.isOpened" (click)="close()" style="cursor: pointer"></i>
+<div class="content">
+    <div class="header">{{ gene.gene }}</div>
+    <div class="list" *ngIf="gene.isOpened">
+        <div class="item" *ngFor="let mhcclass of gene.mhcclasses" motif-search-mhcclass [mhcclass]="mhcclass"></div>
+    </div>
+</div>

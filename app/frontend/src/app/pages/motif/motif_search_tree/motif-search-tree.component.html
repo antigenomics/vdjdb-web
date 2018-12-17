@@ -1,0 +1,3 @@
+<div class="ui list" *ngIf="tree">
+    <div class="item" *ngFor="let species of tree.species" motif-search-species [species]="species"></div>
+</div>

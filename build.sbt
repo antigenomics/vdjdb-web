@@ -3,8 +3,8 @@ import play.sbt.PlayImport.PlayKeys.playRunHooks
 
 name := """VDJdb-web"""
 
-version := "2.3.2"
-scalaVersion := "2.12.6"
+version := "2.3.3"
+scalaVersion := "2.12.7"
 
 val now = System.currentTimeMillis()
 val dtf = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm")
@@ -24,7 +24,7 @@ buildInfoOptions += BuildInfoOption.ToJson
 pipelineStages := Seq(digest)
 
 libraryDependencies ++= Seq(
-    "com.antigenomics" % "vdjmatch" % "1.2.1-SNAPSHOT",
+    "com.github.antigenomics" % "vdjmatch" % "1.3.1",
     "ch.qos.logback" % "logback-classic" % "1.2.3",
     "com.typesafe.scala-logging" %% "scala-logging" % "3.9.0",
     "com.typesafe.play" %% "play-slick" % "3.0.3",
