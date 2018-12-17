@@ -1,0 +1,8 @@
+@import play.api.{Environment, Mode}
+@import backend.utils.analytics.Analytics
+@(title: String)(content: Html)(implicit environment: Environment, analytics: Analytics)
+
+@frontend.views.html.main(title) {
+    <link type="text/css" href="@routes.Assets.versioned("bundles/styles.css")" rel="stylesheet">
+    @content
+}

@@ -1,0 +1,15 @@
+<div class="ui main content text fade slow element soft-margin" style="padding-bottom: 75px;">
+    <div class="ui raised segments">
+        <h3 class="ui top attached header">Motifs browser</h3>
+        <div class="ui attached segment">
+            <div class="ui grid">
+                <div class="ui five wide column" style="max-height: 800px; min-height: 800px; overflow-x: hidden; overflow-y: auto">
+                    <motif-search-tree [tree]="tree | async"></motif-search-tree>
+                </div>
+                <div class="ui eleven wide column" style="max-height: 800px; min-height: 800px; overflow-x: hidden; overflow-y: auto">
+                    <motifs-container [epitopes]="selected | async"></motifs-container>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

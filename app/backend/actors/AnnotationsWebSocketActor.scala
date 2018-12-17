@@ -1,5 +1,7 @@
 package backend.actors
 
+import java.nio.file.{Files, Paths}
+
 import akka.actor.{ActorRef, ActorSystem, Props}
 import backend.models.authorization.permissions.UserPermissionsProvider
 import backend.models.authorization.user.{User, UserDetails, UserProvider}
@@ -26,6 +28,7 @@ import backend.server.database.api.metadata.DatabaseMetadataResponse
 import backend.server.limit.{IpLimit, RequestLimits}
 import com.antigenomics.vdjtools.io.SampleFileConnection
 import com.antigenomics.vdjtools.misc.Software
+import com.antigenomics.vdjtools.sample.Sample
 import org.slf4j.LoggerFactory
 import play.api.libs.json._
 
@@ -83,8 +86,7 @@ class AnnotationsWebSocketActor(out: ActorRef, limit: IpLimit, user: User, detai
                         case Some(file) =>
                             try {
                                 out.success(SampleAnnotateResponse.ParseState)
-                                val sampleFileConnection = new SampleFileConnection(file._2.path, Software.valueOf(file._1.software))
-                                val sample = sampleFileConnection.getSample
+                                val sample = SampleFileConnection.load(file._2.path, Software.valueOf(file._1.software))
 
                                 if (file._1.isSampleFileInfoEmpty) {
                                     val readsCount = sample.getCount

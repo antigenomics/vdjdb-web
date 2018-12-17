@@ -19,35 +19,35 @@ import { createDefaultChartContainerConfiguration, IChartContainerConfiguration 
 import { createDefaultChartTooltipConfiguration, IChartTooltipConfiguration } from 'shared/charts/tooltip/chart-tooltip.configuration';
 
 export interface IBarChartAxisConfiguration {
-    title?: string;
-    dx?: string;
-    dy?: string;
-    tickFormat?: string;
-    ticksCount?: number;
+  title?: string;
+  dx?: string;
+  dy?: string;
+  tickFormat?: string;
+  ticksCount?: number;
 }
 
 function createDefaultAxisConfiguration(): IBarChartAxisConfiguration {
-    return { };
+  return {};
 }
 
 export interface IBarChartConfiguration {
-    container?: IChartContainerConfiguration;
-    tooltip?: IChartTooltipConfiguration;
-    grid?: boolean;
-    axis?: {
-        x?: IBarChartAxisConfiguration,
-        y?: IBarChartAxisConfiguration
-    };
+  container?: IChartContainerConfiguration;
+  tooltip?: IChartTooltipConfiguration;
+  grid?: boolean;
+  axis?: {
+    x?: IBarChartAxisConfiguration,
+    y?: IBarChartAxisConfiguration
+  };
 }
 
 export function createDefaultBarChartConfiguration(): IBarChartConfiguration {
-    return {
-        container: createDefaultChartContainerConfiguration(),
-        tooltip: createDefaultChartTooltipConfiguration(),
-        grid: false,
-        axis:      {
-            x: createDefaultAxisConfiguration(),
-            y: createDefaultAxisConfiguration()
-        }
-    };
+  return {
+    container: createDefaultChartContainerConfiguration(),
+    tooltip:   createDefaultChartTooltipConfiguration(),
+    grid:      false,
+    axis:      {
+      x: createDefaultAxisConfiguration(),
+      y: createDefaultAxisConfiguration()
+    }
+  };
 }

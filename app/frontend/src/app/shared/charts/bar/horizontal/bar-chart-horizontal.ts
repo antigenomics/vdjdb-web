@@ -86,7 +86,7 @@ export class BarChartHorizontal extends Chart<IChartDataEntry, IBarChartConfigur
 
         const merged = bars.enter().append('rect')
                            .attr('class', 'bar')
-                           .merge(bars);
+                           .merge(bars as any);
 
         merged.transition().duration(BarChartHorizontal.defaultTransitionDuration)
               .attr('y', (d) => y(d.name))
