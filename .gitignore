@@ -1,17 +1,17 @@
-# Front end
+# Frontend
 /app/frontend/node_modules
 /app/frontend/out-tsc
 /app/frontend/e2e/*.js
 /app/frontend/e2e/*.map
 /app/frontend/coverage
+/app/frontend/npm-debug.log
+/app/frontend/package-lock.json
 
 # Front end build artifacts
 /public/bundles
 
 # Docs build directories
 /docs/_build
-
-npm-debug.log
 
 /logs
 /target
@@ -26,3 +26,5 @@ npm-debug.log
 /RUNNING_PID
 /build
 /test/frontend/dll
+
+logs

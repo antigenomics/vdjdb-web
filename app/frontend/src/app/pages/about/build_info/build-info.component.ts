@@ -5,11 +5,13 @@ export interface BuildInfo {
     name: string;
     version: string;
     builtAt: string;
+    commitHash: string;
 }
 
 @Component({
     selector: 'build-info',
-    templateUrl: './build-info.component.html'
+    templateUrl: './build-info.component.html',
+    styleUrls: [ './build-info.component.css' ]
 })
 export class BuildInfoComponent implements OnInit {
     private static readonly buildInfoURL: string = '/buildInfo';

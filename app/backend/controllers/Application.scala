@@ -62,12 +62,10 @@ class Application @Inject()(ws: WSClient, assets: Assets, configuration: Configu
         SessionAction.updateCookies(Ok(frontend.views.html.index()))
     }
 
-    def webpack(file: String, cache: Boolean): Action[AnyContent] = externalServer(file, cache, "8080")
-
-    def angular(file: String, cache: Boolean): Action[AnyContent] = externalServer(file, cache, "4200")
+    def angular(file: String, cache: Boolean): Action[AnyContent] = externalServer(file, cache, ":4200/develop/angular/")
 
     def externalServer(file: String, cache: Boolean, path: String): Action[AnyContent] = if (environment.mode == Mode.Dev) Action.async { implicit request =>
-        ws.url(s"http://localhost:$path/$file").get().map { response =>
+        ws.url(s"http://localhost$path/$file").get().map { response =>
             val contentType = response.headers.get("Content-Type").flatMap(_.headOption).getOrElse("application/octet-stream")
             var headers = response.headers
                 .toSeq.filter(p =>
@@ -79,7 +77,7 @@ class Application @Inject()(ws: WSClient, assets: Assets, configuration: Configu
             } else {
                 headers = headers ++: Seq(("Cache-Control", s"no-cache, no-store, must-revalidate"))
             }
-            Ok(response.body).withHeaders(headers: _*).as(contentType)
+            Ok(response.bodyAsBytes).withHeaders(headers: _*).as(contentType)
         }
     } else {
         Action.apply(BadRequest(""))

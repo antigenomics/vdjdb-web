@@ -42,10 +42,8 @@
         <title>@title</title>
         <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        @if(environment.mode == Mode.Dev) {
-            <link type="text/css" href="develop/webpack/cached/bundles/bundle.css" rel="stylesheet">
-        } else {
-            <link type="text/css" href="@routes.Assets.versioned("bundles/bundle.min.css")" rel="stylesheet">
+        @if(environment.mode == Mode.Prod) {
+            <link type="text/css" href="@routes.Assets.versioned("bundles/styles.css")" rel="stylesheet">
         }
     </head>
     <body>

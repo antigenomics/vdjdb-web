@@ -9,6 +9,7 @@ scalaVersion := "2.12.7"
 val now = System.currentTimeMillis()
 val dtf = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm")
 val currentTime = dtf.format(new java.util.Date(now))
+val commitHash = Process("git rev-parse HEAD").!!.stripLineEnd
 
 resolvers += "Local Maven Repository" at Path.userHome.asFile.toURI.toURL + ".m2/repository"
 resolvers += Resolver.sonatypeRepo("releases")
@@ -16,7 +17,7 @@ resolvers += "jitpack" at "https://jitpack.io"
 
 lazy val root = (project in file("."))
     .enablePlugins(PlayScala, LauncherJarPlugin, SbtWeb, BuildInfoPlugin)
-    .settings(buildInfoKeys := Seq[BuildInfoKey](name, version, "builtAt" -> { currentTime }))
+    .settings(buildInfoKeys := Seq[BuildInfoKey](name, version, "builtAt" -> currentTime, "commitHash" -> commitHash))
 
 buildInfoOptions += BuildInfoOption.ToJson
 
@@ -60,50 +61,40 @@ mappings in (Compile, packageDoc) := Seq.empty
 publishArtifact in(Compile, packageDoc) := false
 // Ends.
 
-// Starts: NPM tasks integration with sbt build
+// Starts: Yarn tasks integration with sbt build
 
 lazy val isWindows = System.getProperty("os.name").toUpperCase().contains("WIN")
 lazy val frontendApplicationPath = if (isWindows) "app\\frontend" else "./app/frontend"
-lazy val npm: String = if (isWindows) "cmd /c npm " else "npm "
+lazy val yarn: String = if (isWindows) "cmd /c yarn " else "yarn "
 
-def frontendNPMTask(task: String): Unit = {
-    println(s"Executing npm task: $task")
-    val process = Process(s"$npm$task", file(frontendApplicationPath)).run()
+def frontendYarnTask(task: String): Unit = {
+    println(s"Executing yarn task: $task")
+    val process = Process(s"$yarn$task", file(frontendApplicationPath)).run()
     if (process.exitValue != 0) {
-        throw new IllegalStateException(s"npm task '$task' failed")
+        throw new IllegalStateException(s"yarn task '$task' failed")
     }
-    println(s"npm task '$task' completed successfully")
+    println(s"yarn task '$task' completed successfully")
 }
 
 lazy val frontendCleanDependencies = taskKey[Unit]("Clean frontend dependencies")
-frontendCleanDependencies := frontendNPMTask("run clean:node_modules")
+frontendCleanDependencies := frontendYarnTask("run clean:node_modules")
 
 lazy val frontendCleanCache = taskKey[Unit]("Clean frontend cache")
-frontendCleanCache := frontendNPMTask("run clean:cache")
+frontendCleanCache := frontendYarnTask("run clean:cache")
 
 lazy val frontendCleanBuild = taskKey[Unit]("Clean frontend build")
-frontendCleanBuild := frontendNPMTask("run bundle:clean:public")
+frontendCleanBuild := frontendYarnTask("run clean:build")
 
 lazy val frontendInstallDependencies = taskKey[Unit]("Install frontend dependencies")
-frontendInstallDependencies := frontendNPMTask("install")
-
-lazy val frontendBuildAngular = taskKey[Unit]("Build angular application")
-frontendBuildAngular := frontendNPMTask("run bundle:aot")
-
-lazy val frontendBuildWebpack = taskKey[Unit]("Build webpack assets")
-frontendBuildWebpack := frontendNPMTask("run bundle:webpack")
-
-lazy val frontendBuildWebpackDLL = taskKey[Unit]("Build webpack development dlls")
-frontendBuildWebpackDLL := frontendNPMTask("run develop:webpack:dll")
+frontendInstallDependencies := frontendYarnTask("install")
 
 lazy val frontendBuild = taskKey[Unit]("Build frontend application")
-frontendBuild := frontendNPMTask("run bundle")
+frontendBuild := frontendYarnTask("run build")
 
 lazy val frontendOutdated = taskKey[Unit]("Check frontend dependencies updates")
-frontendOutdated := frontendNPMTask("outdated")
+frontendOutdated := frontendYarnTask("outdated")
 
 // Ends.
-
 
 addCommandAlias("backendBuild", "dist")
 addCommandAlias("backendTest", "test")
@@ -117,7 +108,7 @@ build := {
 val frontendDirectory = baseDirectory {
     _ / frontendApplicationPath
 }
-playRunHooks += frontendDirectory.map(WebpackServer(_)).value
+playRunHooks += frontendDirectory.map(AngularServer(_)).value
 // Ends.
 
 
