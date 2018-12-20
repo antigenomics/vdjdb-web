@@ -39,7 +39,7 @@ object Motifs {
     val MHC_CLASS_HEADER_NAME = "mhc.class"
     val MHC_A_HEADER_NAME = "mhc.a"
     val MHC_B_HEADER_NAME = "mhc.b"
-    val EPITOPE_HEADER_NAME = "epitope"
+    val EPITOPE_HEADER_NAME = "antigen.epitope"
     val CLUSTER_ID_HEADER_NAME = "cid"
     val CLUSTER_SIZE_HEADER_NAME = "csz"
     val AA_CHAR_HEADER_NAME = "aa"
@@ -48,7 +48,7 @@ object Motifs {
     val COUNT_HEADER_NAME = "count"
     val FREQ_HEADER_NAME = "freq"
     val INFORMATIVENESS_HEADER_NAME = "I"
-    val HEIGHT_HEADER_NAME = "height"
+    val HEIGHT_HEADER_NAME = "height.I"
 
     val HEADER_NAMES = List(
         SPECIES_HEADER_NAME,
