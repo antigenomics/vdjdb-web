@@ -19,7 +19,6 @@ package backend.actors
 import akka.actor.{ActorRef, ActorSystem, Props}
 import backend.server.limit.{IpLimit, RequestLimits}
 import backend.server.motifs.Motifs
-import backend.server.motifs.api.metadata.MotifsMetadataResponse
 import play.api.libs.json.JsValue
 
 import scala.concurrent.ExecutionContext
@@ -30,8 +29,6 @@ class MotifsSearchWebSocketActor(out: ActorRef, limit: IpLimit, motifs: Motifs)
 
     def handleMessage(out: WebSocketOutActorRef, data: Option[JsValue]): Unit = {
         out.getAction match {
-            case MotifsMetadataResponse.Action =>
-                out.success(MotifsMetadataResponse(motifs.getMetadata))
             case _ =>
                 out.errorMessage(MotifsSearchWebSocketActor.invalidActionMessage)
         }

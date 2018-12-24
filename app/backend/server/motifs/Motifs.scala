@@ -16,95 +16,62 @@
 
 package backend.server.motifs
 
-import java.io.File
-
 import backend.server.database.Database
 import javax.inject.{Inject, Singleton}
-import play.api.Configuration
-
-import scala.io.Source
+import tech.tablesaw.api.{ColumnType, Table}
+import tech.tablesaw.io.csv.CsvReadOptions
 
 @Singleton
-class Motifs @Inject()(configuration: Configuration, database: Database) {
-    private final val header: Map[String, Int] = Motifs.parseMotifsHeader(database.getMotifFile)
-    private final val metadata: MotifsMetadata = Motifs.parseMotifsCollection(database.getMotifFile, header)
+case class Motifs @Inject()(database: Database) {
+  private final val table = Motifs.parseMotifFileIntoDataFrame(database.getMotifFile.map(_.getPath))
 
-    def getMetadata: MotifsMetadata = metadata
+  private final val metadataLevels = Seq("species", "gene", "mhc.class", "mhc.a", "cid")
+  private final val metadata = MotifsMetadata.generateMetadataFromLevels(table, metadataLevels)
+
+  def getTable: Table = table
+
+  def getMetadata: MotifsMetadata = metadata
 }
 
 object Motifs {
-
-    val SPECIES_HEADER_NAME = "species"
-    val GENE_HEADER_NAME = "gene"
-    val MHC_CLASS_HEADER_NAME = "mhc.class"
-    val MHC_A_HEADER_NAME = "mhc.a"
-    val MHC_B_HEADER_NAME = "mhc.b"
-    val EPITOPE_HEADER_NAME = "antigen.epitope"
-    val CLUSTER_ID_HEADER_NAME = "cid"
-    val CLUSTER_SIZE_HEADER_NAME = "csz"
-    val AA_CHAR_HEADER_NAME = "aa"
-    val AA_CHAR_POSITION_HEADER_NAME = "pos"
-    val LEN_HEADER_NAME = "len"
-    val COUNT_HEADER_NAME = "count"
-    val FREQ_HEADER_NAME = "freq"
-    val INFORMATIVENESS_HEADER_NAME = "I"
-    val HEIGHT_HEADER_NAME = "height.I"
-
-    val HEADER_NAMES = List(
-        SPECIES_HEADER_NAME,
-        GENE_HEADER_NAME,
-        MHC_CLASS_HEADER_NAME,
-        MHC_A_HEADER_NAME,
-        MHC_B_HEADER_NAME,
-        EPITOPE_HEADER_NAME,
-        CLUSTER_ID_HEADER_NAME,
-        CLUSTER_SIZE_HEADER_NAME,
-        AA_CHAR_HEADER_NAME,
-        AA_CHAR_POSITION_HEADER_NAME,
-        LEN_HEADER_NAME,
-        COUNT_HEADER_NAME,
-        FREQ_HEADER_NAME,
-        INFORMATIVENESS_HEADER_NAME,
-        HEIGHT_HEADER_NAME,
-    )
-
-    def parseMotifsHeader(motifsFile: Option[File]): Map[String, Int] = {
-        motifsFile match {
-            case Some(file) =>
-                val header = Source.fromFile(file).getLines().next().split("\t")
-                HEADER_NAMES.map(name => name -> header.indexOf(name)).toMap
-            case None => Map()
-        }
+  def parseMotifFileIntoDataFrame(path: Option[String]): Table = {
+    path match {
+      case Some(p) =>
+        // TODO metadata file
+        val columnTypes: Array[ColumnType] = Array(
+          ColumnType.STRING, // cid
+          ColumnType.STRING, // mhc.class
+          ColumnType.STRING, // mhc.a
+          ColumnType.STRING, // mhc.b
+          ColumnType.STRING, // species
+          ColumnType.STRING, // gene
+          ColumnType.STRING, // aa
+          ColumnType.INTEGER, // pos
+          ColumnType.INTEGER, // len
+          ColumnType.STRING, // v.segm.repr
+          ColumnType.STRING, // j.segm.repr
+          ColumnType.STRING, // antigen.epitope
+          ColumnType.INTEGER, // csz (cluster size)
+          ColumnType.INTEGER, // count
+          ColumnType.SKIP, // count.bg
+          ColumnType.SKIP, // total.bg
+          ColumnType.SKIP, // count.bg.i
+          ColumnType.SKIP, // total.bg.i
+          ColumnType.SKIP, // need.impute
+          ColumnType.DOUBLE, // freq
+          ColumnType.SKIP, // freq.bg
+          ColumnType.DOUBLE, // I
+          ColumnType.DOUBLE, // I.norm
+          ColumnType.DOUBLE, // height.I
+          ColumnType.DOUBLE, // height.I.norm
+        )
+        val builder = CsvReadOptions.builder(p)
+          .separator('\t')
+          .header(true)
+          .columnTypes(columnTypes)
+        val options = builder.build()
+        Table.read().csv(options)
+      case None => Table.create("")
     }
-
-    def parseMotifsCollection(motifsFile: Option[File], header: Map[String, Int]): MotifsMetadata = {
-        motifsFile match {
-            case Some(file) =>
-                val metadata = Source.fromFile(file)
-                    .getLines.drop(1) // Drop header
-                    .toStream // Stream execution
-                    .map(line => line.toString.split("\t")) // Split tab-delimited lines
-                    .groupBy(_ (header(SPECIES_HEADER_NAME))) // Group by species
-                    .map(species =>
-                    species._1 -> species._2.groupBy(_ (header(GENE_HEADER_NAME))) // Group by gene
-                        .map(gene => gene._1 -> gene._2.groupBy(_ (header(MHC_CLASS_HEADER_NAME))) // Group by MHC.class
-                        .map(mhcclass => mhcclass._1 -> mhcclass._2.groupBy(_ (header(MHC_A_HEADER_NAME)))) // Group by MHC group (for now it is just MHC.A)
-                    )
-                )
-
-                val entries = metadata.flatMap {
-                    case (species, genes) => genes.flatMap {
-                        case (gene, mhcclasses) => mhcclasses.flatMap {
-                            case (mhcclass, mhcgroups) => mhcgroups.map {
-                                case (mhcgroup, stream) => MotifsMetadataEntry.fromStream(header, species, gene, mhcclass, mhcgroup, stream)
-                            }.toSeq
-                        }
-                    }
-                }.toSeq
-
-                MotifsMetadata(entries)
-            case None => MotifsMetadata(entries = Seq())
-        }
-    }
-
+  }
 }
