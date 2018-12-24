@@ -41,8 +41,8 @@ export class MotifService {
       this.isMetadataLoading = true;
       const response = await Utils.HTTP.get('/api/motifs/metadata');
       const metadata = JSON.parse(response.response) as MotifsMetadata;
-      const tree = motifSearchTreefromMetadata(metadata);
       this.logger.debug('Motifs metadata', metadata);
+      const tree = motifSearchTreefromMetadata(metadata);
       this.logger.debug('Motifs tree', tree);
 
       this.metadata.next(metadata);

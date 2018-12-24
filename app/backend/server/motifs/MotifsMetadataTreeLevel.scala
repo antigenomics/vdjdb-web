@@ -16,15 +16,21 @@
 
 package backend.server.motifs
 
+
+import scala.collection.JavaConverters._
 import play.api.libs.json.{Format, Json}
 import tech.tablesaw.api.Table
 
-case class MotifsMetadata(root: MotifsMetadataTreeLevel)
+case class MotifsMetadataTreeLevel(name: String, values: Seq[MotifsMetadataTreeLevelValue])
 
-object MotifsMetadata {
-  implicit val motifsMetadataFormat: Format[MotifsMetadata] = Json.format[MotifsMetadata]
+object MotifsMetadataTreeLevel {
+  implicit val motifsMetadataTreeLevelFormat: Format[MotifsMetadataTreeLevel] = Json.format[MotifsMetadataTreeLevel]
 
-  def generateMetadataFromLevels(table: Table, levels: Seq[String]): MotifsMetadata = {
-    MotifsMetadata(MotifsMetadataTreeLevel.createTreeLevelFromTable(table, levels.head, levels.tail))
+  def createTreeLevelFromTable(table: Table, name: String, next: Seq[String]): MotifsMetadataTreeLevel = {
+    val values = table.stringColumn(name).asSet().asScala.toSeq.filter(_.nonEmpty).map { value =>
+      val st = table.where(table.stringColumn(name).isEqualTo(value))
+      MotifsMetadataTreeLevelValue(value, next.headOption.map(n => MotifsMetadataTreeLevel.createTreeLevelFromTable(st, n, next.tail)))
+    }
+    MotifsMetadataTreeLevel(name, values)
   }
 }
