@@ -14,19 +14,6 @@
  *     limitations under the License.
  */
 
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { MotifsMetadata, MotifsSearchTreeFilter } from 'pages/motif/motif';
-
-@Component({
-  selector:        'motif-search-tree',
-  templateUrl:     './motif-search-tree.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush
-})
-export class MotifSearchTreeComponent {
-  @Input('metadata')
-  public metadata: MotifsMetadata;
-
-  public onFilterReceived(filter: MotifsSearchTreeFilter): void {
-    console.log(filter);
-  }
+.selected {
+    color: #48af75;
 }
