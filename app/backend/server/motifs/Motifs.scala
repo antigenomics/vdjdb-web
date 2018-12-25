@@ -25,7 +25,7 @@ import tech.tablesaw.io.csv.CsvReadOptions
 case class Motifs @Inject()(database: Database) {
   private final val table = Motifs.parseMotifFileIntoDataFrame(database.getMotifFile.map(_.getPath))
 
-  private final val metadataLevels = Seq("species", "gene", "mhc.class", "mhc.a", "cid")
+  private final val metadataLevels = Seq("species", "gene", "mhc.class", "mhc.a", "antigen.epitope")
   private final val metadata = MotifsMetadata.generateMetadataFromLevels(table, metadataLevels)
 
   def getTable: Table = table

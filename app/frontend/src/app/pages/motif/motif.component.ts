@@ -16,9 +16,8 @@
 
 
 import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
-import { MotifEpitope } from 'pages/motif/motif';
+import { MotifsMetadata } from 'pages/motif/motif';
 import { MotifService } from 'pages/motif/motif.service';
-import { MotifSearchTree } from 'pages/motif/motif_search_tree/motif-search-tree';
 import { Observable } from 'rxjs';
 
 @Component({
@@ -27,12 +26,12 @@ import { Observable } from 'rxjs';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MotifPageComponent implements OnInit {
-  public readonly tree: Observable<MotifSearchTree>;
-  public readonly selected: Observable<MotifEpitope[]>;
+  public readonly metadata: Observable<MotifsMetadata>;
+  // public readonly selected: Observable<MotifEpitope[]>;
 
   constructor(private motifService: MotifService) {
-    this.tree = motifService.getTree();
-    this.selected = motifService.getSelected();
+    this.metadata = motifService.getMetadata();
+    // this.selected = motifService.getSelected();
   }
 
   public ngOnInit(): void {

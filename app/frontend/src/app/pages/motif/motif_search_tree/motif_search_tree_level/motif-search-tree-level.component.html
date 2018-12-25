@@ -1,0 +1,12 @@
+<!-- <div class list >-->
+<div class="item" *ngFor="let value of level.values">
+    <ng-container *ngIf="value.next">
+        <i class="angle right icon cursor pointer" *ngIf="!value.isOpened" (click)="open(value)"></i>
+        <i class="angle down icon cursor pointer" *ngIf="value.isOpened" (click)="close(value)"></i>
+    </ng-container>
+    <div class="content">
+        <div class="header">{{ value.value }}</div>
+        <div class="list" *ngIf="value.next && value.isOpened" motif-search-tree-level [level]="value.next"></div>
+    </div>
+</div>
+<!-- <end div class list >-->

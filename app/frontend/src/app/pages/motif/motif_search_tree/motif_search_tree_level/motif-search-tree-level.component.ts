@@ -14,27 +14,23 @@
  *     limitations under the License.
  */
 
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input } from '@angular/core';
-import { MotifSearchTreeSpecies } from 'pages/motif/motif_search_tree/motif-search-tree';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { MotifsMetadataTreeLevel, MotifsMetadataTreeLevelValue } from 'pages/motif/motif';
 
 @Component({
-  selector:        'div[motif-search-species]',
-  templateUrl:     './motif-search-species.component.html',
+  selector:        'div[motif-search-tree-level]',
+  templateUrl:     './motif-search-tree-level.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class MotifSearchSpeciesComponent {
-  @Input('species')
-  public species: MotifSearchTreeSpecies;
+export class MotifSearchTreeLevelComponent {
+  @Input('level')
+  public level: MotifsMetadataTreeLevel;
 
-  constructor(private changeDetector: ChangeDetectorRef) {}
-
-  public open(): void {
-    this.species.isOpened = true;
-    this.changeDetector.detectChanges();
+  public open(value: MotifsMetadataTreeLevelValue): void {
+    value.isOpened = true;
   }
 
-  public close(): void {
-    this.species.isOpened = false;
-    this.changeDetector.detectChanges();
+  public close(value: MotifsMetadataTreeLevelValue): void {
+    value.isOpened = false;
   }
 }

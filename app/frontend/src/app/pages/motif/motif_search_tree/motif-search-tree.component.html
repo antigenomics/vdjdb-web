@@ -1,3 +1,4 @@
-<div class="ui list" *ngIf="tree">
-    <div class="item" *ngFor="let species of tree.species" motif-search-species [species]="species"></div>
-</div>
+<div class="ui list" motif-search-tree-level [level]="metadata.root" *ngIf="metadata; else loader"></div>
+<ng-template #loader>
+    <div class="ui active text centered inline loader">Loading metadata</div>
+</ng-template>

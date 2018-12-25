@@ -14,43 +14,19 @@
  *     limitations under the License.
  */
 
-export interface MotifClusterEntryAA {
-  readonly aa: string;
-  readonly len: number;
-  readonly count: number;
-  readonly F: number;
-  readonly I: number;
-  readonly H: number;
+export interface MotifsMetadataTreeLevel {
+  name: string;
+  values: MotifsMetadataTreeLevelValue[];
 }
 
-export interface MotifClusterEntry {
-  readonly pos: number;
-  readonly aa: MotifClusterEntryAA[];
-}
-
-export interface MotifCluster {
-  readonly cid: string;
-  readonly size: number;
-  readonly entries: MotifClusterEntry[];
-}
-
-export interface MotifEpitope {
-  isSelected?: boolean;
-  readonly epitope: string;
-  readonly clusters: MotifCluster[];
-}
-
-
-export interface MotifsMetadataEntry {
-  readonly species: string;
-  readonly gene: string;
-  readonly mhcclass: string;
-  readonly mhcgroup: string;
-  readonly epitopes: MotifEpitope[];
+export interface MotifsMetadataTreeLevelValue {
+  value: string;
+  next: MotifsMetadataTreeLevel | null;
+  isOpened?: boolean;
 }
 
 export interface MotifsMetadata {
-  readonly entries: MotifsMetadataEntry[];
+  readonly root: MotifsMetadataTreeLevel;
 }
 
 

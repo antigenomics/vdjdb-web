@@ -1,8 +1,0 @@
-<i class="right angle icon" *ngIf="!mhcclass.isOpened" (click)="open()" style="cursor: pointer"></i>
-<i class="down angle icon" *ngIf="mhcclass.isOpened" (click)="close()" style="cursor: pointer"></i>
-<div class="content">
-    <div class="header">{{ mhcclass.mhcclass }}</div>
-    <div class="list" *ngIf="mhcclass.isOpened">
-        <div class="item" *ngFor="let mhcgroup of mhcclass.mhcgroups" motif-search-mhcgroup [mhcgroup]="mhcgroup"></div>
-    </div>
-</div>
