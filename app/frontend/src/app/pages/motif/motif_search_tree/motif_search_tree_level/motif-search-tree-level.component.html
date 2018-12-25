@@ -1,12 +1,14 @@
 <!-- <div class list >-->
-<div class="item" *ngFor="let value of level.values">
+<div class="item cursor pointer" *ngFor="let value of level.values">
     <ng-container *ngIf="value.next">
-        <i class="angle right icon cursor pointer" *ngIf="!value.isOpened" (click)="open(value)"></i>
-        <i class="angle down icon cursor pointer" *ngIf="value.isOpened" (click)="close(value)"></i>
+        <i class="angle right icon" *ngIf="!value.isOpened" (click)="open(value)"></i>
+        <i class="angle down icon" *ngIf="value.isOpened" (click)="close(value)"></i>
     </ng-container>
     <div class="content">
-        <div class="header">{{ value.value }}</div>
-        <div class="list" *ngIf="value.next && value.isOpened" motif-search-tree-level [level]="value.next"></div>
+        <div class="header" (click)="header(value)">
+            <span [ngClass]="{ 'selected': isSelected(value) }">{{ value.value }}</span>
+        </div>
+        <div class="list" *ngIf="value.next && value.isOpened" motif-search-tree-level [level]="value.next" (onFilter)="pushFilter(value, $event)"></div>
     </div>
 </div>
 <!-- <end div class list >-->

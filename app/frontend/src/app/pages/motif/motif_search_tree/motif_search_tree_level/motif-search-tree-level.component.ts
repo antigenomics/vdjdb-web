@@ -14,17 +14,21 @@
  *     limitations under the License.
  */
 
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { MotifsMetadataTreeLevel, MotifsMetadataTreeLevelValue } from 'pages/motif/motif';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
+import { MotifsMetadataTreeLevel, MotifsMetadataTreeLevelValue, MotifsSearchTreeFilter } from 'pages/motif/motif';
 
 @Component({
   selector:        'div[motif-search-tree-level]',
   templateUrl:     './motif-search-tree-level.component.html',
+  styleUrls:       [ './motif-search-tree-level.component.css' ],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MotifSearchTreeLevelComponent {
   @Input('level')
   public level: MotifsMetadataTreeLevel;
+
+  @Output('onFilter')
+  public onFilter = new EventEmitter<MotifsSearchTreeFilter>();
 
   public open(value: MotifsMetadataTreeLevelValue): void {
     value.isOpened = true;
@@ -32,5 +36,29 @@ export class MotifSearchTreeLevelComponent {
 
   public close(value: MotifsMetadataTreeLevelValue): void {
     value.isOpened = false;
+  }
+
+  public header(value: MotifsMetadataTreeLevelValue): void {
+    if (value.next !== null) {
+      value.isOpened = !value.isOpened;
+    } else {
+      this.startFilter(value);
+    }
+  }
+
+  public pushFilter(value: MotifsMetadataTreeLevelValue, filter: MotifsSearchTreeFilter): void {
+    this.onFilter.emit({ entries: [ ...filter.entries, { name: this.level.name, value: value.value } ] });
+  }
+
+  public startFilter(value: MotifsMetadataTreeLevelValue): void {
+    this.onFilter.emit({ entries: [ { name: this.level.name, value: value.value } ] });
+  }
+
+  public isSelected(value: MotifsMetadataTreeLevelValue): boolean {
+    if (value.next !== null) {
+      return value.next.values.reduce((previous, current) => previous && this.isSelected(current), true);
+    } else {
+      return value.isSelected;
+    }
   }
 }

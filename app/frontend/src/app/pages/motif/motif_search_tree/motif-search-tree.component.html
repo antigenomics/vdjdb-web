@@ -1,4 +1,4 @@
-<div class="ui list" motif-search-tree-level [level]="metadata.root" *ngIf="metadata; else loader"></div>
+<div class="ui list" motif-search-tree-level [level]="metadata.root" *ngIf="metadata; else loader" (onFilter)="onFilterReceived($event)"></div>
 <ng-template #loader>
     <div class="ui active text centered inline loader">Loading metadata</div>
 </ng-template>

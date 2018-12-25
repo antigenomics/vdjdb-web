@@ -15,18 +15,29 @@
  */
 
 export interface MotifsMetadataTreeLevel {
-  name: string;
-  values: MotifsMetadataTreeLevelValue[];
+  readonly name: string;
+  readonly values: MotifsMetadataTreeLevelValue[];
 }
 
 export interface MotifsMetadataTreeLevelValue {
-  value: string;
-  next: MotifsMetadataTreeLevel | null;
+  readonly value: string;
+  readonly next: MotifsMetadataTreeLevel | null;
   isOpened?: boolean;
+  isSelected?: boolean;
 }
 
 export interface MotifsMetadata {
   readonly root: MotifsMetadataTreeLevel;
+}
+
+
+export interface MotifsSearchTreeFilterEntry {
+  readonly name: string;
+  readonly value: string;
+}
+
+export interface MotifsSearchTreeFilter {
+  readonly entries: MotifsSearchTreeFilterEntry[];
 }
 
 
