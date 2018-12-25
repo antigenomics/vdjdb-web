@@ -22,7 +22,14 @@
     "alwaysStrict": true,
     "strictFunctionTypes": false,
     "lib": [ "es2017", "dom" ],
-    "baseUrl": "."
+    "baseUrl": ".",
+    "paths": {
+      "external/*": [ "src/external/*" ],
+      "pages/*": [ "src/app/pages/*" ],
+      "shared/*": [ "src/app/shared/*" ],
+      "utils/*": [ "src/app/utils/*" ],
+      "environments/*": [ "src/environments/*" ]
+    }
   },
   "exclude": [
     "node_modules",

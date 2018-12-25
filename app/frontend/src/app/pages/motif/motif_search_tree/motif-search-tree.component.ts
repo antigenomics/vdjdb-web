@@ -15,7 +15,7 @@
  */
 
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { MotifSearchTree } from 'pages/motif/motif_search_tree/motif-search-tree';
+import { MotifsMetadata } from 'pages/motif/motif';
 
 @Component({
   selector:        'motif-search-tree',
@@ -23,6 +23,6 @@ import { MotifSearchTree } from 'pages/motif/motif_search_tree/motif-search-tree
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MotifSearchTreeComponent {
-  @Input('tree')
-  public tree: MotifSearchTree;
+  @Input('metadata')
+  public metadata: MotifsMetadata;
 }

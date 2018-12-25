@@ -17,19 +17,13 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { MotifSearchTreeComponent } from 'pages/motif/motif_search_tree/motif-search-tree.component';
-import { MotifSearchGeneComponent } from 'pages/motif/motif_search_tree/motif_search_gene/motif-search-gene.component';
-import { MotifSearchMhcclassComponent } from 'pages/motif/motif_search_tree/motif_search_mhcclass/motif-search-mhcclass.component';
-import { MotifSearchMhcgroupComponent } from 'pages/motif/motif_search_tree/motif_search_mhcgroup/motif-search-mhcgroup.component';
-import { MotifSearchSpeciesComponent } from 'pages/motif/motif_search_tree/motif_search_species/motif-search-species.component';
+import { MotifSearchTreeLevelComponent } from 'pages/motif/motif_search_tree/motif_search_tree_level/motif-search-tree-level.component';
 
 @NgModule({
   imports:      [ CommonModule ],
   declarations: [
     MotifSearchTreeComponent,
-    MotifSearchSpeciesComponent,
-    MotifSearchGeneComponent,
-    MotifSearchMhcclassComponent,
-    MotifSearchMhcgroupComponent
+    MotifSearchTreeLevelComponent
   ],
   exports:      [ MotifSearchTreeComponent ]
 })

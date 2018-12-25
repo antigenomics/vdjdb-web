@@ -16,13 +16,12 @@
 
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
-import { MotifClusterComponent } from 'pages/motif/motifs_container/motif_cluster/motif-cluster.component';
 import { MotifsContainerComponent } from 'pages/motif/motifs_container/motifs-container.component';
 import { ChartsModule } from 'shared/charts/charts.module';
 
 @NgModule({
   imports:      [ CommonModule, ChartsModule ],
-  declarations: [ MotifsContainerComponent, MotifClusterComponent ],
+  declarations: [ MotifsContainerComponent ],
   exports:      [ MotifsContainerComponent ]
 })
 export class MotifsContainerModule {}
