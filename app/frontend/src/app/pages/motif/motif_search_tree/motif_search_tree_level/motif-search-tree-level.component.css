@@ -17,3 +17,12 @@
 .selected {
     color: #48af75;
 }
+
+.content .header span.extra {
+    visibility: hidden;
+    font-weight: normal;
+}
+
+.content .header:hover span.extra {
+    visibility: visible;
+}

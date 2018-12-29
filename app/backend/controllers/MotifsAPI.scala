@@ -21,9 +21,10 @@ import akka.stream.Materializer
 import backend.actors.MotifsSearchWebSocketActor
 import backend.server.limit.RequestLimits
 import backend.server.motifs.Motifs
+import backend.server.motifs.api.filter.MotifsSearchTreeFilter
 import javax.inject._
 import play.api.Configuration
-import play.api.libs.json.JsValue
+import play.api.libs.json.{JsError, JsValue}
 import play.api.libs.json.Json.toJson
 import play.api.libs.streams.ActorFlow
 import play.api.mvc._
@@ -37,6 +38,20 @@ class MotifsAPI @Inject()(cc: ControllerComponents, motifs: Motifs, configuratio
   def getMetadata: Action[AnyContent] = Action.async {
     Future.successful {
       Ok(toJson(motifs.getMetadata))
+    }
+  }
+
+  def filter: Action[AnyContent] = Action.async { implicit request =>
+    Future.successful {
+      request.body.asJson.map { json =>
+        json.validate[MotifsSearchTreeFilter].map {
+          filter => motifs.filter(filter).map { r => Ok(toJson(r)) }.getOrElse(BadRequest("Invalid filter provided"))
+        }.recoverTotal {
+          e => BadRequest("Detected error:" + JsError.toFlatForm(e))
+        }
+      }.getOrElse {
+        BadRequest("Expecting Json data")
+      }
     }
   }
 

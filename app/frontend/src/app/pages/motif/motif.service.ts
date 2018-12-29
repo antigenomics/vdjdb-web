@@ -15,7 +15,7 @@
  */
 
 import { Injectable } from '@angular/core';
-import { MotifsMetadata } from 'pages/motif/motif';
+import { MotifsMetadata, MotifsMetadataTreeLevelValue, MotifsSearchTreeFilter } from 'pages/motif/motif';
 import { Observable, ReplaySubject, Subject } from 'rxjs';
 import { LoggerService } from 'utils/logger/logger.service';
 import { Utils } from 'utils/utils';
@@ -54,6 +54,12 @@ export class MotifService {
     return this.metadata.asObservable();
   }
 
+  public filter(filter: MotifsSearchTreeFilter): void {
+    Utils.HTTP.post('/api/motifs/filter', filter).then((result) => {
+      this.logger.debug('Filter', JSON.parse(result.response));
+    });
+  }
+
   // public getSelected(): Observable<MotifEpitope[]> {
   //   return this.selected.asObservable();
   // }
@@ -66,5 +72,13 @@ export class MotifService {
   //     this.selected.next(selected);
   //   });
   // }
+
+  public isTreeLevelValueSelected(value: MotifsMetadataTreeLevelValue): boolean {
+    if (value.next !== null) {
+      return value.next.values.reduce((previous, current) => previous && this.isTreeLevelValueSelected(current), true);
+    } else {
+      return value.isSelected;
+    }
+  }
 
 }

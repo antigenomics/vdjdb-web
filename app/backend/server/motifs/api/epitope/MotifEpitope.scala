@@ -14,13 +14,12 @@
  *     limitations under the License.
  */
 
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+package backend.server.motifs.api.epitope
 
-@Component({
-  selector:        'motifs-container',
-  templateUrl:     './motifs-container.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush
-})
-export class MotifsContainerComponent {
+import play.api.libs.json.{Json, Format}
 
+case class MotifEpitope(epitope: String, clusters: Seq[MotifCluster])
+
+object MotifEpitope {
+  implicit val motifEpitopeFormat: Format[MotifEpitope] = Json.format[MotifEpitope]
 }

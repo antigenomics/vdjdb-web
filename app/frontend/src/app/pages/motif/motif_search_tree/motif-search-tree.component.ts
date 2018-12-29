@@ -16,6 +16,7 @@
 
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { MotifsMetadata, MotifsSearchTreeFilter } from 'pages/motif/motif';
+import { MotifService } from 'pages/motif/motif.service';
 
 @Component({
   selector:        'motif-search-tree',
@@ -26,7 +27,9 @@ export class MotifSearchTreeComponent {
   @Input('metadata')
   public metadata: MotifsMetadata;
 
+  constructor(private motifService: MotifService) {}
+
   public onFilterReceived(filter: MotifsSearchTreeFilter): void {
-    console.log(filter);
+    this.motifService.filter(filter);
   }
 }

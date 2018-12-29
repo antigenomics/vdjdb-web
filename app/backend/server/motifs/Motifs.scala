@@ -17,9 +17,13 @@
 package backend.server.motifs
 
 import backend.server.database.Database
+import backend.server.motifs.api.epitope.{MotifCluster, MotifEpitope}
+import backend.server.motifs.api.filter.{MotifsSearchTreeFilter, MotifsSearchTreeFilterResult}
 import javax.inject.{Inject, Singleton}
 import tech.tablesaw.api.{ColumnType, Table}
 import tech.tablesaw.io.csv.CsvReadOptions
+
+import scala.collection.JavaConverters._
 
 @Singleton
 case class Motifs @Inject()(database: Database) {
@@ -31,6 +35,23 @@ case class Motifs @Inject()(database: Database) {
   def getTable: Table = table
 
   def getMetadata: MotifsMetadata = metadata
+
+  def filter(filter: MotifsSearchTreeFilter): Option[MotifsSearchTreeFilterResult] = {
+    filter.entries.map(h => table.stringColumn(h.name).isEqualTo(h.value)).reduceRightOption((left, right) => left.and(right)).map { selection =>
+      table.where(selection).splitOn(table.stringColumn("antigen.epitope")).asTableList().asScala.map { epitopeTable =>
+        val epitopes = epitopeTable.stringColumn("antigen.epitope").asSet()
+
+        assert(epitopes.size() == 1)
+
+        MotifEpitope(
+          epitopes.asScala.toSeq.head,
+          epitopeTable.splitOn(table.stringColumn("cid")).asTableList().asScala.map(MotifCluster.fromTable)
+        )
+      }
+    }.map { epitopes =>
+      MotifsSearchTreeFilterResult(epitopes)
+    }
+  }
 }
 
 object Motifs {

@@ -14,13 +14,12 @@
  *     limitations under the License.
  */
 
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+package backend.server.motifs.api.filter
 
-@Component({
-  selector:        'motifs-container',
-  templateUrl:     './motifs-container.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush
-})
-export class MotifsContainerComponent {
+import play.api.libs.json.{Format, Json}
 
+case class MotifsSearchTreeFilter(entries: Seq[MotifsSearchTreeFilterEntry])
+
+object MotifsSearchTreeFilter {
+  implicit val motifsSearchTreeFilterFormat: Format[MotifsSearchTreeFilter] = Json.format[MotifsSearchTreeFilter]
 }
