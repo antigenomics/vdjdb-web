@@ -14,6 +14,10 @@
  *     limitations under the License.
  */
 
+// MotifsMetadata
+
+export type MotifsMappedFlatMetadata = { [ key: string ]: MotifsMetadataTreeLevelValue };
+
 export interface MotifsMetadataTreeLevel {
   readonly name: string;
   readonly values: MotifsMetadataTreeLevelValue[];
@@ -29,6 +33,7 @@ export interface MotifsMetadataTreeLevelValue {
 
 export interface MotifsMetadata {
   readonly root: MotifsMetadataTreeLevel;
+  readonly flat: { [ key: string ]: MotifsMetadataTreeLevelValue };
 }
 
 
@@ -41,6 +46,39 @@ export interface MotifsSearchTreeFilter {
   readonly entries: MotifsSearchTreeFilterEntry[];
 }
 
+export interface MotifsSearchTreeFilterResult {
+  readonly epitopes: MotifEpitope[]
+}
+
+
+// MotifsEpitopes
+
+export interface MotifClusterEntryAA {
+  readonly letter: string;
+  readonly length: number;
+  readonly count: number;
+  readonly freq: number;
+  readonly I: number;
+  readonly INorm: number;
+  readonly H: number;
+  readonly HNorm: number;
+}
+
+export interface MotifClusterEntry {
+  readonly position: number;
+  readonly aa: MotifClusterEntryAA[]
+}
+
+export interface MotifCluster {
+  readonly clusterId: string,
+  readonly size: number,
+  readonly entries: MotifClusterEntry[]
+}
+
+export interface MotifEpitope {
+  readonly epitope: string,
+  readonly clusters: MotifCluster[]
+}
 
 
 
