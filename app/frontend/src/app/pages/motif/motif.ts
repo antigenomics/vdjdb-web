@@ -21,6 +21,7 @@ export interface MotifsMetadataTreeLevel {
 
 export interface MotifsMetadataTreeLevelValue {
   readonly value: string;
+  readonly description?: string;
   readonly next: MotifsMetadataTreeLevel | null;
   isOpened?: boolean;
   isSelected?: boolean;

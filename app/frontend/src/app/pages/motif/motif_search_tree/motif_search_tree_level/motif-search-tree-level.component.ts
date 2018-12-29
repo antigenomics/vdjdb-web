@@ -16,6 +16,7 @@
 
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
 import { MotifsMetadataTreeLevel, MotifsMetadataTreeLevelValue, MotifsSearchTreeFilter } from 'pages/motif/motif';
+import { MotifService } from 'pages/motif/motif.service';
 
 @Component({
   selector:        'div[motif-search-tree-level]',
@@ -30,6 +31,8 @@ export class MotifSearchTreeLevelComponent {
   @Output('onFilter')
   public onFilter = new EventEmitter<MotifsSearchTreeFilter>();
 
+  constructor(private motifService: MotifService) {}
+
   public open(value: MotifsMetadataTreeLevelValue): void {
     value.isOpened = true;
   }
@@ -42,7 +45,7 @@ export class MotifSearchTreeLevelComponent {
     if (value.next !== null) {
       value.isOpened = !value.isOpened;
     } else {
-      this.startFilter(value);
+      this.filter(value);
     }
   }
 
@@ -50,15 +53,11 @@ export class MotifSearchTreeLevelComponent {
     this.onFilter.emit({ entries: [ ...filter.entries, { name: this.level.name, value: value.value } ] });
   }
 
-  public startFilter(value: MotifsMetadataTreeLevelValue): void {
+  public filter(value: MotifsMetadataTreeLevelValue): void {
     this.onFilter.emit({ entries: [ { name: this.level.name, value: value.value } ] });
   }
 
   public isSelected(value: MotifsMetadataTreeLevelValue): boolean {
-    if (value.next !== null) {
-      return value.next.values.reduce((previous, current) => previous && this.isSelected(current), true);
-    } else {
-      return value.isSelected;
-    }
+    return this.motifService.isTreeLevelValueSelected(value);
   }
 }

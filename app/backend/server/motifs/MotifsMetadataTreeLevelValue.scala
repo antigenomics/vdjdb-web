@@ -18,13 +18,17 @@ package backend.server.motifs
 
 import play.api.libs.json._
 
-case class MotifsMetadataTreeLevelValue(value: String, next: Option[MotifsMetadataTreeLevel])
+case class MotifsMetadataTreeLevelValue(value: String, description: Option[String], next: Option[MotifsMetadataTreeLevel])
 
 object MotifsMetadataTreeLevelValue {
   implicit val motifsMetadataTreeLevelValueReads: Reads[MotifsMetadataTreeLevelValue] = Json.reads[MotifsMetadataTreeLevelValue]
   implicit val motifsMetadataTreeLevelValueWrites: Writes[MotifsMetadataTreeLevelValue] = new Writes[MotifsMetadataTreeLevelValue] {
     override def writes(o: MotifsMetadataTreeLevelValue): JsValue = JsObject(Seq(
       "value" -> JsString(o.value),
+      "description" -> Json.toJson(o.description match {
+        case Some(str) => JsString(str)
+        case None => JsNull
+      }),
       "next" -> Json.toJson(o.next match {
         case Some(level) => MotifsMetadataTreeLevel.motifsMetadataTreeLevelFormat.writes(level)
         case None => JsNull

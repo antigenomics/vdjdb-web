@@ -29,7 +29,7 @@ object MotifsMetadataTreeLevel {
   def createTreeLevelFromTable(table: Table, name: String, next: Seq[String]): MotifsMetadataTreeLevel = {
     val values = table.stringColumn(name).asSet().asScala.toSeq.filter(_.nonEmpty).map { value =>
       val st = table.where(table.stringColumn(name).isEqualTo(value))
-      MotifsMetadataTreeLevelValue(value, next.headOption.map(n => MotifsMetadataTreeLevel.createTreeLevelFromTable(st, n, next.tail)))
+      MotifsMetadataTreeLevelValue(value, None, next.headOption.map(n => MotifsMetadataTreeLevel.createTreeLevelFromTable(st, n, next.tail)))
     }
     MotifsMetadataTreeLevel(name, values)
   }
