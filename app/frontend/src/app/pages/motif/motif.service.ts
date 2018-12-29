@@ -15,10 +15,18 @@
  */
 
 import { Injectable } from '@angular/core';
-import { MotifsMetadata, MotifsMetadataTreeLevelValue, MotifsSearchTreeFilter } from 'pages/motif/motif';
+import {
+  MotifsMappedFlatMetadata,
+  MotifsMetadata,
+  MotifsMetadataTreeLevel,
+  MotifsMetadataTreeLevelValue,
+  MotifsSearchTreeFilter,
+  MotifsSearchTreeFilterResult
+} from 'pages/motif/motif';
 import { Observable, ReplaySubject, Subject } from 'rxjs';
 import { LoggerService } from 'utils/logger/logger.service';
 import { Utils } from 'utils/utils';
+import { take } from 'rxjs/operators';
 
 export namespace MotifsServiceWebSocketActions {
   export const METADATA = 'meta';
@@ -39,11 +47,12 @@ export class MotifService {
     if (!this.isMetadataLoaded && !this.isMetadataLoading) {
       this.isMetadataLoading = true;
       const response = await Utils.HTTP.get('/api/motifs/metadata');
-      const metadata = JSON.parse(response.response) as MotifsMetadata;
+      const root = JSON.parse(response.response) as { root: MotifsMetadataTreeLevel };
+      const flat = MotifService.convertMetadataToFlatFormat(root.root);
+      const metadata = { root: root.root, flat: flat };
       this.logger.debug('Motifs metadata', metadata);
 
       this.metadata.next(metadata);
-      // this.selected.next([]);
 
       this.isMetadataLoaded = true;
       this.isMetadataLoading = false;
@@ -55,8 +64,15 @@ export class MotifService {
   }
 
   public filter(filter: MotifsSearchTreeFilter): void {
-    Utils.HTTP.post('/api/motifs/filter', filter).then((result) => {
-      this.logger.debug('Filter', JSON.parse(result.response));
+    Utils.HTTP.post('/api/motifs/filter', filter).then((response) => {
+      const result = JSON.parse(response.response) as MotifsSearchTreeFilterResult;
+      console.log(result);
+      this.metadata.pipe(take(1)).subscribe((metadata) => {
+        result.epitopes.forEach((epitope) => {
+          metadata.flat[ epitope.epitope ].isSelected = true;
+        });
+        console.log(metadata);
+      });
     });
   }
 
@@ -79,6 +95,25 @@ export class MotifService {
     } else {
       return value.isSelected;
     }
+  }
+
+  private static convertMetadataToFlatFormat(root: MotifsMetadataTreeLevel): MotifsMappedFlatMetadata {
+    const leafs = MotifService.extractMetadataTreeLeafValues(root);
+    const map: MotifsMappedFlatMetadata = {};
+    leafs.forEach((leaf) => {
+      map[ leaf[ 0 ] ] = leaf[ 1 ];
+    });
+    return map;
+  }
+
+  private static extractMetadataTreeLeafValues(tree: MotifsMetadataTreeLevel): Array<[ string, MotifsMetadataTreeLevelValue ]> {
+    return Utils.Array.flattened(tree.values.map((v) => {
+      if (v.next === null) {
+        return [ [ v.value, v ] ] as Array<[ string, MotifsMetadataTreeLevelValue ]>;
+      } else {
+        return MotifService.extractMetadataTreeLeafValues(v.next);
+      }
+    }));
   }
 
 }

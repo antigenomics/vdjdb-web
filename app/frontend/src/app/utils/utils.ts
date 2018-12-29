@@ -45,6 +45,12 @@ export namespace Utils {
       }
     }
 
+    export function flattened<T>(array: T[][]): T[] {
+      return array.reduce(function (a, b) {
+        return a.concat(b);
+      }, []);
+    }
+
   }
 
   export namespace SequencePattern {
