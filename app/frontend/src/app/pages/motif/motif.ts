@@ -14,10 +14,6 @@
  *     limitations under the License.
  */
 
-// MotifsMetadata
-
-export type MotifsMappedFlatMetadata = { [ key: string ]: MotifsMetadataTreeLevelValue };
-
 export interface MotifsMetadataTreeLevel {
   readonly name: string;
   readonly values: MotifsMetadataTreeLevelValue[];
@@ -31,9 +27,12 @@ export interface MotifsMetadataTreeLevelValue {
   isSelected?: boolean;
 }
 
+export interface MotifsMetadataTreeLevelValueOptions {
+  isSelected: boolean;
+}
+
 export interface MotifsMetadata {
   readonly root: MotifsMetadataTreeLevel;
-  readonly flat: { [ key: string ]: MotifsMetadataTreeLevelValue };
 }
 
 

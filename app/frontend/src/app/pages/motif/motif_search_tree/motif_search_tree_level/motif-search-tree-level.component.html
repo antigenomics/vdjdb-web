@@ -6,8 +6,11 @@
     <div class="content">
         <div class="header" [ngClass]="{ 'selected': isSelected(value) }">
             <span (click)="header(value)">{{ value.value }}</span>
-            &nbsp;&nbsp;&nbsp;<span class="extra" *ngIf="value.next" (click)="filter(value)"><i class="ui icon small circle outline"></i>Select all</span>
+            &nbsp;&nbsp;&nbsp;<span class="extra" *ngIf="value.next && !isSelected(value)" (click)="select(value)"><i class="ui icon small circle outline"></i>Select all</span>
+            &nbsp;&nbsp;&nbsp;<span class="extra" *ngIf="value.next && isSelected(value)" (click)="discard(value)"><i class="ui icon small circle outline"></i>Discard all</span>
         </div>
-        <div class="list" *ngIf="value.next && value.isOpened" motif-search-tree-level [level]="value.next" (onFilter)="pushFilter(value, $event)"></div>
+        <div class="list" *ngIf="value.next && value.isOpened" motif-search-tree-level [level]="value.next"
+             (onSelect)="pushSelect(value, $event)" (onDiscard)="pushDiscard(value, $event)">
+        </div>
     </div>
 </div>

@@ -15,7 +15,7 @@
  */
 
 .selected {
-    color: #48af75;
+    color: #48af75 !important;
 }
 
 .content .header span.extra {
