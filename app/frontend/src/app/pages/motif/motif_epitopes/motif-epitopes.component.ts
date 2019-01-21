@@ -33,13 +33,11 @@ export class MotifEpitopesComponent {
 
   constructor(private motifService: MotifService) {}
 
-  public setOptions(options: MotifEpitopeViewOptions): void {
-    this.motifService.setOptions(options);
-  }
-
   public onEpitopeDiscard(epitope: MotifEpitope): void {
-    this.motifService.findTreeLevelValue(epitope.epitope).pipe(take(1)).subscribe((value) => {
-      this.motifService.discardTreeLevelValue(value);
+    this.motifService.findTreeLevelValue(epitope.epitope).pipe(take(1)).subscribe((values) => {
+      values.forEach((value) => {
+        this.motifService.discardTreeLevelValue(value);
+      });
       this.motifService.updateSelected();
       setImmediate(() => {
         this.motifService.updateEpitopes();

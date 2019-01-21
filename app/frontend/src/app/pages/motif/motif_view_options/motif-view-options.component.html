@@ -1,6 +1,6 @@
-<div class="ui segments">
+<div class="ui segments" style="margin-top: 25px">
     <div class="ui segment header">View options</div>
-    <div class="ui segment">
+    <div class="ui segment" *ngIf="options">
         <div class="ui checkbox" (click)="normalize()">
             <input type="checkbox" [ngModel]="options.isNormalized">
             <label>Normalize</label>

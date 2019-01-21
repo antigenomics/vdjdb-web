@@ -16,14 +16,12 @@
 
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
-import { FormsModule } from '@angular/forms';
 import { MotifEpitopesComponent } from 'pages/motif/motif_epitopes/motif-epitopes.component';
 import { MotifEpitopeEntryModule } from 'pages/motif/motif_epitopes/motif_epitope_entry/motif-epitope-entry.module';
-import { MotifEpitopeOptionsComponent } from 'pages/motif/motif_epitopes/motif_epitope_options/motif-epitope-options.component';
 
 @NgModule({
-  imports:      [ CommonModule, FormsModule, MotifEpitopeEntryModule ],
-  declarations: [ MotifEpitopesComponent, MotifEpitopeOptionsComponent ],
+  imports:      [ CommonModule, MotifEpitopeEntryModule ],
+  declarations: [ MotifEpitopesComponent ],
   exports:      [ MotifEpitopesComponent ]
 })
 export class MotifEpitopesModule {}

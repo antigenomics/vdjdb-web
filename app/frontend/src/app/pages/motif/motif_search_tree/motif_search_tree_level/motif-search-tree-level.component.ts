@@ -16,8 +16,9 @@
 
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { MotifsMetadataTreeLevel, MotifsMetadataTreeLevelValue, MotifsSearchTreeFilter } from 'pages/motif/motif';
-import { MotifService } from 'pages/motif/motif.service';
+import { MotifService, MotifsServiceEvents } from 'pages/motif/motif.service';
 import { Subscription } from 'rxjs';
+import { filter } from 'rxjs/operators';
 
 @Component({
   selector:        'div[motif-search-tree-level]',
@@ -40,7 +41,7 @@ export class MotifSearchTreeLevelComponent implements OnInit, OnDestroy {
   constructor(private motifService: MotifService, private changeDetector: ChangeDetectorRef) {}
 
   public ngOnInit(): void {
-    this.subscription = this.motifService.getEvents().subscribe(() => {
+    this.subscription = this.motifService.getEvents().pipe(filter((event) => event === MotifsServiceEvents.UPDATE_SELECTED)).subscribe(() => {
       this.changeDetector.detectChanges();
     });
   }

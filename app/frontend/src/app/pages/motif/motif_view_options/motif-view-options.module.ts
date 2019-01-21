@@ -14,20 +14,14 @@
  *     limitations under the License.
  */
 
-
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
-import { MotifPageComponent } from 'pages/motif/motif.component';
-import { MotifPageRouting } from 'pages/motif/motif.routing';
-import { MotifService } from 'pages/motif/motif.service';
-import { MotifEpitopesModule } from 'pages/motif/motif_epitopes/motif-epitopes.module';
-import { MotifSearchTreeModule } from 'pages/motif/motif_search_tree/motif-search-tree.module';
-import { MotifViewOptionsModule } from 'pages/motif/motif_view_options/motif-view-options.module';
+import { FormsModule } from '@angular/forms';
+import { MotifViewOptionsComponent } from 'pages/motif/motif_view_options/motif-view-options.component';
 
 @NgModule({
-  imports:      [ CommonModule, MotifPageRouting, MotifViewOptionsModule, MotifSearchTreeModule, MotifEpitopesModule ],
-  declarations: [ MotifPageComponent ],
-  exports:      [ MotifPageComponent ],
-  providers:    [ MotifService ]
+  imports:      [ CommonModule, FormsModule ],
+  declarations: [ MotifViewOptionsComponent ],
+  exports:      [ MotifViewOptionsComponent ]
 })
-export class MotifPageModule {}
+export class MotifViewOptionsModule {}

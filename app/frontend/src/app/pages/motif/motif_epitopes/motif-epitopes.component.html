@@ -1,5 +1,4 @@
 <ng-container *ngIf="epitopes && epitopes.length !== 0; else empty">
-    <motif-epitope-options [options]="options" (onOptionsChange)="setOptions($event)"></motif-epitope-options>
     <ng-container *ngFor="let epitope of epitopes; trackBy:trackEpitopeBy">
         <motif-epitope-entry [epitope]="epitope" [isNormalized]="options.isNormalized" (onDiscard)="onEpitopeDiscard($event)"></motif-epitope-entry>
     </ng-container>
