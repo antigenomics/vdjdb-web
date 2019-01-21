@@ -139,7 +139,9 @@ export class SeqLogoChart extends Chart<ISeqLogoChartDataEntry, ISeqLogoChartCon
   }
 
   public update(data: ISeqLogoChartDataEntry[]): void {
-    super.destroy();
+    const { svg } = this.container.getContainer();
+    svg.selectAll('g').remove();
+    svg.selectAll('.box').remove();
     this.create(data);
   }
 

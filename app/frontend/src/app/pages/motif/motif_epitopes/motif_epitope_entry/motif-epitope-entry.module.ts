@@ -14,19 +14,17 @@
  *     limitations under the License.
  */
 
-
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
-import { MotifPageComponent } from 'pages/motif/motif.component';
-import { MotifPageRouting } from 'pages/motif/motif.routing';
-import { MotifService } from 'pages/motif/motif.service';
-import { MotifEpitopesModule } from 'pages/motif/motif_epitopes/motif-epitopes.module';
-import { MotifSearchTreeModule } from 'pages/motif/motif_search_tree/motif-search-tree.module';
+import { MotifEpitopeEntryComponent } from 'pages/motif/motif_epitopes/motif_epitope_entry/motif-epitope-entry.component';
+import { MotifEpitopeClusterComponent } from 'pages/motif/motif_epitopes/motif_epitope_entry/motif_epitope_cluster/motif-epitope-cluster.component';
+import { ChartsModule } from 'shared/charts/charts.module';
 
 @NgModule({
-  imports:      [ CommonModule, MotifPageRouting, MotifSearchTreeModule, MotifEpitopesModule ],
-  declarations: [ MotifPageComponent ],
-  exports:      [ MotifPageComponent ],
-  providers:    [ MotifService ]
+  imports:      [ CommonModule, ChartsModule ],
+  declarations: [ MotifEpitopeEntryComponent, MotifEpitopeClusterComponent ],
+  exports:      [ MotifEpitopeEntryComponent ]
 })
-export class MotifPageModule {}
+export class MotifEpitopeEntryModule {
+
+}

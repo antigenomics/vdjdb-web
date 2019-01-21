@@ -14,19 +14,25 @@
  *     limitations under the License.
  */
 
-
-import { CommonModule } from '@angular/common';
-import { NgModule } from '@angular/core';
-import { MotifPageComponent } from 'pages/motif/motif.component';
-import { MotifPageRouting } from 'pages/motif/motif.routing';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { MotifEpitope, MotifEpitopeViewOptions } from 'pages/motif/motif';
 import { MotifService } from 'pages/motif/motif.service';
-import { MotifEpitopesModule } from 'pages/motif/motif_epitopes/motif-epitopes.module';
-import { MotifSearchTreeModule } from 'pages/motif/motif_search_tree/motif-search-tree.module';
 
-@NgModule({
-  imports:      [ CommonModule, MotifPageRouting, MotifSearchTreeModule, MotifEpitopesModule ],
-  declarations: [ MotifPageComponent ],
-  exports:      [ MotifPageComponent ],
-  providers:    [ MotifService ]
+@Component({
+  selector:        'motif-epitopes',
+  templateUrl:     './motif-epitopes.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class MotifPageModule {}
+export class MotifEpitopesComponent {
+  @Input('options')
+  public options: MotifEpitopeViewOptions;
+
+  @Input('epitopes')
+  public epitopes: MotifEpitope[];
+
+  constructor(private motifService: MotifService) {}
+
+  public setOptions(options: MotifEpitopeViewOptions): void {
+    this.motifService.setOptions(options);
+  }
+}

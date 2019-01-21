@@ -20,7 +20,7 @@ import play.api.libs.json.{Format, Json}
 import tech.tablesaw.api.Table
 import scala.collection.JavaConverters._
 
-case class MotifCluster(clusterId: String, size: Int, entries: Seq[MotifClusterEntry])
+case class MotifCluster(clusterId: String, size: Int, length: Int, entries: Seq[MotifClusterEntry])
 
 object MotifCluster {
   implicit val motifClusterFormat: Format[MotifCluster] = Json.format[MotifCluster]
@@ -28,13 +28,15 @@ object MotifCluster {
   def fromTable(table: Table): MotifCluster = {
     val cid = table.stringColumn("cid").asSet.asScala
     val csz = table.intColumn("csz").asList.asScala.toSet
+    val len = table.intColumn("len").asList.asScala.toSet
 
-    assert(cid.size == 1 && csz.size == 1)
+    assert(cid.size == 1 && csz.size == 1 && len.size == 1)
 
     val clusterId = cid.head
     val size = csz.head
+    val length = len.head
     val entries = table.splitOn(table.intColumn("pos")).asTableList().asScala.map(MotifClusterEntry.fromTable)
 
-    MotifCluster(clusterId, size, entries)
+    MotifCluster(clusterId, size, length, entries)
   }
 }

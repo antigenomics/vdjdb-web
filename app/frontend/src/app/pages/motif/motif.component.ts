@@ -16,7 +16,7 @@
 
 
 import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
-import { MotifsMetadata } from 'pages/motif/motif';
+import { MotifEpitope, MotifEpitopeViewOptions, MotifsMetadata } from 'pages/motif/motif';
 import { MotifService } from 'pages/motif/motif.service';
 import { Observable } from 'rxjs';
 
@@ -27,11 +27,13 @@ import { Observable } from 'rxjs';
 })
 export class MotifPageComponent implements OnInit {
   public readonly metadata: Observable<MotifsMetadata>;
-  // public readonly selected: Observable<MotifEpitope[]>;
+  public readonly epitopes: Observable<Array<MotifEpitope>>;
+  public readonly options: Observable<MotifEpitopeViewOptions>;
 
   constructor(private motifService: MotifService) {
     this.metadata = motifService.getMetadata();
-    // this.selected = motifService.getSelected();
+    this.epitopes = motifService.getEpitopes();
+    this.options = motifService.getOptions();
   }
 
   public ngOnInit(): void {
@@ -40,3 +42,4 @@ export class MotifPageComponent implements OnInit {
   }
 
 }
+
