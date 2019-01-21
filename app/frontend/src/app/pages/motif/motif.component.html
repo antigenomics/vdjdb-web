@@ -7,7 +7,7 @@
             </div>
             <div class="ui grid">
                 <div class="ui five wide column" style="max-height: 800px; min-height: 800px; overflow-x: hidden; overflow-y: auto">
-                    <motif-view-options [options]="options | async" (onOptionsChange)="setOptions($event)"></motif-view-options>
+                    <motif-view-options [selected]="selected | async" [options]="options | async" (onOptionsChange)="setOptions($event)"></motif-view-options>
                     <motif-search-tree [metadata]="metadata | async"></motif-search-tree>
                 </div>
                 <div class="ui eleven wide column" style="max-height: 800px; min-height: 800px; overflow-x: hidden; overflow-y: auto" #EpitopesContainer>

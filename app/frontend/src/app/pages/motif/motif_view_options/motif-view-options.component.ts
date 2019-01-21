@@ -15,7 +15,8 @@
  */
 
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
-import { MotifEpitopeViewOptions } from 'pages/motif/motif';
+import { MotifEpitopeViewOptions, MotifsMetadataTreeLevelValue } from 'pages/motif/motif';
+import { MotifService } from 'pages/motif/motif.service';
 
 @Component({
   selector:        'motif-view-options',
@@ -29,7 +30,24 @@ export class MotifViewOptionsComponent {
   @Output('onOptionsChange')
   public onOptionsChange = new EventEmitter<MotifEpitopeViewOptions>();
 
+  @Input('selected')
+  public selected: MotifsMetadataTreeLevelValue[];
+
+  constructor(private motifService: MotifService) {}
+
   public normalize(): void {
     this.onOptionsChange.emit({ ...this.options, isNormalized: !this.options.isNormalized });
+  }
+
+  public isSelectedExist(): boolean {
+    return this.selected && this.selected.length !== 0;
+  }
+
+  public discardAll(): void {
+    this.selected.forEach((s) => this.motifService.discardTreeLevelValue(s));
+    this.motifService.updateSelected();
+    setTimeout(() => {
+      this.motifService.updateEpitopes();
+    });
   }
 }

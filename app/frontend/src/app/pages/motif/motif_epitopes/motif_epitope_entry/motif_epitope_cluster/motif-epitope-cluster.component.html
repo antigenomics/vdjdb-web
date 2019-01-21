@@ -2,5 +2,6 @@
     <div class="item">ID: {{ cluster.clusterId }}</div>
     <div class="item">Cluster size: {{ cluster.size }}</div>
     <div class="item">Cluster length: {{ cluster.length }}</div>
+    <div class="item">{{ cluster.vsegm }}&nbsp;/&nbsp;{{ cluster.jsegm }}</div>
 </div>
 <seqlogo-chart [configuration]="configuration" [stream]="stream"></seqlogo-chart>

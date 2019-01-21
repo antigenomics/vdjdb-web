@@ -6,5 +6,8 @@
             <label>Normalize</label>
         </div>
     </div>
+    <div class="ui secondary segment">
+        <div class="ui mini orange basic button" [ngClass]="{ 'disabled':!isSelectedExist() }" (click)="discardAll()">Discard all</div>
+    </div>
 </div>
 
