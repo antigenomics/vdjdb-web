@@ -24,6 +24,7 @@ import {
   MotifsSearchTreeFilterResult
 } from 'pages/motif/motif';
 import { combineLatest, Observable, ReplaySubject, Subject } from 'rxjs';
+import { ISeqLogoChartConfiguration } from 'shared/charts/seqlogo/seqlogo-configuration';
 import { LoggerService } from 'utils/logger/logger.service';
 import { Utils } from 'utils/utils';
 import { map, take } from 'rxjs/operators';
@@ -34,12 +35,17 @@ export namespace MotifsServiceWebSocketActions {
 
 export namespace MotifsServiceEvents {
   export const UPDATE_SELECTED: number = 1;
+  export const UPDATE_SCROLL: number = 2;
 }
 
 export type MotifsServiceEvents = number;
 
 @Injectable()
 export class MotifService {
+  public static readonly clusterViewportChartConfiguration: ISeqLogoChartConfiguration = {
+    container: { height: 150 }
+  };
+
   private isMetadataLoaded: boolean = false;
   private isMetadataLoading: boolean = false;
 
@@ -47,6 +53,7 @@ export class MotifService {
   private metadata: Subject<MotifsMetadata> = new ReplaySubject(1);
   private selected: Subject<Array<MotifsMetadataTreeLevelValue>> = new ReplaySubject(1);
   private epitopes: Subject<Array<MotifEpitope>> = new ReplaySubject(1);
+  private epitopesLoadingState: Subject<boolean> = new ReplaySubject(1);
   private options: Subject<MotifEpitopeViewOptions> = new ReplaySubject(1);
 
   constructor(private logger: LoggerService) {}
@@ -77,6 +84,10 @@ export class MotifService {
     return this.epitopes.asObservable();
   }
 
+  public isEpitopesLoading(): Observable<boolean> {
+    return this.epitopesLoadingState;
+  }
+
   public getSelected(): Observable<Array<MotifsMetadataTreeLevelValue>> {
     return this.selected.asObservable();
   }
@@ -93,14 +104,20 @@ export class MotifService {
     this.options.next(options);
   }
 
+  public fireScrollUpdateEvent(): void {
+    this.events.next(MotifsServiceEvents.UPDATE_SCROLL);
+  }
+
   public select(filter: MotifsSearchTreeFilter): void {
     this.updateSelected();
+    this.epitopesLoadingState.next(true);
     Utils.HTTP.post('/api/motifs/filter', filter).then((response) => {
       const result = JSON.parse(response.response) as MotifsSearchTreeFilterResult;
       this.epitopes.pipe(take(1)).subscribe((epitopes) => {
         const names = epitopes.map((epitope) => epitope.epitope);
         const newEpitopes = result.epitopes.filter((epitope) => names.indexOf(epitope.epitope) === -1);
         this.epitopes.next([ ...epitopes, ...newEpitopes ]);
+        this.epitopesLoadingState.next(false);
       });
     });
   }
@@ -158,9 +175,11 @@ export class MotifService {
     });
   }
 
-  public findTreeLevelValue(search: string): Observable<MotifsMetadataTreeLevelValue> {
+  public findTreeLevelValue(search: string): Observable<MotifsMetadataTreeLevelValue[]> {
     return this.metadata.pipe(take(1), map((metadata) => {
-      return MotifService.extractMetadataTreeLeafValues(metadata.root).find(([ name, _ ]) => name === search)[ 1 ];
+      return MotifService.extractMetadataTreeLeafValues(metadata.root)
+        .filter(([ name, _ ]) => name === search)
+        .map(([ _, value ]) => value);
     }));
   }
 

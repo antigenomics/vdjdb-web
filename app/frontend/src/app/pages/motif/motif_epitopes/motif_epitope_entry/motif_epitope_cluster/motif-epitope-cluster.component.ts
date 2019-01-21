@@ -14,21 +14,27 @@
  *     limitations under the License.
  */
 
-import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, Input, OnDestroy, OnInit } from '@angular/core';
 import { MotifCluster } from 'pages/motif/motif';
-import { ReplaySubject } from 'rxjs';
+import { MotifService, MotifsServiceEvents } from 'pages/motif/motif.service';
+import { ReplaySubject, Subscription } from 'rxjs';
+import { filter } from 'rxjs/operators';
 import { ChartEventType } from 'shared/charts/chart-events';
 import { ISeqLogoChartDataEntry, SeqLogoChartStreamType } from 'shared/charts/seqlogo/seqlogo-chart';
+import { ISeqLogoChartConfiguration } from 'shared/charts/seqlogo/seqlogo-configuration';
 
 @Component({
   selector:        'motif-epitope-cluster',
   templateUrl:     './motif-epitope-cluster.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class MotifEpitopeClusterComponent implements OnInit {
-  private isNormalized: boolean = false;
+export class MotifEpitopeClusterComponent implements OnInit, OnDestroy {
+  private subscription: Subscription;
+  private isNormalized: boolean;
 
+  public isRendered: boolean = false;
   public stream: SeqLogoChartStreamType = new ReplaySubject(1);
+  public configuration: ISeqLogoChartConfiguration = MotifService.clusterViewportChartConfiguration;
 
   @Input('cluster')
   public cluster: MotifCluster;
@@ -37,16 +43,32 @@ export class MotifEpitopeClusterComponent implements OnInit {
   public set setIsNormalized(isNormalized: boolean) {
     if (this.isNormalized !== isNormalized) {
       this.isNormalized = isNormalized;
-      this.updateStream(ChartEventType.UPDATE_DATA);
+      this.updateIfInViewport(ChartEventType.UPDATE_DATA);
     }
   }
 
+  constructor(private element: ElementRef, private motifService: MotifService) {}
+
   public ngOnInit(): void {
-    this.updateStream(ChartEventType.INITIAL_DATA);
+    this.subscription = this.motifService.getEvents().pipe(filter((event) => event === MotifsServiceEvents.UPDATE_SCROLL)).subscribe(() => {
+      if (!this.isRendered) {
+        this.updateIfInViewport(ChartEventType.UPDATE_DATA);
+      }
+    });
+  }
+
+  public updateIfInViewport(type: ChartEventType): void {
+    if (this.isInViewport()) {
+      this.updateStream(type);
+      this.isRendered = true;
+    } else {
+      this.isRendered = false;
+    }
   }
 
   public updateStream(type: ChartEventType): void {
     this.stream.next({ type: type, data: this.createData() });
+    this.isRendered = true;
   }
 
   public createData(): ISeqLogoChartDataEntry[] {
@@ -56,5 +78,19 @@ export class MotifEpitopeClusterComponent implements OnInit {
         chars: entry.aa.map((aa) => ({ c: aa.letter, h: this.isNormalized ? aa.HNorm : aa.H })).sort((e1, e2) => e2.h - e1.h)
       };
     });
+  }
+
+  public isInViewport(): boolean {
+    const bounding = this.element.nativeElement.getBoundingClientRect();
+    return (
+      bounding.top >= 0 &&
+      bounding.left >= 0 &&
+      bounding.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+      bounding.right <= (window.innerWidth || document.documentElement.clientWidth)
+    );
+  };
+
+  public ngOnDestroy(): void {
+    this.subscription.unsubscribe();
   }
 }

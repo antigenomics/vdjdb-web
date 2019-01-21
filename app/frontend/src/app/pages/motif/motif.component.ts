@@ -15,20 +15,26 @@
  */
 
 
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { MotifEpitope, MotifEpitopeViewOptions, MotifsMetadata } from 'pages/motif/motif';
 import { MotifService } from 'pages/motif/motif.service';
-import { Observable } from 'rxjs';
+import { fromEvent, Observable, Subscription, timer } from 'rxjs';
+import { debounce } from 'rxjs/operators';
 
 @Component({
   selector:        'motif',
   templateUrl:     './motif.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class MotifPageComponent implements OnInit {
+export class MotifPageComponent implements OnInit, OnDestroy {
+  private subscription: Subscription;
+
   public readonly metadata: Observable<MotifsMetadata>;
   public readonly epitopes: Observable<Array<MotifEpitope>>;
   public readonly options: Observable<MotifEpitopeViewOptions>;
+
+  @ViewChild('EpitopesContainer')
+  public EpitopesContainer: ElementRef;
 
   constructor(private motifService: MotifService) {
     this.metadata = motifService.getMetadata();
@@ -39,6 +45,22 @@ export class MotifPageComponent implements OnInit {
   public ngOnInit(): void {
     // noinspection JSIgnoredPromiseFromCall
     this.motifService.load();
+    this.subscription = fromEvent(this.EpitopesContainer.nativeElement, 'scroll').pipe(debounce(() => timer(5)))
+      .subscribe(() => {
+        this.motifService.fireScrollUpdateEvent();
+      });
+  }
+
+  public isEpitopesLoading(): Observable<boolean> {
+    return this.motifService.isEpitopesLoading();
+  }
+
+  public setOptions(options: MotifEpitopeViewOptions): void {
+    this.motifService.setOptions(options);
+  }
+
+  public ngOnDestroy(): void {
+    this.subscription.unsubscribe();
   }
 
 }

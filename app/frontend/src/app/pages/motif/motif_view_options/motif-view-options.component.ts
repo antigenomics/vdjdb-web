@@ -18,11 +18,11 @@ import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from 
 import { MotifEpitopeViewOptions } from 'pages/motif/motif';
 
 @Component({
-  selector:        'motif-epitope-options',
-  templateUrl:     './motif-epitope-options.component.html',
+  selector:        'motif-view-options',
+  templateUrl:     './motif-view-options.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class MotifEpitopeOptionsComponent {
+export class MotifViewOptionsComponent {
   @Input('options')
   public options: MotifEpitopeViewOptions;
 
