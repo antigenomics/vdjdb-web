@@ -14,12 +14,13 @@
  *     limitations under the License.
  */
 
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
 import { MotifEpitope } from 'pages/motif/motif';
 
 @Component({
   selector:        'motif-epitope-entry',
   templateUrl:     './motif-epitope-entry.component.html',
+  styleUrls:       [ './motif-epitope-entry.component.css' ],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MotifEpitopeEntryComponent {
@@ -28,4 +29,11 @@ export class MotifEpitopeEntryComponent {
 
   @Input('isNormalized')
   public isNormalized: boolean;
+
+  @Output('onDiscard')
+  public onDiscard = new EventEmitter<MotifEpitope>();
+
+  public discard(): void {
+    this.onDiscard.emit(this.epitope);
+  }
 }

@@ -1,6 +1,7 @@
 <div class="ui segments" style="margin-top: 25px">
-    <div class="ui segment header">
+    <div class="ui clearing segment header">
         {{ epitope.epitope }}
+        <i class="ui small outline trash icon options-icon" (click)="discard()"></i>
     </div>
     <div class="ui segment" *ngFor="let cluster of epitope.clusters">
         <motif-epitope-cluster [cluster]="cluster" [isNormalized]="isNormalized"></motif-epitope-cluster>

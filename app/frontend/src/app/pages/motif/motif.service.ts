@@ -26,7 +26,7 @@ import {
 import { combineLatest, Observable, ReplaySubject, Subject } from 'rxjs';
 import { LoggerService } from 'utils/logger/logger.service';
 import { Utils } from 'utils/utils';
-import { take } from 'rxjs/operators';
+import { map, take } from 'rxjs/operators';
 
 export namespace MotifsServiceWebSocketActions {
   export const METADATA = 'meta';
@@ -108,11 +108,7 @@ export class MotifService {
   public discard(_: MotifsSearchTreeFilter): void {
     this.updateSelected();
     setImmediate(() => {
-      combineLatest(this.selected, this.epitopes).pipe(take(1)).subscribe(([ selected, epitopes ]) => {
-        const selectedEpitopeNames = selected.map((s) => s.value);
-        const remainingEpitopes = epitopes.filter((e) => selectedEpitopeNames.indexOf(e.epitope) !== -1);
-        this.epitopes.next(remainingEpitopes);
-      });
+      this.updateEpitopes();
     });
   }
 
@@ -150,8 +146,22 @@ export class MotifService {
         .filter(([ _, value ]) => value.isSelected)
         .map(([ _, value ]) => value)
       );
+      this.events.next(MotifsServiceEvents.UPDATE_SELECTED);
     });
-    this.events.next(MotifsServiceEvents.UPDATE_SELECTED);
+  }
+
+  public updateEpitopes(): void {
+    combineLatest(this.selected, this.epitopes).pipe(take(1)).subscribe(([ selected, epitopes ]) => {
+      const selectedEpitopeNames = selected.map((s) => s.value);
+      const remainingEpitopes = epitopes.filter((e) => selectedEpitopeNames.indexOf(e.epitope) !== -1);
+      this.epitopes.next(remainingEpitopes);
+    });
+  }
+
+  public findTreeLevelValue(search: string): Observable<MotifsMetadataTreeLevelValue> {
+    return this.metadata.pipe(take(1), map((metadata) => {
+      return MotifService.extractMetadataTreeLeafValues(metadata.root).find(([ name, _ ]) => name === search)[ 1 ];
+    }));
   }
 
   private static extractMetadataTreeLeafValues(tree: MotifsMetadataTreeLevel): Array<[ string, MotifsMetadataTreeLevelValue ]> {
