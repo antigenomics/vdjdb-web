@@ -71,6 +71,8 @@ export interface MotifCluster {
   readonly clusterId: string,
   readonly size: number,
   readonly length: number;
+  readonly vsegm: string;
+  readonly jsegm: string;
   readonly entries: MotifClusterEntry[]
 }
 

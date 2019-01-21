@@ -16,7 +16,7 @@
 
 
 import { ChangeDetectionStrategy, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { MotifEpitope, MotifEpitopeViewOptions, MotifsMetadata } from 'pages/motif/motif';
+import { MotifEpitope, MotifEpitopeViewOptions, MotifsMetadata, MotifsMetadataTreeLevelValue } from 'pages/motif/motif';
 import { MotifService } from 'pages/motif/motif.service';
 import { fromEvent, Observable, Subscription, timer } from 'rxjs';
 import { debounce } from 'rxjs/operators';
@@ -30,6 +30,7 @@ export class MotifPageComponent implements OnInit, OnDestroy {
   private subscription: Subscription;
 
   public readonly metadata: Observable<MotifsMetadata>;
+  public readonly selected: Observable<Array<MotifsMetadataTreeLevelValue>>;
   public readonly epitopes: Observable<Array<MotifEpitope>>;
   public readonly options: Observable<MotifEpitopeViewOptions>;
 
@@ -38,6 +39,7 @@ export class MotifPageComponent implements OnInit, OnDestroy {
 
   constructor(private motifService: MotifService) {
     this.metadata = motifService.getMetadata();
+    this.selected = motifService.getSelected();
     this.epitopes = motifService.getEpitopes();
     this.options = motifService.getOptions();
   }

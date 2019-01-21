@@ -164,6 +164,9 @@ export class MotifService {
         .map(([ _, value ]) => value)
       );
       this.events.next(MotifsServiceEvents.UPDATE_SELECTED);
+      setTimeout(() => {
+        this.events.next(MotifsServiceEvents.UPDATE_SCROLL);
+      }, 100);
     });
   }
 
