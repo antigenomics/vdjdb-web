@@ -27,10 +27,6 @@ export interface MotifsMetadataTreeLevelValue {
   isSelected?: boolean;
 }
 
-export interface MotifsMetadataTreeLevelValueOptions {
-  isSelected: boolean;
-}
-
 export interface MotifsMetadata {
   readonly root: MotifsMetadataTreeLevel;
 }
@@ -49,6 +45,9 @@ export interface MotifsSearchTreeFilterResult {
   readonly epitopes: MotifEpitope[]
 }
 
+export interface MotifEpitopeViewOptions {
+  isNormalized: boolean;
+}
 
 // MotifsEpitopes
 
@@ -71,6 +70,7 @@ export interface MotifClusterEntry {
 export interface MotifCluster {
   readonly clusterId: string,
   readonly size: number,
+  readonly length: number;
   readonly entries: MotifClusterEntry[]
 }
 

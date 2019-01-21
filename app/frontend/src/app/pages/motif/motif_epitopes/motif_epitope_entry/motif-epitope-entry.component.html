@@ -1,0 +1,8 @@
+<div class="ui segments" style="margin-top: 25px">
+    <div class="ui segment header">
+        {{ epitope.epitope }}
+    </div>
+    <div class="ui segment" *ngFor="let cluster of epitope.clusters">
+        <motif-epitope-cluster [cluster]="cluster" [isNormalized]="isNormalized"></motif-epitope-cluster>
+    </div>
+</div>

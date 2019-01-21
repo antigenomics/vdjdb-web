@@ -14,13 +14,18 @@
  *     limitations under the License.
  */
 
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { MotifEpitope } from 'pages/motif/motif';
 
 @Component({
-  selector:        'motifs-container',
-  templateUrl:     './motifs-container.component.html',
+  selector:        'motif-epitope-entry',
+  templateUrl:     './motif-epitope-entry.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class MotifsContainerComponent {
+export class MotifEpitopeEntryComponent {
+  @Input('epitope')
+  public epitope: MotifEpitope;
 
+  @Input('isNormalized')
+  public isNormalized: boolean;
 }

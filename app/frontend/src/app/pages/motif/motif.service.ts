@@ -16,13 +16,14 @@
 
 import { Injectable } from '@angular/core';
 import {
+  MotifEpitope, MotifEpitopeViewOptions,
   MotifsMetadata,
   MotifsMetadataTreeLevel,
-  MotifsMetadataTreeLevelValue, MotifsMetadataTreeLevelValueOptions,
+  MotifsMetadataTreeLevelValue,
   MotifsSearchTreeFilter,
   MotifsSearchTreeFilterResult
 } from 'pages/motif/motif';
-import { Observable, ReplaySubject, Subject } from 'rxjs';
+import { combineLatest, Observable, ReplaySubject, Subject } from 'rxjs';
 import { LoggerService } from 'utils/logger/logger.service';
 import { Utils } from 'utils/utils';
 import { take } from 'rxjs/operators';
@@ -45,8 +46,8 @@ export class MotifService {
   private events: Subject<MotifsServiceEvents> = new Subject<MotifsServiceEvents>();
   private metadata: Subject<MotifsMetadata> = new ReplaySubject(1);
   private selected: Subject<Array<MotifsMetadataTreeLevelValue>> = new ReplaySubject(1);
-
-  // private selected: Subject<MotifEpitope[]> = new ReplaySubject(1);
+  private epitopes: Subject<Array<MotifEpitope>> = new ReplaySubject(1);
+  private options: Subject<MotifEpitopeViewOptions> = new ReplaySubject(1);
 
   constructor(private logger: LoggerService) {}
 
@@ -60,6 +61,8 @@ export class MotifService {
 
       this.metadata.next(metadata);
       this.selected.next([]);
+      this.epitopes.next([]);
+      this.options.next({ isNormalized: false });
 
       this.isMetadataLoaded = true;
       this.isMetadataLoading = false;
@@ -70,6 +73,10 @@ export class MotifService {
     return this.metadata.asObservable();
   }
 
+  public getEpitopes(): Observable<Array<MotifEpitope>> {
+    return this.epitopes.asObservable();
+  }
+
   public getSelected(): Observable<Array<MotifsMetadataTreeLevelValue>> {
     return this.selected.asObservable();
   }
@@ -78,21 +85,35 @@ export class MotifService {
     return this.events.asObservable();
   }
 
-  public select(filter: MotifsSearchTreeFilter): void {
-    this.updateSelected();
-    // Utils.HTTP.post('/api/motifs/filter', filter).then((response) => {
-    //   const result = JSON.parse(response.response) as MotifsSearchTreeFilterResult;
-    //   console.log(result);
-    // this.metadata.pipe(take(1)).subscribe((metadata) => {
-    //   result.epitopes.forEach((epitope) => {
-    //     metadata.flat[ epitope.epitope ].next({ isSelected: true });
-    //   });
-    // });
-    // });
+  public getOptions(): Observable<MotifEpitopeViewOptions> {
+    return this.options.asObservable();
   }
 
-  public discard(filter: MotifsSearchTreeFilter): void {
+  public setOptions(options: MotifEpitopeViewOptions): void {
+    this.options.next(options);
+  }
+
+  public select(filter: MotifsSearchTreeFilter): void {
     this.updateSelected();
+    Utils.HTTP.post('/api/motifs/filter', filter).then((response) => {
+      const result = JSON.parse(response.response) as MotifsSearchTreeFilterResult;
+      this.epitopes.pipe(take(1)).subscribe((epitopes) => {
+        const names = epitopes.map((epitope) => epitope.epitope);
+        const newEpitopes = result.epitopes.filter((epitope) => names.indexOf(epitope.epitope) === -1);
+        this.epitopes.next([ ...epitopes, ...newEpitopes ]);
+      });
+    });
+  }
+
+  public discard(_: MotifsSearchTreeFilter): void {
+    this.updateSelected();
+    setImmediate(() => {
+      combineLatest(this.selected, this.epitopes).pipe(take(1)).subscribe(([ selected, epitopes ]) => {
+        const selectedEpitopeNames = selected.map((s) => s.value);
+        const remainingEpitopes = epitopes.filter((e) => selectedEpitopeNames.indexOf(e.epitope) !== -1);
+        this.epitopes.next(remainingEpitopes);
+      });
+    });
   }
 
   public isTreeLevelValueSelected(value: MotifsMetadataTreeLevelValue): boolean {
