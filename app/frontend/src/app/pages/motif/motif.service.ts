@@ -16,10 +16,9 @@
 
 import { Injectable } from '@angular/core';
 import {
-  MotifsMappedFlatMetadata,
   MotifsMetadata,
   MotifsMetadataTreeLevel,
-  MotifsMetadataTreeLevelValue,
+  MotifsMetadataTreeLevelValue, MotifsMetadataTreeLevelValueOptions,
   MotifsSearchTreeFilter,
   MotifsSearchTreeFilterResult
 } from 'pages/motif/motif';
@@ -32,12 +31,20 @@ export namespace MotifsServiceWebSocketActions {
   export const METADATA = 'meta';
 }
 
+export namespace MotifsServiceEvents {
+  export const UPDATE_SELECTED: number = 1;
+}
+
+export type MotifsServiceEvents = number;
+
 @Injectable()
 export class MotifService {
   private isMetadataLoaded: boolean = false;
   private isMetadataLoading: boolean = false;
 
+  private events: Subject<MotifsServiceEvents> = new Subject<MotifsServiceEvents>();
   private metadata: Subject<MotifsMetadata> = new ReplaySubject(1);
+  private selected: Subject<Array<MotifsMetadataTreeLevelValue>> = new ReplaySubject(1);
 
   // private selected: Subject<MotifEpitope[]> = new ReplaySubject(1);
 
@@ -48,11 +55,11 @@ export class MotifService {
       this.isMetadataLoading = true;
       const response = await Utils.HTTP.get('/api/motifs/metadata');
       const root = JSON.parse(response.response) as { root: MotifsMetadataTreeLevel };
-      const flat = MotifService.convertMetadataToFlatFormat(root.root);
-      const metadata = { root: root.root, flat: flat };
+      const metadata = { root: root.root };
       this.logger.debug('Motifs metadata', metadata);
 
       this.metadata.next(metadata);
+      this.selected.next([]);
 
       this.isMetadataLoaded = true;
       this.isMetadataLoading = false;
@@ -63,31 +70,30 @@ export class MotifService {
     return this.metadata.asObservable();
   }
 
-  public filter(filter: MotifsSearchTreeFilter): void {
-    Utils.HTTP.post('/api/motifs/filter', filter).then((response) => {
-      const result = JSON.parse(response.response) as MotifsSearchTreeFilterResult;
-      console.log(result);
-      this.metadata.pipe(take(1)).subscribe((metadata) => {
-        result.epitopes.forEach((epitope) => {
-          metadata.flat[ epitope.epitope ].isSelected = true;
-        });
-        console.log(metadata);
-      });
-    });
+  public getSelected(): Observable<Array<MotifsMetadataTreeLevelValue>> {
+    return this.selected.asObservable();
   }
 
-  // public getSelected(): Observable<MotifEpitope[]> {
-  //   return this.selected.asObservable();
-  // }
+  public getEvents(): Observable<MotifsServiceEvents> {
+    return this.events.asObservable();
+  }
 
-  // public fireSelectedUpdate(): void {
-  //   this.metadata.subscribe((meta) => {
-  //     const selected: MotifEpitope[] = ([] as MotifEpitope[]).concat(...meta.entries.map((e) =>
-  //       ([] as MotifEpitope[]).concat(...e.epitopes.filter((p) => p.isSelected))
-  //     ));
-  //     this.selected.next(selected);
-  //   });
-  // }
+  public select(filter: MotifsSearchTreeFilter): void {
+    this.updateSelected();
+    // Utils.HTTP.post('/api/motifs/filter', filter).then((response) => {
+    //   const result = JSON.parse(response.response) as MotifsSearchTreeFilterResult;
+    //   console.log(result);
+    // this.metadata.pipe(take(1)).subscribe((metadata) => {
+    //   result.epitopes.forEach((epitope) => {
+    //     metadata.flat[ epitope.epitope ].next({ isSelected: true });
+    //   });
+    // });
+    // });
+  }
+
+  public discard(filter: MotifsSearchTreeFilter): void {
+    this.updateSelected();
+  }
 
   public isTreeLevelValueSelected(value: MotifsMetadataTreeLevelValue): boolean {
     if (value.next !== null) {
@@ -97,13 +103,34 @@ export class MotifService {
     }
   }
 
-  private static convertMetadataToFlatFormat(root: MotifsMetadataTreeLevel): MotifsMappedFlatMetadata {
-    const leafs = MotifService.extractMetadataTreeLeafValues(root);
-    const map: MotifsMappedFlatMetadata = {};
-    leafs.forEach((leaf) => {
-      map[ leaf[ 0 ] ] = leaf[ 1 ];
+  public selectTreeLevelValue(value: MotifsMetadataTreeLevelValue): void {
+    if (value.next !== null) {
+      value.next.values.forEach((value) => {
+        this.selectTreeLevelValue(value);
+      });
+    } else {
+      value.isSelected = true;
+    }
+  }
+
+  public discardTreeLevelValue(value: MotifsMetadataTreeLevelValue): void {
+    if (value.next !== null) {
+      value.next.values.forEach((value) => {
+        this.discardTreeLevelValue(value);
+      });
+    } else {
+      value.isSelected = false;
+    }
+  }
+
+  public updateSelected(): void {
+    this.metadata.pipe(take(1)).subscribe((metadata) => {
+      this.selected.next(MotifService.extractMetadataTreeLeafValues(metadata.root)
+        .filter(([ _, value ]) => value.isSelected)
+        .map(([ _, value ]) => value)
+      );
     });
-    return map;
+    this.events.next(MotifsServiceEvents.UPDATE_SELECTED);
   }
 
   private static extractMetadataTreeLeafValues(tree: MotifsMetadataTreeLevel): Array<[ string, MotifsMetadataTreeLevelValue ]> {

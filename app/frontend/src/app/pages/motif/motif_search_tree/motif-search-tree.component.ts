@@ -30,6 +30,10 @@ export class MotifSearchTreeComponent {
   constructor(private motifService: MotifService) {}
 
   public onFilterReceived(filter: MotifsSearchTreeFilter): void {
-    this.motifService.filter(filter);
+    this.motifService.select(filter);
+  }
+
+  public onDiscardReceived(filter: MotifsSearchTreeFilter): void {
+    this.motifService.discard(filter);
   }
 }
