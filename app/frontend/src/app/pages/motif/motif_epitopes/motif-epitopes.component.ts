@@ -17,6 +17,7 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { MotifEpitope, MotifEpitopeViewOptions } from 'pages/motif/motif';
 import { MotifService } from 'pages/motif/motif.service';
+import { take } from 'rxjs/operators';
 
 @Component({
   selector:        'motif-epitopes',
@@ -34,5 +35,15 @@ export class MotifEpitopesComponent {
 
   public setOptions(options: MotifEpitopeViewOptions): void {
     this.motifService.setOptions(options);
+  }
+
+  public onEpitopeDiscard(epitope: MotifEpitope): void {
+    this.motifService.findTreeLevelValue(epitope.epitope).pipe(take(1)).subscribe((value) => {
+      this.motifService.discardTreeLevelValue(value);
+      this.motifService.updateSelected();
+      setImmediate(() => {
+        this.motifService.updateEpitopes();
+      });
+    });
   }
 }
