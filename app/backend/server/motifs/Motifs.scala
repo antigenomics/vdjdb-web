@@ -17,7 +17,7 @@
 package backend.server.motifs
 
 import backend.server.database.Database
-import backend.server.motifs.api.cdr3.MotifCDR3SearchResult
+import backend.server.motifs.api.cdr3.{MotifCDR3SearchEntry, MotifCDR3SearchResult}
 import backend.server.motifs.api.epitope.{MotifCluster, MotifEpitope}
 import backend.server.motifs.api.filter.{MotifsSearchTreeFilter, MotifsSearchTreeFilterResult}
 import javax.inject.{Inject, Singleton}
@@ -55,21 +55,31 @@ case class Motifs @Inject()(database: Database) {
   }
 
   def cdr3(cdr3: String): Option[MotifCDR3SearchResult] = {
-    val filtered = table.where(table.intColumn("len").isEqualTo(cdr3.length.toDouble)).splitOn(table.stringColumn("cid")).asTableList().asScala.filter { t =>
-      t.splitOn("pos").asTableList().asScala.map { p =>
+    val mapped = table.where(table.intColumn("len").isEqualTo(cdr3.length.toDouble)).splitOn(table.stringColumn("cid")).asTableList().asScala.map { t =>
+      val info: Seq[(Double, Double)] = t.splitOn("pos").asTableList().asScala.map { p =>
         val posSet = p.intColumn("pos").asScala.toSet
-
         assert(posSet.size == 1)
-
         val pos = posSet.head
+        val i: (Double, Double) = if (p.stringColumn("aa").asSet().asScala.contains(String.valueOf(cdr3(pos)))) {
+          val I = p.doubleColumn("I").asScala.toSet
+          val Inorm = p.doubleColumn("I.norm").asScala.toSet
 
-        p.stringColumn("aa").asSet().asScala.contains(String.valueOf(cdr3(pos)))
-      }.reduce(_ && _)
-    }.map { c =>
-      MotifCluster.fromTable(c)
+          assert(I.size == 1 && Inorm.size == 1)
+
+          (I.head, Inorm.head)
+        } else {
+          (0.0d, 0.0d)
+        }
+        i
+      }
+      val reduced = info.reduce((l, r) => (l._1 + r._1, l._2 + r._2))
+      (reduced._1, reduced._2, MotifCluster.fromTable(t))
     }
 
-    Some(MotifCDR3SearchResult(cdr3, filtered))
+    val clusters = mapped.sortWith(_._1 > _._1).take(5).map { case (i, _, cluster) => MotifCDR3SearchEntry(i, cluster) }
+    val clustersNorm = mapped.sortWith(_._2 > _._2).take(5).map { case (_, in, cluster) => MotifCDR3SearchEntry(in, cluster) }
+
+    Some(MotifCDR3SearchResult(cdr3, clusters, clustersNorm))
   }
 }
 

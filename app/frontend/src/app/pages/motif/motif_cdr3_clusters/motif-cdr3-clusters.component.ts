@@ -15,7 +15,7 @@
  */
 
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { MotifCDR3SearchResult, MotifEpitopeViewOptions } from 'pages/motif/motif';
+import { MotifCDR3SearchEntry, MotifCDR3SearchResult, MotifEpitopeViewOptions } from 'pages/motif/motif';
 
 @Component({
   selector:        'motif-cdr3-clusters',
@@ -28,4 +28,12 @@ export class MotifCDR3ClustersComponent {
 
   @Input('clusters')
   public clusters: MotifCDR3SearchResult;
+
+  public getClustersEntries(): MotifCDR3SearchEntry[] {
+    if (this.options.isNormalized) {
+      return this.clusters.clustersNorm;
+    } else {
+      return this.clusters.clusters;
+    }
+  }
 }
