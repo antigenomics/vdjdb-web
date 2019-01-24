@@ -2,9 +2,9 @@
     <div class="ui segments" style="margin-top: 25px">
         <ng-container *ngIf="clusters.clusters.length !== 0; else empty">
             <div class="ui segment header">Clusters found for {{ clusters.cdr3 }}</div>
-            <div class="ui segment">
-                <motif-epitope-cluster *ngFor="let cluster of clusters.clusters" [cluster]="cluster"
-                                       [isNormalized]="options.isNormalized"></motif-epitope-cluster>
+            <div class="ui segment" *ngFor="let entry of getClustersEntries()">
+                <span style="margin-left: 10px">Informativeness: {{ entry.info.toFixed(3) }}</span>
+                <motif-epitope-cluster [cluster]="entry.cluster" [isNormalized]="options.isNormalized"></motif-epitope-cluster>
             </div>
         </ng-container>
         <ng-template #empty>

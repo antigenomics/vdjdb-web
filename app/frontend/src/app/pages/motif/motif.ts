@@ -82,9 +82,19 @@ export interface MotifEpitope {
 }
 
 // -------------------------------------------------------------------------------- //
+
+// case class MotifCDR3SearchEntry(info: Double, cluster: MotifCluster)
+
+export interface MotifCDR3SearchEntry {
+  info: number;
+  cluster: MotifCluster;
+}
+
+
 export interface MotifCDR3SearchResult {
   cdr3: string;
-  clusters: MotifCluster[];
+  clusters: MotifCDR3SearchEntry[];
+  clustersNorm: MotifCDR3SearchEntry[];
 }
 
 
