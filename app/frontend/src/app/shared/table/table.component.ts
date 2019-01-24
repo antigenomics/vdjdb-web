@@ -43,7 +43,7 @@ export class TableComponent implements OnInit, AfterViewInit, OnDestroy {
     public contentFontSize: string = 'inherit';
 
     @HostBinding('style.overflow')
-    public hostOverflowProperty: string = 'visible';
+    public hostOverflowProperty: string = 'auto';
 
     @Input('configuration')
     public set configuration(source: ITableConfigurationDescriptor) {
