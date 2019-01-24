@@ -16,6 +16,7 @@
 
 import { Injectable } from '@angular/core';
 import {
+  MotifCDR3SearchResult,
   MotifEpitope, MotifEpitopeViewOptions,
   MotifsMetadata,
   MotifsMetadataTreeLevel,
@@ -26,6 +27,7 @@ import {
 import { combineLatest, Observable, ReplaySubject, Subject } from 'rxjs';
 import { ISeqLogoChartConfiguration } from 'shared/charts/seqlogo/seqlogo-configuration';
 import { LoggerService } from 'utils/logger/logger.service';
+import { NotificationService } from 'utils/notifications/notification.service';
 import { Utils } from 'utils/utils';
 import { map, take } from 'rxjs/operators';
 
@@ -36,9 +38,18 @@ export namespace MotifsServiceWebSocketActions {
 export namespace MotifsServiceEvents {
   export const UPDATE_SELECTED: number = 1;
   export const UPDATE_SCROLL: number = 2;
+  export const HIDE_CLUSTERS: number = 3;
 }
 
 export type MotifsServiceEvents = number;
+
+export namespace MotifSearchState {
+  export const SEARCH_TREE: number = 1;
+  export const SEARCH_CDR3: number = 2;
+}
+
+export type MotifSearchState = number;
+
 
 @Injectable()
 export class MotifService {
@@ -49,14 +60,19 @@ export class MotifService {
   private isMetadataLoaded: boolean = false;
   private isMetadataLoading: boolean = false;
 
+  private state: MotifSearchState = MotifSearchState.SEARCH_TREE;
+
   private events: Subject<MotifsServiceEvents> = new Subject<MotifsServiceEvents>();
   private metadata: Subject<MotifsMetadata> = new ReplaySubject(1);
   private selected: Subject<Array<MotifsMetadataTreeLevelValue>> = new ReplaySubject(1);
   private epitopes: Subject<Array<MotifEpitope>> = new ReplaySubject(1);
-  private epitopesLoadingState: Subject<boolean> = new ReplaySubject(1);
   private options: Subject<MotifEpitopeViewOptions> = new ReplaySubject(1);
 
-  constructor(private logger: LoggerService) {}
+  private clusters: Subject<MotifCDR3SearchResult> = new ReplaySubject(1);
+
+  private loadingState: Subject<boolean> = new ReplaySubject(1);
+
+  constructor(private logger: LoggerService, private notifications: NotificationService) {}
 
   public async load(): Promise<void> {
     if (!this.isMetadataLoaded && !this.isMetadataLoading) {
@@ -76,16 +92,20 @@ export class MotifService {
     }
   }
 
+  public setSearchState(state: MotifSearchState): void {
+    this.state = state;
+  }
+
+  public getSearchState(): MotifSearchState {
+    return this.state;
+  }
+
   public getMetadata(): Observable<MotifsMetadata> {
     return this.metadata.asObservable();
   }
 
   public getEpitopes(): Observable<Array<MotifEpitope>> {
     return this.epitopes.asObservable();
-  }
-
-  public isEpitopesLoading(): Observable<boolean> {
-    return this.epitopesLoadingState;
   }
 
   public getSelected(): Observable<Array<MotifsMetadataTreeLevelValue>> {
@@ -100,6 +120,10 @@ export class MotifService {
     return this.options.asObservable();
   }
 
+  public getCDR3Clusters(): Observable<MotifCDR3SearchResult> {
+    return this.clusters.asObservable();
+  }
+
   public setOptions(options: MotifEpitopeViewOptions): void {
     this.options.next(options);
   }
@@ -108,17 +132,42 @@ export class MotifService {
     this.events.next(MotifsServiceEvents.UPDATE_SCROLL);
   }
 
+  public fireHideEvent(): void {
+    this.events.next(MotifsServiceEvents.HIDE_CLUSTERS);
+  }
+
+  public isLoading(): Observable<boolean> {
+    return this.loadingState;
+  }
+
+  public searchCDR3(cdr3: string): void {
+    this.loadingState.next(true);
+    Utils.HTTP.post('/api/motifs/cdr3', { cdr3 }).then((response) => {
+      const result = JSON.parse(response.response) as MotifCDR3SearchResult;
+      this.clusters.next(result);
+      this.loadingState.next(false);
+      this.notifications.info('Motifs CDR3', 'Loaded successfully', 1000);
+    }).catch(() => {
+      this.loadingState.next(false);
+      this.notifications.error('Motifs CDR3', 'Unable to load results');
+    });
+  }
+
   public select(filter: MotifsSearchTreeFilter): void {
     this.updateSelected();
-    this.epitopesLoadingState.next(true);
+    this.loadingState.next(true);
     Utils.HTTP.post('/api/motifs/filter', filter).then((response) => {
       const result = JSON.parse(response.response) as MotifsSearchTreeFilterResult;
       this.epitopes.pipe(take(1)).subscribe((epitopes) => {
         const names = epitopes.map((epitope) => epitope.epitope);
         const newEpitopes = result.epitopes.filter((epitope) => names.indexOf(epitope.epitope) === -1);
         this.epitopes.next([ ...epitopes, ...newEpitopes ]);
-        this.epitopesLoadingState.next(false);
+        this.loadingState.next(false);
+        this.notifications.info('Motifs', 'Loaded successfully', 1000);
       });
+    }).catch(() => {
+      this.loadingState.next(false);
+      this.notifications.error('Motifs', 'Unable to load results');
     });
   }
 

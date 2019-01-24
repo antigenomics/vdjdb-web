@@ -21,6 +21,7 @@ import akka.stream.Materializer
 import backend.actors.MotifsSearchWebSocketActor
 import backend.server.limit.RequestLimits
 import backend.server.motifs.Motifs
+import backend.server.motifs.api.cdr3.MotifCDR3SearchRequest
 import backend.server.motifs.api.filter.MotifsSearchTreeFilter
 import javax.inject._
 import play.api.Configuration
@@ -46,6 +47,20 @@ class MotifsAPI @Inject()(cc: ControllerComponents, motifs: Motifs, configuratio
       request.body.asJson.map { json =>
         json.validate[MotifsSearchTreeFilter].map {
           filter => motifs.filter(filter).map { r => Ok(toJson(r)) }.getOrElse(BadRequest("Invalid filter provided"))
+        }.recoverTotal {
+          e => BadRequest("Detected error:" + JsError.toFlatForm(e))
+        }
+      }.getOrElse {
+        BadRequest("Expecting Json data")
+      }
+    }
+  }
+
+  def cdr3: Action[AnyContent] = Action.async { implicit request =>
+    Future.successful {
+      request.body.asJson.map { json =>
+        json.validate[MotifCDR3SearchRequest].map {
+          search => motifs.cdr3(search.cdr3).map { r => Ok(toJson(r)) }.getOrElse(BadRequest("Invalid filter provided"))
         }.recoverTotal {
           e => BadRequest("Detected error:" + JsError.toFlatForm(e))
         }

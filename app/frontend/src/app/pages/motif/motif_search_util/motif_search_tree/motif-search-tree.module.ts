@@ -16,14 +16,15 @@
 
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
-import { MotifEpitopeClusterModule } from 'pages/motif/motif_epitope_cluster/motif-epitope-cluster.module';
-import { MotifEpitopeEntryComponent } from 'pages/motif/motif_epitopes/motif_epitope_entry/motif-epitope-entry.component';
+import { MotifSearchTreeComponent } from 'pages/motif/motif_search_util/motif_search_tree/motif-search-tree.component';
+import { MotifSearchTreeLevelComponent } from 'pages/motif/motif_search_util/motif_search_tree/motif_search_tree_level/motif-search-tree-level.component';
 
 @NgModule({
-  imports:      [ CommonModule, MotifEpitopeClusterModule ],
-  declarations: [ MotifEpitopeEntryComponent ],
-  exports:      [ MotifEpitopeEntryComponent ]
+  imports:      [ CommonModule ],
+  declarations: [
+    MotifSearchTreeComponent,
+    MotifSearchTreeLevelComponent
+  ],
+  exports:      [ MotifSearchTreeComponent ]
 })
-export class MotifEpitopeEntryModule {
-
-}
+export class MotifSearchTreeModule {}

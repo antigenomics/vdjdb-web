@@ -16,15 +16,13 @@
 
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
-import { MotifSearchTreeComponent } from 'pages/motif/motif_search_tree/motif-search-tree.component';
-import { MotifSearchTreeLevelComponent } from 'pages/motif/motif_search_tree/motif_search_tree_level/motif-search-tree-level.component';
+import { FormsModule } from '@angular/forms';
+import { MotifSearchCDR3Component } from 'pages/motif/motif_search_util/motif_search_cdr3/motif-search-cdr3.component';
 
 @NgModule({
-  imports:      [ CommonModule ],
-  declarations: [
-    MotifSearchTreeComponent,
-    MotifSearchTreeLevelComponent
-  ],
-  exports:      [ MotifSearchTreeComponent ]
+  imports:      [ CommonModule, FormsModule ],
+  declarations: [ MotifSearchCDR3Component ],
+  exports:      [ MotifSearchCDR3Component ]
+
 })
-export class MotifSearchTreeModule {}
+export class MotifSearchCDR3Module {}

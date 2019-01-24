@@ -16,14 +16,12 @@
 
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
-import { MotifEpitopeClusterModule } from 'pages/motif/motif_epitope_cluster/motif-epitope-cluster.module';
-import { MotifEpitopeEntryComponent } from 'pages/motif/motif_epitopes/motif_epitope_entry/motif-epitope-entry.component';
+import { MotifEpitopeClusterComponent } from 'pages/motif/motif_epitope_cluster/motif-epitope-cluster.component';
+import { ChartsModule } from 'shared/charts/charts.module';
 
 @NgModule({
-  imports:      [ CommonModule, MotifEpitopeClusterModule ],
-  declarations: [ MotifEpitopeEntryComponent ],
-  exports:      [ MotifEpitopeEntryComponent ]
+  imports:      [ CommonModule, ChartsModule ],
+  declarations: [ MotifEpitopeClusterComponent ],
+  exports:      [ MotifEpitopeClusterComponent ]
 })
-export class MotifEpitopeEntryModule {
-
-}
+export class MotifEpitopeClusterModule {}

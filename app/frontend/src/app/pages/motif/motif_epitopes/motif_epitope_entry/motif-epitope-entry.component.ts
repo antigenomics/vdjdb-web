@@ -14,8 +14,11 @@
  *     limitations under the License.
  */
 
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
 import { MotifEpitope } from 'pages/motif/motif';
+import { MotifService, MotifsServiceEvents } from 'pages/motif/motif.service';
+import { Subscription } from 'rxjs';
+import { filter } from 'rxjs/operators';
 
 @Component({
   selector:        'motif-epitope-entry',
@@ -23,7 +26,11 @@ import { MotifEpitope } from 'pages/motif/motif';
   styleUrls:       [ './motif-epitope-entry.component.css' ],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class MotifEpitopeEntryComponent {
+export class MotifEpitopeEntryComponent implements OnInit, OnDestroy {
+  private subscription: Subscription;
+
+  public isHidden: boolean = false;
+
   @Input('epitope')
   public epitope: MotifEpitope;
 
@@ -33,7 +40,24 @@ export class MotifEpitopeEntryComponent {
   @Output('onDiscard')
   public onDiscard = new EventEmitter<MotifEpitope>();
 
+  constructor(private motifService: MotifService, private changeDetector: ChangeDetectorRef) {}
+
+  public ngOnInit(): void {
+    this.subscription = this.motifService.getEvents().pipe(filter((event) => event === MotifsServiceEvents.HIDE_CLUSTERS)).subscribe(() => {
+      this.isHidden = true;
+      this.changeDetector.markForCheck();
+    });
+  }
+
   public discard(): void {
     this.onDiscard.emit(this.epitope);
+  }
+
+  public hide(): void {
+    this.isHidden = !this.isHidden;
+  }
+
+  public ngOnDestroy(): void {
+    this.subscription.unsubscribe();
   }
 }

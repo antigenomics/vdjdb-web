@@ -17,6 +17,7 @@
 package backend.server.motifs
 
 import backend.server.database.Database
+import backend.server.motifs.api.cdr3.MotifCDR3SearchResult
 import backend.server.motifs.api.epitope.{MotifCluster, MotifEpitope}
 import backend.server.motifs.api.filter.{MotifsSearchTreeFilter, MotifsSearchTreeFilterResult}
 import javax.inject.{Inject, Singleton}
@@ -51,6 +52,24 @@ case class Motifs @Inject()(database: Database) {
     }.map { epitopes =>
       MotifsSearchTreeFilterResult(epitopes)
     }
+  }
+
+  def cdr3(cdr3: String): Option[MotifCDR3SearchResult] = {
+    val filtered = table.where(table.intColumn("len").isEqualTo(cdr3.length.toDouble)).splitOn(table.stringColumn("cid")).asTableList().asScala.filter { t =>
+      t.splitOn("pos").asTableList().asScala.map { p =>
+        val posSet = p.intColumn("pos").asScala.toSet
+
+        assert(posSet.size == 1)
+
+        val pos = posSet.head
+
+        p.stringColumn("aa").asSet().asScala.contains(String.valueOf(cdr3(pos)))
+      }.reduce(_ && _)
+    }.map { c =>
+      MotifCluster.fromTable(c)
+    }
+
+    Some(MotifCDR3SearchResult(cdr3, filtered))
   }
 }
 

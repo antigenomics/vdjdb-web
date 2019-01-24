@@ -14,22 +14,20 @@
  *     limitations under the License.
  */
 
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
-import { MotifEpitopeViewOptions } from 'pages/motif/motif';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { MotifService } from 'pages/motif/motif.service';
 
 @Component({
-  selector:        'motif-view-options',
-  templateUrl:     './motif-view-options.component.html',
+  selector:        'motif-search-cdr3',
+  templateUrl:     './motif-search-cdr3.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class MotifViewOptionsComponent {
-  @Input('options')
-  public options: MotifEpitopeViewOptions;
+export class MotifSearchCDR3Component {
+  public input: string = '';
 
-  @Output('onOptionsChange')
-  public onOptionsChange = new EventEmitter<MotifEpitopeViewOptions>();
+  constructor(private motifService: MotifService) {}
 
-  public normalize(): void {
-    this.onOptionsChange.emit({ ...this.options, isNormalized: !this.options.isNormalized });
+  public search(): void {
+    this.motifService.searchCDR3(this.input);
   }
 }
