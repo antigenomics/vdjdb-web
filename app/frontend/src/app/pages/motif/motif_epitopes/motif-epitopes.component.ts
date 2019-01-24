@@ -44,4 +44,9 @@ export class MotifEpitopesComponent {
       });
     });
   }
+
+  public trackEpitopeBy(_: number, epitope: MotifEpitope): string {
+    return epitope.epitope;
+  }
+
 }
