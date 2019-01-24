@@ -259,57 +259,66 @@ export namespace Utils {
 
     export function get(url: string): Promise<XMLHttpRequest> {
       return new Promise<XMLHttpRequest>((resolve, reject) => {
-        const xhttp = new XMLHttpRequest();
-        const lastReadyState = 4;
-        const successStatus = 200;
-        const failedStatus = 400;
-        xhttp.onreadystatechange = function () {
-          if (this.readyState === lastReadyState && this.status === successStatus) {
-            resolve(this);
-          } else if (this.readyState === lastReadyState && this.status === failedStatus) {
+        try {
+          const xhttp = new XMLHttpRequest();
+          const lastReadyState = 4;
+          const successStatus = 200;
+          const failedStatuses = [ 400, 401, 402, 403, 404, 405 ];
+
+          xhttp.onreadystatechange = function () {
+            if (this.readyState === lastReadyState && this.status === successStatus) {
+              resolve(this);
+            } else if (this.readyState === lastReadyState && failedStatuses.indexOf(this.status) !== -1) {
+              reject(this);
+            }
+          };
+
+          xhttp.onerror = function () {
             reject(this);
-          }
-        };
+          };
 
-        xhttp.onerror = function () {
+          xhttp.onabort = function () {
+            reject(this);
+          };
+
+          xhttp.open('GET', url, true);
+          xhttp.send();
+        } catch (e) {
           reject(this);
-        };
-
-        xhttp.onabort = function () {
-          reject(this);
-        };
-
-        xhttp.open('GET', url, true);
-        xhttp.send();
+        }
       });
     }
 
     export function post(url: string, body: any): Promise<XMLHttpRequest> {
       return new Promise<XMLHttpRequest>((resolve, reject) => {
-        const xhttp = new XMLHttpRequest();
-        const lastReadyState = 4;
-        const successStatus = 200;
-        const failedStatus = 400;
+        try {
+          const xhttp = new XMLHttpRequest();
+          const lastReadyState = 4;
+          const successStatus = 200;
+          const failedStatuses = [ 400, 403 ];
 
-        xhttp.onreadystatechange = function () {
-          if (this.readyState === lastReadyState && this.status === successStatus) {
-            resolve(this);
-          } else if (this.readyState === lastReadyState && this.status === failedStatus) {
+          xhttp.onreadystatechange = function () {
+            if (this.readyState === lastReadyState && this.status === successStatus) {
+              resolve(this);
+            } else if (this.readyState === lastReadyState && failedStatuses.indexOf(this.status) !== -1) {
+              reject(this);
+            }
+          };
+
+          xhttp.onerror = function () {
             reject(this);
-          }
-        };
+          };
 
-        xhttp.onerror = function () {
+          xhttp.onabort = function () {
+            reject(this);
+          };
+
+          xhttp.open('POST', url);
+          xhttp.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
+          xhttp.send(JSON.stringify(body));
+        } catch (e) {
           reject(this);
-        };
-
-        xhttp.onabort = function () {
-          reject(this);
-        };
-
-        xhttp.open('POST', url);
-        xhttp.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
-        xhttp.send(JSON.stringify(body));
+        }
       });
     }
 

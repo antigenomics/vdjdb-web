@@ -14,16 +14,13 @@
  *     limitations under the License.
  */
 
-import { CommonModule } from '@angular/common';
-import { NgModule } from '@angular/core';
-import { MotifEpitopeClusterModule } from 'pages/motif/motif_epitope_cluster/motif-epitope-cluster.module';
-import { MotifEpitopeEntryComponent } from 'pages/motif/motif_epitopes/motif_epitope_entry/motif-epitope-entry.component';
+package backend.server.motifs.api.cdr3
 
-@NgModule({
-  imports:      [ CommonModule, MotifEpitopeClusterModule ],
-  declarations: [ MotifEpitopeEntryComponent ],
-  exports:      [ MotifEpitopeEntryComponent ]
-})
-export class MotifEpitopeEntryModule {
+import backend.server.motifs.api.epitope.MotifCluster
+import play.api.libs.json.{Format, Json}
 
+case class MotifCDR3SearchResult(cdr3: String, clusters: Seq[MotifCluster])
+
+object MotifCDR3SearchResult {
+  implicit val motifCDR3SearchResultFormat: Format[MotifCDR3SearchResult] = Json.format[MotifCDR3SearchResult]
 }

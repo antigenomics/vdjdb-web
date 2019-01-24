@@ -81,6 +81,12 @@ export interface MotifEpitope {
   readonly clusters: MotifCluster[]
 }
 
+// -------------------------------------------------------------------------------- //
+export interface MotifCDR3SearchResult {
+  cdr3: string;
+  clusters: MotifCluster[];
+}
+
 
 
 

@@ -14,22 +14,18 @@
  *     limitations under the License.
  */
 
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
-import { MotifEpitopeViewOptions } from 'pages/motif/motif';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { MotifCDR3SearchResult, MotifEpitopeViewOptions } from 'pages/motif/motif';
 
 @Component({
-  selector:        'motif-view-options',
-  templateUrl:     './motif-view-options.component.html',
+  selector:        'motif-cdr3-clusters',
+  templateUrl:     './motif-cdr3-clusters.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class MotifViewOptionsComponent {
+export class MotifCDR3ClustersComponent {
   @Input('options')
   public options: MotifEpitopeViewOptions;
 
-  @Output('onOptionsChange')
-  public onOptionsChange = new EventEmitter<MotifEpitopeViewOptions>();
-
-  public normalize(): void {
-    this.onOptionsChange.emit({ ...this.options, isNormalized: !this.options.isNormalized });
-  }
+  @Input('clusters')
+  public clusters: MotifCDR3SearchResult;
 }

@@ -16,8 +16,8 @@
 
 
 import { ChangeDetectionStrategy, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { MotifEpitope, MotifEpitopeViewOptions, MotifsMetadata, MotifsMetadataTreeLevelValue } from 'pages/motif/motif';
-import { MotifService } from 'pages/motif/motif.service';
+import { MotifCDR3SearchResult, MotifEpitope, MotifEpitopeViewOptions, MotifsMetadata, MotifsMetadataTreeLevelValue } from 'pages/motif/motif';
+import { MotifSearchState, MotifService } from 'pages/motif/motif.service';
 import { fromEvent, Observable, Subscription, timer } from 'rxjs';
 import { debounce } from 'rxjs/operators';
 
@@ -32,6 +32,7 @@ export class MotifPageComponent implements OnInit, OnDestroy {
   public readonly metadata: Observable<MotifsMetadata>;
   public readonly selected: Observable<Array<MotifsMetadataTreeLevelValue>>;
   public readonly epitopes: Observable<Array<MotifEpitope>>;
+  public readonly clusters: Observable<MotifCDR3SearchResult>;
   public readonly options: Observable<MotifEpitopeViewOptions>;
 
   @ViewChild('EpitopesContainer')
@@ -41,6 +42,7 @@ export class MotifPageComponent implements OnInit, OnDestroy {
     this.metadata = motifService.getMetadata();
     this.selected = motifService.getSelected();
     this.epitopes = motifService.getEpitopes();
+    this.clusters = motifService.getCDR3Clusters();
     this.options = motifService.getOptions();
   }
 
@@ -54,7 +56,7 @@ export class MotifPageComponent implements OnInit, OnDestroy {
   }
 
   public isEpitopesLoading(): Observable<boolean> {
-    return this.motifService.isEpitopesLoading();
+    return this.motifService.isLoading();
   }
 
   public setOptions(options: MotifEpitopeViewOptions): void {
@@ -63,6 +65,14 @@ export class MotifPageComponent implements OnInit, OnDestroy {
 
   public ngOnDestroy(): void {
     this.subscription.unsubscribe();
+  }
+
+  public isStateSearchTree(): boolean {
+    return this.motifService.getSearchState() === MotifSearchState.SEARCH_TREE;
+  }
+
+  public isStateSearchCDR3(): boolean {
+    return this.motifService.getSearchState() === MotifSearchState.SEARCH_CDR3;
   }
 
 }

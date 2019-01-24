@@ -20,12 +20,13 @@ import { NgModule } from '@angular/core';
 import { MotifPageComponent } from 'pages/motif/motif.component';
 import { MotifPageRouting } from 'pages/motif/motif.routing';
 import { MotifService } from 'pages/motif/motif.service';
+import { MotifCDR3ClustersModule } from 'pages/motif/motif_cdr3_clusters/motif-cdr3-clusters.module';
 import { MotifEpitopesModule } from 'pages/motif/motif_epitopes/motif-epitopes.module';
-import { MotifSearchTreeModule } from 'pages/motif/motif_search_tree/motif-search-tree.module';
+import { MotifSearchUtilModule } from 'pages/motif/motif_search_util/motif-search-util.module';
 import { MotifViewOptionsModule } from 'pages/motif/motif_view_options/motif-view-options.module';
 
 @NgModule({
-  imports:      [ CommonModule, MotifPageRouting, MotifViewOptionsModule, MotifSearchTreeModule, MotifEpitopesModule ],
+  imports:      [ CommonModule, MotifPageRouting, MotifViewOptionsModule, MotifSearchUtilModule, MotifEpitopesModule, MotifCDR3ClustersModule ],
   declarations: [ MotifPageComponent ],
   exports:      [ MotifPageComponent ],
   providers:    [ MotifService ]

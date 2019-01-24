@@ -1,0 +1,9 @@
+<div class="ui list" motif-search-tree-level [level]="metadata.root" *ngIf="metadata; else loader"
+     (onSelect)="onFilterReceived($event)" (onDiscard)="onDiscardReceived($event)">
+</div>
+<ng-template #loader>
+    <div class="ui active text centered inline loader">Loading metadata</div>
+</ng-template>
+<div class="ui divider"></div>
+<div class="ui mini blue basic button" [ngClass]="{ 'disabled':!isSelectedExist() }" (click)="hideAll()">Hide all</div>
+<div class="ui mini orange basic button" [ngClass]="{ 'disabled':!isSelectedExist() }" (click)="discardAll()">Discard all</div>

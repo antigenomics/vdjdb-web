@@ -1,0 +1,16 @@
+<div class="ui segments" style="margin-top: 25px">
+    <div class="ui segment">
+        <div class="ui secondary  menu">
+            <a class="item" (click)="setStateSearchTree()" [ngClass]="{'active': isStateSearchTree()}">
+                Search tree
+            </a>
+            <a class="item" (click)="setStateSearchCDR3()" [ngClass]="{'active': isStateSearchCDR3()}">
+                Search CDR3
+            </a>
+        </div>
+    </div>
+    <div class="ui segment">
+        <motif-search-tree [metadata]="metadata" [selected]="selected" *ngIf="isStateSearchTree()"></motif-search-tree>
+        <motif-search-cdr3 *ngIf="isStateSearchCDR3()"></motif-search-cdr3>
+    </div>
+</div>

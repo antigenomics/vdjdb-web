@@ -2,8 +2,11 @@
     <div class="ui clearing segment header">
         {{ epitope.epitope }}
         <i class="ui small outline trash icon options-icon" (click)="discard()"></i>
+        <i class="ui small angle icon options-icon" [ngClass]="{'down': isHidden, 'up': !isHidden}" (click)="hide()"></i>
     </div>
-    <div class="ui segment" *ngFor="let cluster of epitope.clusters">
-        <motif-epitope-cluster [cluster]="cluster" [isNormalized]="isNormalized"></motif-epitope-cluster>
-    </div>
+    <ng-container *ngIf="!isHidden">
+        <div class="ui segment">
+            <motif-epitope-cluster *ngFor="let cluster of epitope.clusters" [cluster]="cluster" [isNormalized]="isNormalized"></motif-epitope-cluster>
+        </div>
+    </ng-container>
 </div>

@@ -15,25 +15,37 @@
  */
 
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { MotifsMetadata, MotifsSearchTreeFilter } from 'pages/motif/motif';
-import { MotifService } from 'pages/motif/motif.service';
+import { MotifsMetadata, MotifsMetadataTreeLevelValue } from 'pages/motif/motif';
+import { MotifSearchState, MotifService } from 'pages/motif/motif.service';
 
 @Component({
-  selector:        'motif-search-tree',
-  templateUrl:     './motif-search-tree.component.html',
+  selector:        'motif-search-util',
+  templateUrl:     './motif-search-util.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class MotifSearchTreeComponent {
+export class MotifSearchUtilComponent {
+
   @Input('metadata')
   public metadata: MotifsMetadata;
 
+  @Input('selected')
+  public selected: MotifsMetadataTreeLevelValue[];
+
   constructor(private motifService: MotifService) {}
 
-  public onFilterReceived(filter: MotifsSearchTreeFilter): void {
-    this.motifService.select(filter);
+  public setStateSearchTree(): void {
+    this.motifService.setSearchState(MotifSearchState.SEARCH_TREE);
   }
 
-  public onDiscardReceived(filter: MotifsSearchTreeFilter): void {
-    this.motifService.discard(filter);
+  public setStateSearchCDR3(): void {
+    this.motifService.setSearchState(MotifSearchState.SEARCH_CDR3);
+  }
+
+  public isStateSearchTree(): boolean {
+    return this.motifService.getSearchState() === MotifSearchState.SEARCH_TREE;
+  }
+
+  public isStateSearchCDR3(): boolean {
+    return this.motifService.getSearchState() === MotifSearchState.SEARCH_CDR3;
   }
 }
