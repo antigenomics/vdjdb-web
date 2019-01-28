@@ -18,9 +18,10 @@ import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MotifSearchCDR3Component } from 'pages/motif/motif_search_util/motif_search_cdr3/motif-search-cdr3.component';
+import { ModalsModule } from 'shared/modals/modals.module';
 
 @NgModule({
-  imports:      [ CommonModule, FormsModule ],
+  imports:      [ CommonModule, FormsModule, ModalsModule ],
   declarations: [ MotifSearchCDR3Component ],
   exports:      [ MotifSearchCDR3Component ]
 

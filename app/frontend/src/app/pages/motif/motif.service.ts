@@ -145,9 +145,9 @@ export class MotifService {
     return this.loadingState;
   }
 
-  public searchCDR3(cdr3: string): void {
+  public searchCDR3(cdr3: string, top: number): void {
     this.loadingState.next(true);
-    Utils.HTTP.post('/api/motifs/cdr3', { cdr3 }).then((response) => {
+    Utils.HTTP.post('/api/motifs/cdr3', { cdr3, top }).then((response) => {
       const result = JSON.parse(response.response) as MotifCDR3SearchResult;
       this.clusters.next(result);
       this.loadingState.next(false);

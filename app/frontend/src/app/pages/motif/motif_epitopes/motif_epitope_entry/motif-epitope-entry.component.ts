@@ -57,6 +57,9 @@ export class MotifEpitopeEntryComponent implements OnInit, OnDestroy {
 
   public hide(): void {
     this.isHidden = !this.isHidden;
+    setTimeout(() => {
+      this.motifService.fireScrollUpdateEvent();
+    }, 50);
   }
 
   public ngOnDestroy(): void {
