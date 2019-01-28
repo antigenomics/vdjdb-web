@@ -1,14 +1,13 @@
 <div class="ui main content text fade slow element soft-margin" style="padding-bottom: 15px; height: 100%; overflow: hidden;">
     <div class="ui raised segments" style="height: 85%">
-        <h3 class="ui top attached header">Motifs browser</h3>
+        <h3 class="ui top attached header">CDR3 motif database</h3>
         <div class="ui attached segment" style="height: 100%">
             <div class="ui active inverted dimmer" *ngIf="isEpitopesLoading() | async">
                 <div class="ui text loader">Loading</div>
             </div>
             <div class="ui grid" style="height: 100%;">
                 <div class="ui five wide column" style="overflow-x: hidden; overflow-y: auto">
-                    <motif-view-options [options]="options | async" (onOptionsChange)="setOptions($event)"></motif-view-options>
-                    <motif-search-util [metadata]="metadata | async" [selected]="selected | async"></motif-search-util>
+                    <motif-search-util [metadata]="metadata | async" [options]="options | async" [selected]="selected | async"></motif-search-util>
                 </div>
                 <div class="ui eleven wide column" style="overflow-x: hidden; overflow-y: auto" #EpitopesContainer>
                     <motif-epitopes *ngIf="isStateSearchTree()" [options]="options | async" [epitopes]="epitopes | async"></motif-epitopes>

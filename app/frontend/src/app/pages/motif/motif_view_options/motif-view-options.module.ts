@@ -18,9 +18,10 @@ import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MotifViewOptionsComponent } from 'pages/motif/motif_view_options/motif-view-options.component';
+import { ModalsModule } from 'shared/modals/modals.module';
 
 @NgModule({
-  imports:      [ CommonModule, FormsModule ],
+  imports:      [ CommonModule, FormsModule, ModalsModule ],
   declarations: [ MotifViewOptionsComponent ],
   exports:      [ MotifViewOptionsComponent ]
 })
