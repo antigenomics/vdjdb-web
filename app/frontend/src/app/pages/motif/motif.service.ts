@@ -146,6 +146,10 @@ export class MotifService {
   }
 
   public searchCDR3(cdr3: string, top: number): void {
+    if (cdr3.length === 0) {
+      this.notifications.warn('Motifs CDR3', 'Empty search input');
+      return;
+    }
     this.loadingState.next(true);
     Utils.HTTP.post('/api/motifs/cdr3', { cdr3, top }).then((response) => {
       const result = JSON.parse(response.response) as MotifCDR3SearchResult;
