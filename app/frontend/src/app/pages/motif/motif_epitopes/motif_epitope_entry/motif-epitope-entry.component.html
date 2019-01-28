@@ -1,4 +1,4 @@
-<div class="ui segments with-options" style="margin-top: 25px">
+<div class="ui segments with-options" style="margin-top: 10px">
     <h4 class="ui clearing segment header">
         <div class="content">
             {{ epitope.epitope }}
@@ -6,7 +6,7 @@
         <div class="sub header">
             {{ meta.species }}&nbsp;&nbsp;>&nbsp;&nbsp;{{ meta.gene }}&nbsp;&nbsp;>&nbsp;&nbsp;{{ meta.mhcclass }}&nbsp;&nbsp;>&nbsp;&nbsp;{{ meta.mhca }}
         </div>
-        <i class="ui small outline trash icon options-icon" (click)="discard()" style="right: 10px"></i>
+        <i class="ui small close icon options-icon" (click)="discard()" style="right: 10px"></i>
         <i class="ui small angle icon options-icon" [ngClass]="{'down': isHidden, 'up': !isHidden}" (click)="hide()" style="right: 40px"></i>
     </h4>
     <ng-container *ngIf="!isHidden">

@@ -15,7 +15,7 @@
  */
 
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { MotifsMetadata, MotifsMetadataTreeLevelValue } from 'pages/motif/motif';
+import { MotifEpitopeViewOptions, MotifsMetadata, MotifsMetadataTreeLevelValue } from 'pages/motif/motif';
 import { MotifSearchState, MotifService } from 'pages/motif/motif.service';
 
 @Component({
@@ -30,6 +30,9 @@ export class MotifSearchUtilComponent {
 
   @Input('selected')
   public selected: MotifsMetadataTreeLevelValue[];
+
+  @Input('options')
+  public options: MotifEpitopeViewOptions;
 
   constructor(private motifService: MotifService) {}
 
@@ -47,5 +50,9 @@ export class MotifSearchUtilComponent {
 
   public isStateSearchCDR3(): boolean {
     return this.motifService.getSearchState() === MotifSearchState.SEARCH_CDR3;
+  }
+
+  public onOptionsChange(options: MotifEpitopeViewOptions): void {
+    this.motifService.setOptions(options);
   }
 }

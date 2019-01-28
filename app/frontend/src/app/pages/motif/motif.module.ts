@@ -23,10 +23,9 @@ import { MotifService } from 'pages/motif/motif.service';
 import { MotifCDR3ClustersModule } from 'pages/motif/motif_cdr3_clusters/motif-cdr3-clusters.module';
 import { MotifEpitopesModule } from 'pages/motif/motif_epitopes/motif-epitopes.module';
 import { MotifSearchUtilModule } from 'pages/motif/motif_search_util/motif-search-util.module';
-import { MotifViewOptionsModule } from 'pages/motif/motif_view_options/motif-view-options.module';
 
 @NgModule({
-  imports:      [ CommonModule, MotifPageRouting, MotifViewOptionsModule, MotifSearchUtilModule, MotifEpitopesModule, MotifCDR3ClustersModule ],
+  imports:      [ CommonModule, MotifPageRouting, MotifSearchUtilModule, MotifEpitopesModule, MotifCDR3ClustersModule ],
   declarations: [ MotifPageComponent ],
   exports:      [ MotifPageComponent ],
   providers:    [ MotifService ]

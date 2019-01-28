@@ -19,9 +19,10 @@ import { NgModule } from '@angular/core';
 import { MotifSearchUtilComponent } from 'pages/motif/motif_search_util/motif-search-util.component';
 import { MotifSearchCDR3Module } from 'pages/motif/motif_search_util/motif_search_cdr3/motif-search-cdr3.module';
 import { MotifSearchTreeModule } from 'pages/motif/motif_search_util/motif_search_tree/motif-search-tree.module';
+import { MotifViewOptionsModule } from 'pages/motif/motif_view_options/motif-view-options.module';
 
 @NgModule({
-  imports:      [ CommonModule, MotifSearchTreeModule, MotifSearchCDR3Module ],
+  imports:      [ CommonModule, MotifSearchTreeModule, MotifSearchCDR3Module, MotifViewOptionsModule ],
   declarations: [ MotifSearchUtilComponent ],
   exports:      [ MotifSearchUtilComponent ]
 })

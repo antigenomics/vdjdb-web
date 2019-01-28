@@ -1,10 +1,13 @@
-<div class="ui segments" style="margin-top: 25px">
-    <div class="ui segment header">View options</div>
-    <div class="ui segment" *ngIf="options">
+<div class="ui grid" *ngIf="options">
+    <div class="fourteen wide column">
         <div class="ui checkbox" (click)="normalize()">
             <input type="checkbox" [ngModel]="options.isNormalized">
             <label>Normalize</label>
         </div>
+    </div>
+    <div class="two wide column cursor pointer" popup="Normalize position-weight matrices by background frequency of CDR3 residues in naive T-cell repertoire.
+            This aids in removing large information scores produced by V/J germline parts at CDR3 boundaries." header="Normalize" position="left">
+        <i class="help icon"></i>
     </div>
 </div>
 
