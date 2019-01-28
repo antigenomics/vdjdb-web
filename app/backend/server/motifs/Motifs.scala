@@ -54,7 +54,7 @@ case class Motifs @Inject()(database: Database) {
     }
   }
 
-  def cdr3(cdr3: String): Option[MotifCDR3SearchResult] = {
+  def cdr3(cdr3: String, top: Int): Option[MotifCDR3SearchResult] = {
     val mapped = table.where(table.intColumn("len").isEqualTo(cdr3.length.toDouble)).splitOn(table.stringColumn("cid")).asTableList().asScala.map { t =>
       val info: Seq[(Double, Double)] = t.splitOn("pos").asTableList().asScala.map { p =>
         val posSet = p.intColumn("pos").asScala.toSet
@@ -76,10 +76,11 @@ case class Motifs @Inject()(database: Database) {
       (reduced._1, reduced._2, MotifCluster.fromTable(t))
     }
 
-    val clusters = mapped.sortWith(_._1 > _._1).take(5).map { case (i, _, cluster) => MotifCDR3SearchEntry(i, cluster) }
-    val clustersNorm = mapped.sortWith(_._2 > _._2).take(5).map { case (_, in, cluster) => MotifCDR3SearchEntry(in, cluster) }
+    val safeTop = Math.max(1, Math.min(15, top))
+    val clusters = mapped.sortWith(_._1 > _._1).take(safeTop).map { case (i, _, cluster) => MotifCDR3SearchEntry(i, cluster) }
+    val clustersNorm = mapped.sortWith(_._2 > _._2).take(safeTop).map { case (_, in, cluster) => MotifCDR3SearchEntry(in, cluster) }
 
-    Some(MotifCDR3SearchResult(cdr3, clusters, clustersNorm))
+    Some(MotifCDR3SearchResult(cdr3, safeTop, clusters, clustersNorm))
   }
 }
 

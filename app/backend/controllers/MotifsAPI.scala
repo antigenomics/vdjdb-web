@@ -60,7 +60,7 @@ class MotifsAPI @Inject()(cc: ControllerComponents, motifs: Motifs, configuratio
     Future.successful {
       request.body.asJson.map { json =>
         json.validate[MotifCDR3SearchRequest].map {
-          search => motifs.cdr3(search.cdr3).map { r => Ok(toJson(r)) }.getOrElse(BadRequest("Invalid filter provided"))
+          search => motifs.cdr3(search.cdr3, search.top).map { r => Ok(toJson(r)) }.getOrElse(BadRequest("Invalid filter provided"))
         }.recoverTotal {
           e => BadRequest("Detected error:" + JsError.toFlatForm(e))
         }

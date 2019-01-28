@@ -14,7 +14,7 @@
  *     limitations under the License.
  */
 
-import { ChangeDetectionStrategy, Component, ElementRef, Input, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { MotifCluster } from 'pages/motif/motif';
 import { MotifService, MotifsServiceEvents } from 'pages/motif/motif.service';
 import { ReplaySubject, Subscription } from 'rxjs';
@@ -37,6 +37,9 @@ export class MotifEpitopeClusterComponent implements OnInit, OnDestroy {
   public stream: SeqLogoChartStreamType = new ReplaySubject(1);
   public configuration: ISeqLogoChartConfiguration = MotifService.clusterViewportChartConfiguration;
 
+  @ViewChild('HeaderContent', { read: ElementRef })
+  public HeaderContent: ElementRef;
+
   @Input('cluster')
   public cluster: MotifCluster;
 
@@ -48,7 +51,7 @@ export class MotifEpitopeClusterComponent implements OnInit, OnDestroy {
     }
   }
 
-  constructor(private element: ElementRef, private motifService: MotifService) {}
+  constructor(private motifService: MotifService) {}
 
   public ngOnInit(): void {
     this.onScrollObservable = this.motifService.getEvents().pipe(filter((event) => event === MotifsServiceEvents.UPDATE_SCROLL)).subscribe(() => {
@@ -85,7 +88,7 @@ export class MotifEpitopeClusterComponent implements OnInit, OnDestroy {
   }
 
   public isInViewport(): boolean {
-    const bounding = this.element.nativeElement.getBoundingClientRect();
+    const bounding = this.HeaderContent.nativeElement.getBoundingClientRect();
     return (
       bounding.top >= 0 &&
       bounding.left >= 0 &&

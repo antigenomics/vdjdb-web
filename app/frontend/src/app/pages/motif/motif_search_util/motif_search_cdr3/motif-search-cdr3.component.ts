@@ -23,11 +23,16 @@ import { MotifService } from 'pages/motif/motif.service';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MotifSearchCDR3Component {
+  public top: number = 5;
   public input: string = '';
 
   constructor(private motifService: MotifService) {}
 
   public search(): void {
-    this.motifService.searchCDR3(this.input);
+    this.motifService.searchCDR3(this.input, this.top);
+  }
+
+  public setTop(top: number): void {
+    this.top = top;
   }
 }

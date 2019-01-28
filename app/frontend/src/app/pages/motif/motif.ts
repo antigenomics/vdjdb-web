@@ -101,6 +101,7 @@ export interface MotifCDR3SearchEntry {
 
 export interface MotifCDR3SearchResult {
   cdr3: string;
+  top: number;
   clusters: MotifCDR3SearchEntry[];
   clustersNorm: MotifCDR3SearchEntry[];
 }
