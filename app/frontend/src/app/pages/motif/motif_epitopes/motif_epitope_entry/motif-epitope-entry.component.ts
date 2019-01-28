@@ -15,7 +15,7 @@
  */
 
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
-import { MotifClusterMeta, MotifEpitope } from 'pages/motif/motif';
+import { MotifCluster, MotifClusterMeta, MotifEpitope } from 'pages/motif/motif';
 import { MotifService, MotifsServiceEvents } from 'pages/motif/motif.service';
 import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
@@ -60,6 +60,10 @@ export class MotifEpitopeEntryComponent implements OnInit, OnDestroy {
     setTimeout(() => {
       this.motifService.fireScrollUpdateEvent();
     }, 50);
+  }
+
+  public trackClusterBy(_: number, item: MotifCluster): string {
+    return item.clusterId;
   }
 
   public ngOnDestroy(): void {

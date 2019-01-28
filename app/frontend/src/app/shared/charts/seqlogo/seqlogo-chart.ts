@@ -15,6 +15,7 @@
  */
 
 import { ScaleBand } from 'd3-scale';
+import { event as D3CurrentEvent } from 'd3-selection';
 import * as d3 from 'external/d3';
 import { NgZone } from '@angular/core';
 import { Observable, Subject } from 'rxjs';
@@ -73,26 +74,26 @@ export class SeqLogoChart extends Chart<ISeqLogoChartDataEntry, ISeqLogoChartCon
   };
 
   private static readonly colors: { [ index: string ]: string } = {
-    'A': 'black',
-    'C': 'green',
-    'T': 'green',
-    'G': 'green',
-    'D': 'red',
-    'E': 'red',
-    'F': 'black',
-    'H': 'blue',
-    'I': 'black',
-    'K': 'blue',
-    'L': 'black',
-    'M': 'black',
-    'N': 'purple',
-    'P': 'black',
-    'Q': 'purple',
-    'R': 'blue',
-    'S': 'green',
-    'V': 'black',
-    'W': 'black',
-    'Y': 'green'
+    'A': '#333333',
+    'C': '#21ba45',
+    'T': '#21ba45',
+    'G': '#21ba45',
+    'D': '#f2711c',
+    'E': '#f2711c',
+    'F': '#333333',
+    'H': '#2185d0',
+    'I': '#333333',
+    'K': '#2185d0',
+    'L': '#333333',
+    'M': '#333333',
+    'N': '#a333c8',
+    'P': '#333333',
+    'Q': '#a333c8',
+    'R': '#2185d0',
+    'S': '#21ba45',
+    'V': '#333333',
+    'W': '#333333',
+    'Y': '#21ba45'
   };
 
   constructor(configuration: ISeqLogoChartConfiguration, container: ChartContainer,
@@ -115,8 +116,7 @@ export class SeqLogoChart extends Chart<ISeqLogoChartDataEntry, ISeqLogoChartCon
       .attr('transform', `translate(0, ${height - SeqLogoChart.defaultXMargin})`)
       .call(xAxis);
 
-
-    const m = data.map((d) =>
+    const mapped = data.filter((d) => d.pos >= 0).map((d) =>
       d.chars.map((c, i) => ({
         char: c,
         pos:  d.pos,
@@ -124,8 +124,17 @@ export class SeqLogoChart extends Chart<ISeqLogoChartDataEntry, ISeqLogoChartCon
       }))
     ).reduce((acc, val) => acc.concat(val), []);
 
-    svg.selectAll('.box')
-      .data(m).enter()
+    const hits = mapped.filter((d) => {
+      const real = data.find((f) => f.pos === (-d.pos - 1));
+      if (real !== undefined) {
+        return real.chars[ 0 ].c === d.char.c;
+      } else {
+        return false;
+      }
+    });
+
+    const elements = svg.selectAll('.box')
+      .data(mapped).enter()
       .append('g')
       .attr('class', 'box')
       .attr('transform', (d) => `translate(${x(`${d.pos + 1}`)}, ${(height - SeqLogoChart.defaultXMargin) * d.dy})`)
@@ -136,6 +145,26 @@ export class SeqLogoChart extends Chart<ISeqLogoChartDataEntry, ISeqLogoChartCon
         return `scale(${x.bandwidth() / bbox.width}, ${(height - SeqLogoChart.defaultXMargin) * d.char.h / bbox.height})`;
       })
       .attr('fill', (d) => d.char.color === undefined ? SeqLogoChart.colors[ d.char.c ] : d.char.color);
+
+    svg.selectAll('.hit')
+      .data(hits).enter()
+      .append('g')
+      .attr('class', 'hit')
+      .attr('transform', (d) => `translate(${x(`${d.pos + 1}`)}, ${(height - SeqLogoChart.defaultXMargin) * d.dy})`)
+      .append('rect')
+      .attr('x', 3)
+      .attr('y', -80)
+      .attr('width', 28)
+      .attr('height', 80)
+      .attr('fill', 'none')
+      .attr('stroke', 'red')
+      .attr('stroke-width', '2.5px')
+      .attr('transform', (d, i, n) => {
+        const bbox = (d3.select(n[ i ]).node() as any).getBBox();
+        return `scale(${x.bandwidth() / bbox.width}, ${(height - SeqLogoChart.defaultXMargin) * d.char.h / bbox.height})`;
+      });
+
+    this.bindTooltipEvents(elements);
   }
 
   public update(data: ISeqLogoChartDataEntry[]): void {
@@ -160,5 +189,19 @@ export class SeqLogoChart extends Chart<ISeqLogoChartDataEntry, ISeqLogoChartCon
 
     const xAxis = d3.axisBottom(x);
     return { x, xAxis };
+  }
+
+  private bindTooltipEvents(elements: any): void {
+    const xDefaultOffset = 20;
+    const yDefaultOffset = -40;
+
+    elements.on('mouseover', (d: { char: { c: string, h: number }, pos: number }) => {
+      this.tooltip.text(d.char.c, `Frequency: ${(d.char.h * 100).toFixed(2)}`);
+      this.tooltip.show();
+    }).on('mouseout', () => {
+      this.tooltip.hide();
+    }).on('mousemove', () => {
+      this.tooltip.position(D3CurrentEvent.pageX + xDefaultOffset, D3CurrentEvent.pageY + yDefaultOffset);
+    });
   }
 }

@@ -11,7 +11,7 @@
                 <h5 class="ui header">
                     <div class="content">Informativeness: {{ entry.info.toFixed(3) }}</div>
                 </h5>
-                <motif-epitope-cluster [cluster]="entry.cluster" [isNormalized]="options.isNormalized"></motif-epitope-cluster>
+                <motif-epitope-cluster [cluster]="entry.cluster" [hit]="clusters.cdr3" [isNormalized]="options.isNormalized"></motif-epitope-cluster>
             </div>
         </ng-container>
         <ng-template #empty>
