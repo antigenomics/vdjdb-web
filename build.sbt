@@ -56,6 +56,10 @@ scalacOptions ++= Seq(
     "-Xfatal-warnings"
 )
 
+scalacOptions in Universal ++= Seq(
+    "-Xdisable-assertions"
+)
+
 // Starts: Prevent documentation of API for production bundles
 sources in (Compile, doc) := Seq.empty
 mappings in (Compile, packageDoc) := Seq.empty

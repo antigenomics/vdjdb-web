@@ -20,6 +20,7 @@ import { MotifCDR3SearchResult, MotifEpitope, MotifEpitopeViewOptions, MotifsMet
 import { MotifSearchState, MotifService } from 'pages/motif/motif.service';
 import { fromEvent, Observable, Subscription, timer } from 'rxjs';
 import { debounce } from 'rxjs/operators';
+import { ContentWrapperService } from '../../content-wrapper.service';
 
 @Component({
   selector:        'motif',
@@ -27,7 +28,8 @@ import { debounce } from 'rxjs/operators';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MotifPageComponent implements OnInit, OnDestroy {
-  private subscription: Subscription;
+  private onScrollObservable: Subscription;
+  private onResizeObservable: Subscription;
 
   public readonly metadata: Observable<MotifsMetadata>;
   public readonly selected: Observable<Array<MotifsMetadataTreeLevelValue>>;
@@ -38,7 +40,7 @@ export class MotifPageComponent implements OnInit, OnDestroy {
   @ViewChild('EpitopesContainer')
   public EpitopesContainer: ElementRef;
 
-  constructor(private motifService: MotifService) {
+  constructor(private motifService: MotifService, private contentWrapper: ContentWrapperService) {
     this.metadata = motifService.getMetadata();
     this.selected = motifService.getSelected();
     this.epitopes = motifService.getEpitopes();
@@ -48,11 +50,16 @@ export class MotifPageComponent implements OnInit, OnDestroy {
 
   public ngOnInit(): void {
     // noinspection JSIgnoredPromiseFromCall
+    this.contentWrapper.blockScrolling();
     this.motifService.load();
-    this.subscription = fromEvent(this.EpitopesContainer.nativeElement, 'scroll').pipe(debounce(() => timer(5)))
-      .subscribe(() => {
+    this.onScrollObservable = fromEvent(this.EpitopesContainer.nativeElement, 'scroll')
+      .pipe(debounce(() => timer(5))).subscribe(() => {
         this.motifService.fireScrollUpdateEvent();
       });
+
+    this.onResizeObservable = fromEvent(window, 'resize').pipe(debounce(() => timer(200))).subscribe(() => {
+      this.motifService.fireResizeUpdateEvent();
+    });
   }
 
   public isEpitopesLoading(): Observable<boolean> {
@@ -64,7 +71,9 @@ export class MotifPageComponent implements OnInit, OnDestroy {
   }
 
   public ngOnDestroy(): void {
-    this.subscription.unsubscribe();
+    this.contentWrapper.unblockScrolling();
+    this.onScrollObservable.unsubscribe();
+    this.onResizeObservable.unsubscribe();
   }
 
   public isStateSearchTree(): boolean {
