@@ -43,6 +43,9 @@ export class MotifEpitopeClusterComponent implements OnInit, OnDestroy {
   @Input('cluster')
   public cluster: MotifCluster;
 
+  @Input('hit')
+  public hit?: string;
+
   @Input('isNormalized')
   public set setIsNormalized(isNormalized: boolean) {
     if (this.isNormalized !== isNormalized) {
@@ -79,12 +82,23 @@ export class MotifEpitopeClusterComponent implements OnInit, OnDestroy {
   }
 
   public createData(): ISeqLogoChartDataEntry[] {
-    return this.cluster.entries.map((entry) => {
+    const entries = this.cluster.entries.map((entry) => {
       return {
         pos:   entry.position,
         chars: entry.aa.map((aa) => ({ c: aa.letter, h: this.isNormalized ? aa.HNorm : aa.H })).sort((e1, e2) => e2.h - e1.h)
       };
     });
+
+    if (this.hit !== undefined) {
+      entries.push(...this.hit.split('').map((c, index) => {
+        return {
+          pos:   -index - 1,
+          chars: [ { c: c, h: 0 } ]
+        };
+      }));
+    }
+
+    return entries;
   }
 
   public isInViewport(): boolean {

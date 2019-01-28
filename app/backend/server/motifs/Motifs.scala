@@ -59,14 +59,15 @@ case class Motifs @Inject()(database: Database) {
       val info: Seq[(Double, Double)] = t.splitOn("pos").asTableList().asScala.map { p =>
         val posSet = p.intColumn("pos").asScala.toSet
         assert(posSet.size == 1)
+
         val pos = posSet.head
-        val i: (Double, Double) = if (p.stringColumn("aa").asSet().asScala.contains(String.valueOf(cdr3(pos)))) {
-          val I = p.doubleColumn("I").asScala.toSet
-          val Inorm = p.doubleColumn("I.norm").asScala.toSet
+        val index = p.stringColumn("aa").firstIndexOf(String.valueOf(cdr3(pos)))
 
-          assert(I.size == 1 && Inorm.size == 1)
+        val i: (Double, Double) = if (index != -1) {
+          val I = p.doubleColumn("height.I").get(index)
+          val Inorm = p.doubleColumn("height.I.norm").get(index)
 
-          (I.head, Inorm.head)
+          (I, Inorm)
         } else {
           (0.0d, 0.0d)
         }
