@@ -67,18 +67,26 @@ export interface MotifClusterEntry {
   readonly aa: MotifClusterEntryAA[]
 }
 
+export interface MotifClusterMeta {
+  readonly species: string;
+  readonly gene: string;
+  readonly mhcclass: string;
+  readonly mhca: string;
+}
+
 export interface MotifCluster {
-  readonly clusterId: string,
-  readonly size: number,
+  readonly clusterId: string;
+  readonly size: number;
   readonly length: number;
   readonly vsegm: string;
   readonly jsegm: string;
-  readonly entries: MotifClusterEntry[]
+  readonly entries: MotifClusterEntry[];
+  readonly meta: MotifClusterMeta;
 }
 
 export interface MotifEpitope {
-  readonly epitope: string,
-  readonly clusters: MotifCluster[]
+  readonly epitope: string;
+  readonly clusters: MotifCluster[];
 }
 
 // -------------------------------------------------------------------------------- //

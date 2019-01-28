@@ -38,7 +38,8 @@ export namespace MotifsServiceWebSocketActions {
 export namespace MotifsServiceEvents {
   export const UPDATE_SELECTED: number = 1;
   export const UPDATE_SCROLL: number = 2;
-  export const HIDE_CLUSTERS: number = 3;
+  export const UPDATE_RESIZE: number = 3;
+  export const HIDE_CLUSTERS: number = 4;
 }
 
 export type MotifsServiceEvents = number;
@@ -130,6 +131,10 @@ export class MotifService {
 
   public fireScrollUpdateEvent(): void {
     this.events.next(MotifsServiceEvents.UPDATE_SCROLL);
+  }
+
+  public fireResizeUpdateEvent(): void {
+    this.events.next(MotifsServiceEvents.UPDATE_RESIZE);
   }
 
   public fireHideEvent(): void {

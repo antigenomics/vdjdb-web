@@ -1,16 +1,16 @@
-<div class="ui main content text fade slow element soft-margin" style="padding-bottom: 75px;">
-    <div class="ui raised segments">
+<div class="ui main content text fade slow element soft-margin" style="padding-bottom: 15px; height: 100%; overflow: hidden;">
+    <div class="ui raised segments" style="height: 85%">
         <h3 class="ui top attached header">Motifs browser</h3>
-        <div class="ui attached segment">
+        <div class="ui attached segment" style="height: 100%">
             <div class="ui active inverted dimmer" *ngIf="isEpitopesLoading() | async">
                 <div class="ui text loader">Loading</div>
             </div>
-            <div class="ui grid">
-                <div class="ui five wide column" style="max-height: 800px; min-height: 800px; overflow-x: hidden; overflow-y: auto">
+            <div class="ui grid" style="height: 100%;">
+                <div class="ui five wide column" style="overflow-x: hidden; overflow-y: auto">
                     <motif-view-options [options]="options | async" (onOptionsChange)="setOptions($event)"></motif-view-options>
                     <motif-search-util [metadata]="metadata | async" [selected]="selected | async"></motif-search-util>
                 </div>
-                <div class="ui eleven wide column" style="max-height: 800px; min-height: 800px; overflow-x: hidden; overflow-y: auto" #EpitopesContainer>
+                <div class="ui eleven wide column" style="overflow-x: hidden; overflow-y: auto" #EpitopesContainer>
                     <motif-epitopes *ngIf="isStateSearchTree()" [options]="options | async" [epitopes]="epitopes | async"></motif-epitopes>
                     <motif-cdr3-clusters *ngIf="isStateSearchCDR3()" [options]="options | async" [clusters]="clusters | async"></motif-cdr3-clusters>
                 </div>

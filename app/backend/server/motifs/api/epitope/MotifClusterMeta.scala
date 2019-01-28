@@ -14,23 +14,12 @@
  *     limitations under the License.
  */
 
-.options-icon {
-    top: 15px;
-    position: absolute;
-    float: right;
-    opacity: 0.0 !important;
-    font-size: 1.25em !important;
-    cursor: pointer;
-    -webkit-transition: opacity 0.2s ease-in-out !important;
-    -moz-transition: opacity 0.2s ease-in-out !important;
-    -ms-transition: opacity 0.2s ease-in-out !important;
-    transition: opacity 0.2s ease-in-out !important;
-}
+package backend.server.motifs.api.epitope
 
-.ui.segments.with-options > .ui.header > .options-icon {
-    opacity: 0.0 !important;
-}
+import play.api.libs.json.{Format, Json}
 
-.ui.segments.with-options > .ui.header:hover > .options-icon {
-    opacity: 0.5 !important;
+case class MotifClusterMeta(species: String, gene: String, mhcclass: String, mhca: String)
+
+object MotifClusterMeta {
+  implicit val motifMetaFormat: Format[MotifClusterMeta] = Json.format[MotifClusterMeta]
 }

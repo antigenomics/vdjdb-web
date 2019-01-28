@@ -29,13 +29,14 @@ import { NotificationModule } from 'utils/notifications/notification.module';
 import { LocalStorageService } from 'utils/storage/local-storage.service';
 import { ApplicationComponent } from './application.component';
 import { ApplicationRouting } from './application.routing';
+import { ContentWrapperService } from './content-wrapper.service';
 
 @NgModule({
-    imports:      [ BrowserModule, CommonModule, ApplicationRouting, HomePageModule, OverviewPageModule, SearchPageModule,
-                    NotificationModule, NavigationBarModule, LoaderModule ],
-    declarations: [ ApplicationComponent ],
-    providers:    [ LoggerService, ClipboardService, AnalyticsService, LocalStorageService ],
-    bootstrap:    [ ApplicationComponent ]
+  imports:      [ BrowserModule, CommonModule, ApplicationRouting, HomePageModule, OverviewPageModule, SearchPageModule,
+    NotificationModule, NavigationBarModule, LoaderModule ],
+  declarations: [ ApplicationComponent ],
+  providers:    [ LoggerService, ClipboardService, AnalyticsService, LocalStorageService, ContentWrapperService ],
+  bootstrap:    [ ApplicationComponent ]
 })
 export class ApplicationModule {
 }

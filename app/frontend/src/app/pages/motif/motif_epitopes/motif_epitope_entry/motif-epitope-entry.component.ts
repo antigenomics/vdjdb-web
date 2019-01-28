@@ -15,7 +15,7 @@
  */
 
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
-import { MotifEpitope } from 'pages/motif/motif';
+import { MotifClusterMeta, MotifEpitope } from 'pages/motif/motif';
 import { MotifService, MotifsServiceEvents } from 'pages/motif/motif.service';
 import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
@@ -29,6 +29,7 @@ import { filter } from 'rxjs/operators';
 export class MotifEpitopeEntryComponent implements OnInit, OnDestroy {
   private subscription: Subscription;
 
+  public meta: MotifClusterMeta;
   public isHidden: boolean = false;
 
   @Input('epitope')
@@ -43,6 +44,7 @@ export class MotifEpitopeEntryComponent implements OnInit, OnDestroy {
   constructor(private motifService: MotifService, private changeDetector: ChangeDetectorRef) {}
 
   public ngOnInit(): void {
+    this.meta = this.epitope.clusters[ 0 ].meta;
     this.subscription = this.motifService.getEvents().pipe(filter((event) => event === MotifsServiceEvents.HIDE_CLUSTERS)).subscribe(() => {
       this.isHidden = true;
       this.changeDetector.markForCheck();

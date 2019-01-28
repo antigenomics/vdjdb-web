@@ -29,7 +29,8 @@ import { ISeqLogoChartConfiguration } from 'shared/charts/seqlogo/seqlogo-config
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MotifEpitopeClusterComponent implements OnInit, OnDestroy {
-  private subscription: Subscription;
+  private onScrollObservable: Subscription;
+  private onResizeObservable: Subscription;
   private isNormalized: boolean;
 
   public isRendered: boolean = false;
@@ -50,10 +51,13 @@ export class MotifEpitopeClusterComponent implements OnInit, OnDestroy {
   constructor(private element: ElementRef, private motifService: MotifService) {}
 
   public ngOnInit(): void {
-    this.subscription = this.motifService.getEvents().pipe(filter((event) => event === MotifsServiceEvents.UPDATE_SCROLL)).subscribe(() => {
+    this.onScrollObservable = this.motifService.getEvents().pipe(filter((event) => event === MotifsServiceEvents.UPDATE_SCROLL)).subscribe(() => {
       if (!this.isRendered) {
         this.updateIfInViewport(ChartEventType.UPDATE_DATA);
       }
+    });
+    this.onResizeObservable = this.motifService.getEvents().pipe(filter((event) => event === MotifsServiceEvents.UPDATE_RESIZE)).subscribe(() => {
+      this.updateIfInViewport(ChartEventType.RESIZE);
     });
   }
 
@@ -91,6 +95,7 @@ export class MotifEpitopeClusterComponent implements OnInit, OnDestroy {
   };
 
   public ngOnDestroy(): void {
-    this.subscription.unsubscribe();
+    this.onScrollObservable.unsubscribe();
+    this.onResizeObservable.unsubscribe();
   }
 }

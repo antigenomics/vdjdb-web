@@ -15,14 +15,18 @@
  */
 
 import { Component } from '@angular/core';
+import { Observable } from 'rxjs';
+import { ContentWrapperService } from './content-wrapper.service';
 
 @Component({
-    selector: 'application',
-    template: `<navbar></navbar>
-               <notification-container></notification-container>
-               <loader></loader>
-               <div class="content_wrapper">
-                    <router-outlet></router-outlet>
-               </div>`
+  selector:    'application',
+  templateUrl: './application.component.html',
+  styleUrls:   [ './application.component.css' ]
 })
-export class ApplicationComponent {}
+export class ApplicationComponent {
+  public isScrollBlocked: Observable<boolean>;
+
+  constructor(contentWrapper: ContentWrapperService) {
+    this.isScrollBlocked = contentWrapper.getScrollBlockedState();
+  }
+}

@@ -20,7 +20,7 @@ import play.api.libs.json.{Format, Json}
 import tech.tablesaw.api.Table
 import scala.collection.JavaConverters._
 
-case class MotifCluster(clusterId: String, size: Int, length: Int, vsegm: String, jsegm: String, entries: Seq[MotifClusterEntry])
+case class MotifCluster(clusterId: String, size: Int, length: Int, vsegm: String, jsegm: String, entries: Seq[MotifClusterEntry], meta: MotifClusterMeta)
 
 object MotifCluster {
   implicit val motifClusterFormat: Format[MotifCluster] = Json.format[MotifCluster]
@@ -39,6 +39,15 @@ object MotifCluster {
     val length = len.head
     val entries = table.splitOn(table.intColumn("pos")).asTableList().asScala.map(MotifClusterEntry.fromTable)
 
-    MotifCluster(clusterId, size, length, v.head, j.head, entries)
+    val species = table.stringColumn("species").asSet.asScala
+    val gene = table.stringColumn("gene").asSet.asScala
+    val mhcclass = table.stringColumn("mhc.class").asSet.asScala
+    val mhca = table.stringColumn("mhc.a").asSet.asScala
+
+    assert(species.size == 1 && gene.size == 1 && mhcclass.size == 1 && mhca.size == 1)
+
+    val meta = MotifClusterMeta(species.head, gene.head, mhcclass.head, mhca.head)
+
+    MotifCluster(clusterId, size, length, v.head, j.head, entries, meta)
   }
 }

@@ -1,0 +1,6 @@
+<navbar></navbar>
+<notification-container></notification-container>
+<loader></loader>
+<div class="content_wrapper" [ngClass]="{ 'block-scroll':(isScrollBlocked | async) }">
+    <router-outlet></router-outlet>
+</div>
