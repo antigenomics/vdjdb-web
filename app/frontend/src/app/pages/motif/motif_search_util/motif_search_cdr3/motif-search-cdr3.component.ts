@@ -14,7 +14,7 @@
  *     limitations under the License.
  */
 
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { MotifService } from 'pages/motif/motif.service';
 
 @Component({
@@ -23,6 +23,8 @@ import { MotifService } from 'pages/motif/motif.service';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MotifSearchCDR3Component {
+
+  @Input('input')
   public input: string = '';
 
   constructor(private motifService: MotifService) {}

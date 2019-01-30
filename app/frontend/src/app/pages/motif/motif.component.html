@@ -7,7 +7,8 @@
             </div>
             <div class="ui grid" style="height: 100%;">
                 <div class="ui five wide column" style="overflow-x: hidden; overflow-y: auto">
-                    <motif-search-util [metadata]="metadata | async" [options]="options | async" [selected]="selected | async"></motif-search-util>
+                    <motif-search-util [metadata]="metadata | async" [options]="options | async" [selected]="selected | async"
+                                       [cdr3]="cdr3 | async"></motif-search-util>
                 </div>
                 <div class="ui eleven wide column" style="overflow-x: hidden; overflow-y: auto" #EpitopesContainer>
                     <motif-epitopes *ngIf="isStateSearchTree()" [options]="options | async" [epitopes]="epitopes | async"></motif-epitopes>

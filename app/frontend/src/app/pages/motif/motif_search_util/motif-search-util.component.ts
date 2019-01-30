@@ -34,6 +34,9 @@ export class MotifSearchUtilComponent {
   @Input('options')
   public options: MotifEpitopeViewOptions;
 
+  @Input('cdr3')
+  public cdr3: string;
+
   constructor(private motifService: MotifService) {}
 
   public setStateSearchTree(): void {
