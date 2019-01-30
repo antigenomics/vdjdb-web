@@ -150,7 +150,7 @@ export class MotifService {
   }
 
   public searchCDR3(cdr3: string, top: number = 15): void {
-    if (cdr3.length === 0) {
+    if (cdr3 ===null || cdr3 === undefined || cdr3.length === 0) {
       this.notifications.warn('Motifs CDR3', 'Empty search input');
       return;
     }
