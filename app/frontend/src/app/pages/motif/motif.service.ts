@@ -29,7 +29,7 @@ import { ISeqLogoChartConfiguration } from 'shared/charts/seqlogo/seqlogo-config
 import { LoggerService } from 'utils/logger/logger.service';
 import { NotificationService } from 'utils/notifications/notification.service';
 import { Utils } from 'utils/utils';
-import { map, take } from 'rxjs/operators';
+import { filter, map, take } from 'rxjs/operators';
 
 export namespace MotifsServiceWebSocketActions {
   export const METADATA = 'meta';
@@ -123,6 +123,10 @@ export class MotifService {
 
   public getCDR3Clusters(): Observable<MotifCDR3SearchResult> {
     return this.clusters.asObservable();
+  }
+
+  public getCDR3SearchInput(): Observable<string> {
+    return this.clusters.asObservable().pipe(filter((c) => c !== null && c !== undefined), map((c) => c.cdr3));
   }
 
   public setOptions(options: MotifEpitopeViewOptions): void {

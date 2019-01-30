@@ -35,6 +35,7 @@ export class MotifPageComponent implements OnInit, OnDestroy {
   public readonly selected: Observable<Array<MotifsMetadataTreeLevelValue>>;
   public readonly epitopes: Observable<Array<MotifEpitope>>;
   public readonly clusters: Observable<MotifCDR3SearchResult>;
+  public readonly cdr3: Observable<string>;
   public readonly options: Observable<MotifEpitopeViewOptions>;
 
   @ViewChild('EpitopesContainer')
@@ -45,6 +46,7 @@ export class MotifPageComponent implements OnInit, OnDestroy {
     this.selected = motifService.getSelected();
     this.epitopes = motifService.getEpitopes();
     this.clusters = motifService.getCDR3Clusters();
+    this.cdr3 = motifService.getCDR3SearchInput();
     this.options = motifService.getOptions();
   }
 
