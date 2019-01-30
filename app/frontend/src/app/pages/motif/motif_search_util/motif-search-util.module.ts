@@ -26,6 +26,4 @@ import { MotifViewOptionsModule } from 'pages/motif/motif_view_options/motif-vie
   declarations: [ MotifSearchUtilComponent ],
   exports:      [ MotifSearchUtilComponent ]
 })
-export class MotifSearchUtilModule {
-
-}
+export class MotifSearchUtilModule {}

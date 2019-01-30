@@ -25,6 +25,4 @@ import { ModalsModule } from 'shared/modals/modals.module';
   declarations: [ MotifCDR3ClustersComponent ],
   exports:      [ MotifCDR3ClustersComponent ]
 })
-export class MotifCDR3ClustersModule {
-
-}
+export class MotifCDR3ClustersModule {}

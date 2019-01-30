@@ -15,7 +15,7 @@
  */
 
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
-import { MotifsMetadataTreeLevel, MotifsMetadataTreeLevelValue, MotifsSearchTreeFilter } from 'pages/motif/motif';
+import { IMotifsMetadataTreeLevel, IMotifsMetadataTreeLevelValue, IMotifsSearchTreeFilter } from 'pages/motif/motif';
 import { MotifService, MotifsServiceEvents } from 'pages/motif/motif.service';
 import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
@@ -30,13 +30,13 @@ export class MotifSearchTreeLevelComponent implements OnInit, OnDestroy {
   private subscription: Subscription;
 
   @Input('level')
-  public level: MotifsMetadataTreeLevel;
+  public level: IMotifsMetadataTreeLevel;
 
   @Output('onSelect')
-  public onSelect = new EventEmitter<MotifsSearchTreeFilter>();
+  public onSelect = new EventEmitter<IMotifsSearchTreeFilter>();
 
   @Output('onDiscard')
-  public onDiscard = new EventEmitter<MotifsSearchTreeFilter>();
+  public onDiscard = new EventEmitter<IMotifsSearchTreeFilter>();
 
   constructor(private motifService: MotifService, private changeDetector: ChangeDetectorRef) {}
 
@@ -46,15 +46,15 @@ export class MotifSearchTreeLevelComponent implements OnInit, OnDestroy {
     });
   }
 
-  public open(value: MotifsMetadataTreeLevelValue): void {
+  public open(value: IMotifsMetadataTreeLevelValue): void {
     value.isOpened = true;
   }
 
-  public close(value: MotifsMetadataTreeLevelValue): void {
+  public close(value: IMotifsMetadataTreeLevelValue): void {
     value.isOpened = false;
   }
 
-  public header(value: MotifsMetadataTreeLevelValue): void {
+  public header(value: IMotifsMetadataTreeLevelValue): void {
     if (value.next !== null) {
       value.isOpened = !value.isOpened;
     } else {
@@ -66,25 +66,25 @@ export class MotifSearchTreeLevelComponent implements OnInit, OnDestroy {
     }
   }
 
-  public pushSelect(value: MotifsMetadataTreeLevelValue, filter: MotifsSearchTreeFilter): void {
-    this.onSelect.emit({ entries: [ ...filter.entries, { name: this.level.name, value: value.value } ] });
+  public pushSelect(value: IMotifsMetadataTreeLevelValue, treeFilter: IMotifsSearchTreeFilter): void {
+    this.onSelect.emit({ entries: [ ...treeFilter.entries, { name: this.level.name, value: value.value } ] });
   }
 
-  public select(value: MotifsMetadataTreeLevelValue): void {
+  public select(value: IMotifsMetadataTreeLevelValue): void {
     this.motifService.selectTreeLevelValue(value);
     this.onSelect.emit({ entries: [ { name: this.level.name, value: value.value } ] });
   }
 
-  public pushDiscard(value: MotifsMetadataTreeLevelValue, filter: MotifsSearchTreeFilter): void {
-    this.onDiscard.emit({ entries: [ ...filter.entries, { name: this.level.name, value: value.value } ] });
+  public pushDiscard(value: IMotifsMetadataTreeLevelValue, treeFilter: IMotifsSearchTreeFilter): void {
+    this.onDiscard.emit({ entries: [ ...treeFilter.entries, { name: this.level.name, value: value.value } ] });
   }
 
-  public discard(value: MotifsMetadataTreeLevelValue): void {
+  public discard(value: IMotifsMetadataTreeLevelValue): void {
     this.motifService.discardTreeLevelValue(value);
     this.onDiscard.emit({ entries: [ { name: this.level.name, value: value.value } ] });
   }
 
-  public isSelected(value: MotifsMetadataTreeLevelValue): boolean {
+  public isSelected(value: IMotifsMetadataTreeLevelValue): boolean {
     return this.motifService.isTreeLevelValueSelected(value);
   }
 

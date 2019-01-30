@@ -15,7 +15,7 @@
  */
 
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { MotifEpitope, MotifEpitopeViewOptions } from 'pages/motif/motif';
+import { IMotifEpitope, IMotifEpitopeViewOptions } from 'pages/motif/motif';
 import { MotifService } from 'pages/motif/motif.service';
 import { take } from 'rxjs/operators';
 
@@ -26,14 +26,14 @@ import { take } from 'rxjs/operators';
 })
 export class MotifEpitopesComponent {
   @Input('options')
-  public options: MotifEpitopeViewOptions;
+  public options: IMotifEpitopeViewOptions;
 
   @Input('epitopes')
-  public epitopes: MotifEpitope[];
+  public epitopes: IMotifEpitope[];
 
   constructor(private motifService: MotifService) {}
 
-  public onEpitopeDiscard(epitope: MotifEpitope): void {
+  public onEpitopeDiscard(epitope: IMotifEpitope): void {
     this.motifService.findTreeLevelValue(epitope.epitope).pipe(take(1)).subscribe((values) => {
       values.forEach((value) => {
         this.motifService.discardTreeLevelValue(value);
@@ -45,7 +45,7 @@ export class MotifEpitopesComponent {
     });
   }
 
-  public trackEpitopeBy(_: number, epitope: MotifEpitope): string {
+  public trackEpitopeBy(_: number, epitope: IMotifEpitope): string {
     return epitope.epitope;
   }
 

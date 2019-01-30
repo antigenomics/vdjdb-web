@@ -15,7 +15,7 @@
  */
 
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { MotifsMetadata, MotifsMetadataTreeLevelValue, MotifsSearchTreeFilter } from 'pages/motif/motif';
+import { IMotifsMetadata, IMotifsMetadataTreeLevelValue, IMotifsSearchTreeFilter } from 'pages/motif/motif';
 import { MotifService } from 'pages/motif/motif.service';
 
 @Component({
@@ -25,18 +25,18 @@ import { MotifService } from 'pages/motif/motif.service';
 })
 export class MotifSearchTreeComponent {
   @Input('metadata')
-  public metadata: MotifsMetadata;
+  public metadata: IMotifsMetadata;
 
   @Input('selected')
-  public selected: MotifsMetadataTreeLevelValue[];
+  public selected: IMotifsMetadataTreeLevelValue[];
 
   constructor(private motifService: MotifService) {}
 
-  public onFilterReceived(filter: MotifsSearchTreeFilter): void {
+  public onFilterReceived(filter: IMotifsSearchTreeFilter): void {
     this.motifService.select(filter);
   }
 
-  public onDiscardReceived(filter: MotifsSearchTreeFilter): void {
+  public onDiscardReceived(filter: IMotifsSearchTreeFilter): void {
     this.motifService.discard(filter);
   }
 

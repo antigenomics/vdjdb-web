@@ -24,6 +24,4 @@ import { MotifEpitopeEntryComponent } from 'pages/motif/motif_epitopes/motif_epi
   declarations: [ MotifEpitopeEntryComponent ],
   exports:      [ MotifEpitopeEntryComponent ]
 })
-export class MotifEpitopeEntryModule {
-
-}
+export class MotifEpitopeEntryModule {}

@@ -46,7 +46,7 @@ export namespace Utils {
     }
 
     export function flattened<T>(array: T[][]): T[] {
-      return array.reduce(function (a, b) {
+      return array.reduce((a, b) => {
         return a.concat(b);
       }, []);
     }
@@ -257,27 +257,28 @@ export namespace Utils {
 
   export namespace HTTP {
 
+    export const SUCCESS_STATUS: number = 200;
+    export const FAIL_STATUSES: number[] = [ 400, 401, 402, 403, 404, 405 ]; // tslint:disable-line:no-magic-numbers
+
     export function get(url: string): Promise<XMLHttpRequest> {
       return new Promise<XMLHttpRequest>((resolve, reject) => {
         try {
           const xhttp = new XMLHttpRequest();
           const lastReadyState = 4;
-          const successStatus = 200;
-          const failedStatuses = [ 400, 401, 402, 403, 404, 405 ];
 
-          xhttp.onreadystatechange = function () {
-            if (this.readyState === lastReadyState && this.status === successStatus) {
+          xhttp.onreadystatechange = function() {
+            if (this.readyState === lastReadyState && this.status === HTTP.SUCCESS_STATUS) {
               resolve(this);
-            } else if (this.readyState === lastReadyState && failedStatuses.indexOf(this.status) !== -1) {
+            } else if (this.readyState === lastReadyState && HTTP.FAIL_STATUSES.indexOf(this.status) !== -1) {
               reject(this);
             }
           };
 
-          xhttp.onerror = function () {
+          xhttp.onerror = function() {
             reject(this);
           };
 
-          xhttp.onabort = function () {
+          xhttp.onabort = function() {
             reject(this);
           };
 
@@ -294,22 +295,20 @@ export namespace Utils {
         try {
           const xhttp = new XMLHttpRequest();
           const lastReadyState = 4;
-          const successStatus = 200;
-          const failedStatuses = [ 400, 403 ];
 
-          xhttp.onreadystatechange = function () {
-            if (this.readyState === lastReadyState && this.status === successStatus) {
+          xhttp.onreadystatechange = function() {
+            if (this.readyState === lastReadyState && this.status === HTTP.SUCCESS_STATUS) {
               resolve(this);
-            } else if (this.readyState === lastReadyState && failedStatuses.indexOf(this.status) !== -1) {
+            } else if (this.readyState === lastReadyState && HTTP.FAIL_STATUSES.indexOf(this.status) !== -1) {
               reject(this);
             }
           };
 
-          xhttp.onerror = function () {
+          xhttp.onerror = function() {
             reject(this);
           };
 
-          xhttp.onabort = function () {
+          xhttp.onabort = function() {
             reject(this);
           };
 
@@ -397,7 +396,7 @@ export namespace Utils {
   export namespace Time {
     export function debounce(f: (...args: any[]) => void, ms: number = 100): any {
       let timer: number;
-      return function (...args: any[]) {
+      return function(...args: any[]) {
         const onComplete = () => {
           f.apply(this, args);
           timer = undefined;
