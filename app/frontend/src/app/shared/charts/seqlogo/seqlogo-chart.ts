@@ -196,7 +196,7 @@ export class SeqLogoChart extends Chart<ISeqLogoChartDataEntry, ISeqLogoChartCon
     const yDefaultOffset = -40;
 
     elements.on('mouseover', (d: { char: { c: string, h: number }, pos: number }) => {
-      this.tooltip.text(d.char.c, `Frequency: ${(d.char.h * 100).toFixed(2)}`);
+      this.tooltip.text(d.char.c, `Frequency: ${(d.char.h * 100).toFixed(2)}%`);
       this.tooltip.show();
     }).on('mouseout', () => {
       this.tooltip.hide();
