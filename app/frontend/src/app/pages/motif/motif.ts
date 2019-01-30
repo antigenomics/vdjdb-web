@@ -101,3 +101,9 @@ export interface IMotifCDR3SearchResult {
   clusters: IMotifCDR3SearchEntry[];
   clustersNorm: IMotifCDR3SearchEntry[];
 }
+
+// -------------------------------------------------------------------------------- //
+
+export interface IMotifClusterMembersExportResponse {
+  link: string;
+}

@@ -61,6 +61,15 @@ case class Database @Inject()(configuration: Configuration) {
     }
   }
 
+  def getClusterMembersFile: Option[File] = {
+    val clusterMembersFile = new File(getLocation + "/" + "cluster_members.txt")
+    if (clusterMembersFile.exists()) {
+      Some(clusterMembersFile)
+    } else {
+      None
+    }
+  }
+
   def getSuggestionsAvailableColumns: Seq[String] = Seq("antigen.epitope")
 
   def getSuggestions(column: String): Option[DatabaseColumnSuggestionsResponse] = {

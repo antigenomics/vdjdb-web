@@ -17,6 +17,7 @@
 import { Injectable } from '@angular/core';
 import {
   IMotifCDR3SearchResult,
+  IMotifClusterMembersExportResponse,
   IMotifEpitope,
   IMotifEpitopeViewOptions,
   IMotifsMetadata,
@@ -181,6 +182,16 @@ export class MotifService {
     }).catch(() => {
       this.loadingState.next(false);
       this.notifications.error('Motifs', 'Unable to load results');
+    });
+  }
+
+  public members(cid: string): void {
+    Utils.HTTP.post('/api/motifs/members', { cid, format: 'tsv' }).then((response) => {
+      const result = JSON.parse(response.response) as IMotifClusterMembersExportResponse;
+      Utils.File.download(result.link);
+      this.notifications.info('Motifs export', 'Download will start automatically');
+    }).catch(() => {
+      this.notifications.error('Motifs', 'Unable to export results');
     });
   }
 

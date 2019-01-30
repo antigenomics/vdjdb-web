@@ -26,7 +26,7 @@
         <i class="ui small angle icon options-icon" [ngClass]="{'down': isHidden, 'up': !isHidden}" (click)="hide()" style="right: 40px"></i>
     </h4>
     <ng-container *ngIf="!isHidden">
-        <div class="ui segment">
+        <div class="ui clearing segment">
             <motif-epitope-cluster *ngFor="let cluster of epitope.clusters; trackBy: trackClusterBy" [cluster]="cluster"
                                    [isNormalized]="isNormalized"></motif-epitope-cluster>
         </div>
