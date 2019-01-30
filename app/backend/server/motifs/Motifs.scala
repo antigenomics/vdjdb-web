@@ -104,31 +104,33 @@ object Motifs {
       case Some(p) =>
         // TODO metadata file
         val columnTypes: Array[ColumnType] = Array(
-          ColumnType.STRING, // cid
-          ColumnType.STRING, // mhc.class
-          ColumnType.STRING, // mhc.a
-          ColumnType.STRING, // mhc.b
           ColumnType.STRING, // species
+          ColumnType.STRING, // antigen.epitope
           ColumnType.STRING, // gene
           ColumnType.STRING, // aa
-          ColumnType.INTEGER, // pos
-          ColumnType.INTEGER, // len
+          ColumnType.INTEGER,// pos
+          ColumnType.INTEGER,// len
           ColumnType.STRING, // v.segm.repr
           ColumnType.STRING, // j.segm.repr
-          ColumnType.STRING, // antigen.epitope
-          ColumnType.INTEGER, // csz (cluster size)
-          ColumnType.INTEGER, // count
-          ColumnType.SKIP, // count.bg
-          ColumnType.SKIP, // total.bg
-          ColumnType.SKIP, // count.bg.i
-          ColumnType.SKIP, // total.bg.i
-          ColumnType.SKIP, // need.impute
+          ColumnType.STRING, // cid
+          ColumnType.INTEGER,// csz
+          ColumnType.INTEGER,// count
+          ColumnType.SKIP,   // count.bg
+          ColumnType.SKIP,   // total.bg
+          ColumnType.SKIP,   // count.bg.i
+          ColumnType.SKIP,   // total.bg.i
+          ColumnType.SKIP,   // need.impute
           ColumnType.DOUBLE, // freq
-          ColumnType.SKIP, // freq.bg
+          ColumnType.SKIP,   // freq.bg
           ColumnType.DOUBLE, // I
           ColumnType.DOUBLE, // I.norm
           ColumnType.DOUBLE, // height.I
           ColumnType.DOUBLE, // height.I.norm
+          ColumnType.STRING, // antigen.gene
+          ColumnType.STRING, // antigen.species
+          ColumnType.STRING, // mhc.a
+          ColumnType.STRING, // mhc.b
+          ColumnType.STRING, // mhc.class
         )
         val builder = CsvReadOptions.builder(p)
           .separator('\t')
@@ -145,25 +147,22 @@ object Motifs {
       case Some(p) =>
         val columnTypes: Array[ColumnType] = Array(
           ColumnType.STRING, // species
-          ColumnType.STRING, // gene
           ColumnType.STRING, // antigen.epitope
-          ColumnType.STRING, // cdr3aa
           ColumnType.STRING, // antigen.gene
           ColumnType.STRING, // antigen.species
-          ColumnType.STRING, // complex.id
+          ColumnType.STRING, // mhc.a
+          ColumnType.STRING, // mhc.b
+          ColumnType.STRING, // mhc.class
+          ColumnType.STRING, // gene
+          ColumnType.STRING, // cdr3aa
+          ColumnType.STRING, // cid
+          ColumnType.STRING, // csz
           ColumnType.STRING, // v.segm
           ColumnType.STRING, // j.segm
           ColumnType.STRING, // v.end
           ColumnType.STRING, // j.start
-          ColumnType.STRING, // mhc.a
-          ColumnType.STRING, // mhc.b
-          ColumnType.STRING, // mhc.class
-          ColumnType.STRING, // reference.id
-          ColumnType.STRING, // vdjdb.score
-          ColumnType.STRING, // cid
-          ColumnType.STRING, // csz
           ColumnType.STRING, // v.segm.repr
-          ColumnType.STRING // j.segm.repr
+          ColumnType.STRING, // j.segm.repr
         )
         val builder = CsvReadOptions.builder(p)
           .separator('\t')
