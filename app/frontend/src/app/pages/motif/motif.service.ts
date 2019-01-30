@@ -145,7 +145,7 @@ export class MotifService {
     return this.loadingState;
   }
 
-  public searchCDR3(cdr3: string, top: number): void {
+  public searchCDR3(cdr3: string, top: number = 15): void {
     if (cdr3.length === 0) {
       this.notifications.warn('Motifs CDR3', 'Empty search input');
       return;

@@ -18,9 +18,10 @@ import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { MotifCDR3ClustersComponent } from 'pages/motif/motif_cdr3_clusters/motif-cdr3-clusters.component';
 import { MotifEpitopeClusterModule } from 'pages/motif/motif_epitope_cluster/motif-epitope-cluster.module';
+import { ModalsModule } from 'shared/modals/modals.module';
 
 @NgModule({
-  imports:      [ CommonModule, MotifEpitopeClusterModule ],
+  imports:      [ CommonModule, MotifEpitopeClusterModule, ModalsModule ],
   declarations: [ MotifCDR3ClustersComponent ],
   exports:      [ MotifCDR3ClustersComponent ]
 })

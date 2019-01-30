@@ -23,6 +23,10 @@ import { MotifCDR3SearchEntry, MotifCDR3SearchResult, MotifEpitopeViewOptions } 
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MotifCDR3ClustersComponent {
+  private isHitboxVisible: boolean = true;
+
+  public top: number = 5;
+
   @Input('options')
   public options: MotifEpitopeViewOptions;
 
@@ -30,10 +34,24 @@ export class MotifCDR3ClustersComponent {
   public clusters: MotifCDR3SearchResult;
 
   public getClustersEntries(): MotifCDR3SearchEntry[] {
+    let entries: MotifCDR3SearchEntry[] = [];
     if (this.options.isNormalized) {
-      return this.clusters.clustersNorm;
+      entries = this.clusters.clustersNorm;
     } else {
-      return this.clusters.clusters;
+      entries = this.clusters.clusters;
     }
+    return entries.slice(0, this.top);
+  }
+
+  public getCDR3Hitbox(): string {
+    return this.isHitboxVisible ? this.clusters.cdr3 : undefined;
+  }
+
+  public toggleHitboxVisibility(): void {
+    this.isHitboxVisible = !this.isHitboxVisible;
+  }
+
+  public setTop(top: number): void {
+    this.top = top;
   }
 }
