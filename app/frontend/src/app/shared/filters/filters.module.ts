@@ -36,15 +36,15 @@ import { TCRGeneralFilterComponent } from './filters_tcr/tcr_general_filter/tcr-
 import { TCRSegmentsFilterComponent } from './filters_tcr/tcr_segments_filter/tcr-segments-filter.component';
 
 @NgModule({
-    imports:      [ CommonModule, FormsModule, FiltersCommonModule, ModalsModule ],
-    declarations: [ TCRGeneralFilterComponent, TCRSegmentsFilterComponent, TCRcdr3FilterComponent,
-        AGOriginFilterComponent, AGEpitopeFilterComponent,
-        MHCGeneralFilterComponent, MHCHaplotypeFilterComponent,
-        MetaGeneralFilterComponent, MetaReliabilityFilterComponent ],
-    exports:      [ TCRGeneralFilterComponent, TCRSegmentsFilterComponent, TCRcdr3FilterComponent,
-        AGOriginFilterComponent, AGEpitopeFilterComponent,
-        MHCGeneralFilterComponent, MHCHaplotypeFilterComponent,
-        MetaGeneralFilterComponent, MetaReliabilityFilterComponent ],
-    providers:    [ TCRFiltersService, AGFiltersService, MHCFiltersService, MetaFiltersService, FiltersService ]
+  imports:      [ CommonModule, FormsModule, FiltersCommonModule, ModalsModule ],
+  declarations: [ TCRGeneralFilterComponent, TCRSegmentsFilterComponent, TCRcdr3FilterComponent,
+    AGOriginFilterComponent, AGEpitopeFilterComponent,
+    MHCGeneralFilterComponent, MHCHaplotypeFilterComponent,
+    MetaGeneralFilterComponent, MetaReliabilityFilterComponent ],
+  exports:      [ TCRGeneralFilterComponent, TCRSegmentsFilterComponent, TCRcdr3FilterComponent,
+    AGOriginFilterComponent, AGEpitopeFilterComponent,
+    MHCGeneralFilterComponent, MHCHaplotypeFilterComponent,
+    MetaGeneralFilterComponent, MetaReliabilityFilterComponent ],
+  providers:    [ TCRFiltersService, AGFiltersService, MHCFiltersService, MetaFiltersService, FiltersService ]
 })
 export class FiltersModule {}

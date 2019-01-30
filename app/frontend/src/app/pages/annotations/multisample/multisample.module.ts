@@ -28,8 +28,8 @@ import { ChartsModule } from 'shared/charts/charts.module';
 import { ModalsModule } from 'shared/modals/modals.module';
 
 @NgModule({
-    imports:      [ CommonModule, FormsModule, ModalsModule, AnnotationsFiltersModule, MultisampleRouting, SampleChartModule, ChartsModule ],
-    declarations: [ MultisampleInfoComponent, MultisampleSummaryComponent, MultisampleSummaryChartComponent ],
-    providers:    [ MultisampleSummaryService ]
+  imports:      [ CommonModule, FormsModule, ModalsModule, AnnotationsFiltersModule, MultisampleRouting, SampleChartModule, ChartsModule ],
+  declarations: [ MultisampleInfoComponent, MultisampleSummaryComponent, MultisampleSummaryChartComponent ],
+  providers:    [ MultisampleSummaryService ]
 })
 export class MultisamplePageModule {}

@@ -18,13 +18,13 @@ import { SummaryClonotypeCounter } from 'pages/annotations/sample/table/intersec
 import { SummaryFieldCounter } from 'pages/annotations/sample/table/intersection/summary/summary-field-counter';
 
 export class SummaryCounters {
-    public readonly counters: SummaryFieldCounter[];
-    public readonly notFoundCounter: SummaryClonotypeCounter;
+  public readonly counters: SummaryFieldCounter[];
+  public readonly notFoundCounter: SummaryClonotypeCounter;
 
-    constructor(c: any) {
-        /* tslint:disable:no-string-literal */
-        this.counters = c['counters'].map((v: any) => new SummaryFieldCounter(v));
-        this.notFoundCounter = new SummaryClonotypeCounter(c['notFoundCounter']);
-        /* tslint:enable:no-string-literal */
-    }
+  constructor(c: any) {
+    /* tslint:disable:no-string-literal */
+    this.counters = c[ 'counters' ].map((v: any) => new SummaryFieldCounter(v));
+    this.notFoundCounter = new SummaryClonotypeCounter(c[ 'notFoundCounter' ]);
+    /* tslint:enable:no-string-literal */
+  }
 }

@@ -17,13 +17,13 @@
 export type ChartEventType = number;
 
 export namespace ChartEventType {
-    export const INITIAL_DATA: number = 0;
-    export const UPDATE_VALUES: number = 1;
-    export const UPDATE_DATA: number = 2;
-    export const RESIZE: number = 3;
+  export const INITIAL_DATA: number = 0;
+  export const UPDATE_VALUES: number = 1;
+  export const UPDATE_DATA: number = 2;
+  export const RESIZE: number = 3;
 }
 
 export interface IChartEvent<T> {
-    readonly type: ChartEventType;
-    readonly data: T[];
+  readonly type: ChartEventType;
+  readonly data: T[];
 }

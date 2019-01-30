@@ -21,48 +21,48 @@ import { AnnotationsService } from '../../../../annotations.service';
 import { MatchesTable } from './matches-table';
 
 @Component({
-    selector:        'tr[matches-table]',
-    templateUrl:     './matches-table.component.html',
-    changeDetection: ChangeDetectionStrategy.OnPush
+  selector:        'tr[matches-table]',
+  templateUrl:     './matches-table.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MatchesTableComponent {
-    @Input('table')
-    public table: MatchesTable;
+  @Input('table')
+  public table: MatchesTable;
 
-    public configuration: ITableConfigurationDescriptor;
+  public configuration: ITableConfigurationDescriptor;
 
-    constructor(private annotationsService: AnnotationsService) {
-        this.configuration = {
-            classes: {
-                columns: 'collapsing center aligned',
-                rows:    'center aligned'
-            },
-            utils:   {
-                disable: true
-            },
-            size:    {
-                header:  {
-                    dynamicSizeEnabled: true,
-                    dynamicSizeWeightB: 0.25
-                },
-                content: {
-                    dynamicSizeEnabled: true,
-                    dynamicSizeWeightB: 0.4
-                }
-            }
-        };
-    }
+  constructor(private annotationsService: AnnotationsService) {
+    this.configuration = {
+      classes: {
+        columns: 'collapsing center aligned',
+        rows:    'center aligned'
+      },
+      utils:   {
+        disable: true
+      },
+      size:    {
+        header:  {
+          dynamicSizeEnabled: true,
+          dynamicSizeWeightB: 0.25
+        },
+        content: {
+          dynamicSizeEnabled: true,
+          dynamicSizeWeightB: 0.4
+        }
+      }
+    };
+  }
 
-    public getColumns(): TableColumn[] {
-        const skip: string[] = [ 'gene', 'cdr3', 'species' ];
-        const columns = [
-            new TableColumn('alignment', 'Alignment', false, false, true, true, 'Alignment of query (top) and VDJdb hit (bottom) CDR3 sequences'),
-            new TableColumn('match-score', 'Match Score', true, false, true, true, 'Final aggregate score of the TCR alignment between query and VDJdb hit'),
-            new TableColumn('weight', 'Weight', true, false, true)
-        ];
+  public getColumns(): TableColumn[] {
+    const skip: string[] = [ 'gene', 'cdr3', 'species' ];
+    const columns = [
+      new TableColumn('alignment', 'Alignment', false, false, true, true, 'Alignment of query (top) and VDJdb hit (bottom) CDR3 sequences'),
+      new TableColumn('match-score', 'Match Score', true, false, true, true, 'Final aggregate score of the TCR alignment between query and VDJdb hit'),
+      new TableColumn('weight', 'Weight', true, false, true)
+    ];
 
-        return columns.concat(this.annotationsService.getDatabaseMetadata().columns.map((c) => {
-            return new TableColumn(c.name, c.title, false, skip.indexOf(c.name) !== -1, false, true, c.comment, '');
-        }));
-    }
+    return columns.concat(this.annotationsService.getDatabaseMetadata().columns.map((c) => {
+      return new TableColumn(c.name, c.title, false, skip.indexOf(c.name) !== -1, false, true, c.comment, '');
+    }));
+  }
 }

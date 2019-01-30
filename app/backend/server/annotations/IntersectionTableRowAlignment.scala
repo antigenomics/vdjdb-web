@@ -22,9 +22,9 @@ import play.api.libs.json.{Json, Writes}
 case class IntersectionTableRowAlignment(seq1String: String, markup: String, seq2String: String)
 
 object IntersectionTableRowAlignment {
-    implicit val intersectionTableRowAlignmentWrites: Writes[IntersectionTableRowAlignment] = Json.writes[IntersectionTableRowAlignment]
+  implicit val intersectionTableRowAlignmentWrites: Writes[IntersectionTableRowAlignment] = Json.writes[IntersectionTableRowAlignment]
 
-    def createFromAlignmentHelper(helper: AlignmentHelper): IntersectionTableRowAlignment = {
-        IntersectionTableRowAlignment(helper.getSeq1String, helper.getMarkup, helper.getSeq2String)
-    }
+  def createFromAlignmentHelper(helper: AlignmentHelper): IntersectionTableRowAlignment = {
+    IntersectionTableRowAlignment(helper.getSeq1String, helper.getMarkup, helper.getSeq2String)
+  }
 }

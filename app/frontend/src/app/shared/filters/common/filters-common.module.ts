@@ -24,8 +24,8 @@ import { SetComponent } from './set/set.component';
 import { SliderComponent } from './slider/slider.component';
 
 @NgModule({
-    imports:      [ CommonModule, FormsModule, ModalsModule ],
-    declarations: [ SliderComponent, SetComponent, AutocompletePipe, FiltersHeaderComponent ],
-    exports:      [ SliderComponent, SetComponent, AutocompletePipe, FiltersHeaderComponent ]
+  imports:      [ CommonModule, FormsModule, ModalsModule ],
+  declarations: [ SliderComponent, SetComponent, AutocompletePipe, FiltersHeaderComponent ],
+  exports:      [ SliderComponent, SetComponent, AutocompletePipe, FiltersHeaderComponent ]
 })
 export class FiltersCommonModule {}

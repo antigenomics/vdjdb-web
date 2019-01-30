@@ -21,5 +21,5 @@ import play.api.libs.json.{Json, Writes}
 case class SummaryClonotypeCounter(field: String, unique: Int, databaseUnique: Long, frequency: Double)
 
 object SummaryClonotypeCounter {
-    implicit val summaryClonotypeCounterWrites: Writes[SummaryClonotypeCounter] = Json.writes[SummaryClonotypeCounter]
+  implicit val summaryClonotypeCounterWrites: Writes[SummaryClonotypeCounter] = Json.writes[SummaryClonotypeCounter]
 }

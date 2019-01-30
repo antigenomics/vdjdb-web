@@ -26,8 +26,8 @@ import { FiltersCommonModule } from 'shared/filters/common/filters-common.module
 import { ModalsModule } from 'shared/modals/modals.module';
 
 @NgModule({
-    imports:      [ CommonModule, FormsModule, ModalsModule, FiltersCommonModule ],
-    declarations: [ AnnotationsFiltersComponent, DatabaseQueryParamsComponent, SearchScopeComponent, ScoringTypeComponent, ScoringVDJMatchComponent ],
-    exports:      [ AnnotationsFiltersComponent ]
+  imports:      [ CommonModule, FormsModule, ModalsModule, FiltersCommonModule ],
+  declarations: [ AnnotationsFiltersComponent, DatabaseQueryParamsComponent, SearchScopeComponent, ScoringTypeComponent, ScoringVDJMatchComponent ],
+  exports:      [ AnnotationsFiltersComponent ]
 })
 export class AnnotationsFiltersModule {}

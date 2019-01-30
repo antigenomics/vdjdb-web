@@ -24,16 +24,18 @@ import backend.server.search.api.export.ExportOptionFlag
 import scala.concurrent.Future
 
 trait SearchTableConverter {
-    def convert(table: SearchTable, database: Database, options: Seq[ExportOptionFlag]): Future[TemporaryFileLink]
-    def getExtension: String
+  def convert(table: SearchTable, database: Database, options: Seq[ExportOptionFlag]): Future[TemporaryFileLink]
+
+  def getExtension: String
 }
 
 object SearchTableConverter {
-    def getAvailableConverters: Seq[String] = Seq("tsv")
-    def getConverter(converterType: String)(implicit tfp: TemporaryFileProvider): Option[SearchTableConverter] = {
-        converterType match {
-            case "tsv" => Some(SearchTableTSVConverter())
-            case _ => None
-        }
+  def getAvailableConverters: Seq[String] = Seq("tsv")
+
+  def getConverter(converterType: String)(implicit tfp: TemporaryFileProvider): Option[SearchTableConverter] = {
+    converterType match {
+      case "tsv" => Some(SearchTableTSVConverter())
+      case _ => None
     }
+  }
 }

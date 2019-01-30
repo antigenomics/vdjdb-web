@@ -19,36 +19,36 @@ import { Subscription } from 'rxjs';
 import { AnnotationsService, AnnotationsServiceEvents } from '../annotations.service';
 
 @Component({
-    selector:        'annotations-info',
-    templateUrl:     './annotations-info.component.html',
-    changeDetection: ChangeDetectionStrategy.OnPush
+  selector:        'annotations-info',
+  templateUrl:     './annotations-info.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AnnotationsInfoComponent implements OnInit, OnDestroy {
-    private _annotationsServiceEventsSubscription: Subscription;
+  private _annotationsServiceEventsSubscription: Subscription;
 
-    constructor(private annotationsService: AnnotationsService, private changeDetector: ChangeDetectorRef) {}
+  constructor(private annotationsService: AnnotationsService, private changeDetector: ChangeDetectorRef) {}
 
-    public ngOnInit(): void {
-        this._annotationsServiceEventsSubscription = this.annotationsService.getEvents().subscribe((event) => {
-            switch (event) {
-                case AnnotationsServiceEvents.INITIALIZED:
-                    this.changeDetector.detectChanges();
-                    break;
-                default:
-            }
-        });
-    }
+  public ngOnInit(): void {
+    this._annotationsServiceEventsSubscription = this.annotationsService.getEvents().subscribe((event) => {
+      switch (event) {
+        case AnnotationsServiceEvents.INITIALIZED:
+          this.changeDetector.detectChanges();
+          break;
+        default:
+      }
+    });
+  }
 
-    public checkFeaturesAvailability(): boolean {
-        const permissions = this.annotationsService.getUserPermissions();
-        return permissions.isUploadAllowed && permissions.isDeleteAllowed && permissions.isChangePasswordAllowed;
-    }
+  public checkFeaturesAvailability(): boolean {
+    const permissions = this.annotationsService.getUserPermissions();
+    return permissions.isUploadAllowed && permissions.isDeleteAllowed && permissions.isChangePasswordAllowed;
+  }
 
-    public isInitialized(): boolean {
-        return this.annotationsService.isInitialized();
-    }
+  public isInitialized(): boolean {
+    return this.annotationsService.isInitialized();
+  }
 
-    public ngOnDestroy(): void {
-        this._annotationsServiceEventsSubscription.unsubscribe();
-    }
+  public ngOnDestroy(): void {
+    this._annotationsServiceEventsSubscription.unsubscribe();
+  }
 }

@@ -20,172 +20,172 @@ import { TableRow } from './row/table-row';
 export type TableEvent = number;
 
 export namespace TableEvent {
-    export const LOADING: number = 0;
-    export const INITIALIZED: number = 1;
-    export const UPDATED: number = 2;
+  export const LOADING: number = 0;
+  export const INITIALIZED: number = 1;
+  export const UPDATED: number = 2;
 }
 
 export class TableSortRule {
-    public column: string = '';
-    public type: 'asc' | 'desc' | 'none' = 'none';
+  public column: string = '';
+  public type: 'asc' | 'desc' | 'none' = 'none';
 
-    public update(column: string): void {
-        if (this.column === column) {
-            this.type = (this.type === 'desc') ? 'asc' : 'desc';
-        } else {
-            this.column = column;
-            this.type = 'desc';
-        }
+  public update(column: string): void {
+    if (this.column === column) {
+      this.type = (this.type === 'desc') ? 'asc' : 'desc';
+    } else {
+      this.column = column;
+      this.type = 'desc';
     }
+  }
 
-    public clear(): void {
-        this.column = '';
-        this.type = 'none';
-    }
+  public clear(): void {
+    this.column = '';
+    this.type = 'none';
+  }
 
-    public toString(): string {
-        return `${this.column}:${this.type}`;
-    }
+  public toString(): string {
+    return `${this.column}:${this.type}`;
+  }
 }
 
 export abstract class Table<R extends TableRow> {
-    private static readonly _initialPage: number = 0;
-    private static readonly _initialPageSize: number = 25;
+  private static readonly _initialPage: number = 0;
+  private static readonly _initialPageSize: number = 25;
 
-    private _events: Subject<TableEvent> = new Subject();
+  private _events: Subject<TableEvent> = new Subject();
 
-    private _exporting: boolean = false;
-    private _loading: boolean = false;
-    private _dirty: boolean = false;
-    private _error: boolean = false;
-    private _empty: boolean = true;
-    private _page: number = Table._initialPage;
-    private _pageSize: number = Table._initialPageSize;
-    private _pageCount: number;
-    private _sortRule: TableSortRule = new TableSortRule();
-    private _rows: R[] = [];
+  private _exporting: boolean = false;
+  private _loading: boolean = false;
+  private _dirty: boolean = false;
+  private _error: boolean = false;
+  private _empty: boolean = true;
+  private _page: number = Table._initialPage;
+  private _pageSize: number = Table._initialPageSize;
+  private _pageCount: number;
+  private _sortRule: TableSortRule = new TableSortRule();
+  private _rows: R[] = [];
 
-    private _recordsFound: number;
-    private _numberOfRecords: number;
+  private _recordsFound: number;
+  private _numberOfRecords: number;
 
-    public startLoading(): void {
-        this._loading = true;
-        this._events.next(TableEvent.LOADING);
+  public startLoading(): void {
+    this._loading = true;
+    this._events.next(TableEvent.LOADING);
+  }
+
+  public isEmpty(): boolean {
+    return this.dirty && this._empty;
+  }
+
+  public updateTable(page: number, pageSize: number, rows: R[], pageCount?: number): void {
+    this._page = page;
+    this._pageSize = pageSize;
+    this.updateRows(rows, pageCount);
+  }
+
+  public updateRows(rows: R[], pageCount?: number): void {
+    this._empty = rows.length === 0;
+    this._rows = rows;
+    this._pageCount = pageCount !== undefined ? pageCount : Math.floor(rows.length / this._pageSize) + 1;
+    this._error = false;
+    this._dirty = true;
+    this._loading = false;
+    this._events.next(TableEvent.UPDATED);
+  }
+
+  public updatePage(page: number): void {
+    this._page = page;
+  }
+
+  public updatePageSize(pageSize: number, pageCount?: number): void {
+    this._pageSize = pageSize;
+    this._pageCount = pageCount !== undefined ? pageCount : Math.floor(this._rows.length / this._pageSize) + 1;
+  }
+
+  public updateRecordsFound(recordsFound: number): void {
+    this._recordsFound = recordsFound;
+  }
+
+  public updateNumberOfRecords(numberOfRecords: number): void {
+    this._numberOfRecords = numberOfRecords;
+  }
+
+  public setError(): void {
+    this._dirty = true;
+    this._loading = false;
+    this._error = true;
+    this._events.next(TableEvent.UPDATED);
+  }
+
+  public isSorted(name: string): string {
+    if (this.sortRule.column !== name) {
+      return '';
     }
-
-    public isEmpty(): boolean {
-        return this.dirty && this._empty;
+    switch (this.sortRule.type) {
+      case 'asc':
+        return 'ascending';
+      case 'desc':
+        return 'descending';
+      default:
+        return '';
     }
+  }
 
-    public updateTable(page: number, pageSize: number, rows: R[], pageCount?: number): void {
-        this._page = page;
-        this._pageSize = pageSize;
-        this.updateRows(rows, pageCount);
-    }
+  public setExportStartStatus(): void {
+    this._exporting = true;
+  }
 
-    public updateRows(rows: R[], pageCount?: number): void {
-        this._empty = rows.length === 0;
-        this._rows = rows;
-        this._pageCount = pageCount !== undefined ? pageCount : Math.floor(rows.length / this._pageSize) + 1;
-        this._error = false;
-        this._dirty = true;
-        this._loading = false;
-        this._events.next(TableEvent.UPDATED);
-    }
+  public setExportEndStatus(): void {
+    this._exporting = false;
+  }
 
-    public updatePage(page: number): void {
-        this._page = page;
-    }
+  public abstract getRows(): R[];
 
-    public updatePageSize(pageSize: number, pageCount?: number): void {
-        this._pageSize = pageSize;
-        this._pageCount = pageCount !== undefined ? pageCount : Math.floor(this._rows.length / this._pageSize) + 1;
-    }
+  get events(): Subject<TableEvent> {
+    return this._events;
+  }
 
-    public updateRecordsFound(recordsFound: number): void {
-        this._recordsFound = recordsFound;
-    }
+  get exporting(): boolean {
+    return this._exporting;
+  }
 
-    public updateNumberOfRecords(numberOfRecords: number): void {
-        this._numberOfRecords = numberOfRecords;
-    }
+  get loading(): boolean {
+    return this._loading;
+  }
 
-    public setError(): void {
-        this._dirty = true;
-        this._loading = false;
-        this._error = true;
-        this._events.next(TableEvent.UPDATED);
-    }
+  get dirty(): boolean {
+    return this._dirty;
+  }
 
-    public isSorted(name: string): string {
-        if (this.sortRule.column !== name) {
-            return '';
-        }
-        switch (this.sortRule.type) {
-            case 'asc':
-                return 'ascending';
-            case 'desc':
-                return 'descending';
-            default:
-                return '';
-        }
-    }
+  get error(): boolean {
+    return this._error;
+  }
 
-    public setExportStartStatus(): void {
-        this._exporting = true;
-    }
+  get page(): number {
+    return this._page;
+  }
 
-    public setExportEndStatus(): void {
-        this._exporting = false;
-    }
+  get pageSize(): number {
+    return this._pageSize;
+  }
 
-    public abstract getRows(): R[];
+  get pageCount(): number {
+    return this._pageCount;
+  }
 
-    get events(): Subject<TableEvent> {
-        return this._events;
-    }
+  get sortRule(): TableSortRule {
+    return this._sortRule;
+  }
 
-    get exporting(): boolean {
-        return this._exporting;
-    }
+  get rows(): R[] {
+    return this._rows;
+  }
 
-    get loading(): boolean {
-        return this._loading;
-    }
+  get recordsFound(): number {
+    return this._recordsFound;
+  }
 
-    get dirty(): boolean {
-        return this._dirty;
-    }
-
-    get error(): boolean {
-        return this._error;
-    }
-
-    get page(): number {
-        return this._page;
-    }
-
-    get pageSize(): number {
-        return this._pageSize;
-    }
-
-    get pageCount(): number {
-        return this._pageCount;
-    }
-
-    get sortRule(): TableSortRule {
-        return this._sortRule;
-    }
-
-    get rows(): R[] {
-        return this._rows;
-    }
-
-    get recordsFound(): number {
-        return this._recordsFound;
-    }
-
-    get numberOfRecords(): number {
-        return this._numberOfRecords;
-    }
+  get numberOfRecords(): number {
+    return this._numberOfRecords;
+  }
 }

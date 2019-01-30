@@ -20,16 +20,16 @@ import { TableEntry } from 'shared/table/entry/table-entry';
 import { MatchTableRow } from '../row/match-table-row';
 
 @Component({
-    selector:            'td[match-table-entry-match-score]',
-    template:            `{{ matchScore }}`,
-    changeDetection:     ChangeDetectionStrategy.OnPush,
-    preserveWhitespaces: false
+  selector:            'td[match-table-entry-match-score]',
+  template:            `{{ matchScore }}`,
+  changeDetection:     ChangeDetectionStrategy.OnPush,
+  preserveWhitespaces: false
 })
 export class MatchesTableEntryMatchScoreComponent extends TableEntry {
-    public matchScore: string;
+  public matchScore: string;
 
-    public create(_entry: string, _column: TableColumn, _columns: TableColumn[], row: MatchTableRow,
-                  _hostViewContainer: ViewContainerRef, _resolver: ComponentFactoryResolver): void {
-        this.matchScore = row.matchScore.toPrecision(3);
-    }
+  public create(_entry: string, _column: TableColumn, _columns: TableColumn[], row: MatchTableRow,
+                _hostViewContainer: ViewContainerRef, _resolver: ComponentFactoryResolver): void {
+    this.matchScore = row.matchScore.toPrecision(3);
+  }
 }

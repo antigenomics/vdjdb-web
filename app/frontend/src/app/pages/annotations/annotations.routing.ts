@@ -25,23 +25,23 @@ import { AnnotationsSampleComponent } from 'pages/annotations/sample/sample.comp
 import { SampleTableComponent } from 'pages/annotations/sample/table/sample-table.component';
 
 const routes: Routes = [
-    {
-        path:     '', component: AnnotationsPageComponent, resolve: { user: UserResolver },
+  {
+    path:     '', component: AnnotationsPageComponent, resolve: { user: UserResolver },
+    children: [
+      { path: 'info', component: AnnotationsInfoComponent },
+      { path: 'upload', loadChildren: 'pages/annotations/upload/upload.module#UploadModule' },
+      {
+        path:     'sample/:sample', component: AnnotationsSampleComponent, resolve: { sample: SampleItemResolver },
         children: [
-            { path: 'info', component: AnnotationsInfoComponent },
-            { path: 'upload', loadChildren: 'pages/annotations/upload/upload.module#UploadModule' },
-            {
-                path:     'sample/:sample', component: AnnotationsSampleComponent, resolve: { sample: SampleItemResolver },
-                children: [
-                    { path: 'table', component: SampleTableComponent },
-                    { path: 'chart', component: SampleChartComponent }
-                ]
-            },
-            { path: 'multisample', loadChildren: 'pages/annotations/multisample/multisample.module#MultisamplePageModule' },
-            { path: 'tags', loadChildren: 'pages/annotations/tags/tags.module#TagsPageModule' },
-            { path: '**', redirectTo: 'info' }
+          { path: 'table', component: SampleTableComponent },
+          { path: 'chart', component: SampleChartComponent }
         ]
-    }
+      },
+      { path: 'multisample', loadChildren: 'pages/annotations/multisample/multisample.module#MultisamplePageModule' },
+      { path: 'tags', loadChildren: 'pages/annotations/tags/tags.module#TagsPageModule' },
+      { path: '**', redirectTo: 'info' }
+    ]
+  }
 ];
 
 export const AnnotationsRouting = RouterModule.forChild(routes); // tslint:disable-line:variable-name

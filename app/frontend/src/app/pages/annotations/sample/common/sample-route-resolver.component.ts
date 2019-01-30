@@ -22,34 +22,34 @@ import { filter } from 'rxjs/operators';
 import { SampleItem } from 'shared/sample/sample-item';
 
 export class SampleRouteResolverComponent implements OnInit, OnDestroy {
-    private _sampleRouteSubscription: Subscription;
-    private _sampleServiceEventsSubscription: Subscription;
+  private _sampleRouteSubscription: Subscription;
+  private _sampleServiceEventsSubscription: Subscription;
 
-    public sample: SampleItem;
+  public sample: SampleItem;
 
-    constructor(protected data: Observable<Data>, protected snapshot: ActivatedRouteSnapshot,
-                protected changeDetector: ChangeDetectorRef, protected sampleService: SampleService) {
-        this.sample = snapshot.data.sample;
+  constructor(protected data: Observable<Data>, protected snapshot: ActivatedRouteSnapshot,
+              protected changeDetector: ChangeDetectorRef, protected sampleService: SampleService) {
+    this.sample = snapshot.data.sample;
+  }
+
+  public ngOnInit(): void {
+    this._sampleRouteSubscription = this.data.subscribe((data: Data) => {
+      this.sample = data.sample;
+      this.changeDetector.detectChanges();
+    });
+    this._sampleServiceEventsSubscription = this.sampleService.getEvents().pipe(filter((event) => {
+      return event.type === SampleServiceEventType.EVENT_UPDATED || event.type === SampleServiceEventType.EVENT_EXPORT;
+    })).subscribe(() => {
+      this.changeDetector.detectChanges();
+    });
+  }
+
+  public ngOnDestroy(): void {
+    if (this._sampleRouteSubscription) {
+      this._sampleRouteSubscription.unsubscribe();
     }
-
-    public ngOnInit(): void {
-        this._sampleRouteSubscription = this.data.subscribe((data: Data) => {
-            this.sample = data.sample;
-            this.changeDetector.detectChanges();
-        });
-        this._sampleServiceEventsSubscription = this.sampleService.getEvents().pipe(filter((event) => {
-            return event.type === SampleServiceEventType.EVENT_UPDATED || event.type === SampleServiceEventType.EVENT_EXPORT;
-        })).subscribe(() => {
-            this.changeDetector.detectChanges();
-        });
+    if (this._sampleServiceEventsSubscription) {
+      this._sampleServiceEventsSubscription.unsubscribe();
     }
-
-    public ngOnDestroy(): void {
-        if (this._sampleRouteSubscription) {
-            this._sampleRouteSubscription.unsubscribe();
-        }
-        if (this._sampleServiceEventsSubscription) {
-            this._sampleServiceEventsSubscription.unsubscribe();
-        }
-    }
+  }
 }

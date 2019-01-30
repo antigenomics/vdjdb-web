@@ -21,7 +21,7 @@ import play.api.libs.json.{Json, Writes}
 case class UpdateSamplePropsInfoResponse(prevSampleName: String, newSampleName: String, newSampleSoftware: String, newTagID: Long)
 
 object UpdateSamplePropsInfoResponse {
-    final val Action: String = "update_sample_props"
+  final val Action: String = "update_sample_props"
 
-    implicit val updateSamplePropsInfoResponseWrites: Writes[UpdateSamplePropsInfoResponse] = Json.writes[UpdateSamplePropsInfoResponse]
+  implicit val updateSamplePropsInfoResponseWrites: Writes[UpdateSamplePropsInfoResponse] = Json.writes[UpdateSamplePropsInfoResponse]
 }

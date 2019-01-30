@@ -19,34 +19,34 @@ import { LoggerService } from 'utils/logger/logger.service';
 import { Utils } from 'utils/utils';
 
 @Component({
-    selector:    'navbar',
-    templateUrl: './navbar.component.html',
-    changeDetection: ChangeDetectionStrategy.OnPush
+  selector:        'navbar',
+  templateUrl:     './navbar.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class NavigationBarComponent {
-    private readonly _isLogged: boolean = false;
-    private readonly _userEmail: string = '';
-    private readonly _userLogin: string = '';
+  private readonly _isLogged: boolean = false;
+  private readonly _userEmail: string = '';
+  private readonly _userLogin: string = '';
 
-    constructor(logger: LoggerService) {
-        this._isLogged = Utils.Cookies.getCookie('logged') === 'true';
-        this._userEmail = Utils.Cookies.getCookie('email');
-        this._userLogin = Utils.Cookies.getCookie('login');
-        if (this._userEmail !== undefined && this._userLogin !== undefined) {
-            logger.debug('User email', this._userEmail);
-            logger.debug('User login', this._userLogin);
-        }
+  constructor(logger: LoggerService) {
+    this._isLogged = Utils.Cookies.getCookie('logged') === 'true';
+    this._userEmail = Utils.Cookies.getCookie('email');
+    this._userLogin = Utils.Cookies.getCookie('login');
+    if (this._userEmail !== undefined && this._userLogin !== undefined) {
+      logger.debug('User email', this._userEmail);
+      logger.debug('User login', this._userLogin);
     }
+  }
 
-    public isLogged(): boolean {
-        return this._isLogged;
-    }
+  public isLogged(): boolean {
+    return this._isLogged;
+  }
 
-    public getUserEmail(): string {
-        return this._userEmail;
-    }
+  public getUserEmail(): string {
+    return this._userEmail;
+  }
 
-    public getUserLogin(): string {
-        return this._userLogin;
-    }
+  public getUserLogin(): string {
+    return this._userLogin;
+  }
 }

@@ -20,12 +20,12 @@ import { SampleRouteResolverComponent } from 'pages/annotations/sample/common/sa
 import { SampleService } from 'pages/annotations/sample/sample.service';
 
 @Component({
-    selector:        'sample-chart',
-    templateUrl:     './sample-chart.component.html',
-    changeDetection: ChangeDetectionStrategy.OnPush
+  selector:        'sample-chart',
+  templateUrl:     './sample-chart.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SampleChartComponent extends SampleRouteResolverComponent {
-    constructor(sampleService: SampleService, activatedRoute: ActivatedRoute, changeDetector: ChangeDetectorRef) {
-        super(activatedRoute.parent.data, activatedRoute.parent.snapshot, changeDetector, sampleService);
-    }
+  constructor(sampleService: SampleService, activatedRoute: ActivatedRoute, changeDetector: ChangeDetectorRef) {
+    super(activatedRoute.parent.data, activatedRoute.parent.snapshot, changeDetector, sampleService);
+  }
 }

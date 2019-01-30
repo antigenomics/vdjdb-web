@@ -24,54 +24,54 @@ import { NotificationService } from 'utils/notifications/notification.service';
 import { SearchTableService } from './table/search/search-table.service';
 
 @Component({
-    selector:    'search',
-    templateUrl: './search.component.html'
+  selector:    'search',
+  templateUrl: './search.component.html'
 })
 export class SearchPageComponent implements OnInit, OnDestroy {
-    public columns: TableColumn[] = [];
-    public table: SearchTable;
+  public columns: TableColumn[] = [];
+  public table: SearchTable;
 
-    constructor(private searchTableService: SearchTableService, private filters: FiltersService,
-                logger: LoggerService, notifications: NotificationService, analytics: AnalyticsService) {
-        this.table = new SearchTable(searchTableService, filters, analytics, logger, notifications);
-        if (this.searchTableService.isInitialized()) {
-            this.fetchColumns();
-            this.table.updateNumberOfRecords(this.searchTableService.getMetadata().numberOfRecords);
+  constructor(private searchTableService: SearchTableService, private filters: FiltersService,
+              logger: LoggerService, notifications: NotificationService, analytics: AnalyticsService) {
+    this.table = new SearchTable(searchTableService, filters, analytics, logger, notifications);
+    if (this.searchTableService.isInitialized()) {
+      this.fetchColumns();
+      this.table.updateNumberOfRecords(this.searchTableService.getMetadata().numberOfRecords);
+    }
+  }
+
+  public ngOnInit(): void {
+    if (!this.searchTableService.isInitialized()) {
+      this.searchTableService.waitInitialization().then(() => {
+        this.fetchColumns();
+        this.table.updateNumberOfRecords(this.searchTableService.getMetadata().numberOfRecords);
+        if (!this.table.dirty) {
+          this.table.update();
         }
+      });
     }
+  }
 
-    public ngOnInit(): void {
-        if (!this.searchTableService.isInitialized()) {
-            this.searchTableService.waitInitialization().then(() => {
-                this.fetchColumns();
-                this.table.updateNumberOfRecords(this.searchTableService.getMetadata().numberOfRecords);
-                if (!this.table.dirty) {
-                    this.table.update();
-                }
-            });
-        }
-    }
+  public search(): void {
+    this.table.update();
+  }
 
-    public search(): void {
-        this.table.update();
-    }
+  public reset(): void {
+    this.filters.setDefault();
+  }
 
-    public reset(): void {
-        this.filters.setDefault();
-    }
+  public isLoading(): boolean {
+    return this.table.loading || !this.table.dirty;
+  }
 
-    public isLoading(): boolean {
-        return this.table.loading || !this.table.dirty;
-    }
+  public ngOnDestroy(): void {
+    this.table.destroy();
+  }
 
-    public ngOnDestroy(): void {
-        this.table.destroy();
-    }
-
-    private fetchColumns(): void {
-        const metadata = this.searchTableService.getMetadata();
-        this.columns = metadata.columns.map((c) => {
-            return new TableColumn(c.name, c.title, true, false, false, true, c.comment, 'Click to sort column');
-        });
-    }
+  private fetchColumns(): void {
+    const metadata = this.searchTableService.getMetadata();
+    this.columns = metadata.columns.map((c) => {
+      return new TableColumn(c.name, c.title, true, false, false, true, c.comment, 'Click to sort column');
+    });
+  }
 }

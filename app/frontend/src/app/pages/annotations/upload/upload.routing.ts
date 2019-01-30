@@ -18,7 +18,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { AnnotationsUploadComponent } from 'pages/annotations/upload/upload.component';
 
 const routes: Routes = [
-    { path: '', component: AnnotationsUploadComponent }
+  { path: '', component: AnnotationsUploadComponent }
 ];
 
 export const AnnotationsUploadRouting = RouterModule.forChild(routes); // tslint:disable-line:variable-name

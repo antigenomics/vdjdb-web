@@ -17,8 +17,8 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 
 @Component({
-    selector: 'links',
-    templateUrl: './links.component.html',
-    changeDetection: ChangeDetectionStrategy.OnPush
+  selector:        'links',
+  templateUrl:     './links.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class LinksPageComponent {}

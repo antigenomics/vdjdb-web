@@ -22,8 +22,8 @@ import { SearchPageComponent } from './search.component';
 import { SearchTableModule } from './table/search/search-table.module';
 
 @NgModule({
-    imports:      [ CommonModule, SearchTableModule, FiltersModule],
-    declarations: [ SearchPageComponent, SearchInfoComponent ],
-    exports:      [ SearchPageComponent, SearchInfoComponent ]
+  imports:      [ CommonModule, SearchTableModule, FiltersModule ],
+  declarations: [ SearchPageComponent, SearchInfoComponent ],
+  exports:      [ SearchPageComponent, SearchInfoComponent ]
 })
 export class SearchPageModule {}

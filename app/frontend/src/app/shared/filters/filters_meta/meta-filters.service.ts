@@ -20,37 +20,37 @@ import { MetaGeneralFilter, MetaReliabilityFilter } from './meta-filters';
 
 @Injectable()
 export class MetaFiltersService implements FilterInterface {
-    public general: MetaGeneralFilter;
-    public reliability: MetaReliabilityFilter;
+  public general: MetaGeneralFilter;
+  public reliability: MetaReliabilityFilter;
 
-    constructor() {
-        this.general = new MetaGeneralFilter();
-        this.reliability = new MetaReliabilityFilter();
+  constructor() {
+    this.general = new MetaGeneralFilter();
+    this.reliability = new MetaReliabilityFilter();
+  }
+
+  public setDefault(): void {
+    this.general.setDefault();
+    this.reliability.setDefault();
+  }
+
+  public setOptions(options: IFiltersOptions): void {
+    const generalFilterId = this.general.getFilterId();
+    if (options.hasOwnProperty(generalFilterId)) {
+      this.general.setOptions(options[ generalFilterId ]);
     }
 
-    public setDefault(): void {
-        this.general.setDefault();
-        this.reliability.setDefault();
+    const reliabilityFilterId = this.reliability.getFilterId();
+    if (options.hasOwnProperty(reliabilityFilterId)) {
+      this.reliability.setOptions(options[ reliabilityFilterId ]);
     }
+  }
 
-    public setOptions(options: IFiltersOptions): void {
-        const generalFilterId = this.general.getFilterId();
-        if (options.hasOwnProperty(generalFilterId)) {
-            this.general.setOptions(options[generalFilterId]);
-        }
+  public collectFilters(filters: Filter[], errors: string[]): void {
+    this.general.collectFilters(filters, errors);
+    this.reliability.collectFilters(filters, errors);
+  }
 
-        const reliabilityFilterId = this.reliability.getFilterId();
-        if (options.hasOwnProperty(reliabilityFilterId)) {
-            this.reliability.setOptions(options[reliabilityFilterId]);
-        }
-    }
-
-    public collectFilters(filters: Filter[], errors: string[]): void {
-        this.general.collectFilters(filters, errors);
-        this.reliability.collectFilters(filters, errors);
-    }
-
-    public getFilterId(): string {
-        return 'meta';
-    }
+  public getFilterId(): string {
+    return 'meta';
+  }
 }

@@ -18,7 +18,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { TagsComponent } from 'pages/annotations/tags/tags.component';
 
 const routes: Routes = [
-    { path: '', component: TagsComponent }
+  { path: '', component: TagsComponent }
 ];
 
 export const AnnotationsTagsRouting = RouterModule.forChild(routes); // tslint:disable-line:variable-name

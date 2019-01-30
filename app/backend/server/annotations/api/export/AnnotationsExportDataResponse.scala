@@ -21,7 +21,7 @@ import play.api.libs.json.{Json, Writes}
 case class AnnotationsExportDataResponse(link: String)
 
 object AnnotationsExportDataResponse {
-    final val Action: String = "export"
+  final val Action: String = "export"
 
-    implicit val annotationsExportDataResponseWrites: Writes[AnnotationsExportDataResponse] = Json.writes[AnnotationsExportDataResponse]
+  implicit val annotationsExportDataResponseWrites: Writes[AnnotationsExportDataResponse] = Json.writes[AnnotationsExportDataResponse]
 }

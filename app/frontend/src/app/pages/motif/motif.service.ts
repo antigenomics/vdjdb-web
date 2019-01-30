@@ -17,7 +17,8 @@
 import { Injectable } from '@angular/core';
 import {
   MotifCDR3SearchResult,
-  MotifEpitope, MotifEpitopeViewOptions,
+  MotifEpitope,
+  MotifEpitopeViewOptions,
   MotifsMetadata,
   MotifsMetadataTreeLevel,
   MotifsMetadataTreeLevelValue,
@@ -25,11 +26,11 @@ import {
   MotifsSearchTreeFilterResult
 } from 'pages/motif/motif';
 import { combineLatest, Observable, ReplaySubject, Subject } from 'rxjs';
+import { filter, map, take } from 'rxjs/operators';
 import { ISeqLogoChartConfiguration } from 'shared/charts/seqlogo/seqlogo-configuration';
 import { LoggerService } from 'utils/logger/logger.service';
 import { NotificationService } from 'utils/notifications/notification.service';
 import { Utils } from 'utils/utils';
-import { filter, map, take } from 'rxjs/operators';
 
 export namespace MotifsServiceWebSocketActions {
   export const METADATA = 'meta';
@@ -150,7 +151,7 @@ export class MotifService {
   }
 
   public searchCDR3(cdr3: string, top: number = 15): void {
-    if (cdr3 ===null || cdr3 === undefined || cdr3.length === 0) {
+    if (cdr3 === null || cdr3 === undefined || cdr3.length === 0) {
       this.notifications.warn('Motifs CDR3', 'Empty search input');
       return;
     }

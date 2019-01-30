@@ -21,5 +21,5 @@ import play.api.libs.json.{Json, Reads}
 case class DeleteTagRequest(tagID: Long)
 
 object DeleteTagRequest {
-    implicit val deleteTagRequestReads: Reads[DeleteTagRequest] = Json.reads[DeleteTagRequest]
+  implicit val deleteTagRequestReads: Reads[DeleteTagRequest] = Json.reads[DeleteTagRequest]
 }

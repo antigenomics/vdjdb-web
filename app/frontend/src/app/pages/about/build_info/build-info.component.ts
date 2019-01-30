@@ -18,31 +18,31 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@
 import { Utils } from 'utils/utils';
 
 export interface IBuildInfo {
-    name: string;
-    version: string;
-    builtAt: string;
-    commitHash: string;
+  name: string;
+  version: string;
+  builtAt: string;
+  commitHash: string;
 }
 
 @Component({
-    selector:        'build-info',
-    templateUrl:     './build-info.component.html',
-    styleUrls:       [ './build-info.component.css' ],
-    changeDetection: ChangeDetectionStrategy.OnPush
+  selector:        'build-info',
+  templateUrl:     './build-info.component.html',
+  styleUrls:       [ './build-info.component.css' ],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class BuildInfoComponent implements OnInit {
-    private static readonly buildInfoURL: string = '/buildInfo';
+  private static readonly buildInfoURL: string = '/buildInfo';
 
-    public loading: boolean = true;
-    public info?: IBuildInfo;
+  public loading: boolean = true;
+  public info?: IBuildInfo;
 
-    constructor(private changeDetector: ChangeDetectorRef) {}
+  constructor(private changeDetector: ChangeDetectorRef) {}
 
-    public ngOnInit(): void {
-        Utils.HTTP.get(BuildInfoComponent.buildInfoURL).then(({ response }) => {
-            this.info = JSON.parse(response) as IBuildInfo;
-            this.loading = false;
-            this.changeDetector.detectChanges();
-        });
-    }
+  public ngOnInit(): void {
+    Utils.HTTP.get(BuildInfoComponent.buildInfoURL).then(({ response }) => {
+      this.info = JSON.parse(response) as IBuildInfo;
+      this.loading = false;
+      this.changeDetector.detectChanges();
+    });
+  }
 }

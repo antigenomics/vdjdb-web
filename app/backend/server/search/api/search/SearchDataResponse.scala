@@ -22,7 +22,7 @@ import play.api.libs.json.{Format, Json}
 case class SearchDataResponse(page: Int, pageSize: Int, pageCount: Int, recordsFound: Int, rows: Seq[SearchTableRow])
 
 object SearchDataResponse {
-    final val Action: String = "search"
+  final val Action: String = "search"
 
-    implicit val searchTableResultsFilterResponseFormat: Format[SearchDataResponse] = Json.format[SearchDataResponse]
+  implicit val searchTableResultsFilterResponseFormat: Format[SearchDataResponse] = Json.format[SearchDataResponse]
 }

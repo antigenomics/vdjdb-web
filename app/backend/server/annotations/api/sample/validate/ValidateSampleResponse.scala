@@ -21,7 +21,7 @@ import play.api.libs.json.{Json, Writes}
 case class ValidateSampleResponse(valid: Boolean)
 
 object ValidateSampleResponse {
-    final val Action: String = "validate_sample"
+  final val Action: String = "validate_sample"
 
-    implicit val validateSampleResponseWrites: Writes[ValidateSampleResponse] = Json.writes[ValidateSampleResponse]
+  implicit val validateSampleResponseWrites: Writes[ValidateSampleResponse] = Json.writes[ValidateSampleResponse]
 }

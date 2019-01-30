@@ -20,20 +20,20 @@ import { TableRow } from '../row/table-row';
 import { TableEntry } from './table-entry';
 
 @Component({
-    selector:        'td[table-entry-centered]',
-    template:        '{{ entry }}',
-    changeDetection: ChangeDetectionStrategy.OnPush
+  selector:        'td[table-entry-centered]',
+  template:        '{{ entry }}',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TableEntryCenteredComponent extends TableEntry {
 
-    @HostBinding('class.center')
-    @HostBinding('class.aligned')
-    public centered: boolean = true;
+  @HostBinding('class.center')
+  @HostBinding('class.aligned')
+  public centered: boolean = true;
 
-    public entry: string;
+  public entry: string;
 
-    public create(entry: string, _column: TableColumn, _columns: TableColumn[], _row: TableRow,
-                  _hostViewContainer: ViewContainerRef, _resolver: ComponentFactoryResolver): void {
-        this.entry = entry;
-    }
+  public create(entry: string, _column: TableColumn, _columns: TableColumn[], _row: TableRow,
+                _hostViewContainer: ViewContainerRef, _resolver: ComponentFactoryResolver): void {
+    this.entry = entry;
+  }
 }

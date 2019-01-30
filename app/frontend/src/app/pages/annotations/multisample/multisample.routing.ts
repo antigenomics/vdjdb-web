@@ -19,8 +19,8 @@ import { RouterModule, Routes } from '@angular/router';
 import { MultisampleSummaryComponent } from 'pages/annotations/multisample/summary/multisample-summary.component';
 
 const routes: Routes = [
-    { path: '', redirectTo: 'summary' },
-    { path: 'summary', component: MultisampleSummaryComponent }
+  { path: '', redirectTo: 'summary' },
+  { path: 'summary', component: MultisampleSummaryComponent }
 ];
 
 export const MultisampleRouting = RouterModule.forChild(routes); // tslint:disable-line:variable-name

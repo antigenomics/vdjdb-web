@@ -27,21 +27,21 @@ import { TableRowComponent } from './row/table-row.component';
 import { TableComponent } from './table.component';
 
 @NgModule({
-    imports:         [ CommonModule, ModalsModule ],
-    declarations:    [ TableComponent,
-        TableRowComponent,
-        TablePaginationComponent,
-        TableInfoComponent,
-        TableExportComponent,
-        TablePagesizeComponent,
-        TableEntryDefaultComponent,
-        TableEntryCenteredComponent ],
-    exports:         [ TableComponent,
-        TablePaginationComponent,
-        TableInfoComponent,
-        TableExportComponent,
-        TablePagesizeComponent ],
-    entryComponents: [ TableEntryDefaultComponent, TableEntryCenteredComponent, TableRowComponent ]
+  imports:         [ CommonModule, ModalsModule ],
+  declarations:    [ TableComponent,
+    TableRowComponent,
+    TablePaginationComponent,
+    TableInfoComponent,
+    TableExportComponent,
+    TablePagesizeComponent,
+    TableEntryDefaultComponent,
+    TableEntryCenteredComponent ],
+  exports:         [ TableComponent,
+    TablePaginationComponent,
+    TableInfoComponent,
+    TableExportComponent,
+    TablePagesizeComponent ],
+  entryComponents: [ TableEntryDefaultComponent, TableEntryCenteredComponent, TableRowComponent ]
 })
 export class TableModule {
 }

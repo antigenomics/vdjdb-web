@@ -24,15 +24,16 @@ import backend.server.search.api.export.ExportOptionFlag
 import scala.concurrent.{ExecutionContext, Future}
 
 trait IntersectionTableConverter {
-    def convert(sampleName: String, table: IntersectionTable, database: Database, options: Seq[ExportOptionFlag]): Future[TemporaryFileLink]
-    def getExtension: String
+  def convert(sampleName: String, table: IntersectionTable, database: Database, options: Seq[ExportOptionFlag]): Future[TemporaryFileLink]
+
+  def getExtension: String
 }
 
 object IntersectionTableConverter {
-    def getConverter(converterType: String)(implicit tfp: TemporaryFileProvider, ec: ExecutionContext): Option[IntersectionTableConverter] = {
-        converterType match {
-            case "tsv" => Some(IntersectionTableTSVConverter())
-            case _ => None
-        }
+  def getConverter(converterType: String)(implicit tfp: TemporaryFileProvider, ec: ExecutionContext): Option[IntersectionTableConverter] = {
+    converterType match {
+      case "tsv" => Some(IntersectionTableTSVConverter())
+      case _ => None
     }
+  }
 }

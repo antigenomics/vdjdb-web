@@ -24,51 +24,53 @@ import play.api.mvc._
 import scala.concurrent.{ExecutionContext, Future}
 
 object SessionAction {
-    final val redirectLoadtion = backend.controllers.routes.Application.index()
+  final val redirectLoadtion = backend.controllers.routes.Application.index()
 
-    def authorizedOnly(implicit ec: ExecutionContext): ActionFilter[UserRequest] = new ActionFilter[UserRequest] {
-        override protected def executionContext: ExecutionContext = ec
-        override protected def filter[A](request: UserRequest[A]): Future[Option[Result]] = Future.successful {
-            if (request.authorized) {
-                None
-            } else {
-                Some(Results.Redirect(redirectLoadtion))
-            }
-        }
-    }
+  def authorizedOnly(implicit ec: ExecutionContext): ActionFilter[UserRequest] = new ActionFilter[UserRequest] {
+    override protected def executionContext: ExecutionContext = ec
 
-    def unauthorizedOnly(implicit ec: ExecutionContext): ActionFilter[UserRequest] = new ActionFilter[UserRequest] {
-        override protected def executionContext: ExecutionContext = ec
-        override protected def filter[A](request: UserRequest[A]): Future[Option[Result]] = Future.successful {
-            if (request.authorized) {
-                Some(Results.Redirect(redirectLoadtion))
-            } else {
-                None
-            }
-        }
+    override protected def filter[A](request: UserRequest[A]): Future[Option[Result]] = Future.successful {
+      if (request.authorized) {
+        None
+      } else {
+        Some(Results.Redirect(redirectLoadtion))
+      }
     }
+  }
 
-    def updateCookies[A](result: Result)(implicit userRequest: UserRequest[A], stp: SessionTokenProvider): Result = {
-        if (userRequest.authorized) {
-            val session = userRequest.session + ((stp.getAuthTokenSessionName, userRequest.token.get.token))
-            result
-                .withSession(session)
-                .withCookies(Cookie("logged", URLEncoder.encode("true", "UTF-8"), httpOnly = false))
-                .withCookies(Cookie("email", URLEncoder.encode(userRequest.user.get.email, "UTF-8"), httpOnly = false))
-                .withCookies(Cookie("login", URLEncoder.encode(userRequest.user.get.login, "UTF-8"), httpOnly = false))
-        } else {
-            SessionAction.clearSessionAndDiscardCookies(result)
-        }
-    }
+  def unauthorizedOnly(implicit ec: ExecutionContext): ActionFilter[UserRequest] = new ActionFilter[UserRequest] {
+    override protected def executionContext: ExecutionContext = ec
 
-    def discardCookies(result: Result): Result = {
-        result
-            .discardingCookies(DiscardingCookie("logged"))
-            .discardingCookies(DiscardingCookie("email"))
-            .discardingCookies(DiscardingCookie("login"))
+    override protected def filter[A](request: UserRequest[A]): Future[Option[Result]] = Future.successful {
+      if (request.authorized) {
+        Some(Results.Redirect(redirectLoadtion))
+      } else {
+        None
+      }
     }
+  }
 
-    def clearSessionAndDiscardCookies(result: Result): Result = {
-        discardCookies(result).withNewSession
+  def updateCookies[A](result: Result)(implicit userRequest: UserRequest[A], stp: SessionTokenProvider): Result = {
+    if (userRequest.authorized) {
+      val session = userRequest.session + ((stp.getAuthTokenSessionName, userRequest.token.get.token))
+      result
+        .withSession(session)
+        .withCookies(Cookie("logged", URLEncoder.encode("true", "UTF-8"), httpOnly = false))
+        .withCookies(Cookie("email", URLEncoder.encode(userRequest.user.get.email, "UTF-8"), httpOnly = false))
+        .withCookies(Cookie("login", URLEncoder.encode(userRequest.user.get.login, "UTF-8"), httpOnly = false))
+    } else {
+      SessionAction.clearSessionAndDiscardCookies(result)
     }
+  }
+
+  def discardCookies(result: Result): Result = {
+    result
+      .discardingCookies(DiscardingCookie("logged"))
+      .discardingCookies(DiscardingCookie("email"))
+      .discardingCookies(DiscardingCookie("login"))
+  }
+
+  def clearSessionAndDiscardCookies(result: Result): Result = {
+    discardCookies(result).withNewSession
+  }
 }

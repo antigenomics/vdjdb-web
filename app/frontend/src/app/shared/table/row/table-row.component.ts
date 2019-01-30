@@ -15,53 +15,53 @@
  */
 
 import {
-    ChangeDetectionStrategy, Component, ComponentFactoryResolver, ComponentRef, Input, OnDestroy, OnInit, ViewChild, ViewContainerRef
+  ChangeDetectionStrategy, Component, ComponentFactoryResolver, ComponentRef, Input, OnDestroy, OnInit, ViewChild, ViewContainerRef
 } from '@angular/core';
 import { TableColumn } from '../column/table-column';
 import { TableEntryDefaultComponent } from '../entry/table-entry-default.component';
 import { TableRow } from './table-row';
 
 @Component({
-    selector:        'tr[table-row]',
-    template:        '<ng-container #rowViewContainer></ng-container>',
-    changeDetection: ChangeDetectionStrategy.OnPush
+  selector:        'tr[table-row]',
+  template:        '<ng-container #rowViewContainer></ng-container>',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TableRowComponent implements OnInit, OnDestroy {
-    private _components: Array<ComponentRef<any>> = [];
+  private _components: Array<ComponentRef<any>> = [];
 
-    @Input('columns')
-    public columns: TableColumn[];
+  @Input('columns')
+  public columns: TableColumn[];
 
-    @Input('row')
-    public row: TableRow;
+  @Input('row')
+  public row: TableRow;
 
-    @ViewChild('rowViewContainer', { read: ViewContainerRef })
-    public rowViewContainer: ViewContainerRef;
+  @ViewChild('rowViewContainer', { read: ViewContainerRef })
+  public rowViewContainer: ViewContainerRef;
 
-    constructor(private hostViewContainer: ViewContainerRef, private resolver: ComponentFactoryResolver) {}
+  constructor(private hostViewContainer: ViewContainerRef, private resolver: ComponentFactoryResolver) {}
 
-    public ngOnInit(): void {
-        const defaultEntryComponentResolver = this.resolver.resolveComponentFactory(TableEntryDefaultComponent);
-        if (this.columns) {
-            const entries: string[] = this.row.getEntries();
+  public ngOnInit(): void {
+    const defaultEntryComponentResolver = this.resolver.resolveComponentFactory(TableEntryDefaultComponent);
+    if (this.columns) {
+      const entries: string[] = this.row.getEntries();
 
-            let entryIndex: number = 0;
-            this.columns.forEach(async (column: TableColumn) => {
-                const entry = column.noEntry ? '' : entries[entryIndex++];
-                let entryResolver = this.row.resolveComponentFactory(column, this.resolver);
-                if (!entryResolver) {
-                    entryResolver = defaultEntryComponentResolver;
-                }
-                const component = this.rowViewContainer.createComponent(entryResolver);
-                component.instance.create(entry, column, this.columns, this.row, this.hostViewContainer, this.resolver);
-                this._components.push(component);
-            });
+      let entryIndex: number = 0;
+      this.columns.forEach(async (column: TableColumn) => {
+        const entry = column.noEntry ? '' : entries[ entryIndex++ ];
+        let entryResolver = this.row.resolveComponentFactory(column, this.resolver);
+        if (!entryResolver) {
+          entryResolver = defaultEntryComponentResolver;
         }
+        const component = this.rowViewContainer.createComponent(entryResolver);
+        component.instance.create(entry, column, this.columns, this.row, this.hostViewContainer, this.resolver);
+        this._components.push(component);
+      });
     }
+  }
 
-    public ngOnDestroy(): void {
-        this._components.forEach((component: ComponentRef<any>) => {
-            component.destroy();
-        });
-    }
+  public ngOnDestroy(): void {
+    this._components.forEach((component: ComponentRef<any>) => {
+      component.destroy();
+    });
+  }
 }

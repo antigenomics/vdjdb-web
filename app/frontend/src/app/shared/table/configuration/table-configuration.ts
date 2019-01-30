@@ -19,91 +19,91 @@
 import { IExportFormat, IExportOptionFlag } from 'shared/table/export/table-export.component';
 
 export interface ITableClassesConfigurationDescriptor {
-    readonly columns?: string;
-    readonly rows?: string;
+  readonly columns?: string;
+  readonly rows?: string;
 }
 
 function createDefaultTableClassesConfiguration(): ITableClassesConfigurationDescriptor {
-    return {
-        columns: '',
-        rows:    ''
-    };
+  return {
+    columns: '',
+    rows:    ''
+  };
 }
 
 /* Table utils configuration options
  * =================================== */
 export interface ITableUtilsPaginationConfigurationDescriptor {
-    readonly disable?: boolean;
-    readonly pageRange?: number;
+  readonly disable?: boolean;
+  readonly pageRange?: number;
 }
 
 export interface ITableUtilsInfoConfigurationDescriptor {
-    readonly disable?: boolean;
+  readonly disable?: boolean;
 }
 
 export interface ITableUtilsExportConfigurationDescriptor {
-    readonly disable?: boolean;
-    readonly formats?: IExportFormat[];
-    readonly options?: IExportOptionFlag[];
+  readonly disable?: boolean;
+  readonly formats?: IExportFormat[];
+  readonly options?: IExportOptionFlag[];
 }
 
 export interface ITableUtilsPageSizeConfigurationDescriptor {
-    readonly disable?: boolean;
-    readonly sizes?: number[];
+  readonly disable?: boolean;
+  readonly sizes?: number[];
 }
 
 export interface ITableUtilsConfigurationDescriptor {
-    readonly disable?: boolean;
-    readonly pagination?: ITableUtilsPaginationConfigurationDescriptor;
-    readonly info?: ITableUtilsInfoConfigurationDescriptor;
-    readonly export?: ITableUtilsExportConfigurationDescriptor;
-    readonly pageSize?: ITableUtilsPageSizeConfigurationDescriptor;
+  readonly disable?: boolean;
+  readonly pagination?: ITableUtilsPaginationConfigurationDescriptor;
+  readonly info?: ITableUtilsInfoConfigurationDescriptor;
+  readonly export?: ITableUtilsExportConfigurationDescriptor;
+  readonly pageSize?: ITableUtilsPageSizeConfigurationDescriptor;
 }
 
 function ITableUtilsConfigurationDefault(): ITableUtilsConfigurationDescriptor {
-    return {
-        disable:    false,
-        pagination: { disable: false, pageRange: 5 },
-        info:       { disable: false },
-        export:     { disable: false, formats: [], options: [] },
-        pageSize:   { disable: false, sizes: [ 25, 50, 100 ] } // tslint:disable-line:no-magic-numbers
-    };
+  return {
+    disable:    false,
+    pagination: { disable: false, pageRange: 5 },
+    info:       { disable: false },
+    export:     { disable: false, formats: [], options: [] },
+    pageSize:   { disable: false, sizes: [ 25, 50, 100 ] } // tslint:disable-line:no-magic-numbers
+  };
 }
 
 /* Table font size configuration options
  * ====================================== */
 export interface IFontSizeConfigurationDescriptor {
-    readonly dynamicSizeEnabled?: boolean;
-    readonly dynamicSizeWeightA?: number;
-    readonly dynamicSizeWeightB?: number;
+  readonly dynamicSizeEnabled?: boolean;
+  readonly dynamicSizeWeightA?: number;
+  readonly dynamicSizeWeightB?: number;
 }
 
 export interface ITableSizeConfigurationDescriptor {
-    readonly overflowThreshold?: number;
-    readonly header?: IFontSizeConfigurationDescriptor;
-    readonly content?: IFontSizeConfigurationDescriptor;
+  readonly overflowThreshold?: number;
+  readonly header?: IFontSizeConfigurationDescriptor;
+  readonly content?: IFontSizeConfigurationDescriptor;
 }
 
 function createDefaultTableSizeConfiguration(): ITableSizeConfigurationDescriptor {
-    return {
-        overflowThreshold: 1200,
-        header:  { dynamicSizeEnabled: false, dynamicSizeWeightA: 0.0003125, dynamicSizeWeightB: 0.4 },
-        content: { dynamicSizeEnabled: false, dynamicSizeWeightA: 0.0003125, dynamicSizeWeightB: 0.4 }
-    };
+  return {
+    overflowThreshold: 1200,
+    header:            { dynamicSizeEnabled: false, dynamicSizeWeightA: 0.0003125, dynamicSizeWeightB: 0.4 },
+    content:           { dynamicSizeEnabled: false, dynamicSizeWeightA: 0.0003125, dynamicSizeWeightB: 0.4 }
+  };
 }
 
 /* Table configuration options
  * =================================== */
 export interface ITableConfigurationDescriptor {
-    readonly classes?: ITableClassesConfigurationDescriptor;
-    readonly utils?: ITableUtilsConfigurationDescriptor;
-    readonly size?: ITableSizeConfigurationDescriptor;
+  readonly classes?: ITableClassesConfigurationDescriptor;
+  readonly utils?: ITableUtilsConfigurationDescriptor;
+  readonly size?: ITableSizeConfigurationDescriptor;
 }
 
 export function createDefaultTableConfiguration(): ITableConfigurationDescriptor {
-    return {
-        classes: createDefaultTableClassesConfiguration(),
-        utils:   ITableUtilsConfigurationDefault(),
-        size:    createDefaultTableSizeConfiguration()
-    };
+  return {
+    classes: createDefaultTableClassesConfiguration(),
+    utils:   ITableUtilsConfigurationDefault(),
+    size:    createDefaultTableSizeConfiguration()
+  };
 }

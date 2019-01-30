@@ -15,7 +15,7 @@
  */
 
 export interface IChartDataEntry {
-    readonly name: string;
-    readonly value: number;
-    readonly color?: string;
+  readonly name: string;
+  readonly value: number;
+  readonly color?: string;
 }

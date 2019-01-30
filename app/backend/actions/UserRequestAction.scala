@@ -16,12 +16,12 @@
 
 package backend.actions
 
-import javax.inject.Inject
 import backend.models.authorization.permissions.UserPermissionsProvider
 import backend.models.authorization.tokens.session.{SessionToken, SessionTokenProvider}
 import backend.models.authorization.user.{User, UserDetails, UserProvider}
 import backend.models.files.sample.SampleFileProvider
 import backend.models.files.sample.tags.SampleTagProvider
+import javax.inject.Inject
 import play.api.mvc._
 
 import scala.async.Async.await
@@ -29,25 +29,25 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class UserRequest[A](val authorized: Boolean, val user: Option[User], val details: Option[UserDetails],
                      val token: Option[SessionToken], request: Request[A])
-    extends WrappedRequest[A](request)
+  extends WrappedRequest[A](request)
 
 class UserRequestAction @Inject()(val parser: BodyParsers.Default)
                                  (implicit val executionContext: ExecutionContext, stp: SessionTokenProvider,
                                   up: UserProvider, upp: UserPermissionsProvider, sfp: SampleFileProvider, stsp: SampleTagProvider)
-    extends ActionBuilder[UserRequest, AnyContent] with ActionTransformer[Request, UserRequest] {
+  extends ActionBuilder[UserRequest, AnyContent] with ActionTransformer[Request, UserRequest] {
 
-    def transform[A](request: Request[A]): Future[UserRequest[A]] = scala.async.Async.async {
-        val requestSessionToken = request.session.get(up.getAuthTokenSessionName)
-        if (requestSessionToken.isEmpty) {
-            new UserRequest(false, None, None, None, request)
-        } else {
-            val session = await(stp.getWithUser(requestSessionToken.get))
-            if (session.isEmpty) {
-                new UserRequest(false, None, None, None, request)
-            } else {
-                val details = await(session.get._2.getDetails)
-                new UserRequest(true, Some(session.get._2), Some(details), Some(session.get._1), request)
-            }
-        }
+  def transform[A](request: Request[A]): Future[UserRequest[A]] = scala.async.Async.async {
+    val requestSessionToken = request.session.get(up.getAuthTokenSessionName)
+    if (requestSessionToken.isEmpty) {
+      new UserRequest(false, None, None, None, request)
+    } else {
+      val session = await(stp.getWithUser(requestSessionToken.get))
+      if (session.isEmpty) {
+        new UserRequest(false, None, None, None, request)
+      } else {
+        val details = await(session.get._2.getDetails)
+        new UserRequest(true, Some(session.get._2), Some(details), Some(session.get._1), request)
+      }
     }
+  }
 }

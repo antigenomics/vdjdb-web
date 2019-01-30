@@ -21,5 +21,5 @@ import play.api.libs.json.{Json, Reads}
 case class UpdateTagRequest(tagID: Long, name: String, color: String, samples: Seq[String])
 
 object UpdateTagRequest {
-    implicit val updateTagRequestReads: Reads[UpdateTagRequest] = Json.reads[UpdateTagRequest]
+  implicit val updateTagRequestReads: Reads[UpdateTagRequest] = Json.reads[UpdateTagRequest]
 }

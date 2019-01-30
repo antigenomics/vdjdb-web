@@ -19,6 +19,6 @@ import { TableColumn } from '../column/table-column';
 import { TableRow } from '../row/table-row';
 
 export abstract class TableEntry {
-    public abstract create(entry: string, column: TableColumn, columns: TableColumn[], row: TableRow,
-                           hostViewContainer: ViewContainerRef, resolver: ComponentFactoryResolver): void;
+  public abstract create(entry: string, column: TableColumn, columns: TableColumn[], row: TableRow,
+                         hostViewContainer: ViewContainerRef, resolver: ComponentFactoryResolver): void;
 }

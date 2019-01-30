@@ -16,9 +16,8 @@
 
 package backend.models.authorization.permissions
 
-import javax.inject.Inject
-
 import groovy.lang.Singleton
+import javax.inject.Inject
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import play.db.NamedDatabase
 import slick.jdbc.JdbcProfile
@@ -28,22 +27,24 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class UserPermissionsProvider @Inject()(@NamedDatabase("default") protected val dbConfigProvider: DatabaseConfigProvider)
                                        (implicit ec: ExecutionContext) extends HasDatabaseConfigProvider[JdbcProfile] {
-    import dbConfig.profile.api._
-    private final val table = TableQuery[UserPermissionsTable]
 
-    def getTable: TableQuery[UserPermissionsTable] = table
+  import dbConfig.profile.api._
 
-    def getAll: Future[Seq[UserPermissions]] = {
-        db.run(table.result)
-    }
+  private final val table = TableQuery[UserPermissionsTable]
 
-    def getByID(id: Long): Future[Option[UserPermissions]] = {
-        db.run(table.filter(_.id === id).result.headOption)
-    }
+  def getTable: TableQuery[UserPermissionsTable] = table
+
+  def getAll: Future[Seq[UserPermissions]] = {
+    db.run(table.result)
+  }
+
+  def getByID(id: Long): Future[Option[UserPermissions]] = {
+    db.run(table.filter(_.id === id).result.headOption)
+  }
 }
 
 object UserPermissionsProvider {
-    final val UNLIMITED_ID: Long = 0L
-    final val DEFAULT_ID: Long = 1L
-    final val DEMO_ID: Long = 2L
+  final val UNLIMITED_ID: Long = 0L
+  final val DEFAULT_ID: Long = 1L
+  final val DEMO_ID: Long = 2L
 }

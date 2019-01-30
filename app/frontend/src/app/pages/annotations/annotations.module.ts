@@ -26,9 +26,9 @@ import { UserResolver } from './resolvers/user.resolver';
 import { SampleModule } from './sample/sample.module';
 
 @NgModule({
-    imports:      [ CommonModule, AnnotationsSidebarModule, SampleModule, AnnotationsRouting ],
-    declarations: [ AnnotationsPageComponent, AnnotationsInfoComponent ],
-    exports:      [ AnnotationsPageComponent ],
-    providers:    [ AnnotationsService, UserResolver, SampleItemResolver ]
+  imports:      [ CommonModule, AnnotationsSidebarModule, SampleModule, AnnotationsRouting ],
+  declarations: [ AnnotationsPageComponent, AnnotationsInfoComponent ],
+  exports:      [ AnnotationsPageComponent ],
+  providers:    [ AnnotationsService, UserResolver, SampleItemResolver ]
 })
 export class AnnotationsPageModule {}

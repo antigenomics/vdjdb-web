@@ -23,5 +23,5 @@ case class SampleAnnotateRequest(sampleName: String, databaseQueryParams: Annota
                                  searchScope: AnnotationsSearchScope, scoring: AnnotationsAnnotateScoring)
 
 object SampleAnnotateRequest {
-    implicit val sampleIntersectionRequestReads: Reads[SampleAnnotateRequest] = Json.reads[SampleAnnotateRequest]
+  implicit val sampleIntersectionRequestReads: Reads[SampleAnnotateRequest] = Json.reads[SampleAnnotateRequest]
 }

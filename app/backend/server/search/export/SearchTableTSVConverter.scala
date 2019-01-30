@@ -18,7 +18,6 @@ package backend.server.search.export
 
 import backend.models.files.temporary.{TemporaryFileLink, TemporaryFileProvider}
 import backend.server.database.Database
-import backend.server.database.filters.{DatabaseFilterRequest, DatabaseFilterType, DatabaseFilters}
 import backend.server.search.SearchTable
 import backend.server.search.api.export.ExportOptionFlag
 
@@ -26,29 +25,29 @@ import scala.concurrent.Future
 
 case class SearchTableTSVConverter()(implicit tfp: TemporaryFileProvider) extends SearchTableConverter {
 
-    override def convert(table: SearchTable, database: Database, options: Seq[ExportOptionFlag]): Future[TemporaryFileLink] = {
-        val rows = table.getRows
+  override def convert(table: SearchTable, database: Database, options: Seq[ExportOptionFlag]): Future[TemporaryFileLink] = {
+    val rows = table.getRows
 
-        val content = new StringBuilder()
+    val content = new StringBuilder()
 
-        val header = database.getMetadata.columns.map(column => column.title).mkString("complex.id\t", "\t", "\r\n")
-        content.append(header)
+    val header = database.getMetadata.columns.map(column => column.title).mkString("complex.id\t", "\t", "\r\n")
+    content.append(header)
 
-        rows.foreach(row => content.append(row.entries.mkString(s"${row.metadata.pairedID}\t", "\t", "\r\n")))
+    rows.foreach(row => content.append(row.entries.mkString(s"${row.metadata.pairedID}\t", "\t", "\r\n")))
 
-        options.foreach(option => {
-            option.name match {
-                case "paired_export" =>
-                    if (option.value) {
-                        val pairedRows = SearchTable.getPairedRows(rows, database)
-                        pairedRows.foreach(row => content.append(row.entries.mkString(s"${row.metadata.pairedID}\t", "\t", "\r\n")))
-                    }
-                case _ =>
-            }
-        })
+    options.foreach(option => {
+      option.name match {
+        case "paired_export" =>
+          if (option.value) {
+            val pairedRows = SearchTable.getPairedRows(rows, database)
+            pairedRows.foreach(row => content.append(row.entries.mkString(s"${row.metadata.pairedID}\t", "\t", "\r\n")))
+          }
+        case _ =>
+      }
+    })
 
-        tfp.createTemporaryFile("SearchTable", getExtension, content.toString())
-    }
+    tfp.createTemporaryFile("SearchTable", getExtension, content.toString())
+  }
 
-    override def getExtension: String = "tsv"
+  override def getExtension: String = "tsv"
 }

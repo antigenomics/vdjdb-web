@@ -25,11 +25,11 @@ import play.api.libs.json.{Json, Writes}
 case class UserDetailsResponse(details: UserDetails)
 
 object UserDetailsResponse {
-    final val Action: String = "details"
+  final val Action: String = "details"
 
-    implicit val userPermissionsWrites: Writes[UserPermissions] = Json.writes[UserPermissions]
-    implicit val sampleFileDetailsWrites: Writes[SampleFileDetails] = Json.writes[SampleFileDetails]
-    implicit val sampleTagDetailsWrites: Writes[SampleTagDetails] = Json.writes[SampleTagDetails]
-    implicit val userDetailWrites: Writes[UserDetails] = Json.writes[UserDetails]
-    implicit val userDetailsResponseWrites: Writes[UserDetailsResponse] = Json.writes[UserDetailsResponse]
+  implicit val userPermissionsWrites: Writes[UserPermissions] = Json.writes[UserPermissions]
+  implicit val sampleFileDetailsWrites: Writes[SampleFileDetails] = Json.writes[SampleFileDetails]
+  implicit val sampleTagDetailsWrites: Writes[SampleTagDetails] = Json.writes[SampleTagDetails]
+  implicit val userDetailWrites: Writes[UserDetails] = Json.writes[UserDetails]
+  implicit val userDetailsResponseWrites: Writes[UserDetailsResponse] = Json.writes[UserDetailsResponse]
 }

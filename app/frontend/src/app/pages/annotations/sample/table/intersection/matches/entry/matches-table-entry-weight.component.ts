@@ -20,16 +20,16 @@ import { TableEntry } from 'shared/table/entry/table-entry';
 import { MatchTableRow } from '../row/match-table-row';
 
 @Component({
-    selector:            'td[match-table-entry-weight]',
-    template:            `{{ weight }}`,
-    changeDetection:     ChangeDetectionStrategy.OnPush,
-    preserveWhitespaces: false
+  selector:            'td[match-table-entry-weight]',
+  template:            `{{ weight }}`,
+  changeDetection:     ChangeDetectionStrategy.OnPush,
+  preserveWhitespaces: false
 })
 export class MatchesTableEntryWeightComponent extends TableEntry {
-    public weight: string;
+  public weight: string;
 
-    public create(_entry: string, _column: TableColumn, _columns: TableColumn[], row: MatchTableRow,
-                  _hostViewContainer: ViewContainerRef, _resolver: ComponentFactoryResolver): void {
-        this.weight = row.weight.toPrecision(3);
-    }
+  public create(_entry: string, _column: TableColumn, _columns: TableColumn[], row: MatchTableRow,
+                _hostViewContainer: ViewContainerRef, _resolver: ComponentFactoryResolver): void {
+    this.weight = row.weight.toPrecision(3);
+  }
 }

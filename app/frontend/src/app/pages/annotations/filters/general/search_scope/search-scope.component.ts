@@ -19,35 +19,35 @@ import { environment } from 'environments/environment';
 import { AnnotationsFilters } from 'pages/annotations/filters/annotations-filters';
 
 @Component({
-    selector: 'search-scope',
-    templateUrl: './search-scope.component.html',
-    changeDetection: ChangeDetectionStrategy.OnPush
+  selector:        'search-scope',
+  templateUrl:     './search-scope.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SearchScopeComponent {
-    @Input('filters')
-    public filters: AnnotationsFilters;
+  @Input('filters')
+  public filters: AnnotationsFilters;
 
-    @Input('disabled')
-    public disabled: boolean;
+  @Input('disabled')
+  public disabled: boolean;
 
-    constructor(private changeDetector: ChangeDetectorRef) {}
+  constructor(private changeDetector: ChangeDetectorRef) {}
 
-    public isDisabled() {
-        return this.disabled ? true : undefined;
+  public isDisabled() {
+    return this.disabled ? true : undefined;
+  }
+
+  public isIndelsAllowed(): boolean {
+    return environment.application.annotations.filters.hammingDistance.allowIndels;
+  }
+
+  public checkHammingDistance(distance: number, type: string): void {
+    const hammingDistance = this.filters.searchScope.hammingDistance as any;
+    hammingDistance[ type ] = -1;
+    this.changeDetector.detectChanges();
+    hammingDistance[ type ] = this.filters.validateRange(AnnotationsFilters.hammingDistanceRange, distance);
+    if (!this.isIndelsAllowed()) {
+      hammingDistance.total = hammingDistance.substitutions;
     }
-
-    public isIndelsAllowed(): boolean {
-        return environment.application.annotations.filters.hammingDistance.allowIndels;
-    }
-
-    public checkHammingDistance(distance: number, type: string): void {
-        const hammingDistance = this.filters.searchScope.hammingDistance as any;
-        hammingDistance[type] = -1;
-        this.changeDetector.detectChanges();
-        hammingDistance[type] = this.filters.validateRange(AnnotationsFilters.hammingDistanceRange, distance);
-        if (!this.isIndelsAllowed()) {
-            hammingDistance.total = hammingDistance.substitutions;
-        }
-        this.changeDetector.detectChanges();
-    }
+    this.changeDetector.detectChanges();
+  }
 }

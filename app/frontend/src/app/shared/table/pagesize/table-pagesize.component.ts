@@ -17,22 +17,22 @@
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
 
 @Component({
-    selector:        'table-pagesize',
-    templateUrl:     './table-pagesize.component.html',
-    changeDetection: ChangeDetectionStrategy.OnPush
+  selector:        'table-pagesize',
+  templateUrl:     './table-pagesize.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TablePagesizeComponent {
-    @Input()
-    public pageSize: number;
+  @Input()
+  public pageSize: number;
 
-    @Input()
-    public sizes: number[];
+  @Input()
+  public sizes: number[];
 
-    @Output()
-    public changePageSize = new EventEmitter();
+  @Output()
+  public changePageSize = new EventEmitter();
 
-    public changeSize(size: number): void {
-        this.pageSize = size;
-        this.changePageSize.emit(size);
-    }
+  public changeSize(size: number): void {
+    this.pageSize = size;
+    this.changePageSize.emit(size);
+  }
 }

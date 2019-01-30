@@ -23,12 +23,12 @@ import play.api.data.Forms.{mapping, nonEmptyText}
 case class SampleFileForm(name: String, software: String)
 
 object SampleFileForm {
-    implicit val sampleFileFormMapping: Form[SampleFileForm] = Form(mapping(
-        "name" -> nonEmptyText(maxLength = 64),
-        "software" -> nonEmptyText(maxLength = 64)
-    )(SampleFileForm.apply)(SampleFileForm.unapply) verifying("sample.file.form.invalid.software", { sampleFileForm =>
-        Software.values().map(_.toString).contains(sampleFileForm.software)
-    }) verifying("sample.file.form.invalid.name", { sampleFileForm =>
-        sampleFileForm.name.nonEmpty && SampleFileTable.isSampleNameValid(sampleFileForm.name)
-    }))
+  implicit val sampleFileFormMapping: Form[SampleFileForm] = Form(mapping(
+    "name" -> nonEmptyText(maxLength = 64),
+    "software" -> nonEmptyText(maxLength = 64)
+  )(SampleFileForm.apply)(SampleFileForm.unapply) verifying("sample.file.form.invalid.software", { sampleFileForm =>
+    Software.values().map(_.toString).contains(sampleFileForm.software)
+  }) verifying("sample.file.form.invalid.name", { sampleFileForm =>
+    sampleFileForm.name.nonEmpty && SampleFileTable.isSampleNameValid(sampleFileForm.name)
+  }))
 }

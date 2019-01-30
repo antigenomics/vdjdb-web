@@ -43,7 +43,7 @@
         <h3 class="ui top attached header">Annotate all</h3>
         <div class="ui teal attached padded segment">
             <annotations-filters [filters]="multisampleSummaryService.getCurrentTabFilters()"
-                            [disabled]="multisampleSummaryService.isCurrentTabDisabled()"></annotations-filters>
+                                 [disabled]="multisampleSummaryService.isCurrentTabDisabled()"></annotations-filters>
         </div>
         <div class="ui attached secondary clearing segment">
             <button class="ui teal button left floated" (click)="multisampleSummaryService.annotate()">Annotate</button>

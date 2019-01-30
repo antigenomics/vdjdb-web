@@ -21,9 +21,9 @@ import { NotificationItemComponent } from './item/notification-item.component';
 import { NotificationService } from './notification.service';
 
 @NgModule({
-    imports:      [ CommonModule ],
-    declarations: [ NotificationContainerComponent, NotificationItemComponent ],
-    exports:      [ NotificationContainerComponent, NotificationItemComponent ],
-    providers:    [ NotificationService ]
+  imports:      [ CommonModule ],
+  declarations: [ NotificationContainerComponent, NotificationItemComponent ],
+  exports:      [ NotificationContainerComponent, NotificationItemComponent ],
+  providers:    [ NotificationService ]
 })
 export class NotificationModule {}

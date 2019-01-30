@@ -26,56 +26,56 @@ import { SearchTableEntryMetaComponent } from '../entry/search-table-entry-meta.
 import { SearchTableEntryUrlComponent } from '../entry/search-table-entry-url.component';
 
 export class SearchTableRowMetadata {
-    public readonly pairedID: string;
-    public readonly cdr3vEnd: number;
-    public readonly cdr3jStart: number;
+  public readonly pairedID: string;
+  public readonly cdr3vEnd: number;
+  public readonly cdr3jStart: number;
 
-    constructor(meta: any) {
-        /* tslint:disable:no-string-literal */
-        this.pairedID = meta[ 'pairedID' ];
-        this.cdr3vEnd = meta[ 'cdr3vEnd' ];
-        this.cdr3jStart = meta[ 'cdr3jStart' ];
-        /* tslint:enable:no-string-literal */
-    }
+  constructor(meta: any) {
+    /* tslint:disable:no-string-literal */
+    this.pairedID = meta[ 'pairedID' ];
+    this.cdr3vEnd = meta[ 'cdr3vEnd' ];
+    this.cdr3jStart = meta[ 'cdr3jStart' ];
+    /* tslint:enable:no-string-literal */
+  }
 }
 
 export class SearchTableRow extends TableRow {
-    private pairedDisabled: boolean = false;
+  private pairedDisabled: boolean = false;
 
-    public readonly entries: string[];
-    public readonly metadata: SearchTableRowMetadata;
+  public readonly entries: string[];
+  public readonly metadata: SearchTableRowMetadata;
 
-    constructor(row: any, pairedDisabled: boolean = false) {
-        /* tslint:disable:no-string-literal */
-        super();
-        this.entries = row[ 'entries' ];
-        this.metadata = new SearchTableRowMetadata(row[ 'metadata' ]);
-        this.pairedDisabled = pairedDisabled;
-        /* tslint:enable:no-string-literal */
+  constructor(row: any, pairedDisabled: boolean = false) {
+    /* tslint:disable:no-string-literal */
+    super();
+    this.entries = row[ 'entries' ];
+    this.metadata = new SearchTableRowMetadata(row[ 'metadata' ]);
+    this.pairedDisabled = pairedDisabled;
+    /* tslint:enable:no-string-literal */
+  }
+
+  public hash(): string {
+    return this.entries[ 1 ];
+  }
+
+  public getEntries(): string[] {
+    return this.entries;
+  }
+
+  public resolveComponentFactory(column: TableColumn, resolver: ComponentFactoryResolver): ComponentFactory<TableEntry> {
+    if (column.name === 'gene' && !this.pairedDisabled) {
+      return resolver.resolveComponentFactory(SearchTableEntryGeneComponent);
+    } else if (column.name === 'cdr3') {
+      return resolver.resolveComponentFactory(SearchTableEntryCdrComponent);
+    } else if (column.name === 'reference.id') {
+      return resolver.resolveComponentFactory(SearchTableEntryUrlComponent);
+    } else if (column.name === 'method' || column.name === 'meta' || column.name === 'cdr3fix') {
+      return resolver.resolveComponentFactory(SearchTableEntryMetaComponent);
+    } else if (column.name === 'v.segm' || column.name === 'j.segm') {
+      return resolver.resolveComponentFactory(SearchTableEntrySegmentComponent);
+    } else if (column.name === 'mhc.a' || column.name === 'mhc.b') {
+      return resolver.resolveComponentFactory(SearchTableEntryMHCComponent);
     }
-
-    public hash(): string {
-        return this.entries[1];
-    }
-
-    public getEntries(): string[] {
-        return this.entries;
-    }
-
-    public resolveComponentFactory(column: TableColumn, resolver: ComponentFactoryResolver): ComponentFactory<TableEntry> {
-        if (column.name === 'gene' && !this.pairedDisabled) {
-            return resolver.resolveComponentFactory(SearchTableEntryGeneComponent);
-        } else if (column.name === 'cdr3') {
-            return resolver.resolveComponentFactory(SearchTableEntryCdrComponent);
-        } else if (column.name === 'reference.id') {
-            return resolver.resolveComponentFactory(SearchTableEntryUrlComponent);
-        } else if (column.name === 'method' || column.name === 'meta' || column.name === 'cdr3fix') {
-            return resolver.resolveComponentFactory(SearchTableEntryMetaComponent);
-        } else if (column.name === 'v.segm' || column.name === 'j.segm') {
-            return resolver.resolveComponentFactory(SearchTableEntrySegmentComponent);
-        } else if (column.name === 'mhc.a' || column.name === 'mhc.b') {
-            return resolver.resolveComponentFactory(SearchTableEntryMHCComponent);
-        }
-        return undefined;
-    }
+    return undefined;
+  }
 }

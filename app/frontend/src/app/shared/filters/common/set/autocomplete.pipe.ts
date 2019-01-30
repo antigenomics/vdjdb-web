@@ -18,39 +18,39 @@ import { Pipe, PipeTransform } from '@angular/core';
 import { SetEntry } from './set-entry';
 
 @Pipe({
-    name: 'autocomplete'
+  name: 'autocomplete'
 })
 export class AutocompletePipe implements PipeTransform {
 
-    public transform(values: string[], model: string, alreadySelected: SetEntry[], substringDisabled: boolean): SetEntry[] {
-        let result: SetEntry[] = [ ];
-        if (!substringDisabled) {
-            result.push({
-                value: model,
-                display: 'Search substring: ' + model,
-                disabled: false
-            });
-        }
-        if (model === undefined || model === '') {
-            result = values.map((value: string) => ({ value, display: value, disabled: false }));
-        } else {
-            const filtered = values
-                .filter((value: string) => value.indexOf(model) !== -1)
-                .map((value: string) => ({ value, display: value, disabled: false }));
-            if (filtered.length !== 0) {
-                result = result.concat(filtered);
-            } else {
-                result = [{
-                    value: '',
-                    display: 'No matches',
-                    disabled: true
-                }];
-            }
-        }
-
-        const alreadySelectedValues = alreadySelected.map((entry: SetEntry) => entry.value);
-        return result.filter((entry: SetEntry) => {
-            return alreadySelectedValues.indexOf(entry.value) === -1;
-        });
+  public transform(values: string[], model: string, alreadySelected: SetEntry[], substringDisabled: boolean): SetEntry[] {
+    let result: SetEntry[] = [];
+    if (!substringDisabled) {
+      result.push({
+        value:    model,
+        display:  'Search substring: ' + model,
+        disabled: false
+      });
     }
+    if (model === undefined || model === '') {
+      result = values.map((value: string) => ({ value, display: value, disabled: false }));
+    } else {
+      const filtered = values
+        .filter((value: string) => value.indexOf(model) !== -1)
+        .map((value: string) => ({ value, display: value, disabled: false }));
+      if (filtered.length !== 0) {
+        result = result.concat(filtered);
+      } else {
+        result = [ {
+          value:    '',
+          display:  'No matches',
+          disabled: true
+        } ];
+      }
+    }
+
+    const alreadySelectedValues = alreadySelected.map((entry: SetEntry) => entry.value);
+    return result.filter((entry: SetEntry) => {
+      return alreadySelectedValues.indexOf(entry.value) === -1;
+    });
+  }
 }

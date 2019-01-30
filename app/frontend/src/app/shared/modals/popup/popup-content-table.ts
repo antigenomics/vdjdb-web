@@ -15,11 +15,11 @@
  */
 
 export class PopupContentTable {
-    public readonly headers: string[];
-    public readonly rows: string[][];
+  public readonly headers: string[];
+  public readonly rows: string[][];
 
-    constructor(headers: string[], rows: string[][]) {
-        this.headers = headers;
-        this.rows = rows;
-    }
+  constructor(headers: string[], rows: string[][]) {
+    this.headers = headers;
+    this.rows = rows;
+  }
 }

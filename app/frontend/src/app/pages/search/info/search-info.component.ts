@@ -19,31 +19,31 @@ import { Subscription } from 'rxjs';
 import { FiltersService, FiltersServiceEventType } from 'shared/filters/filters.service';
 
 @Component({
-    selector:        'search-info',
-    templateUrl:     './search-info.component.html',
-    changeDetection: ChangeDetectionStrategy.OnPush
+  selector:        'search-info',
+  templateUrl:     './search-info.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SearchInfoComponent implements OnDestroy {
-    private _currentState: string = 'info';
-    private _resetEvent: Subscription;
+  private _currentState: string = 'info';
+  private _resetEvent: Subscription;
 
-    constructor(private filters: FiltersService, private changeDetector: ChangeDetectorRef) {
-        this._resetEvent = this.filters.getEvents().subscribe((event: FiltersServiceEventType) => {
-            if (event === FiltersServiceEventType.RESET) {
-                this.changeDetector.detectChanges();
-            }
-        });
-    }
+  constructor(private filters: FiltersService, private changeDetector: ChangeDetectorRef) {
+    this._resetEvent = this.filters.getEvents().subscribe((event: FiltersServiceEventType) => {
+      if (event === FiltersServiceEventType.RESET) {
+        this.changeDetector.detectChanges();
+      }
+    });
+  }
 
-    public isCurrentState(state: string): boolean {
-        return this._currentState === state;
-    }
+  public isCurrentState(state: string): boolean {
+    return this._currentState === state;
+  }
 
-    public setCurrentState(state: string): void {
-        this._currentState = state;
-    }
+  public setCurrentState(state: string): void {
+    this._currentState = state;
+  }
 
-    public ngOnDestroy() {
-        this._resetEvent.unsubscribe();
-    }
+  public ngOnDestroy() {
+    this._resetEvent.unsubscribe();
+  }
 }

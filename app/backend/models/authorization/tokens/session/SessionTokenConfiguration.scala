@@ -17,17 +17,18 @@
 package backend.models.authorization.tokens.session
 
 import java.time.Duration
+
 import com.typesafe.config.Config
 import play.api.ConfigLoader
 
 case class SessionTokenConfiguration(keep: Duration, interval: Duration)
 
 object SessionTokenConfiguration {
-    implicit val sessionTokenConfigurationLoader: ConfigLoader[SessionTokenConfiguration] = (rootConfig: Config, path: String) => {
-        val config = rootConfig.getConfig(path)
-        SessionTokenConfiguration(
-            keep = config.getDuration("keep"),
-            interval = config.getDuration("interval")
-        )
-    }
+  implicit val sessionTokenConfigurationLoader: ConfigLoader[SessionTokenConfiguration] = (rootConfig: Config, path: String) => {
+    val config = rootConfig.getConfig(path)
+    SessionTokenConfiguration(
+      keep = config.getDuration("keep"),
+      interval = config.getDuration("interval")
+    )
+  }
 }

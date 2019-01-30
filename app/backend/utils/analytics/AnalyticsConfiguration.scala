@@ -22,12 +22,12 @@ import play.api.ConfigLoader
 case class AnalyticsConfiguration(enabled: Boolean, yandexID: String, googleID: String)
 
 object AnalyticsConfiguration {
-    implicit val analyticsConfigurationLoader: ConfigLoader[AnalyticsConfiguration] = (rootConfig: Config, path: String) => {
-        val config = rootConfig.getConfig(path)
-        AnalyticsConfiguration(
-            enabled = config.getBoolean("enabled"),
-            yandexID = config.getString("yandexID"),
-            googleID = config.getString("googleID")
-        )
-    }
+  implicit val analyticsConfigurationLoader: ConfigLoader[AnalyticsConfiguration] = (rootConfig: Config, path: String) => {
+    val config = rootConfig.getConfig(path)
+    AnalyticsConfiguration(
+      enabled = config.getBoolean("enabled"),
+      yandexID = config.getString("yandexID"),
+      googleID = config.getString("googleID")
+    )
+  }
 }

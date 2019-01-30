@@ -20,7 +20,7 @@ import { LinksPageComponent } from 'pages/links/links.component';
 import { LinksPageRouting } from 'pages/links/links.routing';
 
 @NgModule({
-    imports:      [ CommonModule, LinksPageRouting ],
-    declarations: [ LinksPageComponent ]
+  imports:      [ CommonModule, LinksPageRouting ],
+  declarations: [ LinksPageComponent ]
 })
 export class LinksPageModule {}

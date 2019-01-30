@@ -20,7 +20,7 @@ import { CreditsPageComponent } from 'pages/credits/credits.component';
 import { CreditsPageRouting } from 'pages/credits/credits.routing';
 
 @NgModule({
-    imports:      [ CommonModule, CreditsPageRouting ],
-    declarations: [ CreditsPageComponent ]
+  imports:      [ CommonModule, CreditsPageRouting ],
+  declarations: [ CreditsPageComponent ]
 })
 export class CreditsPageModule {}

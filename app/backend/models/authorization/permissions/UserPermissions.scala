@@ -18,5 +18,5 @@ package backend.models.authorization.permissions
 
 case class UserPermissions(id: Long, maxFilesCount: Int, maxFileSize: Long,
                            isUploadAllowed: Boolean, isDeleteAllowed: Boolean, isChangePasswordAllowed: Boolean) {
-    def getMaxFileSizeInBytes: Long = maxFileSize * 1024 * 1024
+  def getMaxFileSizeInBytes: Long = maxFileSize * 1024 * 1024
 }
