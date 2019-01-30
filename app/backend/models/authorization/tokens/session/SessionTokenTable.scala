@@ -25,19 +25,24 @@ import slick.lifted.Tag
 import scala.language.higherKinds
 
 class SessionTokenTable(tag: Tag) extends Table[SessionToken](tag, SessionTokenTable.TABLE_NAME) {
-    def id = column[Long]("ID", O.PrimaryKey, O.AutoInc)
-    def token = column[String]("TOKEN", O.Length(255), O.Unique)
-    def lastUsage = column[Timestamp]("LAST_USAGE")
-    def userID = column[Long]("USER_ID")
+  def id = column[Long]("ID", O.PrimaryKey, O.AutoInc)
 
-    def * = (id, token, lastUsage, userID) <> (SessionToken.tupled, SessionToken.unapply)
-    def token_idx = index("SESSION_TOKEN_IDX", token, unique = true)
+  def token = column[String]("TOKEN", O.Length(255), O.Unique)
+
+  def lastUsage = column[Timestamp]("LAST_USAGE")
+
+  def userID = column[Long]("USER_ID")
+
+  def * = (id, token, lastUsage, userID) <> (SessionToken.tupled, SessionToken.unapply)
+
+  def token_idx = index("SESSION_TOKEN_IDX", token, unique = true)
 }
 
 object SessionTokenTable {
-    final val TABLE_NAME = "SESSION_TOKEN"
+  final val TABLE_NAME = "SESSION_TOKEN"
 
-    implicit class SessionExtension[C[_]](q: Query[SessionTokenTable, SessionToken, C]) {
-        def withUser(implicit up: UserProvider) = q.join(up.getTable).on(_.userID === _.id)
-    }
+  implicit class SessionExtension[C[_]](q: Query[SessionTokenTable, SessionToken, C]) {
+    def withUser(implicit up: UserProvider) = q.join(up.getTable).on(_.userID === _.id)
+  }
+
 }

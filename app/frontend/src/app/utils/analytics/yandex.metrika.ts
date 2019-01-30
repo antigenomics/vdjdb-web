@@ -15,23 +15,23 @@
  */
 
 export class YandexMetrikaTools {
-    private counter: any;
+  private counter: any;
 
-    constructor(id: string) {
-        this.counter = (window as any)[ 'yaCounter' + id ];
-    }
+  constructor(id: string) {
+    this.counter = (window as any)[ 'yaCounter' + id ];
+  }
 
-    public reachGoal(target: string, params?: any): void {
-        const data: { [ index: string ]: any } = {};
-        data[ target ] = params;
-        this.counter.reachGoal(target, data);
-    }
+  public reachGoal(target: string, params?: any): void {
+    const data: { [ index: string ]: any } = {};
+    data[ target ] = params;
+    this.counter.reachGoal(target, data);
+  }
 
-    public hit(url: string): void {
-        this.counter.hit(url);
-    }
+  public hit(url: string): void {
+    this.counter.hit(url);
+  }
 
-    public extLink(url: string): void {
-        this.counter.extLink(url);
-    }
+  public extLink(url: string): void {
+    this.counter.extLink(url);
+  }
 }

@@ -20,38 +20,38 @@ import { Utils } from 'utils/utils';
 
 @Injectable()
 export class OverviewService {
-    private static readonly _rejectedMessage: string = 'Security issue, please try again later';
-    private static readonly _failedMessage: string = 'Failed to download overview, please try again later';
+  private static readonly _rejectedMessage: string = 'Security issue, please try again later';
+  private static readonly _failedMessage: string = 'Failed to download overview, please try again later';
 
-    private _rejected: boolean = false;
-    private _overviewContent: string;
+  private _rejected: boolean = false;
+  private _overviewContent: string;
 
-    constructor(private logger: LoggerService) {}
+  constructor(private logger: LoggerService) {}
 
-    public getOverviewContent(): Promise<string> {
-        return new Promise<string>((resolve) => {
-            if (this._rejected) {
-                resolve(OverviewService._rejectedMessage);
-            } else if (this._overviewContent) {
-                resolve(this._overviewContent);
-            } else {
-                this.logger.debug('Overview service', 'downloading..');
-                Utils.HTTP.get('/api/database/summary').then((request: XMLHttpRequest) => {
-                    const text = request.responseText;
-                    if (text.indexOf('script') !== -1) {
-                        this._rejected = true;
-                        resolve(OverviewService._rejectedMessage);
-                        this.logger.debug('Overview service: WARNING', 'rejected');
-                    } else {
-                        this._overviewContent = request.responseText;
-                        this.logger.debug('Overview service', 'downloaded successfully');
-                        resolve(this._overviewContent);
-                    }
-                }).catch(() => {
-                    this.logger.warn('Overview service', 'failed');
-                    resolve(OverviewService._failedMessage);
-                });
-            }
+  public getOverviewContent(): Promise<string> {
+    return new Promise<string>((resolve) => {
+      if (this._rejected) {
+        resolve(OverviewService._rejectedMessage);
+      } else if (this._overviewContent) {
+        resolve(this._overviewContent);
+      } else {
+        this.logger.debug('Overview service', 'downloading..');
+        Utils.HTTP.get('/api/database/summary').then((request: XMLHttpRequest) => {
+          const text = request.responseText;
+          if (text.indexOf('script') !== -1) {
+            this._rejected = true;
+            resolve(OverviewService._rejectedMessage);
+            this.logger.debug('Overview service: WARNING', 'rejected');
+          } else {
+            this._overviewContent = request.responseText;
+            this.logger.debug('Overview service', 'downloaded successfully');
+            resolve(this._overviewContent);
+          }
+        }).catch(() => {
+          this.logger.warn('Overview service', 'failed');
+          resolve(OverviewService._failedMessage);
         });
-    }
+      }
+    });
+  }
 }

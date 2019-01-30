@@ -16,7 +16,7 @@
 
 package backend.server.motifs.api.epitope
 
-import play.api.libs.json.{Json, Format}
+import play.api.libs.json.{Format, Json}
 
 case class MotifClusterEntryAA(letter: String, length: Int, count: Int, freq: Double, I: Double, INorm: Double, H: Double, HNorm: Double)
 

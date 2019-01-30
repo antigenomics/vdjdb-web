@@ -23,9 +23,9 @@ import { PopupContentComponent } from './popup/popup-content.component';
 import { PopupDirective } from './popup/popup.directive';
 
 @NgModule({
-    imports:         [ CommonModule, FormsModule ],
-    declarations:    [ PopupDirective, PopupContentComponent, ModalComponent, DropdownDirective ],
-    exports:         [ PopupDirective, PopupContentComponent, ModalComponent, DropdownDirective ],
-    entryComponents: [ PopupContentComponent, ModalComponent ]
+  imports:         [ CommonModule, FormsModule ],
+  declarations:    [ PopupDirective, PopupContentComponent, ModalComponent, DropdownDirective ],
+  exports:         [ PopupDirective, PopupContentComponent, ModalComponent, DropdownDirective ],
+  entryComponents: [ PopupContentComponent, ModalComponent ]
 })
 export class ModalsModule {}

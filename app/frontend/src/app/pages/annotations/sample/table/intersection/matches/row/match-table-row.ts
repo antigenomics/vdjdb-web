@@ -23,46 +23,46 @@ import { TableEntry } from 'shared/table/entry/table-entry';
 import { MatchesTableEntryAlignmentComponent } from '../entry/matches-table-entry-alignment.component';
 
 export class MatchRowAlignment {
-    public readonly seq1String: string;
-    public readonly markup: string;
-    public readonly seq2String: string;
+  public readonly seq1String: string;
+  public readonly markup: string;
+  public readonly seq2String: string;
 
-    constructor(helper: any) {
-        /* tslint:disable:no-string-literal */
-        this.seq1String = helper[ 'seq1String' ].trim();
-        this.markup = helper[ 'markup' ].trim();
-        this.seq2String = helper[ 'seq2String' ].trim();
-        /* tslint:enable:no-string-literal */
-    }
+  constructor(helper: any) {
+    /* tslint:disable:no-string-literal */
+    this.seq1String = helper[ 'seq1String' ].trim();
+    this.markup = helper[ 'markup' ].trim();
+    this.seq2String = helper[ 'seq2String' ].trim();
+    /* tslint:enable:no-string-literal */
+  }
 }
 
 export class MatchTableRow extends SearchTableRow {
-    public readonly alignment: MatchRowAlignment;
-    public readonly matchScore: number;
-    public readonly weight: number;
+  public readonly alignment: MatchRowAlignment;
+  public readonly matchScore: number;
+  public readonly weight: number;
 
-    constructor(match: any) {
-        /* tslint:disable:no-string-literal */
-        super(match[ 'row' ], true);
-        this.alignment = new MatchRowAlignment(match[ 'alignment' ]);
-        this.matchScore = match[ 'matchScore' ];
-        this.weight = match[ 'weight' ];
-        /* tslint:enable:no-string-literal */
-    }
+  constructor(match: any) {
+    /* tslint:disable:no-string-literal */
+    super(match[ 'row' ], true);
+    this.alignment = new MatchRowAlignment(match[ 'alignment' ]);
+    this.matchScore = match[ 'matchScore' ];
+    this.weight = match[ 'weight' ];
+    /* tslint:enable:no-string-literal */
+  }
 
-    public hash(): string {
-        return `${super.hash()}${this.matchScore}${this.weight}${this.alignment.markup}${this.alignment.seq1String}${this.alignment.seq2String}`;
-    }
+  public hash(): string {
+    return `${super.hash()}${this.matchScore}${this.weight}${this.alignment.markup}${this.alignment.seq1String}${this.alignment.seq2String}`;
+  }
 
-    public resolveComponentFactory(column: TableColumn, resolver: ComponentFactoryResolver): ComponentFactory<TableEntry> {
-        if (column.name === 'alignment') {
-            return resolver.resolveComponentFactory(MatchesTableEntryAlignmentComponent);
-        } else if (column.name === 'match-score' ) {
-            return resolver.resolveComponentFactory(MatchesTableEntryMatchScoreComponent);
-        } else if (column.name === 'weight' ) {
-            return resolver.resolveComponentFactory(MatchesTableEntryWeightComponent);
-        } else {
-            return super.resolveComponentFactory(column, resolver);
-        }
+  public resolveComponentFactory(column: TableColumn, resolver: ComponentFactoryResolver): ComponentFactory<TableEntry> {
+    if (column.name === 'alignment') {
+      return resolver.resolveComponentFactory(MatchesTableEntryAlignmentComponent);
+    } else if (column.name === 'match-score') {
+      return resolver.resolveComponentFactory(MatchesTableEntryMatchScoreComponent);
+    } else if (column.name === 'weight') {
+      return resolver.resolveComponentFactory(MatchesTableEntryWeightComponent);
+    } else {
+      return super.resolveComponentFactory(column, resolver);
     }
+  }
 }

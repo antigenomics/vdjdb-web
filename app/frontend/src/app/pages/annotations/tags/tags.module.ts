@@ -26,9 +26,9 @@ import { ColorpickerModule } from 'shared/colorpicker/colorpicker.module';
 import { FiltersCommonModule } from 'shared/filters/common/filters-common.module';
 
 @NgModule({
-    imports:      [ CommonModule, FormsModule, ColorpickerModule, FiltersCommonModule, AnnotationsTagsRouting ],
-    declarations: [ TagsComponent, TagsTableComponent, TagsTableRowComponent ],
-    providers:    [ TagsService ]
+  imports:      [ CommonModule, FormsModule, ColorpickerModule, FiltersCommonModule, AnnotationsTagsRouting ],
+  declarations: [ TagsComponent, TagsTableComponent, TagsTableRowComponent ],
+  providers:    [ TagsService ]
 })
 export class TagsPageModule {
 }

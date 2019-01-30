@@ -22,26 +22,26 @@ import java.sql.Timestamp
 case class FileMetadata(id: Long, fileName: String, extension: String, path: String,
                         folder: String, createdAt: Timestamp = new Timestamp(new java.util.Date().getTime)) {
 
-    def getNameWithExtension: String = s"$fileName.$extension"
+  def getNameWithExtension: String = s"$fileName.$extension"
 
-    def getNameWithDateAndExtension: String = s"$fileName-$createdAt.$extension"
+  def getNameWithDateAndExtension: String = s"$fileName-$createdAt.$extension"
 
-    def checkIfExist(): Boolean = {
-        val directory = new File(folder)
-        val file = new File(path)
+  def checkIfExist(): Boolean = {
+    val directory = new File(folder)
+    val file = new File(path)
 
-        directory.exists() && file.exists()
+    directory.exists() && file.exists()
+  }
+
+  private[files] def deleteFile(): Unit = {
+    val directory = new File(folder)
+    val file = new File(path)
+
+    if (file.exists()) {
+      file.delete()
     }
-
-    private[files] def deleteFile(): Unit = {
-        val directory = new File(folder)
-        val file = new File(path)
-
-        if (file.exists()) {
-            file.delete()
-        }
-        if (directory.exists()) {
-            directory.delete()
-        }
+    if (directory.exists()) {
+      directory.delete()
     }
+  }
 }

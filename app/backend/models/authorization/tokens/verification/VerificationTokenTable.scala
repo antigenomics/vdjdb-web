@@ -21,23 +21,28 @@ import java.sql.Timestamp
 import backend.models.authorization.user.UserProvider
 import slick.jdbc.H2Profile.api._
 import slick.lifted.Tag
+
 import scala.language.higherKinds
 
 class VerificationTokenTable(tag: Tag) extends Table[VerificationToken](tag, VerificationTokenTable.TABLE_NAME) {
-    def id = column[Long]("ID", O.PrimaryKey, O.AutoInc)
-    def token = column[String]("TOKEN", O.Unique, O.Length(32))
-    def userID = column[Long]("USER_ID")
-    def expiredAt = column[Timestamp]("EXPIRED_AT")
+  def id = column[Long]("ID", O.PrimaryKey, O.AutoInc)
 
-    def * = (id, token, userID, expiredAt) <> (VerificationToken.tupled, VerificationToken.unapply)
+  def token = column[String]("TOKEN", O.Unique, O.Length(32))
 
-    def token_idx = index("TOKEN_IDX", token, unique = true)
+  def userID = column[Long]("USER_ID")
+
+  def expiredAt = column[Timestamp]("EXPIRED_AT")
+
+  def * = (id, token, userID, expiredAt) <> (VerificationToken.tupled, VerificationToken.unapply)
+
+  def token_idx = index("TOKEN_IDX", token, unique = true)
 }
 
 object VerificationTokenTable {
-    final val TABLE_NAME = "VERIFICATION_TOKEN"
+  final val TABLE_NAME = "VERIFICATION_TOKEN"
 
-    implicit class ResetExtension[C[_]](q: Query[VerificationTokenTable, VerificationToken, C]) {
-        def withUser(implicit up: UserProvider) = q.join(up.getTable).on(_.userID === _.id)
-    }
+  implicit class ResetExtension[C[_]](q: Query[VerificationTokenTable, VerificationToken, C]) {
+    def withUser(implicit up: UserProvider) = q.join(up.getTable).on(_.userID === _.id)
+  }
+
 }

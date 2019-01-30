@@ -30,26 +30,26 @@ import { ModalsModule } from 'shared/modals/modals.module';
 import { TableModule } from 'shared/table/table.module';
 
 @NgModule({
-    imports:         [ CommonModule, ModalsModule, FormsModule, TableModule ],
-    declarations:    [
-        SampleTableComponent,
-        IntersectionTableEntryFrequencyComponent,
-        IntersectionTableEntryCdr3aaComponent,
-        IntersectionTableEntryDetailsComponent,
-        IntersectionTableEntryTagsComponent,
-        MatchesTableComponent,
-        MatchesTableEntryAlignmentComponent,
-        MatchesTableEntryMatchScoreComponent,
-        MatchesTableEntryWeightComponent ],
-    exports:         [ SampleTableComponent ],
-    entryComponents: [
-        IntersectionTableEntryFrequencyComponent,
-        IntersectionTableEntryCdr3aaComponent,
-        IntersectionTableEntryDetailsComponent,
-        IntersectionTableEntryTagsComponent,
-        MatchesTableComponent,
-        MatchesTableEntryAlignmentComponent,
-        MatchesTableEntryMatchScoreComponent,
-        MatchesTableEntryWeightComponent ]
+  imports:         [ CommonModule, ModalsModule, FormsModule, TableModule ],
+  declarations:    [
+    SampleTableComponent,
+    IntersectionTableEntryFrequencyComponent,
+    IntersectionTableEntryCdr3aaComponent,
+    IntersectionTableEntryDetailsComponent,
+    IntersectionTableEntryTagsComponent,
+    MatchesTableComponent,
+    MatchesTableEntryAlignmentComponent,
+    MatchesTableEntryMatchScoreComponent,
+    MatchesTableEntryWeightComponent ],
+  exports:         [ SampleTableComponent ],
+  entryComponents: [
+    IntersectionTableEntryFrequencyComponent,
+    IntersectionTableEntryCdr3aaComponent,
+    IntersectionTableEntryDetailsComponent,
+    IntersectionTableEntryTagsComponent,
+    MatchesTableComponent,
+    MatchesTableEntryAlignmentComponent,
+    MatchesTableEntryMatchScoreComponent,
+    MatchesTableEntryWeightComponent ]
 })
 export class SampleTableModule {}

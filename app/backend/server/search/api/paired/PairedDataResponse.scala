@@ -17,12 +17,12 @@
 package backend.server.search.api.paired
 
 import backend.server.search.SearchTableRow
-import play.api.libs.json.{Json, Format}
+import play.api.libs.json.{Format, Json}
 
 case class PairedDataResponse(paired: Option[SearchTableRow], found: Boolean)
 
 object PairedDataResponse {
-    final val Action: String = "paired"
+  final val Action: String = "paired"
 
-    implicit val pairedDataResponseFormat: Format[PairedDataResponse] = Json.format[PairedDataResponse]
+  implicit val pairedDataResponseFormat: Format[PairedDataResponse] = Json.format[PairedDataResponse]
 }

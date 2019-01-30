@@ -18,24 +18,24 @@ import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { AnnotationsFilters } from 'pages/annotations/filters/annotations-filters';
 
 @Component({
-    selector:        'annotations-filters',
-    templateUrl:     './annotations-filters.component.html',
-    changeDetection: ChangeDetectionStrategy.OnPush
+  selector:        'annotations-filters',
+  templateUrl:     './annotations-filters.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AnnotationsFiltersComponent {
-    private currentState: 'general' | 'scoring' = 'general';
+  private currentState: 'general' | 'scoring' = 'general';
 
-    @Input('filters')
-    public filters: AnnotationsFilters;
+  @Input('filters')
+  public filters: AnnotationsFilters;
 
-    @Input('disabled')
-    public disabled: boolean;
+  @Input('disabled')
+  public disabled: boolean;
 
-    public setCurrentState(state: 'general' | 'scoring'): void {
-        this.currentState = state;
-    }
+  public setCurrentState(state: 'general' | 'scoring'): void {
+    this.currentState = state;
+  }
 
-    public isCurrentState(state: string): boolean {
-        return this.currentState === state;
-    }
+  public isCurrentState(state: string): boolean {
+    return this.currentState === state;
+  }
 }

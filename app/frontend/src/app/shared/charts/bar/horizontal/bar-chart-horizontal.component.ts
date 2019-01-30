@@ -22,33 +22,33 @@ import { ChartContainer } from 'shared/charts/container/chart-container';
 import { Configuration } from 'utils/configuration/configuration';
 
 @Component({
-    selector:  'bar-chart',
-    template:  '<div #container style="width: 100%; height: 100%"></div>',
-    styleUrls: [ '../bar-chart.styles.css' ]
+  selector:  'bar-chart',
+  template:  '<div #container style="width: 100%; height: 100%"></div>',
+  styleUrls: [ '../bar-chart.styles.css' ]
 })
 export class BarChartHorizontalComponent implements AfterViewInit, OnDestroy {
-    private chart: BarChartHorizontal;
+  private chart: BarChartHorizontal;
 
-    @Input('configuration')
-    public configuration: IBarChartConfiguration = createDefaultBarChartConfiguration();
+  @Input('configuration')
+  public configuration: IBarChartConfiguration = createDefaultBarChartConfiguration();
 
-    @Input('stream')
-    public stream: ChartInputStreamType;
+  @Input('stream')
+  public stream: ChartInputStreamType;
 
-    @ViewChild('container', { read: ElementRef })
-    public containerElementRef: ElementRef;
+  @ViewChild('container', { read: ElementRef })
+  public containerElementRef: ElementRef;
 
-    constructor(private ngZone: NgZone) {}
+  constructor(private ngZone: NgZone) {}
 
-    public ngAfterViewInit(): void {
-        const configuration = createDefaultBarChartConfiguration();
-        Configuration.extend(configuration, this.configuration);
+  public ngAfterViewInit(): void {
+    const configuration = createDefaultBarChartConfiguration();
+    Configuration.extend(configuration, this.configuration);
 
-        const container = new ChartContainer(this.containerElementRef, configuration.container);
-        this.chart = new BarChartHorizontal(configuration, container, this.stream, this.ngZone);
-    }
+    const container = new ChartContainer(this.containerElementRef, configuration.container);
+    this.chart = new BarChartHorizontal(configuration, container, this.stream, this.ngZone);
+  }
 
-    public ngOnDestroy(): void {
-        this.chart.destroy();
-    }
+  public ngOnDestroy(): void {
+    this.chart.destroy();
+  }
 }

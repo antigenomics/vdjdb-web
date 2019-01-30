@@ -21,7 +21,7 @@ import play.api.libs.json.{Json, Writes}
 case class CreateTagResponse(tagID: Long)
 
 object CreateTagResponse {
-    final val Action: String = "create_tag"
+  final val Action: String = "create_tag"
 
-    implicit val createTagResponseWrites: Writes[CreateTagResponse] = Json.writes[CreateTagResponse]
+  implicit val createTagResponseWrites: Writes[CreateTagResponse] = Json.writes[CreateTagResponse]
 }

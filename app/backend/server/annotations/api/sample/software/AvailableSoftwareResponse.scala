@@ -21,7 +21,7 @@ import play.api.libs.json.{Json, Writes}
 case class AvailableSoftwareResponse(available: Seq[String])
 
 object AvailableSoftwareResponse {
-    final val Action: String = "available_software"
+  final val Action: String = "available_software"
 
-    implicit val availableSoftwareResponseWrites: Writes[AvailableSoftwareResponse] = Json.writes[AvailableSoftwareResponse]
+  implicit val availableSoftwareResponseWrites: Writes[AvailableSoftwareResponse] = Json.writes[AvailableSoftwareResponse]
 }

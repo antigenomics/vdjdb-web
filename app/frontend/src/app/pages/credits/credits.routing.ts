@@ -18,7 +18,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { CreditsPageComponent } from 'pages/credits/credits.component';
 
 const routes: Routes = [
-    { path: '', component: CreditsPageComponent }
+  { path: '', component: CreditsPageComponent }
 ];
 
 export const CreditsPageRouting = RouterModule.forChild(routes); // tslint:disable-line:variable-name

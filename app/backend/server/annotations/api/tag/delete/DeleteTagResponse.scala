@@ -21,7 +21,7 @@ import play.api.libs.json.{Json, Writes}
 case class DeleteTagResponse(tagID: Long)
 
 object DeleteTagResponse {
-    final val Action: String = "delete_tag"
+  final val Action: String = "delete_tag"
 
-    implicit val deleteTagResponseWrites: Writes[DeleteTagResponse] = Json.writes[DeleteTagResponse]
+  implicit val deleteTagResponseWrites: Writes[DeleteTagResponse] = Json.writes[DeleteTagResponse]
 }

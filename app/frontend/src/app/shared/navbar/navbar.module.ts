@@ -21,8 +21,8 @@ import { NavigationBarComponent } from './navbar.component';
 import { RouteDirective } from './route.directive';
 
 @NgModule({
-    imports:      [ CommonModule, ModalsModule ],
-    declarations: [ NavigationBarComponent, RouteDirective ],
-    exports:      [ NavigationBarComponent, RouteDirective ]
+  imports:      [ CommonModule, ModalsModule ],
+  declarations: [ NavigationBarComponent, RouteDirective ],
+  exports:      [ NavigationBarComponent, RouteDirective ]
 })
 export class NavigationBarModule {}

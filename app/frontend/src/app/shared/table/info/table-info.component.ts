@@ -17,14 +17,14 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 
 @Component({
-    selector:        'table-info',
-    templateUrl:     './table-info.component.html',
-    changeDetection: ChangeDetectionStrategy.OnPush
+  selector:        'table-info',
+  templateUrl:     './table-info.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TableInfoComponent {
-    @Input()
-    public found: number;
+  @Input()
+  public found: number;
 
-    @Input()
-    public total: number;
+  @Input()
+  public total: number;
 }

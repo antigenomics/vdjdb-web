@@ -21,7 +21,7 @@ import { BuildInfoComponent } from 'pages/about/build_info/build-info.component'
 import { AboutPageComponent } from './about.component';
 
 @NgModule({
-    imports:      [ CommonModule, AboutPageRouting ],
-    declarations: [ AboutPageComponent, BuildInfoComponent ]
+  imports:      [ CommonModule, AboutPageRouting ],
+  declarations: [ AboutPageComponent, BuildInfoComponent ]
 })
 export class AboutPageModule {}

@@ -30,22 +30,22 @@ import { SearchTableComponent } from './search-table.component';
 import { SearchTableService } from './search-table.service';
 
 @NgModule({
-    imports:         [ CommonModule, FormsModule, ModalsModule, FiltersModule, TableModule ],
-    declarations:    [ SearchTableComponent,
-        SearchTableEntryMetaComponent,
-        SearchTableEntryUrlComponent,
-        SearchTableEntryGeneComponent,
-        SearchTableEntryCdrComponent,
-        SearchTableEntrySegmentComponent,
-        SearchTableEntryMHCComponent ],
-    exports:         [ SearchTableComponent ],
-    entryComponents: [ SearchTableEntryMetaComponent,
-        SearchTableEntryUrlComponent,
-        SearchTableEntryGeneComponent,
-        SearchTableEntryCdrComponent,
-        SearchTableEntrySegmentComponent,
-        SearchTableEntryMHCComponent ],
-    providers:       [ SearchTableService ]
+  imports:         [ CommonModule, FormsModule, ModalsModule, FiltersModule, TableModule ],
+  declarations:    [ SearchTableComponent,
+    SearchTableEntryMetaComponent,
+    SearchTableEntryUrlComponent,
+    SearchTableEntryGeneComponent,
+    SearchTableEntryCdrComponent,
+    SearchTableEntrySegmentComponent,
+    SearchTableEntryMHCComponent ],
+  exports:         [ SearchTableComponent ],
+  entryComponents: [ SearchTableEntryMetaComponent,
+    SearchTableEntryUrlComponent,
+    SearchTableEntryGeneComponent,
+    SearchTableEntryCdrComponent,
+    SearchTableEntrySegmentComponent,
+    SearchTableEntryMHCComponent ],
+  providers:       [ SearchTableService ]
 })
 export class SearchTableModule {
 }

@@ -22,13 +22,13 @@ import play.api.ConfigLoader
 case class DemoUserConfiguration(enabled: Boolean, filesLocation: String, login: String, password: String)
 
 object DemoUserConfiguration {
-    implicit val demoUserConfigurationLoader: ConfigLoader[DemoUserConfiguration] = (rootConfig: Config, path: String) => {
-        val config = rootConfig.getConfig(path);
-        DemoUserConfiguration(
-            enabled = config.getBoolean("enabled"),
-            filesLocation = config.getString("filesLocation"),
-            login = config.getString("login"),
-            password = config.getString("password")
-        )
-    }
+  implicit val demoUserConfigurationLoader: ConfigLoader[DemoUserConfiguration] = (rootConfig: Config, path: String) => {
+    val config = rootConfig.getConfig(path);
+    DemoUserConfiguration(
+      enabled = config.getBoolean("enabled"),
+      filesLocation = config.getString("filesLocation"),
+      login = config.getString("login"),
+      password = config.getString("password")
+    )
+  }
 }

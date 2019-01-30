@@ -26,9 +26,9 @@ import { SampleTableModule } from 'pages/annotations/sample/table/sample-table.m
 import { ModalsModule } from 'shared/modals/modals.module';
 
 @NgModule({
-    imports:      [ CommonModule, FormsModule, RouterModule, ModalsModule, AnnotationsFiltersModule, SampleTableModule, SampleChartModule ],
-    declarations: [ AnnotationsSampleComponent ],
-    providers:    [ SampleService ]
+  imports:      [ CommonModule, FormsModule, RouterModule, ModalsModule, AnnotationsFiltersModule, SampleTableModule, SampleChartModule ],
+  declarations: [ AnnotationsSampleComponent ],
+  providers:    [ SampleService ]
 })
 export class SampleModule {
 

@@ -17,9 +17,10 @@
 package backend.server.motifs
 
 
-import scala.collection.JavaConverters._
 import play.api.libs.json.{Format, Json}
 import tech.tablesaw.api.Table
+
+import scala.collection.JavaConverters._
 
 case class MotifsMetadataTreeLevel(name: String, values: Seq[MotifsMetadataTreeLevelValue])
 

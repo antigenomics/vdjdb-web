@@ -18,13 +18,13 @@ import { createDefaultChartContainerConfiguration, IChartContainerConfiguration 
 import { createDefaultChartTooltipConfiguration, IChartTooltipConfiguration } from 'shared/charts/tooltip/chart-tooltip.configuration';
 
 export interface IPieChartConfiguration {
-    container?: IChartContainerConfiguration;
-    tooltip?: IChartTooltipConfiguration;
+  container?: IChartContainerConfiguration;
+  tooltip?: IChartTooltipConfiguration;
 }
 
 export function createDefaultPieChartConfiguration(): IPieChartConfiguration {
-    return {
-        container: createDefaultChartContainerConfiguration(),
-        tooltip: createDefaultChartTooltipConfiguration()
-    };
+  return {
+    container: createDefaultChartContainerConfiguration(),
+    tooltip:   createDefaultChartTooltipConfiguration()
+  };
 }

@@ -24,11 +24,11 @@ import play.api.ConfigLoader
 case class ResetTokenConfiguration(keep: Duration, interval: Duration)
 
 object ResetTokenConfiguration {
-    implicit val resetTokenConfigurationLoader: ConfigLoader[ResetTokenConfiguration] = (rootConfig: Config, path: String) => {
-        val config = rootConfig.getConfig(path)
-        ResetTokenConfiguration(
-            keep = config.getDuration("keep"),
-            interval = config.getDuration("interval")
-        )
-    }
+  implicit val resetTokenConfigurationLoader: ConfigLoader[ResetTokenConfiguration] = (rootConfig: Config, path: String) => {
+    val config = rootConfig.getConfig(path)
+    ResetTokenConfiguration(
+      keep = config.getDuration("keep"),
+      interval = config.getDuration("interval")
+    )
+  }
 }

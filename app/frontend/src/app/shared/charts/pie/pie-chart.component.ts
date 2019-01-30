@@ -22,33 +22,33 @@ import { createDefaultPieChartConfiguration, IPieChartConfiguration } from 'shar
 import { Configuration } from 'utils/configuration/configuration';
 
 @Component({
-    selector: 'pie-chart',
-    template:  '<div #container style="width: 100%; height: 100%"></div>',
-    styleUrls: [ './pie-chart.styles.css' ]
+  selector:  'pie-chart',
+  template:  '<div #container style="width: 100%; height: 100%"></div>',
+  styleUrls: [ './pie-chart.styles.css' ]
 })
 export class PieChartComponent implements AfterViewInit, OnDestroy {
-    private chart: PieChart;
+  private chart: PieChart;
 
-    @Input('configuration')
-    public configuration: IPieChartConfiguration = createDefaultPieChartConfiguration();
+  @Input('configuration')
+  public configuration: IPieChartConfiguration = createDefaultPieChartConfiguration();
 
-    @Input('stream')
-    public stream: ChartInputStreamType;
+  @Input('stream')
+  public stream: ChartInputStreamType;
 
-    @ViewChild('container', { read: ElementRef })
-    public containerElementRef: ElementRef;
+  @ViewChild('container', { read: ElementRef })
+  public containerElementRef: ElementRef;
 
-    constructor(private ngZone: NgZone) {}
+  constructor(private ngZone: NgZone) {}
 
-    public ngAfterViewInit(): void {
-        const configuration = createDefaultPieChartConfiguration();
-        Configuration.extend(configuration, this.configuration);
+  public ngAfterViewInit(): void {
+    const configuration = createDefaultPieChartConfiguration();
+    Configuration.extend(configuration, this.configuration);
 
-        const container = new ChartContainer(this.containerElementRef, configuration.container);
-        this.chart = new PieChart(configuration, container, this.stream, this.ngZone);
-    }
+    const container = new ChartContainer(this.containerElementRef, configuration.container);
+    this.chart = new PieChart(configuration, container, this.stream, this.ngZone);
+  }
 
-    public ngOnDestroy(): void {
-        this.chart.destroy();
-    }
+  public ngOnDestroy(): void {
+    this.chart.destroy();
+  }
 }

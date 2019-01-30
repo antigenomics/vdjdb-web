@@ -23,5 +23,5 @@ case class MultisampleSummaryAnalysisRequest(tabID: Int, sampleNames: Seq[String
                                              searchScope: AnnotationsSearchScope, scoring: AnnotationsAnnotateScoring) {}
 
 object MultisampleSummaryAnalysisRequest {
-    implicit val multisampleSummaryAnalysisRequestReads: Reads[MultisampleSummaryAnalysisRequest] = Json.reads[MultisampleSummaryAnalysisRequest]
+  implicit val multisampleSummaryAnalysisRequestReads: Reads[MultisampleSummaryAnalysisRequest] = Json.reads[MultisampleSummaryAnalysisRequest]
 }

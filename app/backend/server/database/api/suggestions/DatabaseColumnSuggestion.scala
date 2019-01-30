@@ -17,16 +17,16 @@
 package backend.server.database.api.suggestions
 
 import com.antigenomics.vdjdb.web.EpitopeSuggestion
-import play.api.libs.json.{Json, Format}
+import play.api.libs.json.{Format, Json}
 
 case class DatabaseColumnSuggestion(value: String, meta: String)
 
 object DatabaseColumnSuggestion {
-    implicit val databaseColumnSuggestionsFormat: Format[DatabaseColumnSuggestion] = Json.format[DatabaseColumnSuggestion]
+  implicit val databaseColumnSuggestionsFormat: Format[DatabaseColumnSuggestion] = Json.format[DatabaseColumnSuggestion]
 
-    def createFromEpitopeSuggestion(epitopeSuggestion: EpitopeSuggestion): DatabaseColumnSuggestion = {
-        val meta = s"Substitutions: ${epitopeSuggestion.substitutions}, Indels: ${epitopeSuggestion.indels}, " +
-            s"Length: ${epitopeSuggestion.length}, Count: ${epitopeSuggestion.count}"
-        DatabaseColumnSuggestion(epitopeSuggestion.sequence, meta)
-    }
+  def createFromEpitopeSuggestion(epitopeSuggestion: EpitopeSuggestion): DatabaseColumnSuggestion = {
+    val meta = s"Substitutions: ${epitopeSuggestion.substitutions}, Indels: ${epitopeSuggestion.indels}, " +
+      s"Length: ${epitopeSuggestion.length}, Count: ${epitopeSuggestion.count}"
+    DatabaseColumnSuggestion(epitopeSuggestion.sequence, meta)
+  }
 }

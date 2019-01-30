@@ -22,7 +22,7 @@ import play.api.libs.json.{Format, Json}
 case class DatabaseMetadataResponse(metadata: DatabaseMetadata)
 
 object DatabaseMetadataResponse {
-    final val Action: String = "meta"
+  final val Action: String = "meta"
 
-    implicit val databaseMetadataResponseFormat: Format[DatabaseMetadataResponse] = Json.format[DatabaseMetadataResponse]
+  implicit val databaseMetadataResponseFormat: Format[DatabaseMetadataResponse] = Json.format[DatabaseMetadataResponse]
 }

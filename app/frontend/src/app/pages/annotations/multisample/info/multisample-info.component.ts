@@ -17,9 +17,9 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 
 @Component({
-    selector: 'multisample-info',
-    templateUrl: 'multisample-info.component.html',
-    changeDetection: ChangeDetectionStrategy.OnPush
+  selector:        'multisample-info',
+  templateUrl:     'multisample-info.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MultisampleInfoComponent {
 

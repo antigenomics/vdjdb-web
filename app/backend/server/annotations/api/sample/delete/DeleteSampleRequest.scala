@@ -21,7 +21,7 @@ import play.api.libs.json.{Json, Reads}
 case class DeleteSampleRequest(all: Boolean, name: String)
 
 object DeleteSampleRequest {
-    implicit val deleteSampleRequestReads: Reads[DeleteSampleRequest] = Json.reads[DeleteSampleRequest]
+  implicit val deleteSampleRequestReads: Reads[DeleteSampleRequest] = Json.reads[DeleteSampleRequest]
 }
 
 

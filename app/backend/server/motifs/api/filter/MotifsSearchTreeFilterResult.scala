@@ -17,7 +17,7 @@
 package backend.server.motifs.api.filter
 
 import backend.server.motifs.api.epitope.MotifEpitope
-import play.api.libs.json.{Json, Format}
+import play.api.libs.json.{Format, Json}
 
 case class MotifsSearchTreeFilterResult(epitopes: Seq[MotifEpitope])
 

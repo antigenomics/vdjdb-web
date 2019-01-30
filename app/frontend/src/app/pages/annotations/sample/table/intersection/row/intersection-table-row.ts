@@ -26,65 +26,65 @@ import { IntersectionTableEntryTagsComponent } from '../entry/intersection-table
 import { MatchTableRow } from '../matches/row/match-table-row';
 
 export interface IntersectionTableRowTags {
-    [ field: string ]: string[];
+  [ field: string ]: string[];
 }
 
 export class IntersectionTableRowMetadata {
-    public readonly vEnd: number;
-    public readonly jStart: number;
-    public readonly cdr3nt: string;
+  public readonly vEnd: number;
+  public readonly jStart: number;
+  public readonly cdr3nt: string;
 
-    constructor(meta: any) {
-        /* tslint:disable:no-string-literal */
-        this.vEnd = meta[ 'vEnd' ];
-        this.jStart = meta[ 'jStart' ];
-        this.cdr3nt = meta[ 'cdr3nt' ];
-        /* tslint:enable:no-string-literal */
-    }
+  constructor(meta: any) {
+    /* tslint:disable:no-string-literal */
+    this.vEnd = meta[ 'vEnd' ];
+    this.jStart = meta[ 'jStart' ];
+    this.cdr3nt = meta[ 'cdr3nt' ];
+    /* tslint:enable:no-string-literal */
+  }
 }
 
 export class IntersectionTableRow extends TableRow {
-    private readonly rhash: number;
+  private readonly rhash: number;
 
-    public readonly entries: string[];
-    public readonly index: number;
-    public readonly tags: IntersectionTableRowTags;
-    public readonly metadata: IntersectionTableRowMetadata;
+  public readonly entries: string[];
+  public readonly index: number;
+  public readonly tags: IntersectionTableRowTags;
+  public readonly metadata: IntersectionTableRowMetadata;
 
-    public matchesLoaded: boolean = false;
-    public matchesCount: number = 0;
-    public matches: MatchTableRow[];
+  public matchesLoaded: boolean = false;
+  public matchesCount: number = 0;
+  public matches: MatchTableRow[];
 
-    constructor(row: any, index: number) {
-        /* tslint:disable:no-string-literal */
-        super();
-        this.rhash = row[ 'hash' ];
-        this.entries = row[ 'entries' ];
-        this.index = index;
-        this.tags = row[ 'tags' ];
-        this.metadata = new IntersectionTableRowMetadata(row[ 'metadata' ]);
-        /* tslint:enable:no-string-literal */
+  constructor(row: any, index: number) {
+    /* tslint:disable:no-string-literal */
+    super();
+    this.rhash = row[ 'hash' ];
+    this.entries = row[ 'entries' ];
+    this.index = index;
+    this.tags = row[ 'tags' ];
+    this.metadata = new IntersectionTableRowMetadata(row[ 'metadata' ]);
+    /* tslint:enable:no-string-literal */
+  }
+
+  public hash(): string {
+    return `${this.entries[ 2 ]}${this.entries[ 4 ]}${this.rhash}`; // tslint:disable-line:no-magic-numbers
+  }
+
+  public getEntries(): string[] {
+    return this.entries;
+  }
+
+  public resolveComponentFactory(column: TableColumn, resolver: ComponentFactoryResolver): ComponentFactory<TableEntry> {
+    if (column.name === 'details') {
+      return resolver.resolveComponentFactory(IntersectionTableEntryDetailsComponent);
+    } else if (column.name === 'freq') {
+      return resolver.resolveComponentFactory(IntersectionTableEntryFrequencyComponent);
+    } else if (column.name === 'cdr3aa') {
+      return resolver.resolveComponentFactory(IntersectionTableEntryCdr3aaComponent);
+    } else if (column.name === 'tags') {
+      return resolver.resolveComponentFactory(IntersectionTableEntryTagsComponent);
+    } else {
+      return resolver.resolveComponentFactory(TableEntryCenteredComponent);
     }
-
-    public hash(): string {
-        return `${this.entries[ 2 ]}${this.entries[ 4 ]}${this.rhash}`; // tslint:disable-line:no-magic-numbers
-    }
-
-    public getEntries(): string[] {
-        return this.entries;
-    }
-
-    public resolveComponentFactory(column: TableColumn, resolver: ComponentFactoryResolver): ComponentFactory<TableEntry> {
-        if (column.name === 'details') {
-            return resolver.resolveComponentFactory(IntersectionTableEntryDetailsComponent);
-        } else if (column.name === 'freq') {
-            return resolver.resolveComponentFactory(IntersectionTableEntryFrequencyComponent);
-        } else if (column.name === 'cdr3aa') {
-            return resolver.resolveComponentFactory(IntersectionTableEntryCdr3aaComponent);
-        } else if (column.name === 'tags') {
-            return resolver.resolveComponentFactory(IntersectionTableEntryTagsComponent);
-        } else {
-            return resolver.resolveComponentFactory(TableEntryCenteredComponent);
-        }
-    }
+  }
 }

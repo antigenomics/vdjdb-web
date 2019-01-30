@@ -21,25 +21,26 @@ import { environment } from 'environments/environment';
 @Injectable()
 export class LoggerService {
 
-    // noinspection JSMethodCanBeStatic
-    public info(title: any, content?: any) {
-        console.log(title, content);
-    }
+  // noinspection JSMethodCanBeStatic
+  public info(title: any, content?: any) {
+    console.log(title, content);
+  }
 
-    // noinspection JSMethodCanBeStatic
-    public warn(title: any, content?: any) {
-        console.warn(title, content);
-    }
+  // noinspection JSMethodCanBeStatic
+  public warn(title: any, content?: any) {
+    console.warn(title, content);
+  }
 
-    // noinspection JSMethodCanBeStatic
-    public error(title: any, content?: any) {
-        console.error(title, content);
-    }
+  // noinspection JSMethodCanBeStatic
+  public error(title: any, content?: any) {
+    console.error(title, content);
+  }
 
-    public debug(title: any, content?: any) {
-        if (!environment.production) {
-            this.info('[Debug] ' + title, content);
-        }
+  public debug(title: any, content?: any) {
+    if (!environment.production) {
+      this.info('[Debug] ' + title, content);
     }
+  }
 }
+
 /* tslint:enable:no-console */

@@ -15,17 +15,17 @@
  */
 
 export class SummaryClonotypeCounter {
-    public readonly field: string;
-    public readonly unique: number;
-    public readonly databaseUnique: number;
-    public readonly frequency: number;
+  public readonly field: string;
+  public readonly unique: number;
+  public readonly databaseUnique: number;
+  public readonly frequency: number;
 
-    constructor(counter: any) {
-        /* tslint:disable:no-string-literal */
-        this.field = counter[ 'field' ];
-        this.unique = counter[ 'unique' ];
-        this.databaseUnique = counter[ 'databaseUnique' ];
-        this.frequency = counter[ 'frequency' ];
-        /* tslint:enable:no-string-literal */
-    }
+  constructor(counter: any) {
+    /* tslint:disable:no-string-literal */
+    this.field = counter[ 'field' ];
+    this.unique = counter[ 'unique' ];
+    this.databaseUnique = counter[ 'databaseUnique' ];
+    this.frequency = counter[ 'frequency' ];
+    /* tslint:enable:no-string-literal */
+  }
 }

@@ -19,8 +19,8 @@ import { OverviewPageComponent } from './overview.component';
 import { OverviewService } from './overview.service';
 
 @NgModule({
-    declarations: [ OverviewPageComponent ],
-    exports:      [ OverviewPageComponent ],
-    providers:    [ OverviewService ]
+  declarations: [ OverviewPageComponent ],
+  exports:      [ OverviewPageComponent ],
+  providers:    [ OverviewService ]
 })
 export class OverviewPageModule {}

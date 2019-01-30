@@ -19,33 +19,33 @@ import { Subscription } from 'rxjs';
 import { UploadService } from './upload.service';
 
 @Component({
-    selector:        'upload',
-    templateUrl:     './upload.component.html',
-    changeDetection: ChangeDetectionStrategy.OnPush
+  selector:        'upload',
+  templateUrl:     './upload.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AnnotationsUploadComponent implements OnInit, OnDestroy {
-    private _uploadServiceEventsSubscription: Subscription;
+  private _uploadServiceEventsSubscription: Subscription;
 
-    @ViewChild('fileHandlerForm')
-    public fileHandlerForm: ElementRef;
+  @ViewChild('fileHandlerForm')
+  public fileHandlerForm: ElementRef;
 
-    constructor(public uploadService: UploadService, private changeDetector: ChangeDetectorRef) {}
+  constructor(public uploadService: UploadService, private changeDetector: ChangeDetectorRef) {}
 
-    public ngOnInit(): void {
-        this._uploadServiceEventsSubscription = this.uploadService.getEvents().subscribe(() => {
-            this.changeDetector.detectChanges();
-        });
+  public ngOnInit(): void {
+    this._uploadServiceEventsSubscription = this.uploadService.getEvents().subscribe(() => {
+      this.changeDetector.detectChanges();
+    });
+  }
+
+  public handleNewFiles(event: Event): void {
+    this.uploadService.addItems((event.target as HTMLInputElement).files);
+    this.fileHandlerForm.nativeElement.reset();
+  }
+
+  public ngOnDestroy(): void {
+    if (this._uploadServiceEventsSubscription) {
+      this._uploadServiceEventsSubscription.unsubscribe();
     }
-
-    public handleNewFiles(event: Event): void {
-        this.uploadService.addItems((event.target as HTMLInputElement).files);
-        this.fileHandlerForm.nativeElement.reset();
-    }
-
-    public ngOnDestroy(): void {
-        if (this._uploadServiceEventsSubscription) {
-            this._uploadServiceEventsSubscription.unsubscribe();
-        }
-    }
+  }
 
 }

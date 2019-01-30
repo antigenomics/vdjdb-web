@@ -23,13 +23,13 @@ import play.api.libs.json.{Json, Writes}
 case class SampleAnnotateResponse(state: String, rows: Seq[IntersectionTableRow], summary: Option[SummaryCounters])
 
 object SampleAnnotateResponse {
-    final val Action: String = "intersect"
+  final val Action: String = "intersect"
 
-    final val ParseState = SampleAnnotateResponse("parse", Seq(), None)
-    final val AnnotateState = SampleAnnotateResponse("annotate", Seq(), None)
-    final val LoadingState = SampleAnnotateResponse("loading", Seq(), None)
+  final val ParseState = SampleAnnotateResponse("parse", Seq(), None)
+  final val AnnotateState = SampleAnnotateResponse("annotate", Seq(), None)
+  final val LoadingState = SampleAnnotateResponse("loading", Seq(), None)
 
-    final def CompletedState(rows: Seq[IntersectionTableRow], summary: Option[SummaryCounters]) = SampleAnnotateResponse("completed", rows, summary)
+  final def CompletedState(rows: Seq[IntersectionTableRow], summary: Option[SummaryCounters]) = SampleAnnotateResponse("completed", rows, summary)
 
-    implicit val sampleIntersectionResponseWrites: Writes[SampleAnnotateResponse] = Json.writes[SampleAnnotateResponse]
+  implicit val sampleIntersectionResponseWrites: Writes[SampleAnnotateResponse] = Json.writes[SampleAnnotateResponse]
 }

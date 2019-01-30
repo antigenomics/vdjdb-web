@@ -21,11 +21,11 @@ import backend.models.authorization.user.{User, UserProvider}
 import scala.concurrent.{ExecutionContext, Future}
 
 case class SampleTag(id: Long, name: String, color: String, userID: Long) {
-    def getUser(implicit up: UserProvider, ec: ExecutionContext): Future[User] = {
-        up.get(userID).map(_.get)
-    }
+  def getUser(implicit up: UserProvider, ec: ExecutionContext): Future[User] = {
+    up.get(userID).map(_.get)
+  }
 
-    def getDetails: SampleTagDetails = {
-        SampleTagDetails(name, color, id)
-    }
+  def getDetails: SampleTagDetails = {
+    SampleTagDetails(name, color, id)
+  }
 }

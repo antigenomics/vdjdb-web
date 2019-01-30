@@ -24,13 +24,13 @@ import play.api.ConfigLoader
 case class TemporaryFileConfiguration(path: String, keep: Duration, interval: Duration)
 
 object TemporaryFileConfiguration {
-    implicit val temporaryFileConfigurationLoader: ConfigLoader[TemporaryFileConfiguration] = (rootConfig: Config, path: String) => {
-        val config = rootConfig.getConfig(path)
-        TemporaryFileConfiguration(
-            path = config.getString("path"),
-            keep = config.getDuration("keep"),
-            interval = config.getDuration("interval")
-        )
-    }
+  implicit val temporaryFileConfigurationLoader: ConfigLoader[TemporaryFileConfiguration] = (rootConfig: Config, path: String) => {
+    val config = rootConfig.getConfig(path)
+    TemporaryFileConfiguration(
+      path = config.getString("path"),
+      keep = config.getDuration("keep"),
+      interval = config.getDuration("interval")
+    )
+  }
 }
 

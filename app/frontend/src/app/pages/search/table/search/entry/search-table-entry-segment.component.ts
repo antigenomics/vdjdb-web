@@ -20,18 +20,18 @@ import { TableEntry } from 'shared/table/entry/table-entry';
 import { TableRow } from 'shared/table/row/table-row';
 
 @Component({
-    selector: 'td[search-table-entry-segment]',
-    template: '<span [popup]="entry" header="Full segment" position="top">{{ short }}</span>',
-    changeDetection: ChangeDetectionStrategy.OnPush
+  selector:        'td[search-table-entry-segment]',
+  template:        '<span [popup]="entry" header="Full segment" position="top">{{ short }}</span>',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SearchTableEntrySegmentComponent extends TableEntry {
-    public entry: string;
-    public short: string;
+  public entry: string;
+  public short: string;
 
-    public create(entry: string, _column: TableColumn, _columns: TableColumn[], _row: TableRow,
-                  _hostViewContainer: ViewContainerRef, _resolver: ComponentFactoryResolver): void {
-        this.entry = entry;
-        this.short = entry.replace(/\*.+$/, '');
-    }
+  public create(entry: string, _column: TableColumn, _columns: TableColumn[], _row: TableRow,
+                _hostViewContainer: ViewContainerRef, _resolver: ComponentFactoryResolver): void {
+    this.entry = entry;
+    this.short = entry.replace(/\*.+$/, '');
+  }
 
 }

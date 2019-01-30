@@ -27,139 +27,139 @@ import { IPieChartConfiguration } from 'shared/charts/pie/pie-chart-configuratio
 import { Utils } from 'utils/utils';
 
 @Component({
-    selector:        'div[summary-chart]',
-    templateUrl:     './summary-chart.component.html',
-    changeDetection: ChangeDetectionStrategy.OnPush
+  selector:        'div[summary-chart]',
+  templateUrl:     './summary-chart.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SummaryChartComponent implements OnInit, OnDestroy {
-    private static readonly _barChartConfiguration: IBarChartConfiguration = {
-        axis:      {
-            y: { title: 'Column values', dy: '-0.4em' },
-            x: { tickFormat: '.1e', ticksCount: 5 }
-        },
-        grid:      true,
-        container: { margin: { left: 100, right: 25, top: 20, bottom: 20 } },
-        tooltip:   {
-            value: SummaryChartComponent.tooltipValueFn
-        }
+  private static readonly _barChartConfiguration: IBarChartConfiguration = {
+    axis:      {
+      y: { title: 'Column values', dy: '-0.4em' },
+      x: { tickFormat: '.1e', ticksCount: 5 }
+    },
+    grid:      true,
+    container: { margin: { left: 100, right: 25, top: 20, bottom: 20 } },
+    tooltip:   {
+      value: SummaryChartComponent.tooltipValueFn
+    }
+  };
+
+  private static readonly _pieChartConfiguration: IPieChartConfiguration = {
+    tooltip: {
+      value: SummaryChartComponent.tooltipValueFn
+    }
+  };
+
+  private resizeWindowListener: () => void;
+  private resizeDebouncedHandler = Utils.Time.debounce(() => {
+    this.updateStream(ChartEventType.RESIZE, this.options);
+  });
+
+  private isPie: boolean = false;
+  private thresholdTypesAvailable: number = -1;
+  private data: SummaryCounters;
+
+  public options: SummaryChartOptions = new SummaryChartOptions();
+  public stream: ChartStreamType = new ReplaySubject(1);
+
+  public get barChartConfiguration(): IBarChartConfiguration {
+    return SummaryChartComponent._barChartConfiguration;
+  }
+
+  public get pieChartConfiguration(): IPieChartConfiguration {
+    return SummaryChartComponent._pieChartConfiguration;
+  }
+
+  public get pie(): boolean {
+    return this.isPie;
+  }
+
+  public set pie(pie: boolean) {
+    this.isPie = pie;
+    this.updateStream(ChartEventType.UPDATE_DATA, this.options);
+  }
+
+  public get threshold(): number {
+    return this.thresholdTypesAvailable;
+  }
+
+  @Input('data')
+  public set setData(data: SummaryCounters) {
+    this.data = data;
+    this.updateThresholdValues();
+    this.updateStream(ChartEventType.UPDATE_DATA, this.options);
+  }
+
+  constructor(private renderer: Renderer2) {
+  }
+
+  public ngOnInit(): void {
+    this.resizeWindowListener = this.renderer.listen('window', 'resize', this.resizeDebouncedHandler);
+  }
+
+  public handleChangeOptionsFn(options: SummaryChartOptions): void {
+    this.updateStream(ChartEventType.UPDATE_DATA, options);
+  }
+
+  public ngOnDestroy(): void {
+    this.resizeWindowListener();
+  }
+
+  private updateStream(type: ChartEventType, options: SummaryChartOptions): void {
+    this.stream.next({ type, data: this.createData(options) });
+  }
+
+  private createData(options: SummaryChartOptions): IChartDataEntry[] {
+
+    const valueConverter: (c: SummaryClonotypeCounter) => number = (c) => {
+      let value = (options.isWeightedByReadCount ? c.frequency : c.unique);
+      if (options.normalizeTypes[ 0 ].checked) { // db
+        value = value / c.databaseUnique;
+      }
+      if (options.normalizeTypes[ 1 ].checked) { // matches
+        value = value / c.unique;
+      }
+      return value;
     };
 
-    private static readonly _pieChartConfiguration: IPieChartConfiguration = {
-        tooltip: {
-            value: SummaryChartComponent.tooltipValueFn
-        }
-    };
+    const currentFieldName: string = options.fieldTypes[ options.currentFieldIndex ].name;
+    const counters = this.data.counters.find((c) => c.name === currentFieldName);
 
-    private resizeWindowListener: () => void;
-    private resizeDebouncedHandler = Utils.Time.debounce(() => {
-        this.updateStream(ChartEventType.RESIZE, this.options);
+    if (!counters) {
+      return [];
+    }
+
+    let data: IChartDataEntry[] = counters.counters.map((c) => {
+      return { name: c.field, value: valueConverter(c) };
     });
 
-    private isPie: boolean = false;
-    private thresholdTypesAvailable: number = -1;
-    private data: SummaryCounters;
-
-    public options: SummaryChartOptions = new SummaryChartOptions();
-    public stream: ChartStreamType = new ReplaySubject(1);
-
-    public get barChartConfiguration(): IBarChartConfiguration {
-        return SummaryChartComponent._barChartConfiguration;
+    data = data.sort((a, b) => b.value - a.value);
+    if (data.length > options.currentThresholdType.threshold) {
+      data = data.slice(0, options.currentThresholdType.threshold);
     }
 
-    public get pieChartConfiguration(): IPieChartConfiguration {
-        return SummaryChartComponent._pieChartConfiguration;
+    if (options.isNotFoundVisible) {
+      data.push({ name: 'Unannotated', value: valueConverter(this.data.notFoundCounter), color: 'rgba(40, 40, 40, 0.5)' });
     }
 
-    public get pie(): boolean {
-        return this.isPie;
-    }
+    return data.reverse();
+  }
 
-    public set pie(pie: boolean) {
-        this.isPie = pie;
-        this.updateStream(ChartEventType.UPDATE_DATA, this.options);
-    }
-
-    public get threshold(): number {
-        return this.thresholdTypesAvailable;
-    }
-
-    @Input('data')
-    public set setData(data: SummaryCounters) {
-        this.data = data;
-        this.updateThresholdValues();
-        this.updateStream(ChartEventType.UPDATE_DATA, this.options);
-    }
-
-    constructor(private renderer: Renderer2) {
-    }
-
-    public ngOnInit(): void {
-        this.resizeWindowListener = this.renderer.listen('window', 'resize', this.resizeDebouncedHandler);
-    }
-
-    public handleChangeOptionsFn(options: SummaryChartOptions): void {
-        this.updateStream(ChartEventType.UPDATE_DATA, options);
-    }
-
-    public ngOnDestroy(): void {
-        this.resizeWindowListener();
-    }
-
-    private updateStream(type: ChartEventType, options: SummaryChartOptions): void {
-        this.stream.next({ type, data: this.createData(options) });
-    }
-
-    private createData(options: SummaryChartOptions): IChartDataEntry[] {
-
-        const valueConverter: (c: SummaryClonotypeCounter) => number = (c) => {
-            let value = (options.isWeightedByReadCount ? c.frequency : c.unique);
-            if (options.normalizeTypes[ 0 ].checked) { // db
-                value = value / c.databaseUnique;
-            }
-            if (options.normalizeTypes[ 1 ].checked) { // matches
-                value = value / c.unique;
-            }
-            return value;
-        };
-
-        const currentFieldName: string = options.fieldTypes[ options.currentFieldIndex ].name;
-        const counters = this.data.counters.find((c) => c.name === currentFieldName);
-
-        if (!counters) {
-            return [];
+  private updateThresholdValues(): void {
+    this.thresholdTypesAvailable = 1;
+    const currentFieldName: string = this.options.fieldTypes[ this.options.currentFieldIndex ].name;
+    const counters = this.data.counters.find((c) => c.name === currentFieldName);
+    if (counters) {
+      for (const type of SummaryChartOptions.thresholdTypes) {
+        if (counters.counters.length > type.threshold) {
+          this.thresholdTypesAvailable += 1;
         }
-
-        let data: IChartDataEntry[] = counters.counters.map((c) => {
-            return { name: c.field, value: valueConverter(c) };
-        });
-
-        data = data.sort((a, b) => b.value - a.value);
-        if (data.length > options.currentThresholdType.threshold) {
-            data = data.slice(0, options.currentThresholdType.threshold);
-        }
-
-        if (options.isNotFoundVisible) {
-            data.push({ name: 'Unannotated', value: valueConverter(this.data.notFoundCounter), color: 'rgba(40, 40, 40, 0.5)' });
-        }
-
-        return data.reverse();
+      }
     }
+    this.options.updateCurrentThresholdType(this.thresholdTypesAvailable);
+  }
 
-    private updateThresholdValues(): void {
-        this.thresholdTypesAvailable = 1;
-        const currentFieldName: string = this.options.fieldTypes[ this.options.currentFieldIndex ].name;
-        const counters = this.data.counters.find((c) => c.name === currentFieldName);
-        if (counters) {
-            for (const type of SummaryChartOptions.thresholdTypes) {
-                if (counters.counters.length > type.threshold) {
-                    this.thresholdTypesAvailable += 1;
-                }
-            }
-        }
-        this.options.updateCurrentThresholdType(this.thresholdTypesAvailable);
-    }
-
-    private static tooltipValueFn(d: IChartDataEntry): string {
-        return d.value.toExponential(3);
-    }
+  private static tooltipValueFn(d: IChartDataEntry): string {
+    return d.value.toExponential(3);
+  }
 }

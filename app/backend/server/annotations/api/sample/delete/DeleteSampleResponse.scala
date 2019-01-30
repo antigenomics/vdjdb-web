@@ -21,7 +21,7 @@ import play.api.libs.json.{Json, Writes}
 case class DeleteSampleResponse(valid: Boolean)
 
 object DeleteSampleResponse {
-    final val Action: String = "delete_sample"
+  final val Action: String = "delete_sample"
 
-    implicit val deleteSampleResponseWrites: Writes[DeleteSampleResponse] = Json.writes[DeleteSampleResponse]
+  implicit val deleteSampleResponseWrites: Writes[DeleteSampleResponse] = Json.writes[DeleteSampleResponse]
 }

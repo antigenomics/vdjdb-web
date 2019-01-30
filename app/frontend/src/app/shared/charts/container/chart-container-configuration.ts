@@ -15,22 +15,22 @@
  */
 
 export interface IChartContainerMarginConfiguration {
-    readonly left?: number;
-    readonly right?: number;
-    readonly top?: number;
-    readonly bottom?: number;
+  readonly left?: number;
+  readonly right?: number;
+  readonly top?: number;
+  readonly bottom?: number;
 }
 
 function createDefaultChartContainerMarginConfiguration(): IChartContainerMarginConfiguration {
-    return { left: 0, right: 0, top: 0, bottom: 0 };
+  return { left: 0, right: 0, top: 0, bottom: 0 };
 }
 
 export interface IChartContainerConfiguration {
-    readonly width?: number;
-    readonly height?: number;
-    readonly margin?: IChartContainerMarginConfiguration;
+  readonly width?: number;
+  readonly height?: number;
+  readonly margin?: IChartContainerMarginConfiguration;
 }
 
 export function createDefaultChartContainerConfiguration(): IChartContainerConfiguration {
-    return { margin: createDefaultChartContainerMarginConfiguration() };
+  return { margin: createDefaultChartContainerMarginConfiguration() };
 }

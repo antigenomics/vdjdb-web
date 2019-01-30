@@ -24,13 +24,13 @@ import play.api.ConfigLoader
 case class RequestLimitsConfiguration(maxRequestsCount: Int, countClearInterval: Duration, maxRequestsTime: Long, timeClearInterval: Duration)
 
 object RequestLimitsConfiguration {
-    implicit val configLoader: ConfigLoader[RequestLimitsConfiguration] = (rootConfig: Config, path: String) => {
-        val config = rootConfig.getConfig(path)
-        RequestLimitsConfiguration(
-            maxRequestsCount = config.getInt("maxRequestsCount"),
-            countClearInterval = config.getDuration("countClearInterval"),
-            maxRequestsTime = config.getLong("maxRequestsTime"),
-            timeClearInterval = config.getDuration("timeClearInterval")
-        )
-    }
+  implicit val configLoader: ConfigLoader[RequestLimitsConfiguration] = (rootConfig: Config, path: String) => {
+    val config = rootConfig.getConfig(path)
+    RequestLimitsConfiguration(
+      maxRequestsCount = config.getInt("maxRequestsCount"),
+      countClearInterval = config.getDuration("countClearInterval"),
+      maxRequestsTime = config.getLong("maxRequestsTime"),
+      timeClearInterval = config.getDuration("timeClearInterval")
+    )
+  }
 }

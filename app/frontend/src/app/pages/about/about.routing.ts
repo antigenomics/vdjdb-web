@@ -18,7 +18,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { AboutPageComponent } from 'pages/about/about.component';
 
 const routes: Routes = [
-    { path: '', component: AboutPageComponent }
+  { path: '', component: AboutPageComponent }
 ];
 
 export const AboutPageRouting = RouterModule.forChild(routes); // tslint:disable-line:variable-name

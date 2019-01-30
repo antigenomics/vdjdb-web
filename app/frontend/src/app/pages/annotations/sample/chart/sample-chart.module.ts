@@ -24,9 +24,9 @@ import { ChartsModule } from 'shared/charts/charts.module';
 import { ModalsModule } from 'shared/modals/modals.module';
 
 @NgModule({
-    imports:      [ CommonModule, FormsModule, ModalsModule, ChartsModule ],
-    declarations: [ SampleChartComponent, SummaryChartComponent, SummaryChartOptionsComponent ],
-    exports:      [ SampleChartComponent, SummaryChartOptionsComponent ]
+  imports:      [ CommonModule, FormsModule, ModalsModule, ChartsModule ],
+  declarations: [ SampleChartComponent, SummaryChartComponent, SummaryChartOptionsComponent ],
+  exports:      [ SampleChartComponent, SummaryChartOptionsComponent ]
 })
 export class SampleChartModule {
 

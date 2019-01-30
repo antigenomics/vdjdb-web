@@ -22,7 +22,7 @@ import play.api.libs.json.{Json, Writes}
 case class IntersectionMatchesResponse(matches: Seq[IntersectionTableRowMatch], count: Int)
 
 object IntersectionMatchesResponse {
-    final val Action: String = "download_matches"
+  final val Action: String = "download_matches"
 
-    implicit val intersectionMatchesResponseWrites: Writes[IntersectionMatchesResponse] = Json.writes[IntersectionMatchesResponse]
+  implicit val intersectionMatchesResponseWrites: Writes[IntersectionMatchesResponse] = Json.writes[IntersectionMatchesResponse]
 }

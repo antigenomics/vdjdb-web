@@ -27,7 +27,8 @@
     </h4>
     <ng-container *ngIf="!isHidden">
         <div class="ui segment">
-            <motif-epitope-cluster *ngFor="let cluster of epitope.clusters; trackBy: trackClusterBy" [cluster]="cluster" [isNormalized]="isNormalized"></motif-epitope-cluster>
+            <motif-epitope-cluster *ngFor="let cluster of epitope.clusters; trackBy: trackClusterBy" [cluster]="cluster"
+                                   [isNormalized]="isNormalized"></motif-epitope-cluster>
         </div>
     </ng-container>
 </div>

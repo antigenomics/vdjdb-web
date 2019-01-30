@@ -20,31 +20,31 @@ import { Subscription } from 'rxjs';
 import { SampleTag } from 'shared/sample/sample-tag';
 
 @Component({
-    selector: 'tags-table',
-    templateUrl: './tags-table.component.html',
-    styleUrls: [ './tags-table.component.css' ],
-    changeDetection: ChangeDetectionStrategy.OnPush
+  selector:        'tags-table',
+  templateUrl:     './tags-table.component.html',
+  styleUrls:       [ './tags-table.component.css' ],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TagsTableComponent implements OnInit, OnDestroy {
-    private tagsServiceEventsSubscription: Subscription;
+  private tagsServiceEventsSubscription: Subscription;
 
-    constructor(private tagsService: TagsService, private changeDetector: ChangeDetectorRef) {}
+  constructor(private tagsService: TagsService, private changeDetector: ChangeDetectorRef) {}
 
-    public ngOnInit(): void {
-        this.tagsServiceEventsSubscription = this.tagsService.getEvents().subscribe(() => {
-            this.changeDetector.detectChanges();
-        });
-    }
+  public ngOnInit(): void {
+    this.tagsServiceEventsSubscription = this.tagsService.getEvents().subscribe(() => {
+      this.changeDetector.detectChanges();
+    });
+  }
 
-    public getAvailableTags(): SampleTag[] {
-        return this.tagsService.getAvailableTags();
-    }
+  public getAvailableTags(): SampleTag[] {
+    return this.tagsService.getAvailableTags();
+  }
 
-    public isTagNameHelpVisible(): boolean {
-        return this.tagsService.isTagNameHelpVisible();
-    }
+  public isTagNameHelpVisible(): boolean {
+    return this.tagsService.isTagNameHelpVisible();
+  }
 
-    public ngOnDestroy(): void {
-        this.tagsServiceEventsSubscription.unsubscribe();
-    }
+  public ngOnDestroy(): void {
+    this.tagsServiceEventsSubscription.unsubscribe();
+  }
 }

@@ -21,8 +21,8 @@ import backend.models.authorization.user.User
 import javax.inject.{Inject, Singleton}
 import org.slf4j.LoggerFactory
 import play.api.Configuration
-import play.db.NamedDatabase
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
+import play.db.NamedDatabase
 import slick.jdbc.JdbcProfile
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -30,42 +30,44 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class SampleTagProvider @Inject()(@NamedDatabase("default") protected val dbConfigProvider: DatabaseConfigProvider)
                                  (implicit ec: ExecutionContext, conf: Configuration, system: ActorSystem)
-    extends HasDatabaseConfigProvider[JdbcProfile] {
-    private final val logger = LoggerFactory.getLogger(this.getClass)
-    import dbConfig.profile.api._
-    private final val table = TableQuery[SampleTagTable]
+  extends HasDatabaseConfigProvider[JdbcProfile] {
+  private final val logger = LoggerFactory.getLogger(this.getClass)
 
-    def getTable: TableQuery[SampleTagTable] = table
+  import dbConfig.profile.api._
 
-    def getAll: Future[Seq[SampleTag]] = {
-        db.run(table.result)
-    }
+  private final val table = TableQuery[SampleTagTable]
 
-    def get(id: Long): Future[Option[SampleTag]] = {
-        db.run(table.filter(_.id === id).result.headOption)
-    }
+  def getTable: TableQuery[SampleTagTable] = table
 
-    def getByIdAndUser(id: Long, user: User): Future[Option[SampleTag]] = {
-        db.run(table.filter((t) => t.id === id && t.userID === user.id).result.headOption)
-    }
+  def getAll: Future[Seq[SampleTag]] = {
+    db.run(table.result)
+  }
 
-    def getByUserID(id: Long): Future[Seq[SampleTag]] = {
-        db.run(table.filter(_.userID === id).result)
-    }
+  def get(id: Long): Future[Option[SampleTag]] = {
+    db.run(table.filter(_.id === id).result.headOption)
+  }
 
-    def getByUser(user: User): Future[Seq[SampleTag]] = {
-        getByUserID(user.id)
-    }
+  def getByIdAndUser(id: Long, user: User): Future[Option[SampleTag]] = {
+    db.run(table.filter((t) => t.id === id && t.userID === user.id).result.headOption)
+  }
 
-    def delete(tag: SampleTag): Future[Int] = {
-        db.run(table.filter(_.id === tag.id).delete)
-    }
+  def getByUserID(id: Long): Future[Seq[SampleTag]] = {
+    db.run(table.filter(_.userID === id).result)
+  }
 
-    def update(tag: SampleTag, name: String, color: String): Future[Int] = {
-        db.run(table.filter(_.id === tag.id).map((tag) => (tag.name, tag.color)).update((name, color)))
-    }
+  def getByUser(user: User): Future[Seq[SampleTag]] = {
+    getByUserID(user.id)
+  }
 
-    def insert(tag: SampleTag): Future[Long] = {
-        db.run(table returning table.map(_.id) += tag)
-    }
+  def delete(tag: SampleTag): Future[Int] = {
+    db.run(table.filter(_.id === tag.id).delete)
+  }
+
+  def update(tag: SampleTag, name: String, color: String): Future[Int] = {
+    db.run(table.filter(_.id === tag.id).map((tag) => (tag.name, tag.color)).update((name, color)))
+  }
+
+  def insert(tag: SampleTag): Future[Long] = {
+    db.run(table returning table.map(_.id) += tag)
+  }
 }

@@ -22,6 +22,6 @@ import play.api.libs.json.{Json, Reads}
 case class AnnotationsExportDataRequest(sampleName: String, format: String, options: Seq[ExportOptionFlag])
 
 object AnnotationsExportDataRequest {
-    implicit val exportOptionFlagReads: Reads[ExportOptionFlag] = Json.reads[ExportOptionFlag]
-    implicit val annotationsExportDataRequestReads: Reads[AnnotationsExportDataRequest] = Json.reads[AnnotationsExportDataRequest]
+  implicit val exportOptionFlagReads: Reads[ExportOptionFlag] = Json.reads[ExportOptionFlag]
+  implicit val annotationsExportDataRequestReads: Reads[AnnotationsExportDataRequest] = Json.reads[AnnotationsExportDataRequest]
 }

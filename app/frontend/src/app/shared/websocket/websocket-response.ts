@@ -15,35 +15,35 @@
  */
 
 export interface IWebSocketResponseData {
-    [index: string]: any;
+  [ index: string ]: any;
 }
 
 export class WebSocketResponseData {
-    private _data: IWebSocketResponseData;
+  private _data: IWebSocketResponseData;
 
-    constructor(data: IWebSocketResponseData) {
-        this._data = data;
-    }
+  constructor(data: IWebSocketResponseData) {
+    this._data = data;
+  }
 
-    public get<T = any>(key: string): T {
-        return this._data[ key ] as T;
-    }
+  public get<T = any>(key: string): T {
+    return this._data[ key ] as T;
+  }
 
-    public status(): string {
-        /*tslint:disable:no-string-literal */
-        return this._data[ 'status' ];
-        /*tslint:enable:no-string-literal */
-    }
+  public status(): string {
+    /*tslint:disable:no-string-literal */
+    return this._data[ 'status' ];
+    /*tslint:enable:no-string-literal */
+  }
 
-    public isSuccess(): boolean {
-        return this.status() === 'success';
-    }
+  public isSuccess(): boolean {
+    return this.status() === 'success';
+  }
 
-    public isWarning(): boolean {
-        return this.status() === 'warning';
-    }
+  public isWarning(): boolean {
+    return this.status() === 'warning';
+  }
 
-    public isError(): boolean {
-        return this.status() === 'error';
-    }
+  public isError(): boolean {
+    return this.status() === 'error';
+  }
 }

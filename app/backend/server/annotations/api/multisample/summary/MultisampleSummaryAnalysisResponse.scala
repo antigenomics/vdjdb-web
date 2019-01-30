@@ -22,13 +22,15 @@ import play.api.libs.json.{Json, Writes}
 case class MultisampleSummaryAnalysisResponse(tabID: Int, state: String, summary: Map[String, SummaryCounters]) {}
 
 object MultisampleSummaryAnalysisResponse {
-    implicit val multipleSummaryAnalysisResponseWrites: Writes[MultisampleSummaryAnalysisResponse] = Json.writes[MultisampleSummaryAnalysisResponse]
+  implicit val multipleSummaryAnalysisResponseWrites: Writes[MultisampleSummaryAnalysisResponse] = Json.writes[MultisampleSummaryAnalysisResponse]
 
-    final def ParseState(tabID: Int, sample: String) = MultisampleSummaryAnalysisResponse(tabID, s"parse:${sample}", Map())
-    final def AnnotateState(tabID: Int, sample: String) = MultisampleSummaryAnalysisResponse(tabID, s"annotate:${sample}", Map())
-    final def LoadingState(tabID: Int) = MultisampleSummaryAnalysisResponse(tabID, "loading", Map())
+  final def ParseState(tabID: Int, sample: String) = MultisampleSummaryAnalysisResponse(tabID, s"parse:${sample}", Map())
 
-    final def CompletedState(tabID: Int, summary: Map[String, SummaryCounters]) = MultisampleSummaryAnalysisResponse(tabID, "completed", summary)
+  final def AnnotateState(tabID: Int, sample: String) = MultisampleSummaryAnalysisResponse(tabID, s"annotate:${sample}", Map())
 
-    final val Action: String = "multiple-summary"
+  final def LoadingState(tabID: Int) = MultisampleSummaryAnalysisResponse(tabID, "loading", Map())
+
+  final def CompletedState(tabID: Int, summary: Map[String, SummaryCounters]) = MultisampleSummaryAnalysisResponse(tabID, "completed", summary)
+
+  final val Action: String = "multiple-summary"
 }

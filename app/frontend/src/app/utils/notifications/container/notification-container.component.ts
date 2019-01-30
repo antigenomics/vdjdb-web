@@ -20,33 +20,33 @@ import { NotificationItem } from '../item/notification-item';
 import { NotificationService } from '../notification.service';
 
 @Component({
-    selector:        'notification-container',
-    templateUrl:     './notification-container.component.html',
-    styleUrls:       [ './notification-container.component.css' ],
-    changeDetection: ChangeDetectionStrategy.OnPush
+  selector:        'notification-container',
+  templateUrl:     './notification-container.component.html',
+  styleUrls:       [ './notification-container.component.css' ],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class NotificationContainerComponent implements OnInit, OnDestroy {
-    private _notificationServiceEventsSubscription: Subscription;
+  private _notificationServiceEventsSubscription: Subscription;
 
-    constructor(private notificationService: NotificationService, private changeDetector: ChangeDetectorRef) {}
+  constructor(private notificationService: NotificationService, private changeDetector: ChangeDetectorRef) {}
 
-    public ngOnInit(): void {
-        this._notificationServiceEventsSubscription = this.notificationService.getEvents().subscribe(() => {
-            this.changeDetector.detectChanges();
-        });
+  public ngOnInit(): void {
+    this._notificationServiceEventsSubscription = this.notificationService.getEvents().subscribe(() => {
+      this.changeDetector.detectChanges();
+    });
+  }
+
+  public getNotifications(): NotificationItem[] {
+    return this.notificationService.getNotifications();
+  }
+
+  public isNotificationsExist(): boolean {
+    return this.notificationService.isNotificationsExist();
+  }
+
+  public ngOnDestroy(): void {
+    if (this._notificationServiceEventsSubscription) {
+      this._notificationServiceEventsSubscription.unsubscribe();
     }
-
-    public getNotifications(): NotificationItem[] {
-        return this.notificationService.getNotifications();
-    }
-
-    public isNotificationsExist(): boolean {
-        return this.notificationService.isNotificationsExist();
-    }
-
-    public ngOnDestroy(): void {
-        if (this._notificationServiceEventsSubscription) {
-            this._notificationServiceEventsSubscription.unsubscribe();
-        }
-    }
+  }
 }

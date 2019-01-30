@@ -22,16 +22,21 @@ import slick.jdbc.H2Profile.api._
 import slick.lifted.Tag
 
 class FileMetadataTable(tag: Tag) extends Table[FileMetadata](tag, FileMetadataTable.TABLE_NAME) {
-    def id = column[Long]("ID", O.PrimaryKey, O.AutoInc)
-    def fileName = column[String]("FILE_NAME", O.Length(128))
-    def extension = column[String]("EXTENSION", O.Length(16))
-    def path = column[String]("PATH", O.Length(512))
-    def folder = column[String]("FOLDER", O.Length(512))
-    def createdAt = column[Timestamp]("CREATED_AT")
+  def id = column[Long]("ID", O.PrimaryKey, O.AutoInc)
 
-    def * = (id, fileName, extension, path, folder, createdAt) <> (FileMetadata.tupled, FileMetadata.unapply)
+  def fileName = column[String]("FILE_NAME", O.Length(128))
+
+  def extension = column[String]("EXTENSION", O.Length(16))
+
+  def path = column[String]("PATH", O.Length(512))
+
+  def folder = column[String]("FOLDER", O.Length(512))
+
+  def createdAt = column[Timestamp]("CREATED_AT")
+
+  def * = (id, fileName, extension, path, folder, createdAt) <> (FileMetadata.tupled, FileMetadata.unapply)
 }
 
 object FileMetadataTable {
-    final val TABLE_NAME = "FILE_METADATA"
+  final val TABLE_NAME = "FILE_METADATA"
 }

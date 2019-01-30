@@ -20,50 +20,50 @@ import { TagsService } from 'pages/annotations/tags/tags.service';
 import { SampleTag } from 'shared/sample/sample-tag';
 
 @Component({
-    selector: 'tr[tags-table-row]',
-    templateUrl: './tags-table-row.component.html'
+  selector:    'tr[tags-table-row]',
+  templateUrl: './tags-table-row.component.html'
 })
 export class TagsTableRowComponent {
-    @Input('tag')
-    public tag: SampleTag;
+  @Input('tag')
+  public tag: SampleTag;
 
-    constructor(private tagsService: TagsService, private annotationsService: AnnotationsService) {}
+  constructor(private tagsService: TagsService, private annotationsService: AnnotationsService) {}
 
-    public isTagNameValid(): boolean {
-        return SampleTag.isNameValid(this.tag.name);
-    }
+  public isTagNameValid(): boolean {
+    return SampleTag.isNameValid(this.tag.name);
+  }
 
-    public pickColor(color: string): void {
-        this.tag.color = color;
-    }
+  public pickColor(color: string): void {
+    this.tag.color = color;
+  }
 
-    public save(): void {
-        this.tagsService.save(this.tag);
-    }
+  public save(): void {
+    this.tagsService.save(this.tag);
+  }
 
-    public remove(): void {
-        this.tagsService.remove(this.tag);
-    }
+  public remove(): void {
+    this.tagsService.remove(this.tag);
+  }
 
-    public edit(): void {
-        this.tagsService.edit(this.tag);
-    }
+  public edit(): void {
+    this.tagsService.edit(this.tag);
+  }
 
-    public update(): void {
-        this.tagsService.update(this.tag);
-    }
+  public update(): void {
+    this.tagsService.update(this.tag);
+  }
 
-    public delete(): void {
-        this.tagsService.delete(this.tag);
-    }
+  public delete(): void {
+    this.tagsService.delete(this.tag);
+  }
 
-    public getUserSamplesSetEntries(): string[] {
-        return this.annotationsService.getSamples().filter((sample) => sample.tagID === -1).map((sample) => {
-            return sample.name;
-        });
-    }
+  public getUserSamplesSetEntries(): string[] {
+    return this.annotationsService.getSamples().filter((sample) => sample.tagID === -1).map((sample) => {
+      return sample.name;
+    });
+  }
 
-    public handleTagName(name: string): void {
-        this.tag.name = name;
-    }
+  public handleTagName(name: string): void {
+    this.tag.name = name;
+  }
 }

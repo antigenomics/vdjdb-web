@@ -20,37 +20,37 @@ import { LoggerService } from 'utils/logger/logger.service';
 
 @Injectable()
 export class AnalyticsService {
-    private yandexMetrikaTools: YandexMetrikaTools;
+  private yandexMetrikaTools: YandexMetrikaTools;
 
-    constructor(private logger: LoggerService) {
-        window.addEventListener('analytics', () => {
-            const w = window as any;
-            if (w.analytics !== undefined && w.analytics.yandexID !== undefined) {
-                this.logger.info('AnalyticsService', `Yandex metrika analytics tools has been found (id: ${w.analytics.yandexID})`);
-                this.yandexMetrikaTools = new YandexMetrikaTools(w.analytics.yandexID);
-            }
-        });
-    }
+  constructor(private logger: LoggerService) {
+    window.addEventListener('analytics', () => {
+      const w = window as any;
+      if (w.analytics !== undefined && w.analytics.yandexID !== undefined) {
+        this.logger.info('AnalyticsService', `Yandex metrika analytics tools has been found (id: ${w.analytics.yandexID})`);
+        this.yandexMetrikaTools = new YandexMetrikaTools(w.analytics.yandexID);
+      }
+    });
+  }
 
-    public async reachGoal(target: string, params?: any): Promise<void> {
-        this.logger.debug('AnalyticsService', `Goal reached: ${target}`);
-        if (this.yandexMetrikaTools) {
-            this.yandexMetrikaTools.reachGoal(target, params);
-        }
+  public async reachGoal(target: string, params?: any): Promise<void> {
+    this.logger.debug('AnalyticsService', `Goal reached: ${target}`);
+    if (this.yandexMetrikaTools) {
+      this.yandexMetrikaTools.reachGoal(target, params);
     }
+  }
 
-    public async hit(url: string): Promise<void> {
-        this.logger.debug('AnalyticsService', `Hit: ${url}`);
-        if (this.yandexMetrikaTools) {
-            this.yandexMetrikaTools.hit(url);
-        }
+  public async hit(url: string): Promise<void> {
+    this.logger.debug('AnalyticsService', `Hit: ${url}`);
+    if (this.yandexMetrikaTools) {
+      this.yandexMetrikaTools.hit(url);
     }
+  }
 
-    public async extLink(url: string): Promise<void> {
-        this.logger.debug('AnalyticsService', `External link: ${url}`);
-        if (this.yandexMetrikaTools) {
-            this.yandexMetrikaTools.extLink(url);
-        }
+  public async extLink(url: string): Promise<void> {
+    this.logger.debug('AnalyticsService', `External link: ${url}`);
+    if (this.yandexMetrikaTools) {
+      this.yandexMetrikaTools.extLink(url);
     }
+  }
 
 }

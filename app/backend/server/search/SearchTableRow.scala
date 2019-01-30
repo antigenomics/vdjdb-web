@@ -17,18 +17,18 @@
 package backend.server.search
 
 import com.antigenomics.vdjdb.db.Row
-import play.api.libs.json.{Json, Format}
+import play.api.libs.json.{Format, Json}
 
 case class SearchTableRow(entries: Seq[String], metadata: SearchTableRowMetadata)
 
 object SearchTableRow {
-    implicit val searchTableRowFormat: Format[SearchTableRow] = Json.format[SearchTableRow]
+  implicit val searchTableRowFormat: Format[SearchTableRow] = Json.format[SearchTableRow]
 
-    def createFromRow(r: Row): SearchTableRow = {
-        val entries = r.getEntries
-            .filter(_.getColumn.getMetadata.get("visible") == "1")
-            .map(_.getValue)
-        val metadata = SearchTableRowMetadata.createFromRow(r)
-        SearchTableRow(entries, metadata)
-    }
+  def createFromRow(r: Row): SearchTableRow = {
+    val entries = r.getEntries
+      .filter(_.getColumn.getMetadata.get("visible") == "1")
+      .map(_.getValue)
+    val metadata = SearchTableRowMetadata.createFromRow(r)
+    SearchTableRow(entries, metadata)
+  }
 }

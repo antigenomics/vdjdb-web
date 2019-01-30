@@ -16,22 +16,22 @@
 
 package backend.models.authorization.forms
 
-import play.api.data._
 import play.api.data.Forms._
+import play.api.data._
 
 case class LoginForm(email: String, password: String)
 
 object LoginForm {
-    implicit val loginFormMapping: Form[LoginForm] = Form(mapping(
-        "email" -> email,
-        "password" -> nonEmptyText
-    )(LoginForm.apply)(LoginForm.unapply))
+  implicit val loginFormMapping: Form[LoginForm] = Form(mapping(
+    "email" -> email,
+    "password" -> nonEmptyText
+  )(LoginForm.apply)(LoginForm.unapply))
 
-    final val loginFailedFormMapping: Form[LoginForm] =
-        loginFormMapping.withGlobalError("authorization.forms.login.failed.message")
-            .withGlobalError("authorization.forms.login.failed.workaround.1")
-            .withGlobalError("authorization.forms.login.failed.workaround.2")
+  final val loginFailedFormMapping: Form[LoginForm] =
+    loginFormMapping.withGlobalError("authorization.forms.login.failed.message")
+      .withGlobalError("authorization.forms.login.failed.workaround.1")
+      .withGlobalError("authorization.forms.login.failed.workaround.2")
 
-    final val loginUnverified: Form[LoginForm] =
-        loginFormMapping.withGlobalError("authorization.forms.login.failed.unverified")
+  final val loginUnverified: Form[LoginForm] =
+    loginFormMapping.withGlobalError("authorization.forms.login.failed.unverified")
 }

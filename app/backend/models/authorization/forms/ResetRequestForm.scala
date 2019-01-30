@@ -16,13 +16,13 @@
 
 package backend.models.authorization.forms
 
-import play.api.data._
 import play.api.data.Forms._
+import play.api.data._
 
 case class ResetRequestForm(email: String)
 
 object ResetRequestForm {
-    implicit val resetRequestFormMapping: Form[ResetRequestForm] = Form(mapping(
-        "email" -> email
-    )(ResetRequestForm.apply)(ResetRequestForm.unapply))
+  implicit val resetRequestFormMapping: Form[ResetRequestForm] = Form(mapping(
+    "email" -> email
+  )(ResetRequestForm.apply)(ResetRequestForm.unapply))
 }

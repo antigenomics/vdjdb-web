@@ -23,9 +23,9 @@ import { UpdateSampleModalComponent } from 'pages/annotations/sidebar/update_sam
 import { ModalsModule } from 'shared/modals/modals.module';
 
 @NgModule({
-    imports:      [ CommonModule, ModalsModule, FormsModule ],
-    declarations: [ AnnotationsSidebarComponent, UpdateSampleModalComponent, SortModalComponent ],
-    exports:      [ AnnotationsSidebarComponent ]
+  imports:      [ CommonModule, ModalsModule, FormsModule ],
+  declarations: [ AnnotationsSidebarComponent, UpdateSampleModalComponent, SortModalComponent ],
+  exports:      [ AnnotationsSidebarComponent ]
 })
 export class AnnotationsSidebarModule {
 

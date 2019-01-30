@@ -21,5 +21,5 @@ import play.api.libs.json.{Json, Reads}
 case class IntersectionMatchesRequest(sampleName: String, rowIndex: Int)
 
 object IntersectionMatchesRequest {
-    implicit val intersectionMatchesRequestReads: Reads[IntersectionMatchesRequest] = Json.reads[IntersectionMatchesRequest]
+  implicit val intersectionMatchesRequestReads: Reads[IntersectionMatchesRequest] = Json.reads[IntersectionMatchesRequest]
 }

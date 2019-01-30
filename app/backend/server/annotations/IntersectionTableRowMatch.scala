@@ -23,13 +23,13 @@ import play.api.libs.json.{Json, Writes}
 case class IntersectionTableRowMatch(row: SearchTableRow, alignment: IntersectionTableRowAlignment, matchScore: Float, weight: Float)
 
 object IntersectionTableRowMatch {
-    implicit val intersectionTableRowMatchWrites: Writes[IntersectionTableRowMatch] = Json.writes[IntersectionTableRowMatch]
+  implicit val intersectionTableRowMatchWrites: Writes[IntersectionTableRowMatch] = Json.writes[IntersectionTableRowMatch]
 
-    def createFromSearchResult(result: ClonotypeSearchResult): IntersectionTableRowMatch = {
-        val alignment = result.getHit.computeAlignment()
+  def createFromSearchResult(result: ClonotypeSearchResult): IntersectionTableRowMatch = {
+    val alignment = result.getHit.computeAlignment()
 
-        IntersectionTableRowMatch(
-            SearchTableRow.createFromRow(result.getRow),
-            IntersectionTableRowAlignment.createFromAlignmentHelper(alignment.getAlignmentHelper), result.getScore, result.getWeight)
-    }
+    IntersectionTableRowMatch(
+      SearchTableRow.createFromRow(result.getRow),
+      IntersectionTableRowAlignment.createFromAlignmentHelper(alignment.getAlignmentHelper), result.getScore, result.getWeight)
+  }
 }

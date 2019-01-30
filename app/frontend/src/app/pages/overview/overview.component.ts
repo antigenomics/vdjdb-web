@@ -18,20 +18,20 @@ import { ChangeDetectionStrategy, Component, ElementRef, OnInit, ViewChild } fro
 import { OverviewService } from './overview.service';
 
 @Component({
-    selector:        'overview',
-    templateUrl:     './overview.component.html',
-    changeDetection: ChangeDetectionStrategy.OnPush
+  selector:        'overview',
+  templateUrl:     './overview.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class OverviewPageComponent implements OnInit {
-    @ViewChild('overviewContainer', { read: ElementRef })
-    public overviewContainer: ElementRef;
+  @ViewChild('overviewContainer', { read: ElementRef })
+  public overviewContainer: ElementRef;
 
-    constructor(public overviewService: OverviewService) {
-    }
+  constructor(public overviewService: OverviewService) {
+  }
 
-    public ngOnInit(): void {
-        this.overviewService.getOverviewContent().then((text: string) => {
-            this.overviewContainer.nativeElement.innerHTML = text;
-        });
-    }
+  public ngOnInit(): void {
+    this.overviewService.getOverviewContent().then((text: string) => {
+      this.overviewContainer.nativeElement.innerHTML = text;
+    });
+  }
 }

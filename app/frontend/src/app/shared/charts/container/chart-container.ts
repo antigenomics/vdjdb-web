@@ -23,61 +23,61 @@ export type D3HTMLSelection = d3.Selection<d3.BaseType, any, any, any>;
 export type D3MultipleDataSelection<T> = d3.Selection<d3.BaseType, T, any, any>;
 
 export class ChartContainer {
-    private readonly _configuration: IChartContainerConfiguration;
-    private readonly _container: D3HTMLSelection;
-    private readonly _svg: D3HTMLSelection;
-    private _width: number;
-    private _height: number;
+  private readonly _configuration: IChartContainerConfiguration;
+  private readonly _container: D3HTMLSelection;
+  private readonly _svg: D3HTMLSelection;
+  private _width: number;
+  private _height: number;
 
-    constructor(private readonly element: ElementRef, configuration?: IChartContainerConfiguration) {
-        this._configuration = createDefaultChartContainerConfiguration();
-        Configuration.extend(this._configuration, configuration);
+  constructor(private readonly element: ElementRef, configuration?: IChartContainerConfiguration) {
+    this._configuration = createDefaultChartContainerConfiguration();
+    Configuration.extend(this._configuration, configuration);
 
-        const margin = this._configuration.margin;
-        this._container = d3.select(element.nativeElement).append('svg');
-        this._svg = this._container.append('g').attr('transform', `translate(${margin.left},${margin.top})`);
-        this.recalculateContainerViewSize();
-    }
+    const margin = this._configuration.margin;
+    this._container = d3.select(element.nativeElement).append('svg');
+    this._svg = this._container.append('g').attr('transform', `translate(${margin.left},${margin.top})`);
+    this.recalculateContainerViewSize();
+  }
 
-    public recalculateContainerViewSize(): void {
-        const native = this.element.nativeElement;
-        const margin = this._configuration.margin;
-        const width = (this._configuration.width ? this._configuration.width : native.clientWidth) - margin.left - margin.right;
-        const height = (this._configuration.height ? this._configuration.height : native.clientHeight) - margin.top - margin.bottom;
+  public recalculateContainerViewSize(): void {
+    const native = this.element.nativeElement;
+    const margin = this._configuration.margin;
+    const width = (this._configuration.width ? this._configuration.width : native.clientWidth) - margin.left - margin.right;
+    const height = (this._configuration.height ? this._configuration.height : native.clientHeight) - margin.top - margin.bottom;
 
-        this._container
-            .attr('width', width + margin.left + margin.right)
-            .attr('height', height + margin.top + margin.bottom);
+    this._container
+      .attr('width', width + margin.left + margin.right)
+      .attr('height', height + margin.top + margin.bottom);
 
-        this._width = width;
-        this._height = height;
-    }
+    this._width = width;
+    this._height = height;
+  }
 
-    public classed(name: string): void {
-        this._svg.attr('class', name);
-    }
+  public classed(name: string): void {
+    this._svg.attr('class', name);
+  }
 
-    public styled(name: string, value: string): void {
-        this._svg.style(name, value);
-    }
+  public styled(name: string, value: string): void {
+    this._svg.style(name, value);
+  }
 
-    public getElementRef(): ElementRef {
-        return this.element;
-    }
+  public getElementRef(): ElementRef {
+    return this.element;
+  }
 
-    public getContainer(): { svg?: D3HTMLSelection, width?: number, height?: number } {
-        return { svg: this._svg, width: this._width, height: this._height };
-    }
+  public getContainer(): { svg?: D3HTMLSelection, width?: number, height?: number } {
+    return { svg: this._svg, width: this._width, height: this._height };
+  }
 
-    public getWidth(): number {
-        return this._width;
-    }
+  public getWidth(): number {
+    return this._width;
+  }
 
-    public getHeight(): number {
-        return this._height;
-    }
+  public getHeight(): number {
+    return this._height;
+  }
 
-    public destroy(): void {
-        this._container.remove();
-    }
+  public destroy(): void {
+    this._container.remove();
+  }
 }

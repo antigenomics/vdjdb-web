@@ -25,27 +25,27 @@ import { AnnotationsService, AnnotationsServiceEvents } from '../annotations.ser
 @Injectable()
 export class UserResolver implements Resolve<User> {
 
-    constructor(private annotationService: AnnotationsService, private logger: LoggerService) {
-    }
+  constructor(private annotationService: AnnotationsService, private logger: LoggerService) {
+  }
 
-    public resolve(_route: ActivatedRouteSnapshot, _state: RouterStateSnapshot): Observable<User> | Promise<User> | User {
-        this.logger.debug('UserResolver', 'Resolving');
-        return new Promise<User>((resolve) => {
-            if (this.annotationService.isInitialized()) {
-                resolve(this.getUser());
-            } else {
-                this.annotationService.getEvents().pipe(filter((event) => {
-                    return event === AnnotationsServiceEvents.INITIALIZED;
-                }), take(1)).subscribe(() => {
-                    resolve(this.getUser());
-                });
-            }
+  public resolve(_route: ActivatedRouteSnapshot, _state: RouterStateSnapshot): Observable<User> | Promise<User> | User {
+    this.logger.debug('UserResolver', 'Resolving');
+    return new Promise<User>((resolve) => {
+      if (this.annotationService.isInitialized()) {
+        resolve(this.getUser());
+      } else {
+        this.annotationService.getEvents().pipe(filter((event) => {
+          return event === AnnotationsServiceEvents.INITIALIZED;
+        }), take(1)).subscribe(() => {
+          resolve(this.getUser());
         });
-    }
+      }
+    });
+  }
 
-    private getUser(): User {
-        const user = this.annotationService.getUser();
-        this.logger.debug('UserResolver: resolved', user);
-        return user;
-    }
+  private getUser(): User {
+    const user = this.annotationService.getUser();
+    this.logger.debug('UserResolver: resolved', user);
+    return user;
+  }
 }

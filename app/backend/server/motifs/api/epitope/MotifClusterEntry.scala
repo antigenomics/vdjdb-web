@@ -18,6 +18,7 @@ package backend.server.motifs.api.epitope
 
 import play.api.libs.json.{Format, Json}
 import tech.tablesaw.api.Table
+
 import scala.collection.JavaConverters._
 
 case class MotifClusterEntry(position: Int, aa: Seq[MotifClusterEntryAA])

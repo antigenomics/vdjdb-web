@@ -23,28 +23,28 @@ import play.api.libs.json.{Format, Json}
 import scala.collection.JavaConverters._
 
 case class DatabaseMetadata(numberOfRecords: Int, numberOfColumns: Int, columns: List[DatabaseColumnInfo]) {
-    require(numberOfRecords > 0, DatabaseMetadata.numberOfRecordsRequirementErrorMessage)
-    require(numberOfColumns > 0, DatabaseMetadata.numberOfColumnsRequirementErrorMessage)
+  require(numberOfRecords > 0, DatabaseMetadata.numberOfRecordsRequirementErrorMessage)
+  require(numberOfColumns > 0, DatabaseMetadata.numberOfColumnsRequirementErrorMessage)
 
-    def getColumnIndex(columnName: String): Int = {
-        columns.indexWhere(_.name == columnName)
-    }
+  def getColumnIndex(columnName: String): Int = {
+    columns.indexWhere(_.name == columnName)
+  }
 }
 
 object DatabaseMetadata {
-    final val numberOfRecordsRequirementErrorMessage: String = "number of records should be greater than zero"
-    final val numberOfColumnsRequirementErrorMessage: String = "number of columns should be greater than zero"
+  final val numberOfRecordsRequirementErrorMessage: String = "number of records should be greater than zero"
+  final val numberOfColumnsRequirementErrorMessage: String = "number of columns should be greater than zero"
 
-    implicit val databaseMetadataFormat: Format[DatabaseMetadata] = Json.format[DatabaseMetadata]
+  implicit val databaseMetadataFormat: Format[DatabaseMetadata] = Json.format[DatabaseMetadata]
 
-    def createFromInstance(instance: VdjdbInstance): DatabaseMetadata = {
-        val dbInstance = instance.getDbInstance
-        val numberOfRecords = dbInstance.getRows.size()
-        val columns = dbInstance.getColumns
-            .asScala
-            .map((c: Column) => DatabaseColumnInfo.createInfoFromColumn(c))
-            .filter((info: DatabaseColumnInfo) => info.visible)
-            .toList
-        DatabaseMetadata(numberOfRecords, columns.size, columns)
-    }
+  def createFromInstance(instance: VdjdbInstance): DatabaseMetadata = {
+    val dbInstance = instance.getDbInstance
+    val numberOfRecords = dbInstance.getRows.size()
+    val columns = dbInstance.getColumns
+      .asScala
+      .map((c: Column) => DatabaseColumnInfo.createInfoFromColumn(c))
+      .filter((info: DatabaseColumnInfo) => info.visible)
+      .toList
+    DatabaseMetadata(numberOfRecords, columns.size, columns)
+  }
 }

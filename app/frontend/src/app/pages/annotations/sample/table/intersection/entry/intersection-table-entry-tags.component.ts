@@ -20,30 +20,31 @@ import { TableEntry } from 'shared/table/entry/table-entry';
 import { IntersectionTableRow } from '../row/intersection-table-row';
 
 @Component({
-    selector:        'td[intersection-table-entry-tags]',
-    template:        `<div class="ui small basic {{ tag[1] }} label" *ngFor="let tag of values">{{ tag[0] }}</div>`,
-    changeDetection: ChangeDetectionStrategy.OnPush
+  selector: 'td[intersection-table-entry-tags]',
+  template: `
+                <div class="ui small basic {{ tag[1] }} label" *ngFor="let tag of values">{{ tag[0] }}</div>`,
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class IntersectionTableEntryTagsComponent extends TableEntry {
-    private static readonly _colors: string[] = [ 'teal', 'blue', 'violet', 'red' ];
+  private static readonly _colors: string[] = [ 'teal', 'blue', 'violet', 'red' ];
 
-    @HostBinding('class')
-    public width: string = 'seven wide';
+  @HostBinding('class')
+  public width: string = 'seven wide';
 
-    public values: Array<[ string, string ]> = [];
+  public values: Array<[ string, string ]> = [];
 
-    public create(_entry: string, _column: TableColumn, _columns: TableColumn[], row: IntersectionTableRow,
-                  _hostViewContainer: ViewContainerRef, _resolver: ComponentFactoryResolver): void {
-        this.values = [];
+  public create(_entry: string, _column: TableColumn, _columns: TableColumn[], row: IntersectionTableRow,
+                _hostViewContainer: ViewContainerRef, _resolver: ComponentFactoryResolver): void {
+    this.values = [];
 
-        let index = 0;
-        for (const key in row.tags) {
-            if (row.tags.hasOwnProperty(key)) {
-                this.values = this.values.concat(row.tags[ key ].map((tag) =>
-                    [ tag, IntersectionTableEntryTagsComponent._colors[ index ] ] as [ string, string ])
-                );
-                index += 1;
-            }
-        }
+    let index = 0;
+    for (const key in row.tags) {
+      if (row.tags.hasOwnProperty(key)) {
+        this.values = this.values.concat(row.tags[ key ].map((tag) =>
+          [ tag, IntersectionTableEntryTagsComponent._colors[ index ] ] as [ string, string ])
+        );
+        index += 1;
+      }
     }
+  }
 }

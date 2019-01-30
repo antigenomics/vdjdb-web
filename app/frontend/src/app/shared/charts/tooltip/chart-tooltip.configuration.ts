@@ -17,11 +17,11 @@
 import { IChartDataEntry } from 'shared/charts/data/chart-data-entry';
 
 export interface IChartTooltipConfiguration {
-    value: (d: IChartDataEntry) => string;
+  value: (d: IChartDataEntry) => string;
 }
 
 export function createDefaultChartTooltipConfiguration(): IChartTooltipConfiguration {
-    return {
-        value: (d) => d.value.toString()
-    };
+  return {
+    value: (d) => d.value.toString()
+  };
 }

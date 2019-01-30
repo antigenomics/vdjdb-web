@@ -21,27 +21,27 @@ import { TableEntry } from 'shared/table/entry/table-entry';
 import { MatchRowAlignment, MatchTableRow } from '../row/match-table-row';
 
 @Component({
-    selector:            'td[match-table-entry-alignment]',
-    template:            `<span class="text alignment cursor pointer" [popup]="popupAlignmentTable" 
-                            style="display: block; width: 100%; height: 100%;"
-                            display="table" position="right" popupClass="big text alignment" width="800">
+  selector:                     'td[match-table-entry-alignment]',
+  template:                     `<span class="text alignment cursor pointer" [popup]="popupAlignmentTable"
+                                       style="display: block; width: 100%; height: 100%;"
+                                       display="table" position="right" popupClass="big text alignment" width="800">
                             {{ alignment.seq1String }}<br>
-                            {{ alignment.markup }}<br>
-                            {{ alignment.seq2String }}
+      {{ alignment.markup }}<br>
+      {{ alignment.seq2String }}
                          </span>`,
-    changeDetection:     ChangeDetectionStrategy.OnPush,
-    preserveWhitespaces: false
+  changeDetection:              ChangeDetectionStrategy.OnPush,
+  preserveWhitespaces:          false
 })
 export class MatchesTableEntryAlignmentComponent extends TableEntry {
-    public alignment: MatchRowAlignment;
+  public alignment: MatchRowAlignment;
 
-    public popupAlignmentTable: PopupContentTable;
+  public popupAlignmentTable: PopupContentTable;
 
-    public create(_entry: string, _column: TableColumn, _columns: TableColumn[], row: MatchTableRow,
-                  _hostViewContainer: ViewContainerRef, _resolver: ComponentFactoryResolver): void {
-        this.alignment = row.alignment;
+  public create(_entry: string, _column: TableColumn, _columns: TableColumn[], row: MatchTableRow,
+                _hostViewContainer: ViewContainerRef, _resolver: ComponentFactoryResolver): void {
+    this.alignment = row.alignment;
 
-        const rows = [ [ row.alignment.seq1String ], [ row.alignment.markup ], [ row.alignment.seq2String ] ];
-        this.popupAlignmentTable = new PopupContentTable([ 'Alignment' ], rows);
-    }
+    const rows = [ [ row.alignment.seq1String ], [ row.alignment.markup ], [ row.alignment.seq2String ] ];
+    this.popupAlignmentTable = new PopupContentTable([ 'Alignment' ], rows);
+  }
 }

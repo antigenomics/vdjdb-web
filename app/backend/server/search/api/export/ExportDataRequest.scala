@@ -23,6 +23,6 @@ case class ExportOptionFlag(name: String, title: String, value: Boolean)
 case class ExportDataRequest(format: String, options: Seq[ExportOptionFlag])
 
 object ExportDataRequest {
-    implicit val exportOptionFlagFormat: Format[ExportOptionFlag] = Json.format[ExportOptionFlag]
-    implicit val exportDataRequestFormat: Format[ExportDataRequest] = Json.format[ExportDataRequest]
+  implicit val exportOptionFlagFormat: Format[ExportOptionFlag] = Json.format[ExportOptionFlag]
+  implicit val exportDataRequestFormat: Format[ExportDataRequest] = Json.format[ExportDataRequest]
 }

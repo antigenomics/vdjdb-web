@@ -17,5 +17,6 @@
 <div class="ui active centered inline loader" *ngIf="loading; else loaded"></div>
 <ng-template #loaded>
     Server: {{ info.name }}:{{ info.version }} - built at: {{ info.builtAt }}
-    (hash: <a class="hash-link" href="https://github.com/antigenomics/vdjdb-web/commit/{{ info.commitHash }}" rel="noopener" target="_blank">{{ info.commitHash }}</a>)
+    (hash: <a class="hash-link" href="https://github.com/antigenomics/vdjdb-web/commit/{{ info.commitHash }}" rel="noopener"
+              target="_blank">{{ info.commitHash }}</a>)
 </ng-template>

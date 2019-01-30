@@ -17,13 +17,13 @@
 import { SummaryClonotypeCounter } from 'pages/annotations/sample/table/intersection/summary/summary-clonotype-counter';
 
 export class SummaryFieldCounter {
-    public readonly name: string;
-    public readonly counters: SummaryClonotypeCounter[];
+  public readonly name: string;
+  public readonly counters: SummaryClonotypeCounter[];
 
-    constructor(counter: any) {
-        /* tslint:disable:no-string-literal */
-        this.name = counter[ 'name' ];
-        this.counters = counter[ 'counters' ].map((c: any) => new SummaryClonotypeCounter(c));
-        /* tslint:enable:no-string-literal */
-    }
+  constructor(counter: any) {
+    /* tslint:disable:no-string-literal */
+    this.name = counter[ 'name' ];
+    this.counters = counter[ 'counters' ].map((c: any) => new SummaryClonotypeCounter(c));
+    /* tslint:enable:no-string-literal */
+  }
 }

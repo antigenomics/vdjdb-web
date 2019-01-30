@@ -17,10 +17,10 @@
 package backend.server.database.filters
 
 import backend.server.database.filters.DatabaseFilterType.FilterType
-import play.api.libs.json.{Json, Format}
+import play.api.libs.json.{Format, Json}
 
 case class DatabaseFilterRequest(column: String, filterType: FilterType, negative: Boolean, value: String)
 
 object DatabaseFilterRequest {
-    implicit val databaseFilterRequestFormat: Format[DatabaseFilterRequest] = Json.format[DatabaseFilterRequest]
+  implicit val databaseFilterRequestFormat: Format[DatabaseFilterRequest] = Json.format[DatabaseFilterRequest]
 }

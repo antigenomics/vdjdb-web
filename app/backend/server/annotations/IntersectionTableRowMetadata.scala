@@ -21,5 +21,5 @@ import play.api.libs.json.{Json, Writes}
 case class IntersectionTableRowMetadata(vEnd: Int, jStart: Int, cdr3nt: String)
 
 object IntersectionTableRowMetadata {
-    implicit val intersectionTableRowMetadataWrites: Writes[IntersectionTableRowMetadata] = Json.writes[IntersectionTableRowMetadata]
+  implicit val intersectionTableRowMetadataWrites: Writes[IntersectionTableRowMetadata] = Json.writes[IntersectionTableRowMetadata]
 }

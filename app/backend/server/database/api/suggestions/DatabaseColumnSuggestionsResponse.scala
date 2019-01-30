@@ -16,12 +16,12 @@
 
 package backend.server.database.api.suggestions
 
-import play.api.libs.json.{Json, Format}
+import play.api.libs.json.{Format, Json}
 
 case class DatabaseColumnSuggestionsResponse(suggestions: Map[String, List[DatabaseColumnSuggestion]])
 
 object DatabaseColumnSuggestionsResponse {
-    final val Action: String = "suggestions"
+  final val Action: String = "suggestions"
 
-    implicit val databaseColumnSuggestionsRequestFormat: Format[DatabaseColumnSuggestionsResponse] = Json.format[DatabaseColumnSuggestionsResponse]
+  implicit val databaseColumnSuggestionsRequestFormat: Format[DatabaseColumnSuggestionsResponse] = Json.format[DatabaseColumnSuggestionsResponse]
 }

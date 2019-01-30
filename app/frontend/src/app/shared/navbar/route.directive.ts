@@ -20,24 +20,24 @@ import { AnalyticsService } from 'utils/analytics/analytics.service';
 import { Utils } from 'utils/utils';
 
 @Directive({
-    selector: '[route]'
+  selector: '[route]'
 })
 export class RouteDirective {
-    @Input('route')
-    public routeURL: string;
+  @Input('route')
+  public routeURL: string;
 
-    @Input('external')
-    public external: boolean = false;
+  @Input('external')
+  public external: boolean = false;
 
-    constructor(private router: Router, private analytics: AnalyticsService) {}
+  constructor(private router: Router, private analytics: AnalyticsService) {}
 
-    @HostListener('click')
-    public onRouteChange(): void {
-        this.analytics.hit(this.routeURL);
-        if (this.external) {
-            document.location.href = this.routeURL;
-        } else {
-            this.router.navigate([ this.routeURL ]).then(() =>  Utils.Window.scroll(document.body));
-        }
+  @HostListener('click')
+  public onRouteChange(): void {
+    this.analytics.hit(this.routeURL);
+    if (this.external) {
+      document.location.href = this.routeURL;
+    } else {
+      this.router.navigate([ this.routeURL ]).then(() => Utils.Window.scroll(document.body));
     }
+  }
 }

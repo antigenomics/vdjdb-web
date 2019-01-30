@@ -16,14 +16,14 @@
 
 package backend.models.files.temporary
 
-import play.api.libs.json.{Json, Format}
+import play.api.libs.json.{Format, Json}
 
 case class TemporaryFileLink(link: String) {
-    def getDownloadLink: String = s"/temporary/$link"
+  def getDownloadLink: String = s"/temporary/$link"
 }
 
 object TemporaryFileLink {
-    implicit val temporaryFileLinkFormat: Format[TemporaryFileLink] = Json.format[TemporaryFileLink]
+  implicit val temporaryFileLinkFormat: Format[TemporaryFileLink] = Json.format[TemporaryFileLink]
 
-    def unpackDownloadLink(downloadLink: String): String = downloadLink.split("/")(2)
+  def unpackDownloadLink(downloadLink: String): String = downloadLink.split("/")(2)
 }

@@ -18,7 +18,7 @@ import { Table } from 'shared/table/table';
 import { MatchTableRow } from './row/match-table-row';
 
 export class MatchesTable extends Table<MatchTableRow> {
-    public getRows(): MatchTableRow[] {
-        return this.rows;
-    }
+  public getRows(): MatchTableRow[] {
+    return this.rows;
+  }
 }

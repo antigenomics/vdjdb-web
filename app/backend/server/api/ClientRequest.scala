@@ -21,12 +21,12 @@ import play.api.libs.json._
 case class ClientRequest(id: Int, action: Option[String], data: Option[JsValue])
 
 object ClientRequest {
-    implicit val clientRequestWrites: Writes[ClientRequest] = Json.writes[ClientRequest]
-    implicit val clientRequestReads: Reads[ClientRequest] = (json: JsValue) => {
-        if ((json \ "id").isEmpty) {
-            JsError()
-        } else {
-            JsSuccess(ClientRequest((json \ "id").as[Int], (json \ "action").asOpt[String], (json \ "data").asOpt[JsValue]))
-        }
+  implicit val clientRequestWrites: Writes[ClientRequest] = Json.writes[ClientRequest]
+  implicit val clientRequestReads: Reads[ClientRequest] = (json: JsValue) => {
+    if ((json \ "id").isEmpty) {
+      JsError()
+    } else {
+      JsSuccess(ClientRequest((json \ "id").as[Int], (json \ "action").asOpt[String], (json \ "data").asOpt[JsValue]))
     }
+  }
 }

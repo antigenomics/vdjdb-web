@@ -19,28 +19,37 @@ package backend.models.authorization.user
 import backend.models.authorization.permissions.UserPermissionsProvider
 import slick.jdbc.H2Profile.api._
 import slick.lifted.Tag
+
 import scala.language.higherKinds
 
 class UserTable(tag: Tag)(implicit upp: UserPermissionsProvider) extends Table[User](tag, UserTable.TABLE_NAME) {
-    def id = column[Long]("ID", O.PrimaryKey, O.AutoInc)
-    def login = column[String]("LOGIN", O.Length(64))
-    def email = column[String]("EMAIL", O.Unique, O.Length(128))
-    def verified = column[Boolean]("VERIFIED")
-    def folderPath = column[String]("FOLDER_PATH", O.Length(255))
-    def password = column[String]("PASSWORD", O.Length(255))
-    def permissionID = column[Long]("PERMISSION_ID")
+  def id = column[Long]("ID", O.PrimaryKey, O.AutoInc)
 
-    def * = (id, login, email, verified, folderPath, password, permissionID) <> (User.tupled, User.unapply)
-    def permissions = foreignKey("PERMISSIONS_FK", permissionID, upp.getTable)(_.id,
-        onUpdate = ForeignKeyAction.Cascade, onDelete = ForeignKeyAction.NoAction)
+  def login = column[String]("LOGIN", O.Length(64))
 
-    def email_idx = index("EMAIL_IDX", email, unique = true)
+  def email = column[String]("EMAIL", O.Unique, O.Length(128))
+
+  def verified = column[Boolean]("VERIFIED")
+
+  def folderPath = column[String]("FOLDER_PATH", O.Length(255))
+
+  def password = column[String]("PASSWORD", O.Length(255))
+
+  def permissionID = column[Long]("PERMISSION_ID")
+
+  def * = (id, login, email, verified, folderPath, password, permissionID) <> (User.tupled, User.unapply)
+
+  def permissions = foreignKey("PERMISSIONS_FK", permissionID, upp.getTable)(_.id,
+    onUpdate = ForeignKeyAction.Cascade, onDelete = ForeignKeyAction.NoAction)
+
+  def email_idx = index("EMAIL_IDX", email, unique = true)
 }
 
 object UserTable {
-    final val TABLE_NAME = "USER"
+  final val TABLE_NAME = "USER"
 
-    implicit class UserExtension[C[_]](q: Query[UserTable, User, C]) {
-        def withPermissions(implicit upp: UserPermissionsProvider) = q.join(upp.getTable).on(_.permissionID === _.id)
-    }
+  implicit class UserExtension[C[_]](q: Query[UserTable, User, C]) {
+    def withPermissions(implicit upp: UserPermissionsProvider) = q.join(upp.getTable).on(_.permissionID === _.id)
+  }
+
 }
