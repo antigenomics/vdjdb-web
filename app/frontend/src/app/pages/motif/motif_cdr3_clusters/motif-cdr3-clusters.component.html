@@ -3,15 +3,26 @@
         <ng-container *ngIf="clusters.clusters.length !== 0; else empty">
             <div class="ui segment header">
                 <div class="content">Motifs found for {{ clusters.cdr3 }}</div>
-                <div class="sub header">
-                    Top {{ clusters.top }} results are shown
+            </div>
+            <div class="ui clearing segment">
+                Top
+                <div class="ui mini input selection dropdown" dropdown [content]="content" style="width: 50px; min-width: 50px">
+                    <div class="text">{{ top }}</div>
+                    <i class="dropdown icon"></i>
+                    <div class="menu fade element slow padded" tabindex="-1" #content>
+                        <div class="item" (click)="setTop(5)">5</div>
+                        <div class="item" (click)="setTop(10)">10</div>
+                        <div class="item" (click)="setTop(15)">15</div>
+                    </div>
                 </div>
+                results are shown
+                <div class="ui mini basic blue right floated button" (click)="toggleHitboxVisibility()">Toggle CDR3 hitbox</div>
             </div>
             <div class="ui segment" *ngFor="let entry of getClustersEntries()">
                 <h5 class="ui header">
                     <div class="content">Informativeness: {{ entry.info.toFixed(3) }}</div>
                 </h5>
-                <motif-epitope-cluster [cluster]="entry.cluster" [hit]="clusters.cdr3" [isNormalized]="options.isNormalized"></motif-epitope-cluster>
+                <motif-epitope-cluster [cluster]="entry.cluster" [hit]="getCDR3Hitbox()" [isNormalized]="options.isNormalized"></motif-epitope-cluster>
             </div>
         </ng-container>
         <ng-template #empty>

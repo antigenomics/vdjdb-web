@@ -53,7 +53,7 @@ case class Database @Inject() (configuration: Configuration) {
     }
 
     def getMotifFile: Option[File] = {
-        val motifsFile = new File(getLocation + "/" + "vdjdb_motifs.txt")
+        val motifsFile = new File(getLocation + "/" + "motif_pwms.txt")
         if (motifsFile.exists()) {
             Some(motifsFile)
         } else {

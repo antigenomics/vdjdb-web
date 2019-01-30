@@ -32,6 +32,7 @@ export class MotifEpitopeClusterComponent implements OnInit, OnDestroy {
   private onScrollObservable: Subscription;
   private onResizeObservable: Subscription;
   private isNormalized: boolean;
+  private hit: string;
 
   public isRendered: boolean = false;
   public stream: SeqLogoChartStreamType = new ReplaySubject(1);
@@ -44,7 +45,12 @@ export class MotifEpitopeClusterComponent implements OnInit, OnDestroy {
   public cluster: MotifCluster;
 
   @Input('hit')
-  public hit?: string;
+  public set setHit(hit: string) {
+    if (this.hit !== hit) {
+      this.hit = hit;
+      this.updateIfInViewport(ChartEventType.UPDATE_DATA);
+    }
+  }
 
   @Input('isNormalized')
   public set setIsNormalized(isNormalized: boolean) {

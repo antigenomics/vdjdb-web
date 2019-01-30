@@ -77,7 +77,7 @@ case class Motifs @Inject()(database: Database) {
       (reduced._1, reduced._2, MotifCluster.fromTable(t))
     }
 
-    val safeTop = Math.max(1, Math.min(15, top))
+    val safeTop = Math.max(1, Math.min(Motifs.maxTopValueInCDR3Search, top))
     val clusters = mapped.sortWith(_._1 > _._1).take(safeTop).map { case (i, _, cluster) => MotifCDR3SearchEntry(i, cluster) }
     val clustersNorm = mapped.sortWith(_._2 > _._2).take(safeTop).map { case (_, in, cluster) => MotifCDR3SearchEntry(in, cluster) }
 
@@ -86,6 +86,8 @@ case class Motifs @Inject()(database: Database) {
 }
 
 object Motifs {
+  private final val maxTopValueInCDR3Search: Int = 15
+
   def parseMotifFileIntoDataFrame(path: Option[String]): Table = {
     path match {
       case Some(p) =>
