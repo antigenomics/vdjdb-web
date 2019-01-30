@@ -1,5 +1,5 @@
 /*
- *     Copyright 2017-2018 Bagaev Dmitry
+ *     Copyright 2017-2019 Bagaev Dmitry
  *
  *     Licensed under the Apache License, Version 2.0 (the "License");
  *     you may not use this file except in compliance with the License.
@@ -18,16 +18,14 @@ package backend.controllers
 
 import akka.actor.ActorSystem
 import akka.stream.Materializer
-import backend.actors.MotifsSearchWebSocketActor
 import backend.server.limit.RequestLimits
 import backend.server.motifs.Motifs
 import backend.server.motifs.api.cdr3.MotifCDR3SearchRequest
 import backend.server.motifs.api.filter.MotifsSearchTreeFilter
 import javax.inject._
 import play.api.Configuration
-import play.api.libs.json.{JsError, JsValue}
+import play.api.libs.json.JsError
 import play.api.libs.json.Json.toJson
-import play.api.libs.streams.ActorFlow
 import play.api.mvc._
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -68,16 +66,6 @@ class MotifsAPI @Inject()(cc: ControllerComponents, motifs: Motifs, configuratio
         BadRequest("Expecting Json data")
       }
     }
-  }
-
-  def connect: WebSocket = WebSocket.acceptOrResult[JsValue, JsValue] { implicit request =>
-    Future.successful(if (limits.allowConnection(request)) {
-      Right(ActorFlow.actorRef { out =>
-        MotifsSearchWebSocketActor.props(out, limits.getLimit(request), motifs)
-      })
-    } else {
-      Left(Forbidden)
-    })
   }
 
 }
