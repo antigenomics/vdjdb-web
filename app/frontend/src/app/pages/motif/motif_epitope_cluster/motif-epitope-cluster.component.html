@@ -14,8 +14,8 @@
   ~     limitations under the License.
   -->
 
-<h5 class="ui header" style="margin-top: 10px; margin-bottom: 10px" #HeaderContent>
-    <div class="content">
+<h5 class="ui left floated header" style="margin-top: 10px; margin-bottom: 10px" #HeaderContent>
+    <div class="content with-options">
         <span>ID: {{ cluster.clusterId }}</span>&nbsp;&nbsp;&nbsp;
         <span>Cluster size: {{ cluster.size }}</span>&nbsp;&nbsp;&nbsp;
         <span>Cluster length: {{ cluster.length }}</span>&nbsp;&nbsp;&nbsp;
@@ -28,4 +28,12 @@
         </div>
     </div>
 </h5>
+<div class="ui right floated header">
+    <div class="content with-options">
+        <button class="mini ui basic button download-members-icon" (click)="exportCID()">
+            <i class="icon download"></i>
+            Export
+        </button>
+    </div>
+</div>
 <seqlogo-chart [configuration]="configuration" [stream]="stream"></seqlogo-chart>

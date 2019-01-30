@@ -21,6 +21,7 @@ import akka.stream.Materializer
 import backend.server.limit.RequestLimits
 import backend.server.motifs.Motifs
 import backend.server.motifs.api.cdr3.MotifCDR3SearchRequest
+import backend.server.motifs.api.export.{ClusterMembersExportRequest, ClusterMembersExportResponse}
 import backend.server.motifs.api.filter.MotifsSearchTreeFilter
 import javax.inject._
 import play.api.Configuration
@@ -65,6 +66,21 @@ class MotifsAPI @Inject()(cc: ControllerComponents, motifs: Motifs, configuratio
       }.getOrElse {
         BadRequest("Expecting Json data")
       }
+    }
+  }
+
+  def members: Action[AnyContent] = Action.async { implicit request =>
+    request.body.asJson.map { json =>
+      json.validate[ClusterMembersExportRequest].map {
+        export =>
+          motifs.members(export.cid, export.format).map(_.map(link =>
+            Ok(toJson(ClusterMembersExportResponse(link.getDownloadLink))))
+          ).getOrElse(Future.successful(BadRequest("Invalid format provided")))
+      }.recoverTotal {
+        e => Future.successful(BadRequest("Detected error:" + JsError.toFlatForm(e)))
+      }
+    }.getOrElse {
+      Future.successful(BadRequest("Expecting Json data"))
     }
   }
 

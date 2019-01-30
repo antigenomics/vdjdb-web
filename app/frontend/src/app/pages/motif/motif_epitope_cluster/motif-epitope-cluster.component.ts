@@ -26,6 +26,7 @@ import { ISeqLogoChartConfiguration } from 'shared/charts/seqlogo/seqlogo-config
 @Component({
   selector:        'motif-epitope-cluster',
   templateUrl:     './motif-epitope-cluster.component.html',
+  styleUrls:       [ './motif-epitope-cluster.component.css' ],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MotifEpitopeClusterComponent implements OnInit, OnDestroy {
@@ -115,6 +116,10 @@ export class MotifEpitopeClusterComponent implements OnInit, OnDestroy {
       bounding.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
       bounding.right <= (window.innerWidth || document.documentElement.clientWidth)
     );
+  }
+
+  public exportCID(): void {
+    this.motifService.members(this.cluster.clusterId);
   }
 
   public ngOnDestroy(): void {

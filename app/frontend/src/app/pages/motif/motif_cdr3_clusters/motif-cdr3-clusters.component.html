@@ -34,7 +34,7 @@
                 results are shown
                 <div class="ui mini basic blue right floated button" (click)="toggleHitboxVisibility()">Toggle CDR3 hitbox</div>
             </div>
-            <div class="ui segment" *ngFor="let entry of getClustersEntries()">
+            <div class="ui clearing segment" *ngFor="let entry of getClustersEntries()">
                 <h5 class="ui header">
                     <div class="content">Informativeness: {{ entry.info.toFixed(3) }}</div>
                 </h5>

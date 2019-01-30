@@ -16,22 +16,29 @@
 
 package backend.server.motifs
 
+import backend.models.files.temporary.{TemporaryFileLink, TemporaryFileProvider}
 import backend.server.database.Database
 import backend.server.motifs.api.cdr3.{MotifCDR3SearchEntry, MotifCDR3SearchResult}
 import backend.server.motifs.api.epitope.{MotifCluster, MotifEpitope}
+import backend.server.motifs.api.export.ClusterMembersExportResponse
 import backend.server.motifs.api.filter.{MotifsSearchTreeFilter, MotifsSearchTreeFilterResult}
+import backend.server.motifs.export.ClusterMembersConverter
 import javax.inject.{Inject, Singleton}
 import tech.tablesaw.api.{ColumnType, Table}
 import tech.tablesaw.io.csv.CsvReadOptions
 
 import scala.collection.JavaConverters._
+import scala.concurrent.Future
 
 @Singleton
-case class Motifs @Inject()(database: Database) {
+case class Motifs @Inject()(database: Database)(implicit tfp: TemporaryFileProvider) {
+  private final val members = Motifs.parseClusterMembersFileIntoDataFrame(database.getClusterMembersFile.map(_.getPath))
   private final val table = Motifs.parseMotifFileIntoDataFrame(database.getMotifFile.map(_.getPath))
 
   private final val metadataLevels = Seq("species", "gene", "mhc.class", "mhc.a", "antigen.epitope")
   private final val metadata = MotifsMetadata.generateMetadataFromLevels(table, metadataLevels)
+
+  def getMembers: Table = members
 
   def getTable: Table = table
 
@@ -83,6 +90,10 @@ case class Motifs @Inject()(database: Database) {
 
     Some(MotifCDR3SearchResult(cdr3, safeTop, clusters, clustersNorm))
   }
+
+  def members(cid: String, format: String): Option[Future[TemporaryFileLink]] = {
+    ClusterMembersConverter.getConverter(format).map(_.convert(members.where(members.stringColumn("cid").isEqualTo(cid)), cid))
+  }
 }
 
 object Motifs {
@@ -118,6 +129,41 @@ object Motifs {
           ColumnType.DOUBLE, // I.norm
           ColumnType.DOUBLE, // height.I
           ColumnType.DOUBLE, // height.I.norm
+        )
+        val builder = CsvReadOptions.builder(p)
+          .separator('\t')
+          .header(true)
+          .columnTypes(columnTypes)
+        val options = builder.build()
+        Table.read().csv(options)
+      case None => Table.create("")
+    }
+  }
+
+  def parseClusterMembersFileIntoDataFrame(path: Option[String]): Table = {
+    path match {
+      case Some(p) =>
+        val columnTypes: Array[ColumnType] = Array(
+          ColumnType.STRING, // species
+          ColumnType.STRING, // gene
+          ColumnType.STRING, // antigen.epitope
+          ColumnType.STRING, // cdr3aa
+          ColumnType.STRING, // antigen.gene
+          ColumnType.STRING, // antigen.species
+          ColumnType.STRING, // complex.id
+          ColumnType.STRING, // v.segm
+          ColumnType.STRING, // j.segm
+          ColumnType.STRING, // v.end
+          ColumnType.STRING, // j.start
+          ColumnType.STRING, // mhc.a
+          ColumnType.STRING, // mhc.b
+          ColumnType.STRING, // mhc.class
+          ColumnType.STRING, // reference.id
+          ColumnType.STRING, // vdjdb.score
+          ColumnType.STRING, // cid
+          ColumnType.STRING, // csz
+          ColumnType.STRING, // v.segm.repr
+          ColumnType.STRING // j.segm.repr
         )
         val builder = CsvReadOptions.builder(p)
           .separator('\t')
