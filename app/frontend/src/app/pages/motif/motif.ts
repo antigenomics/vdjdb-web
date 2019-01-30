@@ -14,44 +14,43 @@
  *     limitations under the License.
  */
 
-export interface MotifsMetadataTreeLevel {
+export interface IMotifsMetadataTreeLevel {
   readonly name: string;
-  readonly values: MotifsMetadataTreeLevelValue[];
+  readonly values: IMotifsMetadataTreeLevelValue[];
 }
 
-export interface MotifsMetadataTreeLevelValue {
+export interface IMotifsMetadataTreeLevelValue {
   readonly value: string;
   readonly description?: string;
-  readonly next: MotifsMetadataTreeLevel | null;
+  readonly next: IMotifsMetadataTreeLevel | null;
   isOpened?: boolean;
   isSelected?: boolean;
 }
 
-export interface MotifsMetadata {
-  readonly root: MotifsMetadataTreeLevel;
+export interface IMotifsMetadata {
+  readonly root: IMotifsMetadataTreeLevel;
 }
 
-
-export interface MotifsSearchTreeFilterEntry {
+export interface IMotifsSearchTreeFilterEntry {
   readonly name: string;
   readonly value: string;
 }
 
-export interface MotifsSearchTreeFilter {
-  readonly entries: MotifsSearchTreeFilterEntry[];
+export interface IMotifsSearchTreeFilter {
+  readonly entries: IMotifsSearchTreeFilterEntry[];
 }
 
-export interface MotifsSearchTreeFilterResult {
-  readonly epitopes: MotifEpitope[]
+export interface IMotifsSearchTreeFilterResult {
+  readonly epitopes: IMotifEpitope[];
 }
 
-export interface MotifEpitopeViewOptions {
+export interface IMotifEpitopeViewOptions {
   isNormalized: boolean;
 }
 
 // MotifsEpitopes
 
-export interface MotifClusterEntryAA {
+export interface IMotifClusterEntryAA {
   readonly letter: string;
   readonly length: number;
   readonly count: number;
@@ -62,51 +61,43 @@ export interface MotifClusterEntryAA {
   readonly HNorm: number;
 }
 
-export interface MotifClusterEntry {
+export interface IMotifClusterEntry {
   readonly position: number;
-  readonly aa: MotifClusterEntryAA[]
+  readonly aa: IMotifClusterEntryAA[];
 }
 
-export interface MotifClusterMeta {
+export interface IMotifClusterMeta {
   readonly species: string;
   readonly gene: string;
   readonly mhcclass: string;
   readonly mhca: string;
 }
 
-export interface MotifCluster {
+export interface IMotifCluster {
   readonly clusterId: string;
   readonly size: number;
   readonly length: number;
   readonly vsegm: string;
   readonly jsegm: string;
-  readonly entries: MotifClusterEntry[];
-  readonly meta: MotifClusterMeta;
+  readonly entries: IMotifClusterEntry[];
+  readonly meta: IMotifClusterMeta;
 }
 
-export interface MotifEpitope {
+export interface IMotifEpitope {
   readonly epitope: string;
-  readonly clusters: MotifCluster[];
+  readonly clusters: IMotifCluster[];
 }
 
 // -------------------------------------------------------------------------------- //
 
-// case class MotifCDR3SearchEntry(info: Double, cluster: MotifCluster)
-
-export interface MotifCDR3SearchEntry {
+export interface IMotifCDR3SearchEntry {
   info: number;
-  cluster: MotifCluster;
+  cluster: IMotifCluster;
 }
 
-
-export interface MotifCDR3SearchResult {
+export interface IMotifCDR3SearchResult {
   cdr3: string;
   top: number;
-  clusters: MotifCDR3SearchEntry[];
-  clustersNorm: MotifCDR3SearchEntry[];
+  clusters: IMotifCDR3SearchEntry[];
+  clustersNorm: IMotifCDR3SearchEntry[];
 }
-
-
-
-
-

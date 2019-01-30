@@ -26,7 +26,9 @@ export namespace FilterType {
   export const SEQUENCE: string = 'sequence';
 }
 
-export interface IFilter {[ index: string ]: any;}
+export interface IFilter {
+  [ index: string ]: any;
+}
 
 export class Filter {
   private _filter: IFilter = {};

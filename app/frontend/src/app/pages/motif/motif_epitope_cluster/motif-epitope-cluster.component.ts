@@ -15,7 +15,7 @@
  */
 
 import { ChangeDetectionStrategy, Component, ElementRef, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { MotifCluster } from 'pages/motif/motif';
+import { IMotifCluster } from 'pages/motif/motif';
 import { MotifService, MotifsServiceEvents } from 'pages/motif/motif.service';
 import { ReplaySubject, Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
@@ -39,10 +39,10 @@ export class MotifEpitopeClusterComponent implements OnInit, OnDestroy {
   public configuration: ISeqLogoChartConfiguration = MotifService.clusterViewportChartConfiguration;
 
   @ViewChild('HeaderContent', { read: ElementRef })
-  public HeaderContent: ElementRef;
+  public headerContent: ElementRef;
 
   @Input('cluster')
-  public cluster: MotifCluster;
+  public cluster: IMotifCluster;
 
   @Input('hit')
   public set setHit(hit: string) {
@@ -83,7 +83,7 @@ export class MotifEpitopeClusterComponent implements OnInit, OnDestroy {
   }
 
   public updateStream(type: ChartEventType): void {
-    this.stream.next({ type: type, data: this.createData() });
+    this.stream.next({ type, data: this.createData() });
     this.isRendered = true;
   }
 
@@ -99,7 +99,7 @@ export class MotifEpitopeClusterComponent implements OnInit, OnDestroy {
       entries.push(...this.hit.split('').map((c, index) => {
         return {
           pos:   -index - 1,
-          chars: [ { c: c, h: 0 } ]
+          chars: [ { c, h: 0 } ]
         };
       }));
     }
@@ -108,14 +108,14 @@ export class MotifEpitopeClusterComponent implements OnInit, OnDestroy {
   }
 
   public isInViewport(): boolean {
-    const bounding = this.HeaderContent.nativeElement.getBoundingClientRect();
+    const bounding = this.headerContent.nativeElement.getBoundingClientRect();
     return (
       bounding.top >= 0 &&
       bounding.left >= 0 &&
       bounding.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
       bounding.right <= (window.innerWidth || document.documentElement.clientWidth)
     );
-  };
+  }
 
   public ngOnDestroy(): void {
     this.onScrollObservable.unsubscribe();

@@ -15,7 +15,7 @@
  */
 
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { MotifEpitopeViewOptions, MotifsMetadata, MotifsMetadataTreeLevelValue } from 'pages/motif/motif';
+import { IMotifEpitopeViewOptions, IMotifsMetadata, IMotifsMetadataTreeLevelValue } from 'pages/motif/motif';
 import { MotifSearchState, MotifService } from 'pages/motif/motif.service';
 
 @Component({
@@ -26,13 +26,13 @@ import { MotifSearchState, MotifService } from 'pages/motif/motif.service';
 export class MotifSearchUtilComponent {
 
   @Input('metadata')
-  public metadata: MotifsMetadata;
+  public metadata: IMotifsMetadata;
 
   @Input('selected')
-  public selected: MotifsMetadataTreeLevelValue[];
+  public selected: IMotifsMetadataTreeLevelValue[];
 
   @Input('options')
-  public options: MotifEpitopeViewOptions;
+  public options: IMotifEpitopeViewOptions;
 
   @Input('cdr3')
   public cdr3: string;
@@ -55,7 +55,7 @@ export class MotifSearchUtilComponent {
     return this.motifService.getSearchState() === MotifSearchState.SEARCH_CDR3;
   }
 
-  public onOptionsChange(options: MotifEpitopeViewOptions): void {
+  public onOptionsChange(options: IMotifEpitopeViewOptions): void {
     this.motifService.setOptions(options);
   }
 }

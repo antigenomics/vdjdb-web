@@ -14,10 +14,10 @@
  *     limitations under the License.
  */
 
+import { NgZone } from '@angular/core';
 import { ScaleBand } from 'd3-scale';
 import { event as D3CurrentEvent } from 'd3-selection';
 import * as d3 from 'external/d3';
-import { NgZone } from '@angular/core';
 import { Observable, Subject } from 'rxjs';
 import { Chart } from 'shared/charts/chart';
 import { IChartEvent } from 'shared/charts/chart-events';
@@ -44,6 +44,7 @@ export class SeqLogoChart extends Chart<ISeqLogoChartDataEntry, ISeqLogoChartCon
   private static readonly defaultPadding: number = 0.3;
 
   // Paths and colors from https://github.com/alexpreynolds/react-seqlogo/blob/master/src/index.js
+  // tslint:disable:object-literal-key-quotes max-line-length
   private static readonly paths: { [ index: string ]: string } = {
     'A': 'M 11.21875 -16.1875 L 12.296875 0 L 15.734375 0 L 10.09375 -80.265625 L 6.375 -80.265625 L 0.578125 0 L 4.015625 0 L 5.109375 -16.1875 Z M 10.296875 -29.953125 L 6.046875 -29.953125 L 8.171875 -61.328125 Z M 10.296875 -29.953125',
     'C': 'M 16.171875 -50.734375 C 16.046875 -57.375 15.734375 -61.578125 15 -65.890625 C 13.671875 -73.6875 11.546875 -78 8.953125 -78 C 4.078125 -78 1.046875 -62.53125 1.046875 -37.6875 C 1.046875 -13.046875 4.046875 2.421875 8.859375 2.421875 C 13.15625 2.421875 16.015625 -8.625 16.234375 -26.21875 L 12.78125 -26.21875 C 12.5625 -16.421875 11.171875 -10.84375 8.953125 -10.84375 C 6.203125 -10.84375 4.59375 -20.734375 4.59375 -37.46875 C 4.59375 -54.421875 6.28125 -64.53125 9.078125 -64.53125 C 10.3125 -64.53125 11.328125 -62.640625 12 -58.953125 C 12.375 -56.84375 12.5625 -54.84375 12.78125 -50.734375 Z M 16.171875 -50.734375',
@@ -96,6 +97,8 @@ export class SeqLogoChart extends Chart<ISeqLogoChartDataEntry, ISeqLogoChartCon
     'Y': '#21ba45'
   };
 
+  // tslint:enable:object-literal-key-quotes max-line-length
+
   constructor(configuration: ISeqLogoChartConfiguration, container: ChartContainer,
               dataStream: SeqLogoChartInputStreamType, ngZone: NgZone) {
     super(configuration, container, dataStream, ngZone);
@@ -146,6 +149,7 @@ export class SeqLogoChart extends Chart<ISeqLogoChartDataEntry, ISeqLogoChartCon
       })
       .attr('fill', (d) => d.char.color === undefined ? SeqLogoChart.colors[ d.char.c ] : d.char.color);
 
+    // tslint:disable:no-magic-numbers
     svg.selectAll('.hit')
       .data(hits).enter()
       .append('g')
@@ -163,6 +167,7 @@ export class SeqLogoChart extends Chart<ISeqLogoChartDataEntry, ISeqLogoChartCon
         const bbox = (d3.select(n[ i ]).node() as any).getBBox();
         return `scale(${x.bandwidth() / bbox.width}, ${(height - SeqLogoChart.defaultXMargin) * d.char.h / bbox.height})`;
       });
+    // tslint:enable:no-magic-numbers
 
     this.bindTooltipEvents(elements);
   }
@@ -185,7 +190,7 @@ export class SeqLogoChart extends Chart<ISeqLogoChartDataEntry, ISeqLogoChartCon
   private createXAxis(width: number, data: ISeqLogoChartDataEntry[]): { x: ScaleBand<string>, xAxis: any } {
     const x = d3.scaleBand().rangeRound([ 0, width ])
       .padding(SeqLogoChart.defaultPadding)
-      .domain(Array.apply(null, { length: Math.max(...data.map((d) => d.pos)) + 1 }).map(Number.call, (i: number) => `${i + 1}`));
+      .domain(Array.apply(undefined, { length: Math.max(...data.map((d) => d.pos)) + 1 }).map(Number.call, (i: number) => `${i + 1}`));
 
     const xAxis = d3.axisBottom(x);
     return { x, xAxis };
@@ -194,9 +199,10 @@ export class SeqLogoChart extends Chart<ISeqLogoChartDataEntry, ISeqLogoChartCon
   private bindTooltipEvents(elements: any): void {
     const xDefaultOffset = 20;
     const yDefaultOffset = -40;
+    const toPercent = 100;
 
     elements.on('mouseover', (d: { char: { c: string, h: number }, pos: number }) => {
-      this.tooltip.text(d.char.c, `Frequency: ${(d.char.h * 100).toFixed(2)}%`);
+      this.tooltip.text(d.char.c, `Frequency: ${(d.char.h * toPercent).toFixed(2)}%`);
       this.tooltip.show();
     }).on('mouseout', () => {
       this.tooltip.hide();

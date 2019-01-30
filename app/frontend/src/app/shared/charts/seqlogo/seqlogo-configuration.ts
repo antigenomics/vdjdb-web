@@ -33,7 +33,7 @@ export interface ISeqLogoChartConfiguration {
   axis?: {
     x?: ISeqLogoAxisConfiguration,
     y?: ISeqLogoAxisConfiguration
-  }
+  };
 }
 
 export function createDefaultSeqLogoConfiguration(): ISeqLogoChartConfiguration {

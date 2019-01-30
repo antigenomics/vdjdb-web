@@ -15,7 +15,7 @@
  */
 
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
-import { MotifCluster, MotifClusterMeta, MotifEpitope } from 'pages/motif/motif';
+import { IMotifCluster, IMotifClusterMeta, IMotifEpitope } from 'pages/motif/motif';
 import { MotifService, MotifsServiceEvents } from 'pages/motif/motif.service';
 import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
@@ -27,19 +27,20 @@ import { filter } from 'rxjs/operators';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MotifEpitopeEntryComponent implements OnInit, OnDestroy {
+  private static readonly hideScrollEventUpdateTimeout: number = 50;
   private subscription: Subscription;
 
-  public meta: MotifClusterMeta;
+  public meta: IMotifClusterMeta;
   public isHidden: boolean = false;
 
   @Input('epitope')
-  public epitope: MotifEpitope;
+  public epitope: IMotifEpitope;
 
   @Input('isNormalized')
   public isNormalized: boolean;
 
   @Output('onDiscard')
-  public onDiscard = new EventEmitter<MotifEpitope>();
+  public onDiscard = new EventEmitter<IMotifEpitope>();
 
   constructor(private motifService: MotifService, private changeDetector: ChangeDetectorRef) {}
 
@@ -59,10 +60,10 @@ export class MotifEpitopeEntryComponent implements OnInit, OnDestroy {
     this.isHidden = !this.isHidden;
     setTimeout(() => {
       this.motifService.fireScrollUpdateEvent();
-    }, 50);
+    }, MotifEpitopeEntryComponent.hideScrollEventUpdateTimeout);
   }
 
-  public trackClusterBy(_: number, item: MotifCluster): string {
+  public trackClusterBy(_: number, item: IMotifCluster): string {
     return item.clusterId;
   }
 

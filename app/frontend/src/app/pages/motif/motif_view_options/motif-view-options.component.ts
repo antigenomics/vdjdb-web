@@ -15,7 +15,7 @@
  */
 
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
-import { MotifEpitopeViewOptions } from 'pages/motif/motif';
+import { IMotifEpitopeViewOptions } from 'pages/motif/motif';
 
 @Component({
   selector:        'motif-view-options',
@@ -24,10 +24,10 @@ import { MotifEpitopeViewOptions } from 'pages/motif/motif';
 })
 export class MotifViewOptionsComponent {
   @Input('options')
-  public options: MotifEpitopeViewOptions;
+  public options: IMotifEpitopeViewOptions;
 
   @Output('onOptionsChange')
-  public onOptionsChange = new EventEmitter<MotifEpitopeViewOptions>();
+  public onOptionsChange = new EventEmitter<IMotifEpitopeViewOptions>();
 
   public normalize(): void {
     this.onOptionsChange.emit({ ...this.options, isNormalized: !this.options.isNormalized });

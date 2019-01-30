@@ -16,14 +16,14 @@
 
 import { Injectable } from '@angular/core';
 import {
-  MotifCDR3SearchResult,
-  MotifEpitope,
-  MotifEpitopeViewOptions,
-  MotifsMetadata,
-  MotifsMetadataTreeLevel,
-  MotifsMetadataTreeLevelValue,
-  MotifsSearchTreeFilter,
-  MotifsSearchTreeFilterResult
+  IMotifCDR3SearchResult,
+  IMotifEpitope,
+  IMotifEpitopeViewOptions,
+  IMotifsMetadata,
+  IMotifsMetadataTreeLevel,
+  IMotifsMetadataTreeLevelValue,
+  IMotifsSearchTreeFilter,
+  IMotifsSearchTreeFilterResult
 } from 'pages/motif/motif';
 import { combineLatest, Observable, ReplaySubject, Subject } from 'rxjs';
 import { filter, map, take } from 'rxjs/operators';
@@ -52,7 +52,6 @@ export namespace MotifSearchState {
 
 export type MotifSearchState = number;
 
-
 @Injectable()
 export class MotifService {
   public static readonly clusterViewportChartConfiguration: ISeqLogoChartConfiguration = {
@@ -65,12 +64,12 @@ export class MotifService {
   private state: MotifSearchState = MotifSearchState.SEARCH_TREE;
 
   private events: Subject<MotifsServiceEvents> = new Subject<MotifsServiceEvents>();
-  private metadata: Subject<MotifsMetadata> = new ReplaySubject(1);
-  private selected: Subject<Array<MotifsMetadataTreeLevelValue>> = new ReplaySubject(1);
-  private epitopes: Subject<Array<MotifEpitope>> = new ReplaySubject(1);
-  private options: Subject<MotifEpitopeViewOptions> = new ReplaySubject(1);
+  private metadata: Subject<IMotifsMetadata> = new ReplaySubject(1);
+  private selected: Subject<IMotifsMetadataTreeLevelValue[]> = new ReplaySubject(1);
+  private epitopes: Subject<IMotifEpitope[]> = new ReplaySubject(1);
+  private options: Subject<IMotifEpitopeViewOptions> = new ReplaySubject(1);
 
-  private clusters: Subject<MotifCDR3SearchResult> = new ReplaySubject(1);
+  private clusters: Subject<IMotifCDR3SearchResult> = new ReplaySubject(1);
 
   private loadingState: Subject<boolean> = new ReplaySubject(1);
 
@@ -80,7 +79,7 @@ export class MotifService {
     if (!this.isMetadataLoaded && !this.isMetadataLoading) {
       this.isMetadataLoading = true;
       const response = await Utils.HTTP.get('/api/motifs/metadata');
-      const root = JSON.parse(response.response) as { root: MotifsMetadataTreeLevel };
+      const root = JSON.parse(response.response) as { root: IMotifsMetadataTreeLevel };
       const metadata = { root: root.root };
       this.logger.debug('Motifs metadata', metadata);
 
@@ -102,15 +101,15 @@ export class MotifService {
     return this.state;
   }
 
-  public getMetadata(): Observable<MotifsMetadata> {
+  public getMetadata(): Observable<IMotifsMetadata> {
     return this.metadata.asObservable();
   }
 
-  public getEpitopes(): Observable<Array<MotifEpitope>> {
+  public getEpitopes(): Observable<IMotifEpitope[]> {
     return this.epitopes.asObservable();
   }
 
-  public getSelected(): Observable<Array<MotifsMetadataTreeLevelValue>> {
+  public getSelected(): Observable<IMotifsMetadataTreeLevelValue[]> {
     return this.selected.asObservable();
   }
 
@@ -118,11 +117,11 @@ export class MotifService {
     return this.events.asObservable();
   }
 
-  public getOptions(): Observable<MotifEpitopeViewOptions> {
+  public getOptions(): Observable<IMotifEpitopeViewOptions> {
     return this.options.asObservable();
   }
 
-  public getCDR3Clusters(): Observable<MotifCDR3SearchResult> {
+  public getCDR3Clusters(): Observable<IMotifCDR3SearchResult> {
     return this.clusters.asObservable();
   }
 
@@ -130,7 +129,7 @@ export class MotifService {
     return this.clusters.asObservable().pipe(filter((c) => c !== null && c !== undefined), map((c) => c.cdr3));
   }
 
-  public setOptions(options: MotifEpitopeViewOptions): void {
+  public setOptions(options: IMotifEpitopeViewOptions): void {
     this.options.next(options);
   }
 
@@ -157,27 +156,27 @@ export class MotifService {
     }
     this.loadingState.next(true);
     Utils.HTTP.post('/api/motifs/cdr3', { cdr3, top }).then((response) => {
-      const result = JSON.parse(response.response) as MotifCDR3SearchResult;
+      const result = JSON.parse(response.response) as IMotifCDR3SearchResult;
       this.clusters.next(result);
       this.loadingState.next(false);
-      this.notifications.info('Motifs CDR3', 'Loaded successfully', 1000);
+      this.notifications.info('Motifs CDR3', 'Loaded successfully', 1000); // tslint:disable-line:no-magic-numbers
     }).catch(() => {
       this.loadingState.next(false);
       this.notifications.error('Motifs CDR3', 'Unable to load results');
     });
   }
 
-  public select(filter: MotifsSearchTreeFilter): void {
+  public select(treeFilter: IMotifsSearchTreeFilter): void {
     this.updateSelected();
     this.loadingState.next(true);
-    Utils.HTTP.post('/api/motifs/filter', filter).then((response) => {
-      const result = JSON.parse(response.response) as MotifsSearchTreeFilterResult;
+    Utils.HTTP.post('/api/motifs/filter', treeFilter).then((response) => {
+      const result = JSON.parse(response.response) as IMotifsSearchTreeFilterResult;
       this.epitopes.pipe(take(1)).subscribe((epitopes) => {
         const names = epitopes.map((epitope) => epitope.epitope);
         const newEpitopes = result.epitopes.filter((epitope) => names.indexOf(epitope.epitope) === -1);
         this.epitopes.next([ ...epitopes, ...newEpitopes ]);
         this.loadingState.next(false);
-        this.notifications.info('Motifs', 'Loaded successfully', 1000);
+        this.notifications.info('Motifs', 'Loaded successfully', 1000); // tslint:disable-line:no-magic-numbers
       });
     }).catch(() => {
       this.loadingState.next(false);
@@ -185,14 +184,14 @@ export class MotifService {
     });
   }
 
-  public discard(_: MotifsSearchTreeFilter): void {
+  public discard(_: IMotifsSearchTreeFilter): void {
     this.updateSelected();
     setImmediate(() => {
       this.updateEpitopes();
     });
   }
 
-  public isTreeLevelValueSelected(value: MotifsMetadataTreeLevelValue): boolean {
+  public isTreeLevelValueSelected(value: IMotifsMetadataTreeLevelValue): boolean {
     if (value.next !== null) {
       return value.next.values.reduce((previous, current) => previous && this.isTreeLevelValueSelected(current), true);
     } else {
@@ -200,20 +199,20 @@ export class MotifService {
     }
   }
 
-  public selectTreeLevelValue(value: MotifsMetadataTreeLevelValue): void {
+  public selectTreeLevelValue(value: IMotifsMetadataTreeLevelValue): void {
     if (value.next !== null) {
-      value.next.values.forEach((value) => {
-        this.selectTreeLevelValue(value);
+      value.next.values.forEach((v) => {
+        this.selectTreeLevelValue(v);
       });
     } else {
       value.isSelected = true;
     }
   }
 
-  public discardTreeLevelValue(value: MotifsMetadataTreeLevelValue): void {
+  public discardTreeLevelValue(value: IMotifsMetadataTreeLevelValue): void {
     if (value.next !== null) {
-      value.next.values.forEach((value) => {
-        this.discardTreeLevelValue(value);
+      value.next.values.forEach((v) => {
+        this.discardTreeLevelValue(v);
       });
     } else {
       value.isSelected = false;
@@ -229,7 +228,7 @@ export class MotifService {
       this.events.next(MotifsServiceEvents.UPDATE_SELECTED);
       setTimeout(() => {
         this.events.next(MotifsServiceEvents.UPDATE_SCROLL);
-      }, 100);
+      }, 100); // tslint:disable-line:no-magic-numbers
     });
   }
 
@@ -241,7 +240,7 @@ export class MotifService {
     });
   }
 
-  public findTreeLevelValue(search: string): Observable<MotifsMetadataTreeLevelValue[]> {
+  public findTreeLevelValue(search: string): Observable<IMotifsMetadataTreeLevelValue[]> {
     return this.metadata.pipe(take(1), map((metadata) => {
       return MotifService.extractMetadataTreeLeafValues(metadata.root)
         .filter(([ name, _ ]) => name === search)
@@ -249,10 +248,10 @@ export class MotifService {
     }));
   }
 
-  private static extractMetadataTreeLeafValues(tree: MotifsMetadataTreeLevel): Array<[ string, MotifsMetadataTreeLevelValue ]> {
+  private static extractMetadataTreeLeafValues(tree: IMotifsMetadataTreeLevel): Array<[ string, IMotifsMetadataTreeLevelValue ]> {
     return Utils.Array.flattened(tree.values.map((v) => {
       if (v.next === null) {
-        return [ [ v.value, v ] ] as Array<[ string, MotifsMetadataTreeLevelValue ]>;
+        return [ [ v.value, v ] ] as Array<[ string, IMotifsMetadataTreeLevelValue ]>;
       } else {
         return MotifService.extractMetadataTreeLeafValues(v.next);
       }
