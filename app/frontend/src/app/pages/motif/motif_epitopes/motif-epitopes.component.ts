@@ -46,7 +46,7 @@ export class MotifEpitopesComponent {
   }
 
   public trackEpitopeBy(_: number, epitope: IMotifEpitope): string {
-    return epitope.epitope;
+    return epitope.hash;
   }
 
 }

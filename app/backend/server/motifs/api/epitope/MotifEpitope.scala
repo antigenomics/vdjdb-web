@@ -18,7 +18,7 @@ package backend.server.motifs.api.epitope
 
 import play.api.libs.json.{Format, Json}
 
-case class MotifEpitope(epitope: String, clusters: Seq[MotifCluster])
+case class MotifEpitope(epitope: String, hash: String, clusters: Seq[MotifCluster])
 
 object MotifEpitope {
   implicit val motifEpitopeFormat: Format[MotifEpitope] = Json.format[MotifEpitope]

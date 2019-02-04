@@ -16,6 +16,8 @@
 
 package backend.utils
 
+import java.security.MessageDigest
+
 import scala.util.Random
 
 object CommonUtils {
@@ -25,5 +27,12 @@ object CommonUtils {
   def randomAlphabetString(alphabet: String)(length: Int): String = Stream.continually(Random.nextInt(alphabet.length)).map(alphabet).take(length).mkString
 
   def randomAlphaString(length: Int): String = randomAlphabetString("abcdefghijklmnopqrstuvwxyz")(length)
+
+  def md5(s: String): String = {
+    val m = MessageDigest.getInstance("MD5")
+    val b = s.getBytes("UTF-8")
+    m.update(b, 0, b.length)
+    new java.math.BigInteger(1, m.digest()).toString(16).reverse.padTo(32, "0").reverse.mkString
+  }
 
 }

@@ -17,6 +17,7 @@
 package backend.server.motifs
 
 
+import backend.utils.CommonUtils
 import play.api.libs.json.{Format, Json}
 import tech.tablesaw.api.Table
 
@@ -27,10 +28,15 @@ case class MotifsMetadataTreeLevel(name: String, values: Seq[MotifsMetadataTreeL
 object MotifsMetadataTreeLevel {
   implicit val motifsMetadataTreeLevelFormat: Format[MotifsMetadataTreeLevel] = Json.format[MotifsMetadataTreeLevel]
 
-  def createTreeLevelFromTable(table: Table, name: String, next: Seq[String]): MotifsMetadataTreeLevel = {
+  def createTreeLevelFromTable(table: Table, name: String, next: Seq[String], chain: String): MotifsMetadataTreeLevel = {
     val values = table.stringColumn(name).asSet().asScala.toSeq.filter(_.nonEmpty).map { value =>
       val st = table.where(table.stringColumn(name).isEqualTo(value))
-      MotifsMetadataTreeLevelValue(value, None, next.headOption.map(n => MotifsMetadataTreeLevel.createTreeLevelFromTable(st, n, next.tail)))
+      val nextChain = s"$chain$value"
+      MotifsMetadataTreeLevelValue(
+        value,
+        if (next.headOption.isEmpty) Some(CommonUtils.md5(nextChain)) else None,
+        next.headOption.map(n => MotifsMetadataTreeLevel.createTreeLevelFromTable(st, n, next.tail, nextChain))
+      )
     }
     MotifsMetadataTreeLevel(name, values)
   }
