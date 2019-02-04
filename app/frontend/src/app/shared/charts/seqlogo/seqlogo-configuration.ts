@@ -1,5 +1,5 @@
 /*
- *     Copyright 2017-2018 Bagaev Dmitry
+ *     Copyright 2017-2019 Bagaev Dmitry
  *
  *     Licensed under the Apache License, Version 2.0 (the "License");
  *     you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ export interface ISeqLogoChartConfiguration {
   axis?: {
     x?: ISeqLogoAxisConfiguration,
     y?: ISeqLogoAxisConfiguration
-  }
+  };
 }
 
 export function createDefaultSeqLogoConfiguration(): ISeqLogoChartConfiguration {

@@ -1,0 +1,26 @@
+<!--
+  ~     Copyright 2017-2019 Bagaev Dmitry
+  ~
+  ~     Licensed under the Apache License, Version 2.0 (the "License");
+  ~     you may not use this file except in compliance with the License.
+  ~     You may obtain a copy of the License at
+  ~
+  ~         http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~     Unless required by applicable law or agreed to in writing, software
+  ~     distributed under the License is distributed on an "AS IS" BASIS,
+  ~     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~     See the License for the specific language governing permissions and
+  ~     limitations under the License.
+  -->
+
+<ng-container *ngIf="epitopes && epitopes.length !== 0; else empty">
+    <ng-container *ngFor="let epitope of epitopes; trackBy:trackEpitopeBy">
+        <motif-epitope-entry [epitope]="epitope" [isNormalized]="options.isNormalized" (onDiscard)="onEpitopeDiscard($event)"></motif-epitope-entry>
+    </ng-container>
+</ng-container>
+<ng-template #empty>
+    <h2 class="ui center aligned icon header" style="margin-top: 10px"><i class="search icon"></i> Nothing selected
+        <div class="sub header">Browse motifs using the tree on the left side of the page</div>
+    </h2>
+</ng-template>

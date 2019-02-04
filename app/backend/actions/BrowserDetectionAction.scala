@@ -1,8 +1,23 @@
+/*
+ *     Copyright 2017-2019 Bagaev Dmitry
+ *
+ *     Licensed under the Apache License, Version 2.0 (the "License");
+ *     you may not use this file except in compliance with the License.
+ *     You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *     Unless required by applicable law or agreed to in writing, software
+ *     distributed under the License is distributed on an "AS IS" BASIS,
+ *     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *     See the License for the specific language governing permissions and
+ *     limitations under the License.
+ */
+
 package backend.actions
 
-import javax.inject.Inject
-
 import eu.bitwalker.useragentutils.UserAgent
+import javax.inject.Inject
 import play.api.libs.typedmap.TypedKey
 import play.api.mvc._
 import play.mvc.Http
@@ -10,11 +25,11 @@ import play.mvc.Http
 import scala.concurrent.{ExecutionContext, Future}
 
 class BrowserDetectionAction @Inject()(parser: BodyParsers.Default)(implicit ec: ExecutionContext) extends ActionBuilderImpl(parser) {
-    override def invokeBlock[A](request: Request[A], block: (Request[A]) => Future[Result]): Future[Result] = {
-        block(request.addAttr(BrowserDetectionAction.BROWSER_TYPED_KEY, UserAgent.parseUserAgentString(request.headers.get(Http.HeaderNames.USER_AGENT).getOrElse(""))))
-    }
+  override def invokeBlock[A](request: Request[A], block: (Request[A]) => Future[Result]): Future[Result] = {
+    block(request.addAttr(BrowserDetectionAction.BROWSER_TYPED_KEY, UserAgent.parseUserAgentString(request.headers.get(Http.HeaderNames.USER_AGENT).getOrElse(""))))
+  }
 }
 
 object BrowserDetectionAction {
-    final val BROWSER_TYPED_KEY = TypedKey[UserAgent]("Browser")
+  final val BROWSER_TYPED_KEY = TypedKey[UserAgent]("Browser")
 }

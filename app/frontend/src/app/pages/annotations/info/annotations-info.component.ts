@@ -1,5 +1,5 @@
 /*
- *     Copyright 2017 Bagaev Dmitry
+ *     Copyright 2017-2019 Bagaev Dmitry
  *
  *     Licensed under the Apache License, Version 2.0 (the "License");
  *     you may not use this file except in compliance with the License.
@@ -12,7 +12,6 @@
  *     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *     See the License for the specific language governing permissions and
  *     limitations under the License.
- *
  */
 
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
@@ -20,36 +19,36 @@ import { Subscription } from 'rxjs';
 import { AnnotationsService, AnnotationsServiceEvents } from '../annotations.service';
 
 @Component({
-    selector:        'annotations-info',
-    templateUrl:     './annotations-info.component.html',
-    changeDetection: ChangeDetectionStrategy.OnPush
+  selector:        'annotations-info',
+  templateUrl:     './annotations-info.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AnnotationsInfoComponent implements OnInit, OnDestroy {
-    private _annotationsServiceEventsSubscription: Subscription;
+  private _annotationsServiceEventsSubscription: Subscription;
 
-    constructor(private annotationsService: AnnotationsService, private changeDetector: ChangeDetectorRef) {}
+  constructor(private annotationsService: AnnotationsService, private changeDetector: ChangeDetectorRef) {}
 
-    public ngOnInit(): void {
-        this._annotationsServiceEventsSubscription = this.annotationsService.getEvents().subscribe((event) => {
-            switch (event) {
-                case AnnotationsServiceEvents.INITIALIZED:
-                    this.changeDetector.detectChanges();
-                    break;
-                default:
-            }
-        });
-    }
+  public ngOnInit(): void {
+    this._annotationsServiceEventsSubscription = this.annotationsService.getEvents().subscribe((event) => {
+      switch (event) {
+        case AnnotationsServiceEvents.INITIALIZED:
+          this.changeDetector.detectChanges();
+          break;
+        default:
+      }
+    });
+  }
 
-    public checkFeaturesAvailability(): boolean {
-        const permissions = this.annotationsService.getUserPermissions();
-        return permissions.isUploadAllowed && permissions.isDeleteAllowed && permissions.isChangePasswordAllowed;
-    }
+  public checkFeaturesAvailability(): boolean {
+    const permissions = this.annotationsService.getUserPermissions();
+    return permissions.isUploadAllowed && permissions.isDeleteAllowed && permissions.isChangePasswordAllowed;
+  }
 
-    public isInitialized(): boolean {
-        return this.annotationsService.isInitialized();
-    }
+  public isInitialized(): boolean {
+    return this.annotationsService.isInitialized();
+  }
 
-    public ngOnDestroy(): void {
-        this._annotationsServiceEventsSubscription.unsubscribe();
-    }
+  public ngOnDestroy(): void {
+    this._annotationsServiceEventsSubscription.unsubscribe();
+  }
 }

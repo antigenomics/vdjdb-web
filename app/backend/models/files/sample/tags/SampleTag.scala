@@ -1,5 +1,5 @@
 /*
- *     Copyright 2017 Bagaev Dmitry
+ *     Copyright 2017-2019 Bagaev Dmitry
  *
  *     Licensed under the Apache License, Version 2.0 (the "License");
  *     you may not use this file except in compliance with the License.
@@ -12,7 +12,6 @@
  *     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *     See the License for the specific language governing permissions and
  *     limitations under the License.
- *
  */
 
 package backend.models.files.sample.tags
@@ -22,11 +21,11 @@ import backend.models.authorization.user.{User, UserProvider}
 import scala.concurrent.{ExecutionContext, Future}
 
 case class SampleTag(id: Long, name: String, color: String, userID: Long) {
-    def getUser(implicit up: UserProvider, ec: ExecutionContext): Future[User] = {
-        up.get(userID).map(_.get)
-    }
+  def getUser(implicit up: UserProvider, ec: ExecutionContext): Future[User] = {
+    up.get(userID).map(_.get)
+  }
 
-    def getDetails: SampleTagDetails = {
-        SampleTagDetails(name, color, id)
-    }
+  def getDetails: SampleTagDetails = {
+    SampleTagDetails(name, color, id)
+  }
 }

@@ -1,5 +1,5 @@
 /*
- *     Copyright 2017 Bagaev Dmitry
+ *     Copyright 2017-2019 Bagaev Dmitry
  *
  *     Licensed under the Apache License, Version 2.0 (the "License");
  *     you may not use this file except in compliance with the License.
@@ -12,7 +12,6 @@
  *     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *     See the License for the specific language governing permissions and
  *     limitations under the License.
- *
  */
 
 import { NgZone } from '@angular/core';
@@ -32,67 +31,67 @@ export type ChartInputGroupedStreamType = Observable<IChartEvent<IChartGroupedDa
 
 // tslint:disable-next-line:interface-name
 export interface Chart<T, C> {
-    configure(configuration: C): void;
+  configure(configuration: C): void;
 
-    create(data: T[]): void;
+  create(data: T[]): void;
 
-    update(data: T[]): void;
+  update(data: T[]): void;
 
-    updateValues(data: T[]): void;
+  updateValues(data: T[]): void;
 
-    resize(data: T[]): void;
+  resize(data: T[]): void;
 
-    destroy(): void;
+  destroy(): void;
 }
 
 export class Chart<T, C> {
-    private static readonly createChartDelay: number = 100; // We need this to handle container view size
-    private created: boolean = false;
-    private dataStreamSubscription: Subscription;
-    private debounceResizeListener = Utils.Time.debounce((data) => {
-        this.container.recalculateContainerViewSize();
-        this.resize(data);
-    });
+  private static readonly createChartDelay: number = 100; // We need this to handle container view size
+  private created: boolean = false;
+  private dataStreamSubscription: Subscription;
+  private debounceResizeListener = Utils.Time.debounce((data) => {
+    this.container.recalculateContainerViewSize();
+    this.resize(data);
+  });
 
-    protected tooltip: ChartTooltip;
+  protected tooltip: ChartTooltip;
 
-    constructor(protected configuration: C, protected container: ChartContainer,
-                protected dataStream: Observable<IChartEvent<T>>, protected ngZone: NgZone) {
-        this.configure(configuration);
-        this.dataStreamSubscription = this.dataStream.subscribe((event) => {
-            this.ngZone.runOutsideAngular(() => {
-                if (!this.created) {
-                    window.setTimeout(() => {
-                        this.container.recalculateContainerViewSize();
-                        this.create(event.data);
-                        this.created = true;
-                    }, Chart.createChartDelay);
-                } else {
-                    switch (event.type) {
-                        case ChartEventType.UPDATE_DATA:
-                            this.update(event.data);
-                            break;
-                        case ChartEventType.UPDATE_VALUES:
-                            this.updateValues(event.data);
-                            break;
-                        case ChartEventType.RESIZE:
-                            this.debounceResizeListener(event.data);
-                            break;
-                        default:
-                            break;
-                    }
-                }
-            });
-
-        });
-        this.tooltip = new ChartTooltip();
-    }
-
-    public destroy(): void {
-        this.container.destroy();
-        this.tooltip.destroy();
-        if (this.dataStreamSubscription) {
-            this.dataStreamSubscription.unsubscribe();
+  constructor(protected configuration: C, protected container: ChartContainer,
+              protected dataStream: Observable<IChartEvent<T>>, protected ngZone: NgZone) {
+    this.configure(configuration);
+    this.dataStreamSubscription = this.dataStream.subscribe((event) => {
+      this.ngZone.runOutsideAngular(() => {
+        if (!this.created) {
+          window.setTimeout(() => {
+            this.container.recalculateContainerViewSize();
+            this.create(event.data);
+            this.created = true;
+          }, Chart.createChartDelay);
+        } else {
+          switch (event.type) {
+            case ChartEventType.UPDATE_DATA:
+              this.update(event.data);
+              break;
+            case ChartEventType.UPDATE_VALUES:
+              this.updateValues(event.data);
+              break;
+            case ChartEventType.RESIZE:
+              this.debounceResizeListener(event.data);
+              break;
+            default:
+              break;
+          }
         }
+      });
+
+    });
+    this.tooltip = new ChartTooltip();
+  }
+
+  public destroy(): void {
+    this.container.destroy();
+    this.tooltip.destroy();
+    if (this.dataStreamSubscription) {
+      this.dataStreamSubscription.unsubscribe();
     }
+  }
 }

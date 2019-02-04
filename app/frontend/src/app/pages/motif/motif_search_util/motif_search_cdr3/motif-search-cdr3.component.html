@@ -1,0 +1,41 @@
+<!--
+  ~     Copyright 2017-2019 Bagaev Dmitry
+  ~
+  ~     Licensed under the Apache License, Version 2.0 (the "License");
+  ~     you may not use this file except in compliance with the License.
+  ~     You may obtain a copy of the License at
+  ~
+  ~         http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~     Unless required by applicable law or agreed to in writing, software
+  ~     distributed under the License is distributed on an "AS IS" BASIS,
+  ~     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~     See the License for the specific language governing permissions and
+  ~     limitations under the License.
+  -->
+
+<div class="ui form">
+    <div class="ui field">
+        <div class="ui fluid action input">
+            <input type="text" [attr.placeholder]="placeholder" [(ngModel)]="input">
+            <div class="ui button" (click)="search()">Search</div>
+        </div>
+    </div>
+    <div class="ui field">
+        <div class="ui selection dropdown item" dropdown [content]="content">
+            Gene: {{ gene }}
+            <i class="dropdown icon"></i>
+            <div class="menu fade element slow padded" tabindex="-1" #content>
+                <a (click)="setGene('TRA')" class="item">TRA</a>
+                <a (click)="setGene('TRB')" class="item">TRB</a>
+                <a (click)="setGene('Both')" class="item">Both</a>
+            </div>
+        </div>
+    </div>
+    <div class="ui field">
+        <div class="ui checkbox" (click)="toggleSubstring()">
+            <input type="checkbox" [ngModel]="substring">
+            <label>Search by substring</label>
+        </div>
+    </div>
+</div>

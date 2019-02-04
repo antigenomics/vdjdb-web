@@ -1,5 +1,5 @@
 /*
- *     Copyright 2017 Bagaev Dmitry
+ *     Copyright 2017-2019 Bagaev Dmitry
  *
  *     Licensed under the Apache License, Version 2.0 (the "License");
  *     you may not use this file except in compliance with the License.
@@ -20,9 +20,9 @@ import java.sql.Timestamp
 import java.time.Duration
 
 object TimeUtils {
-    def getExpiredAt(keep: Long): Timestamp = new Timestamp(new java.util.Date().getTime + keep * 1000)
+  def getExpiredAt(keep: Long): Timestamp = new Timestamp(new java.util.Date().getTime + keep * 1000)
 
-    def getExpiredAt(keep: Duration): Timestamp = getExpiredAt(keep.getSeconds)
+  def getExpiredAt(keep: Duration): Timestamp = getExpiredAt(keep.getSeconds)
 
-    def getCurrentTimestamp: Timestamp = new Timestamp(new java.util.Date().getTime)
+  def getCurrentTimestamp: Timestamp = new Timestamp(new java.util.Date().getTime)
 }

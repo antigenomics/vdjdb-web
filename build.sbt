@@ -3,8 +3,8 @@ import play.sbt.PlayImport.PlayKeys.playRunHooks
 
 name := """VDJdb-web"""
 
-version := "2.3.5"
-scalaVersion := "2.12.7"
+version := "2.4.1"
+scalaVersion := "2.12.8"
 
 val now = System.currentTimeMillis()
 val dtf = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm")
@@ -26,7 +26,7 @@ pipelineStages := Seq(digest)
 libraryDependencies ++= Seq(
     "com.github.antigenomics" % "vdjmatch" % "1.3.1",
     "ch.qos.logback" % "logback-classic" % "1.2.3",
-    "com.typesafe.scala-logging" %% "scala-logging" % "3.9.0",
+    "com.typesafe.scala-logging" %% "scala-logging" % "3.9.2",
     "com.typesafe.play" %% "play-slick" % "3.0.3",
     "com.typesafe.play" %% "play-slick-evolutions" % "3.0.3",
     "com.h2database" % "h2" % "1.4.197",
@@ -35,6 +35,7 @@ libraryDependencies ++= Seq(
     "com.typesafe.play" %% "play-mailer" % "6.0.1",
     "com.typesafe.play" %% "play-mailer-guice" % "6.0.1",
     "eu.bitwalker" % "UserAgentUtils" % "1.21",
+    "tech.tablesaw" % "tablesaw-core" % "0.30.2",
     "com.typesafe.akka" %% "akka-testkit" % "2.5.11" % Test,
     guice,
     ws,
@@ -53,6 +54,10 @@ scalacOptions ++= Seq(
     "-feature",
     "–optimise",
     "-Xfatal-warnings"
+)
+
+scalacOptions in Universal ++= Seq(
+    "-Xdisable-assertions"
 )
 
 // Starts: Prevent documentation of API for production bundles

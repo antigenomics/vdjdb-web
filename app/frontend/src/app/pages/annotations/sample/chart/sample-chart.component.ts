@@ -1,5 +1,5 @@
 /*
- *     Copyright 2017 Bagaev Dmitry
+ *     Copyright 2017-2019 Bagaev Dmitry
  *
  *     Licensed under the Apache License, Version 2.0 (the "License");
  *     you may not use this file except in compliance with the License.
@@ -12,7 +12,6 @@
  *     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *     See the License for the specific language governing permissions and
  *     limitations under the License.
- *
  */
 
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component } from '@angular/core';
@@ -21,12 +20,12 @@ import { SampleRouteResolverComponent } from 'pages/annotations/sample/common/sa
 import { SampleService } from 'pages/annotations/sample/sample.service';
 
 @Component({
-    selector:        'sample-chart',
-    templateUrl:     './sample-chart.component.html',
-    changeDetection: ChangeDetectionStrategy.OnPush
+  selector:        'sample-chart',
+  templateUrl:     './sample-chart.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SampleChartComponent extends SampleRouteResolverComponent {
-    constructor(sampleService: SampleService, activatedRoute: ActivatedRoute, changeDetector: ChangeDetectorRef) {
-        super(activatedRoute.parent.data, activatedRoute.parent.snapshot, changeDetector, sampleService);
-    }
+  constructor(sampleService: SampleService, activatedRoute: ActivatedRoute, changeDetector: ChangeDetectorRef) {
+    super(activatedRoute.parent.data, activatedRoute.parent.snapshot, changeDetector, sampleService);
+  }
 }

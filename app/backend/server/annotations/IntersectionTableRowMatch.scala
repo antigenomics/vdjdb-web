@@ -1,5 +1,5 @@
 /*
- *     Copyright 2017 Bagaev Dmitry
+ *     Copyright 2017-2019 Bagaev Dmitry
  *
  *     Licensed under the Apache License, Version 2.0 (the "License");
  *     you may not use this file except in compliance with the License.
@@ -12,7 +12,6 @@
  *     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *     See the License for the specific language governing permissions and
  *     limitations under the License.
- *
  */
 
 package backend.server.annotations
@@ -24,13 +23,13 @@ import play.api.libs.json.{Json, Writes}
 case class IntersectionTableRowMatch(row: SearchTableRow, alignment: IntersectionTableRowAlignment, matchScore: Float, weight: Float)
 
 object IntersectionTableRowMatch {
-    implicit val intersectionTableRowMatchWrites: Writes[IntersectionTableRowMatch] = Json.writes[IntersectionTableRowMatch]
+  implicit val intersectionTableRowMatchWrites: Writes[IntersectionTableRowMatch] = Json.writes[IntersectionTableRowMatch]
 
-    def createFromSearchResult(result: ClonotypeSearchResult): IntersectionTableRowMatch = {
-        val alignment = result.getHit.computeAlignment()
+  def createFromSearchResult(result: ClonotypeSearchResult): IntersectionTableRowMatch = {
+    val alignment = result.getHit.computeAlignment()
 
-        IntersectionTableRowMatch(
-            SearchTableRow.createFromRow(result.getRow),
-            IntersectionTableRowAlignment.createFromAlignmentHelper(alignment.getAlignmentHelper), result.getScore, result.getWeight)
-    }
+    IntersectionTableRowMatch(
+      SearchTableRow.createFromRow(result.getRow),
+      IntersectionTableRowAlignment.createFromAlignmentHelper(alignment.getAlignmentHelper), result.getScore, result.getWeight)
+  }
 }

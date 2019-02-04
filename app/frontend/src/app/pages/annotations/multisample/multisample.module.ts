@@ -1,5 +1,5 @@
 /*
- *     Copyright 2017 Bagaev Dmitry
+ *     Copyright 2017-2019 Bagaev Dmitry
  *
  *     Licensed under the Apache License, Version 2.0 (the "License");
  *     you may not use this file except in compliance with the License.
@@ -12,7 +12,6 @@
  *     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *     See the License for the specific language governing permissions and
  *     limitations under the License.
- *
  */
 
 import { CommonModule } from '@angular/common';
@@ -29,8 +28,8 @@ import { ChartsModule } from 'shared/charts/charts.module';
 import { ModalsModule } from 'shared/modals/modals.module';
 
 @NgModule({
-    imports:      [ CommonModule, FormsModule, ModalsModule, AnnotationsFiltersModule, MultisampleRouting, SampleChartModule, ChartsModule ],
-    declarations: [ MultisampleInfoComponent, MultisampleSummaryComponent, MultisampleSummaryChartComponent ],
-    providers:    [ MultisampleSummaryService ]
+  imports:      [ CommonModule, FormsModule, ModalsModule, AnnotationsFiltersModule, MultisampleRouting, SampleChartModule, ChartsModule ],
+  declarations: [ MultisampleInfoComponent, MultisampleSummaryComponent, MultisampleSummaryChartComponent ],
+  providers:    [ MultisampleSummaryService ]
 })
 export class MultisamplePageModule {}

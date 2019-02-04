@@ -1,5 +1,5 @@
 /*
- *     Copyright 2017 Bagaev Dmitry
+ *     Copyright 2017-2019 Bagaev Dmitry
  *
  *     Licensed under the Apache License, Version 2.0 (the "License");
  *     you may not use this file except in compliance with the License.
@@ -12,54 +12,53 @@
  *     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *     See the License for the specific language governing permissions and
  *     limitations under the License.
- *
  */
 
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
 
 export interface IExportFormat {
-    readonly name: string;
-    readonly title: string;
-    readonly icon?: string;
+  readonly name: string;
+  readonly title: string;
+  readonly icon?: string;
 }
 
 export interface IExportOptionFlag {
-    readonly name: string;
-    readonly title: string;
-    value: boolean;
+  readonly name: string;
+  readonly title: string;
+  value: boolean;
 }
 
 @Component({
-    selector:        'table-export',
-    templateUrl:     './table-export.component.html',
-    changeDetection: ChangeDetectionStrategy.OnPush
+  selector:        'table-export',
+  templateUrl:     './table-export.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TableExportComponent {
-    @Input('exporting')
-    public exporting: boolean;
+  @Input('exporting')
+  public exporting: boolean;
 
-    @Input('formats')
-    public formats: IExportFormat[];
+  @Input('formats')
+  public formats: IExportFormat[];
 
-    @Input('options')
-    public options: IExportOptionFlag[];
+  @Input('options')
+  public options: IExportOptionFlag[];
 
-    @Output()
-    public exportEvent = new EventEmitter<{ format: IExportFormat, options: IExportOptionFlag[] }>();
+  @Output()
+  public exportEvent = new EventEmitter<{ format: IExportFormat, options: IExportOptionFlag[] }>();
 
-    public exportTable(format: IExportFormat): void {
-        this.exportEvent.emit({ format, options: this.options });
-    }
+  public exportTable(format: IExportFormat): void {
+    this.exportEvent.emit({ format, options: this.options });
+  }
 
-    public trackFormatFn(_index: number, format: IExportFormat) {
-        return format.name;
-    }
+  public trackFormatFn(_index: number, format: IExportFormat) {
+    return format.name;
+  }
 
-    public trackOptionFn(_index: number, option: IExportOptionFlag) {
-        return option.name;
-    }
+  public trackOptionFn(_index: number, option: IExportOptionFlag) {
+    return option.name;
+  }
 
-    public isOptionsAvailable(): boolean {
-        return this.options !== undefined && this.options.length !== 0;
-    }
+  public isOptionsAvailable(): boolean {
+    return this.options !== undefined && this.options.length !== 0;
+  }
 }

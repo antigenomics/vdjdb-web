@@ -1,5 +1,5 @@
 /*
- *     Copyright 2017 Bagaev Dmitry
+ *     Copyright 2017-2019 Bagaev Dmitry
  *
  *     Licensed under the Apache License, Version 2.0 (the "License");
  *     you may not use this file except in compliance with the License.
@@ -12,7 +12,6 @@
  *     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *     See the License for the specific language governing permissions and
  *     limitations under the License.
- *
  */
 
 package backend.server.annotations.api.matches
@@ -22,5 +21,5 @@ import play.api.libs.json.{Json, Reads}
 case class IntersectionMatchesRequest(sampleName: String, rowIndex: Int)
 
 object IntersectionMatchesRequest {
-    implicit val intersectionMatchesRequestReads: Reads[IntersectionMatchesRequest] = Json.reads[IntersectionMatchesRequest]
+  implicit val intersectionMatchesRequestReads: Reads[IntersectionMatchesRequest] = Json.reads[IntersectionMatchesRequest]
 }

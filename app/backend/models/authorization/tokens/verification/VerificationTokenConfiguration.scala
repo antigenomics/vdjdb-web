@@ -1,5 +1,5 @@
 /*
- *     Copyright 2017 Bagaev Dmitry
+ *     Copyright 2017-2019 Bagaev Dmitry
  *
  *     Licensed under the Apache License, Version 2.0 (the "License");
  *     you may not use this file except in compliance with the License.
@@ -24,14 +24,14 @@ import play.api.ConfigLoader
 case class VerificationTokenConfiguration(required: Boolean, method: String, server: String, keep: Duration, interval: Duration)
 
 object VerificationTokenConfiguration {
-    implicit val verificationTokenConfigurationLoader: ConfigLoader[VerificationTokenConfiguration] = (rootConfig: Config, path: String) => {
-        val config = rootConfig.getConfig(path)
-        VerificationTokenConfiguration(
-            required = config.getBoolean("required"),
-            method = config.getString("method"),
-            server = config.getString("server"),
-            keep = config.getDuration("keep"),
-            interval = config.getDuration("interval")
-        )
-    }
+  implicit val verificationTokenConfigurationLoader: ConfigLoader[VerificationTokenConfiguration] = (rootConfig: Config, path: String) => {
+    val config = rootConfig.getConfig(path)
+    VerificationTokenConfiguration(
+      required = config.getBoolean("required"),
+      method = config.getString("method"),
+      server = config.getString("server"),
+      keep = config.getDuration("keep"),
+      interval = config.getDuration("interval")
+    )
+  }
 }

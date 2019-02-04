@@ -1,5 +1,5 @@
 /*
- *     Copyright 2017 Bagaev Dmitry
+ *     Copyright 2017-2019 Bagaev Dmitry
  *
  *     Licensed under the Apache License, Version 2.0 (the "License");
  *     you may not use this file except in compliance with the License.
@@ -12,7 +12,6 @@
  *     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *     See the License for the specific language governing permissions and
  *     limitations under the License.
- *
  */
 
 import { ScaleOrdinal } from 'd3-scale';
@@ -22,16 +21,16 @@ import { IChartDataEntry } from 'shared/charts/data/chart-data-entry';
 
 export namespace ChartUtils {
 
-    export namespace Color {
+  export namespace Color {
 
-        export function generate(data: IChartDataEntry[]): ScaleOrdinal<string, string> {
-            const colorHash = new ColorHash({ lightness: [ 0.5, 0.6, 0.7 ], saturation: [ 0.6, 0.5, 0.4 ] }); // tslint:disable-line:no-magic-numbers
-            const categories: string[] = data.map((d) => d.color ? d.color : colorHash.hex(d.name));
-            const names: string[] = data.map((d) => d.name);
+    export function generate(data: IChartDataEntry[]): ScaleOrdinal<string, string> {
+      const colorHash = new ColorHash({ lightness: [ 0.5, 0.6, 0.7 ], saturation: [ 0.6, 0.5, 0.4 ] }); // tslint:disable-line:no-magic-numbers
+      const categories: string[] = data.map((d) => d.color ? d.color : colorHash.hex(d.name));
+      const names: string[] = data.map((d) => d.name);
 
-            return d3.scaleOrdinal(categories).domain(names);
-        }
-
+      return d3.scaleOrdinal(categories).domain(names);
     }
+
+  }
 
 }

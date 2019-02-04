@@ -28,7 +28,12 @@ GET         /api/database/connect                       backend.controllers.Data
 
 # Motifs API
 GET         /api/motifs/metadata                        backend.controllers.MotifsAPI.getMetadata
-GET         /api/motifs/connect                         backend.controllers.MotifsAPI.connect
++ nocsrf
+POST        /api/motifs/filter                          backend.controllers.MotifsAPI.filter
++ nocsrf
+POST        /api/motifs/cdr3                            backend.controllers.MotifsAPI.cdr3
++ nocsrf
+POST        /api/motifs/members                         backend.controllers.MotifsAPI.members
 
 # Authorization API
 GET         /authorization/login                        backend.controllers.Authorization.login

@@ -1,5 +1,5 @@
 /*
- *     Copyright 2017 Bagaev Dmitry
+ *     Copyright 2017-2019 Bagaev Dmitry
  *
  *     Licensed under the Apache License, Version 2.0 (the "License");
  *     you may not use this file except in compliance with the License.
@@ -23,14 +23,14 @@ import play.api.data.Forms.{mapping, nonEmptyText}
 case class ChangeForm(oldPassword: String, newPassword: String, newPasswordRepeat: String)
 
 object ChangeForm {
-    implicit val changeFormMapping: Form[ChangeForm] = Form(mapping(
-        "oldPassword" -> nonEmptyText,
-        "newPassword" -> nonEmptyText(minLength = PASSWORD_MIN_LENGTH, maxLength = PASSWORD_MAX_LENGTH),
-        "newPasswordRepeat" -> nonEmptyText(minLength = PASSWORD_MIN_LENGTH, maxLength = PASSWORD_MAX_LENGTH)
-    )(ChangeForm.apply)(ChangeForm.unapply) verifying("authorization.forms.signup.failed.workaround.3", { changeForm =>
-        changeForm.newPassword == changeForm.newPasswordRepeat
-    }))
+  implicit val changeFormMapping: Form[ChangeForm] = Form(mapping(
+    "oldPassword" -> nonEmptyText,
+    "newPassword" -> nonEmptyText(minLength = PASSWORD_MIN_LENGTH, maxLength = PASSWORD_MAX_LENGTH),
+    "newPasswordRepeat" -> nonEmptyText(minLength = PASSWORD_MIN_LENGTH, maxLength = PASSWORD_MAX_LENGTH)
+  )(ChangeForm.apply)(ChangeForm.unapply) verifying("authorization.forms.signup.failed.workaround.3", { changeForm =>
+    changeForm.newPassword == changeForm.newPasswordRepeat
+  }))
 
-    implicit val invalidOldPasswordChangeFormMapping: Form[ChangeForm] = changeFormMapping
-        .withGlobalError("account.change.password.error.invalidOldPassword")
+  implicit val invalidOldPasswordChangeFormMapping: Form[ChangeForm] = changeFormMapping
+    .withGlobalError("account.change.password.error.invalidOldPassword")
 }

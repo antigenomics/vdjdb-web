@@ -1,5 +1,5 @@
 /*
- *     Copyright 2017 Bagaev Dmitry
+ *     Copyright 2017-2019 Bagaev Dmitry
  *
  *     Licensed under the Apache License, Version 2.0 (the "License");
  *     you may not use this file except in compliance with the License.
@@ -12,7 +12,6 @@
  *     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *     See the License for the specific language governing permissions and
  *     limitations under the License.
- *
  */
 
 import { Injectable } from '@angular/core';
@@ -28,33 +27,33 @@ import { AnnotationsService, AnnotationsServiceEvents } from '../annotations.ser
 
 @Injectable()
 export class SampleItemResolver implements Resolve<SampleItem> {
-    constructor(private annotationService: AnnotationsService, private router: Router,
-                private sampleService: SampleService, private logger: LoggerService) { }
+  constructor(private annotationService: AnnotationsService, private router: Router,
+              private sampleService: SampleService, private logger: LoggerService) { }
 
-    public resolve(route: ActivatedRouteSnapshot, _state: RouterStateSnapshot): Observable<SampleItem> | Promise<SampleItem> | SampleItem {
-        return new Promise<SampleItem>((resolve) => {
-            if (this.annotationService.isInitialized()) {
-                resolve(this.getSample(route));
-            } else {
-                this.annotationService.getEvents().pipe(filter((event) => event === AnnotationsServiceEvents.INITIALIZED), take(1)).subscribe(() => {
-                    resolve(this.getSample(route));
-                });
-            }
+  public resolve(route: ActivatedRouteSnapshot, _state: RouterStateSnapshot): Observable<SampleItem> | Promise<SampleItem> | SampleItem {
+    return new Promise<SampleItem>((resolve) => {
+      if (this.annotationService.isInitialized()) {
+        resolve(this.getSample(route));
+      } else {
+        this.annotationService.getEvents().pipe(filter((event) => event === AnnotationsServiceEvents.INITIALIZED), take(1)).subscribe(() => {
+          resolve(this.getSample(route));
         });
-    }
+      }
+    });
+  }
 
-    private getSample(route: ActivatedRouteSnapshot): SampleItem | undefined {
-        const sample = this.annotationService.getSample(route.paramMap.get('sample'));
-        if (sample === undefined) {
-            this.router.navigate(['/']);
-            return undefined;
-        } else {
-            if (!sample.hasData()) {
-                sample.setData({ table: new IntersectionTable(), filters: new AnnotationsFilters() });
-            }
-            this.sampleService.setCurrentSample(sample);
-            this.logger.debug('SampleItemResolver: resolved', sample);
-            return sample;
-        }
+  private getSample(route: ActivatedRouteSnapshot): SampleItem | undefined {
+    const sample = this.annotationService.getSample(route.paramMap.get('sample'));
+    if (sample === undefined) {
+      this.router.navigate([ '/' ]);
+      return undefined;
+    } else {
+      if (!sample.hasData()) {
+        sample.setData({ table: new IntersectionTable(), filters: new AnnotationsFilters() });
+      }
+      this.sampleService.setCurrentSample(sample);
+      this.logger.debug('SampleItemResolver: resolved', sample);
+      return sample;
     }
+  }
 }

@@ -1,5 +1,5 @@
 /*
- *     Copyright 2017 Bagaev Dmitry
+ *     Copyright 2017-2019 Bagaev Dmitry
  *
  *     Licensed under the Apache License, Version 2.0 (the "License");
  *     you may not use this file except in compliance with the License.
@@ -12,21 +12,20 @@
  *     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *     See the License for the specific language governing permissions and
  *     limitations under the License.
- *
  */
 
 export class SummaryClonotypeCounter {
-    public readonly field: string;
-    public readonly unique: number;
-    public readonly databaseUnique: number;
-    public readonly frequency: number;
+  public readonly field: string;
+  public readonly unique: number;
+  public readonly databaseUnique: number;
+  public readonly frequency: number;
 
-    constructor(counter: any) {
-        /* tslint:disable:no-string-literal */
-        this.field = counter[ 'field' ];
-        this.unique = counter[ 'unique' ];
-        this.databaseUnique = counter[ 'databaseUnique' ];
-        this.frequency = counter[ 'frequency' ];
-        /* tslint:enable:no-string-literal */
-    }
+  constructor(counter: any) {
+    /* tslint:disable:no-string-literal */
+    this.field = counter[ 'field' ];
+    this.unique = counter[ 'unique' ];
+    this.databaseUnique = counter[ 'databaseUnique' ];
+    this.frequency = counter[ 'frequency' ];
+    /* tslint:enable:no-string-literal */
+  }
 }
