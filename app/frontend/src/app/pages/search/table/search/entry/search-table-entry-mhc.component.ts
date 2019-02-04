@@ -1,5 +1,5 @@
 /*
- *     Copyright 2017 Bagaev Dmitry
+ *     Copyright 2017-2019 Bagaev Dmitry
  *
  *     Licensed under the Apache License, Version 2.0 (the "License");
  *     you may not use this file except in compliance with the License.
@@ -12,7 +12,6 @@
  *     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *     See the License for the specific language governing permissions and
  *     limitations under the License.
- *
  */
 
 import { ChangeDetectionStrategy, Component, ComponentFactoryResolver, ViewContainerRef } from '@angular/core';
@@ -21,18 +20,18 @@ import { TableEntry } from 'shared/table/entry/table-entry';
 import { TableRow } from 'shared/table/row/table-row';
 
 @Component({
-    selector: 'td[search-table-entry-mhc]',
-    template: '<span [popup]="entry" header="Full MHC" position="top">{{ short }}</span>',
-    changeDetection: ChangeDetectionStrategy.OnPush
+  selector:        'td[search-table-entry-mhc]',
+  template:        '<span [popup]="entry" header="Full MHC" position="top">{{ short }}</span>',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SearchTableEntryMHCComponent extends TableEntry {
-    public short: string;
-    public entry: string;
+  public short: string;
+  public entry: string;
 
-    public create(entry: string, _column: TableColumn, _columns: TableColumn[], _row: TableRow,
-                  _hostViewContainer: ViewContainerRef, _resolver: ComponentFactoryResolver): void {
-        this.entry = entry;
-        this.short = entry.replace(/:.+$/, '');
-    }
+  public create(entry: string, _column: TableColumn, _columns: TableColumn[], _row: TableRow,
+                _hostViewContainer: ViewContainerRef, _resolver: ComponentFactoryResolver): void {
+    this.entry = entry;
+    this.short = entry.replace(/:.+$/, '');
+  }
 
 }

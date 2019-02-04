@@ -1,5 +1,5 @@
 /*
- *     Copyright 2017-2018 Bagaev Dmitry
+ *     Copyright 2017-2019 Bagaev Dmitry
  *
  *     Licensed under the Apache License, Version 2.0 (the "License");
  *     you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  *     limitations under the License.
  */
 
-import { Component, ElementRef, Input, NgZone, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, Input, NgZone, OnDestroy, ViewChild } from '@angular/core';
 import { ChartContainer } from 'shared/charts/container/chart-container';
 import { SeqLogoChart, SeqLogoChartInputStreamType } from 'shared/charts/seqlogo/seqlogo-chart';
 import { createDefaultSeqLogoConfiguration, ISeqLogoChartConfiguration } from 'shared/charts/seqlogo/seqlogo-configuration';
@@ -24,7 +24,7 @@ import { Configuration } from 'utils/configuration/configuration';
   selector: 'seqlogo-chart',
   template: '<div #container style="width: 100%; height: 100%"></div>'
 })
-export class SeqLogoChartComponent {
+export class SeqLogoChartComponent implements AfterViewInit, OnDestroy {
   private chart: SeqLogoChart;
 
   @Input('configuration')

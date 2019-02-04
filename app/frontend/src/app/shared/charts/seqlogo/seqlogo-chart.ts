@@ -1,5 +1,5 @@
 /*
- *     Copyright 2017-2018 Bagaev Dmitry
+ *     Copyright 2017-2019 Bagaev Dmitry
  *
  *     Licensed under the Apache License, Version 2.0 (the "License");
  *     you may not use this file except in compliance with the License.
@@ -14,9 +14,10 @@
  *     limitations under the License.
  */
 
-import { ScaleBand } from 'd3-scale';
-import * as d3 from 'external/d3';
 import { NgZone } from '@angular/core';
+import { ScaleBand } from 'd3-scale';
+import { event as D3CurrentEvent } from 'd3-selection';
+import * as d3 from 'external/d3';
 import { Observable, Subject } from 'rxjs';
 import { Chart } from 'shared/charts/chart';
 import { IChartEvent } from 'shared/charts/chart-events';
@@ -43,6 +44,7 @@ export class SeqLogoChart extends Chart<ISeqLogoChartDataEntry, ISeqLogoChartCon
   private static readonly defaultPadding: number = 0.3;
 
   // Paths and colors from https://github.com/alexpreynolds/react-seqlogo/blob/master/src/index.js
+  // tslint:disable:object-literal-key-quotes max-line-length
   private static readonly paths: { [ index: string ]: string } = {
     'A': 'M 11.21875 -16.1875 L 12.296875 0 L 15.734375 0 L 10.09375 -80.265625 L 6.375 -80.265625 L 0.578125 0 L 4.015625 0 L 5.109375 -16.1875 Z M 10.296875 -29.953125 L 6.046875 -29.953125 L 8.171875 -61.328125 Z M 10.296875 -29.953125',
     'C': 'M 16.171875 -50.734375 C 16.046875 -57.375 15.734375 -61.578125 15 -65.890625 C 13.671875 -73.6875 11.546875 -78 8.953125 -78 C 4.078125 -78 1.046875 -62.53125 1.046875 -37.6875 C 1.046875 -13.046875 4.046875 2.421875 8.859375 2.421875 C 13.15625 2.421875 16.015625 -8.625 16.234375 -26.21875 L 12.78125 -26.21875 C 12.5625 -16.421875 11.171875 -10.84375 8.953125 -10.84375 C 6.203125 -10.84375 4.59375 -20.734375 4.59375 -37.46875 C 4.59375 -54.421875 6.28125 -64.53125 9.078125 -64.53125 C 10.3125 -64.53125 11.328125 -62.640625 12 -58.953125 C 12.375 -56.84375 12.5625 -54.84375 12.78125 -50.734375 Z M 16.171875 -50.734375',
@@ -53,7 +55,7 @@ export class SeqLogoChart extends Chart<ISeqLogoChartDataEntry, ISeqLogoChartCon
     'E': 'M 4.109375 -23.015625 L 10.375 -23.015625 L 10.375 -32.171875 L 4.109375 -32.171875 L 4.109375 -44.265625 L 10.875 -44.265625 L 10.875 -53.4375 L 1.421875 -53.4375 L 1.421875 0 L 11.203125 0 L 11.203125 -9.15625 L 4.109375 -9.15625 Z M 4.109375 -23.015625',
     'F': 'M 4.296875 -23.125 L 10.421875 -23.125 L 10.421875 -32.328125 L 4.296875 -32.328125 L 4.296875 -44.484375 L 11.25 -44.484375 L 11.25 -53.6875 L 1.421875 -53.6875 L 1.421875 0 L 4.296875 0 Z M 4.296875 -23.125',
     'H': 'M 8.4375 -24.3125 L 8.4375 0 L 10.9375 0 L 10.9375 -53.53125 L 8.421875 -53.53125 L 8.421875 -33.484375 L 3.625 -33.484375 L 3.625 -53.53125 L 1.125 -53.53125 L 1.125 0 L 3.625 0 L 3.625 -24.3125 Z M 8.4375 -24.3125',
-    'I': 'M 8.375 -49.5625 L 12.015625 -49.5625 C 12.515625 -49.5625 12.75 -50.21875 12.75 -51.546875 C 12.75 -52.78125 12.515625 -53.453125 12.015625 -53.453125 L 3.671875 -53.453125 C 3.1875 -53.453125 2.953125 -52.78125 2.953125 -51.546875 C 2.953125 -50.21875 3.1875 -49.5625 3.671875 -49.5625 L 7.3125 -49.5625 L 7.3125 -3.890625 L 3.671875 -3.890625 C 3.1875 -3.890625 2.953125 -3.234375 2.953125 -2 C 2.953125 -0.671875 3.1875 0 3.671875 0 L 12.015625 0 C 12.484375 0 12.75 -0.671875 12.75 -2 C 12.75 -3.234375 12.515625 -3.890625 12.015625 -3.890625 L 8.375 -3.890625 Z M 8.375 -49.5625',
+    'I': 'M 6.375 -49.5625 L 10.015625 -49.5625 C 10.515625 -49.5625 10.75 -50.21875 10.75 -51.546875 C 10.75 -52.78125 10.515625 -53.453125 10.015625 -53.453125 L 1.671875 -53.453125 C 1.1875 -53.453125 0.953125 -52.78125 0.953125 -51.546875 C 0.953125 -50.21875 1.1875 -49.5625 1.671875 -49.5625 L 5.3125 -49.5625 L 5.3125 -3.890625 L 1.671875 -3.890625 C 1.1875 -3.890625 0.953125 -3.234375 0.953125 -2 C 0.953125 -0.671875 1.1875 0 1.671875 0 L 10.015625 0 C 10.484375 0 10.75 -0.671875 10.75 -2 C 10.75 -3.234375 10.515625 -3.890625 10.015625 -3.890625 L 6.375 -3.890625 Z M 6.375 -49.5625',
     'K': 'M 3.40625 -17.90625 L 4.5625 -23.625 L 8.203125 0 L 10.921875 0 L 6.015625 -30.453125 L 10.453125 -53.484375 L 7.75 -53.484375 L 3.40625 -30.015625 L 3.40625 -53.484375 L 1.125 -53.484375 L 1.125 0 L 3.40625 0 Z M 3.40625 -17.90625',
     'L': 'M 4.515625 -53.4375 L 1.5625 -53.4375 L 1.5625 0 L 11.359375 0 L 11.359375 -9.15625 L 4.515625 -9.15625 Z M 4.515625 -53.4375',
     'M': 'M 3 -41.90625 L 4.8125 0 L 6.890625 0 L 8.6875 -41.90625 L 8.6875 0 L 10.765625 0 L 10.765625 -53.78125 L 7.625 -53.78125 L 5.859375 -10.984375 L 4.03125 -53.78125 L 0.921875 -53.78125 L 0.921875 0 L 3 0 Z M 3 -41.90625',
@@ -73,27 +75,29 @@ export class SeqLogoChart extends Chart<ISeqLogoChartDataEntry, ISeqLogoChartCon
   };
 
   private static readonly colors: { [ index: string ]: string } = {
-    'A': 'black',
-    'C': 'green',
-    'T': 'green',
-    'G': 'green',
-    'D': 'red',
-    'E': 'red',
-    'F': 'black',
-    'H': 'blue',
-    'I': 'black',
-    'K': 'blue',
-    'L': 'black',
-    'M': 'black',
-    'N': 'purple',
-    'P': 'black',
-    'Q': 'purple',
-    'R': 'blue',
-    'S': 'green',
-    'V': 'black',
-    'W': 'black',
-    'Y': 'green'
+    'A': '#333333',
+    'C': '#21ba45',
+    'T': '#21ba45',
+    'G': '#21ba45',
+    'D': '#f2711c',
+    'E': '#f2711c',
+    'F': '#333333',
+    'H': '#2185d0',
+    'I': '#333333',
+    'K': '#2185d0',
+    'L': '#333333',
+    'M': '#333333',
+    'N': '#a333c8',
+    'P': '#333333',
+    'Q': '#a333c8',
+    'R': '#2185d0',
+    'S': '#21ba45',
+    'V': '#333333',
+    'W': '#333333',
+    'Y': '#21ba45'
   };
+
+  // tslint:enable:object-literal-key-quotes max-line-length
 
   constructor(configuration: ISeqLogoChartConfiguration, container: ChartContainer,
               dataStream: SeqLogoChartInputStreamType, ngZone: NgZone) {
@@ -115,8 +119,7 @@ export class SeqLogoChart extends Chart<ISeqLogoChartDataEntry, ISeqLogoChartCon
       .attr('transform', `translate(0, ${height - SeqLogoChart.defaultXMargin})`)
       .call(xAxis);
 
-
-    const m = data.map((d) =>
+    const mapped = data.filter((d) => d.pos >= 0).map((d) =>
       d.chars.map((c, i) => ({
         char: c,
         pos:  d.pos,
@@ -124,8 +127,17 @@ export class SeqLogoChart extends Chart<ISeqLogoChartDataEntry, ISeqLogoChartCon
       }))
     ).reduce((acc, val) => acc.concat(val), []);
 
-    svg.selectAll('.box')
-      .data(m).enter()
+    const hits = mapped.filter((d) => {
+      const real = data.find((f) => f.pos === (-d.pos - 1));
+      if (real !== undefined) {
+        return real.chars[ 0 ].c === d.char.c;
+      } else {
+        return false;
+      }
+    });
+
+    const elements = svg.selectAll('.box')
+      .data(mapped).enter()
       .append('g')
       .attr('class', 'box')
       .attr('transform', (d) => `translate(${x(`${d.pos + 1}`)}, ${(height - SeqLogoChart.defaultXMargin) * d.dy})`)
@@ -136,10 +148,34 @@ export class SeqLogoChart extends Chart<ISeqLogoChartDataEntry, ISeqLogoChartCon
         return `scale(${x.bandwidth() / bbox.width}, ${(height - SeqLogoChart.defaultXMargin) * d.char.h / bbox.height})`;
       })
       .attr('fill', (d) => d.char.color === undefined ? SeqLogoChart.colors[ d.char.c ] : d.char.color);
+
+    // tslint:disable:no-magic-numbers
+    svg.selectAll('.hit')
+      .data(hits).enter()
+      .append('g')
+      .attr('class', 'hit')
+      .attr('transform', (d) => `translate(${x(`${d.pos + 1}`)}, ${(height - SeqLogoChart.defaultXMargin) * d.dy})`)
+      .append('rect')
+      .attr('x', 3)
+      .attr('y', -80)
+      .attr('width', 28)
+      .attr('height', 80)
+      .attr('fill', 'none')
+      .attr('stroke', 'red')
+      .attr('stroke-width', '2.5px')
+      .attr('transform', (d, i, n) => {
+        const bbox = (d3.select(n[ i ]).node() as any).getBBox();
+        return `scale(${x.bandwidth() / bbox.width}, ${(height - SeqLogoChart.defaultXMargin) * d.char.h / bbox.height})`;
+      });
+    // tslint:enable:no-magic-numbers
+
+    this.bindTooltipEvents(elements);
   }
 
   public update(data: ISeqLogoChartDataEntry[]): void {
-    super.destroy();
+    const { svg } = this.container.getContainer();
+    svg.selectAll('g').remove();
+    svg.selectAll('.box').remove();
     this.create(data);
   }
 
@@ -154,9 +190,24 @@ export class SeqLogoChart extends Chart<ISeqLogoChartDataEntry, ISeqLogoChartCon
   private createXAxis(width: number, data: ISeqLogoChartDataEntry[]): { x: ScaleBand<string>, xAxis: any } {
     const x = d3.scaleBand().rangeRound([ 0, width ])
       .padding(SeqLogoChart.defaultPadding)
-      .domain(Array.apply(null, { length: Math.max(...data.map((d) => d.pos)) + 1 }).map(Number.call, (i: number) => `${i + 1}`));
+      .domain(Array.apply(undefined, { length: Math.max(...data.map((d) => d.pos)) + 1 }).map(Number.call, (i: number) => `${i + 1}`));
 
     const xAxis = d3.axisBottom(x);
     return { x, xAxis };
+  }
+
+  private bindTooltipEvents(elements: any): void {
+    const xDefaultOffset = 20;
+    const yDefaultOffset = -40;
+    const toPercent = 100;
+
+    elements.on('mouseover', (d: { char: { c: string, h: number }, pos: number }) => {
+      this.tooltip.text(d.char.c, `Frequency: ${(d.char.h * toPercent).toFixed(2)}%`);
+      this.tooltip.show();
+    }).on('mouseout', () => {
+      this.tooltip.hide();
+    }).on('mousemove', () => {
+      this.tooltip.position(D3CurrentEvent.pageX + xDefaultOffset, D3CurrentEvent.pageY + yDefaultOffset);
+    });
   }
 }

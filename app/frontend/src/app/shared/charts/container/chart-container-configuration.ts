@@ -1,5 +1,5 @@
 /*
- *     Copyright 2017 Bagaev Dmitry
+ *     Copyright 2017-2019 Bagaev Dmitry
  *
  *     Licensed under the Apache License, Version 2.0 (the "License");
  *     you may not use this file except in compliance with the License.
@@ -12,26 +12,25 @@
  *     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *     See the License for the specific language governing permissions and
  *     limitations under the License.
- *
  */
 
 export interface IChartContainerMarginConfiguration {
-    readonly left?: number;
-    readonly right?: number;
-    readonly top?: number;
-    readonly bottom?: number;
+  readonly left?: number;
+  readonly right?: number;
+  readonly top?: number;
+  readonly bottom?: number;
 }
 
 function createDefaultChartContainerMarginConfiguration(): IChartContainerMarginConfiguration {
-    return { left: 0, right: 0, top: 0, bottom: 0 };
+  return { left: 0, right: 0, top: 0, bottom: 0 };
 }
 
 export interface IChartContainerConfiguration {
-    readonly width?: number;
-    readonly height?: number;
-    readonly margin?: IChartContainerMarginConfiguration;
+  readonly width?: number;
+  readonly height?: number;
+  readonly margin?: IChartContainerMarginConfiguration;
 }
 
 export function createDefaultChartContainerConfiguration(): IChartContainerConfiguration {
-    return { margin: createDefaultChartContainerMarginConfiguration() };
+  return { margin: createDefaultChartContainerMarginConfiguration() };
 }

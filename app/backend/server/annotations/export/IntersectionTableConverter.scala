@@ -1,5 +1,5 @@
 /*
- *     Copyright 2017 Bagaev Dmitry
+ *     Copyright 2017-2019 Bagaev Dmitry
  *
  *     Licensed under the Apache License, Version 2.0 (the "License");
  *     you may not use this file except in compliance with the License.
@@ -12,7 +12,6 @@
  *     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *     See the License for the specific language governing permissions and
  *     limitations under the License.
- *
  */
 
 package backend.server.annotations.export
@@ -25,15 +24,16 @@ import backend.server.search.api.export.ExportOptionFlag
 import scala.concurrent.{ExecutionContext, Future}
 
 trait IntersectionTableConverter {
-    def convert(sampleName: String, table: IntersectionTable, database: Database, options: Seq[ExportOptionFlag]): Future[TemporaryFileLink]
-    def getExtension: String
+  def convert(sampleName: String, table: IntersectionTable, database: Database, options: Seq[ExportOptionFlag]): Future[TemporaryFileLink]
+
+  def getExtension: String
 }
 
 object IntersectionTableConverter {
-    def getConverter(converterType: String)(implicit tfp: TemporaryFileProvider, ec: ExecutionContext): Option[IntersectionTableConverter] = {
-        converterType match {
-            case "tsv" => Some(IntersectionTableTSVConverter())
-            case _ => None
-        }
+  def getConverter(converterType: String)(implicit tfp: TemporaryFileProvider, ec: ExecutionContext): Option[IntersectionTableConverter] = {
+    converterType match {
+      case "tsv" => Some(IntersectionTableTSVConverter())
+      case _ => None
     }
+  }
 }

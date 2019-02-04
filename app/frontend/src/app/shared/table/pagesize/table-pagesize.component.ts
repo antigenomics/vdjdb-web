@@ -1,5 +1,5 @@
 /*
- *     Copyright 2017 Bagaev Dmitry
+ *     Copyright 2017-2019 Bagaev Dmitry
  *
  *     Licensed under the Apache License, Version 2.0 (the "License");
  *     you may not use this file except in compliance with the License.
@@ -12,28 +12,27 @@
  *     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *     See the License for the specific language governing permissions and
  *     limitations under the License.
- *
  */
 
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
 
 @Component({
-    selector:        'table-pagesize',
-    templateUrl:     './table-pagesize.component.html',
-    changeDetection: ChangeDetectionStrategy.OnPush
+  selector:        'table-pagesize',
+  templateUrl:     './table-pagesize.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TablePagesizeComponent {
-    @Input()
-    public pageSize: number;
+  @Input()
+  public pageSize: number;
 
-    @Input()
-    public sizes: number[];
+  @Input()
+  public sizes: number[];
 
-    @Output()
-    public changePageSize = new EventEmitter();
+  @Output()
+  public changePageSize = new EventEmitter();
 
-    public changeSize(size: number): void {
-        this.pageSize = size;
-        this.changePageSize.emit(size);
-    }
+  public changeSize(size: number): void {
+    this.pageSize = size;
+    this.changePageSize.emit(size);
+  }
 }

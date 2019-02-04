@@ -1,5 +1,5 @@
 /*
- *     Copyright 2017 Bagaev Dmitry
+ *     Copyright 2017-2019 Bagaev Dmitry
  *
  *     Licensed under the Apache License, Version 2.0 (the "License");
  *     you may not use this file except in compliance with the License.
@@ -12,7 +12,6 @@
  *     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *     See the License for the specific language governing permissions and
  *     limitations under the License.
- *
  */
 
 import { CommonModule } from '@angular/common';
@@ -28,21 +27,21 @@ import { TableRowComponent } from './row/table-row.component';
 import { TableComponent } from './table.component';
 
 @NgModule({
-    imports:         [ CommonModule, ModalsModule ],
-    declarations:    [ TableComponent,
-        TableRowComponent,
-        TablePaginationComponent,
-        TableInfoComponent,
-        TableExportComponent,
-        TablePagesizeComponent,
-        TableEntryDefaultComponent,
-        TableEntryCenteredComponent ],
-    exports:         [ TableComponent,
-        TablePaginationComponent,
-        TableInfoComponent,
-        TableExportComponent,
-        TablePagesizeComponent ],
-    entryComponents: [ TableEntryDefaultComponent, TableEntryCenteredComponent, TableRowComponent ]
+  imports:         [ CommonModule, ModalsModule ],
+  declarations:    [ TableComponent,
+    TableRowComponent,
+    TablePaginationComponent,
+    TableInfoComponent,
+    TableExportComponent,
+    TablePagesizeComponent,
+    TableEntryDefaultComponent,
+    TableEntryCenteredComponent ],
+  exports:         [ TableComponent,
+    TablePaginationComponent,
+    TableInfoComponent,
+    TableExportComponent,
+    TablePagesizeComponent ],
+  entryComponents: [ TableEntryDefaultComponent, TableEntryCenteredComponent, TableRowComponent ]
 })
 export class TableModule {
 }

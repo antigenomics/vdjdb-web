@@ -1,5 +1,5 @@
 /*
- *     Copyright 2017 Bagaev Dmitry
+ *     Copyright 2017-2019 Bagaev Dmitry
  *
  *     Licensed under the Apache License, Version 2.0 (the "License");
  *     you may not use this file except in compliance with the License.
@@ -12,7 +12,6 @@
  *     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *     See the License for the specific language governing permissions and
  *     limitations under the License.
- *
  */
 
 import { RouterModule } from '@angular/router';
@@ -26,23 +25,23 @@ import { AnnotationsSampleComponent } from 'pages/annotations/sample/sample.comp
 import { SampleTableComponent } from 'pages/annotations/sample/table/sample-table.component';
 
 const routes: Routes = [
-    {
-        path:     '', component: AnnotationsPageComponent, resolve: { user: UserResolver },
+  {
+    path:     '', component: AnnotationsPageComponent, resolve: { user: UserResolver },
+    children: [
+      { path: 'info', component: AnnotationsInfoComponent },
+      { path: 'upload', loadChildren: 'pages/annotations/upload/upload.module#UploadModule' },
+      {
+        path:     'sample/:sample', component: AnnotationsSampleComponent, resolve: { sample: SampleItemResolver },
         children: [
-            { path: 'info', component: AnnotationsInfoComponent },
-            { path: 'upload', loadChildren: 'pages/annotations/upload/upload.module#UploadModule' },
-            {
-                path:     'sample/:sample', component: AnnotationsSampleComponent, resolve: { sample: SampleItemResolver },
-                children: [
-                    { path: 'table', component: SampleTableComponent },
-                    { path: 'chart', component: SampleChartComponent }
-                ]
-            },
-            { path: 'multisample', loadChildren: 'pages/annotations/multisample/multisample.module#MultisamplePageModule' },
-            { path: 'tags', loadChildren: 'pages/annotations/tags/tags.module#TagsPageModule' },
-            { path: '**', redirectTo: 'info' }
+          { path: 'table', component: SampleTableComponent },
+          { path: 'chart', component: SampleChartComponent }
         ]
-    }
+      },
+      { path: 'multisample', loadChildren: 'pages/annotations/multisample/multisample.module#MultisamplePageModule' },
+      { path: 'tags', loadChildren: 'pages/annotations/tags/tags.module#TagsPageModule' },
+      { path: '**', redirectTo: 'info' }
+    ]
+  }
 ];
 
 export const AnnotationsRouting = RouterModule.forChild(routes); // tslint:disable-line:variable-name

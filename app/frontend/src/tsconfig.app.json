@@ -1,14 +1,7 @@
 {
   "extends": "../tsconfig.json",
   "compilerOptions": {
-    "module": "es2015",
-    "paths": {
-      "external/*": [ "src/external/*" ],
-      "pages/*": [ "src/app/pages/*" ],
-      "shared/*": [ "src/app/shared/*" ],
-      "utils/*": [ "src/app/utils/*" ],
-      "environments/*": [ "src/environments/*" ]
-    }
+    "module": "es2015"
   },
   "exclude": [ "**/*.spec.ts" ]
 }

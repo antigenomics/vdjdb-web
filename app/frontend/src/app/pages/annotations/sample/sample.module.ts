@@ -1,5 +1,5 @@
 /*
- *     Copyright 2017 Bagaev Dmitry
+ *     Copyright 2017-2019 Bagaev Dmitry
  *
  *     Licensed under the Apache License, Version 2.0 (the "License");
  *     you may not use this file except in compliance with the License.
@@ -12,7 +12,6 @@
  *     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *     See the License for the specific language governing permissions and
  *     limitations under the License.
- *
  */
 
 import { CommonModule } from '@angular/common';
@@ -27,9 +26,9 @@ import { SampleTableModule } from 'pages/annotations/sample/table/sample-table.m
 import { ModalsModule } from 'shared/modals/modals.module';
 
 @NgModule({
-    imports:      [ CommonModule, FormsModule, RouterModule, ModalsModule, AnnotationsFiltersModule, SampleTableModule, SampleChartModule ],
-    declarations: [ AnnotationsSampleComponent ],
-    providers:    [ SampleService ]
+  imports:      [ CommonModule, FormsModule, RouterModule, ModalsModule, AnnotationsFiltersModule, SampleTableModule, SampleChartModule ],
+  declarations: [ AnnotationsSampleComponent ],
+  providers:    [ SampleService ]
 })
 export class SampleModule {
 

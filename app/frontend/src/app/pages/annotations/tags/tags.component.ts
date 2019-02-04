@@ -1,5 +1,5 @@
 /*
- *     Copyright 2017 Bagaev Dmitry
+ *     Copyright 2017-2019 Bagaev Dmitry
  *
  *     Licensed under the Apache License, Version 2.0 (the "License");
  *     you may not use this file except in compliance with the License.
@@ -12,7 +12,6 @@
  *     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *     See the License for the specific language governing permissions and
  *     limitations under the License.
- *
  */
 
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
@@ -21,47 +20,47 @@ import { TagsService, TagsServiceEventType } from 'pages/annotations/tags/tags.s
 import { Subscription } from 'rxjs';
 
 @Component({
-    selector:        'tags',
-    templateUrl:     './tags.component.html',
-    changeDetection: ChangeDetectionStrategy.OnPush
+  selector:        'tags',
+  templateUrl:     './tags.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TagsComponent implements OnInit, OnDestroy {
-    private _annotationsServiceEventsSubscription: Subscription;
-    private _tagsServiceEventsSubscription: Subscription;
+  private _annotationsServiceEventsSubscription: Subscription;
+  private _tagsServiceEventsSubscription: Subscription;
 
-    constructor(private annotationsService: AnnotationsService, private tagsService: TagsService, private changeDetector: ChangeDetectorRef) {
-    }
+  constructor(private annotationsService: AnnotationsService, private tagsService: TagsService, private changeDetector: ChangeDetectorRef) {
+  }
 
-    public ngOnInit(): void {
-        this._annotationsServiceEventsSubscription = this.annotationsService.getEvents().subscribe((event) => {
-            switch (event) {
-                case AnnotationsServiceEvents.INITIALIZED:
-                    this.changeDetector.detectChanges();
-                    break;
-                default:
-            }
-        });
-        this._tagsServiceEventsSubscription = this.tagsService.getEvents().subscribe((event) => {
-            if (event === TagsServiceEventType.TAG_DELETING_END || event === TagsServiceEventType.TAGS_UPDATED) {
-                this.changeDetector.detectChanges();
-            }
-        });
-    }
+  public ngOnInit(): void {
+    this._annotationsServiceEventsSubscription = this.annotationsService.getEvents().subscribe((event) => {
+      switch (event) {
+        case AnnotationsServiceEvents.INITIALIZED:
+          this.changeDetector.detectChanges();
+          break;
+        default:
+      }
+    });
+    this._tagsServiceEventsSubscription = this.tagsService.getEvents().subscribe((event) => {
+      if (event === TagsServiceEventType.TAG_DELETING_END || event === TagsServiceEventType.TAGS_UPDATED) {
+        this.changeDetector.detectChanges();
+      }
+    });
+  }
 
-    public isInitialized(): boolean {
-        return this.annotationsService.isInitialized();
-    }
+  public isInitialized(): boolean {
+    return this.annotationsService.isInitialized();
+  }
 
-    public isTagsTableVisible(): boolean {
-        return this.tagsService.getAvailableTags().length !== 0;
-    }
+  public isTagsTableVisible(): boolean {
+    return this.tagsService.getAvailableTags().length !== 0;
+  }
 
-    public addTag(): void {
-        this.tagsService.createNewTag();
-    }
+  public addTag(): void {
+    this.tagsService.createNewTag();
+  }
 
-    public ngOnDestroy(): void {
-        this._annotationsServiceEventsSubscription.unsubscribe();
-        this._tagsServiceEventsSubscription.unsubscribe();
-    }
+  public ngOnDestroy(): void {
+    this._annotationsServiceEventsSubscription.unsubscribe();
+    this._tagsServiceEventsSubscription.unsubscribe();
+  }
 }

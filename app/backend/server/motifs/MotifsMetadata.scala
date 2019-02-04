@@ -1,5 +1,5 @@
 /*
- *     Copyright 2017-2018 Bagaev Dmitry
+ *     Copyright 2017-2019 Bagaev Dmitry
  *
  *     Licensed under the Apache License, Version 2.0 (the "License");
  *     you may not use this file except in compliance with the License.
@@ -17,9 +17,14 @@
 package backend.server.motifs
 
 import play.api.libs.json.{Format, Json}
+import tech.tablesaw.api.Table
 
-case class MotifsMetadata(entries: Seq[MotifsMetadataEntry])
+case class MotifsMetadata(root: MotifsMetadataTreeLevel)
 
 object MotifsMetadata {
-    implicit val motifsMetadataFormat: Format[MotifsMetadata] = Json.format[MotifsMetadata]
+  implicit val motifsMetadataFormat: Format[MotifsMetadata] = Json.format[MotifsMetadata]
+
+  def generateMetadataFromLevels(table: Table, levels: Seq[String]): MotifsMetadata = {
+    MotifsMetadata(MotifsMetadataTreeLevel.createTreeLevelFromTable(table, levels.head, levels.tail))
+  }
 }

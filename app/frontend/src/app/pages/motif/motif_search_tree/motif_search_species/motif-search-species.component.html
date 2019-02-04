@@ -1,8 +1,0 @@
-<i class="right angle icon" *ngIf="!species.isOpened" (click)="open()" style="cursor: pointer"></i>
-<i class="down angle icon" *ngIf="species.isOpened" (click)="close()" style="cursor: pointer"></i>
-<div class="content">
-    <div class="header">{{ species.species }}</div>
-    <div class="list" *ngIf="species.isOpened">
-        <div class="item" *ngFor="let gene of species.genes" motif-search-gene [gene]="gene"></div>
-    </div>
-</div>

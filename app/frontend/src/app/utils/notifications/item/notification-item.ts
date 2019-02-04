@@ -1,5 +1,5 @@
 /*
- *     Copyright 2017 Bagaev Dmitry
+ *     Copyright 2017-2019 Bagaev Dmitry
  *
  *     Licensed under the Apache License, Version 2.0 (the "License");
  *     you may not use this file except in compliance with the License.
@@ -12,28 +12,27 @@
  *     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *     See the License for the specific language governing permissions and
  *     limitations under the License.
- *
  */
 
 export type NotificationItemType = string;
 
 export namespace NotificationItemType {
-    export const INFO: string = 'info';
-    export const SUCCESS: string = 'success';
-    export const WARNING: string = 'warning';
-    export const ERROR: string = 'error';
+  export const INFO: string = 'info';
+  export const SUCCESS: string = 'success';
+  export const WARNING: string = 'warning';
+  export const ERROR: string = 'error';
 }
 
 export class NotificationItem {
-    public type: NotificationItemType;
-    public title: string;
-    public content: string;
-    public timeout: number;
+  public type: NotificationItemType;
+  public title: string;
+  public content: string;
+  public timeout: number;
 
-    constructor(type: NotificationItemType, title: string, content: string, timeout: number) {
-        this.type = type;
-        this.title = title;
-        this.content = content;
-        this.timeout = timeout;
-    }
+  constructor(type: NotificationItemType, title: string, content: string, timeout: number) {
+    this.type = type;
+    this.title = title;
+    this.content = content;
+    this.timeout = timeout;
+  }
 }

@@ -1,5 +1,5 @@
 /*
- *     Copyright 2017 Bagaev Dmitry
+ *     Copyright 2017-2019 Bagaev Dmitry
  *
  *     Licensed under the Apache License, Version 2.0 (the "License");
  *     you may not use this file except in compliance with the License.
@@ -12,7 +12,6 @@
  *     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *     See the License for the specific language governing permissions and
  *     limitations under the License.
- *
  */
 
 import { ComponentFactory, ComponentFactoryResolver } from '@angular/core';
@@ -20,9 +19,9 @@ import { TableColumn } from '../column/table-column';
 import { TableEntry } from '../entry/table-entry';
 
 export abstract class TableRow {
-    public abstract hash(): string;
+  public abstract hash(): string;
 
-    public abstract resolveComponentFactory(column: TableColumn, resolver: ComponentFactoryResolver): ComponentFactory<TableEntry>;
+  public abstract resolveComponentFactory(column: TableColumn, resolver: ComponentFactoryResolver): ComponentFactory<TableEntry>;
 
-    public abstract getEntries(): string[];
+  public abstract getEntries(): string[];
 }

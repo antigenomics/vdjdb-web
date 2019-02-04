@@ -1,5 +1,5 @@
 /*
- *     Copyright 2017 Bagaev Dmitry
+ *     Copyright 2017-2019 Bagaev Dmitry
  *
  *     Licensed under the Apache License, Version 2.0 (the "License");
  *     you may not use this file except in compliance with the License.
@@ -12,11 +12,19 @@
  *     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *     See the License for the specific language governing permissions and
  *     limitations under the License.
- *
  */
 
 import {
-    ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, OnDestroy, OnInit, Output, Renderer2, ViewChild
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  EventEmitter,
+  OnDestroy,
+  OnInit,
+  Output,
+  Renderer2,
+  ViewChild
 } from '@angular/core';
 import { AnnotationsService, AnnotationsServiceEvents } from 'pages/annotations/annotations.service';
 import { Subscription } from 'rxjs';
@@ -25,157 +33,157 @@ import { SampleTag } from 'shared/sample/sample-tag';
 import { NotificationService } from 'utils/notifications/notification.service';
 
 export interface ISampleNewProps {
-    newSoftware: string;
-    newName: string;
-    newTagID: number;
-    sample: SampleItem;
+  newSoftware: string;
+  newName: string;
+  newTagID: number;
+  sample: SampleItem;
 }
 
 @Component({
-    selector:        'update-sample-modal',
-    templateUrl:     'update-sample-modal.component.html',
-    changeDetection: ChangeDetectionStrategy.OnPush
+  selector:        'update-sample-modal',
+  templateUrl:     'update-sample-modal.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class UpdateSampleModalComponent implements OnInit, OnDestroy {
-    private static readonly settingsTopShift: number = -35;
-    private static readonly hideDelay: number = 200;
-    private annotationsServiceEventsSubscription: Subscription;
+  private static readonly settingsTopShift: number = -35;
+  private static readonly hideDelay: number = 200;
+  private annotationsServiceEventsSubscription: Subscription;
 
-    @ViewChild('modal')
-    public modal: ElementRef;
+  @ViewChild('modal')
+  public modal: ElementRef;
 
-    @Output('onClosed')
-    public onClosed = new EventEmitter();
+  @Output('onClosed')
+  public onClosed = new EventEmitter();
 
-    public updating: boolean = false;
-    public saving: boolean = false;
-    public top: string;
-    public sampleNewProps: ISampleNewProps;
+  public updating: boolean = false;
+  public saving: boolean = false;
+  public top: string;
+  public sampleNewProps: ISampleNewProps;
 
-    constructor(private annotationsService: AnnotationsService, private notifications: NotificationService,
-                private renderer: Renderer2, private changeDetector: ChangeDetectorRef) {
-    }
+  constructor(private annotationsService: AnnotationsService, private notifications: NotificationService,
+              private renderer: Renderer2, private changeDetector: ChangeDetectorRef) {
+  }
 
-    public ngOnInit(): void {
-        this.annotationsServiceEventsSubscription = this.annotationsService.getEvents().subscribe((event) => {
-            if (event === AnnotationsServiceEvents.SAMPLE_TAGS_UPDATED) {
-                if (this.sampleNewProps !== undefined) {
-                    this.sampleNewProps.newTagID = this.sampleNewProps.sample.tagID;
-                }
-                this.changeDetector.detectChanges();
-            }
-        });
-    }
-
-    public async save(): Promise<void> {
-        if (!this.isNewNameValid()) {
-            this.notifications.error('Sample update', 'New sample name is not valid');
-            return;
+  public ngOnInit(): void {
+    this.annotationsServiceEventsSubscription = this.annotationsService.getEvents().subscribe((event) => {
+      if (event === AnnotationsServiceEvents.SAMPLE_TAGS_UPDATED) {
+        if (this.sampleNewProps !== undefined) {
+          this.sampleNewProps.newTagID = this.sampleNewProps.sample.tagID;
         }
-
-        if (this.saving) {
-            this.notifications.warn('Sample update', 'Wait until previous updating will be completed');
-            return;
-        }
-
-        this.saving = true;
         this.changeDetector.detectChanges();
+      }
+    });
+  }
 
-        const success = await this.annotationsService.updateSampleProps(
-            this.sampleNewProps.sample, this.sampleNewProps.newName, this.sampleNewProps.newSoftware, this.sampleNewProps.newTagID
-        );
-        if (!success) {
-            this.notifications.error('Sample update', 'An error occured during sample updating');
-        } else {
-            this.notifications.success('Sample update', 'Sample successfully updated');
-            this.hide();
-        }
-
-        this.saving = false;
-        this.changeDetector.detectChanges();
+  public async save(): Promise<void> {
+    if (!this.isNewNameValid()) {
+      this.notifications.error('Sample update', 'New sample name is not valid');
+      return;
     }
 
-    public close(): void {
-        this.hide();
+    if (this.saving) {
+      this.notifications.warn('Sample update', 'Wait until previous updating will be completed');
+      return;
     }
 
-    public update(sample: SampleItem, top: number): void {
-        if (this.saving) {
-            this.notifications.warn('Sample update', 'Wait until previous updating will be completed');
-        } else {
-            this.updating = true;
-            this.sampleNewProps = { newName: sample.name, newSoftware: sample.software, newTagID: sample.tagID, sample };
-            this.top = `${top + UpdateSampleModalComponent.settingsTopShift}px`;
-            this.changeDetector.detectChanges();
-            this.show();
-        }
+    this.saving = true;
+    this.changeDetector.detectChanges();
+
+    const success = await this.annotationsService.updateSampleProps(
+      this.sampleNewProps.sample, this.sampleNewProps.newName, this.sampleNewProps.newSoftware, this.sampleNewProps.newTagID
+    );
+    if (!success) {
+      this.notifications.error('Sample update', 'An error occured during sample updating');
+    } else {
+      this.notifications.success('Sample update', 'Sample successfully updated');
+      this.hide();
     }
 
-    public isVisible(): boolean {
-        return this.sampleNewProps !== undefined;
-    }
+    this.saving = false;
+    this.changeDetector.detectChanges();
+  }
 
-    public isSampleUpdating(sample: SampleItem): boolean {
-        return this.updating === true && this.sampleNewProps !== undefined && this.sampleNewProps.sample === sample;
-    }
+  public close(): void {
+    this.hide();
+  }
 
-    public getSampleNewPropsTagName(): string {
-        return this.sampleNewProps.newTagID < 0 ? 'No tag selected' : this.annotationsService.getSampleTagName(this.sampleNewProps.newTagID);
+  public update(sample: SampleItem, top: number): void {
+    if (this.saving) {
+      this.notifications.warn('Sample update', 'Wait until previous updating will be completed');
+    } else {
+      this.updating = true;
+      this.sampleNewProps = { newName: sample.name, newSoftware: sample.software, newTagID: sample.tagID, sample };
+      this.top = `${top + UpdateSampleModalComponent.settingsTopShift}px`;
+      this.changeDetector.detectChanges();
+      this.show();
     }
+  }
 
-    public getSampleNewPropsTagColor(): string {
-        return this.sampleNewProps.newTagID < 0 ? 'rgba(0, 0, 0, 0)' : this.annotationsService.getSampleTagColor(this.sampleNewProps.newTagID);
-    }
+  public isVisible(): boolean {
+    return this.sampleNewProps !== undefined;
+  }
 
-    public isSampleTagsAvailable(): boolean {
-        return this.annotationsService.getTags().length !== 0;
-    }
+  public isSampleUpdating(sample: SampleItem): boolean {
+    return this.updating === true && this.sampleNewProps !== undefined && this.sampleNewProps.sample === sample;
+  }
 
-    public getAvailableSampleTags(): SampleTag[] {
-        return this.annotationsService.getTags();
-    }
+  public getSampleNewPropsTagName(): string {
+    return this.sampleNewProps.newTagID < 0 ? 'No tag selected' : this.annotationsService.getSampleTagName(this.sampleNewProps.newTagID);
+  }
 
-    public getAvailableSoftwareTypes(): string[] {
-        return this.annotationsService.getAvailableSoftwareTypes();
-    }
+  public getSampleNewPropsTagColor(): string {
+    return this.sampleNewProps.newTagID < 0 ? 'rgba(0, 0, 0, 0)' : this.annotationsService.getSampleTagColor(this.sampleNewProps.newTagID);
+  }
 
-    public isNewNameValid(): boolean {
-        if (!SampleItem.isNameValid(this.sampleNewProps.newName)) {
-            return false;
-        }
-        const duplicate = this.annotationsService.getSamples()
-            .filter((s) => s !== this.sampleNewProps.sample)
-            .findIndex((s) => s.name === this.sampleNewProps.newName);
-        return duplicate === -1;
-    }
+  public isSampleTagsAvailable(): boolean {
+    return this.annotationsService.getTags().length !== 0;
+  }
 
-    public setNewSoftware(software: string): void {
-        this.sampleNewProps.newSoftware = software;
-    }
+  public getAvailableSampleTags(): SampleTag[] {
+    return this.annotationsService.getTags();
+  }
 
-    public setNewTagID(id: number): void {
-        this.sampleNewProps.newTagID = id;
-    }
+  public getAvailableSoftwareTypes(): string[] {
+    return this.annotationsService.getAvailableSoftwareTypes();
+  }
 
-    public ngOnDestroy(): void {
-        this.annotationsServiceEventsSubscription.unsubscribe();
+  public isNewNameValid(): boolean {
+    if (!SampleItem.isNameValid(this.sampleNewProps.newName)) {
+      return false;
     }
+    const duplicate = this.annotationsService.getSamples()
+      .filter((s) => s !== this.sampleNewProps.sample)
+      .findIndex((s) => s.name === this.sampleNewProps.newName);
+    return duplicate === -1;
+  }
 
-    private show(): void {
-        this.renderer.setStyle(this.modal.nativeElement, 'display', 'block');
-        setImmediate(() => {
-            this.renderer.setStyle(this.modal.nativeElement, 'opacity', 1.0);
-        });
-    }
+  public setNewSoftware(software: string): void {
+    this.sampleNewProps.newSoftware = software;
+  }
 
-    private hide(): void {
-        this.updating = false;
-        this.onClosed.emit();
-        this.renderer.setStyle(this.modal.nativeElement, 'opacity', 0.0);
-        setTimeout(() => {
-            this.renderer.setStyle(this.modal.nativeElement, 'display', 'none');
-            this.sampleNewProps = undefined;
-            this.changeDetector.detectChanges();
-        }, UpdateSampleModalComponent.hideDelay);
-    }
+  public setNewTagID(id: number): void {
+    this.sampleNewProps.newTagID = id;
+  }
+
+  public ngOnDestroy(): void {
+    this.annotationsServiceEventsSubscription.unsubscribe();
+  }
+
+  private show(): void {
+    this.renderer.setStyle(this.modal.nativeElement, 'display', 'block');
+    setImmediate(() => {
+      this.renderer.setStyle(this.modal.nativeElement, 'opacity', 1.0);
+    });
+  }
+
+  private hide(): void {
+    this.updating = false;
+    this.onClosed.emit();
+    this.renderer.setStyle(this.modal.nativeElement, 'opacity', 0.0);
+    setTimeout(() => {
+      this.renderer.setStyle(this.modal.nativeElement, 'display', 'none');
+      this.sampleNewProps = undefined;
+      this.changeDetector.detectChanges();
+    }, UpdateSampleModalComponent.hideDelay);
+  }
 }

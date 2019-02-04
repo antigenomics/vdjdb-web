@@ -1,5 +1,5 @@
 /*
- *     Copyright 2017 Bagaev Dmitry
+ *     Copyright 2017-2019 Bagaev Dmitry
  *
  *     Licensed under the Apache License, Version 2.0 (the "License");
  *     you may not use this file except in compliance with the License.
@@ -12,27 +12,26 @@
  *     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *     See the License for the specific language governing permissions and
  *     limitations under the License.
- *
  */
 
 import { ChangeDetectionStrategy, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { OverviewService } from './overview.service';
 
 @Component({
-    selector:        'overview',
-    templateUrl:     './overview.component.html',
-    changeDetection: ChangeDetectionStrategy.OnPush
+  selector:        'overview',
+  templateUrl:     './overview.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class OverviewPageComponent implements OnInit {
-    @ViewChild('overviewContainer', { read: ElementRef })
-    public overviewContainer: ElementRef;
+  @ViewChild('overviewContainer', { read: ElementRef })
+  public overviewContainer: ElementRef;
 
-    constructor(public overviewService: OverviewService) {
-    }
+  constructor(public overviewService: OverviewService) {
+  }
 
-    public ngOnInit(): void {
-        this.overviewService.getOverviewContent().then((text: string) => {
-            this.overviewContainer.nativeElement.innerHTML = text;
-        });
-    }
+  public ngOnInit(): void {
+    this.overviewService.getOverviewContent().then((text: string) => {
+      this.overviewContainer.nativeElement.innerHTML = text;
+    });
+  }
 }

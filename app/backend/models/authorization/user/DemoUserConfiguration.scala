@@ -1,5 +1,5 @@
 /*
- *     Copyright 2017 Bagaev Dmitry
+ *     Copyright 2017-2019 Bagaev Dmitry
  *
  *     Licensed under the Apache License, Version 2.0 (the "License");
  *     you may not use this file except in compliance with the License.
@@ -12,7 +12,6 @@
  *     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *     See the License for the specific language governing permissions and
  *     limitations under the License.
- *
  */
 
 package backend.models.authorization.user
@@ -23,13 +22,13 @@ import play.api.ConfigLoader
 case class DemoUserConfiguration(enabled: Boolean, filesLocation: String, login: String, password: String)
 
 object DemoUserConfiguration {
-    implicit val demoUserConfigurationLoader: ConfigLoader[DemoUserConfiguration] = (rootConfig: Config, path: String) => {
-        val config = rootConfig.getConfig(path);
-        DemoUserConfiguration(
-            enabled = config.getBoolean("enabled"),
-            filesLocation = config.getString("filesLocation"),
-            login = config.getString("login"),
-            password = config.getString("password")
-        )
-    }
+  implicit val demoUserConfigurationLoader: ConfigLoader[DemoUserConfiguration] = (rootConfig: Config, path: String) => {
+    val config = rootConfig.getConfig(path);
+    DemoUserConfiguration(
+      enabled = config.getBoolean("enabled"),
+      filesLocation = config.getString("filesLocation"),
+      login = config.getString("login"),
+      password = config.getString("password")
+    )
+  }
 }
