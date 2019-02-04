@@ -15,7 +15,14 @@
  */
 
 import { ChangeDetectionStrategy, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { IMotifCDR3SearchResult, IMotifEpitope, IMotifEpitopeViewOptions, IMotifsMetadata, IMotifsMetadataTreeLevelValue } from 'pages/motif/motif';
+import {
+  IMotifCDR3SearchResult,
+  IMotifCDR3SearchResultOptions,
+  IMotifEpitope,
+  IMotifEpitopeViewOptions,
+  IMotifsMetadata,
+  IMotifsMetadataTreeLevelValue
+} from 'pages/motif/motif';
 import { MotifSearchState, MotifService } from 'pages/motif/motif.service';
 import { fromEvent, Observable, Subscription, timer } from 'rxjs';
 import { debounce } from 'rxjs/operators';
@@ -36,9 +43,9 @@ export class MotifPageComponent implements OnInit, OnDestroy {
   public readonly metadata: Observable<IMotifsMetadata>;
   public readonly selected: Observable<IMotifsMetadataTreeLevelValue[]>;
   public readonly epitopes: Observable<IMotifEpitope[]>;
-  public readonly clusters: Observable<IMotifCDR3SearchResult>;
-  public readonly cdr3: Observable<string>;
   public readonly options: Observable<IMotifEpitopeViewOptions>;
+  public readonly clusters: Observable<IMotifCDR3SearchResult>;
+  public readonly cdr3SearchOptions: Observable<IMotifCDR3SearchResultOptions>;
 
   @ViewChild('EpitopesContainer')
   public epitopesContainer: ElementRef;
@@ -47,9 +54,9 @@ export class MotifPageComponent implements OnInit, OnDestroy {
     this.metadata = motifService.getMetadata();
     this.selected = motifService.getSelected();
     this.epitopes = motifService.getEpitopes();
-    this.clusters = motifService.getCDR3Clusters();
-    this.cdr3 = motifService.getCDR3SearchInput();
     this.options = motifService.getOptions();
+    this.clusters = motifService.getCDR3Clusters();
+    this.cdr3SearchOptions = motifService.getCDR3SearchOptions();
   }
 
   public ngOnInit(): void {

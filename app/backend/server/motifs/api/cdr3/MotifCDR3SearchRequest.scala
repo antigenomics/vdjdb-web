@@ -18,7 +18,7 @@ package backend.server.motifs.api.cdr3
 
 import play.api.libs.json.{Format, Json}
 
-case class MotifCDR3SearchRequest(cdr3: String, top: Int)
+case class MotifCDR3SearchRequest(cdr3: String, substring: Boolean, gene: String, top: Int)
 
 object MotifCDR3SearchRequest {
   implicit val motifCDR3SearchFormat: Format[MotifCDR3SearchRequest] = Json.format[MotifCDR3SearchRequest]

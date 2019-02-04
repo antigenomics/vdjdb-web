@@ -24,7 +24,7 @@
             <div class="ui grid" style="height: 100%; overflow: hidden">
                 <div class="ui five wide column" style="overflow-x: hidden; overflow-y: auto; height: 100%">
                     <motif-search-util [metadata]="metadata | async" [options]="options | async" [selected]="selected | async"
-                                       [cdr3]="cdr3 | async"></motif-search-util>
+                                       [cdr3SearchOptions]="cdr3SearchOptions | async"></motif-search-util>
                 </div>
                 <div class="ui eleven wide column" style="overflow-x: hidden; overflow-y: auto; height: 100%" #EpitopesContainer>
                     <motif-epitopes *ngIf="isStateSearchTree()" [options]="options | async" [epitopes]="epitopes | async"></motif-epitopes>

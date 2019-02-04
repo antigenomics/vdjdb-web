@@ -16,7 +16,7 @@
 
 import { Injectable } from '@angular/core';
 import {
-  IMotifCDR3SearchResult,
+  IMotifCDR3SearchResult, IMotifCDR3SearchResultOptions,
   IMotifClusterMembersExportResponse,
   IMotifEpitope,
   IMotifEpitopeViewOptions,
@@ -27,7 +27,7 @@ import {
   IMotifsSearchTreeFilterResult
 } from 'pages/motif/motif';
 import { combineLatest, Observable, ReplaySubject, Subject } from 'rxjs';
-import { filter, map, take } from 'rxjs/operators';
+import { map, take } from 'rxjs/operators';
 import { ISeqLogoChartConfiguration } from 'shared/charts/seqlogo/seqlogo-configuration';
 import { LoggerService } from 'utils/logger/logger.service';
 import { NotificationService } from 'utils/notifications/notification.service';
@@ -55,6 +55,7 @@ export type MotifSearchState = number;
 
 @Injectable()
 export class MotifService {
+  public static readonly minSubstringCDR3Length: number = 3;
   public static readonly clusterViewportChartConfiguration: ISeqLogoChartConfiguration = {
     container: { height: 150 }
   };
@@ -84,10 +85,13 @@ export class MotifService {
       const metadata = { root: root.root };
       this.logger.debug('Motifs metadata', metadata);
 
+      metadata.root.values.forEach((value) => value.isOpened = true);
+
       this.metadata.next(metadata);
       this.selected.next([]);
       this.epitopes.next([]);
       this.options.next({ isNormalized: false });
+      this.clusters.next({ options: { cdr3: '', top: 15, gene: 'Both', substring: false }, clusters: undefined, clustersNorm: undefined });
 
       this.isMetadataLoaded = true;
       this.isMetadataLoading = false;
@@ -126,8 +130,8 @@ export class MotifService {
     return this.clusters.asObservable();
   }
 
-  public getCDR3SearchInput(): Observable<string> {
-    return this.clusters.asObservable().pipe(filter((c) => c !== null && c !== undefined), map((c) => c.cdr3));
+  public getCDR3SearchOptions(): Observable<IMotifCDR3SearchResultOptions> {
+    return this.clusters.asObservable().pipe(map((c) => c.options));
   }
 
   public setOptions(options: IMotifEpitopeViewOptions): void {
@@ -150,13 +154,17 @@ export class MotifService {
     return this.loadingState;
   }
 
-  public searchCDR3(cdr3: string, top: number = 15): void {
+  public searchCDR3(cdr3: string, substring: boolean = false, gene: string = 'BOTH', top: number = 15): void {
     if (cdr3 === null || cdr3 === undefined || cdr3.length === 0) {
       this.notifications.warn('Motifs CDR3', 'Empty search input');
       return;
     }
+    if (substring === true && cdr3.length < MotifService.minSubstringCDR3Length) {
+      this.notifications.warn('Motifs CDR3', `Length of CDR3 substring should be greater of equal than ${MotifService.minSubstringCDR3Length}`);
+      return;
+    }
     this.loadingState.next(true);
-    Utils.HTTP.post('/api/motifs/cdr3', { cdr3, top }).then((response) => {
+    Utils.HTTP.post('/api/motifs/cdr3', { cdr3, substring, gene, top }).then((response) => {
       const result = JSON.parse(response.response) as IMotifCDR3SearchResult;
       this.clusters.next(result);
       this.loadingState.next(false);

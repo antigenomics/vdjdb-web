@@ -14,8 +14,16 @@
   ~     limitations under the License.
   -->
 
-<div class="ui list" motif-search-tree-level [level]="metadata.root" *ngIf="metadata; else loader"
-     (onSelect)="onFilterReceived($event)" (onDiscard)="onDiscardReceived($event)">
+<div class="ui list">
+    <div class="item">
+        <div class="content">
+            <div class="header">All motifs</div>
+            <div class="description">Browse motifs using the tree</div>
+            <div class="ui list" motif-search-tree-level [level]="metadata.root" *ngIf="metadata; else loader"
+                 (onSelect)="onFilterReceived($event)" (onDiscard)="onDiscardReceived($event)">
+            </div>
+        </div>
+    </div>
 </div>
 <ng-template #loader>
     <div class="ui active text centered inline loader">Loading metadata</div>

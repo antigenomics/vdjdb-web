@@ -15,7 +15,7 @@
  */
 
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { IMotifEpitopeViewOptions, IMotifsMetadata, IMotifsMetadataTreeLevelValue } from 'pages/motif/motif';
+import { IMotifCDR3SearchResultOptions, IMotifEpitopeViewOptions, IMotifsMetadata, IMotifsMetadataTreeLevelValue } from 'pages/motif/motif';
 import { MotifSearchState, MotifService } from 'pages/motif/motif.service';
 
 @Component({
@@ -34,8 +34,8 @@ export class MotifSearchUtilComponent {
   @Input('options')
   public options: IMotifEpitopeViewOptions;
 
-  @Input('cdr3')
-  public cdr3: string;
+  @Input('cdr3SearchOptions')
+  public cdr3SearchOptions: IMotifCDR3SearchResultOptions;
 
   constructor(private motifService: MotifService) {}
 

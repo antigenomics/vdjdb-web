@@ -18,9 +18,8 @@ package backend.server.motifs
 
 import backend.models.files.temporary.{TemporaryFileLink, TemporaryFileProvider}
 import backend.server.database.Database
-import backend.server.motifs.api.cdr3.{MotifCDR3SearchEntry, MotifCDR3SearchResult}
+import backend.server.motifs.api.cdr3.{MotifCDR3SearchEntry, MotifCDR3SearchResult, MotifCDR3SearchResultOptions}
 import backend.server.motifs.api.epitope.{MotifCluster, MotifEpitope}
-import backend.server.motifs.api.export.ClusterMembersExportResponse
 import backend.server.motifs.api.filter.{MotifsSearchTreeFilter, MotifsSearchTreeFilterResult}
 import backend.server.motifs.export.ClusterMembersConverter
 import javax.inject.{Inject, Singleton}
@@ -28,10 +27,11 @@ import tech.tablesaw.api.{ColumnType, Table}
 import tech.tablesaw.io.csv.CsvReadOptions
 
 import scala.collection.JavaConverters._
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
+import scala.util.Success
 
 @Singleton
-case class Motifs @Inject()(database: Database)(implicit tfp: TemporaryFileProvider) {
+case class Motifs @Inject()(database: Database)(implicit tfp: TemporaryFileProvider, ec: ExecutionContext) {
   private final val members = Motifs.parseClusterMembersFileIntoDataFrame(database.getClusterMembersFile.map(_.getPath))
   private final val table = Motifs.parseMotifFileIntoDataFrame(database.getMotifFile.map(_.getPath))
 
@@ -61,8 +61,24 @@ case class Motifs @Inject()(database: Database)(implicit tfp: TemporaryFileProvi
     }
   }
 
-  def cdr3(cdr3: String, top: Int): Option[MotifCDR3SearchResult] = {
-    val mapped = table.where(table.intColumn("len").isEqualTo(cdr3.length.toDouble)).splitOn(table.stringColumn("cid")).asTableList().asScala.map { t =>
+  def cdr3(cdr3: String, substring: Boolean, gene: String, top: Int): Future[MotifCDR3SearchResult] = {
+    if (substring) {
+      substring_cdr3(cdr3, gene, top)
+    } else {
+      whole_cdr3(cdr3, gene, top)
+    }
+  }
+
+  private def whole_cdr3(cdr3: String, gene: String, top: Int): Future[MotifCDR3SearchResult] = Future.successful {
+    val filterRules = table.intColumn("len").isEqualTo(cdr3.length.toDouble)
+      .and(
+        if (gene != "TRA" && gene != "TRB")
+          table.stringColumn("gene").isIn("TRA", "TRB")
+        else
+          table.stringColumn("gene").isEqualTo(gene)
+      )
+
+    val mapped = table.where(filterRules).splitOn(table.stringColumn("cid")).asTableList().asScala.map { t =>
       val info: Seq[(Double, Double)] = t.splitOn("pos").asTableList().asScala.map { p =>
         val posSet = p.intColumn("pos").asScala.toSet
         assert(posSet.size == 1)
@@ -85,10 +101,29 @@ case class Motifs @Inject()(database: Database)(implicit tfp: TemporaryFileProvi
     }
 
     val safeTop = Math.max(1, Math.min(Motifs.maxTopValueInCDR3Search, top))
-    val clusters = mapped.sortWith(_._1 > _._1).take(safeTop).map { case (i, _, cluster) => MotifCDR3SearchEntry(i, cluster) }
-    val clustersNorm = mapped.sortWith(_._2 > _._2).take(safeTop).map { case (_, in, cluster) => MotifCDR3SearchEntry(in, cluster) }
+    val clusters = mapped.sortWith(_._1 > _._1).take(safeTop).map { case (i, _, cluster) => MotifCDR3SearchEntry(i, cdr3, cluster) }
+    val clustersNorm = mapped.sortWith(_._2 > _._2).take(safeTop).map { case (_, in, cluster) => MotifCDR3SearchEntry(in, cdr3, cluster) }
 
-    Some(MotifCDR3SearchResult(cdr3, safeTop, clusters, clustersNorm))
+    MotifCDR3SearchResult(MotifCDR3SearchResultOptions(cdr3, safeTop, gene, substring = false), clusters, clustersNorm)
+  }
+
+  private def substring_cdr3(cdr3: String, gene: String, top: Int): Future[MotifCDR3SearchResult] = {
+    if (cdr3.length < Motifs.minSubstringCDR3Length || cdr3.length > Motifs.maxSubstringCDR3Length) {
+      Future.failed(new IllegalArgumentException("Illegal CDR3 length"))
+    } else {
+      val safeTop = Math.max(1, Math.min(Motifs.maxTopValueInCDR3Search, top))
+
+      val fakeCDR3s = (Math.max(cdr3.length, 10) to Motifs.maxSubstringCDR3Length + 1).flatMap(length => {
+        (0 to (length - cdr3.length)).map(f => ("X" * f) + cdr3 + ("X" * (length - cdr3.length - f)))
+      })
+
+      val futureResults = Future.sequence(fakeCDR3s.map(fake => whole_cdr3(fake, gene, safeTop)).map(_.transform(Success(_)))).map(_.collect { case Success(x) => x })
+      val topEntries = futureResults.map(_.map(s => (s.clusters, s.clustersNorm)).reduce((l, r) => (l._1 ++ r._1, l._2 ++ r._2))).map(d => {
+        (d._1.sortWith(_.info > _.info).take(safeTop), d._2.sortWith(_.info > _.info).take(safeTop))
+      })
+
+      topEntries.map(e => MotifCDR3SearchResult(MotifCDR3SearchResultOptions(cdr3, safeTop, gene, substring = true), e._1, e._2))
+    }
   }
 
   def members(cid: String, format: String): Option[Future[TemporaryFileLink]] = {
@@ -98,6 +133,8 @@ case class Motifs @Inject()(database: Database)(implicit tfp: TemporaryFileProvi
 
 object Motifs {
   private final val maxTopValueInCDR3Search: Int = 15
+  private final val minSubstringCDR3Length: Int = 3
+  private final val maxSubstringCDR3Length: Int = 30
 
   def parseMotifFileIntoDataFrame(path: Option[String]): Table = {
     path match {
@@ -108,20 +145,20 @@ object Motifs {
           ColumnType.STRING, // antigen.epitope
           ColumnType.STRING, // gene
           ColumnType.STRING, // aa
-          ColumnType.INTEGER,// pos
-          ColumnType.INTEGER,// len
+          ColumnType.INTEGER, // pos
+          ColumnType.INTEGER, // len
           ColumnType.STRING, // v.segm.repr
           ColumnType.STRING, // j.segm.repr
           ColumnType.STRING, // cid
-          ColumnType.INTEGER,// csz
-          ColumnType.INTEGER,// count
-          ColumnType.SKIP,   // count.bg
-          ColumnType.SKIP,   // total.bg
-          ColumnType.SKIP,   // count.bg.i
-          ColumnType.SKIP,   // total.bg.i
-          ColumnType.SKIP,   // need.impute
+          ColumnType.INTEGER, // csz
+          ColumnType.INTEGER, // count
+          ColumnType.SKIP, // count.bg
+          ColumnType.SKIP, // total.bg
+          ColumnType.SKIP, // count.bg.i
+          ColumnType.SKIP, // total.bg.i
+          ColumnType.SKIP, // need.impute
           ColumnType.DOUBLE, // freq
-          ColumnType.SKIP,   // freq.bg
+          ColumnType.SKIP, // freq.bg
           ColumnType.DOUBLE, // I
           ColumnType.DOUBLE, // I.norm
           ColumnType.DOUBLE, // height.I

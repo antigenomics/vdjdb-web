@@ -17,8 +17,25 @@
 <div class="ui form">
     <div class="ui field">
         <div class="ui fluid action input">
-            <input type="text" placeholder="Search by CDR3..." [(ngModel)]="input">
+            <input type="text" [attr.placeholder]="placeholder" [(ngModel)]="input">
             <div class="ui button" (click)="search()">Search</div>
+        </div>
+    </div>
+    <div class="ui field">
+        <div class="ui selection dropdown item" dropdown [content]="content">
+            Gene: {{ gene }}
+            <i class="dropdown icon"></i>
+            <div class="menu fade element slow padded" tabindex="-1" #content>
+                <a (click)="setGene('TRA')" class="item">TRA</a>
+                <a (click)="setGene('TRB')" class="item">TRB</a>
+                <a (click)="setGene('Both')" class="item">Both</a>
+            </div>
+        </div>
+    </div>
+    <div class="ui field">
+        <div class="ui checkbox" (click)="toggleSubstring()">
+            <input type="checkbox" [ngModel]="substring">
+            <label>Search by substring</label>
         </div>
     </div>
 </div>

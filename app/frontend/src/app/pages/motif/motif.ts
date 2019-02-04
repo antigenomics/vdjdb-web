@@ -71,6 +71,9 @@ export interface IMotifClusterMeta {
   readonly gene: string;
   readonly mhcclass: string;
   readonly mhca: string;
+  readonly mhcb: string;
+  readonly antigenGene: string;
+  readonly antigenSpecies: string;
 }
 
 export interface IMotifCluster {
@@ -92,12 +95,19 @@ export interface IMotifEpitope {
 
 export interface IMotifCDR3SearchEntry {
   info: number;
+  cdr3: string;
   cluster: IMotifCluster;
 }
 
-export interface IMotifCDR3SearchResult {
+export interface IMotifCDR3SearchResultOptions {
   cdr3: string;
   top: number;
+  gene: string;
+  substring: boolean;
+}
+
+export interface IMotifCDR3SearchResult {
+  options: IMotifCDR3SearchResultOptions;
   clusters: IMotifCDR3SearchEntry[];
   clustersNorm: IMotifCDR3SearchEntry[];
 }

@@ -15,6 +15,7 @@
  */
 
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { IMotifCDR3SearchResultOptions } from 'pages/motif/motif';
 import { MotifService } from 'pages/motif/motif.service';
 
 @Component({
@@ -24,12 +25,32 @@ import { MotifService } from 'pages/motif/motif.service';
 })
 export class MotifSearchCDR3Component {
 
-  @Input('input')
   public input: string = '';
+  public substring: boolean = false;
+  public gene: string = 'TRA';
+
+  @Input('options')
+  public set options(options: IMotifCDR3SearchResultOptions) {
+    this.input = options.cdr3;
+    this.substring = options.substring;
+    this.gene = options.gene;
+  }
+
+  public get placeholder(): string {
+    return this.substring ? 'Search by CDR3 substring...' : 'Search by whole CDR3 sequence...';
+  }
 
   constructor(private motifService: MotifService) {}
 
   public search(): void {
-    this.motifService.searchCDR3(this.input);
+    this.motifService.searchCDR3(this.input, this.substring, this.gene);
+  }
+
+  public toggleSubstring(): void {
+    this.substring = !this.substring;
+  }
+
+  public setGene(gene: string): void {
+    this.gene = gene;
   }
 }

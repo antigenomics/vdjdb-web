@@ -14,11 +14,11 @@
   ~     limitations under the License.
   -->
 
-<ng-container *ngIf="clusters; else notLoaded">
+<ng-container *ngIf="clusters && clusters.clusters && clusters.clustersNorm; else notLoaded">
     <div class="ui segments" style="margin-top: 10px">
         <ng-container *ngIf="clusters.clusters.length !== 0; else empty">
             <div class="ui segment header">
-                <div class="content">Motifs found for {{ clusters.cdr3 }}</div>
+                <div class="content">Motifs found for {{ clusters.options.cdr3 }}</div>
             </div>
             <div class="ui clearing segment">
                 Top
@@ -36,20 +36,20 @@
             </div>
             <div class="ui clearing segment" *ngFor="let entry of getClustersEntries()">
                 <h5 class="ui header">
-                    <div class="content">Informativeness: {{ entry.info.toFixed(3) }}</div>
+                    <div class="content">Informativeness: {{ entry.info.toFixed(3) }}&nbsp;&nbsp;&nbsp;{{ getCDR3SubstringHelpContent(entry) }}</div>
                 </h5>
-                <motif-epitope-cluster [cluster]="entry.cluster" [hit]="getCDR3Hitbox()" [isNormalized]="options.isNormalized"></motif-epitope-cluster>
+                <motif-epitope-cluster [cluster]="entry.cluster" [hit]="getCDR3Hitbox(entry)" [isNormalized]="options.isNormalized"></motif-epitope-cluster>
             </div>
         </ng-container>
         <ng-template #empty>
             <div class="ui segment">
-                <h2 class="ui center aligned icon header" style="margin-top: 25px">No clusters found for {{ clusters.cdr3 }}</h2>
+                <h2 class="ui center aligned icon header" style="margin-top: 25px">No clusters found for {{ clusters.options.cdr3 }}</h2>
             </div>
         </ng-template>
     </div>
 </ng-container>
 <ng-template #notLoaded>
     <h2 class="ui center aligned icon header" style="margin-top: 10px"><i class="search icon"></i> Empty search input
-        <div class="sub header">To find clusters associated with specific cdr3 you can use the filter input on the left side of the page</div>
+        <div class="sub header">To find clusters associated with specific CDR3 you can use the filter input on the left side of the page</div>
     </h2>
 </ng-template>

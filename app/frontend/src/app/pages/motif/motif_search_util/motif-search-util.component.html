@@ -20,8 +20,9 @@
 </div>
 <div class="ui attached segment">
     <motif-view-options [options]="options" (onOptionsChange)="onOptionsChange($event)"></motif-view-options>
+    <div class="ui divider"></div>
     <div style="margin-top: 15px">
         <motif-search-tree [metadata]="metadata" [selected]="selected" *ngIf="isStateSearchTree()"></motif-search-tree>
-        <motif-search-cdr3 [input]="cdr3" *ngIf="isStateSearchCDR3()"></motif-search-cdr3>
+        <motif-search-cdr3 [options]="cdr3SearchOptions" *ngIf="isStateSearchCDR3()"></motif-search-cdr3>
     </div>
 </div>

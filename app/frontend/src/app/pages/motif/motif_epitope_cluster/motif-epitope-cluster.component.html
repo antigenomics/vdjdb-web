@@ -18,13 +18,16 @@
     <div class="content with-options">
         <span>ID: {{ cluster.clusterId }}</span>&nbsp;&nbsp;&nbsp;
         <span>Cluster size: {{ cluster.size }}</span>&nbsp;&nbsp;&nbsp;
-        <span>Cluster length: {{ cluster.length }}</span>&nbsp;&nbsp;&nbsp;
+        <span>CDR3 length: {{ cluster.length }}</span>&nbsp;&nbsp;&nbsp;
         <span>{{ cluster.vsegm }}&nbsp;/&nbsp;{{ cluster.jsegm }}</span>
         <div class="sub header">
             <span>Species: {{ cluster.meta.species }}</span>&nbsp;&nbsp;&nbsp;
             <span>Gene: {{ cluster.meta.gene }}</span>&nbsp;&nbsp;&nbsp;
             <span>MHC.class: {{ cluster.meta.mhcclass }}</span>&nbsp;&nbsp;&nbsp;
             <span>MHC.A: {{ cluster.meta.mhca }}</span>&nbsp;&nbsp;&nbsp;
+            <span>MHC.B: {{ cluster.meta.mhcb }}</span>&nbsp;&nbsp;&nbsp;
+            <span>Antigen.Gene: {{ cluster.meta.antigenGene }}</span>&nbsp;&nbsp;&nbsp;
+            <span>Antigen.Species: {{ cluster.meta.antigenSpecies }}</span>&nbsp;&nbsp;&nbsp;
         </div>
     </div>
 </h5>
