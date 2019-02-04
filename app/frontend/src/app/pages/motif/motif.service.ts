@@ -259,10 +259,10 @@ export class MotifService {
     });
   }
 
-  public findTreeLevelValue(search: string): Observable<IMotifsMetadataTreeLevelValue[]> {
+  public findTreeLevelValue(hash: string): Observable<IMotifsMetadataTreeLevelValue[]> {
     return this.metadata.pipe(take(1), map((metadata) => {
       return MotifService.extractMetadataTreeLeafValues(metadata.root)
-        .filter(([ name, _ ]) => name === search)
+        .filter(([ h, _ ]) => h === hash)
         .map(([ _, value ]) => value);
     }));
   }
@@ -270,7 +270,7 @@ export class MotifService {
   private static extractMetadataTreeLeafValues(tree: IMotifsMetadataTreeLevel): Array<[ string, IMotifsMetadataTreeLevelValue ]> {
     return Utils.Array.flattened(tree.values.map((v) => {
       if (v.next === null) {
-        return [ [ v.value, v ] ] as Array<[ string, IMotifsMetadataTreeLevelValue ]>;
+        return [ [ v.hash, v ] ] as Array<[ string, IMotifsMetadataTreeLevelValue ]>;
       } else {
         return MotifService.extractMetadataTreeLeafValues(v.next);
       }
