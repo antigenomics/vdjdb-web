@@ -181,8 +181,8 @@ export class MotifService {
     Utils.HTTP.post('/api/motifs/filter', treeFilter).then((response) => {
       const result = JSON.parse(response.response) as IMotifsSearchTreeFilterResult;
       this.epitopes.pipe(take(1)).subscribe((epitopes) => {
-        const names = epitopes.map((epitope) => epitope.epitope);
-        const newEpitopes = result.epitopes.filter((epitope) => names.indexOf(epitope.epitope) === -1);
+        const hashes = epitopes.map((epitope) => epitope.hash);
+        const newEpitopes = result.epitopes.filter((epitope) => hashes.indexOf(epitope.hash) === -1);
         this.epitopes.next([ ...epitopes, ...newEpitopes ]);
         this.loadingState.next(false);
         this.notifications.info('Motifs', 'Loaded successfully', 1000); // tslint:disable-line:no-magic-numbers
@@ -253,8 +253,8 @@ export class MotifService {
 
   public updateEpitopes(): void {
     combineLatest(this.selected, this.epitopes).pipe(take(1)).subscribe(([ selected, epitopes ]) => {
-      const selectedEpitopeNames = selected.map((s) => s.value);
-      const remainingEpitopes = epitopes.filter((e) => selectedEpitopeNames.indexOf(e.epitope) !== -1);
+      const selectedEpitopeHashes = selected.map((s) => s.hash);
+      const remainingEpitopes = epitopes.filter((e) => selectedEpitopeHashes.indexOf(e.hash) !== -1);
       this.epitopes.next(remainingEpitopes);
     });
   }
