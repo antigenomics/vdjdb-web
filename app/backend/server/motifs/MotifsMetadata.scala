@@ -25,6 +25,6 @@ object MotifsMetadata {
   implicit val motifsMetadataFormat: Format[MotifsMetadata] = Json.format[MotifsMetadata]
 
   def generateMetadataFromLevels(table: Table, levels: Seq[String]): MotifsMetadata = {
-    MotifsMetadata(MotifsMetadataTreeLevel.createTreeLevelFromTable(table, levels.head, levels.tail))
+    MotifsMetadata(MotifsMetadataTreeLevel.createTreeLevelFromTable(table, levels.head, levels.tail, ""))
   }
 }
