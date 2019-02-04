@@ -18,11 +18,11 @@
     <div class="fourteen wide column">
         <div class="ui checkbox" (click)="normalize()">
             <input type="checkbox" [ngModel]="options.isNormalized">
-            <label>Normalize</label>
+            <label>Subtract VDJ rearrangement background</label>
         </div>
     </div>
     <div class="two wide column cursor pointer" popup="Normalize position-weight matrices by background frequency of CDR3 residues in naive T-cell repertoire.
-            This aids in removing large information scores produced by V/J germline parts at CDR3 boundaries." header="Normalize" position="left">
+            This aids in removing large information scores produced by V/J germline parts at CDR3 boundaries." header="Subtract VDJ rearrangement background" position="left">
         <i class="help icon"></i>
     </div>
 </div>

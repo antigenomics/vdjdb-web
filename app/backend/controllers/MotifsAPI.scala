@@ -56,16 +56,14 @@ class MotifsAPI @Inject()(cc: ControllerComponents, motifs: Motifs, configuratio
   }
 
   def cdr3: Action[AnyContent] = Action.async { implicit request =>
-    Future.successful {
-      request.body.asJson.map { json =>
-        json.validate[MotifCDR3SearchRequest].map {
-          search => motifs.cdr3(search.cdr3, search.top).map { r => Ok(toJson(r)) }.getOrElse(BadRequest("Invalid filter provided"))
-        }.recoverTotal {
-          e => BadRequest("Detected error:" + JsError.toFlatForm(e))
-        }
-      }.getOrElse {
-        BadRequest("Expecting Json data")
+    request.body.asJson.map { json =>
+      json.validate[MotifCDR3SearchRequest].map {
+        search => motifs.cdr3(search.cdr3, search.substring, search.gene, search.top).map { r => Ok(toJson(r)) }.recover { case _ => BadRequest("Bad request") }
+      }.recoverTotal {
+        e => Future.successful(BadRequest("Detected error:" + JsError.toFlatForm(e)))
       }
+    }.getOrElse {
+      Future.successful(BadRequest("Expecting Json data"))
     }
   }
 

@@ -43,8 +43,12 @@ export class MotifCDR3ClustersComponent {
     return entries.slice(0, this.top);
   }
 
-  public getCDR3Hitbox(): string {
-    return this.isHitboxVisible ? this.clusters.cdr3 : undefined;
+  public getCDR3Hitbox(entry: IMotifCDR3SearchEntry): string {
+    return this.isHitboxVisible ? entry.cdr3 : undefined;
+  }
+
+  public getCDR3SubstringHelpContent(entry: IMotifCDR3SearchEntry): string {
+    return entry.cdr3.indexOf('X') !== -1 ? `Pattern: ${entry.cdr3.replace(/X/g, 'x')}` : '';
   }
 
   public toggleHitboxVisibility(): void {

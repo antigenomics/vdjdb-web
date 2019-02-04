@@ -44,10 +44,13 @@ object MotifCluster {
     val gene = table.stringColumn("gene").asSet.asScala
     val mhcclass = table.stringColumn("mhc.class").asSet.asScala
     val mhca = table.stringColumn("mhc.a").asSet.asScala
+    val mhcb = table.stringColumn("mhc.b").asSet.asScala
+    val antigenGene = table.stringColumn("antigen.gene").asSet.asScala
+    val antigenSpecies = table.stringColumn("antigen.species").asSet.asScala
 
-    assert(species.size == 1 && gene.size == 1 && mhcclass.size == 1 && mhca.size == 1)
+    assert(species.size == 1 && gene.size == 1 && mhcclass.size == 1 && mhca.size == 1 && mhcb.size == 1 && antigenGene.size == 1 && antigenSpecies.size == 1)
 
-    val meta = MotifClusterMeta(species.head, gene.head, mhcclass.head, mhca.head)
+    val meta = MotifClusterMeta(species.head, gene.head, mhcclass.head, mhca.head, mhcb.head, antigenGene.head, antigenSpecies.head)
 
     MotifCluster(clusterId, size, length, v.head, j.head, entries, meta)
   }

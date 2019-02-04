@@ -19,7 +19,7 @@ package backend.server.motifs.api.cdr3
 import backend.server.motifs.api.epitope.MotifCluster
 import play.api.libs.json.{Format, Json}
 
-case class MotifCDR3SearchEntry(info: Double, cluster: MotifCluster)
+case class MotifCDR3SearchEntry(info: Double, cdr3: String, cluster: MotifCluster)
 
 object MotifCDR3SearchEntry {
   implicit val motifCDR3SearchEntry: Format[MotifCDR3SearchEntry] = Json.format[MotifCDR3SearchEntry]

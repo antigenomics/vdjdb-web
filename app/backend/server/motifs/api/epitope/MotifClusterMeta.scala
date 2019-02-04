@@ -18,7 +18,7 @@ package backend.server.motifs.api.epitope
 
 import play.api.libs.json.{Format, Json}
 
-case class MotifClusterMeta(species: String, gene: String, mhcclass: String, mhca: String)
+case class MotifClusterMeta(species: String, gene: String, mhcclass: String, mhca: String, mhcb: String, antigenGene: String, antigenSpecies: String)
 
 object MotifClusterMeta {
   implicit val motifMetaFormat: Format[MotifClusterMeta] = Json.format[MotifClusterMeta]
