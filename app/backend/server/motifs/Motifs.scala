@@ -22,6 +22,7 @@ import backend.server.motifs.api.cdr3.{MotifCDR3SearchEntry, MotifCDR3SearchResu
 import backend.server.motifs.api.epitope.{MotifCluster, MotifEpitope}
 import backend.server.motifs.api.filter.{MotifsSearchTreeFilter, MotifsSearchTreeFilterResult}
 import backend.server.motifs.export.ClusterMembersConverter
+import backend.utils.CommonUtils
 import javax.inject.{Inject, Singleton}
 import tech.tablesaw.api.{ColumnType, Table}
 import tech.tablesaw.io.csv.CsvReadOptions
@@ -34,6 +35,7 @@ import scala.util.Success
 case class Motifs @Inject()(database: Database)(implicit tfp: TemporaryFileProvider, ec: ExecutionContext) {
   private final val members = Motifs.parseClusterMembersFileIntoDataFrame(database.getClusterMembersFile.map(_.getPath))
   private final val table = Motifs.parseMotifFileIntoDataFrame(database.getMotifFile.map(_.getPath))
+  private final val cdr3Range = Motifs.parseCDR3LengthRange(table)
 
   private final val metadataLevels = Seq("species", "gene", "mhc.class", "mhc.a", "antigen.epitope")
   private final val metadata = MotifsMetadata.generateMetadataFromLevels(table, metadataLevels)
@@ -49,10 +51,19 @@ case class Motifs @Inject()(database: Database)(implicit tfp: TemporaryFileProvi
       table.where(selection).splitOn(table.stringColumn("antigen.epitope")).asTableList().asScala.map { epitopeTable =>
         val epitopes = epitopeTable.stringColumn("antigen.epitope").asSet()
 
-        assert(epitopes.size() == 1)
+        assert(epitopes.size == 1)
+
+        val hash = CommonUtils.md5(metadataLevels.map(level => {
+          val meta = epitopeTable.stringColumn(level).asSet.asScala
+
+          assert(meta.size == 1)
+
+          meta.head
+        }).reduce(_ + _))
 
         MotifEpitope(
           epitopes.asScala.toSeq.head,
+          hash,
           epitopeTable.splitOn(table.stringColumn("cid")).asTableList().asScala.map(MotifCluster.fromTable)
         )
       }
@@ -108,12 +119,14 @@ case class Motifs @Inject()(database: Database)(implicit tfp: TemporaryFileProvi
   }
 
   private def substring_cdr3(cdr3: String, gene: String, top: Int): Future[MotifCDR3SearchResult] = {
-    if (cdr3.length < Motifs.minSubstringCDR3Length || cdr3.length > Motifs.maxSubstringCDR3Length) {
+    if (cdr3.length < Motifs.minSubstringCDR3Length) {
       Future.failed(new IllegalArgumentException("Illegal CDR3 length"))
+    } else if (cdr3.length > cdr3Range._2) {
+      Future.successful(MotifCDR3SearchResult(MotifCDR3SearchResultOptions(cdr3, top, gene, substring = true), Seq(), Seq()))
     } else {
       val safeTop = Math.max(1, Math.min(Motifs.maxTopValueInCDR3Search, top))
 
-      val fakeCDR3s = (Math.max(cdr3.length, 10) to Motifs.maxSubstringCDR3Length + 1).flatMap(length => {
+      val fakeCDR3s = (Math.max(cdr3.length, cdr3Range._1) to cdr3Range._2 + 1).flatMap(length => {
         (0 to (length - cdr3.length)).map(f => ("X" * f) + cdr3 + ("X" * (length - cdr3.length - f)))
       })
 
@@ -134,7 +147,6 @@ case class Motifs @Inject()(database: Database)(implicit tfp: TemporaryFileProvi
 object Motifs {
   private final val maxTopValueInCDR3Search: Int = 15
   private final val minSubstringCDR3Length: Int = 3
-  private final val maxSubstringCDR3Length: Int = 30
 
   def parseMotifFileIntoDataFrame(path: Option[String]): Table = {
     path match {
@@ -209,5 +221,10 @@ object Motifs {
         Table.read().csv(options)
       case None => Table.create("")
     }
+  }
+
+  def parseCDR3LengthRange(table: Table): (Int, Int) = {
+    val lengths = table.intColumn("len").asScala.toSet
+    (lengths.min, lengths.max)
   }
 }

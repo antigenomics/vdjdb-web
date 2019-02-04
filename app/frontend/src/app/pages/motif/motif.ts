@@ -21,7 +21,7 @@ export interface IMotifsMetadataTreeLevel {
 
 export interface IMotifsMetadataTreeLevelValue {
   readonly value: string;
-  readonly description?: string;
+  readonly hash?: string;
   readonly next: IMotifsMetadataTreeLevel | null;
   isOpened?: boolean;
   isSelected?: boolean;
@@ -88,6 +88,7 @@ export interface IMotifCluster {
 
 export interface IMotifEpitope {
   readonly epitope: string;
+  readonly hash: string;
   readonly clusters: IMotifCluster[];
 }
 
