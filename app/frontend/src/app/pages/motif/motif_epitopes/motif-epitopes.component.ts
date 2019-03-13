@@ -34,7 +34,7 @@ export class MotifEpitopesComponent {
   constructor(private motifService: MotifService) {}
 
   public onEpitopeDiscard(epitope: IMotifEpitope): void {
-    this.motifService.findTreeLevelValue(epitope.epitope).pipe(take(1)).subscribe((values) => {
+    this.motifService.findTreeLevelValue(epitope.hash).pipe(take(1)).subscribe((values) => {
       values.forEach((value) => {
         this.motifService.discardTreeLevelValue(value);
       });
