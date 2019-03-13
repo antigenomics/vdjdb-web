@@ -14,24 +14,20 @@
  *     limitations under the License.
  */
 
-package backend.server.motifs.api.cdr3
-
-import backend.server.motifs.api.epitope.MotifCluster
-import play.api.libs.json.{Format, Json}
-
-case class MotifCDR3SearchEntry(info: Double, cdr3: String, cluster: MotifCluster) {
-
-  override def equals(obj: Any): Boolean = {
-    obj match {
-      case that: MotifCDR3SearchEntry => that.info == this.info && that.cluster.equals(this.cluster)
-      case _ => false
-    }
-  }
-
-  override def hashCode(): Int = info.hashCode() + cluster.hashCode()
-
+.column.section {
+    padding-top: 0.7rem !important;
+    padding-bottom: 0.7rem !important;
+    cursor: pointer;
+    -webkit-transition: background-color 0.1s ease-out 0.1s;
+    -moz-transition: background-color 0.1s ease-out 0.1s;
+    -o-transition: background-color 0.1s ease-out 0.1s;
+    transition: background-color 0.1s ease-out 0.1s;
 }
 
-object MotifCDR3SearchEntry {
-  implicit val motifCDR3SearchEntry: Format[MotifCDR3SearchEntry] = Json.format[MotifCDR3SearchEntry]
+.column.section:hover {
+    background-color: rgba(34, 36, 38, .05)
+}
+
+.column.section.active {
+    background-color: rgba(34, 36, 38, .10)
 }

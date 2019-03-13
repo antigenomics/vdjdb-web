@@ -15,10 +15,10 @@
   -->
 
 <div class="ui form">
-    <div class="ui field">
+    <div class="ui field" [ngClass]="{ 'error': !isCDR3PatternValid() }">
         <div class="ui fluid action input">
             <input type="text" [attr.placeholder]="placeholder" [(ngModel)]="input">
-            <div class="ui button" (click)="search()">Search</div>
+            <div class="ui button" (click)="search()" [ngClass]="{ 'disabled': !isCDR3PatternValid() }">Search</div>
         </div>
     </div>
     <div class="ui field">

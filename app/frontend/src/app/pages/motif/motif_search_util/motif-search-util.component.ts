@@ -21,6 +21,7 @@ import { MotifSearchState, MotifService } from 'pages/motif/motif.service';
 @Component({
   selector:        'motif-search-util',
   templateUrl:     './motif-search-util.component.html',
+  styleUrls:       [ './motif-search-util.component.css' ],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MotifSearchUtilComponent {

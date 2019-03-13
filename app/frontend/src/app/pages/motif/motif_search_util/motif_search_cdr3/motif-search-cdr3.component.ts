@@ -17,6 +17,7 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { IMotifCDR3SearchResultOptions } from 'pages/motif/motif';
 import { MotifService } from 'pages/motif/motif.service';
+import { Utils } from 'utils/utils';
 
 @Component({
   selector:        'motif-search-cdr3',
@@ -52,5 +53,9 @@ export class MotifSearchCDR3Component {
 
   public setGene(gene: string): void {
     this.gene = gene;
+  }
+
+  public isCDR3PatternValid(): boolean {
+    return Utils.SequencePattern.isPatternValidStrict(this.input);
   }
 }
