@@ -73,6 +73,11 @@ export abstract class Table<R extends TableRow> {
     this._events.next(TableEvent.LOADING);
   }
 
+  public stopLoading(): void {
+    this._loading = false;
+    this._events.next(TableEvent.UPDATED);
+  }
+
   public isEmpty(): boolean {
     return this.dirty && this._empty;
   }

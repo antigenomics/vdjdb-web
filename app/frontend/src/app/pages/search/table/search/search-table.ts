@@ -91,6 +91,8 @@ export class SearchTable extends Table<SearchTableRow> {
         this.notifications.error('Filters error', error);
       });
     }
+
+    this.stopLoading();
   }
 
   public async sort(column: string): Promise<void> {

@@ -73,10 +73,14 @@ case class Motifs @Inject()(database: Database)(implicit tfp: TemporaryFileProvi
   }
 
   def cdr3(cdr3: String, substring: Boolean, gene: String, top: Int): Future[MotifCDR3SearchResult] = {
-    if (substring) {
+    val results = if (substring) {
       substring_cdr3(cdr3, gene, top)
     } else {
       whole_cdr3(cdr3, gene, top)
+    }
+
+    results.map { r =>
+      MotifCDR3SearchResult(r.options, r.clusters.filter(_.info > 0.0), r.clustersNorm.filter(_.info > 0.0))
     }
   }
 
@@ -132,7 +136,7 @@ case class Motifs @Inject()(database: Database)(implicit tfp: TemporaryFileProvi
 
       val futureResults = Future.sequence(fakeCDR3s.map(fake => whole_cdr3(fake, gene, safeTop)).map(_.transform(Success(_)))).map(_.collect { case Success(x) => x })
       val topEntries = futureResults.map(_.map(s => (s.clusters, s.clustersNorm)).reduce((l, r) => (l._1 ++ r._1, l._2 ++ r._2))).map(d => {
-        (d._1.sortWith(_.info > _.info).take(safeTop), d._2.sortWith(_.info > _.info).take(safeTop))
+        (d._1.distinct.sortWith(_.info > _.info).take(safeTop), d._2.distinct.sortWith(_.info > _.info).take(safeTop))
       })
 
       topEntries.map(e => MotifCDR3SearchResult(MotifCDR3SearchResultOptions(cdr3, safeTop, gene, substring = true), e._1, e._2))
