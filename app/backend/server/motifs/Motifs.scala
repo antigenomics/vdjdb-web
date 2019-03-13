@@ -190,7 +190,11 @@ object Motifs {
           .header(true)
           .columnTypes(columnTypes)
         val options = builder.build()
-        Table.read().csv(options)
+        val table = Table.read().csv(options)
+
+        table.replaceColumn("mhc.a", table.stringColumn("mhc.a").replaceAll(":.+", "").setName("mhc.a"))
+        table.replaceColumn("mhc.b", table.stringColumn("mhc.b").replaceAll(":.+", "").setName("mhc.b"))
+
       case None => Table.create("")
     }
   }
