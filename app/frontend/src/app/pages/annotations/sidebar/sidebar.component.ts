@@ -77,7 +77,7 @@ export class AnnotationsSidebarState {
     const additionalRouteIndex = sampleRoute.indexOf('/');
     const sampleName = sampleRoute.substring(0, additionalRouteIndex === -1 ? sampleRoute.length : additionalRouteIndex);
     const route = sampleRoute.substring(sampleName.length, sampleRoute.length);
-    return [ sampleName, route ];
+    return [ decodeURIComponent(sampleName), route ];
   }
 }
 
