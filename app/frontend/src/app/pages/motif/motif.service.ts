@@ -16,7 +16,9 @@
 
 import { Injectable } from '@angular/core';
 import {
-  IMotifCDR3SearchResult, IMotifCDR3SearchResultOptions,
+  IMotifCDR3SearchEntry,
+  IMotifCDR3SearchResult,
+  IMotifCDR3SearchResultOptions,
   IMotifClusterMembersExportResponse,
   IMotifEpitope,
   IMotifEpitopeViewOptions,
@@ -166,6 +168,26 @@ export class MotifService {
     this.loadingState.next(true);
     Utils.HTTP.post('/api/motifs/cdr3', { cdr3, substring, gene, top }).then((response) => {
       const result = JSON.parse(response.response) as IMotifCDR3SearchResult;
+
+      const comparator = (l: IMotifCDR3SearchEntry, r: IMotifCDR3SearchEntry) => {
+        if (l.info < r.info) {
+          return 1;
+        } else if (l.info === r.info) {
+          if (l.cluster.size < r.cluster.size) {
+            return 1;
+          } else if (l.cluster.size > r.cluster.size) {
+            return -1;
+          } else {
+            return 0;
+          }
+        } else {
+          return -1;
+        }
+      };
+
+      result.clusters.sort(comparator);
+      result.clustersNorm.sort(comparator);
+
       this.clusters.next(result);
       this.loadingState.next(false);
       this.notifications.info('Motifs CDR3', 'Loaded successfully', 1000); // tslint:disable-line:no-magic-numbers
@@ -183,6 +205,17 @@ export class MotifService {
       this.epitopes.pipe(take(1)).subscribe((epitopes) => {
         const hashes = epitopes.map((epitope) => epitope.hash);
         const newEpitopes = result.epitopes.filter((epitope) => hashes.indexOf(epitope.hash) === -1);
+
+        newEpitopes.forEach((n) => n.clusters.sort((l, r) => {
+          if (l.size < r.size) {
+            return 1;
+          } else if (l.size > r.size) {
+            return -1;
+          } else {
+            return 0;
+          }
+        }));
+
         this.epitopes.next([ ...epitopes, ...newEpitopes ]);
         this.loadingState.next(false);
         this.notifications.info('Motifs', 'Loaded successfully', 1000); // tslint:disable-line:no-magic-numbers
