@@ -1,9 +1,9 @@
 @import play.api.Environment
 @import backend.utils.analytics.Analytics
 @import helper._
-@import backend.models.authorization.forms.LoginForm
 @import backend.models.authorization.user.UserProvider
-@(form: Form[LoginForm])(implicit environment: Environment, analytics: Analytics, request: Request[_], messages: Messages, flash: Flash, up: UserProvider)
+@import backend.models.authorization.forms.LoginTemporaryForm
+@(form: Form[LoginTemporaryForm])(implicit environment: Environment, analytics: Analytics, request: Request[_], messages: Messages, flash: Flash, up: UserProvider)
 @implicitField = @{
     FieldConstructor(frontend.views.html.authorization.forms.input.f)
 }
@@ -14,15 +14,15 @@
             <h3 class="ui top attached header">@messages("authorization.forms.login.login")</h3>
             <div class="ui attached segment teal padded">
                 <div class="ui fluid buttons">
-                    <a class="ui button" href="@backend.controllers.routes.Authorization.login()" rel="noopener">
+                    <a class="ui basic button" href="@backend.controllers.routes.Authorization.login()" rel="noopener">
                         @messages("authorization.forms.login.withEmail")
                     </a>
-                    <a class="ui basic button" href="@backend.controllers.routes.Authorization.temporaryLogin()" rel="noopener">
+                    <a class="ui button" href="@backend.controllers.routes.Authorization.temporaryLogin()" rel="noopener">
                         @messages("authorization.forms.login.withToken")
                     </a>
                 </div>
                 <div class="ui divider"></div>
-                @helper.form(action = backend.controllers.routes.Authorization.onLogin(), args = 'class -> "ui form", 'id -> "login") {
+                @helper.form(action = backend.controllers.routes.Authorization.onTemporaryLogin(), args = 'class -> "ui form", 'id -> "login") {
                     @if(form.hasGlobalErrors) {
                         @frontend.views.html.authorization.forms.formErrors(form.globalErrors)
                     }
@@ -39,28 +39,15 @@
                         @frontend.views.html.authorization.forms.formSuccess(Seq(flash.get("reset").get))
                     }
                     @CSRF.formField
-                    @inputText(form("email"), args = 'icon -> "mail",
-                        'placeholder -> messages("authorization.forms.login.placeholder.email"),
-                        'fieldType -> "email")
-                    @inputText(form("password"), args = 'icon -> "lock",
-                        'placeholder -> messages("authorization.forms.login.placeholder.password"),
-                        'fieldType -> "password")
-                    <p class="cursor pointer">
-                        <a href="@backend.controllers.routes.Authorization.resetRequest()">@messages("authorization.forms.login.forgot")</a>
-                    </p>
+                    @inputText(form("token"), args = 'icon -> "user",
+                        'placeholder -> messages("authorization.forms.login.placeholder.token"),
+                        'fieldType -> "text")
                     <button class="ui fluid large teal button" type="submit" form="login">@messages("authorization.forms.login.login")</button>
                 }
-                @if(up.getDemoUserConfiguration.enabled) {
-                    @helper.form(action = backend.controllers.routes.Authorization.onLogin(), args = 'id -> "demo-login") {
-                        @CSRF.formField
-                        <input name="email" value="@up.getDemoUserConfiguration.login" style="visibility: hidden">
-                        <input name="password" value="@up.getDemoUserConfiguration.password" style="visibility: hidden">
-                        <button class="ui fluid large blue button" type="submit" form="demo-login">@messages("authorization.forms.login.demo")</button>
-                    }
-                    <div class="ui divider"></div>
-                }
+
+                <div class="ui divider"></div>
                 <p>@messages("authorization.forms.login.signup.question")
-                    <a class="cursor pointer" href="@backend.controllers.routes.Authorization.signup()" rel="noopener">@messages("authorization.forms.login.signup")</a>
+                    <a class="cursor pointer" href="@backend.controllers.routes.Authorization.temporarySignup()" rel="noopener">@messages("authorization.forms.login.signup")</a>
                 </p>
                 <p class="cursor pointer">
                     <a href="@backend.controllers.routes.Application.index()" rel="noopener">

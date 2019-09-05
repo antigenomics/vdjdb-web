@@ -19,19 +19,15 @@ package backend.models.authorization.forms
 import play.api.data.Forms._
 import play.api.data._
 
-case class SignupTemporaryForm(token: String)
+case class LoginTemporaryForm(token: String)
 
-object SignupTemporaryForm {
-  final val TOKEN_MAX_LENGTH = 128
-
-  implicit val signupTemporaryFormMapping: Form[SignupTemporaryForm] = Form(
+object LoginTemporaryForm {
+  implicit val loginTemporaryFormMapping: Form[LoginTemporaryForm] = Form(
     mapping(
-      "token" -> nonEmptyText(maxLength = TOKEN_MAX_LENGTH)
-    )(SignupTemporaryForm.apply)(SignupTemporaryForm.unapply) verifying ("authorization.forms.signup.failed.invalidToken", { form =>
-      form.token.toLowerCase().forall(c => "abcdefghijklmnopqrstuvwxyz0123456789".contains(c))
-    })
+      "token" -> nonEmptyText
+    )(LoginTemporaryForm.apply)(LoginTemporaryForm.unapply)
   )
 
-  final val tokenInUseTemporaryFormMapping: Form[SignupTemporaryForm] =
-    signupTemporaryFormMapping.withGlobalError("authorization.forms.signup.failed.tokenInUse")
+  final val tokenNotFound: Form[LoginTemporaryForm] =
+    loginTemporaryFormMapping.withGlobalError("authorization.forms.login.failed.tokenNotFound")
 }
