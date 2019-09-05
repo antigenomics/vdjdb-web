@@ -1,12 +1,16 @@
 authorization.forms.login.login = Login
+authorization.forms.login.withEmail = With email
+authorization.forms.login.withToken = With token
 authorization.forms.login.demo = Demo
 authorization.forms.login.forgot = Forgot password?
 authorization.forms.login.back = Back to home
 authorization.forms.login.signup = Sign up
 authorization.forms.login.signup.question = Don't have an account?
+authorization.forms.login.placeholder.token = Token
 authorization.forms.login.placeholder.email = E-mail address
 authorization.forms.login.placeholder.password = Password
 authorization.forms.login.failed.unverified = Please verify your account
+authorization.forms.login.failed.tokenNotFound = Token not found
 authorization.forms.login.failed.message = Please check that you have entered your login and password correctly.
 authorization.forms.login.failed.workaround.1 = Check that Caps Lock is turned off
 authorization.forms.login.failed.workaround.2 = Check that you're using correct input language
@@ -14,9 +18,12 @@ authorization.forms.login.flashing.verified = Your account has been successfully
 authorization.forms.login.flashing.reset = Your password has been successfully changed
 
 authorization.forms.signup.signup = Signup
+authorization.forms.signup.withEmail = With email
+authorization.forms.signup.withToken = With token
 authorization.forms.signup.back = Back to home
 authorization.forms.signup.login = Log-in
 authorization.forms.signup.login.question = Already have an account?
+authorization.forms.signup.placeholder.token = Token
 authorization.forms.signup.placeholder.login = Login
 authorization.forms.signup.placeholder.email = E-mail address
 authorization.forms.signup.placeholder.password = Password
@@ -29,7 +36,10 @@ authorization.forms.signup.failed.workaround.2 = E-mail address field should be 
 authorization.forms.signup.failed.workaround.3 = Passwords should match
 authorization.forms.signup.failed.workaround.4 = E-mail address is too long
 authorization.forms.signup.failed.alreadyExists = User already exists. Click forgot password link if you don't remember your credentials
+authorization.forms.signup.failed.tokenInUse = Token already in use.
 authorization.forms.signup.failed.invalidToken = Token can only contain letters and numbers
+authorization.forms.signup.token.description = You can create a temporary user which will be deleted in 24 hours. \
+  Enter any easily remembered private token which you should use to access this temporary account in the future.  
 
 authorization.forms.reset.reset = Reset
 authorization.forms.reset.back = Back to home

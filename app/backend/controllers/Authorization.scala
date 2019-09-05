@@ -17,7 +17,7 @@
 package backend.controllers
 
 import backend.actions.{SessionAction, UserRequestAction}
-import backend.models.authorization.forms.{LoginForm, ResetForm, ResetRequestForm, SignupForm}
+import backend.models.authorization.forms._
 import backend.models.authorization.permissions.UserPermissionsProvider
 import backend.models.authorization.tokens.reset.ResetTokenProvider
 import backend.models.authorization.tokens.session.SessionTokenProvider
@@ -34,12 +34,17 @@ import play.api.mvc._
 import scala.async.Async.{async, await}
 import scala.concurrent.{ExecutionContext, Future}
 
-class Authorization @Inject()(cc: ControllerComponents, messagesApi: MessagesApi, userRequestAction: UserRequestAction, emails: EmailsService)
-                             (implicit ec: ExecutionContext,
-                              up: UserProvider, vtp: VerificationTokenProvider, stp: SessionTokenProvider, rtp: ResetTokenProvider,
-                              environment: Environment, analytics: Analytics, upp: UserPermissionsProvider)
-  extends AbstractController(cc) {
-  private final val logger = LoggerFactory.getLogger(this.getClass)
+class Authorization @Inject()(cc: ControllerComponents, messagesApi: MessagesApi, userRequestAction: UserRequestAction, emails: EmailsService)(
+  implicit ec: ExecutionContext,
+  up: UserProvider,
+  vtp: VerificationTokenProvider,
+  stp: SessionTokenProvider,
+  rtp: ResetTokenProvider,
+  environment: Environment,
+  analytics: Analytics,
+  upp: UserPermissionsProvider
+) extends AbstractController(cc) {
+  final private val logger        = LoggerFactory.getLogger(this.getClass)
   implicit val messages: Messages = messagesApi.preferred(Seq(Lang.defaultLang))
 
   def login: Action[AnyContent] = (userRequestAction andThen SessionAction.unauthorizedOnly) { implicit request =>
@@ -48,26 +53,47 @@ class Authorization @Inject()(cc: ControllerComponents, messagesApi: MessagesApi
 
   def onLogin: Action[AnyContent] = (userRequestAction andThen SessionAction.unauthorizedOnly).async { implicit request =>
     LoginForm.loginFormMapping.bindFromRequest.fold(
-      formWithErrors => async {
-        BadRequest(frontend.views.html.authorization.login(formWithErrors))
-      },
+      formWithErrors =>
+        async {
+          BadRequest(frontend.views.html.authorization.login(formWithErrors))
+        },
       form => {
         up.get(form.email).flatMap {
-          case Some(user) => async {
-            if (user.verified) {
-              if (user.checkPassword(form.password)) {
-                val sessionToken = await(stp.createSessionToken(user))
-                val session = request.session + ((stp.getAuthTokenSessionName, sessionToken))
-                Redirect(backend.controllers.routes.Application.index())
-                  .withSession(session)
+          case Some(user) =>
+            async {
+              if (user.verified) {
+                if (user.checkPassword(form.password)) {
+                  val sessionToken = await(stp.createSessionToken(user))
+                  val session      = request.session + ((stp.getAuthTokenSessionName, sessionToken))
+                  Redirect(backend.controllers.routes.Application.index())
+                    .withSession(session)
+                } else {
+                  BadRequest(frontend.views.html.authorization.login(LoginForm.loginFailedFormMapping))
+                }
               } else {
-                BadRequest(frontend.views.html.authorization.login(LoginForm.loginFailedFormMapping))
+                BadRequest(frontend.views.html.authorization.login(LoginForm.loginUnverified))
               }
-            } else {
-              BadRequest(frontend.views.html.authorization.login(LoginForm.loginUnverified))
             }
-          }
           case None => Future.successful(BadRequest(frontend.views.html.authorization.login(LoginForm.loginFailedFormMapping)))
+        }
+      }
+    )
+  }
+
+  def temporaryLogin: Action[AnyContent] = (userRequestAction andThen SessionAction.unauthorizedOnly) { implicit request =>
+    Ok(frontend.views.html.authorization.temporaryLogin(LoginTemporaryForm.loginTemporaryFormMapping))
+  }
+
+  def onTemporaryLogin: Action[AnyContent] = (userRequestAction andThen SessionAction.unauthorizedOnly).async { implicit request =>
+    LoginTemporaryForm.loginTemporaryFormMapping.bindFromRequest.fold(
+      formWithErrors => Future.successful(BadRequest(frontend.views.html.authorization.temporaryLogin(formWithErrors))),
+      form => {
+        up.get(form.token) flatMap  {
+          case Some(user) => stp.createSessionToken(user) map { sessionToken =>
+            val session      = request.session + ((stp.getAuthTokenSessionName, sessionToken))
+            Redirect(backend.controllers.routes.Application.index()).withSession(session)
+          }
+          case None => Future.successful(BadRequest(frontend.views.html.authorization.temporaryLogin(LoginTemporaryForm.tokenNotFound)))
         }
       }
     )
@@ -79,26 +105,60 @@ class Authorization @Inject()(cc: ControllerComponents, messagesApi: MessagesApi
 
   def onSignup: Action[AnyContent] = (userRequestAction andThen SessionAction.unauthorizedOnly).async { implicit request =>
     SignupForm.signupFormMapping.bindFromRequest.fold(
-      formWithErrors => async {
-        BadRequest(frontend.views.html.authorization.signup(formWithErrors))
-      },
-      form => async {
-        val check = await(up.get(form.email))
-        if (check.nonEmpty) {
-          BadRequest(frontend.views.html.authorization.signup(SignupForm.userAlreadyExistsFormMapping))
-        } else {
-          val verificationToken = await(up.createUser(form))
-          if (up.isVerificationRequired) {
-            up.getVerificationMethod match {
-              case "console" => logger.info(s"Verification token for ${form.email}: ${up.getVerificationServer}/verify/${verificationToken.token}")
-              case "email" => emails.sendVerificationTokenEmail(form.email, s"${up.getVerificationServer}/verify/${verificationToken.token}")
-              case method => logger.error(s"Unknown verification method $method")
-            }
-            Redirect(backend.controllers.routes.Authorization.login()).flashing("created" -> "authorization.forms.signup.success.created")
+      formWithErrors =>
+        async {
+          BadRequest(frontend.views.html.authorization.signup(formWithErrors))
+        },
+      form =>
+        async {
+          val check = await(up.get(form.email))
+          if (check.nonEmpty) {
+            BadRequest(frontend.views.html.authorization.signup(SignupForm.userAlreadyExistsFormMapping))
           } else {
-            val _ = await(up.verifyUser(verificationToken))
-            Redirect(backend.controllers.routes.Authorization.login()).flashing("created" -> "authorization.forms.signup.success.createdAndVerified")
+            val verificationToken = await(up.createUser(form))
+            if (up.isVerificationRequired) {
+              up.getVerificationMethod match {
+                case "console" => logger.info(s"Verification token for ${form.email}: ${up.getVerificationServer}/verify/${verificationToken.token}")
+                case "email"   => emails.sendVerificationTokenEmail(form.email, s"${up.getVerificationServer}/verify/${verificationToken.token}")
+                case method    => logger.error(s"Unknown verification method $method")
+              }
+              Redirect(backend.controllers.routes.Authorization.login()).flashing("created" -> "authorization.forms.signup.success.created")
+            } else {
+              val _ = await(up.verifyUser(verificationToken))
+              Redirect(backend.controllers.routes.Authorization.login()).flashing("created" -> "authorization.forms.signup.success.createdAndVerified")
+            }
           }
+        }
+    )
+  }
+
+  def temporarySignup: Action[AnyContent] = (userRequestAction andThen SessionAction.unauthorizedOnly) { implicit request =>
+    Ok(frontend.views.html.authorization.temporarySignup(SignupTemporaryForm.signupTemporaryFormMapping))
+  }
+
+  def onTemporarySignup: Action[AnyContent] = (userRequestAction andThen SessionAction.unauthorizedOnly).async { implicit request =>
+    SignupTemporaryForm.signupTemporaryFormMapping.bindFromRequest.fold(
+      formWithErrors =>
+        async {
+          BadRequest(frontend.views.html.authorization.temporarySignup(formWithErrors))
+        },
+      form => async {
+        val ip    = request.headers.get("X-Real-IP").getOrElse(request.remoteAddress)
+        val check = await(up.get(form.token))
+        if (check.nonEmpty) {
+          BadRequest(frontend.views.html.authorization.temporarySignup(SignupTemporaryForm.tokenInUseTemporaryFormMapping))
+        } else {
+          val user = up.createTemporaryUser(form.token, ip)
+          val result = user map {
+            case Some(u) =>
+              Redirect(backend.controllers.routes.Authorization.login()).flashing("created" -> "authorization.forms.signup.success.createdAndVerified")
+            case None =>
+              BadRequest(frontend.views.html.authorization.temporarySignup(SignupTemporaryForm.signupTemporaryFormMapping.withGlobalError("Internal Error")))
+          } recover {
+            case e =>
+              BadRequest(frontend.views.html.authorization.temporarySignup(SignupTemporaryForm.signupTemporaryFormMapping.withGlobalError(e.getMessage)))
+          }
+          await(result)
         }
       }
     )
@@ -110,24 +170,26 @@ class Authorization @Inject()(cc: ControllerComponents, messagesApi: MessagesApi
 
   def onResetRequest: Action[AnyContent] = (userRequestAction andThen SessionAction.unauthorizedOnly).async { implicit request =>
     ResetRequestForm.resetRequestFormMapping.bindFromRequest.fold(
-      formWithErrors => async {
-        BadRequest(frontend.views.html.authorization.reset_request(formWithErrors))
-      },
-      form => async {
-        val user = await(up.get(form.email))
-        if (user.nonEmpty) {
-          val permissions = await(user.get.getPermissions)
-          if (permissions.isChangePasswordAllowed) {
-            val resetTokenStr = await(rtp.createResetToken(user.get))
-            up.getVerificationMethod match {
-              case "console" => logger.info(s"Reset token for ${form.email}: ${up.getVerificationServer}/reset/$resetTokenStr")
-              case "email" => emails.sendResetTokenEmail(form.email, s"${up.getVerificationServer}/reset/$resetTokenStr")
-              case method => logger.error(s"Unknown verification method $method")
+      formWithErrors =>
+        async {
+          BadRequest(frontend.views.html.authorization.reset_request(formWithErrors))
+        },
+      form =>
+        async {
+          val user = await(up.get(form.email))
+          if (user.nonEmpty) {
+            val permissions = await(user.get.getPermissions)
+            if (permissions.isChangePasswordAllowed) {
+              val resetTokenStr = await(rtp.createResetToken(user.get))
+              up.getVerificationMethod match {
+                case "console" => logger.info(s"Reset token for ${form.email}: ${up.getVerificationServer}/reset/$resetTokenStr")
+                case "email"   => emails.sendResetTokenEmail(form.email, s"${up.getVerificationServer}/reset/$resetTokenStr")
+                case method    => logger.error(s"Unknown verification method $method")
+              }
             }
           }
+          Redirect(backend.controllers.routes.Authorization.login()).flashing("reset_request" -> "authorization.forms.reset.flashing.message")
         }
-        Redirect(backend.controllers.routes.Authorization.login()).flashing("reset_request" -> "authorization.forms.reset.flashing.message")
-      }
     )
   }
 
@@ -144,20 +206,22 @@ class Authorization @Inject()(cc: ControllerComponents, messagesApi: MessagesApi
 
   def onReset(token: String): Action[AnyContent] = (userRequestAction andThen SessionAction.unauthorizedOnly).async { implicit request =>
     ResetForm.resetFormMapping.bindFromRequest.fold(
-      formWithErrors => async {
-        BadRequest(frontend.views.html.authorization.reset(token, formWithErrors))
-      },
-      form => async {
-        val tokenWithUser = await(rtp.getWithUser(token))
-        if (tokenWithUser.nonEmpty) {
-          val _ = await(rtp.delete(tokenWithUser.get._1.id) flatMap { _ =>
-            up.updatePassword(tokenWithUser.get._2, form.newPassword)
-          })
-          Redirect(backend.controllers.routes.Authorization.login()).flashing("reset" -> "authorization.forms.login.flashing.reset")
-        } else {
-          BadRequest(frontend.views.html.authorization.login(LoginForm.loginFormMapping.withGlobalError("internal.error")))
+      formWithErrors =>
+        async {
+          BadRequest(frontend.views.html.authorization.reset(token, formWithErrors))
+        },
+      form =>
+        async {
+          val tokenWithUser = await(rtp.getWithUser(token))
+          if (tokenWithUser.nonEmpty) {
+            val _ = await(rtp.delete(tokenWithUser.get._1.id) flatMap { _ =>
+              up.updatePassword(tokenWithUser.get._2, form.newPassword)
+            })
+            Redirect(backend.controllers.routes.Authorization.login()).flashing("reset" -> "authorization.forms.login.flashing.reset")
+          } else {
+            BadRequest(frontend.views.html.authorization.login(LoginForm.loginFormMapping.withGlobalError("internal.error")))
+          }
         }
-      }
     )
   }
 
