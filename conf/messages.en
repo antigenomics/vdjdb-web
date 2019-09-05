@@ -29,6 +29,7 @@ authorization.forms.signup.failed.workaround.2 = E-mail address field should be 
 authorization.forms.signup.failed.workaround.3 = Passwords should match
 authorization.forms.signup.failed.workaround.4 = E-mail address is too long
 authorization.forms.signup.failed.alreadyExists = User already exists. Click forgot password link if you don't remember your credentials
+authorization.forms.signup.failed.invalidToken = Token can only contain letters and numbers
 
 authorization.forms.reset.reset = Reset
 authorization.forms.reset.back = Back to home

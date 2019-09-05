@@ -14,19 +14,21 @@
  *     limitations under the License.
  */
 
-package backend.utils
+package backend.models.authorization.forms
 
-import java.sql.Timestamp
-import java.time.Duration
+import play.api.data.Forms._
+import play.api.data._
 
-object TimeUtils {
-  def getExpiredAt(keep: Long): Timestamp = new Timestamp(new java.util.Date().getTime + keep * 1000)
+case class SignupTemporaryForm(token: String)
 
-  def getExpiredAt(keep: Duration): Timestamp = getExpiredAt(keep.getSeconds)
+object SignupTemporaryForm {
+  final val TOKEN_MAX_LENGTH = 128
 
-  def getCreatedAt(keep: Long): Timestamp = new Timestamp(new java.util.Date().getTime - keep * 1000)
-
-  def getCreatedAt(keep: Duration): Timestamp = getCreatedAt(keep.getSeconds)
-
-  def getCurrentTimestamp: Timestamp = new Timestamp(new java.util.Date().getTime)
+  implicit val signupTemporaryFormMapping: Form[SignupTemporaryForm] = Form(
+    mapping(
+      "token" -> nonEmptyText(maxLength = TOKEN_MAX_LENGTH)
+    )(SignupTemporaryForm.apply)(SignupTemporaryForm.unapply) verifying ("authorization.forms.signup.failed.invalidToken", { form =>
+      !form.token.toLowerCase().forall(c => "abcdefghijklmnopqrstuvwxyz0123456789".contains(c))
+    })
+  )
 }

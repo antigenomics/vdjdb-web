@@ -17,6 +17,8 @@
 
 package backend.actions
 
+import java.net.URLEncoder
+
 import play.api.mvc._
 import play.api.test.Helpers._
 import play.api.test.FakeRequest
@@ -62,8 +64,8 @@ class SessionActionSpec extends ActionsTestSpec with Results {
                 implicit val userRequest = result._2
                 val updatedResult = Future.successful(SessionAction.updateCookies(r))
 
-                cookies(updatedResult) should contain(Cookie("login", fixtures.authorizedUser.credentials.login, httpOnly = false))
-                cookies(updatedResult) should contain(Cookie("email", fixtures.authorizedUser.credentials.email, httpOnly = false))
+                cookies(updatedResult) should contain(Cookie("login", URLEncoder.encode(fixtures.authorizedUser.credentials.login, "UTF-8"), httpOnly = false))
+                cookies(updatedResult) should contain(Cookie("email", URLEncoder.encode(fixtures.authorizedUser.credentials.email, "UTF-8"), httpOnly = false))
                 cookies(updatedResult) should contain(Cookie("logged", "true", httpOnly = false))
                 session(updatedResult).data should contain key (stp.getAuthTokenSessionName)
                 session(updatedResult).get(stp.getAuthTokenSessionName).get shouldEqual fixtures.authorizedUser.sessionToken

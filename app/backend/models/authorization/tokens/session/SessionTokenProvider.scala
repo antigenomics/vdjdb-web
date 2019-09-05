@@ -36,27 +36,32 @@ import scala.language.postfixOps
 import scala.util.Failure
 
 @Singleton
-class SessionTokenProvider @Inject()(@NamedDatabase("default") protected val dbConfigProvider: DatabaseConfigProvider, lifecycle: ApplicationLifecycle)
-                                    (implicit ec: ExecutionContext, conf: Configuration, system: ActorSystem)
-  extends HasDatabaseConfigProvider[JdbcProfile] {
-  private final val logger = LoggerFactory.getLogger(this.getClass)
-  private final val configuration = conf.get[SessionTokenConfiguration]("application.auth.session")
-  private final val AUTH_TOKEN_SESSION_NAME = "auth_token"
+class SessionTokenProvider @Inject()(@NamedDatabase("default") protected val dbConfigProvider: DatabaseConfigProvider, lifecycle: ApplicationLifecycle)(
+  implicit ec: ExecutionContext,
+  conf: Configuration,
+  system: ActorSystem
+) extends HasDatabaseConfigProvider[JdbcProfile] {
+  final private val logger                  = LoggerFactory.getLogger(this.getClass)
+  final private val configuration           = conf.get[SessionTokenConfiguration]("application.auth.session")
+  final private val AUTH_TOKEN_SESSION_NAME = "auth_token"
 
   import dbConfig.profile.api._
 
-  private final val table = TableQuery[SessionTokenTable]
-  private final val deleteScheduler: Option[Cancellable] = Option(configuration.interval.getSeconds != 0).collect {
-    case true => system.scheduler.schedule(configuration.interval.getSeconds seconds, configuration.interval.getSeconds seconds) {
-      deleteExpired onComplete {
-        case Failure(ex) =>
-          logger.warn("Cannot delete expired session tokens", ex)
-        case _ =>
+  final private val table = TableQuery[SessionTokenTable]
+  final private val deleteScheduler: Option[Cancellable] = Option(configuration.interval.getSeconds != 0).collect {
+    case true =>
+      system.scheduler.schedule(configuration.interval.getSeconds seconds, configuration.interval.getSeconds seconds) {
+        deleteExpired onComplete {
+          case Failure(ex) =>
+            logger.warn("Cannot delete expired session tokens", ex)
+          case _ =>
+        }
       }
-    }
   }
 
-  lifecycle.addStopHook { () => Future.successful(deleteScheduler.foreach(_.cancel())) }
+  lifecycle.addStopHook { () =>
+    Future.successful(deleteScheduler.foreach(_.cancel()))
+  }
 
   def getAuthTokenSessionName: String = AUTH_TOKEN_SESSION_NAME
 
@@ -65,16 +70,20 @@ class SessionTokenProvider @Inject()(@NamedDatabase("default") protected val dbC
   def getAll: Future[Seq[SessionToken]] = db.run(table.result)
 
   def get(id: Long): Future[Option[SessionToken]] = {
-    val rows = table.filter(_.id === id)
+    val rows  = table.filter(_.id === id)
     val query = db.run(rows.result.headOption)
-    query onComplete { _ => db.run(rows.map(_.lastUsage).update(TimeUtils.getCurrentTimestamp)) }
+    query onComplete { _ =>
+      db.run(rows.map(_.lastUsage).update(TimeUtils.getCurrentTimestamp))
+    }
     query
   }
 
   def get(token: String): Future[Option[SessionToken]] = {
-    val rows = table.filter(_.token === token)
+    val rows  = table.filter(_.token === token)
     val query = db.run(rows.result.headOption)
-    query onComplete { _ => db.run(rows.map(_.lastUsage).update(TimeUtils.getCurrentTimestamp)) }
+    query onComplete { _ =>
+      db.run(rows.map(_.lastUsage).update(TimeUtils.getCurrentTimestamp))
+    }
     query
   }
 
@@ -86,12 +95,19 @@ class SessionTokenProvider @Inject()(@NamedDatabase("default") protected val dbC
     query
   }
 
-  def getWithUser(token: String)(implicit up: UserProvider): Future[Option[(SessionToken, User)]] = {
+  def getWithUser(token: String, touchUser: Boolean = false)(implicit up: UserProvider): Future[Option[(SessionToken, User)]] = {
     val query = db.run(table.withUser.filter(_._1.token === token).result.headOption)
     query onComplete { _ =>
       db.run(table.filter(_.token === token).map(_.lastUsage).update(TimeUtils.getCurrentTimestamp))
     }
-    query
+    if (touchUser) {
+      query onComplete { t =>
+        t.foreach(u => u.foreach(e => up.touch(e._2.id)))
+      }
+      query
+    } else {
+      query
+    }
   }
 
   def delete(id: Long): Future[Int] = {
@@ -107,14 +123,15 @@ class SessionTokenProvider @Inject()(@NamedDatabase("default") protected val dbC
   }
 
   def deleteExpired(): Future[Int] = {
-    db.run(MTable.getTables).flatMap(tables => {
-      if (tables.exists(_.name.name == SessionTokenTable.TABLE_NAME)) {
-        val checkDate = new Timestamp(new java.util.Date().getTime - configuration.keep.getSeconds * 1000)
-        db.run(table.filter(_.lastUsage < checkDate).delete)
-      } else {
-        Future.successful(0)
-      }
-    })
+    db.run(MTable.getTables)
+      .flatMap(tables => {
+        if (tables.exists(_.name.name == SessionTokenTable.TABLE_NAME)) {
+          val checkDate = new Timestamp(new java.util.Date().getTime - configuration.keep.getSeconds * 1000)
+          db.run(table.filter(_.lastUsage < checkDate).delete)
+        } else {
+          Future.successful(0)
+        }
+      })
   }
 
   def createSessionToken(user: User): Future[String] = {
