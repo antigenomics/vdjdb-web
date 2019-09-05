@@ -16,6 +16,8 @@
 
 package backend.models.authorization.user
 
+import java.sql.Timestamp
+
 import backend.models.authorization.permissions.UserPermissionsProvider
 import slick.jdbc.H2Profile.api._
 import slick.lifted.Tag
@@ -37,7 +39,15 @@ class UserTable(tag: Tag)(implicit upp: UserPermissionsProvider) extends Table[U
 
   def permissionID = column[Long]("PERMISSION_ID")
 
-  def * = (id, login, email, verified, folderPath, password, permissionID) <> (User.tupled, User.unapply)
+  def createIP = column[String]("CREATE_IP", O.Length(128))
+
+  def isTemporary = column[Boolean]("IS_TEMPORARY")
+
+  def createdOn = column[Timestamp]("CREATED_ON")
+
+  def lastAccessedOn = column[Timestamp]("LAST_ACCESSED_ON")
+
+  def * = (id, login, email, verified, folderPath, createIP, isTemporary, createdOn, lastAccessedOn, password, permissionID) <> (User.tupled, User.unapply)
 
   def permissions = foreignKey("PERMISSIONS_FK", permissionID, upp.getTable)(_.id,
     onUpdate = ForeignKeyAction.Cascade, onDelete = ForeignKeyAction.NoAction)

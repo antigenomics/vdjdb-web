@@ -20,7 +20,7 @@ import java.io.File
 import java.sql.Timestamp
 
 import akka.actor.{ActorSystem, Cancellable}
-import backend.models.authorization.forms.SignupForm
+import backend.models.authorization.forms.{SignupForm, SignupTemporaryForm}
 import backend.models.authorization.permissions.{UserPermissions, UserPermissionsProvider}
 import backend.models.authorization.tokens.session.SessionTokenProvider
 import backend.models.authorization.tokens.verification.{VerificationToken, VerificationTokenConfiguration, VerificationTokenProvider}
@@ -46,63 +46,72 @@ import scala.language.postfixOps
 import scala.util.{Failure, Success}
 
 @Singleton
-class UserProvider @Inject()(@NamedDatabase("default") protected val dbConfigProvider: DatabaseConfigProvider,
-                             vtp: VerificationTokenProvider, stp: SessionTokenProvider, lifecycle: ApplicationLifecycle)
-                            (implicit ec: ExecutionContext, conf: Configuration, system: ActorSystem, upp: UserPermissionsProvider,
-                             sfp: SampleFileProvider, fmp: FileMetadataProvider)
-  extends HasDatabaseConfigProvider[JdbcProfile] {
-  private final val logger = LoggerFactory.getLogger(this.getClass)
-  private final val configuration = conf.get[VerificationTokenConfiguration]("application.auth.verification")
-  private final val usersConfiguration = conf.get[UserCreateConfiguration]("application.auth.common")
-  private final val demoUserConfiguration = conf.get[DemoUserConfiguration]("application.auth.demo")
+class UserProvider @Inject()(
+  @NamedDatabase("default") protected val dbConfigProvider: DatabaseConfigProvider,
+  vtp: VerificationTokenProvider,
+  stp: SessionTokenProvider,
+  lifecycle: ApplicationLifecycle
+)(implicit ec: ExecutionContext, conf: Configuration, system: ActorSystem, upp: UserPermissionsProvider, sfp: SampleFileProvider, fmp: FileMetadataProvider)
+    extends HasDatabaseConfigProvider[JdbcProfile] {
+  final private val logger                     = LoggerFactory.getLogger(this.getClass)
+  final private val configuration              = conf.get[VerificationTokenConfiguration]("application.auth.verification")
+  final private val usersConfiguration         = conf.get[UserCreateConfiguration]("application.auth.common")
+  final private val demoUserConfiguration      = conf.get[DemoUserConfiguration]("application.auth.demo")
+  final private val temporaryUserConfiguration = conf.get[TemporaryUserConfiguration]("application.auth.temporary")
 
   import dbConfig.profile.api._
 
-  private final val table = TableQuery[UserTable]
+  final private val table = TableQuery[UserTable]
 
   if (usersConfiguration.enableDefaultUsers && usersConfiguration.createUsers.nonEmpty) {
     logger.info("Initial users: ")
-    usersConfiguration.createUsers.foreach(user => async {
-      val check = await(get(user._2))
-      if (check.isEmpty) {
-        verifyUser(await(createUser(user._1, user._2, user._3, user._4.toLong)))
-        logger.info(s"User ${user._2} has been created")
-      } else {
-        logger.info(s"User ${user._2} already created")
-      }
-    })
+    usersConfiguration.createUsers.foreach(
+      user =>
+        async {
+          val check = await(get(user._2))
+          if (check.isEmpty) {
+            verifyUser(await(createUser(user._1, user._2, user._3, user._4.toLong)))
+            logger.info(s"User ${user._2} has been created")
+          } else {
+            logger.info(s"User ${user._2} already created")
+          }
+        }
+    )
   } else if (!usersConfiguration.enableDefaultUsers && usersConfiguration.clearDefaultUsers) {
     logger.info("Clearing initial users: ")
-    usersConfiguration.createUsers.foreach(user => async {
-      val check = await(get(user._2))
-      if (check.isDefined) {
-        await(delete(check.get))
-        logger.info(s"User ${user._2} has been deleted")
-      }
-    })
+    usersConfiguration.createUsers.foreach(
+      user =>
+        async {
+          val check = await(get(user._2))
+          if (check.isDefined) {
+            await(delete(check.get))
+            logger.info(s"User ${user._2} has been deleted")
+          }
+        }
+    )
   }
 
   if (demoUserConfiguration.enabled) async {
     logger.info("Demo user is enabled")
     val check = await(get(demoUserConfiguration.login))
     if (check.isEmpty) {
-      val demoUser = await(verifyUser(await(createUser("vdjdb-demo",
-        demoUserConfiguration.login,
-        demoUserConfiguration.password,
-        UserPermissionsProvider.DEMO_ID))))
+      val demoUser =
+        await(verifyUser(await(createUser("vdjdb-demo", demoUserConfiguration.login, demoUserConfiguration.password, UserPermissionsProvider.DEMO_ID))))
       if (demoUser.isDefined) {
         val demoFiles = new File(demoUserConfiguration.filesLocation)
         if (demoFiles.exists && demoFiles.isDirectory) {
-          demoFiles.listFiles.filter(_.isFile).foreach((file) => {
-            val name = FilenameUtils.getBaseName(file.getName)
-            val extension = FilenameUtils.getExtension(file.getName)
-            demoUser.get.addDemoSampleFile(name, extension, Software.VDJtools.toString, file).map {
-              case Left(sampleFileID) =>
-                logger.info(s"Added demo sample file: $name")
-              case Right(error) =>
-                logger.warn(s"$error")
-            }
-          })
+          demoFiles.listFiles
+            .filter(_.isFile)
+            .foreach((file) => {
+              val name      = FilenameUtils.getBaseName(file.getName)
+              val extension = FilenameUtils.getExtension(file.getName)
+              demoUser.get.addDemoSampleFile(name, extension, Software.VDJtools.toString, file).map {
+                case Left(sampleFileID) =>
+                  logger.info(s"Added demo sample file: $name")
+                case Right(error) =>
+                  logger.warn(s"$error")
+              }
+            })
         }
         logger.info(s"Demo user has been created")
       } else {
@@ -113,24 +122,42 @@ class UserProvider @Inject()(@NamedDatabase("default") protected val dbConfigPro
     }
   }
 
-  private final val deleteScheduler: Option[Cancellable] = Option(configuration.interval.getSeconds != 0).collect {
-    case true => system.scheduler.schedule(configuration.interval.getSeconds seconds, configuration.interval.getSeconds seconds) {
-      deleteUnverified onComplete {
-        case Failure(ex) =>
-          logger.warn("Cannot delete unverified users", ex)
-        case _ =>
+  final private val unverifiedDeleteScheduler: Option[Cancellable] = Option(configuration.interval.getSeconds != 0).collect {
+    case true =>
+      system.scheduler.schedule(configuration.interval.getSeconds seconds, configuration.interval.getSeconds seconds) {
+        deleteUnverified onComplete {
+          case Failure(ex) =>
+            logger.warn("Cannot delete unverified users", ex)
+          case _ =>
+        }
       }
-    }
   }
 
-  lifecycle.addStopHook { () => Future.successful(deleteScheduler.foreach(_.cancel())) }
+  lifecycle.addStopHook { () =>
+    Future.successful(unverifiedDeleteScheduler.foreach(_.cancel()))
+  }
+
+  final private val temporaryDeleteScheduler: Option[Cancellable] = Option(temporaryUserConfiguration.interval.getSeconds != 0).collect {
+    case true =>
+      system.scheduler.schedule(temporaryUserConfiguration.interval.getSeconds seconds, temporaryUserConfiguration.interval.getSeconds seconds) {
+        deleteTemporary onComplete {
+          case Failure(ex) =>
+            logger.warn("Cannot delete temporary users", ex)
+          case _ =>
+        }
+      }
+  }
+
+  lifecycle.addStopHook { () =>
+    Future.successful(temporaryDeleteScheduler.foreach(_.cancel()))
+  }
 
   getAll onComplete {
     case Success(users) =>
       users.foreach(user => {
         if (user.folderPath == "<default>") {
           val folderPath = s"${usersConfiguration.uploadLocation}/${user.email}"
-          val folder = new File(folderPath)
+          val folder     = new File(folderPath)
           folder.mkdirs()
           db.run(table.filter(_.id === user.id).map(_.folderPath).update(folderPath))
         }
@@ -170,7 +197,7 @@ class UserProvider @Inject()(@NamedDatabase("default") protected val dbConfigPro
   def getBySessionToken(sessionToken: String): Future[Option[User]] = {
     stp.get(sessionToken) flatMap {
       case Some(token) => get(token.userID)
-      case None => Future.successful(None)
+      case None        => Future.successful(None)
     }
   }
 
@@ -178,10 +205,26 @@ class UserProvider @Inject()(@NamedDatabase("default") protected val dbConfigPro
     db.run(table.withPermissions.filter(_._1.email === email).result.headOption)
   }
 
+  def getTemporaryUsers(expiredOnly: Boolean = false): Future[Seq[User]] = {
+    if (!expiredOnly) {
+      db.run(table.filter(fm => fm.isTemporary).result)
+    } else {
+      db.run(table.filter(fm => fm.isTemporary && fm.createdOn < TimeUtils.getCreatedAt(temporaryUserConfiguration.keep)).result)
+    }
+  }
+
+  def countForCreateIP(createIP: String): Future[Int] = {
+    db.run(table.filter(fm => fm.createIP === createIP).result).map(_.length)
+  }
+
+  def touch(id: Long): Future[Int] = {
+    db.run(table.filter(fm => fm.id === id).map(_.lastAccessedOn).update(TimeUtils.getCurrentTimestamp))
+  }
+
   def delete(id: Long)(implicit sfp: SampleFileProvider): Future[Int] = {
     get(id) flatMap {
       case Some(user) => delete(user)
-      case None => Future.successful(0)
+      case None       => Future.successful(0)
     }
   }
 
@@ -192,44 +235,119 @@ class UserProvider @Inject()(@NamedDatabase("default") protected val dbConfigPro
   }
 
   def deleteUnverified(implicit sfp: SampleFileProvider): Future[Int] = {
-    db.run(MTable.getTables).flatMap(tables => async {
-      if (tables.exists(_.name.name == UserTable.TABLE_NAME)) {
-        val currentTimestamp = TimeUtils.getCurrentTimestamp
-        val expiredTokens = await(vtp.getExpired(currentTimestamp))
-        val userIDs = expiredTokens.map(_.userID)
-        await(get(userIDs).flatMap(users => {
-          users.foreach(user => {
-            user.delete
-          })
-          deleteByIDS(userIDs).flatMap(_ => {
-            vtp.delete(expiredTokens)
-          })
-        }))
-      } else {
-        0
-      }
-    })
+    db.run(MTable.getTables)
+      .flatMap(
+        tables =>
+          async {
+            if (tables.exists(_.name.name == UserTable.TABLE_NAME)) {
+              val currentTimestamp = TimeUtils.getCurrentTimestamp
+              val expiredTokens    = await(vtp.getExpired(currentTimestamp))
+              val userIDs          = expiredTokens.map(_.userID)
+              await(get(userIDs).flatMap(users => {
+                users.foreach(user => {
+                  user.delete
+                })
+                deleteByIDS(userIDs).flatMap(_ => {
+                  vtp.delete(expiredTokens)
+                })
+              }))
+            } else {
+              0
+            }
+          }
+      )
   }
 
-  def createUser(login: String, email: String, password: String,
-                 permissionsID: Long = UserPermissionsProvider.DEFAULT_ID,
-                 verifyUntil: Timestamp = TimeUtils.getExpiredAt(configuration.keep)): Future[VerificationToken] =
+  def deleteTemporary(implicit sfp: SampleFileProvider): Future[Int] = {
+    db.run(MTable.getTables)
+      .flatMap(
+        tables =>
+          async {
+            if (tables.exists(_.name.name == UserTable.TABLE_NAME)) {
+              val expiredTemporaryUsers = await(getTemporaryUsers(expiredOnly = true))
+              val userIDs               = expiredTemporaryUsers.map(_.id)
+              await(get(userIDs).flatMap(users => {
+                users.foreach(user => {
+                  user.delete
+                })
+                deleteByIDS(userIDs)
+              }))
+            } else {
+              0
+            }
+          }
+      )
+  }
+
+  def createUser(
+    login: String,
+    email: String,
+    password: String,
+    permissionsID: Long    = UserPermissionsProvider.DEFAULT_ID,
+    verifyUntil: Timestamp = TimeUtils.getExpiredAt(configuration.keep)
+  ): Future[VerificationToken] =
     async {
       val check = await(get(email))
       if (check.nonEmpty) {
         throw new RuntimeException("User already exists")
       }
-      val hash = BCrypt.hashpw(password, BCrypt.gensalt())
+      val hash       = BCrypt.hashpw(password, BCrypt.gensalt())
       val folderPath = s"${usersConfiguration.uploadLocation}/$email"
-      val folder = new File(folderPath)
+      val folder     = new File(folderPath)
       folder.mkdirs()
-      val user = User(0, login, email, verified = false, folderPath, hash, permissionsID)
+      val user = User(
+        id             = 0,
+        login          = login,
+        email          = email,
+        verified       = false,
+        folderPath     = folderPath,
+        createIP       = "none",
+        isTemporary    = false,
+        createdOn      = TimeUtils.getCurrentTimestamp,
+        lastAccessedOn = TimeUtils.getCurrentTimestamp,
+        hash,
+        permissionsID
+      )
       val userID: Long = await(insert(user))
       await(vtp.createVerificationToken(userID, verifyUntil))
     }
 
   def createUser(form: SignupForm): Future[VerificationToken] = {
     createUser(form.login, form.email, form.password)
+  }
+
+  def createTemporaryUser(token: String, createIP: String): Future[Option[User]] = async {
+    val check = await(get(token))
+    if (check.nonEmpty) {
+      throw new RuntimeException("User already exists")
+    }
+    val count = await(countForCreateIP(createIP))
+    if (count >= temporaryUserConfiguration.maxForOneIP) {
+      throw new RuntimeException("Too much users for one IP")
+    }
+    val hash       = BCrypt.hashpw(token, BCrypt.gensalt())
+    val folderPath = s"${usersConfiguration.uploadLocation}/$token"
+    val folder     = new File(folderPath)
+    folder.mkdirs()
+    val user = User(
+      id             = 0,
+      login          = token,
+      email          = token,
+      verified       = true,
+      folderPath     = folderPath,
+      createIP       = createIP,
+      isTemporary    = true,
+      createdOn      = TimeUtils.getCurrentTimestamp,
+      lastAccessedOn = TimeUtils.getCurrentTimestamp,
+      hash,
+      permissionID = UserPermissionsProvider.TEMPORARY_ID
+    )
+    val userID: Long = await(insert(user))
+    await(get(userID))
+  }
+
+  def createTemporaryUser(form: SignupTemporaryForm, createIP: String): Future[Option[User]] = {
+    createTemporaryUser(form.token, createIP)
   }
 
   def verifyUser(token: VerificationToken): Future[Option[User]] = {
@@ -243,9 +361,13 @@ class UserProvider @Inject()(@NamedDatabase("default") protected val dbConfigPro
     }
     val success = await(db.run(table.filter(_.id === verificationToken.get.userID).map(_.verified).update(true)))
     if (success == 1) {
-      await(vtp.delete(verificationToken.get).flatMap(_ => {
-        get(verificationToken.get.userID)
-      }))
+      await(
+        vtp
+          .delete(verificationToken.get)
+          .flatMap(_ => {
+            get(verificationToken.get.userID)
+          })
+      )
     } else {
       None
     }

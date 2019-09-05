@@ -14,19 +14,22 @@
  *     limitations under the License.
  */
 
-package backend.utils
+package backend.models.authorization.user
 
-import java.sql.Timestamp
 import java.time.Duration
 
-object TimeUtils {
-  def getExpiredAt(keep: Long): Timestamp = new Timestamp(new java.util.Date().getTime + keep * 1000)
+import com.typesafe.config.Config
+import play.api.ConfigLoader
 
-  def getExpiredAt(keep: Duration): Timestamp = getExpiredAt(keep.getSeconds)
+case class TemporaryUserConfiguration(maxForOneIP: Int, keep: Duration, interval: Duration)
 
-  def getCreatedAt(keep: Long): Timestamp = new Timestamp(new java.util.Date().getTime - keep * 1000)
-
-  def getCreatedAt(keep: Duration): Timestamp = getCreatedAt(keep.getSeconds)
-
-  def getCurrentTimestamp: Timestamp = new Timestamp(new java.util.Date().getTime)
+object TemporaryUserConfiguration {
+  implicit val temporaryUserConfigurationLoader: ConfigLoader[TemporaryUserConfiguration] = (rootConfig: Config, path: String) => {
+    val config = rootConfig.getConfig(path);
+    TemporaryUserConfiguration(
+      maxForOneIP = config.getInt("maxForOneIP"),
+      keep        = config.getDuration("keep"),
+      interval    = config.getDuration("interval")
+    )
+  }
 }

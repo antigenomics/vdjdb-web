@@ -17,6 +17,7 @@
 package backend.models.authorization.user
 
 import java.io.File
+import java.sql.Timestamp
 
 import backend.models.authorization.permissions.{UserPermissions, UserPermissionsProvider}
 import backend.models.files.sample.tags.{SampleTag, SampleTagProvider}
@@ -31,7 +32,9 @@ import scala.async.Async.{async, await}
 import scala.concurrent.{ExecutionContext, Future}
 
 case class User(id: Long, login: String, email: String, verified: Boolean, folderPath: String,
+                createIP: String, isTemporary: Boolean, createdOn: Timestamp, lastAccessedOn: Timestamp,
                 private[authorization] val password: String, private[authorization] val permissionID: Long) {
+
   def getPermissions(implicit upp: UserPermissionsProvider, ec: ExecutionContext): Future[UserPermissions] = {
     upp.getByID(permissionID).map(_.get)
   }

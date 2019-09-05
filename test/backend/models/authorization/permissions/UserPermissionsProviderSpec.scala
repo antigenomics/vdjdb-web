@@ -22,42 +22,56 @@ import backend.models.{DatabaseProviderTestSpec, SQLDatabaseTestTag}
 import scala.async.Async.{async, await}
 
 class UserPermissionsProviderSpec extends DatabaseProviderTestSpec {
-    lazy implicit val userPermissionsProvider: UserPermissionsProvider = app.injector.instanceOf[UserPermissionsProvider]
+  implicit lazy val userPermissionsProvider: UserPermissionsProvider = app.injector.instanceOf[UserPermissionsProvider]
 
-    "UserPermissionsProvider" should {
+  "UserPermissionsProvider" should {
 
-        "have proper table name" taggedAs SQLDatabaseTestTag in {
-            userPermissionsProvider.getTable.baseTableRow.tableName shouldEqual UserPermissionsTable.TABLE_NAME
-        }
-
-        "create default entries" taggedAs SQLDatabaseTestTag in {
-            async {
-                val permissions = await(userPermissionsProvider.getAll)
-                permissions should have size 3
-
-                permissions.map(permission => async {
-                    permission.id match {
-                        case 0 =>
-                            permission.maxFilesCount shouldEqual -1
-                            permission.maxFileSize shouldEqual -1
-                            permission.isUploadAllowed shouldEqual true
-                            permission.isDeleteAllowed shouldEqual true
-                        case 1 =>
-                            permission.maxFilesCount shouldEqual 10
-                            permission.maxFileSize shouldEqual 16
-                            permission.isUploadAllowed shouldEqual true
-                            permission.isDeleteAllowed shouldEqual true
-                        case 2 =>
-                            permission.maxFilesCount shouldEqual 0
-                            permission.maxFileSize shouldEqual 0
-                            permission.isUploadAllowed shouldEqual false
-                            permission.isDeleteAllowed shouldEqual false
-                        case _ =>
-                            fail("Non default user permission in database detected")
-                    }
-                }).assertAllAndAwait
-            }
-        }
-
+    "have proper table name" taggedAs SQLDatabaseTestTag in {
+      userPermissionsProvider.getTable.baseTableRow.tableName shouldEqual UserPermissionsTable.TABLE_NAME
     }
+
+    "create default entries" taggedAs SQLDatabaseTestTag in {
+      async {
+        val permissions = await(userPermissionsProvider.getAll)
+        permissions should have size 4
+
+        permissions
+          .map(
+            permission =>
+              async {
+                permission.id match {
+                  case 0 =>
+                    permission.maxFilesCount shouldEqual -1
+                    permission.maxFileSize shouldEqual -1
+                    permission.isUploadAllowed shouldEqual true
+                    permission.isDeleteAllowed shouldEqual true
+                    permission.isChangePasswordAllowed shouldEqual true
+                  case 1 =>
+                    permission.maxFilesCount shouldEqual 10
+                    permission.maxFileSize shouldEqual 16
+                    permission.isUploadAllowed shouldEqual true
+                    permission.isDeleteAllowed shouldEqual true
+                    permission.isChangePasswordAllowed shouldEqual true
+                  case 2 =>
+                    permission.maxFilesCount shouldEqual 0
+                    permission.maxFileSize shouldEqual 0
+                    permission.isUploadAllowed shouldEqual false
+                    permission.isDeleteAllowed shouldEqual false
+                    permission.isChangePasswordAllowed shouldEqual false
+                  case 3 =>
+                    permission.maxFilesCount shouldEqual 3
+                    permission.maxFileSize shouldEqual 8
+                    permission.isUploadAllowed shouldEqual true
+                    permission.isDeleteAllowed shouldEqual true
+                    permission.isChangePasswordAllowed shouldEqual false
+                  case _ =>
+                    fail("Non default user permission in database detected")
+                }
+              }
+          )
+          .assertAllAndAwait
+      }
+    }
+
+  }
 }
