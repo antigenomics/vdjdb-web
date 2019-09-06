@@ -29,18 +29,27 @@
             <a href="https://github.com/mikessh" target="_blank" rel="noopener">@mikessh</a>).
         </div>
     </div>
-    <div class="ui raised segment">
-        <h3 class="ui header centered">Contributors</h3>
-    </div>
-    <div style="display: grid; grid-template-columns: repeat(2, 1fr); grid-gap: 10px; grid-auto-rows: 1fr">
-        <div style="display: none"></div>
-        <div class="ui raised segment padded" *ngFor="let contributor of contributors">
-            <h4>{{ contributor.title }}</h4>
-            <div class="ui divider"></div>
-            <p>{{ joinNames(contributor.names) }}</p>
+
+    <div class="ui raised segments">
+        <h3 class="ui top attached header centered">Contributors</h3>
+        <div class="ui attached segment teal padded">
+            <contributors></contributors>
         </div>
-        <div style="display: none"></div>
     </div>
+
+<!--    <div class="ui raised segment">-->
+<!--        <h3 class="ui header centered">Contributors</h3>-->
+<!--    </div>-->
+<!--    <div style="display: grid; grid-template-columns: repeat(2, 1fr); grid-gap: 10px; grid-auto-rows: 1fr">-->
+<!--        <div style="display: none"></div>-->
+<!--        <div class="ui raised segment padded" *ngFor="let contributor of contributors">-->
+<!--            <h4>{{ contributor.title }}</h4>-->
+<!--            <div class="ui divider"></div>-->
+<!--            <p>{{ joinNames(contributor.names) }}</p>-->
+<!--        </div>-->
+<!--        <div style="display: none"></div>-->
+<!--    </div>-->
+
     <div class="ui raised segments">
         <h3 class="ui top attached header centered">Funding</h3>
         <div class="ui attached segment teal padded">
