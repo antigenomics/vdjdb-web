@@ -14,14 +14,15 @@
  *     limitations under the License.
  */
 
-import { CommonModule } from '@angular/common';
-import { NgModule } from '@angular/core';
-import { ContributorsModule } from 'pages/credits/contributor/contributors.module';
-import { CreditsPageComponent } from 'pages/credits/credits.component';
-import { CreditsPageRouting } from 'pages/credits/credits.routing';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { IContributor } from 'pages/credits/contributor/contributors';
 
-@NgModule({
-  imports:      [ CommonModule, CreditsPageRouting, ContributorsModule ],
-  declarations: [ CreditsPageComponent ]
+@Component({
+  selector:        'div[contributor]',
+  templateUrl:     './contributor.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class CreditsPageModule {}
+export class ContributorComponent {
+  @Input()
+  public contributor: IContributor;
+}

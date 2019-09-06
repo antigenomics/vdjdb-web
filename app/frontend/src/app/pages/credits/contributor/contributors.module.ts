@@ -16,12 +16,14 @@
 
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
-import { ContributorsModule } from 'pages/credits/contributor/contributors.module';
-import { CreditsPageComponent } from 'pages/credits/credits.component';
-import { CreditsPageRouting } from 'pages/credits/credits.routing';
+import { ContributorComponent } from 'pages/credits/contributor/contributor/contributor.component';
+import { ContributorsComponent } from 'pages/credits/contributor/contributors.component';
+import { AffiliationsSortPipe } from 'pages/credits/contributor/contributors.pipes';
+import { UniversityComponent } from 'pages/credits/contributor/university/university.component';
 
 @NgModule({
-  imports:      [ CommonModule, CreditsPageRouting, ContributorsModule ],
-  declarations: [ CreditsPageComponent ]
+  imports:      [ CommonModule ],
+  declarations: [ ContributorsComponent, UniversityComponent, ContributorComponent, AffiliationsSortPipe ],
+  exports:      [ ContributorsComponent ]
 })
-export class CreditsPageModule {}
+export class ContributorsModule {}

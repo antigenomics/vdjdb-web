@@ -14,14 +14,19 @@
  *     limitations under the License.
  */
 
-import { CommonModule } from '@angular/common';
-import { NgModule } from '@angular/core';
-import { ContributorsModule } from 'pages/credits/contributor/contributors.module';
-import { CreditsPageComponent } from 'pages/credits/credits.component';
-import { CreditsPageRouting } from 'pages/credits/credits.routing';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { IContributor, IContributorsAffiliationGroup } from 'pages/credits/contributor/contributors';
 
-@NgModule({
-  imports:      [ CommonModule, CreditsPageRouting, ContributorsModule ],
-  declarations: [ CreditsPageComponent ]
+@Component({
+  selector:        'div[university]',
+  templateUrl:     './university.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class CreditsPageModule {}
+export class UniversityComponent {
+  @Input()
+  public group: IContributorsAffiliationGroup;
+
+  public join(cs: IContributor[]): string {
+    return cs.map((c) => c.name).join(', ');
+  }
+}

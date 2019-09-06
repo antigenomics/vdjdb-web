@@ -14,14 +14,10 @@
  *     limitations under the License.
  */
 
-import { CommonModule } from '@angular/common';
-import { NgModule } from '@angular/core';
-import { ContributorsModule } from 'pages/credits/contributor/contributors.module';
-import { CreditsPageComponent } from 'pages/credits/credits.component';
-import { CreditsPageRouting } from 'pages/credits/credits.routing';
+.ui.text.menu > div.item {
+    cursor: pointer;
+}
 
-@NgModule({
-  imports:      [ CommonModule, CreditsPageRouting, ContributorsModule ],
-  declarations: [ CreditsPageComponent ]
-})
-export class CreditsPageModule {}
+.ui.text.menu > div.item:hover {
+    color: black;
+}
