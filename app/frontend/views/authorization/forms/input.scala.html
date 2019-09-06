@@ -3,7 +3,7 @@
 <div class="field @if(elements.hasErrors) {error}">
     <div class="ui left icon input">
         <i class="@elements.args('icon) icon"></i>
-        <input type="@elements.args('fieldType)" name="@elements.field.name" value="@elements.field.value.getOrElse("")" placeholder="@elements.args('placeholder)">
+        <input id="@elements.args.getOrElse('id, "")" type="@elements.args('fieldType)" name="@elements.field.name" value="@elements.field.value.getOrElse("")" placeholder="@elements.args('placeholder)">
         @if(elements.hasErrors){
             <div class="ui left pointing red basic label" style="position: absolute;
                 min-width: 135px !important;

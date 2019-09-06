@@ -151,7 +151,9 @@ class Authorization @Inject()(cc: ControllerComponents, messagesApi: MessagesApi
           val user = up.createTemporaryUser(form.token, ip)
           val result = user map {
             case Some(u) =>
-              Redirect(backend.controllers.routes.Authorization.login()).flashing("created" -> "authorization.forms.signup.success.createdAndVerified")
+              Redirect(backend.controllers.routes.Authorization.temporaryLogin()).flashing(
+                "created" -> messages("authorization.forms.signup.success.createdWithToken", form.token)
+              )
             case None =>
               BadRequest(frontend.views.html.authorization.temporarySignup(SignupTemporaryForm.signupTemporaryFormMapping.withGlobalError("Internal Error")))
           } recover {

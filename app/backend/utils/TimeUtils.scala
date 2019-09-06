@@ -20,13 +20,13 @@ import java.sql.Timestamp
 import java.time.Duration
 
 object TimeUtils {
-  def getExpiredAt(keep: Long): Timestamp = new Timestamp(new java.util.Date().getTime + keep * 1000)
+  def getExpiredAt(keep: Long): Timestamp = new Timestamp(System.currentTimeMillis() + keep * 1000)
 
   def getExpiredAt(keep: Duration): Timestamp = getExpiredAt(keep.getSeconds)
 
-  def getCreatedAt(keep: Long): Timestamp = new Timestamp(new java.util.Date().getTime - keep * 1000)
+  def getCreatedAt(keep: Long): Timestamp = new Timestamp(System.currentTimeMillis() - keep * 1000)
 
   def getCreatedAt(keep: Duration): Timestamp = getCreatedAt(keep.getSeconds)
 
-  def getCurrentTimestamp: Timestamp = new Timestamp(new java.util.Date().getTime)
+  def getCurrentTimestamp: Timestamp = new Timestamp(System.currentTimeMillis())
 }
