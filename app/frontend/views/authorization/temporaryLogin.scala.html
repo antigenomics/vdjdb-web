@@ -14,11 +14,11 @@
             <h3 class="ui top attached header">@messages("authorization.forms.login.login")</h3>
             <div class="ui attached segment teal padded">
                 <div class="ui fluid buttons">
-                    <a class="ui basic button" href="@backend.controllers.routes.Authorization.login()" rel="noopener">
-                        @messages("authorization.forms.login.withEmail")
-                    </a>
                     <a class="ui button" href="@backend.controllers.routes.Authorization.temporaryLogin()" rel="noopener">
                         @messages("authorization.forms.login.withToken")
+                    </a>
+                    <a class="ui basic button" href="@backend.controllers.routes.Authorization.login()" rel="noopener">
+                        @messages("authorization.forms.login.withEmail")
                     </a>
                 </div>
                 <div class="ui divider"></div>
@@ -26,17 +26,8 @@
                     @if(form.hasGlobalErrors) {
                         @frontend.views.html.authorization.forms.formErrors(form.globalErrors)
                     }
-                    @if(flash.get("verified").nonEmpty) {
-                        @frontend.views.html.authorization.forms.formSuccess(Seq(flash.get("verified").get))
-                    }
                     @if(flash.get("created").nonEmpty) {
                         @frontend.views.html.authorization.forms.formSuccess(Seq(flash.get("created").get))
-                    }
-                    @if(flash.get("reset_request").nonEmpty) {
-                        @frontend.views.html.authorization.forms.formSuccess(Seq(flash.get("reset_request").get))
-                    }
-                    @if(flash.get("reset").nonEmpty) {
-                        @frontend.views.html.authorization.forms.formSuccess(Seq(flash.get("reset").get))
                     }
                     @CSRF.formField
                     @inputText(form("token"), args = 'icon -> "user",

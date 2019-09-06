@@ -14,16 +14,25 @@
             <h3 class="ui top attached header">@messages("authorization.forms.signup.signup")</h3>
             <div class="ui attached segment teal padded">
                 <div class="ui fluid buttons">
-                    <a class="ui button" href="@backend.controllers.routes.Authorization.signup()" rel="noopener">
-                        @messages("authorization.forms.signup.withEmail")
-                    </a>
                     <a class="ui basic button" href="@backend.controllers.routes.Authorization.temporarySignup()" rel="noopener">
                         @messages("authorization.forms.signup.withToken")
+                    </a>
+                    <a class="ui button" href="@backend.controllers.routes.Authorization.signup()" rel="noopener">
+                        @messages("authorization.forms.signup.withEmail")
                     </a>
                 </div>
                 <div class="ui divider"></div>
                 @if(form.hasGlobalErrors) {
                     @frontend.views.html.authorization.forms.formErrors(form.globalErrors)
+                } else {
+                    @frontend.views.html.authorization.forms.formInfo(
+                        Seq(
+                            "authorization.forms.signup.email.description.1",
+                            "authorization.forms.signup.email.description.2",
+                            "authorization.forms.signup.email.description.3",
+                            "authorization.forms.signup.email.description.4"
+                        )
+                    )
                 }
                 @CSRF.formField
                 @inputText(form("login"), args = 'icon -> "user",

@@ -36,10 +36,10 @@ POST        /api/motifs/cdr3                            backend.controllers.Moti
 POST        /api/motifs/members                         backend.controllers.MotifsAPI.members
 
 # Authorization API
-GET         /authorization/login                        backend.controllers.Authorization.login
-POST        /authorization/login                        backend.controllers.Authorization.onLogin
-GET         /authorization/tlogin                       backend.controllers.Authorization.temporaryLogin
-POST        /authorization/tlogin                       backend.controllers.Authorization.onTemporaryLogin
+GET         /authorization/elogin                       backend.controllers.Authorization.login
+POST        /authorization/elogin                       backend.controllers.Authorization.onLogin
+GET         /authorization/login                        backend.controllers.Authorization.temporaryLogin
+POST        /authorization/login                        backend.controllers.Authorization.onTemporaryLogin
 GET         /authorization/signup                       backend.controllers.Authorization.signup
 POST        /authorization/signup                       backend.controllers.Authorization.onSignup
 GET         /authorization/tsignup                      backend.controllers.Authorization.temporarySignup

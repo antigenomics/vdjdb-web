@@ -14,24 +14,35 @@
             <h3 class="ui top attached header">@messages("authorization.forms.signup.signup")</h3>
             <div class="ui attached segment teal padded">
                 <div class="ui fluid buttons">
-                    <a class="ui basic button" href="@backend.controllers.routes.Authorization.signup()" rel="noopener">
-                        @messages("authorization.forms.signup.withEmail")
-                    </a>
                     <a class="ui button" href="@backend.controllers.routes.Authorization.temporarySignup()" rel="noopener">
                         @messages("authorization.forms.signup.withToken")
+                    </a>
+                    <a class="ui basic button" href="@backend.controllers.routes.Authorization.signup()" rel="noopener">
+                        @messages("authorization.forms.signup.withEmail")
                     </a>
                 </div>
                 <div class="ui divider"></div>
                 @if(form.hasGlobalErrors) {
                     @frontend.views.html.authorization.forms.formErrors(form.globalErrors)
                 } else {
-                    @frontend.views.html.authorization.forms.formInfo(Seq(messages("authorization.forms.signup.token.description")))
+                    @frontend.views.html.authorization.forms.formInfo(
+                        Seq(
+                            "authorization.forms.signup.token.description.1",
+                            "authorization.forms.signup.token.description.2",
+                            "authorization.forms.signup.token.description.3",
+                            "authorization.forms.signup.token.description.4"
+                        )
+                    )
                 }
                 @CSRF.formField
-                @inputText(form("token"), args = 'icon -> "user",
+                @inputText(form("token"), args = 'icon -> "", 'id -> "tokenInput",
                     'placeholder ->  messages("authorization.forms.signup.placeholder.token"),
-                    'fieldType -> "text")
-                <button class="ui fluid large teal button" type="submit" form="signup">@messages("authorization.forms.signup.signup")</button>
+                    'fieldType -> "hidden")
+                <h4>Your access token is:</h4>
+                <div class="ui message" style="display:block">
+                    <span id="tokenView"></span>
+                </div>
+                <button class="ui fluid large teal button" type="submit" form="signup">@messages("authorization.forms.signup.temporarySignup")</button>
                 <div class="ui divider"></div>
                 <p>@messages("authorization.forms.signup.login.question")
                     <a class="cursor pointer" href="@backend.controllers.routes.Authorization.temporaryLogin()" rel="noopener">@messages("authorization.forms.signup.login")</a>
@@ -45,4 +56,15 @@
         }
         </div>
     </div>
+    <script>
+        function randomString(length, chars) {
+            var result = '';
+            for (var i = length; i > 0; --i) result += chars[Math.floor(Math.random() * chars.length)];
+            return result;
+        }
+        var rString = randomString(16, '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ');
+        document.getElementById('tokenInput').value = rString;
+        document.getElementById('tokenView').innerHTML = rString;
+
+    </script>
 }

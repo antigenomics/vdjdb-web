@@ -14,11 +14,11 @@
             <h3 class="ui top attached header">@messages("authorization.forms.login.login")</h3>
             <div class="ui attached segment teal padded">
                 <div class="ui fluid buttons">
+                    <a class="ui basic button" href="@backend.controllers.routes.Authorization.temporaryLogin()" rel="noopener">
+                    @messages("authorization.forms.login.withToken")
+                    </a>
                     <a class="ui button" href="@backend.controllers.routes.Authorization.login()" rel="noopener">
                         @messages("authorization.forms.login.withEmail")
-                    </a>
-                    <a class="ui basic button" href="@backend.controllers.routes.Authorization.temporaryLogin()" rel="noopener">
-                        @messages("authorization.forms.login.withToken")
                     </a>
                 </div>
                 <div class="ui divider"></div>
