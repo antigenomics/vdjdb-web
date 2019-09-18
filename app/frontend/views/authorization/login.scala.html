@@ -57,8 +57,8 @@
                         <input name="password" value="@up.getDemoUserConfiguration.password" style="visibility: hidden">
                         <button class="ui fluid large blue button" type="submit" form="demo-login">@messages("authorization.forms.login.demo")</button>
                     }
-                    <div class="ui divider"></div>
                 }
+                <div class="ui divider"></div>
                 <p>@messages("authorization.forms.login.signup.question")
                     <a class="cursor pointer" href="@backend.controllers.routes.Authorization.signup()" rel="noopener">@messages("authorization.forms.login.signup")</a>
                 </p>
