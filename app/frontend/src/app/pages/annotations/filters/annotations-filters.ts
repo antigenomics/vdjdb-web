@@ -73,7 +73,7 @@ export class AnnotationsFilters {
   public databaseQueryParams: IDatabaseQueryParams = { species: 'HomoSapiens', gene: 'TRB', mhc: 'MHCI+II', confidenceThreshold: 0, minEpitopeSize: 10 };
   public searchScope: ISearchScope = { matchV: false, matchJ: false, hammingDistance: { substitutions: 0, insertions: 0, deletions: 0, total: 0 } };
   public scoring: IAnnotateScoring = {
-    type: IAnnotateScoringType.VDJMATCH, vdjmatch: {
+    type: IAnnotateScoringType.SIMPLE, vdjmatch: {
       exhaustiveAlignment: 1,
       scoringMode:         1,
       hitFiltering:        {
