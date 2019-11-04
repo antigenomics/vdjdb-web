@@ -129,6 +129,7 @@ export class SearchTable extends Table<SearchTableRow> {
     const { format, options } = request;
     await this.checkConnection(true, false);
     this.logger.debug('Export', format);
+    this.setExportStartStatus();
     const response = await this.getConnection().sendMessage({
       action: SearchTableWebSocketActions.EXPORT,
       data:   new WebSocketRequestData()
@@ -137,6 +138,7 @@ export class SearchTable extends Table<SearchTableRow> {
                 .unpack()
     });
     this.logger.debug('Export', response);
+    this.setExportEndStatus();
     if (response.get('status') === WebSocketResponseStatus.SUCCESS) {
       this.analytics.reachGoal(SearchTable.EXPORT_DATABASE_GOAL, request);
       Utils.File.download(response.get('link'));
