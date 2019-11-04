@@ -15,35 +15,44 @@
   -->
 
 <div class="ui right floated compact menu">
-    <div class="ui simple dropdown item" *ngIf="!exporting">
-        Export as:
+    <div class="ui simple dropdown item">
+        <ng-container *ngIf="!exporting; else exportingLabel">
+            Export as:
+        </ng-container>
+        <ng-template #exportingLabel>
+            Exporting&nbsp;&nbsp;<div class="ui active mini inline loader"></div>
+        </ng-template>
         <i class="dropdown icon"></i>
         <div class="menu">
             <div class="header">
                 <i class="download icon"></i>
                 Export as:
             </div>
-            <a class="item" *ngFor="let format of formats; trackBy: trackFormatFn" (click)="exportTable(format)">
-                <i class="{{ format.icon }} icon" *ngIf="format.icon"></i> {{ format.title }}
-            </a>
-            <ng-container *ngIf="isOptionsAvailable()">
-                <div class="divider"></div>
-                <div class="header">
-                    <i class="options icon"></i>
-                    Options
-                </div>
-                <ng-container *ngFor="let option of options; trackBy: trackOptionFn">
-                    <a class="item" *ngIf="!option.value" (click)="option.value=true">
-                        <i class="circle outline icon"></i> {{ option.title }} (disabled)
-                    </a>
-                    <a class="item" *ngIf="option.value" (click)="option.value=false">
-                        <i class="check circle outline icon"></i> {{ option.title }} (enabled)
-                    </a>
+            <ng-container *ngIf="!exporting; else generatingLabel">
+                <a class="item" *ngFor="let format of formats; trackBy: trackFormatFn" (click)="exportTable(format)">
+                    <i class="{{ format.icon }} icon" *ngIf="format.icon"></i> {{ format.title }}
+                </a>
+                <ng-container *ngIf="isOptionsAvailable()">
+                    <div class="divider"></div>
+                    <div class="header">
+                        <i class="options icon"></i>
+                        Options
+                    </div>
+                    <ng-container *ngFor="let option of options; trackBy: trackOptionFn">
+                        <a class="item" *ngIf="!option.value" (click)="option.value=true">
+                            <i class="circle outline icon"></i> {{ option.title }} (disabled)
+                        </a>
+                        <a class="item" *ngIf="option.value" (click)="option.value=false">
+                            <i class="check circle outline icon"></i> {{ option.title }} (enabled)
+                        </a>
+                    </ng-container>
                 </ng-container>
             </ng-container>
+            <ng-template #generatingLabel>
+                <a class="item">
+                    Please wait for the generating export file&nbsp;&nbsp;<div class="ui active mini inline loader"></div>
+                </a>
+            </ng-template>
         </div>
-    </div>
-    <div class="ui simple dropdown item" *ngIf="exporting">
-        Generating&nbsp;&nbsp;<div class="ui active mini inline loader"></div>
     </div>
 </div>
