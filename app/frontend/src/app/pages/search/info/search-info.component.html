@@ -53,7 +53,12 @@
     </div>
     <div class="row fade element" *ngIf="isCurrentState('filter.covid19')">
         <div class="sixteen wide column">
-            With the latest VDJdb update we provide a fast-filter feature for querying COVID-19 related entries.
+            With the latest VDJdb update we provide a fast-filter feature for querying database entries.
+            <div class="ui grid">
+                <div class="eight wide column">
+                    <fast-covid-filter></fast-covid-filter>
+                </div>
+            </div>
         </div>
     </div>
     <div class="row fade element" *ngIf="isCurrentState('filter.cdr3')">

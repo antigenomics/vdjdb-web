@@ -34,17 +34,25 @@ import { TCRFiltersService } from './filters_tcr/tcr-filters.service';
 import { TCRcdr3FilterComponent } from './filters_tcr/tcr_cdr3_filter/tcr-cdr3-filter.component';
 import { TCRGeneralFilterComponent } from './filters_tcr/tcr_general_filter/tcr-general-filter.component';
 import { TCRSegmentsFilterComponent } from './filters_tcr/tcr_segments_filter/tcr-segments-filter.component';
+import { FastFiltersService } from "shared/filters/filters_fast/fast-filters.service";
+import {FastCovidFilterComponent} from "shared/filters/filters_fast/fast_covid_filter/fast-covid-filter.component";
 
 @NgModule({
   imports:      [ CommonModule, FormsModule, FiltersCommonModule, ModalsModule ],
   declarations: [ TCRGeneralFilterComponent, TCRSegmentsFilterComponent, TCRcdr3FilterComponent,
     AGOriginFilterComponent, AGEpitopeFilterComponent,
     MHCGeneralFilterComponent, MHCHaplotypeFilterComponent,
-    MetaGeneralFilterComponent, MetaReliabilityFilterComponent ],
+    MetaGeneralFilterComponent, MetaReliabilityFilterComponent,
+    FastCovidFilterComponent
+  ],
   exports:      [ TCRGeneralFilterComponent, TCRSegmentsFilterComponent, TCRcdr3FilterComponent,
     AGOriginFilterComponent, AGEpitopeFilterComponent,
     MHCGeneralFilterComponent, MHCHaplotypeFilterComponent,
-    MetaGeneralFilterComponent, MetaReliabilityFilterComponent ],
-  providers:    [ TCRFiltersService, AGFiltersService, MHCFiltersService, MetaFiltersService, FiltersService ]
+    MetaGeneralFilterComponent, MetaReliabilityFilterComponent,
+    FastCovidFilterComponent
+  ],
+  providers:    [ TCRFiltersService, AGFiltersService, MHCFiltersService, MetaFiltersService,
+    FastFiltersService, FiltersService
+  ]
 })
 export class FiltersModule {}
