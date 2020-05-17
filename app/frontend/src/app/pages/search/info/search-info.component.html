@@ -15,9 +15,12 @@
   -->
 
 <div class="ui grid stackable">
-    <div class="eight wide column">
-        <div class="ui five item menu">
+    <div class="ten wide column">
+        <div class="ui six item menu">
             <a class="item" [class.active]="isCurrentState('info')" (click)="setCurrentState('info')">Info</a>
+            <a class="item" [class.active]="isCurrentState('filter.covid19')" (click)="setCurrentState('filter.covid19')">
+                COVID-19<div class="ui small red label">new</div>
+            </a>
             <a class="item" [class.active]="isCurrentState('filter.cdr3')" (click)="setCurrentState('filter.cdr3')">CDR3</a>
             <a class="item" [class.active]="isCurrentState('filter.ag')" (click)="setCurrentState('filter.ag')">Antigen</a>
             <a class="item" [class.active]="isCurrentState('filter.mhc')" (click)="setCurrentState('filter.mhc')">MHC</a>
@@ -46,6 +49,11 @@
             </ul>
             <p>A comprehensive description of VDJdb record fields/columns can be found
                 <a href='https://github.com/antigenomics/vdjdb-db/blob/master/README.md' target="_blank" rel="noopener">here</a>.</p>
+        </div>
+    </div>
+    <div class="row fade element" *ngIf="isCurrentState('filter.covid19')">
+        <div class="sixteen wide column">
+            With the latest VDJdb update we provide a fast-filter feature for querying COVID-19 related entries.
         </div>
     </div>
     <div class="row fade element" *ngIf="isCurrentState('filter.cdr3')">
