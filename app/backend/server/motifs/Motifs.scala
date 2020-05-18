@@ -212,6 +212,8 @@ object Motifs {
           ColumnType.STRING, // mhc.class
           ColumnType.STRING, // gene
           ColumnType.STRING, // cdr3aa
+          ColumnType.FLOAT, // x
+          ColumnType.FLOAT, // y
           ColumnType.STRING, // cid
           ColumnType.STRING, // csz
           ColumnType.STRING, // v.segm
