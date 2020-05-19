@@ -24,6 +24,7 @@ import { FiltersService } from './filters.service';
 import { AGFiltersService } from './filters_ag/ag-filters.service';
 import { AGEpitopeFilterComponent } from './filters_ag/ag_epitope_filter/ag-epitope-filter.component';
 import { AGOriginFilterComponent } from './filters_ag/ag_origin_filter/ag-origin-filter.component';
+import { AGInfectionsFilterComponent } from './filters_ag/ag_infections_filter/ag-infections-filter.component';
 import { MetaFiltersService } from './filters_meta/meta-filters.service';
 import { MetaGeneralFilterComponent } from './filters_meta/meta_general_filter/meta-general-filter.component';
 import { MetaReliabilityFilterComponent } from './filters_meta/meta_reliability_filter/meta-reliability-filter.component';
@@ -38,13 +39,15 @@ import { TCRSegmentsFilterComponent } from './filters_tcr/tcr_segments_filter/tc
 @NgModule({
   imports:      [ CommonModule, FormsModule, FiltersCommonModule, ModalsModule ],
   declarations: [ TCRGeneralFilterComponent, TCRSegmentsFilterComponent, TCRcdr3FilterComponent,
-    AGOriginFilterComponent, AGEpitopeFilterComponent,
+    AGOriginFilterComponent, AGEpitopeFilterComponent, AGInfectionsFilterComponent,
     MHCGeneralFilterComponent, MHCHaplotypeFilterComponent,
-    MetaGeneralFilterComponent, MetaReliabilityFilterComponent ],
+    MetaGeneralFilterComponent, MetaReliabilityFilterComponent
+  ],
   exports:      [ TCRGeneralFilterComponent, TCRSegmentsFilterComponent, TCRcdr3FilterComponent,
-    AGOriginFilterComponent, AGEpitopeFilterComponent,
+    AGOriginFilterComponent, AGEpitopeFilterComponent, AGInfectionsFilterComponent,
     MHCGeneralFilterComponent, MHCHaplotypeFilterComponent,
-    MetaGeneralFilterComponent, MetaReliabilityFilterComponent ],
+    MetaGeneralFilterComponent, MetaReliabilityFilterComponent
+  ],
   providers:    [ TCRFiltersService, AGFiltersService, MHCFiltersService, MetaFiltersService, FiltersService ]
 })
 export class FiltersModule {}
