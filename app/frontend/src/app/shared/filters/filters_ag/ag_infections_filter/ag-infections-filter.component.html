@@ -1,0 +1,25 @@
+<!--
+  ~     Copyright 2017-2019 Bagaev Dmitry
+  ~
+  ~     Licensed under the Apache License, Version 2.0 (the "License");
+  ~     you may not use this file except in compliance with the License.
+  ~     You may obtain a copy of the License at
+  ~
+  ~         http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~     Unless required by applicable law or agreed to in writing, software
+  ~     distributed under the License is distributed on an "AS IS" BASIS,
+  ~     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~     See the License for the specific language governing permissions and
+  ~     limitations under the License.
+  -->
+
+<filters-header headerTitle="COVID-19 & Common Infections" headerHelp="Quick filter the database according to infection / pathogen"></filters-header>
+
+<div class="ui grid middle aligned">
+    <div class="three wide column filters label"><b>Infections</b></div>
+    <div class="twelve wide column">
+        <div class="ui button" [class.orange]="this.ag.isInfectionSelected('covid19')" (click)="this.ag.selectInfection('covid19')">COVID-19</div>
+        <div class="ui button" [class.orange]="this.ag.isInfectionSelected('commonflu')" (click)="this.ag.selectInfection('commonflu')">Flu</div>
+    </div>
+</div>
