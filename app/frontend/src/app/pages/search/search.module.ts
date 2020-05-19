@@ -20,10 +20,12 @@ import { FiltersModule } from 'shared/filters/filters.module';
 import { SearchInfoComponent } from './info/search-info.component';
 import { SearchPageComponent } from './search.component';
 import { SearchTableModule } from './table/search/search-table.module';
+import { Covid19ActionComponent } from "pages/search/actions/CovidActionComponent";
+import { FluActionComponent } from "pages/search/actions/FluActionComponent";
 
 @NgModule({
   imports:      [ CommonModule, SearchTableModule, FiltersModule ],
-  declarations: [ SearchPageComponent, SearchInfoComponent ],
-  exports:      [ SearchPageComponent, SearchInfoComponent ]
+  declarations: [ SearchPageComponent, SearchInfoComponent, Covid19ActionComponent, FluActionComponent ],
+  exports:      [ SearchPageComponent, SearchInfoComponent, Covid19ActionComponent, FluActionComponent ]
 })
 export class SearchPageModule {}

@@ -14,13 +14,14 @@
  *     limitations under the License.
  */
 
-import { Component } from "@angular/core";
-import { FastFiltersService } from "shared/filters/filters_fast/fast-filters.service";
+import { Component } from '@angular/core';
+import { AGFiltersService } from '../ag-filters.service';
 
 @Component({
-    selector:    'fast-covid-filter',
-    templateUrl: './fast-covid-filter.component.html'
+  selector:    'ag-infections-filter',
+  templateUrl: './ag-infections-filter.component.html'
 })
-export class FastCovidFilterComponent {
-    constructor(public fast: FastFiltersService) {}
+export class AGInfectionsFilterComponent {
+  constructor(public ag: AGFiltersService) {}
 }
+

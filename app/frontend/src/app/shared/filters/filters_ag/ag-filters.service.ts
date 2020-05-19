@@ -17,6 +17,7 @@
 import { Injectable } from '@angular/core';
 import { Filter, FilterInterface, IFiltersOptions } from '../filters';
 import { AGEpitopeFilter, AGOriginFilter } from './ag-filters';
+import { SetEntry } from "shared/filters/common/set/set-entry";
 
 @Injectable()
 export class AGFiltersService implements FilterInterface {
@@ -52,5 +53,36 @@ export class AGFiltersService implements FilterInterface {
 
   public getFilterId(): string {
     return 'ag';
+  }
+
+  public isInfectionSelected(infection: string): boolean {
+    switch (infection) {
+      case 'covid19':
+        return this.origin.speciesSelected.findIndex((e) => { return e.value === 'SarsCov' }) !== -1;
+      case 'commonflu':
+        return this.origin.speciesSelected.findIndex((e) => { return e.value === 'Influenza' }) !== -1;
+      default:
+        return false;
+    }
+  }
+
+  public selectInfection(infection: string): void {
+    switch (infection) {
+      case 'covid19':
+        this.switchInfection('covid19', 'SarsCov')
+        break;
+      case 'commonflu':
+        this.switchInfection('commonflu', 'Influenza')
+        break;
+      default:
+    }
+  }
+
+  private switchInfection(infection: string, value: string): void {
+    if (this.isInfectionSelected(infection)) {
+      this.origin.speciesSelected.splice(this.origin.speciesSelected.findIndex((e) => { return e.value === value }), 1)
+    } else {
+      this.origin.speciesSelected.push(new SetEntry(value, value, false));
+    }
   }
 }

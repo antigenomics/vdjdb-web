@@ -49,4 +49,8 @@ export class NavigationBarComponent {
   public getUserLogin(): string {
     return this._userLogin;
   }
+
+  public redirectOnUrl(url: string) {
+    document.location.href = url;
+  }
 }
