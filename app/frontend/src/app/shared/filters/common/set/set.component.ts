@@ -14,15 +14,14 @@
  *     limitations under the License.
  */
 
-import { ChangeDetectionStrategy, Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
+import { Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
 import { Utils } from 'utils/utils';
 import { SetEntry } from './set-entry';
 import { SuggestionEntry } from './suggestion-entry';
 
 @Component({
   selector:        'set',
-  templateUrl:     './set.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush
+  templateUrl:     './set.component.html'
 })
 export class SetComponent implements OnInit {
   private _searchVisible: boolean = false;

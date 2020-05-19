@@ -18,11 +18,15 @@ import { RouterModule, Routes } from '@angular/router';
 import { HomePageComponent } from 'pages/home/home.component';
 import { OverviewPageComponent } from 'pages/overview/overview.component';
 import { SearchPageComponent } from 'pages/search/search.component';
+import { Covid19ActionComponent } from "pages/search/actions/CovidActionComponent";
+import { FluActionComponent } from "pages/search/actions/FluActionComponent";
 
 const routes: Routes = [
   { path: '', component: HomePageComponent },
   { path: 'overview', component: OverviewPageComponent },
   { path: 'search', component: SearchPageComponent },
+  { path: 'covid19', component: Covid19ActionComponent },
+  { path: 'flu', component: FluActionComponent },
   { path: 'annotations', loadChildren: 'pages/annotations/annotations.module#AnnotationsPageModule' },
   { path: 'motif', loadChildren: 'pages/motif/motif.module#MotifPageModule' },
   { path: 'about', loadChildren: 'pages/about/about.module#AboutPageModule' },
