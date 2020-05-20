@@ -22,10 +22,12 @@ import { SearchPageComponent } from './search.component';
 import { SearchTableModule } from './table/search/search-table.module';
 import { Covid19ActionComponent } from "pages/search/actions/CovidActionComponent";
 import { FluActionComponent } from "pages/search/actions/FluActionComponent";
+import { SearchInfoService } from "pages/search/info/search-info.service";
 
 @NgModule({
   imports:      [ CommonModule, SearchTableModule, FiltersModule ],
   declarations: [ SearchPageComponent, SearchInfoComponent, Covid19ActionComponent, FluActionComponent ],
-  exports:      [ SearchPageComponent, SearchInfoComponent, Covid19ActionComponent, FluActionComponent ]
+  exports:      [ SearchPageComponent, SearchInfoComponent, Covid19ActionComponent, FluActionComponent ],
+  providers:    [ SearchInfoService ]
 })
 export class SearchPageModule {}

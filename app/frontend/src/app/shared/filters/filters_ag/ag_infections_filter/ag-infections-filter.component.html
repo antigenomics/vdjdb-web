@@ -14,12 +14,12 @@
   ~     limitations under the License.
   -->
 
-<filters-header headerTitle="COVID-19 & Common Infections" headerHelp="Quick filter the database according to infection / pathogen"></filters-header>
+<filters-header headerTitle="COVID-19 & Common Infections" headerHelp="<p>Quick filter the database according to infection / pathogen</p><p>These quick filters also enable both TRA/TRB genes filters.</p>"></filters-header>
 
 <div class="ui grid middle aligned">
     <div class="three wide column filters label"><b>Infections</b></div>
     <div class="twelve wide column">
-        <div class="ui button" [class.orange]="this.ag.isInfectionSelected('covid19')" (click)="this.ag.selectInfection('covid19')">COVID-19</div>
-        <div class="ui button" [class.orange]="this.ag.isInfectionSelected('commonflu')" (click)="this.ag.selectInfection('commonflu')">Flu</div>
+        <div class="ui button" [class.orange]="this.isCovidSelected()" (click)="this.switchCovid()">COVID-19</div>
+        <div class="ui button" [class.orange]="this.isFluSelected()" (click)="this.switchFlu()">Flu</div>
     </div>
 </div>

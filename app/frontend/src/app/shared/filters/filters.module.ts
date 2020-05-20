@@ -35,6 +35,7 @@ import { TCRFiltersService } from './filters_tcr/tcr-filters.service';
 import { TCRcdr3FilterComponent } from './filters_tcr/tcr_cdr3_filter/tcr-cdr3-filter.component';
 import { TCRGeneralFilterComponent } from './filters_tcr/tcr_general_filter/tcr-general-filter.component';
 import { TCRSegmentsFilterComponent } from './filters_tcr/tcr_segments_filter/tcr-segments-filter.component';
+import {InfectionsService} from "shared/filters/infections.service";
 
 @NgModule({
   imports:      [ CommonModule, FormsModule, FiltersCommonModule, ModalsModule ],
@@ -48,6 +49,6 @@ import { TCRSegmentsFilterComponent } from './filters_tcr/tcr_segments_filter/tc
     MHCGeneralFilterComponent, MHCHaplotypeFilterComponent,
     MetaGeneralFilterComponent, MetaReliabilityFilterComponent
   ],
-  providers:    [ TCRFiltersService, AGFiltersService, MHCFiltersService, MetaFiltersService, FiltersService ]
+  providers:    [ TCRFiltersService, AGFiltersService, MHCFiltersService, MetaFiltersService, FiltersService, InfectionsService ]
 })
 export class FiltersModule {}
