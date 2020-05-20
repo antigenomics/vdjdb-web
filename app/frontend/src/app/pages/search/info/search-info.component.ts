@@ -15,8 +15,10 @@
  */
 
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy } from '@angular/core';
-import { Subscription } from 'rxjs';
+import {Observable, Subscription} from 'rxjs';
 import { FiltersService, FiltersServiceEventType } from 'shared/filters/filters.service';
+import {SearchInfoService} from "pages/search/info/search-info.service";
+import {map} from "rxjs/operators";
 
 @Component({
   selector:        'search-info',
@@ -24,10 +26,9 @@ import { FiltersService, FiltersServiceEventType } from 'shared/filters/filters.
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SearchInfoComponent implements OnDestroy {
-  private _currentState: string = 'info';
   private _resetEvent: Subscription;
 
-  constructor(private filters: FiltersService, private changeDetector: ChangeDetectorRef) {
+  constructor(private filters: FiltersService, private info: SearchInfoService, private changeDetector: ChangeDetectorRef) {
     this._resetEvent = this.filters.getEvents().subscribe((event: FiltersServiceEventType) => {
       if (event === FiltersServiceEventType.RESET) {
         this.changeDetector.detectChanges();
@@ -35,12 +36,12 @@ export class SearchInfoComponent implements OnDestroy {
     });
   }
 
-  public isCurrentState(state: string): boolean {
-    return this._currentState === state;
+  public isCurrentState(state: string): Observable<boolean> {
+    return this.info.state.pipe(map((s: string) => s === state));
   }
 
   public setCurrentState(state: string): void {
-    this._currentState = state;
+    this.info.state.next(state)
   }
 
   public ngOnDestroy() {

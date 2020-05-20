@@ -17,16 +17,16 @@
 <div class="ui grid stackable">
     <div class="eight wide column">
         <div class="ui five item menu">
-            <a class="item" [class.active]="isCurrentState('info')" (click)="setCurrentState('info')">Info</a>
-            <a class="item" [class.active]="isCurrentState('filter.cdr3')" (click)="setCurrentState('filter.cdr3')">CDR3</a>
-            <a class="item" [class.active]="isCurrentState('filter.ag')" (click)="setCurrentState('filter.ag')">Antigen</a>
-            <a class="item" [class.active]="isCurrentState('filter.mhc')" (click)="setCurrentState('filter.mhc')">MHC</a>
-            <a class="item" [class.active]="isCurrentState('filter.meta')" (click)="setCurrentState('filter.meta')">Meta</a>
+            <a class="item" [class.active]="isCurrentState('info') | async" (click)="setCurrentState('info')">Info</a>
+            <a class="item" [class.active]="isCurrentState('filter.cdr3') | async" (click)="setCurrentState('filter.cdr3')">CDR3</a>
+            <a class="item" [class.active]="isCurrentState('filter.ag') | async" (click)="setCurrentState('filter.ag')">Antigen</a>
+            <a class="item" [class.active]="isCurrentState('filter.mhc') | async" (click)="setCurrentState('filter.mhc')">MHC</a>
+            <a class="item" [class.active]="isCurrentState('filter.meta') | async" (click)="setCurrentState('filter.meta')">Meta</a>
         </div>
     </div>
 </div>
 <div class="ui grid stackable" style="min-height: 370px">
-    <div class="row fade element" *ngIf="isCurrentState('info')">
+    <div class="row fade element" *ngIf="isCurrentState('info') | async">
         <div class="sixteen wide column">
             <p>The table below shows VDJdb records, more information for each column contents is displayed when hovering over the column
                 name.</p>
@@ -48,7 +48,7 @@
                 <a href='https://github.com/antigenomics/vdjdb-db/blob/master/README.md' target="_blank" rel="noopener">here</a>.</p>
         </div>
     </div>
-    <div class="row fade element" *ngIf="isCurrentState('filter.cdr3')">
+    <div class="row fade element" *ngIf="isCurrentState('filter.cdr3') | async">
         <div class="eight wide column">
             <div class="ui grid">
                 <div class="sixteen wide column">
@@ -63,7 +63,7 @@
             <tcr-cdr3-filter></tcr-cdr3-filter>
         </div>
     </div>
-    <div class="row fade element" *ngIf="isCurrentState('filter.ag')">
+    <div class="row fade element" *ngIf="isCurrentState('filter.ag') | async">
         <div class="eight wide column">
             <ag-origin-filter></ag-origin-filter>
         </div>
@@ -74,7 +74,7 @@
             <ag-infections-filter></ag-infections-filter>
         </div>
     </div>
-    <div class="row fade element" *ngIf="isCurrentState('filter.mhc')">
+    <div class="row fade element" *ngIf="isCurrentState('filter.mhc') | async">
         <div class="eight wide column">
             <mhc-general-filter></mhc-general-filter>
         </div>
@@ -82,7 +82,7 @@
             <mhc-haplotype-filter></mhc-haplotype-filter>
         </div>
     </div>
-    <div class="row fade element" *ngIf="isCurrentState('filter.meta')">
+    <div class="row fade element" *ngIf="isCurrentState('filter.meta') | async">
         <div class="eight wide column">
             <meta-general-filter></meta-general-filter>
         </div>

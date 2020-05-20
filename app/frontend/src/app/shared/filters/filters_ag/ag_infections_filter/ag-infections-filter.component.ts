@@ -15,13 +15,30 @@
  */
 
 import { Component } from '@angular/core';
-import { AGFiltersService } from '../ag-filters.service';
+import {CommonInfectionType, InfectionsService} from "shared/filters/infections.service";
 
 @Component({
   selector:    'ag-infections-filter',
   templateUrl: './ag-infections-filter.component.html'
 })
 export class AGInfectionsFilterComponent {
-  constructor(public ag: AGFiltersService) {}
+  constructor(public infections: InfectionsService) {}
+
+  public switchCovid(): void {
+    this.infections.selectInfection(CommonInfectionType.SARSCOV)
+  }
+
+  public isCovidSelected(): boolean {
+    return this.infections.isInfectionSelected(CommonInfectionType.SARSCOV)
+  }
+
+  public switchFlu(): void {
+    this.infections.selectInfection(CommonInfectionType.INFLUENZA)
+  }
+
+  public isFluSelected(): boolean {
+    return this.infections.isInfectionSelected(CommonInfectionType.INFLUENZA)
+  }
+
 }
 
