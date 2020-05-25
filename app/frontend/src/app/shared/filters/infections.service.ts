@@ -17,7 +17,8 @@
 import { Injectable } from "@angular/core";
 import { SetEntry } from "shared/filters/common/set/set-entry";
 import { AGFiltersService } from "shared/filters/filters_ag/ag-filters.service";
-import {TCRFiltersService} from "shared/filters/filters_tcr/tcr-filters.service";
+import { TCRFiltersService } from "shared/filters/filters_tcr/tcr-filters.service";
+import { FiltersService } from "shared/filters/filters.service";
 
 export namespace CommonInfectionType {
     export const SARSCOV: string = 'SARS-CoV';
@@ -27,7 +28,7 @@ export namespace CommonInfectionType {
 @Injectable()
 export class InfectionsService {
 
-    constructor(private readonly ag: AGFiltersService, private readonly tcr: TCRFiltersService) {}
+    constructor(private readonly ag: AGFiltersService, private readonly tcr: TCRFiltersService, private readonly filters: FiltersService) {}
 
     public isInfectionSelected(infection: string): boolean {
         const isSpeciesSelected = this.ag.origin.speciesSelected.findIndex((e) => { return e.value === infection }) !== -1;
@@ -35,13 +36,18 @@ export class InfectionsService {
         return isSpeciesSelected && isTRA_BSelected
     }
 
-    public selectInfection(infection: string): void {
+    public selectInfection(infection: string, forceUpdate: boolean = false): void {
         if (this.isInfectionSelected(infection)) {
             this.ag.origin.speciesSelected.splice(this.ag.origin.speciesSelected.findIndex((e) => { return e.value === infection }), 1)
         } else {
             this.ag.origin.speciesSelected.push(new SetEntry(infection, infection, false));
             this.tcr.general.tra = true;
             this.tcr.general.trb = true
+        }
+        if (forceUpdate) {
+            setTimeout(() => {
+                this.filters.forceUpdate();
+            }, 0)
         }
     }
 

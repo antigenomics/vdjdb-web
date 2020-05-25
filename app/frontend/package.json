@@ -1,6 +1,6 @@
 {
   "name": "vdjdb-frontend",
-  "version": "2.4.18",
+  "version": "2.4.19",
   "description": "Frontend application for VDJdb-server",
   "license": "Apache 2.0",
   "private": true,

@@ -36,6 +36,7 @@ export class SearchTable extends Table<SearchTableRow> {
   private static readonly CHANGE_PAGE_TABLE_GOAL: string = 'change-page-table-goal';
 
   private needReconnectEventSubscription: Subscription;
+  private forceSearchEventSubscription: Subscription;
 
   constructor(private searchTableService: SearchTableService, private filters: FiltersService, private analytics: AnalyticsService,
               private logger: LoggerService, private notifications: NotificationService) {
@@ -52,6 +53,12 @@ export class SearchTable extends Table<SearchTableRow> {
         this.searchTableService.sendEvent(SearchTableServiceEvents.RECONNECTED);
       });
     });
+
+    this.forceSearchEventSubscription = this.searchTableService.getEvents().pipe(filter((event) => {
+      return event === SearchTableServiceEvents.FORCE_SEARCH;
+    })).subscribe(() => {
+      this.update();
+    })
   }
 
   public getRows(): SearchTableRow[] {
@@ -163,6 +170,7 @@ export class SearchTable extends Table<SearchTableRow> {
 
   public destroy(): void {
     this.needReconnectEventSubscription.unsubscribe();
+    this.forceSearchEventSubscription.unsubscribe();
   }
 
   private getConnection(): WebSocketConnection {

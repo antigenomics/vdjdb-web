@@ -18,7 +18,7 @@ import { Injectable } from '@angular/core';
 import { Observable, Subject } from 'rxjs';
 import { filter, take } from 'rxjs/operators';
 import { FiltersOptions } from 'shared/filters/filters';
-import { FiltersService } from 'shared/filters/filters.service';
+import {FiltersService, FiltersServiceEventType} from 'shared/filters/filters.service';
 import { WebSocketConnection } from 'shared/websocket/websocket-connection';
 import { WebSocketRequestData } from 'shared/websocket/websocket-request';
 import { WebSocketResponseData } from 'shared/websocket/websocket-response';
@@ -41,6 +41,7 @@ export namespace SearchTableServiceEvents {
   export const INITIALIZED: number = 0;
   export const NEED_RECONNECT: number = 1;
   export const RECONNECTED: number = 2;
+  export const FORCE_SEARCH: number = 3;
 }
 
 @Injectable()
@@ -54,6 +55,9 @@ export class SearchTableService {
   private connection: WebSocketConnection;
 
   constructor(private filters: FiltersService, private logger: LoggerService) {
+    this.filters.getEvents().pipe(filter((event) => event === FiltersServiceEventType.UPDATE)).subscribe(() => {
+      this.events.next(SearchTableServiceEvents.FORCE_SEARCH);
+    })
     this.connection = new WebSocketConnection(logger, false);
     this.connection.onOpen(async () => {
       const metadataRequest = this.connection.sendMessage({
