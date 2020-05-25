@@ -25,7 +25,7 @@ export class AGInfectionsFilterComponent {
   constructor(public infections: InfectionsService) {}
 
   public switchCovid(): void {
-    this.infections.selectInfection(CommonInfectionType.SARSCOV)
+    this.infections.selectInfection(CommonInfectionType.SARSCOV, true)
   }
 
   public isCovidSelected(): boolean {
@@ -33,7 +33,7 @@ export class AGInfectionsFilterComponent {
   }
 
   public switchFlu(): void {
-    this.infections.selectInfection(CommonInfectionType.INFLUENZA)
+    this.infections.selectInfection(CommonInfectionType.INFLUENZA, true)
   }
 
   public isFluSelected(): boolean {

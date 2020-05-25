@@ -27,6 +27,7 @@ export namespace FiltersServiceEventType {
   export const META: number = 0;
   export const RESET: number = 1;
   export const GET: number = 2;
+  export const UPDATE: number = 3;
 }
 
 @Injectable()
@@ -40,6 +41,10 @@ export class FiltersService implements FilterInterface {
 
   public getEvents(): EventEmitter<FiltersServiceEventType> {
     return this._filtersEvents;
+  }
+
+  public forceUpdate(): void {
+    this._filtersEvents.emit(FiltersServiceEventType.UPDATE);
   }
 
   public setDefault(): void {
