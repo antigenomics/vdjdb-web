@@ -57,6 +57,13 @@ export namespace Affiliations {
     link:    'http://sk.ru/news/',
     logo:    'assets/images/universities/sk.jpg'
   };
+  export const NMRCH: IAffiliation = {
+    title:   'National Research Center for Hematology Moscow',
+    city:    'Moscow',
+    country: 'Russia',
+    link:    'http://www.blood.ru',
+    logo:    'assets/images/universities/nmrch.png'
+  };
 
   /** The Netherlands Affiliations */
   export const ORIGINS_CENTER: IAffiliation = {
@@ -93,6 +100,13 @@ export namespace Affiliations {
     country: 'The Netherlands',
     link:    'https://www.nki.nl',
     logo:    'assets/images/universities/nki.jpg'
+  };
+  export const TUE: IAffiliation = {
+    title:   'Eindhoven University of Technology',
+    city :   'Eindhoven',
+    country: 'The Netherlands',
+    link:    'https://www.tue.nl/en/',
+    logo:    'assets/images/universities/tue.png'
   };
 
   /** Germany Affiliations */
@@ -155,7 +169,7 @@ export namespace Affiliations {
 
 export const contributors: IContributor[] = [
   /** Pirogov Contributors */
-  { name: 'Dmitry V. Bagaev', affiliations: [ Affiliations.PIROGOV, Affiliations.MSU, Affiliations.SHEMYAKIN ] },
+  { name: 'Dmitry V. Bagaev', affiliations: [ Affiliations.TUE, Affiliations.MSU, Affiliations.SHEMYAKIN ] },
   { name: 'Mikhail Shugay', affiliations: [ Affiliations.PIROGOV, Affiliations.SHEMYAKIN, Affiliations.SKOLKOVO ] },
   { name: 'Ivan V. Zvyagin', affiliations: [ Affiliations.PIROGOV, Affiliations.SHEMYAKIN ] },
   { name: 'Dmitriy M. Chudakov', affiliations: [ Affiliations.PIROGOV, Affiliations.SHEMYAKIN, Affiliations.SKOLKOVO ] },
@@ -207,7 +221,26 @@ export const contributors: IContributor[] = [
   /** STJUDE Contributors */
   { name: 'Jeremy C. Crawford', affiliations: [ Affiliations.STJUDE ] },
   { name: 'Pradyot Dash', affiliations: [ Affiliations.STJUDE ] },
-  { name: 'Paul G. Thomas', affiliations: [ Affiliations.STJUDE ] }
+  { name: 'Paul G. Thomas', affiliations: [ Affiliations.STJUDE ] },
+
+  { name: 'Alina S. Shomuradova', affiliations: [ Affiliations.NMRCH ] },
+  { name: 'Murad S. Vagida', affiliations: [ Affiliations.NMRCH ] },
+  { name: 'Savely A. Sheetikov', affiliations: [ Affiliations.NMRCH ] },
+  { name: 'Ksenia V. Zornikova', affiliations: [ Affiliations.NMRCH ] },
+  { name: 'Dmitriy Kiryukhin', affiliations: [ Affiliations.NMRCH ] },
+  { name: 'Aleksei Titov', affiliations: [ Affiliations.NMRCH ] },
+  { name: 'Iuliia O. Peshkova', affiliations: [ Affiliations.NMRCH ] },
+  { name: 'Alexandra Khmelevskaya', affiliations: [ Affiliations.NMRCH ] },
+  { name: 'Dmitry V. Dianov', affiliations: [ Affiliations.NMRCH ] },
+  { name: 'Maria Malasheva', affiliations: [ Affiliations.NMRCH ] },
+  { name: 'Anton Shmelev', affiliations: [ Affiliations.NMRCH ] },
+  { name: 'Yana Serdyuk', affiliations: [ Affiliations.NMRCH ] },
+  { name: 'Alexandra V. Maleeva', affiliations: [ Affiliations.NMRCH ] },
+  { name: 'Naina T. Shakirova', affiliations: [ Affiliations.NMRCH ] },
+  { name: 'Artem Pilunov', affiliations: [ Affiliations.NMRCH ] },
+  { name: 'Dmitry B. Malko', affiliations: [ Affiliations.NMRCH ] },
+  { name: 'Grigory A. Efimov', affiliations: [ Affiliations.NMRCH ] }
+  
 ].sort((l, r) => l.name.localeCompare(r.name));
 
 export interface IContributorsAffiliationGroup {
