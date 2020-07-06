@@ -56,7 +56,7 @@ case class Motifs @Inject()(database: Database)(implicit tfp: TemporaryFileProvi
         val hash = CommonUtils.md5(metadataLevels.map(level => {
           val meta = epitopeTable.stringColumn(level).asSet.asScala
 
-          assert(meta.size == 1)
+          assert(meta.nonEmpty)
 
           meta.head
         }).reduce(_ + _))
@@ -212,8 +212,8 @@ object Motifs {
           ColumnType.STRING, // mhc.class
           ColumnType.STRING, // gene
           ColumnType.STRING, // cdr3aa
-          ColumnType.FLOAT, // x
-          ColumnType.FLOAT, // y
+          ColumnType.SKIP, // x
+          ColumnType.SKIP, // y
           ColumnType.STRING, // cid
           ColumnType.STRING, // csz
           ColumnType.STRING, // v.segm
