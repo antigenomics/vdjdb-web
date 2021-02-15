@@ -20,24 +20,25 @@ import { AGFiltersService } from "shared/filters/filters_ag/ag-filters.service";
 import { TCRFiltersService } from "shared/filters/filters_tcr/tcr-filters.service";
 import { FiltersService } from "shared/filters/filters.service";
 
-export namespace CommonInfectionType {
+export namespace CommonDiseaseType {
     export const SARSCOV: string = 'SARS-CoV';
     export const INFLUENZA: string = 'Influenza';
+    export const CANCER: string = 'HomoSapiens'
 }
 
 @Injectable()
-export class InfectionsService {
+export class DiseasesService {
 
     constructor(private readonly ag: AGFiltersService, private readonly tcr: TCRFiltersService, private readonly filters: FiltersService) {}
 
-    public isInfectionSelected(infection: string): boolean {
+    public isDiseaseSelected(infection: string): boolean {
         const isSpeciesSelected = this.ag.origin.speciesSelected.findIndex((e) => { return e.value === infection }) !== -1;
         const isTRA_BSelected = this.tcr.general.tra && this.tcr.general.trb
         return isSpeciesSelected && isTRA_BSelected
     }
 
-    public selectInfection(infection: string, forceUpdate: boolean = false): void {
-        if (this.isInfectionSelected(infection)) {
+    public selectDisease(infection: string, forceUpdate: boolean = false): void {
+        if (this.isDiseaseSelected(infection)) {
             this.ag.origin.speciesSelected.splice(this.ag.origin.speciesSelected.findIndex((e) => { return e.value === infection }), 1)
         } else {
             this.ag.origin.speciesSelected.push(new SetEntry(infection, infection, false));

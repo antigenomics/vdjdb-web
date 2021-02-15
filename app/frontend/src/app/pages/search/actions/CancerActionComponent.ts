@@ -5,10 +5,10 @@ import { CommonDiseaseType, DiseasesService } from "shared/filters/diseases.serv
 import { SearchInfoService } from "pages/search/info/search-info.service";
 
 @Component({
-    selector: 'covid19',
+    selector: 'cancer',
     template: ''
 })
-export class Covid19ActionComponent implements OnInit {
+export class CancerActionComponent implements OnInit {
 
     constructor(private readonly router: Router, private readonly search: SearchTableService,
                 private readonly info: SearchInfoService, private readonly diseases: DiseasesService) {
@@ -17,7 +17,7 @@ export class Covid19ActionComponent implements OnInit {
     public ngOnInit(): void {
         this.router.navigateByUrl('/search')
         this.search.waitInitialization().then(() => {
-            this.diseases.selectDisease(CommonDiseaseType.SARSCOV);
+            this.diseases.selectDisease(CommonDiseaseType.CANCER);
             this.info.state.next('filter.ag');
         })
     }
