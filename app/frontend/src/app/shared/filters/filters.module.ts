@@ -24,7 +24,7 @@ import { FiltersService } from './filters.service';
 import { AGFiltersService } from './filters_ag/ag-filters.service';
 import { AGEpitopeFilterComponent } from './filters_ag/ag_epitope_filter/ag-epitope-filter.component';
 import { AGOriginFilterComponent } from './filters_ag/ag_origin_filter/ag-origin-filter.component';
-import { AGInfectionsFilterComponent } from './filters_ag/ag_infections_filter/ag-infections-filter.component';
+import { AGDiseasesFilterComponent } from './filters_ag/ag_infections_filter/ag-diseases-filter.component';
 import { MetaFiltersService } from './filters_meta/meta-filters.service';
 import { MetaGeneralFilterComponent } from './filters_meta/meta_general_filter/meta-general-filter.component';
 import { MetaReliabilityFilterComponent } from './filters_meta/meta_reliability_filter/meta-reliability-filter.component';
@@ -35,20 +35,20 @@ import { TCRFiltersService } from './filters_tcr/tcr-filters.service';
 import { TCRcdr3FilterComponent } from './filters_tcr/tcr_cdr3_filter/tcr-cdr3-filter.component';
 import { TCRGeneralFilterComponent } from './filters_tcr/tcr_general_filter/tcr-general-filter.component';
 import { TCRSegmentsFilterComponent } from './filters_tcr/tcr_segments_filter/tcr-segments-filter.component';
-import {InfectionsService} from "shared/filters/infections.service";
+import { DiseasesService } from "shared/filters/diseases.service";
 
 @NgModule({
-  imports:      [ CommonModule, FormsModule, FiltersCommonModule, ModalsModule ],
-  declarations: [ TCRGeneralFilterComponent, TCRSegmentsFilterComponent, TCRcdr3FilterComponent,
-    AGOriginFilterComponent, AGEpitopeFilterComponent, AGInfectionsFilterComponent,
-    MHCGeneralFilterComponent, MHCHaplotypeFilterComponent,
-    MetaGeneralFilterComponent, MetaReliabilityFilterComponent
-  ],
-  exports:      [ TCRGeneralFilterComponent, TCRSegmentsFilterComponent, TCRcdr3FilterComponent,
-    AGOriginFilterComponent, AGEpitopeFilterComponent, AGInfectionsFilterComponent,
-    MHCGeneralFilterComponent, MHCHaplotypeFilterComponent,
-    MetaGeneralFilterComponent, MetaReliabilityFilterComponent
-  ],
-  providers:    [ TCRFiltersService, AGFiltersService, MHCFiltersService, MetaFiltersService, FiltersService, InfectionsService ]
+    imports: [ CommonModule, FormsModule, FiltersCommonModule, ModalsModule ],
+    declarations: [ TCRGeneralFilterComponent, TCRSegmentsFilterComponent, TCRcdr3FilterComponent,
+        AGOriginFilterComponent, AGEpitopeFilterComponent, AGDiseasesFilterComponent,
+        MHCGeneralFilterComponent, MHCHaplotypeFilterComponent,
+        MetaGeneralFilterComponent, MetaReliabilityFilterComponent
+    ],
+    exports: [ TCRGeneralFilterComponent, TCRSegmentsFilterComponent, TCRcdr3FilterComponent,
+        AGOriginFilterComponent, AGEpitopeFilterComponent, AGDiseasesFilterComponent,
+        MHCGeneralFilterComponent, MHCHaplotypeFilterComponent,
+        MetaGeneralFilterComponent, MetaReliabilityFilterComponent
+    ],
+    providers: [ TCRFiltersService, AGFiltersService, MHCFiltersService, MetaFiltersService, FiltersService, DiseasesService ]
 })
 export class FiltersModule {}

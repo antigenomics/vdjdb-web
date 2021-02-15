@@ -7,6 +7,7 @@ GET         /                                           backend.controllers.Appl
 GET         /search                                     backend.controllers.Application.index
 GET         /covid19                                    backend.controllers.Application.index
 GET         /flu                                        backend.controllers.Application.index
+GET         /cancer                                     backend.controllers.Application.index
 GET         /overview                                   backend.controllers.Application.index
 GET         /motif                                      backend.controllers.Application.index
 GET         /links                                      backend.controllers.Application.index
