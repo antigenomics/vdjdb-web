@@ -27,7 +27,7 @@ class SearchTable extends ResultsTable[SearchTableRow] {
 
   def sort(columnIndex: Int, sortType: String): Unit = {
     if ((sortType == "desc" || sortType == "asc") && (columnIndex >= 0)) {
-      rows = rows.sortWith((e1, e2) => {
+      this.rows = this.rows.sortWith((e1, e2) => {
         val v1 = e1.entries(columnIndex)
         val v2 = e2.entries(columnIndex)
         sortType match {

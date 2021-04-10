@@ -101,10 +101,6 @@ export class TableComponent implements OnInit, AfterViewInit, OnDestroy {
     return column.name;
   }
 
-  public trackRowFn(index: number, row: TableRow) {
-    return `${index}${row.hash()}`;
-  }
-
   public ngOnDestroy(): void {
     if (this._resizeEventListener) {
       this._resizeEventListener();

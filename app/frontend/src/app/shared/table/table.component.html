@@ -45,6 +45,6 @@
     </tr>
     </thead>
     <tbody [style.font-size]="contentFontSize">
-    <tr *ngFor="let row of table.getRows(); trackBy: trackRowFn" table-row [row]="row" [columns]="columns" class="{{ configuration.classes.rows }}"></tr>
+    <tr *ngFor="let row of table.getRows()" table-row [row]="row" [columns]="columns" class="{{ configuration.classes.rows }}"></tr>
     </tbody>
 </table>

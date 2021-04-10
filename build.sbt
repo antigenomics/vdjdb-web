@@ -3,7 +3,7 @@ import play.sbt.PlayImport.PlayKeys.playRunHooks
 
 name := """VDJdb-web"""
 
-version := "2.4.21"
+version := "2.4.22"
 scalaVersion := "2.12.8"
 
 val now = System.currentTimeMillis()
@@ -13,7 +13,7 @@ val commitHash = Process("git rev-parse HEAD").!!.stripLineEnd
 
 resolvers += "Local Maven Repository" at Path.userHome.asFile.toURI.toURL + ".m2/repository"
 resolvers += Resolver.sonatypeRepo("releases")
-// resolvers += "jitpack" at "https://jitpack.io"
+resolvers += "jitpack" at "https://jitpack.io"
 
 lazy val root = (project in file("."))
     .enablePlugins(PlayScala, LauncherJarPlugin, SbtWeb, BuildInfoPlugin)
@@ -24,7 +24,7 @@ buildInfoOptions += BuildInfoOption.ToJson
 pipelineStages := Seq(digest)
 
 libraryDependencies ++= Seq(
-    "com.antigenomics" % "vdjmatch" % "1.3.1",
+    "com.github.antigenomics" % "vdjmatch" % "1.3.1",
     "ch.qos.logback" % "logback-classic" % "1.2.3",
     "com.typesafe.scala-logging" %% "scala-logging" % "3.9.2",
     "com.typesafe.play" %% "play-slick" % "3.0.3",
