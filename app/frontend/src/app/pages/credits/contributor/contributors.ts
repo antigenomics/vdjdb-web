@@ -168,16 +168,17 @@ export namespace Affiliations {
 }
 
 export const contributors: IContributor[] = [
-  /** Pirogov Contributors */
+  /** Pirogov and Shemyakin Contributors */
   { name: 'Dmitry V. Bagaev', affiliations: [ Affiliations.TUE, Affiliations.MSU, Affiliations.SHEMYAKIN ] },
-  { name: 'Mikhail Shugay', affiliations: [ Affiliations.PIROGOV, Affiliations.SHEMYAKIN, Affiliations.SKOLKOVO ] },
+  { name: 'Mikhail Shugay', affiliations: [ Affiliations.PIROGOV, Affiliations.SHEMYAKIN ] },
   { name: 'Ivan V. Zvyagin', affiliations: [ Affiliations.PIROGOV, Affiliations.SHEMYAKIN ] },
   { name: 'Dmitriy M. Chudakov', affiliations: [ Affiliations.PIROGOV, Affiliations.SHEMYAKIN, Affiliations.SKOLKOVO ] },
-  { name: 'Ekaterina A Komech', affiliations: [ Affiliations.PIROGOV, Affiliations.SHEMYAKIN ] },
-
-  /** Shemyakin Contributors */
+  { name: 'Ekaterina A. Komech', affiliations: [ Affiliations.PIROGOV, Affiliations.SHEMYAKIN ] },
   { name: 'Evgeny S. Egorov', affiliations: [ Affiliations.SHEMYAKIN ] },
-  { name: 'Anastasiya L Sycheva', affiliations: [ Affiliations.SHEMYAKIN ] },
+  { name: 'Anastasiya L. Sycheva', affiliations: [ Affiliations.SHEMYAKIN ] },
+
+  /** Skolkovo Contributors */
+  { name: 'Mikhail Goncharov', affiliations: [ Affiliations.SKOLKOVO, Affiliations.SHEMYAKIN ] },
 
   /** Utrecht Contributors */
   { name: 'Renske M.A. Vroomans', affiliations: [ Affiliations.UTRECHT, Affiliations.ORIGINS_CENTER, Affiliations.AMSTERDAM ] },
@@ -191,7 +192,7 @@ export const contributors: IContributor[] = [
   { name: 'Kristin Ladell', affiliations: [ Affiliations.CARDIFF ] },
   { name: 'David K. Cole', affiliations: [ Affiliations.CARDIFF ] },
   { name: 'Andrew J. Godkin', affiliations: [ Affiliations.CARDIFF ] },
-  { name: 'Andrew K Sewell', affiliations: [ Affiliations.CARDIFF ] },
+  { name: 'Andrew K. Sewell', affiliations: [ Affiliations.CARDIFF ] },
   { name: 'Cristina R. Rius', affiliations: [ Affiliations.CARDIFF ] },
   { name: 'Garry Dolton', affiliations: [ Affiliations.CARDIFF ] },
   { name: 'Meriem Attaf', affiliations: [ Affiliations.CARDIFF ] },
@@ -223,6 +224,7 @@ export const contributors: IContributor[] = [
   { name: 'Pradyot Dash', affiliations: [ Affiliations.STJUDE ] },
   { name: 'Paul G. Thomas', affiliations: [ Affiliations.STJUDE ] },
 
+  /** Hemocentre Contributors **/
   { name: 'Alina S. Shomuradova', affiliations: [ Affiliations.NMRCH ] },
   { name: 'Murad S. Vagida', affiliations: [ Affiliations.NMRCH ] },
   { name: 'Savely A. Sheetikov', affiliations: [ Affiliations.NMRCH ] },
