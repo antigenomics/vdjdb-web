@@ -171,6 +171,7 @@ export const contributors: IContributor[] = [
   /** Pirogov and Shemyakin Contributors */
   //{ name: 'Dmitry V. Bagaev', affiliations: [ Affiliations.TUE, Affiliations.MSU, Affiliations.SHEMYAKIN ] },
   //{ name: 'Mikhail Shugay', affiliations: [ Affiliations.PIROGOV, Affiliations.SHEMYAKIN ] },
+  { name: 'Dmitriy S. Shcherbinin', affiliations: [ Affiliations.PIROGOV, Affiliations.SHEMYAKIN ] },
   { name: 'Ivan V. Zvyagin', affiliations: [ Affiliations.PIROGOV, Affiliations.SHEMYAKIN ] },
   { name: 'Dmitriy M. Chudakov', affiliations: [ Affiliations.PIROGOV, Affiliations.SHEMYAKIN, Affiliations.SKOLKOVO ] },
   { name: 'Ekaterina A. Komech', affiliations: [ Affiliations.PIROGOV, Affiliations.SHEMYAKIN ] },
@@ -216,6 +217,8 @@ export const contributors: IContributor[] = [
   { name: 'Ton Schumacher', affiliations: [ Affiliations.NKI ] },
 
   /** Melbourne Contributors */
+  { name: 'Thi H. O. Nguyen', affiliations: [ Affiliations.MELBOURNE ] },
+  { name: 'Louise C. Rowntree', affiliations: [ Affiliations.MELBOURNE ] },
   { name: 'Bridie Clemens', affiliations: [ Affiliations.MELBOURNE ] },
   { name: 'Katherine Kedzierska', affiliations: [ Affiliations.MELBOURNE ] },
 
@@ -226,13 +229,16 @@ export const contributors: IContributor[] = [
 
   /** Hemocentre Contributors **/
   { name: 'Alina S. Shomuradova', affiliations: [ Affiliations.NMRCH ] },
+  { name: 'Alexandra A. Khmelevskaya', affiliations: [ Affiliations.NMRCH ] },
+  { name: 'Ksenia V. Zornikova', affiliations: [ Affiliations.NMRCH, Affiliations.MSU ] },
+  { name: 'Savely A. Sheetikov', affiliations: [ Affiliations.NMRCH ] },  
+  { name: 'Grigory A. Efimov', affiliations: [ Affiliations.NMRCH ] }
+
+  /**
   { name: 'Murad S. Vagida', affiliations: [ Affiliations.NMRCH ] },
-  { name: 'Savely A. Sheetikov', affiliations: [ Affiliations.NMRCH ] },
-  { name: 'Ksenia V. Zornikova', affiliations: [ Affiliations.NMRCH ] },
   { name: 'Dmitriy Kiryukhin', affiliations: [ Affiliations.NMRCH ] },
   { name: 'Aleksei Titov', affiliations: [ Affiliations.NMRCH ] },
   { name: 'Iuliia O. Peshkova', affiliations: [ Affiliations.NMRCH ] },
-  { name: 'Alexandra Khmelevskaya', affiliations: [ Affiliations.NMRCH ] },
   { name: 'Dmitry V. Dianov', affiliations: [ Affiliations.NMRCH ] },
   { name: 'Maria Malasheva', affiliations: [ Affiliations.NMRCH ] },
   { name: 'Anton Shmelev', affiliations: [ Affiliations.NMRCH ] },
@@ -240,8 +246,8 @@ export const contributors: IContributor[] = [
   { name: 'Alexandra V. Maleeva', affiliations: [ Affiliations.NMRCH ] },
   { name: 'Naina T. Shakirova', affiliations: [ Affiliations.NMRCH ] },
   { name: 'Artem Pilunov', affiliations: [ Affiliations.NMRCH ] },
-  { name: 'Dmitry B. Malko', affiliations: [ Affiliations.NMRCH ] },
-  { name: 'Grigory A. Efimov', affiliations: [ Affiliations.NMRCH ] }
+  { name: 'Dmitry B. Malko', affiliations: [ Affiliations.NMRCH ] }
+  **/
   
 ].sort((l, r) => l.name.localeCompare(r.name));
 
