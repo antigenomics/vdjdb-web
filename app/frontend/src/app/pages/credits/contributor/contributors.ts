@@ -169,8 +169,8 @@ export namespace Affiliations {
 
 export const contributors: IContributor[] = [
   /** Pirogov and Shemyakin Contributors */
-  { name: 'Dmitry V. Bagaev', affiliations: [ Affiliations.TUE, Affiliations.MSU, Affiliations.SHEMYAKIN ] },
-  { name: 'Mikhail Shugay', affiliations: [ Affiliations.PIROGOV, Affiliations.SHEMYAKIN ] },
+  //{ name: 'Dmitry V. Bagaev', affiliations: [ Affiliations.TUE, Affiliations.MSU, Affiliations.SHEMYAKIN ] },
+  //{ name: 'Mikhail Shugay', affiliations: [ Affiliations.PIROGOV, Affiliations.SHEMYAKIN ] },
   { name: 'Ivan V. Zvyagin', affiliations: [ Affiliations.PIROGOV, Affiliations.SHEMYAKIN ] },
   { name: 'Dmitriy M. Chudakov', affiliations: [ Affiliations.PIROGOV, Affiliations.SHEMYAKIN, Affiliations.SKOLKOVO ] },
   { name: 'Ekaterina A. Komech', affiliations: [ Affiliations.PIROGOV, Affiliations.SHEMYAKIN ] },
