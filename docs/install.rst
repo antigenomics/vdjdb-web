@@ -47,8 +47,8 @@ Please check that the versions of VDJtools and VDJmatch are matched to that in `
 Front-end dependencies
 """"""""""""""""""""""
 
-* `Node.js <https://nodejs.org/en/>`__
-* `Yarn <https://yarnpkg.com/lang/en/>`__
+* `Node.js 11 and NPM 6 <https://nodejs.org/en/>`__
+* `Yarn 1.22 <https://yarnpkg.com/lang/en/>`__
 
 Compiling
 """""""""

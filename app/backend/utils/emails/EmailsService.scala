@@ -36,7 +36,7 @@ class EmailsService @Inject()(mailerClient: MailerClient, conf: Configuration) {
 
   private def send(to: String, subject: String, body: String): Unit = {
     try {
-      val email = Email(subject, s"VDJdb <${conf.get[String]("play.mailer.user")}>", Seq(to), bodyHtml = Some(body))
+      val email = Email(subject, conf.get[String]("play.mailer.from"), Seq(to), bodyHtml = Some(body))
       mailerClient.send(email)
     } catch {
       case e: Exception => logger.error(s"Failed to send an email: ", e)
