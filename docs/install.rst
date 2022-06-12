@@ -41,6 +41,7 @@ Back-end dependencies
 * `VDJtools <https://github.com/mikessh/vdjtools>`__
 * `VDJmatch <https://github.com/antigenomics/vdjmatch>`__
 * `Scala Build Tools <https://www.scala-sbt.org/>`__
+* `Java 1.8`
 
 Please check that the versions of VDJtools and VDJmatch are matched to that in ``build.sbt`` file coming with VDJdb-server.
 
