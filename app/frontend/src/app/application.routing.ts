@@ -31,6 +31,7 @@ const routes: Routes = [
     { path: 'cancer', component: CancerActionComponent },
     { path: 'annotations', loadChildren: 'pages/annotations/annotations.module#AnnotationsPageModule' },
     { path: 'motif', loadChildren: 'pages/motif/motif.module#MotifPageModule' },
+    { path: 'refsearch', loadChildren: 'pages/refsearch/refsearch.module#RefSearchPageModule' },
     { path: 'about', loadChildren: 'pages/about/about.module#AboutPageModule' },
     { path: 'links', loadChildren: 'pages/links/links.module#LinksPageModule' },
     { path: 'credits', loadChildren: 'pages/credits/credits.module#CreditsPageModule' }
