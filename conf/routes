@@ -10,6 +10,7 @@ GET         /flu                                        backend.controllers.Appl
 GET         /cancer                                     backend.controllers.Application.index
 GET         /overview                                   backend.controllers.Application.index
 GET         /motif                                      backend.controllers.Application.index
+GET         /refsearch                                  backend.controllers.Application.index
 GET         /links                                      backend.controllers.Application.index
 GET         /credits                                    backend.controllers.Application.index
 GET         /about                                      backend.controllers.Application.index
