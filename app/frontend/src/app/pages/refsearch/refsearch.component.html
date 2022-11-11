@@ -24,26 +24,35 @@
             </div>
           </ng-container>
           <ng-container *ngSwitchCase="2"> <!-- ALIVE -->
-            <div class="ui teal segment raised">
+            <div class="ui teal segment raised" [ngClass]="{ 'loading': isLoading | async }">
               <refsearch-filters></refsearch-filters>
             </div>
             <div class="ui segment raised">
               <div class="ui grid middle aligned">
 
                 <div class="three wide column">
-                    <button class="ui teal fluid button" (click)="search()">Search</button>
+                    <button class="ui teal fluid button" (click)="search()" [ngClass]="{ 'loading': isLoading | async }">Search</button>
                 </div>
             
                 <div class="ten wide column"></div>
             
                 <div class="three wide column">
-                    <button class="ui blue fluid button" (click)="reset()">Reset filters</button>
+                    <button class="ui blue fluid button" (click)="reset()" [ngClass]="{ 'disabled': isLoading | async }">Reset filters</button>
                 </div>
             
+              </div>
             </div>
+            <div class="ui segment raised" *ngIf="(error | async) as errmsg">
+              <div class="ui negative message">
+                <div class="header">
+                  Error has occured during the search request
+                </div>
+                <p>{{ errmsg }}</p>
+              </div>
+              
             </div>
-            <div class="ui segment raised">
-              <refsearch-table></refsearch-table>
+            <div class="ui segment raised" [ngClass]="{ 'loading': isLoading | async }" *ngIf="!(error | async)">
+              <refsearch-table [rows]="rows | async"></refsearch-table>
             </div>
           </ng-container>
           <ng-container *ngSwitchCase="3"> <!-- UNREACHABLE -->
