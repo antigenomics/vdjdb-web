@@ -9,7 +9,7 @@
             <div class="three wide column filters label"><b>Sequence</b></div>
             <div class="thirteen wide column">
                 <div class="ui fluid input" > <!--[ngClass]="{'error':!tcr.cdr3.isPatternValid()}"-->
-                    <input placeholder="CDR3 sequence" type="text">
+                    <input placeholder="CDR3 sequence" type="text" [ngModel]="cdr3 | async" (ngModelChange)="updateCDR3($event)">
                 </div>
             </div>
         </div>
@@ -24,7 +24,7 @@
             <div class="three wide column filters label"><b>Sequence</b></div>
             <div class="thirteen wide column">
                 <div class="ui fluid input" > <!--[ngClass]="{'error':!tcr.cdr3.isPatternValid()}"-->
-                    <input placeholder="Epitope sequence" type="text">
+                    <input placeholder="Epitope sequence" type="text" [ngModel]="epitope | async" (ngModelChange)="updateEpitope($event)">
                 </div>
             </div>
         </div>

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { thresholdFreedmanDiaconis } from 'd3';
-import { from, interval, Observable, of, ReplaySubject } from 'rxjs';
-import { catchError, map, mergeMap, startWith } from 'rxjs/operators';
+import { combineLatest, from, interval, Observable, of, ReplaySubject } from 'rxjs';
+import { catchError, map, mergeMap, startWith, take } from 'rxjs/operators';
 import { Utils } from 'utils/utils';
 import { RefSearchTableRow } from './refsearch';
 
@@ -30,35 +30,58 @@ export class RefSearchService {
     private queryError: ReplaySubject<string | undefined> = new ReplaySubject<string>(1);
     private queryResults: ReplaySubject<RefSearchTableRow[] | undefined> = new ReplaySubject(1);
 
+    private filterCDR3: ReplaySubject<string> = new ReplaySubject<string>(1);
+    private filterEpitope: ReplaySubject<string> = new ReplaySubject<string>(1);
+
     constructor() {
         this.isQueryLoading.next(false);
         this.queryResults.next(undefined) // In the beginning we have an empty request
         this.queryError.next(undefined) // No error by default
+        this.filterCDR3.next('') // Empty filters by default
+        this.filterEpitope.next('') // Empty filters by default
+    }
+
+    public updateCDR3(cdr3: string): void {
+        this.filterCDR3.next(cdr3);
+    }
+
+    public updateEpitope(epitope: string): void {
+        this.filterEpitope.next(epitope);
     }
 
     public search(): void {
         this.isQueryLoading.next(true);
-        this.queryError.next(undefined)
+        this.queryError.next(undefined);
 
-        let request = Utils.HTTP.post(RefSearchService.refSearchBackendURL, {
-            'cdr3': 'CIV CDISH',
-            'antigen.epitope': 'AFSGFSG'
-        });
+        combineLatest(this.filterCDR3, this.filterEpitope).pipe(
+            take(1),
+            map(([ cdr3, epitope ]) => ({ 'cdr3': cdr3, 'antigen.epitope': epitope }))
+        ).subscribe((filters) => {
+            Utils.HTTP.post(RefSearchService.refSearchBackendURL, filters).then((response) => {
+                this.queryResults.next((JSON.parse(response.response) as any[]).map((row: any) => new RefSearchTableRow(row)))
+            }).catch((error) => {
+                this.queryResults.next(undefined)
+                this.queryError.next(error.responseText)
+            }).finally(() => {
+                this.isQueryLoading.next(false)
+            });
+        })
 
-        request.then((response) => {
-            this.queryResults.next((JSON.parse(response.response) as any[]).map((row: any) => new RefSearchTableRow(row)))
-        }).catch((error) => {
-            this.queryResults.next(undefined)
-            this.queryError.next(error.responseText)
-        }).finally(() => {
-            this.isQueryLoading.next(false)
-        });
-        
     }
 
     public reset(): void {
         this.queryResults.next(undefined);
         this.queryError.next(undefined);
+        this.filterCDR3.next('');
+        this.filterEpitope.next('');
+    }
+
+    public getCDR3Filter(): Observable<string> {
+        return this.filterCDR3;
+    }
+
+    public getEpitopeFilter(): Observable<string> {
+        return this.filterEpitope;
     }
 
     public getRows(): Observable<RefSearchTableRow[] | undefined> {

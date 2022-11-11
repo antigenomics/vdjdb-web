@@ -16,6 +16,7 @@
 
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RefSearchService } from 'pages/refsearch/refsearch.service';
+import { Observable } from 'rxjs';
 
 @Component({
   selector:        'refsearch-filters',
@@ -24,6 +25,22 @@ import { RefSearchService } from 'pages/refsearch/refsearch.service';
 })
 export class RefSearchPageFiltersComponent {
 
+  public get cdr3(): Observable<string> {
+    return this.refsearch.getCDR3Filter();
+  }
+
+  public get epitope(): Observable<string> {
+    return this.refsearch.getEpitopeFilter();
+  }
+
   constructor(private refsearch: RefSearchService) {}
+
+  public updateCDR3(cdr3: string) {
+    this.refsearch.updateCDR3(cdr3)
+  }
+
+  public updateEpitope(cdr3: string) {
+    this.refsearch.updateEpitope(cdr3)
+  }
 
 }

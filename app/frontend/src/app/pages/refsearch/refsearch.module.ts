@@ -16,6 +16,7 @@
 
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { RefSearchPageRouting } from 'pages/refsearch/refsearch.routing';
 import { FiltersModule } from 'shared/filters/filters.module';
 import { RefSearchPageComponent } from './refsearch.component';
@@ -25,7 +26,7 @@ import { RefSearchPageTableComponent } from './refsearch_table/refsearch-table.c
 import { RefSearchPageTableRowComponent } from './refsearch_table_row/refsearch-table-row.component';
 
 @NgModule({
-  imports:      [ CommonModule, FiltersModule, RefSearchPageRouting ],
+  imports:      [ CommonModule, FormsModule, FiltersModule, RefSearchPageRouting ],
   declarations: [ RefSearchPageComponent, RefSearchPageFiltersComponent, RefSearchPageTableComponent, RefSearchPageTableRowComponent ],
   providers:    [ RefSearchService ]
 })
