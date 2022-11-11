@@ -285,7 +285,7 @@ export namespace Utils {
           xhttp.open('GET', url, true);
           xhttp.send();
         } catch (e) {
-          reject(this);
+          reject(e);
         }
       });
     }
