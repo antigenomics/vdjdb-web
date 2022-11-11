@@ -58,7 +58,11 @@ export class RefSearchService {
             map(([ cdr3, epitope ]) => ({ 'cdr3': cdr3, 'antigen.epitope': epitope }))
         ).subscribe((filters) => {
             Utils.HTTP.post(RefSearchService.refSearchBackendURL, filters).then((response) => {
-                this.queryResults.next((JSON.parse(response.response) as any[]).map((row: any) => new RefSearchTableRow(row)))
+                try {
+                    this.queryResults.next((JSON.parse(response.response) as any[]).map((row: any) => new RefSearchTableRow(row)))
+                } catch (error) {
+                    this.queryError.next(error)
+                } 
             }).catch((error) => {
                 this.queryResults.next(undefined)
                 this.queryError.next(error.responseText)
