@@ -1,0 +1,35 @@
+
+<div class="ui grid middle aligned">
+
+    <div class="eight wide column">
+
+        <filters-header headerTitle="CDR3" headerHelp="Specify the CDR3 sequence"></filters-header>
+
+        <div class="ui grid middle aligned">
+            <div class="three wide column filters label"><b>Sequence</b></div>
+            <div class="thirteen wide column">
+                <div class="ui fluid input" > <!--[ngClass]="{'error':!tcr.cdr3.isPatternValid()}"-->
+                    <input placeholder="CDR3 sequence" type="text">
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="eight wide column">
+
+        <filters-header headerTitle="Epitope" headerHelp="Specify the epitope sequence"></filters-header>
+
+        <div class="ui grid middle aligned">
+            <div class="three wide column filters label"><b>Sequence</b></div>
+            <div class="thirteen wide column">
+                <div class="ui fluid input" > <!--[ngClass]="{'error':!tcr.cdr3.isPatternValid()}"-->
+                    <input placeholder="Epitope sequence" type="text">
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+

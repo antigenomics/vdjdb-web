@@ -15,28 +15,15 @@
  */
 
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { Observable } from 'rxjs';
-import { RefSearchBackendState, RefSearchService } from './refsearch.service';
+import { RefSearchService } from 'pages/refsearch/refsearch.service';
 
 @Component({
-  selector:        'refsearch',
-  templateUrl:     './refsearch.component.html',
+  selector:        'refsearch-filters',
+  templateUrl:     './refsearch-filters.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class RefSearchPageComponent {
-
-  get isAlive(): Observable<RefSearchBackendState> {
-    return this.refsearch.isAlive()
-  }
+export class RefSearchPageFiltersComponent {
 
   constructor(private refsearch: RefSearchService) {}
-
-  public search(): void {
-    this.refsearch.search()
-  }
-
-  public reset(): void {
-    this.refsearch.reset()
-  }
 
 }

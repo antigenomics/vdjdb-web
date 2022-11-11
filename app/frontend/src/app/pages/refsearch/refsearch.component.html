@@ -16,6 +16,47 @@
 
 <div class="ui main content container text fade slow element" style="max-width: 850px !important; padding-bottom: 75px;">
     <div class="ui raised segments">
-        <h3 class="ui top attached header centered">Reference search</h3>
+        <h3 class="ui top attached header centered">Reference search </h3>
+        <ng-container [ngSwitch]="isAlive | async">
+          <ng-container *ngSwitchCase="1"> <!-- UNDEFINED -->
+            <div class="ui teal segment raised">
+              <div class="ui active centered inline loader"></div>
+            </div>
+          </ng-container>
+          <ng-container *ngSwitchCase="2"> <!-- ALIVE -->
+            <div class="ui teal segment raised">
+              <refsearch-filters></refsearch-filters>
+            </div>
+            <div class="ui segment raised">
+              <div class="ui grid middle aligned">
+
+                <div class="three wide column">
+                    <button class="ui teal fluid button" (click)="search()">Search</button>
+                </div>
+            
+                <div class="ten wide column"></div>
+            
+                <div class="three wide column">
+                    <button class="ui blue fluid button" (click)="reset()">Reset filters</button>
+                </div>
+            
+            </div>
+            </div>
+            <div class="ui segment raised">
+              <refsearch-table></refsearch-table>
+            </div>
+          </ng-container>
+          <ng-container *ngSwitchCase="3"> <!-- UNREACHABLE -->
+            <div class="ui teal segment raised">
+              <h2 class="ui center aligned icon header">
+                <i class="exclamation triangle icon"></i>
+                The server is unreachable
+                <div class="sub header">
+                  The reference search backend is not available at the moment. Please, try again later. 
+                </div>
+              </h2>
+            </div>
+          </ng-container>
+        </ng-container>
     </div>
 </div>
