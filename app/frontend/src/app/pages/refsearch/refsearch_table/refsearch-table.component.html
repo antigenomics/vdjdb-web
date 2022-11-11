@@ -1,6 +1,6 @@
-<div *ngIf="rows$ | async as rows; else noRequest">
+<div *ngIf="rows; else noRequest">
     <ng-container *ngIf="rows?.length > 0; else empty">
-        123
+        <refsearch-table-row *ngFor="let row of rows" [row]="row"></refsearch-table-row>
     </ng-container>
     <ng-template #empty>
         <h2 class="ui center aligned icon header">

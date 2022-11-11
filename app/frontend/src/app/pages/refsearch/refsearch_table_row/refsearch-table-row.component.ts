@@ -19,14 +19,14 @@ import { RefSearchService } from 'pages/refsearch/refsearch.service';
 import { RefSearchTableRow } from 'pages/refsearch/refsearch';
 
 @Component({
-  selector:        'refsearch-table',
-  templateUrl:     './refsearch-table.component.html',
+  selector:        'refsearch-table-row',
+  templateUrl:     './refsearch-table-row.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class RefSearchPageTableComponent {
-
+export class RefSearchPageTableRowComponent {
+ 
   @Input()
-  public rows: RefSearchTableRow[] | undefined;
+  public row: RefSearchTableRow;
 
   constructor(private refsearch: RefSearchService) {}
 

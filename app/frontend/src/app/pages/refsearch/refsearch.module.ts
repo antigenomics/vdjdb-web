@@ -22,10 +22,11 @@ import { RefSearchPageComponent } from './refsearch.component';
 import { RefSearchService } from './refsearch.service';
 import { RefSearchPageFiltersComponent } from './refsearch_filters/refsearch-filters.component';
 import { RefSearchPageTableComponent } from './refsearch_table/refsearch-table.component';
+import { RefSearchPageTableRowComponent } from './refsearch_table_row/refsearch-table-row.component';
 
 @NgModule({
   imports:      [ CommonModule, FiltersModule, RefSearchPageRouting ],
-  declarations: [ RefSearchPageComponent, RefSearchPageFiltersComponent, RefSearchPageTableComponent ],
+  declarations: [ RefSearchPageComponent, RefSearchPageFiltersComponent, RefSearchPageTableComponent, RefSearchPageTableRowComponent ],
   providers:    [ RefSearchService ]
 })
 export class RefSearchPageModule {}

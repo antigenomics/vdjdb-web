@@ -16,6 +16,7 @@
 
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { Observable } from 'rxjs';
+import { RefSearchTableRow } from './refsearch';
 import { RefSearchBackendState, RefSearchService } from './refsearch.service';
 
 @Component({
@@ -26,7 +27,19 @@ import { RefSearchBackendState, RefSearchService } from './refsearch.service';
 export class RefSearchPageComponent {
 
   get isAlive(): Observable<RefSearchBackendState> {
-    return this.refsearch.isAlive()
+    return this.refsearch.isAlive();
+  }
+
+  get isLoading(): Observable<boolean> {
+    return this.refsearch.isLoading();
+  }
+
+  get error(): Observable<string | undefined> {
+    return this.refsearch.getError();
+  }
+
+  get rows(): Observable<RefSearchTableRow[] | undefined> {
+    return this.refsearch.getRows();
   }
 
   constructor(private refsearch: RefSearchService) {}
