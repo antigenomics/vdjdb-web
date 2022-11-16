@@ -14,9 +14,11 @@
  *     limitations under the License.
  */
 
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { RefSearchService } from 'pages/refsearch/refsearch.service';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input } from '@angular/core';
+import { RefSearchService, IArticleMetadata, RefSearchBackendPrefetchEvents } from 'pages/refsearch/refsearch.service';
 import { RefSearchTableRow } from 'pages/refsearch/refsearch';
+import { Observable, Subscription } from 'rxjs';
+import { filter } from 'rxjs/operators';
 
 @Component({
   selector:        'refsearch-table-row',
@@ -25,9 +27,27 @@ import { RefSearchTableRow } from 'pages/refsearch/refsearch';
 })
 export class RefSearchPageTableRowComponent {
  
+  private prefetchSubscription: Subscription;
+
   @Input()
   public row: RefSearchTableRow;
 
-  constructor(private refsearch: RefSearchService) {}
+  public ngOnInit(): void {
+    this.prefetchSubscription = this.refsearch.getPrefetchEvents().pipe(filter((event) => event === RefSearchBackendPrefetchEvents.FINISHED)).subscribe(() => {
+      this.changeDetector.detectChanges();
+    })
+  }
+
+  constructor(private refsearch: RefSearchService, private changeDetector: ChangeDetectorRef) {
+    
+  }
+
+  public getMetadata(): Observable<IArticleMetadata | undefined> {
+    return this.refsearch.getArticleMetadata(this.row.pmid)
+  }
+
+  public ngOnDestroy(): void {
+    this.prefetchSubscription.unsubscribe();
+  }
 
 }

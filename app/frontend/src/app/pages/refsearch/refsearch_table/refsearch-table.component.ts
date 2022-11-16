@@ -28,6 +28,7 @@ export class RefSearchPageTableComponent {
   @Input()
   public rows: RefSearchTableRow[] | undefined;
 
-  constructor(private refsearch: RefSearchService) {}
+  constructor(public refsearch: RefSearchService) {}
+
 
 }
