@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
-import { thresholdFreedmanDiaconis } from 'd3';
-import { combineLatest, from, interval, Observable, of, ReplaySubject } from 'rxjs';
+import { combineLatest, from, interval, Observable, of, ReplaySubject, Subject, zip } from 'rxjs';
 import { catchError, map, mergeMap, startWith, take } from 'rxjs/operators';
+import { LoggerService } from 'utils/logger/logger.service';
 import { Utils } from 'utils/utils';
 import { RefSearchTableRow } from './refsearch';
 
@@ -11,7 +11,35 @@ export namespace RefSearchBackendStates {
     export const UNDEFINED: number = 1;
     export const ALIVE: number = 2;
     export const UNREACHABLE: number = 3;
-  }
+}
+
+export type RefSearchBackendPrefetchEvent = number;
+
+export namespace RefSearchBackendPrefetchEvents {
+    export const INITIATED: number = 1;
+    export const FINISHED: number = 2;
+}
+
+export interface IArticleAuthorMetadata {
+    readonly name: string;
+    readonly authtype: string;
+}
+
+export interface IArticleMetadata {
+    readonly uid: string;
+    readonly epubdate: string;
+    readonly pubdate: string;
+    readonly source: string;
+    readonly authors: IArticleAuthorMetadata[];
+    readonly title: string;
+    readonly fulljournalname: string;
+    readonly error: string;
+    readonly link: string;
+}
+
+export interface IArticleAbstract {
+    readonly text: string;   
+}
 
 @Injectable()
 export class RefSearchService {
@@ -26,6 +54,12 @@ export class RefSearchService {
         catchError((_, __) => of(RefSearchBackendStates.UNREACHABLE))
     )
 
+    private static readonly prefetchIntervalDelay: number = 750;
+    private static readonly referenceMetadataMap: Map<string | number, ReplaySubject<IArticleMetadata | undefined>> = new Map();
+    private static readonly referenceAbstractMap: Map<string | number, ReplaySubject<IArticleAbstract | undefined>> = new Map();
+    private static readonly referenceFetchingEvents: Subject<RefSearchBackendPrefetchEvent> = new Subject();
+
+    private static readonly queryMaxRows: number = 10;
     private isQueryLoading: ReplaySubject<boolean> = new ReplaySubject<boolean>(1);
     private queryError: ReplaySubject<string | undefined> = new ReplaySubject<string>(1);
     private queryResults: ReplaySubject<RefSearchTableRow[] | undefined> = new ReplaySubject(1);
@@ -33,12 +67,20 @@ export class RefSearchService {
     private filterCDR3: ReplaySubject<string> = new ReplaySubject<string>(1);
     private filterEpitope: ReplaySubject<string> = new ReplaySubject<string>(1);
 
-    constructor() {
+    constructor(private logger: LoggerService) {
         this.isQueryLoading.next(false);
         this.queryResults.next(undefined) // In the beginning we have an empty request
         this.queryError.next(undefined) // No error by default
         this.filterCDR3.next('') // Empty filters by default
         this.filterEpitope.next('') // Empty filters by default
+        this.queryResults.subscribe((results) => {
+            if (results != undefined) {
+                zip(interval(RefSearchService.prefetchIntervalDelay), from(results)).subscribe(([ _, result ]) => {
+                    this.logger.info(`Prefetching article metadata`, result.pmid)
+                    this.prefetchArticleMetadata(result.pmid)
+                })
+            }
+        })
     }
 
     public updateCDR3(cdr3: string): void {
@@ -59,7 +101,7 @@ export class RefSearchService {
         ).subscribe((filters) => {
             Utils.HTTP.post(RefSearchService.refSearchBackendURL, filters).then((response) => {
                 try {
-                    this.queryResults.next((JSON.parse(response.response) as any[]).map((row: any) => new RefSearchTableRow(row)))
+                    this.queryResults.next((JSON.parse(response.response) as any[]).slice(0, RefSearchService.queryMaxRows).map((row: any) => new RefSearchTableRow(row)))
                 } catch (error) {
                     this.queryError.next(error)
                 } 
@@ -103,4 +145,61 @@ export class RefSearchService {
     public isAlive(): Observable<RefSearchBackendState> {
         return RefSearchService.isAliveRequest;
     }
+
+    public getPrefetchEvents(): Observable<RefSearchBackendPrefetchEvent> {
+        return RefSearchService.referenceFetchingEvents;
+    }
+
+    public getArticleMetadata(id: string | number): ReplaySubject<IArticleMetadata | undefined> {
+        if (RefSearchService.referenceMetadataMap.has(id)) {
+            return RefSearchService.referenceMetadataMap.get(id);
+        } else {
+            const metadata = new ReplaySubject<IArticleMetadata | undefined>(1);
+            metadata.next(undefined);
+            RefSearchService.referenceMetadataMap.set(id, metadata);
+            return metadata;
+        }
+    }
+
+    public prefetchArticleMetadata(id: string | number): void {
+        const metadata = this.getArticleMetadata(id);
+        metadata.pipe(take(1)).subscribe((cachedmeta) => {
+            // We do not fetch metadata again if we have saved cache
+            if (cachedmeta == undefined) {
+                RefSearchService.referenceFetchingEvents.next(RefSearchBackendPrefetchEvents.INITIATED)
+                if (typeof id === "number" || (typeof id === "string" && id.startsWith("PMID:"))) {
+                    const pmid = (typeof id === "string" && id.startsWith("PMID:")) ? id.replace("PMID:", "") : id;
+        
+                    // By default there is no metadata available
+                    const metadata = new ReplaySubject<IArticleMetadata | undefined>(1);
+                    metadata.next(undefined);
+        
+                    const promise = new Promise<IArticleMetadata>((resolve, reject) => {
+                        const fetchPMIDMetaAPI = `https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&id=${pmid}&retmode=json`;
+                        const response = Utils.HTTP.get(fetchPMIDMetaAPI);
+        
+                        response.then((r) => {
+                            const result = JSON.parse(r.responseText).result as any;
+                            const uid = result.uids[ 0 ];
+                            const imetadata = { ...(result[ uid ] as IArticleMetadata), link: `http://www.ncbi.nlm.nih.gov/pubmed/?term=${uid}` };
+                            resolve(imetadata);
+                        }).catch(reject);
+                    });
+        
+                    promise.then((imetadata) => {
+                        this.logger.info(`Fetched metadata info for ${id}`, imetadata)
+                        metadata.next(imetadata)
+                    }).catch((err) => 
+                        metadata.next({ error: err.responseText, link: undefined } as IArticleMetadata)
+                    ).finally(() => {
+                        RefSearchService.referenceFetchingEvents.next(RefSearchBackendPrefetchEvents.FINISHED)
+                    })
+        
+                    RefSearchService.referenceMetadataMap.set(id, metadata)
+                } else {
+                    metadata.next({ title: id, error: 'No metadata available.', link: id } as IArticleMetadata)
+                }
+            }
+        })
+      }
 }
