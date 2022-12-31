@@ -21,12 +21,13 @@ import { RefSearchPageRouting } from 'pages/refsearch/refsearch.routing';
 import { FiltersModule } from 'shared/filters/filters.module';
 import { RefSearchPageComponent } from './refsearch.component';
 import { RefSearchService } from './refsearch.service';
+import { FiltersCommonModule } from 'shared/filters/common/filters-common.module';
 import { RefSearchPageFiltersComponent } from './refsearch_filters/refsearch-filters.component';
 import { RefSearchPageTableComponent } from './refsearch_table/refsearch-table.component';
 import { RefSearchPageTableRowComponent } from './refsearch_table_row/refsearch-table-row.component';
 
 @NgModule({
-  imports:      [ CommonModule, FormsModule, FiltersModule, RefSearchPageRouting ],
+  imports:      [ CommonModule, FormsModule, FiltersModule, RefSearchPageRouting, FiltersCommonModule ],
   declarations: [ RefSearchPageComponent, RefSearchPageFiltersComponent, RefSearchPageTableComponent, RefSearchPageTableRowComponent ],
   providers:    [ RefSearchService ]
 })

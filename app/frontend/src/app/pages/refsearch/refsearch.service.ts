@@ -56,7 +56,7 @@ export class RefSearchService {
 
     private static readonly prefetchIntervalDelay: number = 750;
     private static readonly referenceMetadataMap: Map<string | number, ReplaySubject<IArticleMetadata | undefined>> = new Map();
-    private static readonly referenceAbstractMap: Map<string | number, ReplaySubject<IArticleAbstract | undefined>> = new Map();
+    // private static readonly referenceAbstractMap: Map<string | number, ReplaySubject<IArticleAbstract | undefined>> = new Map();
     private static readonly referenceFetchingEvents: Subject<RefSearchBackendPrefetchEvent> = new Subject();
 
     private static readonly queryMaxRows: number = 10;
