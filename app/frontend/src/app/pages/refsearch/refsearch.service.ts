@@ -108,12 +108,32 @@ export class RefSearchService {
         this.isQueryLoading.next(true);
         this.queryError.next(undefined);
 
-        combineLatest(this.filterCDR3, this.filterEpitope).pipe(
+        combineLatest(this.filterCDR3, this.filterEpitope, this.filterExtraSearchByAntigen, this.filterExtraFilterStopWords, this.filterSpeciesToSearch).pipe(
             take(1),
-            map(([ cdr3, epitope ]) => ({ 
-                'cdr3': cdr3.map((entry) => entry.value).join(' '),
-                'antigen.epitope': epitope.map((entry) => entry.value).join(' ')
-            }))
+            map(([ cdr3, epitope, searchByAntigen, filterStopWords, species ]) => { 
+                let extra_parameters = [];
+
+                if (searchByAntigen) {
+                    extra_parameters.push('search_by_antigen');
+                }
+
+                if (filterStopWords) {
+                    extra_parameters.push('filter_stop_words');
+                }
+
+                let speciesToSearch = species.map((entry) => entry.value).join(' ')
+
+                if (speciesToSearch.length == 0) {
+                    speciesToSearch = "HomoSapiens MusMusculus MacacaMulatta";
+                }
+
+                return { 
+                    'cdr3': cdr3.map((entry) => entry.value).join(' '),
+                    'antigen.epitope': epitope.map((entry) => entry.value).join(' '),
+                    'extra_parameters': extra_parameters.join(' '),
+                    'species_to_search': speciesToSearch
+                }
+            })
         ).subscribe((filters) => {
             Utils.HTTP.post(RefSearchService.refSearchBackendURL, filters).then((response) => {
                 try {
