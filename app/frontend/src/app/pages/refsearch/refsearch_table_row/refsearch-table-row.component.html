@@ -7,13 +7,18 @@
                     <div class="content">
                         <a class="header" [attr.href]="metadata.link" target="_blank" rel="noopener">{{ metadata.title }}</a>
                         <div class="meta">
-                            <span class="date" *ngIf="metadata?.fulljournalname">{{ metadata?.fulljournalname }}</span>
+                            <span class="date" *ngIf="metadata?.journal">{{ metadata?.journal }}</span>
                         </div>
                         <div class="meta">
-                            <span class="date" *ngIf="metadata?.epubdate">{{ metadata?.epubdate }},&nbsp;</span>
-                            <span class="date" *ngIf="metadata?.authors">{{ metadata?.authors[0]?.name }} et al.</span>
+                            <span class="date" *ngIf="metadata?.publication_date">{{ metadata?.publication_date }},&nbsp;</span>
+                            <span class="date" *ngIf="metadata?.authors">
+                                {{ metadata?.authors[0]?.collective_name }}{{ metadata?.authors[0]?.last_name }}, {{ metadata?.authors[0]?.first_name }} et al.
+                            </span>
                         </div>
                         <div class="description">
+                            <span *ngIf="metadata?.abstract">
+                                {{ metadata?.abstract }}
+                            </span>
                             <div class="ui warning message" *ngIf="metadata?.error">
                                 <div class="header">
                                   Cannot prefetch article metadata

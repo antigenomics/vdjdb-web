@@ -22,24 +22,19 @@ export namespace RefSearchBackendPrefetchEvents {
 }
 
 export interface IArticleAuthorMetadata {
-    readonly name: string;
-    readonly authtype: string;
+    readonly first_name: string | undefined;
+    readonly last_name: string | undefined;
+    readonly collective_name: string | undefined;
 }
 
 export interface IArticleMetadata {
-    readonly uid: string;
-    readonly epubdate: string;
-    readonly pubdate: string;
-    readonly source: string;
-    readonly authors: IArticleAuthorMetadata[];
+    readonly abstract: string;
+    readonly authors_list: IArticleAuthorMetadata[];
+    readonly journal: string;
+    readonly publication_year: string;
     readonly title: string;
-    readonly fulljournalname: string;
-    readonly error: string;
-    readonly link: string;
-}
-
-export interface IArticleAbstract {
-    readonly text: string;   
+    readonly error: string | undefined;
+    readonly link: string | undefined;
 }
 
 @Injectable()
@@ -55,9 +50,8 @@ export class RefSearchService {
         catchError((_, __) => of(RefSearchBackendStates.UNREACHABLE))
     )
 
-    private static readonly prefetchIntervalDelay: number = 750;
+    private static readonly prefetchIntervalDelay: number = 15;
     private static readonly referenceMetadataMap: Map<string | number, ReplaySubject<IArticleMetadata | undefined>> = new Map();
-    // private static readonly referenceAbstractMap: Map<string | number, ReplaySubject<IArticleAbstract | undefined>> = new Map();
     private static readonly referenceFetchingEvents: Subject<RefSearchBackendPrefetchEvent> = new Subject();
 
     private static readonly queryMaxRows: number = 10;
@@ -226,13 +220,12 @@ export class RefSearchService {
                     metadata.next(undefined);
         
                     const promise = new Promise<IArticleMetadata>((resolve, reject) => {
-                        const fetchPMIDMetaAPI = `https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&id=${pmid}&retmode=json`;
-                        const response = Utils.HTTP.get(fetchPMIDMetaAPI);
+                        const fetchPMIDMetaAPI = `${RefSearchService.refSearchBackendURL}/articles`;
+                        const response = Utils.HTTP.post(fetchPMIDMetaAPI, { pmid: pmid });
         
                         response.then((r) => {
-                            const result = JSON.parse(r.responseText).result as any;
-                            const uid = result.uids[ 0 ];
-                            const imetadata = { ...(result[ uid ] as IArticleMetadata), link: `http://www.ncbi.nlm.nih.gov/pubmed/?term=${uid}` };
+                            const result = JSON.parse(r.responseText) as IArticleMetadata;
+                            const imetadata = { ...result, link: `http://www.ncbi.nlm.nih.gov/pubmed/?term=${pmid}` };
                             resolve(imetadata);
                         }).catch(reject);
                     });
@@ -240,9 +233,10 @@ export class RefSearchService {
                     promise.then((imetadata) => {
                         this.logger.info(`Fetched metadata info for ${id}`, imetadata)
                         metadata.next(imetadata)
-                    }).catch((err) => 
+                    }).catch((err) => {
+                        this.logger.error(`Error metadata for ${id}`, err)
                         metadata.next({ error: err.responseText, link: undefined } as IArticleMetadata)
-                    ).finally(() => {
+                    }).finally(() => {
                         RefSearchService.referenceFetchingEvents.next(RefSearchBackendPrefetchEvents.FINISHED)
                     })
         
