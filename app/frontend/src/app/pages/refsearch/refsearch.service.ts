@@ -67,13 +67,13 @@ export class RefSearchService {
 
     private filterCDR3: ReplaySubject<SetEntry[]> = new ReplaySubject<SetEntry[]>(1);
     private filterEpitope: ReplaySubject<SetEntry[]> = new ReplaySubject<SetEntry[]>(1);
+    private filterExtraSearchByAntigen: ReplaySubject<boolean> = new ReplaySubject<boolean>(1);
+    private filterExtraFilterStopWords: ReplaySubject<boolean> = new ReplaySubject<boolean>(1);
+    private filterSpeciesToSearch: ReplaySubject<SetEntry[]> = new ReplaySubject<SetEntry[]>(1);
 
     constructor(private logger: LoggerService) {
         this.isQueryLoading.next(false);
-        this.queryResults.next(undefined) // In the beginning we have an empty request
-        this.queryError.next(undefined) // No error by default
-        this.filterCDR3.next([]) // Empty filters by default
-        this.filterEpitope.next([]) // Empty filters by default
+        this.reset()
         this.queryResults.subscribe((results) => {
             if (results != undefined) {
                 zip(interval(RefSearchService.prefetchIntervalDelay), from(results)).subscribe(([ _, result ]) => {
@@ -90,6 +90,18 @@ export class RefSearchService {
 
     public updateEpitope(epitope: SetEntry[]): void {
         this.filterEpitope.next(epitope);
+    }
+
+    public updateExtraSearchByAntigen(flag: boolean): void {
+        this.filterExtraSearchByAntigen.next(flag);
+    }
+
+    public updateExtraFilterStopWords(flag: boolean): void {
+        this.filterExtraFilterStopWords.next(flag);
+    }
+
+    public updateSpecies(species: SetEntry[]): void {
+        this.filterSpeciesToSearch.next(species);
     }
 
     public search(): void {
@@ -124,6 +136,9 @@ export class RefSearchService {
         this.queryError.next(undefined);
         this.filterCDR3.next([]);
         this.filterEpitope.next([]);
+        this.filterExtraSearchByAntigen.next(false);
+        this.filterExtraFilterStopWords.next(false);
+        this.filterSpeciesToSearch.next([]);
     }
 
     public getCDR3Filter(): Observable<SetEntry[]> {
@@ -132,6 +147,18 @@ export class RefSearchService {
 
     public getEpitopeFilter(): Observable<SetEntry[]> {
         return this.filterEpitope;
+    }
+
+    public getExtraSearchByAntigenFilter(): Observable<boolean> {
+        return this.filterExtraSearchByAntigen;
+    }
+
+    public getExtraFilterStopWordsFilter(): Observable<boolean> {
+        return this.filterExtraFilterStopWords;
+    }
+
+    public getSpeciesToSearchFilter(): Observable<SetEntry[]> {
+        return this.filterSpeciesToSearch;
     }
 
     public getRows(): Observable<RefSearchTableRow[] | undefined> {

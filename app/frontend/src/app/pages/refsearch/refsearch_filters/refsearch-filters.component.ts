@@ -34,6 +34,18 @@ export class RefSearchPageFiltersComponent {
     return this.refsearch.getEpitopeFilter();
   }
 
+  public get searchByAntigen(): Observable<boolean> {
+    return this.refsearch.getExtraSearchByAntigenFilter();
+  }
+
+  public get filterStopWords(): Observable<boolean> {
+    return this.refsearch.getExtraFilterStopWordsFilter();
+  }
+
+  public get species(): Observable<SetEntry[]> {
+    return this.refsearch.getSpeciesToSearchFilter();
+  }
+
   constructor(private refsearch: RefSearchService) {}
 
   public updateCDR3(cdr3: SetEntry[]) {
@@ -42,6 +54,18 @@ export class RefSearchPageFiltersComponent {
 
   public updateEpitope(epitope: SetEntry[]) {
     this.refsearch.updateEpitope(epitope)
+  }
+
+  public updateSpecies(species: SetEntry[]) {
+    this.refsearch.updateSpecies(species)
+  }
+
+  public updateSearchByAntigen(flag: boolean): void {
+    this.refsearch.updateExtraSearchByAntigen(flag);
+  }
+
+  public updateFilterStopWords(flag: boolean): void {
+      this.refsearch.updateExtraFilterStopWords(flag);
   }
 
 }
