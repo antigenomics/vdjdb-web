@@ -37,6 +37,7 @@
                     <input [ngModel]="searchByAntigen | async" (ngModelChange)="updateSearchByAntigen($event)" type="checkbox">
                     <label>Search by antigen</label>
                 </div>
+                <br>
                 <div class="ui checkbox">
                     <input [ngModel]="filterStopWords | async" (ngModelChange)="updateFilterStopWords($event)" type="checkbox">
                     <label>Filter stop words</label>
@@ -45,7 +46,7 @@
             <div class="ten wide column">
                 <div class="ui grid middle aligned">
                     <div class="three wide column filters label"><b>Species</b></div>
-                    <div class="twelve wide column">
+                    <div class="thirteen wide column">
                         <set [selected]="species | async"
                             (selectedChange)="updateSpecies($event)"
                             [values]="['HomoSapiens', 'MusMusculus', 'MacacaMulatta']"
