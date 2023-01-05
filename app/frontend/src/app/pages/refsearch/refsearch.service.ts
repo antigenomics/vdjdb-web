@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { combineLatest, from, interval, Observable, of, ReplaySubject, Subject, zip } from 'rxjs';
 import { catchError, map, mergeMap, startWith, take } from 'rxjs/operators';
 import { LoggerService } from 'utils/logger/logger.service';
+import { SetEntry } from 'shared/filters/common/set/set-entry';
 import { Utils } from 'utils/utils';
 import { RefSearchTableRow } from './refsearch';
 
@@ -64,15 +65,15 @@ export class RefSearchService {
     private queryError: ReplaySubject<string | undefined> = new ReplaySubject<string>(1);
     private queryResults: ReplaySubject<RefSearchTableRow[] | undefined> = new ReplaySubject(1);
 
-    private filterCDR3: ReplaySubject<string> = new ReplaySubject<string>(1);
-    private filterEpitope: ReplaySubject<string> = new ReplaySubject<string>(1);
+    private filterCDR3: ReplaySubject<SetEntry[]> = new ReplaySubject<SetEntry[]>(1);
+    private filterEpitope: ReplaySubject<SetEntry[]> = new ReplaySubject<SetEntry[]>(1);
 
     constructor(private logger: LoggerService) {
         this.isQueryLoading.next(false);
         this.queryResults.next(undefined) // In the beginning we have an empty request
         this.queryError.next(undefined) // No error by default
-        this.filterCDR3.next('') // Empty filters by default
-        this.filterEpitope.next('') // Empty filters by default
+        this.filterCDR3.next([]) // Empty filters by default
+        this.filterEpitope.next([]) // Empty filters by default
         this.queryResults.subscribe((results) => {
             if (results != undefined) {
                 zip(interval(RefSearchService.prefetchIntervalDelay), from(results)).subscribe(([ _, result ]) => {
@@ -83,11 +84,11 @@ export class RefSearchService {
         })
     }
 
-    public updateCDR3(cdr3: string): void {
+    public updateCDR3(cdr3: SetEntry[]): void {
         this.filterCDR3.next(cdr3);
     }
 
-    public updateEpitope(epitope: string): void {
+    public updateEpitope(epitope: SetEntry[]): void {
         this.filterEpitope.next(epitope);
     }
 
@@ -97,7 +98,10 @@ export class RefSearchService {
 
         combineLatest(this.filterCDR3, this.filterEpitope).pipe(
             take(1),
-            map(([ cdr3, epitope ]) => ({ 'cdr3': cdr3, 'antigen.epitope': epitope }))
+            map(([ cdr3, epitope ]) => ({ 
+                'cdr3': cdr3.map((entry) => entry.value).join(' '),
+                'antigen.epitope': epitope.map((entry) => entry.value).join(' ')
+            }))
         ).subscribe((filters) => {
             Utils.HTTP.post(RefSearchService.refSearchBackendURL, filters).then((response) => {
                 try {
@@ -118,15 +122,15 @@ export class RefSearchService {
     public reset(): void {
         this.queryResults.next(undefined);
         this.queryError.next(undefined);
-        this.filterCDR3.next('');
-        this.filterEpitope.next('');
+        this.filterCDR3.next([]);
+        this.filterEpitope.next([]);
     }
 
-    public getCDR3Filter(): Observable<string> {
+    public getCDR3Filter(): Observable<SetEntry[]> {
         return this.filterCDR3;
     }
 
-    public getEpitopeFilter(): Observable<string> {
+    public getEpitopeFilter(): Observable<SetEntry[]> {
         return this.filterEpitope;
     }
 
