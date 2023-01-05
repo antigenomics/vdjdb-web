@@ -15,7 +15,7 @@
   -->
 
 <!--suppress HtmlFormInputWithoutLabel -->
-<div class="ui fluid search dropdown compact selection multiple" [ngClass]="{ 'active visible' : isSearchVisible(), 'disabled': isSearchDisabled() }" (click)="focus()">
+<div class="ui fluid search dropdown compact selection multiple" [ngClass]="{ 'active visible' : isSearchVisible(), 'disabled': isSearchDisabled() }" (click)="focus()" (keyup.enter)="onEnterPress()">
     <i class="dropdown icon"></i>
     <a class="ui label visible" style="display: inline-block !important;" *ngFor="let entry of selected">
         {{ entry.display }}

@@ -6,11 +6,13 @@
         <filters-header headerTitle="CDR3" headerHelp="Specify the CDR3 sequence"></filters-header>
 
         <div class="ui grid middle aligned">
-            <div class="three wide column filters label"><b>Sequence</b></div>
+            <div class="three wide column filters label"><b>Sequence(s)</b></div>
             <div class="thirteen wide column">
-                <div class="ui fluid input" > <!--[ngClass]="{'error':!tcr.cdr3.isPatternValid()}"-->
-                    <input placeholder="CDR3 sequence" type="text" [ngModel]="cdr3 | async" (ngModelChange)="updateCDR3($event)">
-                </div>
+                <set [selected]="cdr3 | async"
+                    (selectedChange)="updateCDR3($event)"
+                     [inputUpperOnly]="true"
+                     [allowArbitraryInput]="true"
+                     placeholder="Specify a CDR3 sequence"></set>
             </div>
         </div>
 
@@ -21,11 +23,13 @@
         <filters-header headerTitle="Epitope" headerHelp="Specify the epitope sequence"></filters-header>
 
         <div class="ui grid middle aligned">
-            <div class="three wide column filters label"><b>Sequence</b></div>
+            <div class="three wide column filters label"><b>Sequence(s)</b></div>
             <div class="thirteen wide column">
-                <div class="ui fluid input" > <!--[ngClass]="{'error':!tcr.cdr3.isPatternValid()}"-->
-                    <input placeholder="Epitope sequence" type="text" [ngModel]="epitope | async" (ngModelChange)="updateEpitope($event)">
-                </div>
+                <set [selected]="epitope | async"
+                    (selectedChange)="updateEpitope($event)"
+                     [inputUpperOnly]="true"
+                     [allowArbitraryInput]="true"
+                     placeholder="Specify a Epitope sequence"></set>
             </div>
         </div>
 
