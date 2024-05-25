@@ -18,6 +18,9 @@
     <div class="ui container">
         <div class="header item"><h1>VDJdb</h1></div>
         <a route="/" class="item">Home</a>
+        <a (click)="redirectOnUrl('self-antigen')" class="item">
+            <span style="color: #f2711c!important">Self-antigens</span>
+        </a>
         <a (click)="redirectOnUrl('covid19')" class="item">
             <span style="color: #f2711c!important">COVID-19</span>
         </a>

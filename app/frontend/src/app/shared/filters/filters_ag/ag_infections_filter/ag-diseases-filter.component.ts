@@ -40,12 +40,12 @@ export class AGDiseasesFilterComponent {
         return this.diseases.isDiseaseSelected(CommonDiseaseType.INFLUENZA)
     }
 
-    public switchCancer(): void {
-        this.diseases.selectDisease(CommonDiseaseType.CANCER, true)
+    public switchSelfAntigen(): void {
+        this.diseases.selectDisease(CommonDiseaseType.SELFANTIGEN, true)
     }
 
-    public isCancerSelected(): boolean {
-        return this.diseases.isDiseaseSelected(CommonDiseaseType.CANCER)
+    public isSelfAntigenSelected(): boolean {
+        return this.diseases.isDiseaseSelected(CommonDiseaseType.SELFANTIGEN)
     }
 
 }
