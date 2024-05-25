@@ -1,0 +1,63 @@
+
+<div class="ui grid middle aligned">
+
+    <div class="sixteen wide column">
+
+        <filters-header headerTitle="General" headerHelp="Specify the CDR3 and/or Epitope sequences"></filters-header>
+
+        <div class="ui grid middle aligned">
+            <div class="three wide column filters label"><b>CDR3 sequence(s)</b></div>
+            <div class="twelve wide column">
+                <set [selected]="cdr3 | async"
+                    (selectedChange)="updateCDR3($event)"
+                     [inputUpperOnly]="true"
+                     [allowArbitraryInput]="true"
+                     placeholder="Specify a CDR3 sequence"></set>
+            </div>
+        </div>
+
+        <div class="ui grid middle aligned">
+            <div class="three wide column filters label"><b>Epitope sequence(s)</b></div>
+            <div class="twelve wide column">
+                <set [selected]="epitope | async"
+                    (selectedChange)="updateEpitope($event)"
+                     [inputUpperOnly]="true"
+                     [allowArbitraryInput]="true"
+                     placeholder="Specify a Epitope sequence"></set>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="sixteen wide column">
+        <filters-header headerTitle="Extra" headerHelp="Search by antigen: Evaluate tf-idf based on (article, antigen) pair at the same time. Filter stop words: Remove unneeded words from the analysis (e.g. I, an, a, the). Species to search: A subset of HomoSapiens, MusMusculus, or MacacaMulatta species"></filters-header>
+        <div class="ui grid middle aligned">
+            <div class="five wide column">
+                <div class="ui checkbox">
+                    <input [ngModel]="searchByAntigen | async" (ngModelChange)="updateSearchByAntigen($event)" type="checkbox">
+                    <label>Search by antigen</label>
+                </div>
+                <br>
+                <div class="ui checkbox">
+                    <input [ngModel]="filterStopWords | async" (ngModelChange)="updateFilterStopWords($event)" type="checkbox">
+                    <label>Filter stop words</label>
+                </div>
+            </div>
+            <div class="ten wide column">
+                <div class="ui grid middle aligned">
+                    <div class="three wide column filters label"><b>Species</b></div>
+                    <div class="thirteen wide column">
+                        <set [selected]="species | async"
+                            (selectedChange)="updateSpecies($event)"
+                            [values]="['HomoSapiens', 'MusMusculus', 'MacacaMulatta']"
+                            placeholder="Specify species (or empty)"></set>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+
+    
+</div>
+
