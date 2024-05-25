@@ -1,0 +1,46 @@
+<div class="ui grid middle aligned">
+
+    <div class="ui row" >
+        <ng-container *ngIf="(getMetadata() | async) as metadata; else fetching">
+            <div class="ui sixteen wide column">
+                <div class="ui card" style="width: auto; box-shadow: none">
+                    <div class="content">
+                        <a class="header" [attr.href]="metadata.link" target="_blank" rel="noopener">{{ metadata.title }}</a>
+                        <div class="meta">
+                            <span class="date" *ngIf="metadata?.journal">{{ metadata?.journal }}</span>
+                        </div>
+                        <div class="meta">
+                            <span class="date" *ngIf="metadata?.publication_date">{{ metadata?.publication_date }},&nbsp;</span>
+                            <span class="date" *ngIf="metadata?.authors">
+                                {{ metadata?.authors[0]?.collective_name }}{{ metadata?.authors[0]?.last_name }}, {{ metadata?.authors[0]?.first_name }} et al.
+                            </span>
+                        </div>
+                        <div class="description">
+                            <span *ngIf="metadata?.abstract">
+                                {{ metadata?.abstract }}
+                            </span>
+                            <div class="ui warning message" *ngIf="metadata?.error">
+                                <div class="header">
+                                  Cannot prefetch article metadata
+                                </div>
+                                {{ metadata?.error }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="extra content bottom border" *ngIf="metadata?.link">
+                        <div class="right floated">
+                            <a class="header" [attr.href]="metadata.link" target="_blank" rel="noopener">
+                                <i class="ui icon external link alternate"></i>External link</a>
+                        </div>
+                        <span><a href="https://en.wikipedia.org/wiki/Tf%E2%80%93idf" target="_blank" rel="noopened">tf-idf</a>:&nbsp;{{ row.tf_idf }}</span>
+                    </div>
+                </div>
+
+            </div>
+        </ng-container>
+        <ng-template #fetching>
+            <div class="ui active centered inline text loader">Loading metadata for reference {{ row.pmid }}</div>
+        </ng-template>
+    </div>    
+
+</div>

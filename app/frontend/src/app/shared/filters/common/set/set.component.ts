@@ -60,6 +60,9 @@ export class SetComponent implements OnInit {
   public disabled: boolean = false;
 
   @Input()
+  public allowArbitraryInput: boolean = false;
+
+  @Input()
   public substringDisabled: boolean = false;
 
   @Input('suggestions')
@@ -89,8 +92,15 @@ export class SetComponent implements OnInit {
   }
 
   public onFocusOut(): void {
+    this.onEnterPress()
+    this._searchVisible = false;
+  }
+
+  public onEnterPress(): void {
     if (this.inputText !== '') {
-      if (this.values.indexOf(this.inputText) !== -1) {
+      if (this.allowArbitraryInput) {
+        this.append({ value: this.inputText, display: this.inputText, disabled: false });
+      } else if (this.values.indexOf(this.inputText) !== -1) {
         this.append({ value: this.inputText, display: this.inputText, disabled: false });
       } else {
         const filtered = this.values.filter((entry: string) => {
@@ -103,7 +113,6 @@ export class SetComponent implements OnInit {
         }
       }
     }
-    this._searchVisible = false;
   }
 
   public change(newValue: string): void {
