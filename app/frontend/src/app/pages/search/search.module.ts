@@ -23,12 +23,13 @@ import { SearchTableModule } from './table/search/search-table.module';
 import { Covid19ActionComponent } from "pages/search/actions/CovidActionComponent";
 import { FluActionComponent } from "pages/search/actions/FluActionComponent";
 import { SearchInfoService } from "pages/search/info/search-info.service";
-import { CancerActionComponent } from "pages/search/actions/CancerActionComponent";
+import { SelfAntigenActionComponent } from "pages/search/actions/SelfAntigenActionComponent";
+import { CommonDiseasesActionComponent } from './actions/CommonDiseasesActionComponent';
 
 @NgModule({
     imports: [ CommonModule, SearchTableModule, FiltersModule ],
-    declarations: [ SearchPageComponent, SearchInfoComponent, Covid19ActionComponent, FluActionComponent, CancerActionComponent ],
-    exports: [ SearchPageComponent, SearchInfoComponent, Covid19ActionComponent, FluActionComponent, CancerActionComponent ],
+    declarations: [ SearchPageComponent, SearchInfoComponent, Covid19ActionComponent, FluActionComponent, SelfAntigenActionComponent, CommonDiseasesActionComponent ],
+    exports: [ SearchPageComponent, SearchInfoComponent, Covid19ActionComponent, FluActionComponent, SelfAntigenActionComponent, CommonDiseasesActionComponent ],
     providers: [ SearchInfoService ]
 })
 export class SearchPageModule {
