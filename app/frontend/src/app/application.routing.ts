@@ -21,12 +21,14 @@ import { SearchPageComponent } from 'pages/search/search.component';
 import { CommonDiseasesActionComponent } from "pages/search/actions/CommonDiseasesActionComponent";
 import { FluActionComponent } from "pages/search/actions/FluActionComponent";
 import { SelfAntigenActionComponent } from "pages/search/actions/SelfAntigenActionComponent";
+import { Covid19ActionComponent } from 'pages/search/actions/CovidActionComponent';
 
 const routes: Routes = [
     { path: '', component: HomePageComponent },
     { path: 'overview', component: OverviewPageComponent },
     { path: 'search', component: SearchPageComponent },
     { path: 'common-diseases', component: CommonDiseasesActionComponent },
+    { path: 'covid19', component: Covid19ActionComponent },
     { path: 'flu', component: FluActionComponent },
     { path: 'self-antigen', component: SelfAntigenActionComponent },
     { path: 'annotations', loadChildren: 'pages/annotations/annotations.module#AnnotationsPageModule' },
