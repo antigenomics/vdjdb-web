@@ -81,14 +81,21 @@ export class MetaReliabilityFilter implements FilterInterface {
   public confidenceScoreMin: number = 0;
   public confidenceScoreMax: number = 3;
 
+  public legacyScoreMin: number = 0;
+  public legacyScoreMax: number = 3; 
+
   public minimalConfidenceScore: number;
+  public minimalLegacyScore: number;
   public nonCanonical: boolean;
   public unmapped: boolean;
+  public motif: boolean;
 
   public setDefault(): void {
     this.minimalConfidenceScore = 0;
+    this.minimalLegacyScore = 0;
     this.nonCanonical = false;
     this.unmapped = false;
+    this.motif = false;
   }
 
   public setOptions(_: IFiltersOptions): void {
@@ -99,14 +106,23 @@ export class MetaReliabilityFilter implements FilterInterface {
     if (this.minimalConfidenceScore < this.confidenceScoreMin || this.minimalConfidenceScore > this.confidenceScoreMax) {
       errors.push(`Invalid minimal confidence score value, should be between ${this.confidenceScoreMin} and ${this.confidenceScoreMax}`);
     }
+    if (this.minimalLegacyScore < this.legacyScoreMin || this.minimalLegacyScore > this.legacyScoreMax) {
+      errors.push(`Invalid minimal legacy score value, should be between ${this.legacyScoreMin} and ${this.legacyScoreMax}`);
+    }
     if (this.minimalConfidenceScore > 0) {
       filters.push(new Filter('vdjdb.score', FilterType.LEVEL, false, this.minimalConfidenceScore.toString()));
+    }
+    if (this.minimalLegacyScore > 0) {
+      filters.push(new Filter('vdjdb.legacy.score', FilterType.LEVEL, false, this.minimalLegacyScore.toString()));
     }
     if (this.nonCanonical === false) {
       filters.push(new Filter('web.cdr3fix.nc', FilterType.EXACT, true, 'yes'));
     }
     if (this.unmapped === false) {
       filters.push(new Filter('web.cdr3fix.unmp', FilterType.EXACT, true, 'yes'));
+    }
+    if (this.motif === true) {
+      filters.push(new Filter('cluster.member', FilterType.EXACT, true, '0'));
     }
   }
 

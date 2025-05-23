@@ -38,4 +38,18 @@ export class MetaReliabilityFilterComponent {
     }
     this.changeDetector.detectChanges();
   }
+  public checkLegacyScore(score: number): void {
+    this.meta.reliability.minimalLegacyScore = -1;
+    this.changeDetector.detectChanges();
+    if (isNaN(Number(score)) || score === null || score === undefined) {
+      this.meta.reliability.minimalLegacyScore = this.meta.reliability.legacyScoreMin;
+    } else if (score > this.meta.reliability.legacyScoreMax) {
+      this.meta.reliability.minimalLegacyScore = this.meta.reliability.legacyScoreMax;
+    } else if (score < this.meta.reliability.legacyScoreMin) {
+      this.meta.reliability.minimalLegacyScore = this.meta.reliability.legacyScoreMin;
+    } else {
+      this.meta.reliability.minimalLegacyScore = score;
+    }
+    this.changeDetector.detectChanges();
+  }
 }

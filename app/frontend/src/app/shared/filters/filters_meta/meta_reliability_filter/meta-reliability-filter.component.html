@@ -1,43 +1,45 @@
-<!--
-  ~     Copyright 2017-2019 Bagaev Dmitry
-  ~
-  ~     Licensed under the Apache License, Version 2.0 (the "License");
-  ~     you may not use this file except in compliance with the License.
-  ~     You may obtain a copy of the License at
-  ~
-  ~         http://www.apache.org/licenses/LICENSE-2.0
-  ~
-  ~     Unless required by applicable law or agreed to in writing, software
-  ~     distributed under the License is distributed on an "AS IS" BASIS,
-  ~     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  ~     See the License for the specific language governing permissions and
-  ~     limitations under the License.
-  -->
+<!-- ~ Copyright 2017-2019 Bagaev Dmitry ~ ~ Licensed under the Apache License, Version 2.0 (the "License"); ~ you may not use this file except in compliance with the License. ~ You may obtain a copy of the License at ~ ~ http://www.apache.org/licenses/LICENSE-2.0 ~ ~ Unless required by applicable law or agreed to in writing, software ~ distributed under the License is distributed on an "AS IS" BASIS, ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. ~ See the License for the specific language governing permissions and ~ limitations under the License. -->
 
-<filters-header headerTitle="Record reliability" headerHelp="<p>Filter records based on VDJdb confidence score: the higher the better, defined according to assay metadata, more details can be found in VDJdb specification.</p>
+<filters-header headerTitle="Record reliability. Changes test" headerHelp="<p>Filter records based on VDJdb confidence score: the higher the better, defined according to assay metadata, more details can be found in VDJdb specification.</p>
     <p>Check the corresponding box to include non-canonical CDR3 sequences, i.e. those that do not start with a conserved Cys and end with a conserved Phe/Trp, or CDR3
        sequences for which our dedicated algorithm was not unable to fix missing V/J segments or map them.</p>">
 </filters-header>
 
 <div class="ui grid middle aligned">
-    <div class="three wide column filters label"><b>Minimal confidence score</b></div>
-    <div class="four wide column">
-        <div class="ui input fluid">
-            <input class="form-control" value="0" type="number" [attr.min]="meta.reliability.confidenceScoreMin" [attr.max]="meta.reliability.confidenceScoreMax"
-                   [ngModel]="meta.reliability.minimalConfidenceScore" (ngModelChange)="checkConfidenceScore($event)"/>
+    <div class="row">
+        <div class="three wide column filters label"><b>Minimal confidence score</b></div>
+        <div class="four wide column">
+            <div class="ui input fluid">
+                <input class="form-control" value="0" type="number" [attr.min]="meta.reliability.confidenceScoreMin" [attr.max]="meta.reliability.confidenceScoreMax"
+                       [ngModel]="meta.reliability.minimalConfidenceScore" (ngModelChange)="checkConfidenceScore($event)"/>
+            </div>
+        </div>
+        <div class="two wide column"></div>
+        <div class="two wide column filters label"><b>Spurious CDR3</b></div>
+        <div class="five wide column">
+            <div class="ui checkbox">
+                <input [(ngModel)]="meta.reliability.nonCanonical" type="checkbox">
+                <label>Include non-canonical</label>
+            </div>
+            <br>
+            <div class="ui checkbox">
+                <input [(ngModel)]="meta.reliability.unmapped" type="checkbox">
+                <label>Include unmapped V/J</label>
+            </div>
+            <br>
+            <div class="ui checkbox">
+                <input [(ngModel)]="meta.reliability.motif" type="checkbox">
+                <label>Filter non-motif TCRs</label>
+            </div>
         </div>
     </div>
-    <div class="two wide column"></div>
-    <div class="two wide column filters label"><b>Spurious CDR3</b></div>
-    <div class="five wide column">
-        <div class="ui checkbox">
-            <input [(ngModel)]="meta.reliability.nonCanonical" type="checkbox">
-            <label>Include non-canonical</label>
-        </div>
-        <br>
-        <div class="ui checkbox">
-            <input [(ngModel)]="meta.reliability.unmapped" type="checkbox">
-            <label>Include unmapped V/J</label>
+    <div class="row">
+        <div class="three wide column filters label"><b>Minimal legacy score</b></div>
+        <div class="four wide column">
+            <div class="ui input fluid">
+                <input class="form-control" value="0" type="number" [attr.min]="meta.reliability.legacyScoreMin" [attr.max]="meta.reliability.legacyScoreMax"
+                       [ngModel]="meta.reliability.minimalLegacyScore" (ngModelChange)="checkLegacyScore($event)"/>
+            </div>
         </div>
     </div>
 </div>
