@@ -15,6 +15,7 @@
  */
 
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, Input } from '@angular/core';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { Utils } from 'utils/utils';
 import { PopupContentTable } from './popup-content-table';
 import WindowViewport = Utils.Window.WindowViewport;
@@ -54,7 +55,7 @@ export class PopupContentComponent implements AfterViewInit {
   public position: 'left' | 'right' | 'top' | 'bottom';
 
   @Input('display')
-  public display: 'paragraph' | 'list' | 'colored-text' | 'image' | 'table' = 'paragraph';
+  public display: 'paragraph' | 'list' | 'colored-text' | 'image' | 'table' | 'iframe' = 'paragraph';
 
   @Input('topShift')
   public set topShift(shift: number) {
@@ -102,7 +103,7 @@ export class PopupContentComponent implements AfterViewInit {
     this._footer = footerContent;
   }
 
-  constructor(public changeDetector: ChangeDetectorRef) {}
+  constructor(public changeDetector: ChangeDetectorRef, private sanitizer: DomSanitizer) {}
 
   public ngAfterViewInit(): void {
     this.positionElement();
@@ -145,6 +146,22 @@ export class PopupContentComponent implements AfterViewInit {
       return (this._content as string[])[0];
     }
     return '';
+  }
+
+  public getIframeSrc(): SafeResourceUrl | null {
+    let url: string | undefined;
+    if (this._content instanceof PopupContentTable) {
+      const table = this._content as PopupContentTable;
+      if (table.rows.length > 0 && table.rows[0].length > 0) {
+        url = table.rows[0][0];
+      }
+    } else if (Array.isArray(this._content) && this._content.length > 0) {
+      url = (this._content as string[])[0];
+    }
+    if (!url) {
+      return null;
+    }
+    return this.sanitizer.bypassSecurityTrustResourceUrl(url);
   }
 
   public positionElement(): void {

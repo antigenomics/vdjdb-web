@@ -14,21 +14,12 @@
  *     limitations under the License.
  */
 
-th.ascending {
-    border-bottom: 2px solid #00B5AD !important;
-}
+package backend.server.structures.api.epitope
 
-th.descending {
-    border-top: 2px solid #00B5AD !important;
-}
+import play.api.libs.json.{Format, Json}
 
-th span.header {
-    display: block;
-    width: 100%;
-    height: 100%;
-    cursor: pointer;
-}
+case class StructureVisualization(url: String, kind: String)
 
-.hidden-column {
-    display: none !important;
+object StructureVisualization {
+  implicit val structureVisualizationFormat: Format[StructureVisualization] = Json.format[StructureVisualization]
 }

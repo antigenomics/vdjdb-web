@@ -38,6 +38,7 @@ Thumbs.db
 /.project
 /.settings
 *.DS_Store
+*.bak
 /RUNNING_PID
 /build
 /test/frontend/dll

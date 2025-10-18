@@ -16,7 +16,17 @@ class ImageController @Inject()(cc: ControllerComponents, db: Database)
 
   def structure(path: String): Action[AnyContent] = Action {
     val requested = baseDir.resolve(path).normalize()
-    if (!requested.startsWith(baseDir) || !Files.isRegularFile(requested)) NotFound("Image not found")
-    else Ok.sendPath(requested, inline = true)
+    if (!requested.startsWith(baseDir) || !Files.isRegularFile(requested)) {
+      NotFound("Image not found")
+    } else {
+      val originalFileName = requested.getFileName.toString
+      val isHtml = originalFileName.toLowerCase.endsWith(".html")
+      val baseResult = if (isHtml) {
+        Ok.sendPath(requested, inline = true, fileName = (_: Path) => originalFileName).as("text/html")
+      } else {
+        Ok.sendPath(requested, inline = true)
+      }
+      baseResult
+    }
   }
 }

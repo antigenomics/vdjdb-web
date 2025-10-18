@@ -5,16 +5,18 @@ import backend.server.database.Database
 import backend.server.motifs.MotifsMetadata
 import backend.server.motifs.api.filter.MotifsSearchTreeFilter
 import backend.server.structures.api.cdr3.{StructureCDR3SearchEntry, StructureCDR3SearchResult, StructureCDR3SearchResultOptions}
-import backend.server.structures.api.epitope.{StructureCluster, StructureClusterMeta, StructureEpitope}
+import backend.server.structures.api.epitope.{StructureCluster, StructureClusterMeta, StructureEpitope, StructureVisualization}
 import backend.server.structures.api.filter.StructuresSearchTreeFilterResult
 import backend.utils.CommonUtils
 import play.api.libs.json._
 import tech.tablesaw.api.{ColumnType, StringColumn, Table}
 import tech.tablesaw.io.csv.CsvReadOptions
+import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Path, Paths}
 import java.util.Locale
 import scala.collection.JavaConverters._
 import scala.collection.mutable
+import scala.util.Try
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -22,7 +24,35 @@ import scala.concurrent.{ExecutionContext, Future}
 case class Structures @Inject()(database: Database)(implicit ec: ExecutionContext) {
 
   private val structureImagesDir: Path = Structures.resolveImageRoot(database)
+  private val visualizationMappings: Map[String, StructureVisualization] = loadVisualizationMappings()
   private val maxTopValueInCDR3Search: Int = 15
+
+  private def loadVisualizationMappings(): Map[String, StructureVisualization] = {
+    val indexPath = structureImagesDir.resolve("structure_html_mapping.json")
+    if (!Files.isRegularFile(indexPath)) {
+      Map.empty
+    } else {
+      val content = Try(new String(Files.readAllBytes(indexPath), StandardCharsets.UTF_8)).getOrElse("")
+      val parsed = Try(Json.parse(content)).toOption.getOrElse(Json.obj())
+      (parsed \ "visualizations").asOpt[Seq[JsValue]].getOrElse(Seq.empty).flatMap { entry =>
+        val idOpt = (entry \ "structureId").asOpt[String].map(_.trim).filter(_.nonEmpty)
+        val relPathOpt = (entry \ "relativePath").asOpt[String].map(_.trim).filter(path => path.nonEmpty && !path.contains(".."))
+        val kind = (entry \ "type").asOpt[String].map(_.trim).filter(_.nonEmpty).getOrElse("html")
+        (idOpt, relPathOpt) match {
+          case (Some(id), Some(relPath)) =>
+            val normalizedRel = Paths.get(relPath).normalize()
+            val resolved = structureImagesDir.resolve(normalizedRel).normalize()
+            if (!resolved.startsWith(structureImagesDir) || !Files.isRegularFile(resolved)) {
+              None
+            } else {
+              val urlPath = normalizedRel.iterator().asScala.mkString("/")
+              Some(id.toLowerCase(Locale.ROOT) -> StructureVisualization(s"/structure-files/$urlPath", kind))
+            }
+          case _ => None
+        }
+      }.toMap
+    }
+  }
 
   // ---------- load vdjdb.txt ----------
   private def loadVdjdb(): Table = {
@@ -165,6 +195,9 @@ case class Structures @Inject()(database: Database)(implicit ec: ExecutionContex
 
   def getAvailableStructureIds: Set[String] = availableStructureIds
 
+  def getHtmlVisualizations: Map[String, StructureVisualization] =
+    visualizationMappings.filter { case (_, viz) => viz.kind.equalsIgnoreCase("html") }
+
   // ---------- filter → flat list of structures ----------
   def filter(f: MotifsSearchTreeFilter): Future[StructuresSearchTreeFilterResult] = Future {
     val selOpt = f.entries
@@ -296,18 +329,30 @@ case class Structures @Inject()(database: Database)(implicit ec: ExecutionContex
         cellSubset = cellSubsetValue
       )
 
-      Some(StructureCluster(trimmedId, size, length, vsegm, jsegm, Seq.empty, meta))
+      Some(StructureCluster(trimmedId, size, length, vsegm, jsegm, Seq.empty, meta, resolveVisualization(trimmedId, cellSubsetValue)))
     }
   }
 
-  private def hasStructureImage(structureId: String, subsetRaw: String): Boolean = {
+  private def hasStructureImage(structureId: String, subsetRaw: String): Boolean =
+    resolveVisualization(structureId, subsetRaw).isDefined
+
+  private def resolveVisualization(structureId: String, subsetRaw: String): Option[StructureVisualization] = {
     val trimmedId = Option(structureId).map(_.trim).getOrElse("")
     if (trimmedId.isEmpty) {
-      false
+      None
     } else {
-      val dir = if (Option(subsetRaw).getOrElse("").toUpperCase(Locale.ROOT).contains("CD4")) "cd4" else "cd8"
-      val imagePath = structureImagesDir.resolve(Paths.get(dir, s"$trimmedId.png")).normalize()
-      Files.isRegularFile(imagePath) && imagePath.startsWith(structureImagesDir)
+      val lowerId = trimmedId.toLowerCase(Locale.ROOT)
+      visualizationMappings.get(lowerId).orElse {
+        val dir = if (Option(subsetRaw).getOrElse("").toUpperCase(Locale.ROOT).contains("CD4")) "cd4" else "cd8"
+        val path = Paths.get(dir, s"$trimmedId.png").normalize()
+        val resolved = structureImagesDir.resolve(path).normalize()
+        if (!resolved.startsWith(structureImagesDir) || !Files.isRegularFile(resolved)) {
+          None
+        } else {
+          val urlPath = path.iterator().asScala.mkString("/")
+          Some(StructureVisualization(s"/structure-files/$urlPath", "image"))
+        }
+      }
     }
   }
 

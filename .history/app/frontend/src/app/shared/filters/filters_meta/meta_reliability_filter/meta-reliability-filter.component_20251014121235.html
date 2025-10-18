@@ -23,20 +23,20 @@
     <div class="three wide column filters label"><b>Minimal confidence score</b></div>
     <div class="four wide column">
         <div class="ui input fluid">
-            <input class="form-control" value="0" type="number" [attr.min]="meta.reliability.confidenceScoreMin" [attr.max]="meta.reliability.confidenceScoreMax"
-                   [value]="meta.reliability.minimalConfidenceScore" (input)="checkConfidenceScore($event.target.value)"/>
+            <input class="form-control" value="2" type="number" [attr.min]="meta.reliability.confidenceScoreMin" [attr.max]="meta.reliability.confidenceScoreMax"
+                   [ngModel]="meta.reliability.minimalConfidenceScore" (ngModelChange)="checkConfidenceScore($event)"/>
         </div>
     </div>
     <div class="two wide column"></div>
     <div class="two wide column filters label"><b>Spurious CDR3</b></div>
     <div class="five wide column">
         <div class="ui checkbox">
-            <input type="checkbox" [checked]="meta.reliability.nonCanonical" (change)="meta.reliability.nonCanonical = $event.target.checked">
+            <input [(ngModel)]="meta.reliability.nonCanonical" type="checkbox">
             <label>Include non-canonical</label>
         </div>
         <br>
         <div class="ui checkbox">
-            <input type="checkbox" [checked]="meta.reliability.unmapped" (change)="meta.reliability.unmapped = $event.target.checked">
+            <input [(ngModel)]="meta.reliability.unmapped" type="checkbox">
             <label>Include unmapped V/J</label>
         </div>
     </div>

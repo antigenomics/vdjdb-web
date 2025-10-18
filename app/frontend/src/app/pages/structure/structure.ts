@@ -77,6 +77,11 @@ export interface IStructureClusterMeta {
   readonly cellSubset: string;
 }
 
+export interface IStructureVisualization {
+  readonly url: string;
+  readonly kind: 'image' | 'html';
+}
+
 export interface IStructureCluster {
   readonly clusterId: string;
   readonly size: number;
@@ -85,7 +90,7 @@ export interface IStructureCluster {
   readonly jsegm: string;
   readonly entries: IStructureClusterEntry[];
   readonly meta: IStructureClusterMeta;
-  readonly imageUrl: string;
+  readonly visualization?: IStructureVisualization;
 }
 
 export interface IStructureEpitope {

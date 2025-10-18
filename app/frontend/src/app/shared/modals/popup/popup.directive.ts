@@ -46,7 +46,7 @@ export class PopupDirective implements AfterViewInit, OnDestroy {
   public position: 'left' | 'right' | 'top' | 'bottom' = 'left';
 
   @Input('display')
-  public display: 'paragraph' | 'list' | 'colored-text' | 'table' = 'paragraph';
+  public display: 'paragraph' | 'list' | 'colored-text' | 'image' | 'table' | 'iframe' = 'paragraph';
 
   @Input('topShift')
   public topShift: number = 0;

@@ -1,9 +1,15 @@
 import { Injectable } from '@angular/core';
 import { Utils } from 'utils/utils';
 
+interface IStructureVisualizationDescriptor {
+  url: string;
+  kind: 'image' | 'html' | string;
+}
+
 interface ISearchAvailabilityResponse {
   structures: string[];
   motifs: string[];
+  visualizations?: { [structureId: string]: IStructureVisualizationDescriptor };
 }
 
 @Injectable({ providedIn: 'root' })
@@ -13,6 +19,7 @@ export class SearchAvailabilityService {
   private loadPromise: Promise<void> | null = null;
   private readonly structureIds: Set<string> = new Set<string>();
   private readonly motifKeys: Set<string> = new Set<string>();
+  private readonly structureVisualizations: Map<string, IStructureVisualizationDescriptor> = new Map<string, IStructureVisualizationDescriptor>();
 
   private ensureLoaded(): Promise<void> {
     if (!this.loadPromise) {
@@ -22,6 +29,23 @@ export class SearchAvailabilityService {
           payload.structures.forEach((id) => {
             const normalized = this.normalizeStructureId(id);
             if (normalized) {
+              this.structureIds.add(normalized);
+            }
+          });
+        }
+        if (payload && payload.visualizations) {
+          Object.keys(payload.visualizations).forEach((rawId) => {
+            const normalized = this.normalizeStructureId(rawId);
+            if (!normalized) {
+              return;
+            }
+            const descriptor = payload.visualizations ? payload.visualizations[ rawId ] : undefined;
+            if (descriptor && descriptor.url) {
+              const normalizedDescriptor: IStructureVisualizationDescriptor = {
+                url: descriptor.url,
+                kind: descriptor.kind === 'html' ? 'html' : 'image'
+              };
+              this.structureVisualizations.set(normalized, normalizedDescriptor);
               this.structureIds.add(normalized);
             }
           });
@@ -68,6 +92,15 @@ export class SearchAvailabilityService {
     await this.ensureLoaded();
     const normalized = this.normalizeStructureId(structureId);
     return normalized.length > 0 && this.structureIds.has(normalized);
+  }
+
+  public async getStructureVisualization(structureId: string): Promise<IStructureVisualizationDescriptor | undefined> {
+    await this.ensureLoaded();
+    const normalized = this.normalizeStructureId(structureId);
+    if (!normalized) {
+      return undefined;
+    }
+    return this.structureVisualizations.get(normalized);
   }
 
   public async hasMotif(species: string, tcrChain: string, mhcClass: string, gene: string, epitope: string): Promise<boolean> {

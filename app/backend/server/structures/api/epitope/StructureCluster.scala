@@ -21,7 +21,14 @@ import tech.tablesaw.api.Table
 
 import scala.collection.JavaConverters._
 
-case class StructureCluster(clusterId: String, size: Int, length: Int, vsegm: String, jsegm: String, entries: Seq[StructureClusterEntry], meta: StructureClusterMeta)
+case class StructureCluster(clusterId: String,
+                            size: Int,
+                            length: Int,
+                            vsegm: String,
+                            jsegm: String,
+                            entries: Seq[StructureClusterEntry],
+                            meta: StructureClusterMeta,
+                            visualization: Option[StructureVisualization])
 
 object StructureCluster {
   implicit val structureClusterFormat: Format[StructureCluster] = Json.format[StructureCluster]
@@ -67,6 +74,6 @@ object StructureCluster {
       cellSubset.headOption.getOrElse("")
     )
 
-    StructureCluster(clusterId, size, length, v.head, j.head, entries, meta)
+    StructureCluster(clusterId, size, length, v.head, j.head, entries, meta, None)
   }
 }

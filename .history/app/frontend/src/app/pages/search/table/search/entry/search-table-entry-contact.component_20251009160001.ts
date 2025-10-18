@@ -2,12 +2,13 @@
  *     Licensed under the Apache License, Version 2.0
  */
 
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ComponentFactoryResolver, ViewChild, ViewContainerRef, ViewRef } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ComponentFactoryResolver, ViewContainerRef } from '@angular/core';
+import { PopupContentTable } from 'shared/modals/popup/popup-content-table';
+import { PopupDirective } from 'shared/modals/popup/popup.directive';
 import { SearchAvailabilityService } from 'pages/search/table/search/search-availability.service';
 import { SearchTableRow } from 'pages/search/table/search/row/search-table-row';
 import { TableColumn } from 'shared/table/column/table-column';
 import { TableEntry } from 'shared/table/entry/table-entry';
-import { PopupDirective } from 'shared/modals/popup/popup.directive';
 
 /* @Component({
     selector:        'td[search-table-entry-contact]',
@@ -29,10 +30,10 @@ import { PopupDirective } from 'shared/modals/popup/popup.directive';
     template: `
         <ng-container *ngIf="hasStructure; else noStructure">
             <a [attr.href]="structureLink" target="_blank" rel="noopener"
-               [popup]="imageLink" display="image" position="left" width="300"
+               [popup]="popup" display="table" position="left" width="300"
                tableClass="ui very compact small very basic table"
-               footer="Click on the icon to open the full image"
-               [topShift]="popupTopShift" [shiftStrategy]="popupShiftStrategy" #popupDirective>
+               footer="Click on the icon to open the full image" topShift="-70"
+               shiftStrategy="per-item" #popupDirective>
                 <i class="ui image outline icon" style="color: rgb(55,126,184)"></i>
             </a>
         </ng-container>
@@ -46,11 +47,6 @@ export class SearchTableEntryContactComponent extends TableEntry {
     public structureLink: string | undefined;
     public imageLink: string | undefined;
     public hasStructure: boolean = false;
-    public popupTopShift: number = -280;
-    public popupShiftStrategy: 'absolute' | 'per-item' = 'absolute';
-
-    @ViewChild('popupDirective', { read: PopupDirective })
-    private popupDirective: PopupDirective | undefined;
 
     constructor(private availability: SearchAvailabilityService, private changeDetector: ChangeDetectorRef) {
         super();
@@ -96,13 +92,11 @@ export class SearchTableEntryContactComponent extends TableEntry {
                 this.imageLink = this.buildImageLink(structureId, subsetRaw);
             }
             this.changeDetector.markForCheck();
-            this.updatePopup();
         }).catch(() => {
             this.hasStructure = false;
             this.structureLink = undefined;
             this.imageLink = undefined;
             this.changeDetector.markForCheck();
-            this.updatePopup(false);
         });
     }
 
@@ -151,17 +145,5 @@ export class SearchTableEntryContactComponent extends TableEntry {
         params.set('epitope_seq', epitopeSeq);
         params.set('structure_id', structureId);
         return `/structure?${params.toString()}`;
-    }
-
-    private updatePopup(visible?: boolean): void {
-        if ((this.changeDetector as ViewRef).destroyed) {
-            return;
-        }
-
-        // Trigger change detection so the popup picks up latest bindings before positioning.
-        this.changeDetector.detectChanges();
-        if (this.popupDirective) {
-            this.popupDirective.updateView(visible);
-        }
     }
 }

@@ -23,6 +23,7 @@ import {
   IStructureClusterEntry,
   IStructureClusterMeta,
   IStructureClusterMembersExportResponse,
+  IStructureVisualization,
   IStructureEpitope,
   IStructureEpitopeViewOptions,
   IStructuresMetadata,
@@ -227,13 +228,15 @@ export class StructureService {
         if (entry && entry.cluster && !(entry.cluster as any).rawMeta) {
           (entry.cluster as any).rawMeta = entry.cluster.meta;
         }
-        this.assignStructureImageUrl(entry.cluster as IStructureCluster);
+        const cluster = entry && entry.cluster ? entry.cluster as IStructureCluster : undefined;
+        this.ensureVisualization(cluster);
       });
       filteredClustersNorm.forEach((entry: IStructureCDR3SearchEntry) => {
         if (entry && entry.cluster && !(entry.cluster as any).rawMeta) {
           (entry.cluster as any).rawMeta = entry.cluster.meta;
         }
-        this.assignStructureImageUrl(entry.cluster as IStructureCluster);
+        const cluster = entry && entry.cluster ? entry.cluster as IStructureCluster : undefined;
+        this.ensureVisualization(cluster);
       });
 
       const comparator = (l: IStructureCDR3SearchEntry, r: IStructureCDR3SearchEntry) => {
@@ -314,10 +317,10 @@ export class StructureService {
                       if (!(cluster as any).rawMeta) {
                         (cluster as any).rawMeta = cluster.meta;
                       }
-                      this.assignStructureImageUrl(cluster);
+                      this.ensureVisualization(cluster as IStructureCluster);
                       return cluster;
                     })
-                    .filter((cluster) => !!cluster.imageUrl)
+                    .filter((cluster) => !!cluster.visualization)
                     .sort((left, right) => right.size - left.size);
                 return { ...epitope, clusters: filteredClusters };
               })
@@ -499,6 +502,8 @@ export class StructureService {
     const clusterId = item && item.id ? String(item.id) : this.pickMetaValue(meta, [ 'structure.id', 'structureId' ]) || this.buildClusterIdFallback(meta);
     const entries: IStructureClusterEntry[] = [];
 
+    const visualization = this.computeVisualization(item && item.visualization, clusterId, item && item.cd);
+
     const cluster: IStructureCluster = {
       clusterId,
       size: Number(item && item.size ? item.size : 1),
@@ -507,8 +512,8 @@ export class StructureService {
       jsegm: this.pickMetaValue(meta, [ 'j', 'jsegm', 'j.segm' ]) || '',
       entries,
       meta: clusterMeta,
-      imageUrl: item && typeof item.imageUrl === 'string' ? item.imageUrl : this.buildStructureImageUrlFallback(clusterId, item && item.cd)
-    };
+      visualization
+    } as IStructureCluster;
 
     (cluster as any).rawMeta = meta;
     return cluster;
@@ -533,6 +538,32 @@ export class StructureService {
     return `structure:${hash}`;
   }
 
+  private computeVisualization(raw: any, clusterId: string, cd: any): IStructureVisualization | undefined {
+    if (raw && typeof raw.url === 'string') {
+      const kindRaw = typeof raw.kind === 'string' ? raw.kind.toLowerCase() : 'image';
+      const kind: 'image' | 'html' = kindRaw === 'html' ? 'html' : 'image';
+      return { url: raw.url, kind };
+    }
+    const fallbackUrl = this.buildStructureImageUrlFallback(clusterId, cd);
+    if (fallbackUrl) {
+      return { url: fallbackUrl, kind: 'image' };
+    }
+    return undefined;
+  }
+
+  private ensureVisualization(cluster: IStructureCluster | undefined, cd?: any): void {
+    if (!cluster) {
+      return;
+    }
+    const hasVisualization = cluster.visualization && typeof cluster.visualization.url === 'string';
+    if (!hasVisualization) {
+      const fallback = this.computeVisualization(undefined, cluster.clusterId, cd);
+      if (fallback) {
+        (cluster as any).visualization = fallback;
+      }
+    }
+  }
+
   private buildStructureImageUrlFallback(clusterId: string, cd: any): string | undefined {
     if (!clusterId) {
       return undefined;
@@ -550,101 +581,6 @@ export class StructureService {
     return 'structures:' + JSON.stringify(entries || []);
   }
 
-/*  private assignStructureImageUrl(cluster: IStructureCluster): void {
-    try {
-      let rawMeta: any = (cluster as any).rawMeta || (cluster as any).meta;
-      if (typeof rawMeta === 'string') {
-        try {
-          rawMeta = JSON.parse(rawMeta);
-        } catch {
-          rawMeta = undefined;
-        }
-      }
-      let structureId: string = '';
-      if (rawMeta && typeof rawMeta === 'object') {
-        const sidCandidate: any = rawMeta['structure.id'];
-        if (typeof sidCandidate === 'string') {
-          const trimmed = sidCandidate.trim();
-          if (trimmed.length > 0) {
-            structureId = trimmed;
-          }
-        }
-      }
-      if (!structureId) {
-        (cluster as any).imageUrl = undefined;
-        return;
-      }
-      let subsetRaw: string = '';
-      if (rawMeta && typeof rawMeta === 'object') {
-        if (typeof rawMeta['cell.subset'] === 'string') {
-          subsetRaw = rawMeta['cell.subset'];
-        } else if (typeof rawMeta.cellSubset === 'string') {
-          subsetRaw = rawMeta.cellSubset;
-        } else if (typeof rawMeta.cell_subset === 'string') {
-          subsetRaw = rawMeta.cell_subset;
-        }
-      }
-      let dir: string = 'cdr8';
-      if (typeof subsetRaw === 'string') {
-        const upper = subsetRaw.toUpperCase();
-        if (upper.indexOf('CD4') >= 0) {
-          dir = 'cdr4';
-        }
-      }
-      (cluster as any).imageUrl = `/assets/database/structure/${dir}/${structureId}.png`;
-    } catch {
-      (cluster as any).imageUrl = undefined;
-    }
-  } */
-
-  private assignStructureImageUrl(cluster: IStructureCluster): void {
-    try {
-      const already = (cluster as any).imageUrl;
-      if (typeof already === 'string' && already.length > 0) {
-        return;
-      }
-
-      let rawMeta: any = (cluster as any).rawMeta || (cluster as any).meta;
-      if (typeof rawMeta === 'string') {
-        try { rawMeta = JSON.parse(rawMeta); } catch { rawMeta = undefined; }
-      }
-
-      if (rawMeta && typeof rawMeta === 'object' && typeof cluster.clusterId === 'string' && !(rawMeta as any)['structure.id']) {
-        (rawMeta as any)['structure.id'] = cluster.clusterId;
-      }
-      if (rawMeta && typeof rawMeta === 'object' && (rawMeta as any)['cell.subset'] === undefined) {
-        const cellSubset = (cluster.meta as any && (cluster.meta as any).cellSubset) ? (cluster.meta as any).cellSubset : undefined;
-        if (typeof cellSubset === 'string' && cellSubset.length > 0) {
-          (rawMeta as any)['cell.subset'] = cellSubset;
-        }
-      }
-
-      const sid = (rawMeta && typeof rawMeta['structure.id'] === 'string')
-          ? rawMeta['structure.id'].trim() : '';
-      const resolvedSid = sid || (typeof cluster.clusterId === 'string' ? cluster.clusterId.trim() : '');
-      if (!resolvedSid) { (cluster as any).imageUrl = undefined; return; }
-
-      let subsetRaw = '';
-      if (rawMeta && typeof rawMeta === 'object') {
-        if (typeof rawMeta['cell.subset'] === 'string') {
-          subsetRaw = rawMeta['cell.subset'];
-        } else if (typeof rawMeta.cellSubset === 'string') {
-          subsetRaw = rawMeta.cellSubset;
-        } else if (typeof rawMeta.cell_subset === 'string') {
-          subsetRaw = rawMeta.cell_subset;
-        }
-      }
-
-      let dir = 'cd8';
-      if (typeof subsetRaw === 'string' && subsetRaw.toUpperCase().indexOf('CD4') >= 0) {
-        dir = 'cd4';
-      }
-
-      (cluster as any).imageUrl = `/structure-files/${dir}/${resolvedSid}.png`;
-    } catch {
-      (cluster as any).imageUrl = undefined;
-    }
-  }
 
   private static extractMetadataTreeLeafValues(tree: IStructuresMetadataTreeLevel): Array<[ string, IStructuresMetadataTreeLevelValue ]> {
     return Utils.Array.flattened(tree.values.map((v) => {

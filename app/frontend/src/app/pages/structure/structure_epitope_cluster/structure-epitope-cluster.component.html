@@ -60,5 +60,25 @@
     </div>
 </div> -->
 <div class="ui segment" style="clear: both;">
-    <img *ngIf="cluster.imageUrl" [src]="cluster.imageUrl" style="max-width: 100%; max-height: 250px; display: block; margin: auto;" />
+    <ng-container *ngIf="isHtmlVisualizationRequested(); else imageVisualization">
+        <ng-container *ngIf="hasHtmlVisualization(); else htmlLoading">
+            <div class="structure-html" [innerHTML]="htmlVisualization"></div>
+        </ng-container>
+        <ng-template #htmlLoading>
+            <div class="structure-html structure-html--loading">
+                <div *ngIf="isHtmlVisualizationLoading; else htmlUnavailable" class="ui active inline loader"></div>
+                <ng-template #htmlUnavailable>
+                    <div class="structure-empty-placeholder">Unable to load visualization.</div>
+                </ng-template>
+            </div>
+        </ng-template>
+    </ng-container>
 </div>
+<ng-template #imageVisualization>
+    <ng-container *ngIf="getImageVisualizationUrl() as imageUrl; else noVisualization">
+        <img [src]="imageUrl" class="structure-embed" />
+    </ng-container>
+</ng-template>
+<ng-template #noVisualization>
+    <div class="structure-empty-placeholder">No visualization available for this cluster.</div>
+</ng-template>
