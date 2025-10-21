@@ -12,6 +12,7 @@ antigen.epitope	seq	1	1	1	peptide	Epitope	Amino acid sequence of the epitope.
 antigen.gene	txt	1	1	1	factor	Epitope gene	Representative parent gene of the epitope.
 antigen.species	txt	1	1	1	factor	Epitope species	Representative parent species of the epitope.
 reference.id	txt	1	1	1	url	Reference	Pubmed reference / URL / or submitter details in case unpublished.
+contacts	txt	1	0	0	url	Contacts	Link to an image visualising contacts.
 method	txt	1	0	0	method.json	Method	Details on method used to assay TCR specificity.
 meta	txt	1	0	0	meta.json	Meta	Various meta-information: cell subset, donor status, etc.
 cdr3fix	txt	1	0	0	fixer.json	CDR3fix	Details on CDR3 sequence fixing (if applied) and consistency between V, J and reported CDR3 sequence.

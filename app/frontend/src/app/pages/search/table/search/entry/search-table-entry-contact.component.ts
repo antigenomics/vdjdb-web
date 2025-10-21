@@ -276,7 +276,6 @@ export class SearchTableEntryContactComponent extends TableEntry {
             return;
         }
 
-        // Trigger change detection so the popup picks up latest bindings before positioning.
         this.changeDetector.detectChanges();
         if (this.popupDirective) {
             this.popupDirective.updateView(visible);
