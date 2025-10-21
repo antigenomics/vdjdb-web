@@ -50,18 +50,11 @@
         </div>
         <div class="ui clearing segment" *ngIf="overlayEnabled; else regularClusterView">
             <div class="structure-overlay" *ngIf="overlayLayerList.length > 0; else overlayEmpty">
-                <div class="structure-overlay__base">
-                    <div class="structure-html" [innerHTML]="overlayLayerList[0].markup"></div>
+                <div class="structure-overlay__layer" *ngFor="let layer of overlayLayerList; let i = index"
+                     [style.z-index]="overlayLayerList.length - i"
+                     [style.opacity]="computeOverlayOpacity(i)">
+                    <div class="structure-overlay__layer-content structure-html" [innerHTML]="layer.markup"></div>
                 </div>
-                <ng-container *ngFor="let layer of overlayLayerList; let i = index">
-                    <ng-container *ngIf="i > 0">
-                        <div class="structure-overlay__layer"
-                             [style.z-index]="overlayLayerList.length - i"
-                             [style.opacity]="computeOverlayOpacity(i)">
-                            <div class="structure-html" [innerHTML]="layer.markup"></div>
-                        </div>
-                    </ng-container>
-                </ng-container>
             </div>
             <ng-template #overlayEmpty>
                 <div class="structure-empty-placeholder">Select structures from the list above to compare them.</div>

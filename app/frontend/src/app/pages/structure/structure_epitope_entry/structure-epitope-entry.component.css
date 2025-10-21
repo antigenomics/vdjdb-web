@@ -78,51 +78,43 @@
 .structure-overlay {
     position: relative;
     width: 100%;
-    min-height: 360px;
     background-color: transparent;
     border: 1px dashed rgba(0, 0, 0, 0.2);
     border-radius: 4px;
-    padding: 1rem;
+    padding: 0;
+}
+
+.structure-overlay__base {
+    position: relative;
+    width: 100%;
+}
+
+.structure-overlay__base .structure-html {
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .structure-overlay__layer {
     position: absolute;
-    top: 1rem;
-    left: 1rem;
-    right: 1rem;
-    bottom: 1rem;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     pointer-events: none;
     overflow: hidden;
+}
+
+.structure-overlay__layer .structure-html {
+    margin: 0 auto;
     display: flex;
-    align-items: center;
     justify-content: center;
-}
-
-.structure-overlay__layer > div {
-    width: 100%;
-    height: 100%;
-    display: flex;
     align-items: center;
-    justify-content: center;
-    flex: 1 1 100%;
-    overflow: hidden;
-    background-color: transparent !important;
 }
 
-.structure-overlay__layer > div > * {
+.structure-overlay__base .structure-html > *,
+.structure-overlay__layer .structure-html > * {
     max-width: 100%;
-    max-height: 100%;
-}
-
-.structure-overlay__layer svg,
-.structure-overlay__layer img {
-    max-width: 100%;
-    max-height: 100%;
-    width: 100%;
     height: auto;
-}
-
-.structure-overlay__layer canvas {
-    max-width: 100%;
-    max-height: 100%;
 }
