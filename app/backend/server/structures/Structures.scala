@@ -17,18 +17,21 @@ import java.util.Locale
 import scala.collection.JavaConverters._
 import scala.collection.mutable
 import scala.util.Try
+import scala.io.Source
 
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 case class Structures @Inject()(database: Database)(implicit ec: ExecutionContext) {
 
-  private val structureImagesDir: Path = Structures.resolveImageRoot(database)
+  private val structureFilesRoot: Path = Structures.resolveImageRoot(database)
+  private val standardHtmlDir: Path = structureFilesRoot.resolve("structure")
+  private val simpleHtmlDir: Path = structureFilesRoot.resolve("structure_simple")
   private val visualizationMappings: Map[String, StructureVisualization] = loadVisualizationMappings()
   private val maxTopValueInCDR3Search: Int = 15
 
   private def loadVisualizationMappings(): Map[String, StructureVisualization] = {
-    val indexPath = structureImagesDir.resolve("structure_html_mapping.json")
+    val indexPath = structureFilesRoot.resolve("structure_html_mapping.json")
     if (!Files.isRegularFile(indexPath)) {
       Map.empty
     } else {
@@ -38,17 +41,24 @@ case class Structures @Inject()(database: Database)(implicit ec: ExecutionContex
         val idOpt = (entry \ "structureId").asOpt[String].map(_.trim).filter(_.nonEmpty)
         val relPathOpt = (entry \ "relativePath").asOpt[String].map(_.trim).filter(path => path.nonEmpty && !path.contains(".."))
         val kind = (entry \ "type").asOpt[String].map(_.trim).filter(_.nonEmpty).getOrElse("html")
-        (idOpt, relPathOpt) match {
-          case (Some(id), Some(relPath)) =>
-            val normalizedRel = Paths.get(relPath).normalize()
-            val resolved = structureImagesDir.resolve(normalizedRel).normalize()
-            if (!resolved.startsWith(structureImagesDir) || !Files.isRegularFile(resolved)) {
-              None
-            } else {
-              val urlPath = normalizedRel.iterator().asScala.mkString("/")
-              Some(id.toLowerCase(Locale.ROOT) -> StructureVisualization(s"/structure-files/$urlPath", kind))
-            }
-          case _ => None
+        val simpleRelOpt = (entry \ "relativePathSimple").asOpt[String].map(_.trim).filter(path => path.nonEmpty && !path.contains(".."))
+
+        def resolveToUrl(rel: String): Option[String] = {
+          val normalizedRel = Paths.get(rel).normalize()
+          val resolved = structureFilesRoot.resolve(normalizedRel).normalize()
+          if (!resolved.startsWith(structureFilesRoot) || !Files.isRegularFile(resolved)) {
+            None
+          } else {
+            Some(normalizedRel.iterator().asScala.mkString("/"))
+          }
+        }
+
+        (idOpt, relPathOpt.flatMap(resolveToUrl)) match {
+          case (Some(id), Some(relUrlPath)) =>
+            val simpleUrl = simpleRelOpt.flatMap(resolveToUrl)
+            Some(id.toLowerCase(Locale.ROOT) -> StructureVisualization(s"/structure-files/$relUrlPath", kind, simpleUrl.map(u => s"/structure-files/$u")))
+          case _ =>
+            None
         }
       }.toMap
     }
@@ -57,7 +67,22 @@ case class Structures @Inject()(database: Database)(implicit ec: ExecutionContex
   // ---------- load vdjdb.txt ----------
   private def loadVdjdb(): Table = {
     val path = database.getLocation + "/vdjdb.txt"
-    val columnTypes: Array[ColumnType] = Array(
+    val headerColumns: Array[String] = {
+      val source = Source.fromFile(path, StandardCharsets.UTF_8.name())
+      try {
+        source.getLines().take(1).flatMap { line =>
+          if (line == null || line.trim.isEmpty) {
+            None
+          } else {
+            Some(line.split("\t", -1))
+          }
+        }.toSeq.headOption.getOrElse(Array.empty[String])
+      } finally {
+        source.close()
+      }
+    }
+
+    val defaultColumnTypes: Array[ColumnType] = Array(
       ColumnType.SKIP,   // complex.id
       ColumnType.STRING, // gene
       ColumnType.STRING, // cdr3
@@ -81,13 +106,44 @@ case class Structures @Inject()(database: Database)(implicit ec: ExecutionContex
       ColumnType.SKIP    // web.cdr3fix.unmp
     )
 
-    val opts = CsvReadOptions
+    val columnTypes: Array[ColumnType] =
+      if (headerColumns.nonEmpty) {
+        headerColumns.map {
+          case "complex.id"        => ColumnType.SKIP
+          case "gene"              => ColumnType.STRING
+          case "cdr3"              => ColumnType.STRING
+          case "v.segm"            => ColumnType.STRING
+          case "j.segm"            => ColumnType.STRING
+          case "species"           => ColumnType.STRING
+          case "mhc.a"             => ColumnType.STRING
+          case "mhc.b"             => ColumnType.STRING
+          case "mhc.class"         => ColumnType.STRING
+          case "antigen.epitope"   => ColumnType.STRING
+          case "antigen.gene"      => ColumnType.STRING
+          case "antigen.species"   => ColumnType.STRING
+          case "reference.id"      => ColumnType.SKIP
+          case "method"            => ColumnType.SKIP
+          case "meta"              => ColumnType.STRING
+          case "contacts"          => ColumnType.STRING
+          case "cdr3fix"           => ColumnType.SKIP
+          case "vdjdb.score"       => ColumnType.SKIP
+          case "web.method"        => ColumnType.SKIP
+          case "web.method.seq"    => ColumnType.SKIP
+          case "web.cdr3fix.nc"    => ColumnType.SKIP
+          case "web.cdr3fix.unmp"  => ColumnType.SKIP
+          case other               => ColumnType.STRING
+        }
+      } else {
+        defaultColumnTypes
+      }
+
+    val optsBuilder = CsvReadOptions
       .builder(path)
       .separator('\t')
       .header(true)
-      .columnTypes(columnTypes)
       .sample(false)
-      .build() // TSV with header
+
+    val opts = optsBuilder.columnTypes(columnTypes).build() // TSV with header
     val table = Table.read().csv(opts)
 
     if (table.columnNames().contains("mhc.a")) {
@@ -108,6 +164,94 @@ case class Structures @Inject()(database: Database)(implicit ec: ExecutionContex
   private def getMetaCol(t: Table): StringColumn =
     if (t.columnNames().contains("meta")) t.stringColumn("meta")
     else StringColumn.create("meta") // empty fallback
+
+  private def getContactsCol(t: Table): Option[StringColumn] =
+    if (t.columnNames().contains("contacts")) Some(t.stringColumn("contacts"))
+    else None
+
+  private val structureIdJsonKeys: Seq[String] = Seq(
+    "structure.id",
+    "structureId",
+    "structure",
+    "structure_id",
+    "structureHash",
+    "structure.hash"
+  )
+
+  private val structureIdTokenPattern = "^[A-Za-z0-9_-]{4,}$".r
+
+  private def sanitizeStructureIdCandidate(candidate: String): Option[String] = {
+    if (candidate == null) {
+      None
+    } else {
+      val trimmed = candidate.trim
+      if (trimmed.isEmpty) {
+        None
+      } else {
+        val withoutExt = if (trimmed.toLowerCase(Locale.ROOT).endsWith(".html")) {
+          trimmed.dropRight(5)
+        } else {
+          trimmed
+        }
+        val normalizedSeparators = withoutExt.replace('\\', '/')
+        val roughTokens = normalizedSeparators
+          .split("[\\s,;|]+")
+          .flatMap(_.split(":"))
+          .flatMap(_.split("/"))
+          .map(_.trim)
+          .filter(_.nonEmpty)
+        roughTokens.reverseIterator.collectFirst {
+          case token if structureIdTokenPattern.pattern.matcher(token).matches() => token
+        }
+      }
+    }
+  }
+
+  private def extractStructureIdFromJsValue(jsValue: JsValue): Option[String] =
+    jsValue match {
+      case JsString(value) => sanitizeStructureIdCandidate(value)
+      case JsArray(values) =>
+        values.iterator
+          .map(extractStructureIdFromJsValue)
+          .collectFirst { case Some(id) => id }
+      case JsObject(fields) =>
+        structureIdJsonKeys.iterator
+          .flatMap(fields.get)
+          .map(extractStructureIdFromJsValue)
+          .collectFirst { case Some(id) => id }
+      case _ => None
+    }
+
+  private def extractStructureIdFromContacts(raw: String): Option[String] = {
+    val trimmed = Option(raw).map(_.trim).filter(_.nonEmpty)
+    trimmed.flatMap { value =>
+      extractStructureIdFromJsValue(Try(Json.parse(value)).getOrElse(JsString(value)))
+    }
+  }
+
+  private def extractStructureId(metaStr: String, contactsStr: Option[String]): Option[String] = {
+    val fromContacts = contactsStr.flatMap(extractStructureIdFromContacts).map(_.trim).filter(_.nonEmpty)
+    val fromMeta = Option(metaStr)
+      .map(meta => pickFromJson(meta, structureIdJsonKeys))
+      .map(_.trim)
+      .filter(_.nonEmpty)
+    fromContacts.orElse(fromMeta)
+  }
+
+  private def buildStructureIdColumn(t: Table): StringColumn = {
+    val metaCol = getMetaCol(t)
+    val contactsColOpt = getContactsCol(t)
+    val values = new java.util.ArrayList[String](t.rowCount())
+    var i = 0
+    while (i < t.rowCount()) {
+      val metaRaw = Try(metaCol.get(i)).getOrElse("")
+      val contactsRaw = contactsColOpt.flatMap(col => Option(col.get(i)))
+      val resolved = extractStructureId(metaRaw, contactsRaw).getOrElse("")
+      values.add(resolved)
+      i += 1
+    }
+    StringColumn.create("structure.id", values)
+  }
 
   private def pickFromJson(metaStr: String, keys: Seq[String]): String = {
     if (metaStr == null || metaStr.isEmpty) return ""
@@ -143,9 +287,8 @@ case class Structures @Inject()(database: Database)(implicit ec: ExecutionContex
 
   private val withDerived: Table = {
     val t = raw.copy()
-    // derive "structure.id" and "cell.subset" from JSON
-    val structureIdCol = deriveColFromMeta(t, "structure.id",
-      Seq("structure.id", "structureId", "structure.id", "structure.id")) // tries flat; nested is handled too
+    // derive "structure.id" (contacts preferred) and "cell.subset" from JSON
+    val structureIdCol = buildStructureIdColumn(t)
     val cellSubsetCol  = deriveColFromMeta(t, "cell.subset",
       Seq("cell.subset", "cellSubset", "cell_subset", "cell.subset"))
 
@@ -154,7 +297,7 @@ case class Structures @Inject()(database: Database)(implicit ec: ExecutionContex
     t
   }
 
-  // ---------- keep only rows that actually have a structure image ----------
+  // ---------- keep only rows that actually have a structure visualization ----------
   private val structures: Table = {
     val sid = withDerived.stringColumn("structure.id")
     // prune empty / missing / literal "null"
@@ -162,14 +305,12 @@ case class Structures @Inject()(database: Database)(implicit ec: ExecutionContex
     val filteredNonEmpty = withDerived.where(nonEmpty)
 
     val idCol = filteredNonEmpty.stringColumn("structure.id")
-    val subsetColOpt = if (filteredNonEmpty.columnNames().contains("cell.subset")) Some(filteredNonEmpty.stringColumn("cell.subset")) else None
     val kept = mutable.ArrayBuffer.empty[Int]
 
     var idx = 0
     while (idx < filteredNonEmpty.rowCount()) {
       val rawId = Option(idCol.get(idx)).map(_.trim).getOrElse("")
-      val subsetRaw = subsetColOpt.flatMap(c => Option(c.get(idx))).getOrElse("")
-      if (hasStructureImage(rawId, subsetRaw)) {
+      if (hasStructureVisualization(rawId)) {
         kept += idx
       }
       idx += 1
@@ -188,15 +329,34 @@ case class Structures @Inject()(database: Database)(implicit ec: ExecutionContex
   private val metadata: MotifsMetadata =
     MotifsMetadata.generateMetadataFromLevels(structures, metadataLevels)
 
-  private val availableStructureIds: Set[String] =
-    structures.stringColumn("structure.id").asList().asScala.map((s) => Option(s).map(_.trim.toLowerCase(Locale.ROOT)).getOrElse("")).filter(_.nonEmpty).toSet
+  private val structureIdIndex: Map[String, String] = {
+    val idCol = structures.stringColumn("structure.id")
+    val acc = mutable.LinkedHashMap.empty[String, String]
+    var idx = 0
+    while (idx < structures.rowCount()) {
+      val rawIdOpt = Option(idCol.get(idx)).map(_.trim).filter(_.nonEmpty)
+      rawIdOpt.foreach { rawId =>
+        val normalized = rawId.toLowerCase(Locale.ROOT)
+        if (!acc.contains(normalized)) {
+          acc.update(normalized, rawId)
+        }
+      }
+      idx += 1
+    }
+    acc.toMap
+  }
+
+  private val availableStructureIds: Set[String] = structureIdIndex.keySet
 
   def getMetadata: MotifsMetadata = metadata
 
   def getAvailableStructureIds: Set[String] = availableStructureIds
 
-  def getHtmlVisualizations: Map[String, StructureVisualization] =
-    visualizationMappings.filter { case (_, viz) => viz.kind.equalsIgnoreCase("html") }
+  def getHtmlVisualizations: Map[String, StructureVisualization] = {
+    structureIdIndex.flatMap { case (normalized, rawId) =>
+      resolveVisualization(rawId).filter(_.kind.equalsIgnoreCase("html")).map(normalized -> _)
+    }
+  }
 
   // ---------- filter → flat list of structures ----------
   def filter(f: MotifsSearchTreeFilter): Future[StructuresSearchTreeFilterResult] = Future {
@@ -314,7 +474,8 @@ case class Structures @Inject()(database: Database)(implicit ec: ExecutionContex
       val cellSubsetValue = firstValue(table, "cell.subset").getOrElse("")
 
       val trimmedId = structureId.trim
-      if (!hasStructureImage(trimmedId, cellSubsetValue)) {
+      val visualizationOpt = resolveVisualization(trimmedId)
+      if (visualizationOpt.isEmpty) {
         return None
       }
 
@@ -329,30 +490,64 @@ case class Structures @Inject()(database: Database)(implicit ec: ExecutionContex
         cellSubset = cellSubsetValue
       )
 
-      Some(StructureCluster(trimmedId, size, length, vsegm, jsegm, Seq.empty, meta, resolveVisualization(trimmedId, cellSubsetValue)))
+      Some(StructureCluster(trimmedId, size, length, vsegm, jsegm, Seq.empty, meta, visualizationOpt))
     }
   }
 
-  private def hasStructureImage(structureId: String, subsetRaw: String): Boolean =
-    resolveVisualization(structureId, subsetRaw).isDefined
+  private def hasStructureVisualization(structureId: String): Boolean =
+    resolveVisualization(structureId).isDefined
 
-  private def resolveVisualization(structureId: String, subsetRaw: String): Option[StructureVisualization] = {
+  private def resolveVisualization(structureId: String): Option[StructureVisualization] = {
     val trimmedId = Option(structureId).map(_.trim).getOrElse("")
     if (trimmedId.isEmpty) {
       None
     } else {
       val lowerId = trimmedId.toLowerCase(Locale.ROOT)
       visualizationMappings.get(lowerId).orElse {
-        val dir = if (Option(subsetRaw).getOrElse("").toUpperCase(Locale.ROOT).contains("CD4")) "cd4" else "cd8"
-        val path = Paths.get(dir, s"$trimmedId.png").normalize()
-        val resolved = structureImagesDir.resolve(path).normalize()
-        if (!resolved.startsWith(structureImagesDir) || !Files.isRegularFile(resolved)) {
-          None
-        } else {
-          val urlPath = path.iterator().asScala.mkString("/")
-          Some(StructureVisualization(s"/structure-files/$urlPath", "image"))
+        locateStandardHtml(trimmedId, lowerId).flatMap { stdPath =>
+          toUrlPath(stdPath).map { standardUrlPath =>
+            val simplePath = locateSimpleHtml(trimmedId, lowerId).flatMap(toUrlPath)
+            StructureVisualization(s"/structure-files/$standardUrlPath", "html", simplePath.map(url => s"/structure-files/$url"))
+          }
         }
       }
+    }
+  }
+
+  private def locateStandardHtml(originalId: String, lowerId: String): Option[Path] = {
+    if (!Files.isDirectory(standardHtmlDir)) {
+      None
+    } else {
+      val direct = standardHtmlDir.resolve(s"$originalId.html").normalize()
+      if (Files.isRegularFile(direct) && direct.startsWith(structureFilesRoot)) {
+        Some(direct)
+      } else {
+        val lower = standardHtmlDir.resolve(s"$lowerId.html").normalize()
+        if (Files.isRegularFile(lower) && lower.startsWith(structureFilesRoot)) Some(lower) else None
+      }
+    }
+  }
+
+  private def locateSimpleHtml(originalId: String, lowerId: String): Option[Path] = {
+    if (!Files.isDirectory(simpleHtmlDir)) {
+      None
+    } else {
+      val direct = simpleHtmlDir.resolve(s"$originalId.html").normalize()
+      if (Files.isRegularFile(direct) && direct.startsWith(structureFilesRoot)) {
+        Some(direct)
+      } else {
+        val lower = simpleHtmlDir.resolve(s"$lowerId.html").normalize()
+        if (Files.isRegularFile(lower) && lower.startsWith(structureFilesRoot)) Some(lower) else None
+      }
+    }
+  }
+
+  private def toUrlPath(file: Path): Option[String] = {
+    val normalized = file.normalize()
+    if (!normalized.startsWith(structureFilesRoot)) {
+      None
+    } else {
+      Some(structureFilesRoot.relativize(normalized).iterator().asScala.mkString("/"))
     }
   }
 
@@ -391,18 +586,20 @@ case class Structures @Inject()(database: Database)(implicit ec: ExecutionContex
 }
 
 object Structures {
-  private def hasImageSubdirectories(dir: Path): Boolean =
-    Files.isDirectory(dir) && (Files.isDirectory(dir.resolve("cd4")) || Files.isDirectory(dir.resolve("cd8")))
+  private def hasStructureDirectories(dir: Path): Boolean =
+    Files.isDirectory(dir) && Files.isDirectory(dir.resolve("structure"))
 
   def resolveImageRoot(database: Database): Path = {
     val base = Paths.get(database.getLocation).toAbsolutePath.normalize()
     val candidates = Seq(
-      base.resolve("structure"),
-      base.resolve("structures"),
       base,
-      base.resolve("test").resolve("merged").resolve("structure")
+      base.getParent match {
+        case null => base
+        case parent => parent.toAbsolutePath.normalize()
+      },
+      base.resolve("test").resolve("merged")
     ).map(_.normalize()).distinct
 
-    candidates.find(hasImageSubdirectories).getOrElse(base.resolve("structure").normalize())
+    candidates.find(hasStructureDirectories).getOrElse(base)
   }
 }

@@ -60,7 +60,7 @@
     </div>
 </div> -->
 <div class="ui segment" style="clear: both;">
-    <ng-container *ngIf="isHtmlVisualizationRequested(); else imageVisualization">
+    <ng-container *ngIf="isHtmlVisualizationRequested(); else noVisualization">
         <ng-container *ngIf="hasHtmlVisualization(); else htmlLoading">
             <div class="structure-html" [innerHTML]="htmlVisualization"></div>
         </ng-container>
@@ -74,11 +74,6 @@
         </ng-template>
     </ng-container>
 </div>
-<ng-template #imageVisualization>
-    <ng-container *ngIf="getImageVisualizationUrl() as imageUrl; else noVisualization">
-        <img [src]="imageUrl" class="structure-embed" />
-    </ng-container>
-</ng-template>
 <ng-template #noVisualization>
     <div class="structure-empty-placeholder">No visualization available for this cluster.</div>
 </ng-template>

@@ -3,7 +3,8 @@ import { Utils } from 'utils/utils';
 
 interface IStructureVisualizationDescriptor {
   url: string;
-  kind: 'image' | 'html' | string;
+  kind?: 'html' | string;
+  simpleUrl?: string;
 }
 
 interface ISearchAvailabilityResponse {
@@ -40,10 +41,11 @@ export class SearchAvailabilityService {
               return;
             }
             const descriptor = payload.visualizations ? payload.visualizations[ rawId ] : undefined;
-            if (descriptor && descriptor.url) {
+            if (descriptor && descriptor.url && (!descriptor.kind || descriptor.kind === 'html')) {
               const normalizedDescriptor: IStructureVisualizationDescriptor = {
                 url: descriptor.url,
-                kind: descriptor.kind === 'html' ? 'html' : 'image'
+                kind: 'html',
+                simpleUrl: descriptor.simpleUrl
               };
               this.structureVisualizations.set(normalized, normalizedDescriptor);
               this.structureIds.add(normalized);

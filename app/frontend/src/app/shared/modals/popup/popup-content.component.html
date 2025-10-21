@@ -43,9 +43,9 @@
             <img [src]="getPopupContent()" style="max-width:100%; max-height:220px; object-fit:contain">
         </div>
     </div>
-    <div class="content" *ngIf="display === 'iframe'">
+    <div class="content" *ngIf="display === 'html'">
         <div class="ui center aligned basic segment" style="padding:0">
-            <iframe *ngIf="getIframeSrc() as iframeSrc" [src]="iframeSrc" style="width:100%; height:240px; border:0"></iframe>
+            <div [innerHTML]="getHtmlContent()" style="max-width:100%; max-height:220px; overflow:hidden;"></div>
         </div>
     </div>
     <div class="content" *ngIf="display === 'table'">

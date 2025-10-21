@@ -79,7 +79,8 @@ export interface IStructureClusterMeta {
 
 export interface IStructureVisualization {
   readonly url: string;
-  readonly kind: 'image' | 'html';
+  readonly kind: 'html';
+  readonly simpleUrl?: string;
 }
 
 export interface IStructureCluster {

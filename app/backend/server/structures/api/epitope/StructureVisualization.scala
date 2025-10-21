@@ -18,7 +18,7 @@ package backend.server.structures.api.epitope
 
 import play.api.libs.json.{Format, Json}
 
-case class StructureVisualization(url: String, kind: String)
+case class StructureVisualization(url: String, kind: String, simpleUrl: Option[String] = None)
 
 object StructureVisualization {
   implicit val structureVisualizationFormat: Format[StructureVisualization] = Json.format[StructureVisualization]

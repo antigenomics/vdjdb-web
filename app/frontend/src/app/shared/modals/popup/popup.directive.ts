@@ -15,6 +15,7 @@
  */
 
 import { AfterViewInit, ComponentFactoryResolver, ComponentRef, Directive, Input, OnDestroy, Renderer2, ViewContainerRef } from '@angular/core';
+import { SafeHtml } from '@angular/platform-browser';
 import { PopupContentTable } from './popup-content-table';
 import { PopupContentComponent } from './popup-content.component';
 
@@ -31,7 +32,7 @@ export class PopupDirective implements AfterViewInit, OnDestroy {
   private _mouseLeaveListener: () => void;
 
   @Input('popup')
-  public popupContent: string | string[] | PopupContentTable;
+  public popupContent: string | string[] | PopupContentTable | SafeHtml;
 
   @Input('header')
   public headerContent: string;
@@ -46,7 +47,7 @@ export class PopupDirective implements AfterViewInit, OnDestroy {
   public position: 'left' | 'right' | 'top' | 'bottom' = 'left';
 
   @Input('display')
-  public display: 'paragraph' | 'list' | 'colored-text' | 'image' | 'table' | 'iframe' = 'paragraph';
+  public display: 'paragraph' | 'list' | 'colored-text' | 'image' | 'table' | 'html' = 'paragraph';
 
   @Input('topShift')
   public topShift: number = 0;

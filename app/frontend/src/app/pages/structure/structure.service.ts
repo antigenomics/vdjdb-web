@@ -73,6 +73,7 @@ export class StructureService {
   private options: Subject<IStructureEpitopeViewOptions> = new ReplaySubject(1);
   private clusters: Subject<IStructureCDR3SearchResult> = new ReplaySubject(1);
   private loadingState: Subject<boolean> = new ReplaySubject(1);
+  private htmlVisualizationCache: Map<string, string | null> = new Map<string, string | null>();
 
   constructor(private logger: LoggerService, private notifications: NotificationService) {}
 
@@ -161,21 +162,28 @@ export class StructureService {
     this.setSearchState(StructureSearchState.SEARCH_TREE);
 
     this.metadata.pipe(take(1)).subscribe((metadata) => {
+      const pathNodes: IStructuresMetadataTreeLevelValue[] = [];
       const speciesNode = metadata.root.values.find((v) => v.value === filters.species);
-      if (!speciesNode) { return; }
+      if (!speciesNode || !speciesNode.next) { return; }
+      pathNodes.push(speciesNode);
 
       const tcrChainNode = speciesNode.next.values.find((v) => v.value === filters.tcrChain);
-      if (!tcrChainNode) { return; }
+      if (!tcrChainNode || !tcrChainNode.next) { return; }
+      pathNodes.push(tcrChainNode);
 
       const mhcClassNode = tcrChainNode.next.values.find((v) => v.value === filters.mhcClass);
-      if (!mhcClassNode) { return; }
+      if (!mhcClassNode || !mhcClassNode.next) { return; }
+      pathNodes.push(mhcClassNode);
 
       const geneNode = mhcClassNode.next.values.find((v) => v.value === filters.gene);
-      if (!geneNode) { return; }
+      if (!geneNode || !geneNode.next) { return; }
+      pathNodes.push(geneNode);
 
       const epitopeNode = geneNode.next.values.find((v) => v.value === filters.epitopeSeq);
       if (!epitopeNode) { return; }
+      pathNodes.push(epitopeNode);
 
+      pathNodes.forEach((node) => (node.isOpened = true));
       this.selectTreeLevelValue(epitopeNode);
       this.updateSelected();
     });
@@ -189,6 +197,10 @@ export class StructureService {
         { name: 'antigen.epitope', value: filters.epitopeSeq }
       ]
     };
+
+    if (filters.structureId) {
+      treeFilter.entries.push({ name: 'structure.id', value: filters.structureId });
+    }
 
     this.select(treeFilter);
   }
@@ -428,7 +440,21 @@ export class StructureService {
     const hash = this.resolveEpitopeHashFromMetadata(metadata, entries) || this.buildFallbackHash(entries);
     const epitopeLabel = this.resolveEpitopeLabel(entries) || this.extractEpitopeFromItems(items) || 'structures';
 
-    const clusters = items.map((item: any) => this.asStructureCluster(item));
+    const targetStructureEntry = entries.find((entry) => entry && entry.name === 'structure.id' && typeof entry.value === 'string');
+    const normalizedTarget = targetStructureEntry ? targetStructureEntry.value.trim().toLowerCase() : '';
+
+    const clusters = items
+      .map((item: any) => this.asStructureCluster(item))
+      .filter((cluster: IStructureCluster | undefined) => {
+        if (!cluster) {
+          return false;
+        }
+        if (!normalizedTarget) {
+          return true;
+        }
+        const clusterId = (cluster.clusterId || '').trim().toLowerCase();
+        return clusterId === normalizedTarget;
+      });
 
     return {
       epitopes: [
@@ -502,7 +528,7 @@ export class StructureService {
     const clusterId = item && item.id ? String(item.id) : this.pickMetaValue(meta, [ 'structure.id', 'structureId' ]) || this.buildClusterIdFallback(meta);
     const entries: IStructureClusterEntry[] = [];
 
-    const visualization = this.computeVisualization(item && item.visualization, clusterId, item && item.cd);
+    const visualization = this.normalizeVisualizationFromRaw(item && item.visualization);
 
     const cluster: IStructureCluster = {
       clusterId,
@@ -538,47 +564,98 @@ export class StructureService {
     return `structure:${hash}`;
   }
 
-  private computeVisualization(raw: any, clusterId: string, cd: any): IStructureVisualization | undefined {
-    if (raw && typeof raw.url === 'string') {
-      const kindRaw = typeof raw.kind === 'string' ? raw.kind.toLowerCase() : 'image';
-      const kind: 'image' | 'html' = kindRaw === 'html' ? 'html' : 'image';
-      return { url: raw.url, kind };
+  private normalizeVisualizationFromRaw(raw: any): IStructureVisualization | undefined {
+    if (!raw || typeof raw.url !== 'string') {
+      return undefined;
     }
-    const fallbackUrl = this.buildStructureImageUrlFallback(clusterId, cd);
-    if (fallbackUrl) {
-      return { url: fallbackUrl, kind: 'image' };
+    const url = String(raw.url).trim();
+    if (!url) {
+      return undefined;
     }
-    return undefined;
+    const kind = typeof raw.kind === 'string' ? raw.kind.toLowerCase() : 'html';
+    if (kind !== 'html') {
+      return undefined;
+    }
+    const simpleUrlRaw = typeof raw.simpleUrl === 'string' ? String(raw.simpleUrl).trim() : '';
+    return simpleUrlRaw
+      ? { url, kind: 'html', simpleUrl: simpleUrlRaw }
+      : { url, kind: 'html' };
   }
 
-  private ensureVisualization(cluster: IStructureCluster | undefined, cd?: any): void {
+  private ensureVisualization(cluster: IStructureCluster | undefined): void {
     if (!cluster) {
       return;
     }
-    const hasVisualization = cluster.visualization && typeof cluster.visualization.url === 'string';
-    if (!hasVisualization) {
-      const fallback = this.computeVisualization(undefined, cluster.clusterId, cd);
-      if (fallback) {
-        (cluster as any).visualization = fallback;
-      }
+    const normalized = this.normalizeVisualizationFromRaw(cluster.visualization);
+    if (normalized) {
+      (cluster as any).visualization = normalized;
+    } else {
+      (cluster as any).visualization = undefined;
     }
   }
 
-  private buildStructureImageUrlFallback(clusterId: string, cd: any): string | undefined {
-    if (!clusterId) {
+  public async getHtmlVisualizationMarkup(cluster: IStructureCluster, mode: 'standard' | 'simple' = 'standard'): Promise<string | undefined> {
+    if (!cluster) {
       return undefined;
     }
-    const trimmedId = clusterId.trim();
-    if (!trimmedId) {
+    const normalized = this.normalizeVisualizationFromRaw(cluster.visualization);
+    if (!normalized) {
       return undefined;
     }
-    const numericCd = Number(cd);
-    const dir = numericCd === 4 ? 'cd4' : 'cd8';
-    return `/structure-files/${dir}/${trimmedId}.png`;
+    const keyBase = (cluster.clusterId || '').trim().toLowerCase();
+    if (!keyBase) {
+      return undefined;
+    }
+    const cacheKey = `${keyBase}::${mode}`;
+    if (this.htmlVisualizationCache.has(cacheKey)) {
+      const cached = this.htmlVisualizationCache.get(cacheKey);
+      return cached === null ? undefined : cached;
+    }
+    const targetUrl = mode === 'simple'
+      ? (normalized.simpleUrl || normalized.url)
+      : normalized.url;
+    if (!targetUrl) {
+      if (mode === 'simple') {
+        return this.getHtmlVisualizationMarkup(cluster, 'standard');
+      }
+      this.htmlVisualizationCache.set(cacheKey, null);
+      return undefined;
+    }
+    try {
+      const response = await Utils.HTTP.get(targetUrl);
+      const markup = StructureService.normalizeVisualizationMarkup(response.response);
+      this.htmlVisualizationCache.set(cacheKey, markup);
+      return markup;
+    } catch {
+      this.htmlVisualizationCache.set(cacheKey, null);
+      if (mode === 'simple') {
+        return this.getHtmlVisualizationMarkup(cluster, 'standard');
+      }
+      return undefined;
+    }
   }
 
   private buildFallbackHash(entries: IStructuresSearchTreeFilterEntry[]): string {
     return 'structures:' + JSON.stringify(entries || []);
+  }
+
+  public static normalizeVisualizationMarkup(source: string): string {
+    if (!source) {
+      return '';
+    }
+    try {
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(source, 'text/html');
+      const svg = doc.querySelector('svg');
+      if (svg) {
+        svg.setAttribute('width', '100%');
+        svg.setAttribute('height', '100%');
+        return svg.outerHTML;
+      }
+      return source;
+    } catch {
+      return source;
+    }
   }
 
 

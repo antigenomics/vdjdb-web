@@ -19,7 +19,6 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { ChangeDetectorRef } from '@angular/core';
 import { IStructureCluster } from 'pages/structure/structure';
 import { StructureService } from 'pages/structure/structure.service';
-import { Utils } from 'utils/utils';
 
 @Component({
     selector: 'structure-epitope-cluster',
@@ -59,51 +58,20 @@ export class StructureEpitopeClusterComponent implements OnInit, OnChanges {
         return !!(this.cluster && this.cluster.visualization && this.cluster.visualization.kind === 'html');
     }
 
-    public getImageVisualizationUrl(): string | undefined {
-        if (this.cluster && this.cluster.visualization && this.cluster.visualization.kind === 'image') {
-            return this.cluster.visualization.url;
-        }
-        return undefined;
-    }
-
-    private loadHtmlVisualization(): void {
+    private async loadHtmlVisualization(): Promise<void> {
         this.htmlVisualization = undefined;
         this.isHtmlVisualizationLoading = false;
 
         if (this.cluster && this.cluster.visualization && this.cluster.visualization.kind === 'html') {
-            const url = this.cluster.visualization.url;
-            if (url) {
-                this.isHtmlVisualizationLoading = true;
-                Utils.HTTP.get(url).then((response) => {
-                    const markup = this.extractSvgMarkup(response.response);
-                    this.htmlVisualization = this.sanitizer.bypassSecurityTrustHtml(markup);
-                    this.isHtmlVisualizationLoading = false;
-                    this.changeDetector.markForCheck();
-                }).catch(() => {
-                    this.htmlVisualization = undefined;
-                    this.isHtmlVisualizationLoading = false;
-                    this.changeDetector.markForCheck();
-                });
+            this.isHtmlVisualizationLoading = true;
+            const markup = await this.structureService.getHtmlVisualizationMarkup(this.cluster);
+            if (markup) {
+                this.htmlVisualization = this.sanitizer.bypassSecurityTrustHtml(markup);
+            } else {
+                this.htmlVisualization = undefined;
             }
-        }
-    }
-
-    private extractSvgMarkup(source: string): string {
-        if (!source) {
-            return '';
-        }
-        try {
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(source, 'text/html');
-            const svg = doc.querySelector('svg');
-            if (svg) {
-                svg.setAttribute('width', '100%');
-                svg.setAttribute('height', '100%');
-                return svg.outerHTML;
-            }
-            return source;
-        } catch {
-            return source;
+            this.isHtmlVisualizationLoading = false;
+            this.changeDetector.markForCheck();
         }
     }
 }

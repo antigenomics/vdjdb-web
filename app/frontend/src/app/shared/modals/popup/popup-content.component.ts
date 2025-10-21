@@ -15,7 +15,7 @@
  */
 
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, Input } from '@angular/core';
-import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { DomSanitizer, SafeHtml, SafeResourceUrl } from '@angular/platform-browser';
 import { Utils } from 'utils/utils';
 import { PopupContentTable } from './popup-content-table';
 import WindowViewport = Utils.Window.WindowViewport;
@@ -40,6 +40,7 @@ export class PopupContentComponent implements AfterViewInit {
   private _width: number;
   private _topShift: number;
   private _bottomShift: number;
+  private _htmlContent: SafeHtml | null = null;
 
   public boundingRect: PopupBoundingRect = new PopupBoundingRect();
 
@@ -55,7 +56,7 @@ export class PopupContentComponent implements AfterViewInit {
   public position: 'left' | 'right' | 'top' | 'bottom';
 
   @Input('display')
-  public display: 'paragraph' | 'list' | 'colored-text' | 'image' | 'table' | 'iframe' = 'paragraph';
+  public display: 'paragraph' | 'list' | 'colored-text' | 'image' | 'table' | 'html' = 'paragraph';
 
   @Input('topShift')
   public set topShift(shift: number) {
@@ -83,13 +84,21 @@ export class PopupContentComponent implements AfterViewInit {
   public popupTableRowClass: string = 'center aligned';
 
   @Input('content')
-  set content(popupContent: string | string[] | PopupContentTable) {
-    if (typeof popupContent === 'string' && this.display === 'paragraph') {
+  set content(popupContent: string | string[] | PopupContentTable | SafeHtml) {
+    this._htmlContent = null;
+    if (this.isSafeHtml(popupContent)) {
+      this._htmlContent = popupContent as SafeHtml;
+      this._content = [];
+    } else if (typeof popupContent === 'string' && this.display === 'paragraph') {
       this._content = Utils.Text.splitParagraphs(popupContent);
     } else if (typeof popupContent === 'string') {
       this._content = [ popupContent ];
-    } else if (Array.isArray(popupContent) || popupContent instanceof PopupContentTable) {
+    } else if (Array.isArray(popupContent)) {
       this._content = popupContent;
+    } else if (this.isPopupContentTable(popupContent)) {
+      this._content = popupContent;
+    } else {
+      this._content = [];
     }
   }
 
@@ -188,6 +197,9 @@ export class PopupContentComponent implements AfterViewInit {
   }
 
   private getContentLength(): number {
+    if (this._htmlContent) {
+      return 1;
+    }
     if (this._content === undefined) {
       return 0;
     } else if (this._content instanceof PopupContentTable) {
@@ -217,6 +229,18 @@ export class PopupContentComponent implements AfterViewInit {
       default:
         return this._bottomShift;
     }
+  }
+
+  public getHtmlContent(): SafeHtml | null {
+    return this._htmlContent;
+  }
+
+  private isSafeHtml(candidate: any): candidate is SafeHtml {
+    return candidate && typeof candidate === 'object' && 'changingThisBreaksApplicationSecurity' in candidate;
+  }
+
+  private isPopupContentTable(candidate: any): candidate is PopupContentTable {
+    return candidate instanceof PopupContentTable;
   }
 
   private positionLeft(hostBoundingRectangle: ClientRect, _: WindowViewport): void {
