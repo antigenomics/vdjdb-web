@@ -13,7 +13,7 @@
 # Developer instruments
 qodana.yaml
 qodana.sarif.json
-.history
+/.history
 
 # MacOs
 .DS_Store
