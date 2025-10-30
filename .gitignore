@@ -47,8 +47,8 @@ Thumbs.db
 logs
 
 # Big database files
-/vdjdb-2025-10-28/vdjdb.txt
-/vdjdb-2025-10-28/vdjdb.scored.txt
+vdjdb-2025-10-28/vdjdb.txt
+vdjdb-2025-10-28/vdjdb.scored.txt
 
-# Old database
-/database
+# Old_database
+/old_database
