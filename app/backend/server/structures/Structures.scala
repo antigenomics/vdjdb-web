@@ -26,7 +26,6 @@ case class Structures @Inject()(database: Database)(implicit ec: ExecutionContex
 
   private val structureFilesRoot: Path = Structures.resolveImageRoot(database)
   private val standardHtmlDir: Path = structureFilesRoot.resolve("structure")
-  private val simpleHtmlDir: Path = structureFilesRoot.resolve("structure_simple")
   private val visualizationMappings: Map[String, StructureVisualization] = loadVisualizationMappings()
   private val maxTopValueInCDR3Search: Int = 15
 
@@ -165,8 +164,8 @@ case class Structures @Inject()(database: Database)(implicit ec: ExecutionContex
     if (t.columnNames().contains("meta")) t.stringColumn("meta")
     else StringColumn.create("meta") // empty fallback
 
-  private def getContactsCol(t: Table): Option[StringColumn] =
-    if (t.columnNames().contains("contacts")) Some(t.stringColumn("contacts"))
+  private def getTcrHashCol(t: Table): Option[StringColumn] =
+    if (t.columnNames().contains("TCR_hash")) Some(t.stringColumn("TCR_hash"))
     else None
 
   private val structureIdJsonKeys: Seq[String] = Seq(
@@ -175,7 +174,8 @@ case class Structures @Inject()(database: Database)(implicit ec: ExecutionContex
     "structure",
     "structure_id",
     "structureHash",
-    "structure.hash"
+    "structure.hash",
+    "TCR_hash"
   )
 
   private val structureIdTokenPattern = "^[A-Za-z0-9_-]{4,}$".r
@@ -222,31 +222,24 @@ case class Structures @Inject()(database: Database)(implicit ec: ExecutionContex
       case _ => None
     }
 
-  private def extractStructureIdFromContacts(raw: String): Option[String] = {
-    val trimmed = Option(raw).map(_.trim).filter(_.nonEmpty)
-    trimmed.flatMap { value =>
-      extractStructureIdFromJsValue(Try(Json.parse(value)).getOrElse(JsString(value)))
-    }
-  }
-
-  private def extractStructureId(metaStr: String, contactsStr: Option[String]): Option[String] = {
-    val fromContacts = contactsStr.flatMap(extractStructureIdFromContacts).map(_.trim).filter(_.nonEmpty)
+  private def extractStructureId(metaStr: String, hashStr: Option[String]): Option[String] = {
+    val fromHash = hashStr.flatMap(sanitizeStructureIdCandidate).map(_.trim).filter(_.nonEmpty)
     val fromMeta = Option(metaStr)
       .map(meta => pickFromJson(meta, structureIdJsonKeys))
       .map(_.trim)
       .filter(_.nonEmpty)
-    fromContacts.orElse(fromMeta)
+    fromHash.orElse(fromMeta)
   }
 
   private def buildStructureIdColumn(t: Table): StringColumn = {
     val metaCol = getMetaCol(t)
-    val contactsColOpt = getContactsCol(t)
+    val hashColOpt = getTcrHashCol(t)
     val values = new java.util.ArrayList[String](t.rowCount())
     var i = 0
     while (i < t.rowCount()) {
       val metaRaw = Try(metaCol.get(i)).getOrElse("")
-      val contactsRaw = contactsColOpt.flatMap(col => Option(col.get(i)))
-      val resolved = extractStructureId(metaRaw, contactsRaw).getOrElse("")
+      val hashRaw = hashColOpt.flatMap(col => Option(col.get(i)))
+      val resolved = extractStructureId(metaRaw, hashRaw).getOrElse("")
       values.add(resolved)
       i += 1
     }
@@ -287,7 +280,7 @@ case class Structures @Inject()(database: Database)(implicit ec: ExecutionContex
 
   private val withDerived: Table = {
     val t = raw.copy()
-    // derive "structure.id" (contacts preferred) and "cell.subset" from JSON
+    // derive "structure.id" (TCR hash preferred) and "cell.subset" from JSON
     val structureIdCol = buildStructureIdColumn(t)
     val cellSubsetCol  = deriveColFromMeta(t, "cell.subset",
       Seq("cell.subset", "cellSubset", "cell_subset", "cell.subset"))
@@ -515,30 +508,29 @@ case class Structures @Inject()(database: Database)(implicit ec: ExecutionContex
   }
 
   private def locateStandardHtml(originalId: String, lowerId: String): Option[Path] = {
-    if (!Files.isDirectory(standardHtmlDir)) {
-      None
-    } else {
-      val direct = standardHtmlDir.resolve(s"$originalId.html").normalize()
-      if (Files.isRegularFile(direct) && direct.startsWith(structureFilesRoot)) {
-        Some(direct)
-      } else {
-        val lower = standardHtmlDir.resolve(s"$lowerId.html").normalize()
-        if (Files.isRegularFile(lower) && lower.startsWith(structureFilesRoot)) Some(lower) else None
-      }
-    }
+    val candidates = Seq(
+      s"$originalId.html",
+      if (lowerId != originalId) s"$lowerId.html" else ""
+    ).filter(_.nonEmpty)
+    locateInStructureDirectory(candidates)
   }
 
   private def locateSimpleHtml(originalId: String, lowerId: String): Option[Path] = {
-    if (!Files.isDirectory(simpleHtmlDir)) {
+    val candidates = Seq(
+      s"${originalId}_simplified.html",
+      if (lowerId != originalId) s"${lowerId}_simplified.html" else ""
+    ).filter(_.nonEmpty)
+    locateInStructureDirectory(candidates)
+  }
+
+  private def locateInStructureDirectory(candidateFileNames: Seq[String]): Option[Path] = {
+    if (!Files.isDirectory(standardHtmlDir)) {
       None
     } else {
-      val direct = simpleHtmlDir.resolve(s"$originalId.html").normalize()
-      if (Files.isRegularFile(direct) && direct.startsWith(structureFilesRoot)) {
-        Some(direct)
-      } else {
-        val lower = simpleHtmlDir.resolve(s"$lowerId.html").normalize()
-        if (Files.isRegularFile(lower) && lower.startsWith(structureFilesRoot)) Some(lower) else None
-      }
+      candidateFileNames.iterator.flatMap { name =>
+        val normalized = standardHtmlDir.resolve(name).normalize()
+        if (Files.isRegularFile(normalized) && normalized.startsWith(structureFilesRoot)) Some(normalized) else None
+      }.collectFirst { case path => path }
     }
   }
 

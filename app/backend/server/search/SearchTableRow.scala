@@ -26,7 +26,10 @@ object SearchTableRow {
 
   def createFromRow(r: Row): SearchTableRow = {
     val entries = r.getEntries
-      .filter(_.getColumn.getMetadata.get("visible") == "1")
+      .filter { entry =>
+        val metadata = entry.getColumn.getMetadata
+        metadata.get("visible") == "1" || entry.getColumn.getName == "TCR_hash"
+      }
       .map(_.getValue)
 
     val metadata = SearchTableRowMetadata.createFromRow(r)

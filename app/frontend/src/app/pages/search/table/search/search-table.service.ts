@@ -18,12 +18,13 @@ import { Injectable } from '@angular/core';
 import { Observable, Subject } from 'rxjs';
 import { filter, take } from 'rxjs/operators';
 import { FiltersOptions } from 'shared/filters/filters';
-import {FiltersService, FiltersServiceEventType} from 'shared/filters/filters.service';
+import { FiltersService, FiltersServiceEventType } from 'shared/filters/filters.service';
 import { WebSocketConnection } from 'shared/websocket/websocket-connection';
 import { WebSocketRequestData } from 'shared/websocket/websocket-request';
 import { WebSocketResponseData } from 'shared/websocket/websocket-response';
 import { LoggerService } from 'utils/logger/logger.service';
-import { DatabaseMetadata } from '../../database/database-metadata';
+import { DatabaseColumnInfo, DatabaseMetadata } from '../../database/database-metadata';
+import { setSearchTableReorderMap } from './search-table-reorder-map';
 
 export type SearchTableWebSocketActions = string;
 
@@ -73,7 +74,10 @@ export class SearchTableService {
 
       const metadataResponse = await metadataRequest;
       this.logger.debug('Metadata', metadataResponse);
-      const metadata = DatabaseMetadata.deserialize(metadataResponse.get('metadata'));
+      const rawMetadata = DatabaseMetadata.deserialize(metadataResponse.get('metadata'));
+      const normalizedMetadata = this.normalizeMetadata(rawMetadata);
+      const metadata = normalizedMetadata.metadata;
+      setSearchTableReorderMap(normalizedMetadata.reorderMap);
 
       const metadataOptions = new FiltersOptions();
       metadataOptions.add('tcr.segments.vSegmentValues', metadata.getColumnInfo('v.segm').values);
@@ -168,6 +172,42 @@ export class SearchTableService {
                 .add('gene', gene)
                 .unpack()
     });
+  }
+  private normalizeMetadata(source: DatabaseMetadata): { metadata: DatabaseMetadata, reorderMap: number[] } {
+    const originalColumns = source.columns.slice();
+    const reorderMap = originalColumns.map((_column, index) => index);
+
+    const tcrHashIndex = originalColumns.findIndex((column) => column.name === 'TCR_hash');
+    if (tcrHashIndex === -1) {
+      return { metadata: source, reorderMap };
+    }
+
+    const referenceIndex = originalColumns.findIndex((column) => column.name === 'reference.id');
+    const order = reorderMap.slice();
+    order.splice(tcrHashIndex, 1);
+    const insertionPoint = referenceIndex === -1 ? order.length : order.indexOf(referenceIndex) + 1;
+    order.splice(insertionPoint, 0, tcrHashIndex);
+
+    const sourceColumn = originalColumns[ tcrHashIndex ];
+    const dataType = sourceColumn ? (sourceColumn.dataType || 'url') : 'url';
+    const comment = sourceColumn ? (sourceColumn.comment || 'Structure preview and motif browser link') : 'Structure preview and motif browser link';
+    const contactsColumn = new DatabaseColumnInfo('contacts',
+      sourceColumn ? sourceColumn.columnType : 'txt',
+      true,
+      dataType,
+      'Contacts',
+      comment,
+      []);
+
+    const transformedColumns = order.map((originalIndex) => {
+      if (originalIndex === tcrHashIndex) {
+        return contactsColumn;
+      }
+      return originalColumns[ originalIndex ];
+    });
+
+    const normalizedMetadata = new DatabaseMetadata(source.numberOfRecords, source.numberOfColumns, transformedColumns);
+    return { metadata: normalizedMetadata, reorderMap: order };
   }
 
 }

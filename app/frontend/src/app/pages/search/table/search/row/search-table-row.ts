@@ -25,6 +25,7 @@ import { SearchTableEntryContactComponent } from '../entry/search-table-entry-co
 import { SearchTableEntryGeneComponent } from '../entry/search-table-entry-gene.component';
 import { SearchTableEntryMetaComponent } from '../entry/search-table-entry-meta.component';
 import { SearchTableEntryUrlComponent } from '../entry/search-table-entry-url.component';
+import { getSearchTableReorderMap } from '../search-table-reorder-map';
 
 export class SearchTableRowMetadata {
   public readonly pairedID: string;
@@ -49,7 +50,13 @@ export class SearchTableRow extends TableRow {
   constructor(row: any, pairedDisabled: boolean = false) {
     /* tslint:disable:no-string-literal */
     super();
-    this.entries = row[ 'entries' ];
+    const rawEntries: string[] = row[ 'entries' ];
+    const reorder = getSearchTableReorderMap();
+    if (reorder && reorder.length === rawEntries.length && reorder.every((index) => index < rawEntries.length)) {
+      this.entries = reorder.map((originalIndex) => rawEntries[ originalIndex ]);
+    } else {
+      this.entries = rawEntries.slice();
+    }
     this.metadata = new SearchTableRowMetadata(row[ 'metadata' ]);
     this.pairedDisabled = pairedDisabled;
     /* tslint:enable:no-string-literal */

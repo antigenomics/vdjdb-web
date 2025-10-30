@@ -189,7 +189,7 @@ export class SearchTableEntryContactComponent extends TableEntry {
             return undefined;
         }
         if (value && typeof value === 'object') {
-            const prioritizedKeys = [ 'structure', 'structure_id', 'structureId', 'structure.hash', 'structureHash', 'structure.id', 'hash', 'id' ];
+            const prioritizedKeys = [ 'structure', 'structure_id', 'structureId', 'structure.hash', 'structureHash', 'structure.id', 'hash', 'id', 'TCR_hash', 'tcr_hash', 'tcrHash' ];
             for (const key of prioritizedKeys) {
                 const candidate = this.extractIdFromUnknown(this.getValueByPath(value, key));
                 if (candidate) {

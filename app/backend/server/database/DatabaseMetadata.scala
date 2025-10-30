@@ -40,9 +40,14 @@ object DatabaseMetadata {
   def createFromInstance(instance: VdjdbInstance): DatabaseMetadata = {
     val dbInstance = instance.getDbInstance
     val numberOfRecords = dbInstance.getRows.size()
-    val columns = dbInstance.getColumns
+    val rawColumns = dbInstance.getColumns
       .asScala
       .map((c: Column) => DatabaseColumnInfo.createInfoFromColumn(c))
+      .map((info: DatabaseColumnInfo) =>
+        if (info.name == "TCR_hash") info.copy(visible = true) else info
+      )
+
+    val columns = rawColumns
       .filter((info: DatabaseColumnInfo) => info.visible)
       .toList
     DatabaseMetadata(numberOfRecords, columns.size, columns)

@@ -13,6 +13,7 @@
 # Developer instruments
 qodana.yaml
 qodana.sarif.json
+.history
 
 # MacOs
 .DS_Store
@@ -44,3 +45,10 @@ Thumbs.db
 /test/frontend/dll
 
 logs
+
+# Big database files
+/vdjdb-2025-10-28/vdjdb.txt
+/vdjdb-2025-10-28/vdjdb.scored.txt
+
+# Old database
+/database
