@@ -27,6 +27,7 @@ case class Structures @Inject()(database: Database)(implicit ec: ExecutionContex
   private val structureFilesRoot: Path = Structures.resolveImageRoot(database)
   private val standardHtmlDir: Path = structureFilesRoot.resolve("structure")
   private val visualizationMappings: Map[String, StructureVisualization] = loadVisualizationMappings()
+  private lazy val motifClusterIdIndex: Map[String, String] = loadMotifClusterIdIndex(buildStructureKeySet())
   private val maxTopValueInCDR3Search: Int = 15
 
   private def loadVisualizationMappings(): Map[String, StructureVisualization] = {
@@ -61,6 +62,111 @@ case class Structures @Inject()(database: Database)(implicit ec: ExecutionContex
         }
       }.toMap
     }
+  }
+
+  private case class ChainInfo(cdr3: String, vsegm: String, jsegm: String, motifClusterId: Option[String])
+
+  private def firstValueForGene(table: Table, gene: String, column: String): Option[String] = {
+    if (!table.columnNames().contains("gene") || !table.columnNames().contains(column)) {
+      None
+    } else {
+      val filtered = table.where(table.stringColumn("gene").isEqualTo(gene))
+      if (filtered.rowCount() == 0) None else firstValue(filtered, column)
+    }
+  }
+
+  private def loadMotifClusterIdIndex(allowedKeys: Set[String]): Map[String, String] = {
+    if (allowedKeys.isEmpty) {
+      return Map.empty
+    }
+    database.getClusterMembersFile match {
+      case Some(file) if file.exists() =>
+        val source = Source.fromFile(file, StandardCharsets.UTF_8.name())
+        try {
+          val iter = source.getLines()
+          if (!iter.hasNext) {
+            Map.empty
+          } else {
+            val header = iter.next().split("\t", -1)
+            val index = header.zipWithIndex.toMap
+            val required = Seq("species", "gene", "antigen.epitope", "cdr3aa", "v.segm", "j.segm", "cid")
+            if (!required.forall(index.contains)) {
+              Map.empty
+            } else {
+              val builder = mutable.HashMap.empty[String, String]
+              iter.foreach { line =>
+                val cols = line.split("\t", -1)
+                if (cols.length > index("cid")) {
+                  val key = buildMotifClusterKey(
+                    cols(index("species")),
+                    cols(index("gene")),
+                    cols(index("antigen.epitope")),
+                    cols(index("cdr3aa")),
+                    cols(index("v.segm")),
+                    cols(index("j.segm"))
+                  )
+                  val cid = cols(index("cid")).trim
+                  if (key.nonEmpty && cid.nonEmpty && allowedKeys.contains(key) && !builder.contains(key)) {
+                    builder.update(key, cid)
+                  }
+                }
+              }
+              builder.toMap
+            }
+          }
+        } finally {
+          source.close()
+        }
+      case _ =>
+        Map.empty
+    }
+  }
+
+  private def buildMotifClusterKey(species: String, gene: String, epitope: String, cdr3: String, vsegm: String, jsegm: String): String = {
+    val parts = Seq(species, gene, epitope, cdr3, vsegm, jsegm)
+      .map(v => Option(v).map(_.trim).getOrElse("").toLowerCase(Locale.ROOT))
+    if (parts.exists(_.isEmpty)) "" else parts.mkString("|")
+  }
+
+  private def buildStructureKeySet(): Set[String] = {
+    val required = Seq("species", "gene", "antigen.epitope", "cdr3", "v.segm", "j.segm")
+    if (!required.forall(structures.columnNames().contains)) {
+      Set.empty
+    } else {
+      val speciesCol = structures.stringColumn("species")
+      val geneCol = structures.stringColumn("gene")
+      val epitopeCol = structures.stringColumn("antigen.epitope")
+      val cdr3Col = structures.stringColumn("cdr3")
+      val vsegmCol = structures.stringColumn("v.segm")
+      val jsegmCol = structures.stringColumn("j.segm")
+      val builder = mutable.HashSet.empty[String]
+      var idx = 0
+      while (idx < structures.rowCount()) {
+        val key = buildMotifClusterKey(
+          speciesCol.get(idx),
+          geneCol.get(idx),
+          epitopeCol.get(idx),
+          cdr3Col.get(idx),
+          vsegmCol.get(idx),
+          jsegmCol.get(idx)
+        )
+        if (key.nonEmpty) {
+          builder += key
+        }
+        idx += 1
+      }
+      builder.toSet
+    }
+  }
+
+  private def lookupMotifClusterId(species: String, gene: String, epitope: String, cdr3: String, vsegm: String, jsegm: String): Option[String] = {
+    val key = buildMotifClusterKey(species, gene, epitope, cdr3, vsegm, jsegm)
+    if (key.isEmpty) None else motifClusterIdIndex.get(key)
+  }
+
+  private def buildChainLabel(vsegm: String, cdr3: String, jsegm: String): String = {
+    val parts = Seq(vsegm, cdr3, jsegm).map(_.trim).filter(_.nonEmpty)
+    if (parts.isEmpty) "" else parts.mkString("-")
   }
 
   // ---------- load vdjdb.txt ----------
@@ -318,7 +424,7 @@ case class Structures @Inject()(database: Database)(implicit ec: ExecutionContex
   }
 
   // ---------- metadata tree built from pruned table ----------
-  private val metadataLevels = Seq("species", "gene", "mhc.class", "mhc.a", "antigen.epitope")
+  private val metadataLevels = Seq("mhc.class", "mhc.a", "antigen.epitope")
   private val metadata: MotifsMetadata =
     MotifsMetadata.generateMetadataFromLevels(structures, metadataLevels)
 
@@ -465,6 +571,34 @@ case class Structures @Inject()(database: Database)(implicit ec: ExecutionContex
       val vsegm = firstValue(table, "v.segm").getOrElse("")
       val jsegm = firstValue(table, "j.segm").getOrElse("")
       val cellSubsetValue = firstValue(table, "cell.subset").getOrElse("")
+      val speciesValue = firstValue(table, "species").getOrElse("")
+      val epitopeValue = firstValue(table, "antigen.epitope").getOrElse("")
+
+      def buildChainInfo(gene: String): Option[ChainInfo] = {
+        val cdr3 = firstValueForGene(table, gene, "cdr3").getOrElse("")
+        val v = firstValueForGene(table, gene, "v.segm").getOrElse("")
+        val j = firstValueForGene(table, gene, "j.segm").getOrElse("")
+        if (cdr3.isEmpty && v.isEmpty && j.isEmpty) {
+          None
+        } else {
+          val motifId = lookupMotifClusterId(speciesValue, gene, epitopeValue, cdr3, v, j)
+          Some(ChainInfo(cdr3, v, j, motifId))
+        }
+      }
+
+      val alphaInfo = buildChainInfo("TRA")
+      val betaInfo = buildChainInfo("TRB")
+
+      val displayIds = Seq(alphaInfo.flatMap(_.motifClusterId), betaInfo.flatMap(_.motifClusterId)).flatten.distinct
+      val displayId = displayIds match {
+        case Seq() => ""
+        case Seq(single) => single
+        case many => many.mkString(" / ")
+      }
+
+      val alphaLabel = alphaInfo.map(info => buildChainLabel(info.vsegm, info.cdr3, info.jsegm)).getOrElse("")
+      val betaLabel = betaInfo.map(info => buildChainLabel(info.vsegm, info.cdr3, info.jsegm)).getOrElse("")
+      val tcrPairLabel = Seq(alphaLabel, betaLabel).filter(_.nonEmpty).mkString("; ")
 
       val trimmedId = structureId.trim
       val visualizationOpt = resolveVisualization(trimmedId)
@@ -472,9 +606,20 @@ case class Structures @Inject()(database: Database)(implicit ec: ExecutionContex
         return None
       }
 
+      val geneValues = if (table.columnNames().contains("gene")) {
+        table.stringColumn("gene").asSet().asScala.map(_.trim).filter(_.nonEmpty).toSeq
+      } else {
+        Seq.empty
+      }
+      val geneValue = {
+        val normalized = geneValues.map(_.toUpperCase(Locale.ROOT)).toSet
+        if (normalized.contains("TRA") && normalized.contains("TRB")) "TRA/TRB"
+        else geneValues.headOption.getOrElse("")
+      }
+
       val meta = StructureClusterMeta(
-        species = firstValue(table, "species").getOrElse(""),
-        gene = firstValue(table, "gene").getOrElse(""),
+        species = speciesValue,
+        gene = geneValue,
         mhcclass = firstValue(table, "mhc.class").getOrElse(""),
         mhca = firstValue(table, "mhc.a").getOrElse(""),
         mhcb = firstValue(table, "mhc.b").getOrElse(""),
@@ -483,7 +628,7 @@ case class Structures @Inject()(database: Database)(implicit ec: ExecutionContex
         cellSubset = cellSubsetValue
       )
 
-      Some(StructureCluster(trimmedId, size, length, vsegm, jsegm, Seq.empty, meta, visualizationOpt))
+      Some(StructureCluster(trimmedId, displayId, tcrPairLabel, size, length, vsegm, jsegm, Seq.empty, meta, visualizationOpt))
     }
   }
 

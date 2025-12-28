@@ -16,19 +16,15 @@
 
 <h5 class="ui left floated header" style="margin-top: 10px; margin-bottom: 10px" #HeaderContent>
     <div class="content with-options">
-        <span>ID: {{ cluster.clusterId }}</span>&nbsp;&nbsp;&nbsp;
+        <span>ID: {{ cluster.displayId || 'n/a' }}</span>&nbsp;&nbsp;&nbsp;
+        <ng-container *ngIf="cluster.tcrPairLabel">
+            <span>{{ cluster.tcrPairLabel }}</span>&nbsp;&nbsp;&nbsp;
+        </ng-container>
         <ng-container *ngIf="cluster.size > 1">
             <span>Cluster size: {{ cluster.size }}</span>&nbsp;&nbsp;&nbsp;
         </ng-container>
         <ng-container *ngIf="cluster.length > 0">
             <span>CDR3 length: {{ cluster.length }}</span>&nbsp;&nbsp;&nbsp;
-        </ng-container>
-        <ng-container *ngIf="cluster.vsegm || cluster.jsegm">
-            <span>
-                <ng-container *ngIf="cluster.vsegm">{{ cluster.vsegm }}</ng-container>
-                <ng-container *ngIf="cluster.vsegm && cluster.jsegm">&nbsp;/&nbsp;</ng-container>
-                <ng-container *ngIf="cluster.jsegm">{{ cluster.jsegm }}</ng-container>
-            </span>&nbsp;&nbsp;&nbsp;
         </ng-container>
         <div class="sub header">
             <ng-container *ngIf="cluster.meta && cluster.meta.species">

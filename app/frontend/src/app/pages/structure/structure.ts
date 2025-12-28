@@ -85,6 +85,8 @@ export interface IStructureVisualization {
 
 export interface IStructureCluster {
   readonly clusterId: string;
+  readonly displayId?: string;
+  readonly tcrPairLabel?: string;
   readonly size: number;
   readonly length: number;
   readonly vsegm: string;

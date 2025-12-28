@@ -40,7 +40,7 @@
                                [disabled]="isOverlayCheckboxDisabled(cluster)"
                                (change)="onOverlaySelectionChange(cluster, $event.target.checked)">
                         <span class="overlay-selection__label">
-                            {{ cluster.clusterId }}
+                            {{ cluster.tcrPairLabel || 'n/a' }}
                             <span *ngIf="cluster.visualization?.kind !== 'html'" class="overlay-selection__label-note">(no HTML)</span>
                         </span>
                     </label>

@@ -22,6 +22,8 @@ import tech.tablesaw.api.Table
 import scala.collection.JavaConverters._
 
 case class StructureCluster(clusterId: String,
+                            displayId: String,
+                            tcrPairLabel: String,
                             size: Int,
                             length: Int,
                             vsegm: String,
@@ -74,6 +76,6 @@ object StructureCluster {
       cellSubset.headOption.getOrElse("")
     )
 
-    StructureCluster(clusterId, size, length, v.head, j.head, entries, meta, None)
+    StructureCluster(clusterId, clusterId, "", size, length, v.head, j.head, entries, meta, None)
   }
 }

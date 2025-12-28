@@ -163,23 +163,15 @@ export class StructureService {
 
     this.metadata.pipe(take(1)).subscribe((metadata) => {
       const pathNodes: IStructuresMetadataTreeLevelValue[] = [];
-      const speciesNode = metadata.root.values.find((v) => v.value === filters.species);
-      if (!speciesNode || !speciesNode.next) { return; }
-      pathNodes.push(speciesNode);
-
-      const tcrChainNode = speciesNode.next.values.find((v) => v.value === filters.tcrChain);
-      if (!tcrChainNode || !tcrChainNode.next) { return; }
-      pathNodes.push(tcrChainNode);
-
-      const mhcClassNode = tcrChainNode.next.values.find((v) => v.value === filters.mhcClass);
+      const mhcClassNode = metadata.root.values.find((v) => v.value === filters.mhcClass);
       if (!mhcClassNode || !mhcClassNode.next) { return; }
       pathNodes.push(mhcClassNode);
 
-      const geneNode = mhcClassNode.next.values.find((v) => v.value === filters.gene);
-      if (!geneNode || !geneNode.next) { return; }
-      pathNodes.push(geneNode);
+      const mhcNode = mhcClassNode.next.values.find((v) => v.value === filters.gene);
+      if (!mhcNode || !mhcNode.next) { return; }
+      pathNodes.push(mhcNode);
 
-      const epitopeNode = geneNode.next.values.find((v) => v.value === filters.epitopeSeq);
+      const epitopeNode = mhcNode.next.values.find((v) => v.value === filters.epitopeSeq);
       if (!epitopeNode) { return; }
       pathNodes.push(epitopeNode);
 
@@ -190,8 +182,6 @@ export class StructureService {
 
     const treeFilter: IStructuresSearchTreeFilter = {
       entries: [
-        { name: 'species', value: filters.species },
-        { name: 'gene', value: filters.tcrChain },
         { name: 'mhc.class', value: filters.mhcClass },
         { name: 'mhc.a', value: filters.gene },
         { name: 'antigen.epitope', value: filters.epitopeSeq }
@@ -530,8 +520,13 @@ export class StructureService {
 
     const visualization = this.normalizeVisualizationFromRaw(item && item.visualization);
 
+    const displayId = item && typeof item.displayId === 'string' ? item.displayId : undefined;
+    const tcrPairLabel = item && typeof item.tcrPairLabel === 'string' ? item.tcrPairLabel : undefined;
+
     const cluster: IStructureCluster = {
       clusterId,
+      displayId,
+      tcrPairLabel,
       size: Number(item && item.size ? item.size : 1),
       length: Number(item && item.length ? item.length : 0),
       vsegm: this.pickMetaValue(meta, [ 'v', 'vsegm', 'v.segm' ]) || '',
