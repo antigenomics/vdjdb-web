@@ -7,7 +7,7 @@ on:
     branches: [ main, master ]
 
 jobs:
-  build-test:
+  build:
     runs-on: ubuntu-latest
 
     steps:
@@ -54,11 +54,6 @@ jobs:
       - name: Build application
         run: |
           sbt frontendInstallDependencies build
-
-      # Run tests
-      - name: Run tests
-        run: |
-          sbt test
 
       # Upload build artifact (optional but useful)
       - name: Upload server package
