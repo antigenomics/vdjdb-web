@@ -11,19 +11,22 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Checkout repository
+      # Checkout repository
       - name: Checkout source
         uses: actions/checkout@v4
 
-      # 2. Set up Java 8 for SBT / Scala
+      # Set up Java 8 for SBT / Scala
       - name: Set up Java 8
         uses: actions/setup-java@v4
         with:
-          distribution: temurin
+          distribution: zulu
           java-version: '8'
           cache: sbt
 
-      # 3. Set up Node.js 11
+      # Set up SBT
+      - uses: sbt/setup-sbt@v1
+
+      # Set up Node.js 11
       # GitHub runners no longer ship Node 11 by default, so we install it explicitly
       - name: Set up Node.js 11
         uses: actions/setup-node@v4
@@ -32,19 +35,13 @@ jobs:
           cache: 'yarn'
           cache-dependency-path: app/frontend/yarn.lock
 
-      # 4. Install Yarn 1.x explicitly
+      # Install Yarn 1.x explicitly
       - name: Install Yarn
         run: |
           npm install -g yarn@1.22.19
           yarn --version
 
-      # 5. Install SBT
-      - name: Install sbt
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y sbt
-
-      # 6. Verify toolchain
+      # Verify toolchain
       - name: Verify tool versions
         run: |
           java -version
@@ -53,17 +50,17 @@ jobs:
           yarn --version
           sbt --version
 
-      # 7. Build frontend + backend
+      # Build frontend + backend
       - name: Build application
         run: |
           sbt frontendInstallDependencies build
 
-      # 8. Run tests
+      # Run tests
       - name: Run tests
         run: |
           sbt test
 
-      # 9. Upload build artifact (optional but useful)
+      # Upload build artifact (optional but useful)
       - name: Upload server package
         if: success()
         uses: actions/upload-artifact@v4
