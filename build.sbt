@@ -137,7 +137,7 @@ maintainer in Docker := "bvdmitri"
 
 defaultLinuxInstallLocation in Docker := "/home/vdjdb"
 
-dockerBaseImage := "openjdk:8-jdk-slim"
+dockerBaseImage := "amazoncorretto:8-alpine"
 dockerEntrypoint := Seq("bin/vdjdb-web", "-Dconfig.file=/home/vdjdb/environment/application.conf", "-Dpidfile.path=/dev/null")
 dockerExposedPorts := Seq(9000)
 dockerExposedVolumes := Seq("/home/vdjdb/environment",
