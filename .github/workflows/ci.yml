@@ -87,7 +87,9 @@ jobs:
           echo "Tag numeric version: $TAG_NUMERIC"
 
           # Extract numeric core from sbt version
-          SBT_VERSION=$(sbt -Dsbt.supershell=false 'print version' | tail -n 1 | tr -d '[:space:]')
+          SBT_VERSION=$(grep -E '^[[:space:]]*version[[:space:]]*:=.*"' build.sbt \
+                          | head -n1 \
+                          | sed -E 's/^[[:space:]]*version[[:space:]]*:= *"([0-9]+\.[0-9]+\.[0-9]+)".*/\1/')
           SBT_NUMERIC=$(echo "$SBT_VERSION" | sed -E 's/^([0-9]+\.[0-9]+\.[0-9]+).*/\1/')
           echo "sbt numeric version: $SBT_NUMERIC"
 
