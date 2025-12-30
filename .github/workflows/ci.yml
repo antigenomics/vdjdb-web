@@ -3,11 +3,13 @@ name: Build and Test
 on:
   push:
     branches: [ main, master ]
+    tags:
+      - "v*"
   pull_request:
     branches: [ main, master ]
 
 jobs:
-  build:
+  build-publish:
     runs-on: ubuntu-latest
 
     steps:
@@ -63,3 +65,51 @@ jobs:
           name: vdjdb-server
           path: target/universal/*.zip
 
+      # -------------------------------
+      # Version check (TAG ONLY)
+      # -------------------------------
+      - name: Check numeric version matches sbt version
+        if: github.ref_type == 'tag'
+        shell: bash
+        run: |
+          set -e
+
+          TAG="$GITHUB_REF_NAME"
+
+          # Enforce basic tag shape: vX.Y.Z(-anything)?
+          if ! [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-.+)?$ ]]; then
+            echo "Invalid tag format: $TAG"
+            exit 1
+          fi
+
+          # Extract numeric core from tag
+          TAG_NUMERIC=$(echo "$TAG" | sed -E 's/^v([0-9]+\.[0-9]+\.[0-9]+).*/\1/')
+          echo "Tag numeric version: $TAG_NUMERIC"
+
+          # Extract numeric core from sbt version
+          SBT_VERSION=$(sbt -Dsbt.supershell=false 'print version' | tail -n 1 | tr -d '[:space:]')
+          SBT_NUMERIC=$(echo "$SBT_VERSION" | sed -E 's/^([0-9]+\.[0-9]+\.[0-9]+).*/\1/')
+          echo "sbt numeric version: $SBT_NUMERIC"
+
+          if [ "$TAG_NUMERIC" != "$SBT_NUMERIC" ]; then
+            echo "Numeric version mismatch"
+            echo "Tag: $TAG_NUMERIC"
+            echo "sbt: $SBT_NUMERIC"
+            exit 1
+          fi
+
+          echo "Numeric versions match"
+
+      # -------------------------------
+      # Docker publish (TAG ONLY)
+      # -------------------------------
+      - name: Log in to Docker Hub
+        if: github.ref_type == 'tag'
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Publish Docker image
+        if: github.ref_type == 'tag'
+        run: sbt Docker/publish
