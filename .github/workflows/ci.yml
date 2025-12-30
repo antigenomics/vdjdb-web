@@ -30,6 +30,7 @@ jobs:
         with:
           node-version: '11'
           cache: 'yarn'
+          cache-dependency-path: app/frontend/yarn.lock
 
       # 4. Install Yarn 1.x explicitly
       - name: Install Yarn
