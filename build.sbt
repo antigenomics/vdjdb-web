@@ -3,7 +3,7 @@ import play.sbt.PlayImport.PlayKeys.playRunHooks
 
 name := """VDJdb-web"""
 
-version := "2.5.4"
+version := "2.6.0"
 scalaVersion := "2.12.8"
 
 val now = System.currentTimeMillis()
