@@ -14,6 +14,7 @@
 qodana.yaml
 qodana.sarif.json
 /.history
+/.vscode
 
 # MacOs
 .DS_Store

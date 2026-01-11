@@ -99,7 +99,7 @@
     width: 100%;
     min-width: 1140px;
     border-collapse: collapse;
-    table-layout: fixed;
+    table-layout: auto;
     font-size: 0.92rem;
     color: #1f1f1f;
 }
@@ -121,8 +121,7 @@
     padding: 10px 12px;
     border-bottom: 1px solid rgba(0, 0, 0, 0.05);
     height: var(--overlay-row-height);
-    overflow: hidden;
-    text-overflow: ellipsis;
+    overflow: visible;
     white-space: nowrap;
 }
 
@@ -165,8 +164,7 @@
 }
 
 .overlay-table__cell {
-    overflow: hidden;
-    text-overflow: ellipsis;
+    overflow: visible;
     white-space: nowrap;
 }
 

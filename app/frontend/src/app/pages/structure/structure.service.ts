@@ -630,6 +630,16 @@ export class StructureService {
     }
   }
 
+  public releaseHtmlVisualizationMarkup(clusterOrId: IStructureCluster | string | undefined): void {
+    const clusterId = typeof clusterOrId === 'string' ? clusterOrId : clusterOrId && clusterOrId.clusterId;
+    const keyBase = typeof clusterId === 'string' ? clusterId.trim().toLowerCase() : '';
+    if (!keyBase) {
+      return;
+    }
+    this.htmlVisualizationCache.delete(`${keyBase}::standard`);
+    this.htmlVisualizationCache.delete(`${keyBase}::simple`);
+  }
+
   private buildFallbackHash(entries: IStructuresSearchTreeFilterEntry[]): string {
     return 'structures:' + JSON.stringify(entries || []);
   }

@@ -147,6 +147,7 @@ export class StructureEpitopeEntryComponent implements OnInit, OnDestroy {
             if (index !== -1) {
                 this.overlaySelection.splice(index, 1);
                 this.overlayLayerMap.delete(cluster.clusterId);
+                this.structureService.releaseHtmlVisualizationMarkup(cluster);
                 this.updateOverlayLayerList();
                 this.overlayError = null;
                 this.changeDetector.markForCheck();
@@ -408,6 +409,7 @@ export class StructureEpitopeEntryComponent implements OnInit, OnDestroy {
     }
 
     public ngOnDestroy(): void {
+        this.overlaySelection.forEach((id) => this.structureService.releaseHtmlVisualizationMarkup(id));
         if (this.subscription) {
             this.subscription.unsubscribe();
         }

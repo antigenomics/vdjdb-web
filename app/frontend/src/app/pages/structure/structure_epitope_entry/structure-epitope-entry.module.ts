@@ -16,11 +16,10 @@
 
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
-import { StructureEpitopeClusterModule } from 'pages/structure/structure_epitope_cluster/structure-epitope-cluster.module';
 import { StructureEpitopeEntryComponent } from './structure-epitope-entry.component';
 
 @NgModule({
-    imports:      [ CommonModule, StructureEpitopeClusterModule ],
+    imports:      [ CommonModule ],
     declarations: [ StructureEpitopeEntryComponent ],
     exports:      [ StructureEpitopeEntryComponent ]
 })
