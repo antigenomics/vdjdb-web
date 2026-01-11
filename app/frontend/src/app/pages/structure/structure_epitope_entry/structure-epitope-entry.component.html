@@ -28,54 +28,62 @@
     <ng-container *ngIf="!isHidden">
         <div class="ui clearing segment overlay-controls">
             <div class="overlay-header">
-                <div class="overlay-header__title">select up to {{ overlayLimit }} structures</div>
-                <div class="overlay-header__count">{{ overlaySelectionCount }} / {{ overlayLimit }} selected</div>
-            </div>
-            <div class="overlay-table-wrapper">
-                <div class="overlay-table overlay-table--head">
-                    <div class="overlay-table__row overlay-table__row--head">
-                        <div class="overlay-table__cell overlay-table__cell--id">CDR3a cluster ID</div>
-                        <div class="overlay-table__cell overlay-table__cell--id">CDR3b cluster ID</div>
-                        <div class="overlay-table__cell">CDR3a</div>
-                        <div class="overlay-table__cell">CDR3b</div>
-                        <div class="overlay-table__cell">TRAV</div>
-                        <div class="overlay-table__cell">TRAJ</div>
-                        <div class="overlay-table__cell">TRBV</div>
-                        <div class="overlay-table__cell">TRBJ</div>
-                        <div class="overlay-table__cell">Species</div>
-                        <div class="overlay-table__cell">MHC.class</div>
-                        <div class="overlay-table__cell">MHC.A</div>
-                        <div class="overlay-table__cell">MHC.B</div>
-                        <div class="overlay-table__cell">Antigen.Gene</div>
-                        <div class="overlay-table__cell">Antigen.Species</div>
-                    </div>
+                <div>
+                    <div class="overlay-header__title">Select up to {{ overlayLimit }} structures</div>
+                    <div class="overlay-header__hint">Click a row to add/remove it from overlay</div>
                 </div>
-                <div class="overlay-table overlay-table--body">
-                    <div class="overlay-table__body">
-                        <div class="overlay-table__row"
-                             *ngFor="let row of overlayTableRows; trackBy: trackRowBy"
-                             [class.is-selected]="isClusterSelected(row.cluster)"
-                             [class.is-disabled]="isRowDisabled(row)"
-                             (click)="isRowDisabled(row) ? null : onRowToggle(row)">
-                            <div class="overlay-table__cell overlay-table__cell--id">
-                                {{ row.alphaClusterId || '-' }}
+                <div class="overlay-header__counter">
+                    <span class="overlay-header__counter-value">{{ overlaySelectionCount }}</span>
+                    <span class="overlay-header__counter-separator">/</span>
+                    <span class="overlay-header__counter-limit">{{ overlayLimit }}</span>
+                </div>
+            </div>
+            <div class="overlay-table-card">
+                <div class="overlay-table-scroller">
+                    <table class="overlay-table">
+                        <thead>
+                        <tr>
+                            <th class="overlay-table__cell overlay-table__cell--id">CDR3a cluster ID</th>
+                            <th class="overlay-table__cell overlay-table__cell--id">CDR3b cluster ID</th>
+                            <th class="overlay-table__cell">CDR3a</th>
+                            <th class="overlay-table__cell">CDR3b</th>
+                            <th class="overlay-table__cell">TRAV</th>
+                            <th class="overlay-table__cell">TRAJ</th>
+                            <th class="overlay-table__cell">TRBV</th>
+                            <th class="overlay-table__cell">TRBJ</th>
+                            <th class="overlay-table__cell">Species</th>
+                            <th class="overlay-table__cell">MHC.class</th>
+                            <th class="overlay-table__cell">MHC.A</th>
+                            <th class="overlay-table__cell">MHC.B</th>
+                            <th class="overlay-table__cell">Antigen.Gene</th>
+                            <th class="overlay-table__cell">Antigen.Species</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr *ngFor="let row of overlayTableRows; trackBy: trackRowBy"
+                            [class.is-selected]="isClusterSelected(row.cluster)"
+                            [class.is-disabled]="isRowDisabled(row)"
+                            (click)="isRowDisabled(row) ? null : onRowToggle(row)">
+                            <td class="overlay-table__cell overlay-table__cell--id">
+                                <span class="overlay-table__id">{{ row.alphaClusterId || '-' }}</span>
                                 <span class="overlay-table__note" *ngIf="!row.hasHtml">no HTML</span>
-                            </div>
-                            <div class="overlay-table__cell overlay-table__cell--id">{{ row.betaClusterId || '-' }}</div>
-                            <div class="overlay-table__cell overlay-table__cell--cdr">{{ row.cdr3a || '-' }}</div>
-                            <div class="overlay-table__cell overlay-table__cell--cdr">{{ row.cdr3b || '-' }}</div>
-                            <div class="overlay-table__cell">{{ row.trav || '-' }}</div>
-                            <div class="overlay-table__cell">{{ row.traj || '-' }}</div>
-                            <div class="overlay-table__cell">{{ row.trbv || '-' }}</div>
-                            <div class="overlay-table__cell">{{ row.trbj || '-' }}</div>
-                            <div class="overlay-table__cell">{{ row.species || '-' }}</div>
-                            <div class="overlay-table__cell">{{ row.mhcclass || '-' }}</div>
-                            <div class="overlay-table__cell">{{ row.mhca || '-' }}</div>
-                            <div class="overlay-table__cell">{{ row.mhcb || '-' }}</div>
-                            <div class="overlay-table__cell">{{ row.antigenGene || '-' }}</div>
-                            <div class="overlay-table__cell">{{ row.antigenSpecies || '-' }}</div>
-                        </div>
-                    </div>
+                            </td>
+                            <td class="overlay-table__cell overlay-table__cell--id">{{ row.betaClusterId || '-' }}</td>
+                            <td class="overlay-table__cell overlay-table__cell--cdr">{{ row.cdr3a || '-' }}</td>
+                            <td class="overlay-table__cell overlay-table__cell--cdr">{{ row.cdr3b || '-' }}</td>
+                            <td class="overlay-table__cell">{{ row.trav || '-' }}</td>
+                            <td class="overlay-table__cell">{{ row.traj || '-' }}</td>
+                            <td class="overlay-table__cell">{{ row.trbv || '-' }}</td>
+                            <td class="overlay-table__cell">{{ row.trbj || '-' }}</td>
+                            <td class="overlay-table__cell">{{ row.species || '-' }}</td>
+                            <td class="overlay-table__cell">{{ row.mhcclass || '-' }}</td>
+                            <td class="overlay-table__cell">{{ row.mhca || '-' }}</td>
+                            <td class="overlay-table__cell">{{ row.mhcb || '-' }}</td>
+                            <td class="overlay-table__cell">{{ row.antigenGene || '-' }}</td>
+                            <td class="overlay-table__cell">{{ row.antigenSpecies || '-' }}</td>
+                        </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
             <div class="overlay-selection__hint">Click a row to add/remove it from overlay.</div>
