@@ -16,24 +16,24 @@
 
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
-import { IStructureClusterMeta, IStructureCluster, IStructureEpitope } from 'pages/structure/structure';
-import { StructuresServiceEvents } from 'pages/structure/structure.service';
-import { StructureService } from 'pages/structure/structure.service';
+import { SearchAvailabilityService } from 'pages/search/table/search/search-availability.service';
+import { IStructureCluster, IStructureClusterMeta, IStructureEpitope } from 'pages/structure/structure';
+import { StructureService, StructuresServiceEvents } from 'pages/structure/structure.service';
 import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
 
-interface ParsedChainLabel {
+interface IParsedChainLabel {
     cdr3?: string;
     v?: string;
     j?: string;
 }
 
-interface ParsedPairLabel {
-    alpha?: ParsedChainLabel;
-    beta?: ParsedChainLabel;
+interface IParsedPairLabel {
+    alpha?: IParsedChainLabel;
+    beta?: IParsedChainLabel;
 }
 
-interface OverlayTableRow {
+interface IOverlayTableRow {
     cluster: IStructureCluster;
     alphaClusterId?: string;
     betaClusterId?: string;
@@ -43,13 +43,18 @@ interface OverlayTableRow {
     traj?: string;
     trbv?: string;
     trbj?: string;
-    species?: string;
-    mhcclass?: string;
-    mhca?: string;
-    mhcb?: string;
-    antigenGene?: string;
-    antigenSpecies?: string;
     hasHtml: boolean;
+    motifLink?: string;
+    motifAvailable?: boolean;
+    motifParams?: IMotifParams;
+}
+
+interface IMotifParams {
+    species: string;
+    tcrChain: string;
+    mhcClass: string;
+    gene: string;
+    epitope: string;
 }
 
 @Component({
@@ -60,21 +65,21 @@ interface OverlayTableRow {
 })
 export class StructureEpitopeEntryComponent implements OnInit, OnDestroy {
     private subscription: Subscription;
+    private overlaySelection: string[] = [];
+    private overlayLayerMap: Map<string, { standard?: SafeHtml, simple?: SafeHtml }> = new Map<string, { standard?: SafeHtml, simple?: SafeHtml }>();
+
     public meta: IStructureClusterMeta;
     public isHidden: boolean = false;
-    public overlayError: string | null = null;
+    public overlayError: string | undefined;
     public readonly overlayLimit: number = 5;
     public overlayLayerList: Array<{ id: string, markup: SafeHtml, mode: 'standard' | 'simple' }> = [];
-    public overlayTableRows: OverlayTableRow[] = [];
+    public overlayTableRows: IOverlayTableRow[] = [];
     @Input('epitope') public epitope: IStructureEpitope;
     @Input('isNormalized') public isNormalized: boolean;
     @Output('onDiscard') public onDiscard = new EventEmitter<IStructureEpitope>();
 
-    private overlaySelection: string[] = [];
-    private overlayLayerMap: Map<string, { standard?: SafeHtml, simple?: SafeHtml }> = new Map<string, { standard?: SafeHtml, simple?: SafeHtml }>();
-
-    constructor(private structureService: StructureService, private changeDetector: ChangeDetectorRef,
-                private sanitizer: DomSanitizer) {}
+    constructor(private structureService: StructureService, private availability: SearchAvailabilityService,
+                private changeDetector: ChangeDetectorRef, private sanitizer: DomSanitizer) {}
 
     public ngOnInit(): void {
         this.meta = this.epitope.clusters[0].meta;
@@ -83,6 +88,7 @@ export class StructureEpitopeEntryComponent implements OnInit, OnDestroy {
             this.changeDetector.markForCheck();
         });
         this.overlayTableRows = this.epitope.clusters.map((cluster) => this.buildOverlayRow(cluster));
+        this.loadMotifAvailability();
         this.initializeOverlaySelection();
     }
 
@@ -102,7 +108,7 @@ export class StructureEpitopeEntryComponent implements OnInit, OnDestroy {
         return item.clusterId;
     }
 
-    public trackRowBy(_: number, row: OverlayTableRow): string {
+    public trackRowBy(_: number, row: IOverlayTableRow): string {
         return row.cluster.clusterId;
     }
 
@@ -114,7 +120,7 @@ export class StructureEpitopeEntryComponent implements OnInit, OnDestroy {
         return this.overlaySelection.length;
     }
 
-    public onRowToggle(row: OverlayTableRow): void {
+    public onRowToggle(row: IOverlayTableRow): void {
         if (!row) {
             return;
         }
@@ -140,7 +146,7 @@ export class StructureEpitopeEntryComponent implements OnInit, OnDestroy {
                 return;
             }
             this.overlaySelection.push(cluster.clusterId);
-            this.overlayError = null;
+            this.overlayError = undefined;
             this.ensureOverlayLayer(cluster);
         } else {
             const index = this.overlaySelection.indexOf(cluster.clusterId);
@@ -149,13 +155,13 @@ export class StructureEpitopeEntryComponent implements OnInit, OnDestroy {
                 this.overlayLayerMap.delete(cluster.clusterId);
                 this.structureService.releaseHtmlVisualizationMarkup(cluster);
                 this.updateOverlayLayerList();
-                this.overlayError = null;
+                this.overlayError = undefined;
                 this.changeDetector.markForCheck();
             }
         }
     }
 
-    public isRowDisabled(row: OverlayTableRow): boolean {
+    public isRowDisabled(row: IOverlayTableRow): boolean {
         if (!row || !row.cluster) {
             return true;
         }
@@ -218,7 +224,7 @@ export class StructureEpitopeEntryComponent implements OnInit, OnDestroy {
             standard: standardMarkup,
             simple: simpleMarkup || existing.simple
         });
-        this.overlayError = null;
+        this.overlayError = undefined;
         this.updateOverlayLayerList();
         this.changeDetector.markForCheck();
     }
@@ -228,17 +234,17 @@ export class StructureEpitopeEntryComponent implements OnInit, OnDestroy {
             .map((id, index) => {
                 const entry = this.overlayLayerMap.get(id);
                 if (!entry || !entry.standard) {
-                    return null;
+                    return undefined;
                 }
                 const mode: 'standard' | 'simple' = index === 0 ? 'standard' : 'simple';
                 const markup = mode === 'simple' ? (entry.simple || entry.standard) : entry.standard;
-                return markup ? { id, markup, mode } : null;
+                return markup ? { id, markup, mode } : undefined;
             })
-            .filter((entry): entry is { id: string, markup: SafeHtml, mode: 'standard' | 'simple' } => entry !== null);
+            .filter((entry): entry is { id: string, markup: SafeHtml, mode: 'standard' | 'simple' } => entry !== undefined);
     }
 
     private initializeOverlaySelection(): void {
-        this.overlayError = null;
+        this.overlayError = undefined;
         this.overlaySelection = [];
         this.overlayLayerMap.clear();
         this.overlayLayerList = [];
@@ -260,39 +266,93 @@ export class StructureEpitopeEntryComponent implements OnInit, OnDestroy {
         this.changeDetector.markForCheck();
     }
 
-    private buildOverlayRow(cluster: IStructureCluster): OverlayTableRow {
+    private buildOverlayRow(cluster: IStructureCluster): IOverlayTableRow {
         const pairLabel = this.parsePairLabel(cluster.tcrPairLabel);
         const clusterIds = this.parseClusterIds(cluster);
         const alpha = pairLabel.alpha || {};
         const beta = pairLabel.beta || {};
         const meta = cluster.meta || {} as IStructureClusterMeta;
+        const motifParams = this.buildMotifParams(meta, this.epitope.epitope);
+        const motifLink = motifParams ? this.buildMotifLink(motifParams) : undefined;
 
         return {
             cluster,
             alphaClusterId: clusterIds.alpha,
             betaClusterId: clusterIds.beta,
-            cdr3a: alpha.cdr3 || '',
-            cdr3b: beta.cdr3 || '',
-            trav: alpha.v || '',
-            traj: alpha.j || '',
-            trbv: beta.v || '',
-            trbj: beta.j || '',
-            species: meta.species || '',
-            mhcclass: meta.mhcclass || '',
-            mhca: meta.mhca || '',
-            mhcb: meta.mhcb || '',
-            antigenGene: meta.antigenGene || '',
-            antigenSpecies: meta.antigenSpecies || '',
-            hasHtml: !!(cluster.visualization && cluster.visualization.kind === 'html')
+            cdr3a: typeof alpha.cdr3 === 'string' ? alpha.cdr3 : '',
+            cdr3b: typeof beta.cdr3 === 'string' ? beta.cdr3 : '',
+            trav: typeof alpha.v === 'string' ? alpha.v : '',
+            traj: typeof alpha.j === 'string' ? alpha.j : '',
+            trbv: typeof beta.v === 'string' ? beta.v : '',
+            trbj: typeof beta.j === 'string' ? beta.j : '',
+            hasHtml: !!(cluster.visualization && cluster.visualization.kind === 'html'),
+            motifParams,
+            motifLink
         };
     }
 
-    private parsePairLabel(label?: string): ParsedPairLabel {
+    private buildMotifParams(meta: IStructureClusterMeta, epitope: string): IMotifParams | undefined {
+        if (!meta || !epitope) {
+            return undefined;
+        }
+        const species = meta.species || '';
+        const tcrChain = meta.gene || '';
+        const mhcClass = meta.mhcclass || '';
+        const gene = this.normalizeMhcGene(meta.mhca || '');
+        if (!species || !tcrChain || !mhcClass || !gene) {
+            return undefined;
+        }
+        return {
+            species,
+            tcrChain,
+            mhcClass,
+            gene,
+            epitope
+        };
+    }
+
+    private buildMotifLink(params: IMotifParams): string {
+        const search = new URLSearchParams();
+        search.set('species', params.species);
+        search.set('tcr_chain', params.tcrChain);
+        search.set('mhc_class', params.mhcClass);
+        search.set('gene', params.gene);
+        search.set('epitope_seq', params.epitope);
+        return `/motif?${search.toString()}`;
+    }
+
+    private normalizeMhcGene(value: string): string {
+        return value ? value.replace(/:.+/, '').trim() : '';
+    }
+
+    private loadMotifAvailability(): void {
+        const rows = this.overlayTableRows.filter((row) => !!row.motifParams);
+        if (rows.length === 0) {
+            return;
+        }
+        rows.forEach((row) => {
+            if (!row.motifParams) {
+                return;
+            }
+            const params = row.motifParams;
+            this.availability.hasMotif(params.species, params.tcrChain, params.mhcClass, params.gene, params.epitope)
+                .then((available) => {
+                    row.motifAvailable = available;
+                    this.changeDetector.markForCheck();
+                })
+                .catch(() => {
+                    row.motifAvailable = false;
+                    this.changeDetector.markForCheck();
+                });
+        });
+    }
+
+    private parsePairLabel(label?: string): IParsedPairLabel {
         if (!label || typeof label !== 'string') {
             return {};
         }
         const parts = label.split(';').map((part) => part.trim()).filter((part) => part.length > 0);
-        const result: ParsedPairLabel = {};
+        const result: IParsedPairLabel = {};
         for (const part of parts) {
             const chain = this.parseChainLabel(part);
             const upper = part.toUpperCase();
@@ -309,7 +369,7 @@ export class StructureEpitopeEntryComponent implements OnInit, OnDestroy {
         return result;
     }
 
-    private parseChainLabel(label: string): ParsedChainLabel {
+    private parseChainLabel(label: string): IParsedChainLabel {
         const trimmed = (label || '').trim();
         if (!trimmed) {
             return {};

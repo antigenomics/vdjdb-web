@@ -20,14 +20,14 @@ import { StructurePageComponent } from 'pages/structure/structure.component';
 import { StructurePageRouting } from 'pages/structure/structure.routing';
 import { StructureService } from 'pages/structure/structure.service';
 import { StructureCDR3ClustersModule } from 'pages/structure/structure_cdr3_clusters/structure-cdr3-clusters.module';
+import { StructureContextHeaderModule } from 'pages/structure/structure_context_header/structure-context-header.module';
 import { StructureEpitopesModule } from 'pages/structure/structure_epitopes/structure-epitopes.module';
-import { StructureSearchUtilModule } from 'pages/structure/structure_search_util/structure-search-util.module';
 
 @NgModule({
   imports: [
     CommonModule,
     StructurePageRouting,
-    StructureSearchUtilModule,
+    StructureContextHeaderModule,
     StructureEpitopesModule,
     StructureCDR3ClustersModule
   ],

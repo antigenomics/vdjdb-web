@@ -17,16 +17,15 @@
 <div class="ui main content text fade slow element soft-margin" style="padding-bottom: 15px; height: 100%; overflow: hidden;">
     <div class="ui raised segments" style="height: 85%">
         <h3 class="ui top attached header">TCR structure database</h3>
+        <div class="ui attached segment" style="padding-bottom: 0">
+            <structure-context-header [metadata]="metadata | async"></structure-context-header>
+        </div>
         <div class="ui attached segment" style="height: 100%">
             <div class="ui active inverted dimmer" *ngIf="isEpitopesLoading() | async">
                 <div class="ui text loader">Loading</div>
             </div>
             <div class="ui grid" style="height: 100%; overflow: hidden">
-                <div class="ui five wide column" style="overflow-x: hidden; overflow-y: auto; height: 100%">
-                    <structure-search-util [metadata]="metadata | async" [options]="options | async" [selected]="selected | async"
-                                       [cdr3SearchOptions]="cdr3SearchOptions | async"></structure-search-util>
-                </div>
-                <div class="ui eleven wide column" style="overflow-x: hidden; overflow-y: auto; height: 100%" #EpitopesContainer>
+                <div class="ui sixteen wide column" style="overflow-x: hidden; overflow-y: auto; height: 100%" #EpitopesContainer>
                     <structure-epitopes *ngIf="isStateSearchTree()" [options]="options | async" [epitopes]="epitopes | async"></structure-epitopes>
                     <structure-cdr3-clusters *ngIf="isStateSearchCDR3()" [options]="options | async" [clusters]="clusters | async"></structure-cdr3-clusters>
                 </div>

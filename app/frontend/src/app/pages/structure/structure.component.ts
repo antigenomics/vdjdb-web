@@ -27,7 +27,7 @@ import {
 import { StructureSearchState } from 'pages/structure/structure.service';
 import { StructureService } from 'pages/structure/structure.service';
 import { fromEvent, Observable, Subscription, timer } from 'rxjs';
-import {debounce, take} from 'rxjs/operators';
+import { debounce } from 'rxjs/operators';
 import { ContentWrapperService } from '../../content-wrapper.service';
 
 @Component({
@@ -41,6 +41,8 @@ export class StructurePageComponent implements OnInit, OnDestroy {
 
   private onScrollObservable: Subscription;
   private onResizeObservable: Subscription;
+  private routeSubscription: Subscription;
+  private lastQuerySignature: string | null = null;
 
   public readonly metadata: Observable<IStructuresMetadata>;
   public readonly selected: Observable<IStructuresMetadataTreeLevelValue[]>;
@@ -64,24 +66,46 @@ export class StructurePageComponent implements OnInit, OnDestroy {
   public ngOnInit(): void {
     this.contentWrapper.blockScrolling();
 
-    this.route.queryParamMap.pipe(take(1)).subscribe((params) => {
-      const species = params.get('species');
-      const tcrChain = params.get('tcr_chain');
+    this.routeSubscription = this.route.queryParamMap.subscribe((params) => {
+      const species = params.get('species') || '';
+      const tcrChain = params.get('tcr_chain') || '';
       const gene = params.get('gene');
       const mhcClass = params.get('mhc_class');
       const epitopeSeq = params.get('epitope_seq');
       const structureId = params.get('structure_id');
+      const cdr3Query = params.get('query');
 
-      if (species && tcrChain && mhcClass && gene && epitopeSeq) {
-        this.structureService.filterByUrl({ species, tcrChain, mhcClass, gene, epitopeSeq, structureId: structureId || undefined });
+      const signature = [
+        species,
+        tcrChain,
+        gene || '',
+        mhcClass || '',
+        epitopeSeq || '',
+        structureId || '',
+        cdr3Query || ''
+      ].join('|');
 
+      if (signature === this.lastQuerySignature) {
+        return;
+      }
+      this.lastQuerySignature = signature;
+
+      if (mhcClass && gene && epitopeSeq) {
+        this.structureService.filterByUrl({
+          species,
+          tcrChain,
+          mhcClass,
+          gene,
+          epitopeSeq,
+          structureId: structureId || undefined
+        });
+        return;
+      }
+
+      if (cdr3Query) {
+        this.structureService.searchCDR3ByUrl(cdr3Query);
       } else {
-        const cdr3Query = params.get('query');
-        if (cdr3Query) {
-          this.structureService.searchCDR3ByUrl(cdr3Query);
-        } else {
-          this.structureService.load();
-        }
+        this.structureService.load();
       }
     });
 
@@ -104,6 +128,9 @@ export class StructurePageComponent implements OnInit, OnDestroy {
     this.contentWrapper.unblockScrolling();
     this.onScrollObservable.unsubscribe();
     this.onResizeObservable.unsubscribe();
+    if (this.routeSubscription) {
+      this.routeSubscription.unsubscribe();
+    }
   }
 
   public isStateSearchTree(): boolean {

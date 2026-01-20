@@ -163,21 +163,20 @@ export class StructureService {
 
     this.metadata.pipe(take(1)).subscribe((metadata) => {
       const pathNodes: IStructuresMetadataTreeLevelValue[] = [];
-      const mhcClassNode = metadata.root.values.find((v) => v.value === filters.mhcClass);
+      const mhcClassNode = metadata.root.values.find((v) => v.value.toLowerCase() === filters.mhcClass.toLowerCase());
       if (!mhcClassNode || !mhcClassNode.next) { return; }
       pathNodes.push(mhcClassNode);
 
-      const mhcNode = mhcClassNode.next.values.find((v) => v.value === filters.gene);
+      const normalizedGene = this.normalizeMhcGene(filters.gene);
+      const mhcNode = mhcClassNode.next.values.find((v) => this.normalizeMhcGene(v.value) === normalizedGene);
       if (!mhcNode || !mhcNode.next) { return; }
       pathNodes.push(mhcNode);
 
-      const epitopeNode = mhcNode.next.values.find((v) => v.value === filters.epitopeSeq);
+      const epitopeNode = mhcNode.next.values.find((v) => v.value.toLowerCase() === filters.epitopeSeq.toLowerCase());
       if (!epitopeNode) { return; }
       pathNodes.push(epitopeNode);
 
       pathNodes.forEach((node) => (node.isOpened = true));
-      this.selectTreeLevelValue(epitopeNode);
-      this.updateSelected();
     });
 
     const treeFilter: IStructuresSearchTreeFilter = {
@@ -192,7 +191,7 @@ export class StructureService {
       treeFilter.entries.push({ name: 'structure.id', value: filters.structureId });
     }
 
-    this.select(treeFilter);
+    this.select(treeFilter, 'replace');
   }
 
   public searchCDR3(cdr3: string, substring: boolean = false, gene: string = 'BOTH', top: number = 15): void {
@@ -281,9 +280,21 @@ export class StructureService {
     return { options, clusters, clustersNorm };
   }
 
-  public select(treeFilter: IStructuresSearchTreeFilter): void {
+  public select(treeFilter: IStructuresSearchTreeFilter, mode: 'append' | 'replace' = 'append'): void {
     this.setSearchState(StructureSearchState.SEARCH_TREE);
-    this.updateSelected();
+    if (mode === 'replace') {
+      this.metadata.pipe(take(1)).subscribe((metadata) => {
+        this.clearSelectedValues(metadata);
+        const leaf = this.resolveLeafFromFilter(metadata, treeFilter.entries);
+        if (leaf) {
+          this.selectTreeLevelValue(leaf);
+        }
+        this.updateSelected();
+      });
+      this.epitopes.next([]);
+    } else {
+      this.updateSelected();
+    }
     this.loadingState.next(true);
     Utils.HTTP.post('/api/structures/filter', treeFilter).then((response) => {
       try {
@@ -328,7 +339,8 @@ export class StructureService {
               })
               .filter((epitope) => Array.isArray(epitope.clusters) && epitope.clusters.length > 0);
 
-          this.epitopes.next([ ...current, ...newEpitopes ]);
+          const updated = mode === 'replace' ? newEpitopes : [ ...current, ...newEpitopes ];
+          this.epitopes.next(updated);
           this.loadingState.next(false);
           // tslint:disable-next-line:no-magic-numbers
           this.notifications.info('Structure', 'Loaded successfully', 1000);
@@ -480,6 +492,38 @@ export class StructureService {
     return undefined;
   }
 
+  private resolveLeafFromFilter(metadata: IStructuresMetadata,
+                                entries: IStructuresSearchTreeFilterEntry[]): IStructuresMetadataTreeLevelValue | undefined {
+    if (!metadata || !metadata.root || !Array.isArray(entries) || entries.length === 0) {
+      return undefined;
+    }
+    const relevant = entries.filter((entry) => entry && [ 'mhc.class', 'mhc.a', 'antigen.epitope' ].indexOf(entry.name) !== -1);
+    if (relevant.length === 0) {
+      return undefined;
+    }
+    let level: IStructuresMetadataTreeLevel | null = metadata.root;
+    for (let index = 0; index < relevant.length; ++index) {
+      const entry = relevant[index];
+      if (!level) {
+        return undefined;
+      }
+      const value = level.values.find((candidate) => {
+        if (entry.name === 'mhc.a') {
+          return this.normalizeMhcGene(candidate.value) === this.normalizeMhcGene(entry.value);
+        }
+        return candidate.value.toLowerCase() === entry.value.toLowerCase();
+      });
+      if (!value) {
+        return undefined;
+      }
+      if (index === relevant.length - 1) {
+        return value;
+      }
+      level = value.next;
+    }
+    return undefined;
+  }
+
   private resolveEpitopeLabel(entries: IStructuresSearchTreeFilterEntry[]): string | undefined {
     if (!Array.isArray(entries)) {
       return undefined;
@@ -575,6 +619,22 @@ export class StructureService {
     return simpleUrlRaw
       ? { url, kind: 'html', simpleUrl: simpleUrlRaw }
       : { url, kind: 'html' };
+  }
+
+  private clearSelectedValues(metadata: IStructuresMetadata): void {
+    if (!metadata || !metadata.root) {
+      return;
+    }
+    StructureService.extractMetadataTreeLeafValues(metadata.root).forEach(([ _, value ]) => {
+      value.isSelected = false;
+    });
+  }
+
+  private normalizeMhcGene(value: string | undefined | null): string {
+    if (!value) {
+      return '';
+    }
+    return value.replace(/:.+/, '').trim().toLowerCase();
   }
 
   private ensureVisualization(cluster: IStructureCluster | undefined): void {

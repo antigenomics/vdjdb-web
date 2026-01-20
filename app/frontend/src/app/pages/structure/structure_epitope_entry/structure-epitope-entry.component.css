@@ -35,6 +35,20 @@
     opacity: 0.8 !important;
 }
 
+.epitope-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 0.9rem;
+    font-size: 0.82rem;
+    color: rgba(0, 0, 0, 0.65);
+}
+
+.epitope-meta__label {
+    font-weight: 600;
+    margin-right: 4px;
+    color: rgba(0, 0, 0, 0.75);
+}
+
 .overlay-controls {
     display: flex;
     flex-direction: column;
@@ -81,113 +95,112 @@
     color: rgba(0, 0, 0, 0.35);
 }
 
-.overlay-table-card {
-    --overlay-row-height: 54px;
+.overlay-layout {
+    display: flex;
+    align-items: stretch;
+    gap: 1rem;
+}
+
+.overlay-list {
+    flex: 0 0 320px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.overlay-list__scroller {
+    overflow-y: auto;
+    max-height: 520px;
+    padding-right: 4px;
+}
+
+.overlay-card {
     border: 1px solid rgba(0, 0, 0, 0.08);
-    border-radius: 8px;
+    border-radius: 6px;
+    padding: 0.7rem 0.75rem;
     background: #ffffff;
-    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.06);
-    overflow: hidden;
-}
-
-.overlay-table-scroller {
-    overflow: auto;
-    max-height: calc(var(--overlay-row-height) * 5 + 58px);
-}
-
-.overlay-table {
-    width: 100%;
-    min-width: 1140px;
-    border-collapse: collapse;
-    table-layout: auto;
-    font-size: 0.92rem;
-    color: #1f1f1f;
-}
-
-.overlay-table thead th {
-    position: sticky;
-    top: 0;
-    background: linear-gradient(180deg, #f3f5fb 0%, #edf0f7 100%);
-    font-weight: 700;
-    color: #2d2d2d;
-    text-align: left;
-    padding: 10px 12px;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-    white-space: nowrap;
-    z-index: 2;
-}
-
-.overlay-table td {
-    padding: 10px 12px;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-    height: var(--overlay-row-height);
-    overflow: visible;
-    white-space: nowrap;
-}
-
-.overlay-table tbody tr {
-    background: #ffffff;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
     cursor: pointer;
-    transition: background-color 0.12s ease, box-shadow 0.12s ease;
+    transition: background-color 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease;
 }
 
-.overlay-table tbody tr:nth-child(even) {
-    background: #fbfcff;
+.overlay-card + .overlay-card {
+    margin-top: 0.6rem;
 }
 
-.overlay-table tbody tr:hover {
-    background: #f1f4ff;
+.overlay-card.is-selected {
+    border-color: #3d58f3;
+    background: #eef2ff;
+    box-shadow: inset 4px 0 0 #3d58f3, 0 4px 12px rgba(61, 88, 243, 0.15);
 }
 
-.overlay-table tbody tr.is-selected {
-    background: linear-gradient(90deg, #dce4ff 0%, #e8edff 100%);
-    box-shadow: inset 4px 0 0 #3d58f3;
-}
-
-.overlay-table tbody tr.is-disabled {
-    opacity: 0.45;
+.overlay-card.is-disabled {
+    opacity: 0.5;
     cursor: not-allowed;
 }
 
-.overlay-table tbody tr.is-disabled:hover {
-    background: inherit;
+.overlay-card__line {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 6px;
+    font-size: 0.85rem;
+    color: #1f1f1f;
 }
 
-.overlay-table__cell--id {
-    font-variant-numeric: tabular-nums;
-    font-weight: 700;
-}
-
-.overlay-table__cell--cdr {
+.overlay-card__line--cdr .overlay-card__value {
     font-family: "Menlo", "Consolas", "Courier New", monospace;
     color: #2e3c62;
 }
 
-.overlay-table__cell {
-    overflow: visible;
-    white-space: nowrap;
+.overlay-card__label {
+    font-weight: 600;
+    color: rgba(0, 0, 0, 0.65);
 }
 
-.overlay-table__id {
+.overlay-card__note {
     display: inline-block;
-    min-width: 32px;
-}
-
-.overlay-table__note {
-    display: inline-block;
-    margin-left: 8px;
+    margin-left: 6px;
     padding: 2px 8px;
     border-radius: 10px;
     background: #ffe6e6;
     color: #a33;
-    font-size: 0.75rem;
+    font-size: 0.72rem;
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
 
+.overlay-card__links {
+    margin-top: 0.4rem;
+    font-size: 0.82rem;
+}
+
+.overlay-card__links a {
+    color: #1a4fb5;
+    font-weight: 600;
+}
+
+.overlay-card__links a.is-unavailable {
+    color: rgba(0, 0, 0, 0.4);
+    pointer-events: none;
+}
+
+.overlay-card__links a.is-available {
+    color: #1f7a3c;
+}
+
+.overlay-card__link--disabled {
+    color: rgba(0, 0, 0, 0.4);
+}
+
 .overlay-selection__hint {
-    font-size: 0.86rem;
+    font-size: 0.82rem;
     color: rgba(0, 0, 0, 0.52);
+}
+
+.overlay-visualization {
+    flex: 1;
+    min-width: 0;
 }
 
 .structure-overlay {
