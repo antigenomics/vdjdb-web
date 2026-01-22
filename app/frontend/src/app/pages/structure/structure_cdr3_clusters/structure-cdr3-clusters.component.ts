@@ -24,6 +24,7 @@ import {
 @Component({
     selector:        'structure-cdr3-clusters',
     templateUrl:     './structure-cdr3-clusters.component.html',
+    styleUrls:       [ './structure-cdr3-clusters.component.css' ],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class StructureCDR3ClustersComponent {

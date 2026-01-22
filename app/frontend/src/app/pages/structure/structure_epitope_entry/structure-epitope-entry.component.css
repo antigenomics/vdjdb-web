@@ -83,7 +83,6 @@
     border: 1px solid rgba(0, 0, 0, 0.08);
     border-radius: 8px;
     background: linear-gradient(180deg, #ffffff 0%, #f4f6fb 100%);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 
 .overlay-header__counter-value {
@@ -106,12 +105,16 @@
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+    min-height: 0;
+    align-self: stretch;
 }
 
 .overlay-list__scroller {
     overflow-y: auto;
-    max-height: 520px;
+    flex-grow: 1;
     padding-right: 4px;
+    min-height: 0;
+    height: 100%;
 }
 
 .overlay-card {
@@ -119,9 +122,7 @@
     border-radius: 6px;
     padding: 0.7rem 0.75rem;
     background: #ffffff;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
     cursor: pointer;
-    transition: background-color 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease;
 }
 
 .overlay-card + .overlay-card {
@@ -131,7 +132,6 @@
 .overlay-card.is-selected {
     border-color: #3d58f3;
     background: #eef2ff;
-    box-shadow: inset 4px 0 0 #3d58f3, 0 4px 12px rgba(61, 88, 243, 0.15);
 }
 
 .overlay-card.is-disabled {

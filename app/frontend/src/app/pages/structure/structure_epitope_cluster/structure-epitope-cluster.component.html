@@ -20,18 +20,9 @@
         <ng-container *ngIf="cluster.tcrPairLabel">
             <span>{{ cluster.tcrPairLabel }}</span>&nbsp;&nbsp;&nbsp;
         </ng-container>
-        <ng-container *ngIf="cluster.size > 1">
-            <span>Cluster size: {{ cluster.size }}</span>&nbsp;&nbsp;&nbsp;
-        </ng-container>
-        <ng-container *ngIf="cluster.length > 0">
-            <span>CDR3 length: {{ cluster.length }}</span>&nbsp;&nbsp;&nbsp;
-        </ng-container>
         <div class="sub header">
             <ng-container *ngIf="cluster.meta && cluster.meta.species">
                 <span>Species: {{ cluster.meta.species }}</span>&nbsp;&nbsp;&nbsp;
-            </ng-container>
-            <ng-container *ngIf="cluster.meta && cluster.meta.gene">
-                <span>Gene: {{ cluster.meta.gene }}</span>&nbsp;&nbsp;&nbsp;
             </ng-container>
             <ng-container *ngIf="cluster.meta && cluster.meta.mhcclass">
                 <span>MHC.class: {{ cluster.meta.mhcclass }}</span>&nbsp;&nbsp;&nbsp;
@@ -55,7 +46,7 @@
         </button>
     </div>
 </div> -->
-<div class="ui segment" style="clear: both;">
+<div class="ui segment structure-visualization-segment" style="clear: both;">
     <ng-container *ngIf="isHtmlVisualizationRequested(); else noVisualization">
         <ng-container *ngIf="hasHtmlVisualization(); else htmlLoading">
             <div class="structure-html" [innerHTML]="htmlVisualization"></div>

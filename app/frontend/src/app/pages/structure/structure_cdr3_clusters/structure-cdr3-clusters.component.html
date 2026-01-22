@@ -15,7 +15,7 @@
   -->
 
 <ng-container *ngIf="clusters && clusters.clusters && clusters.clustersNorm; else notLoaded">
-    <div class="ui segments" style="margin-top: 10px">
+    <div class="ui segments structure-cdr3-results">
         <ng-container *ngIf="clusters.clusters.length !== 0; else empty">
             <div class="ui segment header">
                 <div class="content">Structures found for {{ clusters.options.cdr3 }}</div>
@@ -33,11 +33,13 @@
                 </div>
                 results are shown.
             </div>
-            <div class="ui clearing segment" *ngFor="let entry of getClustersEntries()">
-                <h5 class="ui header">
-                    <div class="content">Informativeness: {{ entry.info.toFixed(3) }}&nbsp;&nbsp;&nbsp;{{ getCDR3SubstringHelpContent(entry) }}</div>
-                </h5>
-                <structure-epitope-cluster [cluster]="entry.cluster" [hit]="getCDR3Hitbox(entry)" [isNormalized]="options.isNormalized"></structure-epitope-cluster>
+            <div class="structure-cdr3-results__list">
+                <div class="ui clearing segment" *ngFor="let entry of getClustersEntries()">
+                    <h5 class="ui header">
+                        <div class="content">Informativeness: {{ entry.info.toFixed(3) }}&nbsp;&nbsp;&nbsp;{{ getCDR3SubstringHelpContent(entry) }}</div>
+                    </h5>
+                    <structure-epitope-cluster [cluster]="entry.cluster" [hit]="getCDR3Hitbox(entry)" [isNormalized]="options.isNormalized"></structure-epitope-cluster>
+                </div>
             </div>
         </ng-container>
         <ng-template #empty>

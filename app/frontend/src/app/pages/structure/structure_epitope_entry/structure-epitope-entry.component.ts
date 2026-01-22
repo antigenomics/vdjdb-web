@@ -14,7 +14,7 @@
  *     limitations under the License.
  */
 
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { SearchAvailabilityService } from 'pages/search/table/search/search-availability.service';
 import { IStructureCluster, IStructureClusterMeta, IStructureEpitope } from 'pages/structure/structure';
@@ -67,6 +67,7 @@ export class StructureEpitopeEntryComponent implements OnInit, OnDestroy {
     private subscription: Subscription;
     private overlaySelection: string[] = [];
     private overlayLayerMap: Map<string, { standard?: SafeHtml, simple?: SafeHtml }> = new Map<string, { standard?: SafeHtml, simple?: SafeHtml }>();
+    private overlayResizeObserver?: { observe(target: Element): void; disconnect(): void };
 
     public meta: IStructureClusterMeta;
     public isHidden: boolean = false;
@@ -74,9 +75,13 @@ export class StructureEpitopeEntryComponent implements OnInit, OnDestroy {
     public readonly overlayLimit: number = 5;
     public overlayLayerList: Array<{ id: string, markup: SafeHtml, mode: 'standard' | 'simple' }> = [];
     public overlayTableRows: IOverlayTableRow[] = [];
+    public overlayScrollerMaxHeight?: number;
     @Input('epitope') public epitope: IStructureEpitope;
     @Input('isNormalized') public isNormalized: boolean;
     @Output('onDiscard') public onDiscard = new EventEmitter<IStructureEpitope>();
+    @ViewChild('structureOverlay') public set structureOverlayRef(ref: ElementRef<HTMLElement> | undefined) {
+        this.attachOverlayObserver(ref);
+    }
 
     constructor(private structureService: StructureService, private availability: SearchAvailabilityService,
                 private changeDetector: ChangeDetectorRef, private sanitizer: DomSanitizer) {}
@@ -469,9 +474,55 @@ export class StructureEpitopeEntryComponent implements OnInit, OnDestroy {
     }
 
     public ngOnDestroy(): void {
+        this.disconnectOverlayObserver();
         this.overlaySelection.forEach((id) => this.structureService.releaseHtmlVisualizationMarkup(id));
         if (this.subscription) {
             this.subscription.unsubscribe();
         }
+    }
+
+    private attachOverlayObserver(ref: ElementRef<HTMLElement> | undefined): void {
+        this.disconnectOverlayObserver();
+        if (!ref || !ref.nativeElement) {
+            if (this.overlayScrollerMaxHeight !== undefined) {
+                this.overlayScrollerMaxHeight = undefined;
+                this.changeDetector.markForCheck();
+            }
+            return;
+        }
+
+        const element = ref.nativeElement;
+        const ResizeObserverCtor = (window as any).ResizeObserver as (new (callback: (entries: Array<{ contentRect: { height: number } }>) => void)
+            => { observe(target: Element): void; disconnect(): void });
+        if (!ResizeObserverCtor) {
+            this.setOverlayScrollerMaxHeight(element.getBoundingClientRect().height);
+            return;
+        }
+
+        this.overlayResizeObserver = new ResizeObserverCtor((entries: Array<{ contentRect: { height: number } }>) => {
+            if (!entries || entries.length === 0) {
+                return;
+            }
+            const entry = entries[entries.length - 1];
+            this.setOverlayScrollerMaxHeight(entry.contentRect.height);
+        });
+        this.overlayResizeObserver.observe(element);
+        this.setOverlayScrollerMaxHeight(element.getBoundingClientRect().height);
+    }
+
+    private disconnectOverlayObserver(): void {
+        if (this.overlayResizeObserver) {
+            this.overlayResizeObserver.disconnect();
+            this.overlayResizeObserver = undefined;
+        }
+    }
+
+    private setOverlayScrollerMaxHeight(height: number): void {
+        const nextHeight = Math.max(0, Math.round(height));
+        if (this.overlayScrollerMaxHeight === nextHeight) {
+            return;
+        }
+        this.overlayScrollerMaxHeight = nextHeight;
+        this.changeDetector.markForCheck();
     }
 }
