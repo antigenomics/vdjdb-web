@@ -15,6 +15,8 @@ qodana.yaml
 qodana.sarif.json
 /.history
 /.vscode
+/.gemini
+.aiexclude
 
 # MacOs
 .DS_Store
@@ -24,7 +26,7 @@ Thumbs.db
 /database/test*
 /conf/application.local.conf
 
-# Front end build artifacts
+# Frontend build artifacts
 /public/bundles
 
 # Docs build directories
