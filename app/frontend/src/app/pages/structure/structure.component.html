@@ -14,18 +14,30 @@
   ~     limitations under the License.
   -->
 
-<div class="ui main content text fade slow element soft-margin" style="padding-bottom: 15px; height: 100%; overflow: hidden;">
-    <div class="ui raised segments" style="height: 85%">
+<div class="ui main content text fade slow element soft-margin"
+     style="padding-bottom: 15px;"
+     [style.height]="isStateSearchCDR3() ? '100%' : 'auto'"
+     [style.overflow]="isStateSearchCDR3() ? 'hidden' : 'visible'">
+    <div class="ui raised segments" [style.height]="isStateSearchCDR3() ? '85%' : 'auto'">
         <h3 class="ui top attached header">TCR structure database</h3>
-        <div class="ui attached segment" style="padding: 0.5rem; border-bottom: 0;">
+        <div class="ui attached segment" style="padding: 0.5rem;">
             <structure-context-header [metadata]="metadata | async"></structure-context-header>
         </div>
-        <div class="ui attached segment structure-results-segment" style="height: 100%; border-top: 0; padding: 0;">
+        <div class="ui attached segment structure-results-segment"
+             style="border-top: 0; padding: 0;"
+             [style.height]="isStateSearchCDR3() ? '100%' : 'auto'">
             <div class="ui active inverted dimmer" *ngIf="isEpitopesLoading() | async">
                 <div class="ui text loader">Loading</div>
             </div>
-            <div class="ui grid" style="height: 100%; overflow: hidden">
-                <div class="ui sixteen wide column" style="overflow-x: hidden; overflow-y: auto; height: 100%" #EpitopesContainer>
+            <div class="ui grid"
+                 style="margin-top: 0;"
+                 [style.height]="isStateSearchCDR3() ? '100%' : 'auto'"
+                 [style.overflow]="isStateSearchCDR3() ? 'hidden' : 'visible'">
+                <div class="ui sixteen wide column"
+                     style="overflow-x: hidden;"
+                     [style.overflow-y]="isStateSearchCDR3() ? 'auto' : 'visible'"
+                     [style.height]="isStateSearchCDR3() ? '100%' : 'auto'"
+                     #EpitopesContainer>
                     <structure-epitopes *ngIf="isStateSearchTree()" [options]="options | async" [epitopes]="epitopes | async"></structure-epitopes>
                     <structure-cdr3-clusters *ngIf="isStateSearchCDR3()" [options]="options | async" [clusters]="clusters | async"></structure-cdr3-clusters>
                 </div>

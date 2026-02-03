@@ -14,7 +14,7 @@
  *     limitations under the License.
  */
 
-import { ChangeDetectionStrategy, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DoCheck, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import {
   IStructureCDR3SearchResult,
@@ -35,7 +35,7 @@ import { ContentWrapperService } from '../../content-wrapper.service';
   templateUrl:     './structure.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class StructurePageComponent implements OnInit, OnDestroy {
+export class StructurePageComponent implements OnInit, OnDestroy, DoCheck {
   private static readonly pageScrollEventDebounceTimeout: number = 10;
   private static readonly pageResizeEventDebounceTimeout: number = 200;
 
@@ -43,6 +43,7 @@ export class StructurePageComponent implements OnInit, OnDestroy {
   private onResizeObservable: Subscription;
   private routeSubscription: Subscription;
   private lastQuerySignature: string | null = null;
+  private lastSearchState: StructureSearchState | null = null;
 
   public readonly metadata: Observable<IStructuresMetadata>;
   public readonly selected: Observable<IStructuresMetadataTreeLevelValue[]>;
@@ -64,8 +65,6 @@ export class StructurePageComponent implements OnInit, OnDestroy {
   }
 
   public ngOnInit(): void {
-    this.contentWrapper.blockScrolling();
-
     this.routeSubscription = this.route.queryParamMap.subscribe((params) => {
       const species = params.get('species') || '';
       const tcrChain = params.get('tcr_chain') || '';
@@ -118,6 +117,12 @@ export class StructurePageComponent implements OnInit, OnDestroy {
         .pipe(debounce(() => timer(StructurePageComponent.pageResizeEventDebounceTimeout))).subscribe(() => {
           this.structureService.fireResizeUpdateEvent();
         });
+
+    this.syncScrollBlocking();
+  }
+
+  public ngDoCheck(): void {
+    this.syncScrollBlocking();
   }
 
   public isEpitopesLoading(): Observable<boolean> {
@@ -139,5 +144,18 @@ export class StructurePageComponent implements OnInit, OnDestroy {
 
   public isStateSearchCDR3(): boolean {
     return this.structureService.getSearchState() === StructureSearchState.SEARCH_CDR3;
+  }
+
+  private syncScrollBlocking(): void {
+    const nextState = this.structureService.getSearchState();
+    if (this.lastSearchState === nextState) {
+      return;
+    }
+    this.lastSearchState = nextState;
+    if (nextState === StructureSearchState.SEARCH_CDR3) {
+      this.contentWrapper.blockScrolling();
+    } else {
+      this.contentWrapper.unblockScrolling();
+    }
   }
 }
