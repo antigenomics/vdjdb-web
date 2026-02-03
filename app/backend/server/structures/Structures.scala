@@ -260,6 +260,30 @@ case class Structures @Inject()(database: Database)(implicit ec: ExecutionContex
       table.replaceColumn("mhc.b", trimmed)
     }
 
+    val values = new java.util.ArrayList[String](table.rowCount())
+    if (table.columnNames().contains("mhc.a") && table.columnNames().contains("mhc.b")) {
+      val mhcACol = table.stringColumn("mhc.a")
+      val mhcBCol = table.stringColumn("mhc.b")
+      var idx = 0
+      while (idx < table.rowCount()) {
+        val mhcA = Option(mhcACol.get(idx)).map(_.trim).getOrElse("")
+        val mhcB = Option(mhcBCol.get(idx)).map(_.trim).getOrElse("")
+        if (mhcA.nonEmpty && mhcB.nonEmpty) {
+          values.add(s"$mhcA/$mhcB")
+        } else {
+          values.add("")
+        }
+        idx += 1
+      }
+    } else {
+      var idx = 0
+      while (idx < table.rowCount()) {
+        values.add("")
+        idx += 1
+      }
+    }
+    table.addColumns(StringColumn.create("mhc.pair", values))
+
     table  // tech.tablesaw read using options
   }
 
@@ -424,7 +448,7 @@ case class Structures @Inject()(database: Database)(implicit ec: ExecutionContex
   }
 
   // ---------- metadata tree built from pruned table ----------
-  private val metadataLevels = Seq("mhc.class", "mhc.a", "antigen.epitope")
+  private val metadataLevels = Seq("mhc.class", "mhc.pair", "antigen.epitope")
   private val metadata: MotifsMetadata =
     MotifsMetadata.generateMetadataFromLevels(structures, metadataLevels)
 

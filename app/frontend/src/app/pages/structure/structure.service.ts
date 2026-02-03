@@ -167,8 +167,8 @@ export class StructureService {
       if (!mhcClassNode || !mhcClassNode.next) { return; }
       pathNodes.push(mhcClassNode);
 
-      const normalizedGene = this.normalizeMhcGene(filters.gene);
-      const mhcNode = mhcClassNode.next.values.find((v) => this.normalizeMhcGene(v.value) === normalizedGene);
+      const normalizedGene = this.normalizeMhcPair(filters.gene);
+      const mhcNode = mhcClassNode.next.values.find((v) => this.normalizeMhcPair(v.value) === normalizedGene);
       if (!mhcNode || !mhcNode.next) { return; }
       pathNodes.push(mhcNode);
 
@@ -182,7 +182,7 @@ export class StructureService {
     const treeFilter: IStructuresSearchTreeFilter = {
       entries: [
         { name: 'mhc.class', value: filters.mhcClass },
-        { name: 'mhc.a', value: filters.gene },
+        { name: 'mhc.pair', value: filters.gene },
         { name: 'antigen.epitope', value: filters.epitopeSeq }
       ]
     };
@@ -497,7 +497,7 @@ export class StructureService {
     if (!metadata || !metadata.root || !Array.isArray(entries) || entries.length === 0) {
       return undefined;
     }
-    const relevant = entries.filter((entry) => entry && [ 'mhc.class', 'mhc.a', 'antigen.epitope' ].indexOf(entry.name) !== -1);
+    const relevant = entries.filter((entry) => entry && [ 'mhc.class', 'mhc.pair', 'antigen.epitope' ].indexOf(entry.name) !== -1);
     if (relevant.length === 0) {
       return undefined;
     }
@@ -508,8 +508,8 @@ export class StructureService {
         return undefined;
       }
       const value = level.values.find((candidate) => {
-        if (entry.name === 'mhc.a') {
-          return this.normalizeMhcGene(candidate.value) === this.normalizeMhcGene(entry.value);
+        if (entry.name === 'mhc.pair') {
+          return this.normalizeMhcPair(candidate.value) === this.normalizeMhcPair(entry.value);
         }
         return candidate.value.toLowerCase() === entry.value.toLowerCase();
       });
@@ -630,11 +630,12 @@ export class StructureService {
     });
   }
 
-  private normalizeMhcGene(value: string | undefined | null): string {
+  private normalizeMhcPair(value: string | undefined | null): string {
     if (!value) {
       return '';
     }
-    return value.replace(/:.+/, '').trim().toLowerCase();
+    const parts = value.split('/').map((part) => part.replace(/:.+/, '').trim()).filter((part) => part.length > 0);
+    return parts.join('/').toLowerCase();
   }
 
   private ensureVisualization(cluster: IStructureCluster | undefined): void {

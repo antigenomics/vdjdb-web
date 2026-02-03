@@ -101,7 +101,7 @@ export class StructureContextHeaderComponent implements OnInit, OnDestroy {
     this.epitopeValue = null;
     this.updateQueryParams({
       mhc_class: this.mhcClassValue,
-      gene: this.normalizeGeneParam(this.mhcGeneValue),
+      gene: this.normalizeMhcPairParam(this.mhcGeneValue),
       epitope_seq: null,
       query: null
     });
@@ -111,7 +111,7 @@ export class StructureContextHeaderComponent implements OnInit, OnDestroy {
     this.epitopeValue = value.value;
     this.updateQueryParams({
       mhc_class: this.mhcClassValue,
-      gene: this.normalizeGeneParam(this.mhcGeneValue),
+      gene: this.normalizeMhcPairParam(this.mhcGeneValue),
       epitope_seq: this.epitopeValue,
       structure_id: null,
       query: null
@@ -216,8 +216,8 @@ export class StructureContextHeaderComponent implements OnInit, OnDestroy {
     if (!parent || !parent.next || !geneParam) {
       return undefined;
     }
-    const normalized = this.normalizeGeneParam(geneParam).toLowerCase();
-    return parent.next.values.find((node) => this.normalizeGeneParam(node.value).toLowerCase() === normalized);
+    const normalized = this.normalizeMhcPairParam(geneParam).toLowerCase();
+    return parent.next.values.find((node) => this.normalizeMhcPairParam(node.value).toLowerCase() === normalized);
   }
 
   private findEpitopeNode(parent: IStructuresMetadataTreeLevelValue | undefined,
@@ -229,10 +229,11 @@ export class StructureContextHeaderComponent implements OnInit, OnDestroy {
     return parent.next.values.find((node) => node.value.toLowerCase() === normalized);
   }
 
-  private normalizeGeneParam(value: string | null): string {
+  private normalizeMhcPairParam(value: string | null): string {
     if (!value) {
       return '';
     }
-    return value.replace(/:.+/, '').trim();
+    const parts = value.split('/').map((part) => part.replace(/:.+/, '').trim()).filter((part) => part.length > 0);
+    return parts.join('/');
   }
 }

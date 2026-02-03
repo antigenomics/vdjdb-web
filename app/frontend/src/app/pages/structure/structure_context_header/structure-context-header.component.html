@@ -18,9 +18,9 @@
     <div class="ui form structure-context-form">
         <div class="fields">
             <div class="four wide field">
-                <label>MHC.class</label>
+                <label>MHC class</label>
                 <div class="ui fluid selection dropdown" dropdown [content]="mhcClassMenu">
-                    <div class="text">{{ mhcClassValue || 'Select MHC.class' }}</div>
+                    <div class="text">{{ mhcClassValue || 'Select MHC class' }}</div>
                     <i class="dropdown icon"></i>
                     <div class="menu fade element slow padded" tabindex="-1" #mhcClassMenu>
                         <a class="item" *ngFor="let value of mhcClassValues" (click)="onMhcClassSelect(value)">{{ value.value }}</a>
@@ -28,9 +28,9 @@
                 </div>
             </div>
             <div class="four wide field">
-                <label>MHC.A</label>
+                <label>MHC A/B</label>
                 <div class="ui fluid selection dropdown" dropdown [content]="mhcGeneMenu" [ngClass]="{ 'disabled': !mhcClassValue }">
-                    <div class="text">{{ mhcGeneValue || 'Select MHC.A' }}</div>
+                    <div class="text">{{ mhcGeneValue || 'Select MHC A/B' }}</div>
                     <i class="dropdown icon"></i>
                     <div class="menu fade element slow padded" tabindex="-1" #mhcGeneMenu>
                         <a class="item" *ngFor="let value of mhcGeneValues" (click)="onMhcGeneSelect(value)">{{ value.value }}</a>

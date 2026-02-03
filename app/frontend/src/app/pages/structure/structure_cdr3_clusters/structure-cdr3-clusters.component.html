@@ -15,27 +15,27 @@
   -->
 
 <ng-container *ngIf="clusters && clusters.clusters && clusters.clustersNorm; else notLoaded">
-    <div class="ui segments structure-cdr3-results">
+    <div class="structure-cdr3-results">
         <ng-container *ngIf="clusters.clusters.length !== 0; else empty">
-            <div class="ui segment header">
-                <div class="content">Structures found for {{ clusters.options.cdr3 }}</div>
-            </div>
-            <div class="ui clearing segment">
-                Top
-                <div class="ui mini input selection dropdown" dropdown [content]="content" style="width: 50px; min-width: 50px">
-                    <div class="text">{{ top }}</div>
-                    <i class="dropdown icon"></i>
-                    <div class="menu fade element slow padded" tabindex="-1" #content>
-                        <div class="item" (click)="setTop(5)">5</div>
-                        <div class="item" (click)="setTop(10)">10</div>
-                        <div class="item" (click)="setTop(15)">15</div>
+            <div class="structure-cdr3-results__header">
+                <div class="structure-cdr3-results__title">Structures found for {{ clusters.options.cdr3 }}</div>
+                <div class="structure-cdr3-results__controls">
+                    Top
+                    <div class="ui mini input selection dropdown" dropdown [content]="content" style="width: 50px; min-width: 50px">
+                        <div class="text">{{ top }}</div>
+                        <i class="dropdown icon"></i>
+                        <div class="menu fade element slow padded" tabindex="-1" #content>
+                            <div class="item" (click)="setTop(5)">5</div>
+                            <div class="item" (click)="setTop(10)">10</div>
+                            <div class="item" (click)="setTop(15)">15</div>
+                        </div>
                     </div>
+                    results are shown.
                 </div>
-                results are shown.
             </div>
             <div class="structure-cdr3-results__list">
-                <div class="ui clearing segment" *ngFor="let entry of getClustersEntries()">
-                    <h5 class="ui header">
+                <div class="structure-cdr3-results__entry" *ngFor="let entry of getClustersEntries()">
+                    <h5 class="ui header structure-cdr3-results__entry-title">
                         <div class="content">Informativeness: {{ entry.info.toFixed(3) }}&nbsp;&nbsp;&nbsp;{{ getCDR3SubstringHelpContent(entry) }}</div>
                     </h5>
                     <structure-epitope-cluster [cluster]="entry.cluster" [hit]="getCDR3Hitbox(entry)" [isNormalized]="options.isNormalized"></structure-epitope-cluster>
@@ -43,7 +43,7 @@
             </div>
         </ng-container>
         <ng-template #empty>
-            <div class="ui segment">
+            <div class="structure-cdr3-results__empty">
                 <h2 class="ui center aligned icon header" style="margin-top: 25px">No clusters found for {{ clusters.options.cdr3 }}</h2>
             </div>
         </ng-template>

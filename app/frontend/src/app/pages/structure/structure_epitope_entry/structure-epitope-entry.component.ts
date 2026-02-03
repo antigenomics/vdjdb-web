@@ -19,6 +19,7 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { SearchAvailabilityService } from 'pages/search/table/search/search-availability.service';
 import { IStructureCluster, IStructureClusterMeta, IStructureEpitope } from 'pages/structure/structure';
 import { StructureService, StructuresServiceEvents } from 'pages/structure/structure.service';
+import { StructureZoomController } from 'pages/structure/structure_zoom/structure-zoom.controller';
 import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
 
@@ -76,6 +77,7 @@ export class StructureEpitopeEntryComponent implements OnInit, OnDestroy {
     public overlayLayerList: Array<{ id: string, markup: SafeHtml, mode: 'standard' | 'simple' }> = [];
     public overlayTableRows: IOverlayTableRow[] = [];
     public overlayScrollerMaxHeight?: number;
+    public zoomState: StructureZoomController;
     @Input('epitope') public epitope: IStructureEpitope;
     @Input('isNormalized') public isNormalized: boolean;
     @Output('onDiscard') public onDiscard = new EventEmitter<IStructureEpitope>();
@@ -84,7 +86,9 @@ export class StructureEpitopeEntryComponent implements OnInit, OnDestroy {
     }
 
     constructor(private structureService: StructureService, private availability: SearchAvailabilityService,
-                private changeDetector: ChangeDetectorRef, private sanitizer: DomSanitizer) {}
+                private changeDetector: ChangeDetectorRef, private sanitizer: DomSanitizer) {
+        this.zoomState = new StructureZoomController(this.changeDetector);
+    }
 
     public ngOnInit(): void {
         this.meta = this.epitope.clusters[0].meta;
@@ -125,8 +129,20 @@ export class StructureEpitopeEntryComponent implements OnInit, OnDestroy {
         return this.overlaySelection.length;
     }
 
-    public onRowToggle(row: IOverlayTableRow): void {
+    public get overlaySelectionRows(): IOverlayTableRow[] {
+        if (!this.overlaySelection || this.overlaySelection.length === 0) {
+            return [];
+        }
+        return this.overlaySelection
+            .map((id) => this.overlayTableRows.find((row) => row.cluster && row.cluster.clusterId === id))
+            .filter((row): row is IOverlayTableRow => !!row);
+    }
+
+    public onRowToggle(row: IOverlayTableRow, event?: MouseEvent): void {
         if (!row) {
+            return;
+        }
+        if (this.shouldSkipToggle(event)) {
             return;
         }
         this.onOverlaySelectionChange(row.cluster, !this.isClusterSelected(row.cluster));
@@ -190,6 +206,23 @@ export class StructureEpitopeEntryComponent implements OnInit, OnDestroy {
         const step = steps > 0 ? range / steps : range;
         const value = 1 - step * index;
         return value < minOpacity ? minOpacity : value;
+    }
+
+    public formatChainLabel(v: string, cdr3: string, j: string): string {
+        const vLabel = v || '-';
+        const cdr3Label = cdr3 || '-';
+        const jLabel = j || '-';
+        return `${vLabel}-${cdr3Label}-${jLabel}`;
+    }
+
+    public onStripToggle(row: IOverlayTableRow, event?: MouseEvent): void {
+        if (!row) {
+            return;
+        }
+        if (this.shouldSkipToggle(event)) {
+            return;
+        }
+        this.onOverlaySelectionChange(row.cluster, false);
     }
 
     private async ensureOverlayLayer(cluster: IStructureCluster): Promise<void> {
@@ -479,6 +512,7 @@ export class StructureEpitopeEntryComponent implements OnInit, OnDestroy {
         if (this.subscription) {
             this.subscription.unsubscribe();
         }
+        this.zoomState.destroy();
     }
 
     private attachOverlayObserver(ref: ElementRef<HTMLElement> | undefined): void {
@@ -524,5 +558,16 @@ export class StructureEpitopeEntryComponent implements OnInit, OnDestroy {
         }
         this.overlayScrollerMaxHeight = nextHeight;
         this.changeDetector.markForCheck();
+    }
+
+    private shouldSkipToggle(event?: MouseEvent): boolean {
+        if (!event) {
+            return false;
+        }
+        const selection = window.getSelection();
+        if (!selection) {
+            return false;
+        }
+        return selection.toString().trim().length > 0;
     }
 }

@@ -17,10 +17,10 @@
 <div class="ui main content text fade slow element soft-margin" style="padding-bottom: 15px; height: 100%; overflow: hidden;">
     <div class="ui raised segments" style="height: 85%">
         <h3 class="ui top attached header">TCR structure database</h3>
-        <div class="ui attached segment" style="padding: 0.5rem">
+        <div class="ui attached segment" style="padding: 0.5rem; border-bottom: 0;">
             <structure-context-header [metadata]="metadata | async"></structure-context-header>
         </div>
-        <div class="ui attached segment" style="height: 100%">
+        <div class="ui attached segment structure-results-segment" style="height: 100%; border-top: 0; padding: 0;">
             <div class="ui active inverted dimmer" *ngIf="isEpitopesLoading() | async">
                 <div class="ui text loader">Loading</div>
             </div>

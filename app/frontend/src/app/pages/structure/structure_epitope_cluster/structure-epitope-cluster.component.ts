@@ -14,27 +14,31 @@
  *     limitations under the License.
  */
 
-import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
+import { Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { ChangeDetectorRef } from '@angular/core';
 import { IStructureCluster } from 'pages/structure/structure';
 import { StructureService } from 'pages/structure/structure.service';
+import { StructureZoomController } from 'pages/structure/structure_zoom/structure-zoom.controller';
 
 @Component({
     selector: 'structure-epitope-cluster',
     templateUrl: './structure-epitope-cluster.component.html',
     styleUrls: ['./structure-epitope-cluster.component.css']
 })
-export class StructureEpitopeClusterComponent implements OnInit, OnChanges {
+export class StructureEpitopeClusterComponent implements OnInit, OnChanges, OnDestroy {
     @Input('cluster') public cluster: IStructureCluster;
     @Input('hit') public hit: string;
     @Input('isNormalized') public isNormalized: boolean;
     public htmlVisualization: SafeHtml | undefined;
     public isHtmlVisualizationLoading: boolean = false;
+    public zoomState: StructureZoomController;
 
     constructor(private structureService: StructureService,
                 private sanitizer: DomSanitizer,
-                private changeDetector: ChangeDetectorRef) {}
+                private changeDetector: ChangeDetectorRef) {
+        this.zoomState = new StructureZoomController(this.changeDetector);
+    }
 
     public ngOnInit(): void {
         this.loadHtmlVisualization();
@@ -44,6 +48,10 @@ export class StructureEpitopeClusterComponent implements OnInit, OnChanges {
         if (changes.cluster && !changes.cluster.firstChange) {
             this.loadHtmlVisualization();
         }
+    }
+
+    public ngOnDestroy(): void {
+        this.zoomState.destroy();
     }
 
     public exportCID(): void {

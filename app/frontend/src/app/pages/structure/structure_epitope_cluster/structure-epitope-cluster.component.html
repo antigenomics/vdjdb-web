@@ -14,7 +14,7 @@
   ~     limitations under the License.
   -->
 
-<h5 class="ui left floated header" style="margin-top: 10px; margin-bottom: 10px" #HeaderContent>
+<h5 class="ui header structure-epitope-cluster__header" #HeaderContent>
     <div class="content with-options">
         <span>ID: {{ cluster.displayId || 'n/a' }}</span>&nbsp;&nbsp;&nbsp;
         <ng-container *ngIf="cluster.tcrPairLabel">
@@ -25,16 +25,13 @@
                 <span>Species: {{ cluster.meta.species }}</span>&nbsp;&nbsp;&nbsp;
             </ng-container>
             <ng-container *ngIf="cluster.meta && cluster.meta.mhcclass">
-                <span>MHC.class: {{ cluster.meta.mhcclass }}</span>&nbsp;&nbsp;&nbsp;
+                <span>MHC class: {{ cluster.meta.mhcclass }}</span>&nbsp;&nbsp;&nbsp;
             </ng-container>
-            <ng-container *ngIf="cluster.meta && cluster.meta.mhca">
-                <span>MHC.A: {{ cluster.meta.mhca }}</span>&nbsp;&nbsp;&nbsp;
+            <ng-container *ngIf="cluster.meta && (cluster.meta.mhca || cluster.meta.mhcb)">
+                <span>MHC A/B: {{ cluster.meta.mhca || '-' }}/{{ cluster.meta.mhcb || '-' }}</span>&nbsp;&nbsp;&nbsp;
             </ng-container>
-            <ng-container *ngIf="cluster.meta && cluster.meta.mhcb">
-                <span>MHC.B: {{ cluster.meta.mhcb }}</span>&nbsp;&nbsp;&nbsp;
-            </ng-container>
-            <span>Antigen.Gene: {{ cluster.meta?.antigenGene }}</span>&nbsp;&nbsp;&nbsp;
-            <span>Antigen.Species: {{ cluster.meta?.antigenSpecies }}</span>&nbsp;&nbsp;&nbsp;
+            <span>Antigen.Gene: {{ cluster.meta && cluster.meta.antigenGene ? cluster.meta.antigenGene : '-' }}</span>&nbsp;&nbsp;&nbsp;
+            <span>Antigen.Species: {{ cluster.meta && cluster.meta.antigenSpecies ? cluster.meta.antigenSpecies : '-' }}</span>&nbsp;&nbsp;&nbsp;
         </div>
     </div>
 </h5>
@@ -46,10 +43,28 @@
         </button>
     </div>
 </div> -->
-<div class="ui segment structure-visualization-segment" style="clear: both;">
+<div class="structure-visualization-segment" style="clear: both;">
     <ng-container *ngIf="isHtmlVisualizationRequested(); else noVisualization">
         <ng-container *ngIf="hasHtmlVisualization(); else htmlLoading">
-            <div class="structure-html" [innerHTML]="htmlVisualization"></div>
+            <div class="structure-zoom-viewer">
+                <div class="structure-zoom-viewer__content" (mousedown)="zoomState.onMouseDown($event)">
+                    <div class="structure-zoom-viewer__canvas"
+                         [class.is-dragging]="zoomState.isDragging"
+                         [style.transform]="zoomState.transform">
+                        <div class="structure-html" [innerHTML]="htmlVisualization"></div>
+                    </div>
+                </div>
+                <div class="structure-zoom">
+                    <button class="structure-zoom__button" type="button" (click)="zoomState.increaseZoom()">+</button>
+                    <input class="structure-zoom__slider" type="range"
+                           [min]="zoomState.zoomMin"
+                           [max]="zoomState.zoomMax"
+                           [step]="zoomState.zoomStep"
+                           [value]="zoomState.zoomLevel"
+                           (input)="zoomState.onZoomInput($event)">
+                    <button class="structure-zoom__button" type="button" (click)="zoomState.decreaseZoom()">-</button>
+                </div>
+            </div>
         </ng-container>
         <ng-template #htmlLoading>
             <div class="structure-html structure-html--loading">
