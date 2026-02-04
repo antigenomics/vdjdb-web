@@ -84,6 +84,9 @@ export class StructureEpitopeEntryComponent implements OnInit, OnDestroy {
     @ViewChild('structureOverlay') public set structureOverlayRef(ref: ElementRef<HTMLElement> | undefined) {
         this.attachOverlayObserver(ref);
     }
+    @ViewChild('zoomCanvas') public set zoomCanvasRef(ref: ElementRef<HTMLElement> | undefined) {
+        this.zoomState.attachCanvas(ref ? ref.nativeElement : undefined);
+    }
 
     constructor(private structureService: StructureService, private availability: SearchAvailabilityService,
                 private changeDetector: ChangeDetectorRef, private sanitizer: DomSanitizer) {

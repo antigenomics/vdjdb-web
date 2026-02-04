@@ -97,7 +97,8 @@
                         <div class="structure-overlay__content" (mousedown)="zoomState.onMouseDown($event)">
                             <div class="structure-overlay__canvas"
                                  [class.is-dragging]="zoomState.isDragging"
-                                 [style.transform]="zoomState.transform">
+                                 [style.transform]="zoomState.transform"
+                                 #zoomCanvas>
                                 <div class="structure-overlay__base">
                                     <div class="structure-html" [innerHTML]="overlayLayerList[0].markup"></div>
                                 </div>

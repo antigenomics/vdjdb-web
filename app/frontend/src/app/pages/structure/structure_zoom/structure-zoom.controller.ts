@@ -32,6 +32,7 @@ export class StructureZoomController {
     private panStartY: number = 0;
     private dragMoveHandler: (event: MouseEvent) => void;
     private dragEndHandler: (event: MouseEvent) => void;
+    private canvasElement?: HTMLElement;
 
     constructor(private changeDetector: ChangeDetectorRef) {
         this.dragMoveHandler = (event: MouseEvent) => {
@@ -84,6 +85,12 @@ export class StructureZoomController {
         window.removeEventListener('mouseup', this.dragEndHandler);
         window.removeEventListener('mouseleave', this.dragEndHandler);
         this.isDragging = false;
+        this.canvasElement = undefined;
+    }
+
+    public attachCanvas(element: HTMLElement | null | undefined): void {
+        this.canvasElement = element || undefined;
+        this.applyTransform();
     }
 
     private setZoom(value: number): void {
@@ -121,5 +128,12 @@ export class StructureZoomController {
 
     private updateTransform(): void {
         this.transform = `translate(${this.panX}px, ${this.panY}px) scale(${this.zoomLevel})`;
+        this.applyTransform();
+    }
+
+    private applyTransform(): void {
+        if (this.canvasElement) {
+            this.canvasElement.style.transform = this.transform;
+        }
     }
 }

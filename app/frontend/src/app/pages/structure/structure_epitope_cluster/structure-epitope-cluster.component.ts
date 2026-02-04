@@ -14,9 +14,8 @@
  *     limitations under the License.
  */
 
-import { Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, Input, OnChanges, OnDestroy, OnInit, SimpleChanges, ViewChild } from '@angular/core';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
-import { ChangeDetectorRef } from '@angular/core';
 import { IStructureCluster } from 'pages/structure/structure';
 import { StructureService } from 'pages/structure/structure.service';
 import { StructureZoomController } from 'pages/structure/structure_zoom/structure-zoom.controller';
@@ -33,6 +32,9 @@ export class StructureEpitopeClusterComponent implements OnInit, OnChanges, OnDe
     public htmlVisualization: SafeHtml | undefined;
     public isHtmlVisualizationLoading: boolean = false;
     public zoomState: StructureZoomController;
+    @ViewChild('zoomCanvas') public set zoomCanvasRef(ref: ElementRef<HTMLElement> | undefined) {
+        this.zoomState.attachCanvas(ref ? ref.nativeElement : undefined);
+    }
 
     constructor(private structureService: StructureService,
                 private sanitizer: DomSanitizer,

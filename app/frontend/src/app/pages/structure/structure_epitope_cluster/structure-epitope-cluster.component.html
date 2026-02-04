@@ -50,7 +50,8 @@
                 <div class="structure-zoom-viewer__content" (mousedown)="zoomState.onMouseDown($event)">
                     <div class="structure-zoom-viewer__canvas"
                          [class.is-dragging]="zoomState.isDragging"
-                         [style.transform]="zoomState.transform">
+                         [style.transform]="zoomState.transform"
+                         #zoomCanvas>
                         <div class="structure-html" [innerHTML]="htmlVisualization"></div>
                     </div>
                 </div>
