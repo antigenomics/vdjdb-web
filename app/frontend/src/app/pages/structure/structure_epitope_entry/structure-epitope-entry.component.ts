@@ -132,15 +132,6 @@ export class StructureEpitopeEntryComponent implements OnInit, OnDestroy {
         return this.overlaySelection.length;
     }
 
-    public get overlaySelectionRows(): IOverlayTableRow[] {
-        if (!this.overlaySelection || this.overlaySelection.length === 0) {
-            return [];
-        }
-        return this.overlaySelection
-            .map((id) => this.overlayTableRows.find((row) => row.cluster && row.cluster.clusterId === id))
-            .filter((row): row is IOverlayTableRow => !!row);
-    }
-
     public onRowToggle(row: IOverlayTableRow, event?: MouseEvent): void {
         if (!row) {
             return;
@@ -209,23 +200,6 @@ export class StructureEpitopeEntryComponent implements OnInit, OnDestroy {
         const step = steps > 0 ? range / steps : range;
         const value = 1 - step * index;
         return value < minOpacity ? minOpacity : value;
-    }
-
-    public formatChainLabel(v: string, cdr3: string, j: string): string {
-        const vLabel = v || '-';
-        const cdr3Label = cdr3 || '-';
-        const jLabel = j || '-';
-        return `${vLabel}-${cdr3Label}-${jLabel}`;
-    }
-
-    public onStripToggle(row: IOverlayTableRow, event?: MouseEvent): void {
-        if (!row) {
-            return;
-        }
-        if (this.shouldSkipToggle(event)) {
-            return;
-        }
-        this.onOverlaySelectionChange(row.cluster, false);
     }
 
     private async ensureOverlayLayer(cluster: IStructureCluster): Promise<void> {

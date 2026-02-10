@@ -55,10 +55,10 @@
 }
 
 .overlay-header {
-    display: grid;
-    grid-template-columns: 320px minmax(0, 1fr) auto;
+    display: flex;
     align-items: center;
-    column-gap: 1rem;
+    justify-content: space-between;
+    gap: 1rem;
     font-size: 0.95rem;
     color: #303030;
 }
@@ -89,61 +89,6 @@
     border: 1px solid rgba(0, 0, 0, 0.08);
     border-radius: 8px;
     background: linear-gradient(180deg, #ffffff 0%, #f4f6fb 100%);
-    justify-self: end;
-}
-
-.overlay-header__strip {
-    min-width: 0;
-}
-
-.overlay-strip {
-    display: flex;
-    gap: 0.5rem;
-    overflow-x: auto;
-    padding: 4px 0;
-    scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
-}
-
-.overlay-strip.is-empty {
-    min-height: 36px;
-}
-
-.overlay-strip__card {
-    flex: 0 0 auto;
-    min-width: 220px;
-    max-width: 320px;
-    border: 1px solid rgba(0, 0, 0, 0.08);
-    border-radius: 6px;
-    padding: 0.4rem 0.6rem;
-    background: #ffffff;
-    cursor: pointer;
-}
-
-.overlay-strip__row {
-    display: grid;
-    grid-template-columns: auto minmax(0, 1fr);
-    column-gap: 8px;
-    align-items: center;
-    font-size: 0.78rem;
-    line-height: 1.2;
-    color: #1f1f1f;
-}
-
-.overlay-strip__row + .overlay-strip__row {
-    margin-top: 2px;
-}
-
-.overlay-strip__id {
-    font-weight: 700;
-    color: #1f1f1f;
-    min-width: 24px;
-}
-
-.overlay-strip__label {
-    font-family: "Menlo", "Consolas", "Courier New", monospace;
-    color: #304ffe;
-    font-weight: 700;
-    white-space: nowrap;
 }
 
 .overlay-header__counter-value {

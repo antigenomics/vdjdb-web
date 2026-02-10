@@ -36,21 +36,6 @@
                     <div class="overlay-header__title">Select up to {{ overlayLimit }} structures</div>
                     <div class="overlay-header__hint">Click a card to add/remove it from overlay</div>
                 </div>
-                <div class="overlay-header__strip">
-                    <div class="overlay-strip" [class.is-empty]="overlaySelectionRows.length === 0">
-                        <div class="overlay-strip__card" *ngFor="let row of overlaySelectionRows; trackBy: trackRowBy"
-                             (click)="onStripToggle(row, $event)">
-                            <div class="overlay-strip__row">
-                                <span class="overlay-strip__id">{{ row.alphaClusterId || '-' }}</span>
-                                <span class="overlay-strip__label">{{ formatChainLabel(row.trav, row.cdr3a, row.traj) }}</span>
-                            </div>
-                            <div class="overlay-strip__row">
-                                <span class="overlay-strip__id">{{ row.betaClusterId || '-' }}</span>
-                                <span class="overlay-strip__label">{{ formatChainLabel(row.trbv, row.cdr3b, row.trbj) }}</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
                 <div class="overlay-header__counter">
                     <span class="overlay-header__counter-value">{{ overlaySelectionCount }}</span>
                     <span class="overlay-header__counter-separator">/</span>
