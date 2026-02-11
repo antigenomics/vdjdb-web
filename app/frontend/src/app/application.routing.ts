@@ -17,11 +17,11 @@
 import { RouterModule, Routes } from '@angular/router';
 import { HomePageComponent } from 'pages/home/home.component';
 import { OverviewPageComponent } from 'pages/overview/overview.component';
-import { SearchPageComponent } from 'pages/search/search.component';
-import { CommonDiseasesActionComponent } from "pages/search/actions/CommonDiseasesActionComponent";
-import { FluActionComponent } from "pages/search/actions/FluActionComponent";
-import { SelfAntigenActionComponent } from "pages/search/actions/SelfAntigenActionComponent";
+import { CommonDiseasesActionComponent } from 'pages/search/actions/CommonDiseasesActionComponent';
 import { Covid19ActionComponent } from 'pages/search/actions/CovidActionComponent';
+import { FluActionComponent } from 'pages/search/actions/FluActionComponent';
+import { SelfAntigenActionComponent } from 'pages/search/actions/SelfAntigenActionComponent';
+import { SearchPageComponent } from 'pages/search/search.component';
 
 const routes: Routes = [
     { path: '', component: HomePageComponent },
@@ -34,6 +34,7 @@ const routes: Routes = [
     { path: 'annotations', loadChildren: 'pages/annotations/annotations.module#AnnotationsPageModule' },
     { path: 'motif', loadChildren: 'pages/motif/motif.module#MotifPageModule' },
     { path: 'refsearch', loadChildren: 'pages/refsearch/refsearch.module#RefSearchPageModule' },
+    { path: 'structure', loadChildren: 'pages/structure/structure.module#StructurePageModule' },
     { path: 'about', loadChildren: 'pages/about/about.module#AboutPageModule' },
     { path: 'links', loadChildren: 'pages/links/links.module#LinksPageModule' },
     { path: 'credits', loadChildren: 'pages/credits/credits.module#CreditsPageModule' }

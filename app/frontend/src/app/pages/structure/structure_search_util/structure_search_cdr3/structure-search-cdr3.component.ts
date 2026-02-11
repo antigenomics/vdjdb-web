@@ -1,0 +1,61 @@
+/*
+ *     Copyright 2017-2019 Bagaev Dmitry
+ *
+ *     Licensed under the Apache License, Version 2.0 (the "License");
+ *     you may not use this file except in compliance with the License.
+ *     You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *     Unless required by applicable law or agreed to in writing, software
+ *     distributed under the License is distributed on an "AS IS" BASIS,
+ *     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *     See the License for the specific language governing permissions and
+ *     limitations under the License.
+ */
+
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { IStructureCDR3SearchResultOptions } from 'pages/structure/structure';
+import { StructureService } from 'pages/structure/structure.service';
+import { Utils } from 'utils/utils';
+
+@Component({
+  selector:        'structure-search-cdr3',
+  templateUrl:     './structure-search-cdr3.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush
+})
+export class StructureSearchCDR3Component {
+
+  public input: string = '';
+  public substring: boolean = false;
+  public gene: string = 'TRA';
+
+  @Input('options')
+  public set options(options: IStructureCDR3SearchResultOptions) {
+    this.input = options.cdr3;
+    this.substring = options.substring;
+    this.gene = options.gene;
+  }
+
+  public get placeholder(): string {
+    return this.substring ? 'Search by CDR3 substring...' : 'Search by whole CDR3 sequence...';
+  }
+
+  constructor(private structureService: StructureService) {}
+
+  public search(): void {
+    this.structureService.searchCDR3(this.input, this.substring, this.gene);
+  }
+
+  public toggleSubstring(): void {
+    this.substring = !this.substring;
+  }
+
+  public setGene(gene: string): void {
+    this.gene = gene;
+  }
+
+  public isCDR3PatternValid(): boolean {
+    return Utils.SequencePattern.isPatternValidStrict(this.input);
+  }
+}

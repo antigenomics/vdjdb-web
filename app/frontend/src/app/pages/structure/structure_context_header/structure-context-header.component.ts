@@ -1,0 +1,239 @@
+/*
+ *     Copyright 2017-2019 Bagaev Dmitry
+ *
+ *     Licensed under the Apache License, Version 2.0 (the "License");
+ *     you may not use this file except in compliance with the License.
+ *     You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *     Unless required by applicable law or agreed to in writing, software
+ *     distributed under the License is distributed on an "AS IS" BASIS,
+ *     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *     See the License for the specific language governing permissions and
+ *     limitations under the License.
+ */
+
+import { ChangeDetectionStrategy, Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { ActivatedRoute, ParamMap, Router } from '@angular/router';
+import { IStructuresMetadata, IStructuresMetadataTreeLevelValue } from 'pages/structure/structure';
+import { Subscription } from 'rxjs';
+
+interface IStructureQueryParams {
+  species?: string | null;
+  tcr_chain?: string | null;
+  mhc_class?: string | null;
+  gene?: string | null;
+  epitope_seq?: string | null;
+  structure_id?: string | null;
+  query?: string | null;
+}
+
+@Component({
+  selector:        'structure-context-header',
+  templateUrl:     './structure-context-header.component.html',
+  styleUrls:       [ './structure-context-header.component.css' ],
+  changeDetection: ChangeDetectionStrategy.OnPush
+})
+export class StructureContextHeaderComponent implements OnInit, OnDestroy {
+  @Input()
+  public set metadata(value: IStructuresMetadata | null) {
+    this._metadata = value;
+    this.syncSelectionFromParams();
+  }
+
+  public get metadata(): IStructuresMetadata | null {
+    return this._metadata;
+  }
+
+  public mhcClassValue: string | null = null;
+  public mhcGeneValue: string | null = null;
+  public epitopeValue: string | null = null;
+  public cdr3Query: string = '';
+
+  private routeSubscription: Subscription;
+  private currentParams: IStructureQueryParams = {};
+  private _metadata: IStructuresMetadata | null = null;
+
+  constructor(private route: ActivatedRoute, private router: Router) {}
+
+  public ngOnInit(): void {
+    this.routeSubscription = this.route.queryParamMap.subscribe((params) => {
+      this.currentParams = this.toQueryParams(params);
+      this.syncSelectionFromParams();
+    });
+  }
+
+  public ngOnDestroy(): void {
+    if (this.routeSubscription) {
+      this.routeSubscription.unsubscribe();
+    }
+  }
+
+  public get mhcClassValues(): IStructuresMetadataTreeLevelValue[] {
+    return this.metadata && this.metadata.root ? this.metadata.root.values : [];
+  }
+
+  public get mhcGeneValues(): IStructuresMetadataTreeLevelValue[] {
+    const node = this.findMhcClassNode(this.mhcClassValue);
+    return node && node.next ? node.next.values : [];
+  }
+
+  public get epitopeValues(): IStructuresMetadataTreeLevelValue[] {
+    const node = this.findMhcGeneNode(this.findMhcClassNode(this.mhcClassValue), this.mhcGeneValue);
+    return node && node.next ? node.next.values : [];
+  }
+
+  public onMhcClassSelect(value: IStructuresMetadataTreeLevelValue): void {
+    this.mhcClassValue = value.value;
+    this.mhcGeneValue = null;
+    this.epitopeValue = null;
+    this.updateQueryParams({
+      mhc_class: this.mhcClassValue,
+      gene: null,
+      epitope_seq: null,
+      query: null
+    });
+  }
+
+  public onMhcGeneSelect(value: IStructuresMetadataTreeLevelValue): void {
+    this.mhcGeneValue = value.value;
+    this.epitopeValue = null;
+    this.updateQueryParams({
+      mhc_class: this.mhcClassValue,
+      gene: this.normalizeMhcPairParam(this.mhcGeneValue),
+      epitope_seq: null,
+      query: null
+    });
+  }
+
+  public onEpitopeSelect(value: IStructuresMetadataTreeLevelValue): void {
+    this.epitopeValue = value.value;
+    this.updateQueryParams({
+      mhc_class: this.mhcClassValue,
+      gene: this.normalizeMhcPairParam(this.mhcGeneValue),
+      epitope_seq: this.epitopeValue,
+      structure_id: null,
+      query: null
+    });
+  }
+
+  public onCdr3Search(): void {
+    const query = this.cdr3Query ? this.cdr3Query.trim() : '';
+    if (!query) {
+      return;
+    }
+    this.updateQueryParams({
+      query,
+      mhc_class: null,
+      gene: null,
+      epitope_seq: null,
+      structure_id: null,
+      species: null,
+      tcr_chain: null
+    });
+  }
+
+  private updateQueryParams(changes: IStructureQueryParams): void {
+    const params: IStructureQueryParams = {
+      species: this.currentParams.species || null,
+      tcr_chain: this.currentParams.tcr_chain || null,
+      mhc_class: this.currentParams.mhc_class || null,
+      gene: this.currentParams.gene || null,
+      epitope_seq: this.currentParams.epitope_seq || null,
+      structure_id: this.currentParams.structure_id || null,
+      query: this.currentParams.query || null,
+      ...changes
+    };
+
+    if (params.query) {
+      params.mhc_class = null;
+      params.gene = null;
+      params.epitope_seq = null;
+      params.structure_id = null;
+    }
+
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: params
+    });
+  }
+
+  private syncSelectionFromParams(): void {
+    const query = this.currentParams.query || '';
+    this.cdr3Query = query;
+
+    if (!this.metadata || !this.metadata.root) {
+      this.mhcClassValue = null;
+      this.mhcGeneValue = null;
+      this.epitopeValue = null;
+      return;
+    }
+
+    const mhcClassNode = this.findMhcClassNode(this.currentParams.mhc_class || null);
+    if (!mhcClassNode) {
+      this.mhcClassValue = null;
+      this.mhcGeneValue = null;
+      this.epitopeValue = null;
+      return;
+    }
+    this.mhcClassValue = mhcClassNode.value;
+
+    const mhcGeneNode = this.findMhcGeneNode(mhcClassNode, this.currentParams.gene || null);
+    if (!mhcGeneNode) {
+      this.mhcGeneValue = null;
+      this.epitopeValue = null;
+      return;
+    }
+    this.mhcGeneValue = mhcGeneNode.value;
+
+    const epitopeNode = this.findEpitopeNode(mhcGeneNode, this.currentParams.epitope_seq || null);
+    this.epitopeValue = epitopeNode ? epitopeNode.value : null;
+  }
+
+  private toQueryParams(params: ParamMap): IStructureQueryParams {
+    return {
+      species: params.get('species'),
+      tcr_chain: params.get('tcr_chain'),
+      mhc_class: params.get('mhc_class'),
+      gene: params.get('gene'),
+      epitope_seq: params.get('epitope_seq'),
+      structure_id: params.get('structure_id'),
+      query: params.get('query')
+    };
+  }
+
+  private findMhcClassNode(value: string | null): IStructuresMetadataTreeLevelValue | undefined {
+    if (!value || !this.metadata || !this.metadata.root) {
+      return undefined;
+    }
+    const normalized = value.toLowerCase();
+    return this.metadata.root.values.find((node) => node.value.toLowerCase() === normalized);
+  }
+
+  private findMhcGeneNode(parent: IStructuresMetadataTreeLevelValue | undefined,
+                          geneParam: string | null): IStructuresMetadataTreeLevelValue | undefined {
+    if (!parent || !parent.next || !geneParam) {
+      return undefined;
+    }
+    const normalized = this.normalizeMhcPairParam(geneParam).toLowerCase();
+    return parent.next.values.find((node) => this.normalizeMhcPairParam(node.value).toLowerCase() === normalized);
+  }
+
+  private findEpitopeNode(parent: IStructuresMetadataTreeLevelValue | undefined,
+                          epitopeParam: string | null): IStructuresMetadataTreeLevelValue | undefined {
+    if (!parent || !parent.next || !epitopeParam) {
+      return undefined;
+    }
+    const normalized = epitopeParam.toLowerCase();
+    return parent.next.values.find((node) => node.value.toLowerCase() === normalized);
+  }
+
+  private normalizeMhcPairParam(value: string | null): string {
+    if (!value) {
+      return '';
+    }
+    const parts = value.split('/').map((part) => part.replace(/:.+/, '').trim()).filter((part) => part.length > 0);
+    return parts.join('/');
+  }
+}

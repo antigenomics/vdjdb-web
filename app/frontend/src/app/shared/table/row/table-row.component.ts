@@ -15,7 +15,16 @@
  */
 
 import {
-  ChangeDetectionStrategy, Component, ComponentFactoryResolver, ComponentRef, Input, OnDestroy, OnInit, ViewChild, ViewContainerRef
+  ChangeDetectionStrategy,
+  Component,
+  ComponentFactoryResolver,
+  ComponentRef,
+  Input,
+  OnDestroy,
+  OnInit,
+  Renderer2,
+  ViewChild,
+  ViewContainerRef
 } from '@angular/core';
 import { TableColumn } from '../column/table-column';
 import { TableEntryDefaultComponent } from '../entry/table-entry-default.component';
@@ -27,7 +36,8 @@ import { TableRow } from './table-row';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TableRowComponent implements OnInit, OnDestroy {
-  private _components: Array<ComponentRef<any>> = [];
+  private _components: Array<{ column: TableColumn; component: ComponentRef<any> }> = [];
+  private _hiddenColumns: Set<string> = new Set();
 
   @Input('columns')
   public columns: TableColumn[];
@@ -35,33 +45,66 @@ export class TableRowComponent implements OnInit, OnDestroy {
   @Input('row')
   public row: TableRow;
 
+  @Input('hiddenColumns')
+  public set hiddenColumns(hidden: string[]) {
+    this._hiddenColumns = new Set(hidden || []);
+    this.applyHiddenState();
+  }
+
   @ViewChild('rowViewContainer', { read: ViewContainerRef })
   public rowViewContainer: ViewContainerRef;
 
-  constructor(private hostViewContainer: ViewContainerRef, private resolver: ComponentFactoryResolver) {}
+  constructor(private hostViewContainer: ViewContainerRef, private resolver: ComponentFactoryResolver, private renderer: Renderer2) {}
 
   public ngOnInit(): void {
-    const defaultEntryComponentResolver = this.resolver.resolveComponentFactory(TableEntryDefaultComponent);
-    if (this.columns) {
-      const entries: string[] = this.row.getEntries();
-
-      let entryIndex: number = 0;
-      this.columns.forEach(async (column: TableColumn) => {
-        const entry = column.noEntry ? '' : entries[ entryIndex++ ];
-        let entryResolver = this.row.resolveComponentFactory(column, this.resolver);
-        if (!entryResolver) {
-          entryResolver = defaultEntryComponentResolver;
-        }
-        const component = this.rowViewContainer.createComponent(entryResolver);
-        component.instance.create(entry, column, this.columns, this.row, this.hostViewContainer, this.resolver);
-        this._components.push(component);
-      });
+    const columns = this.columns || [];
+    if (columns.length === 0) {
+      return;
     }
+
+    const defaultEntryComponentResolver = this.resolver.resolveComponentFactory(TableEntryDefaultComponent);
+    const entries: string[] = this.row.getEntries();
+    let entryIndex: number = 0;
+
+    columns.forEach((column: TableColumn) => {
+      const entry = column.noEntry ? '' : entries[ entryIndex++ ];
+      let entryResolver = this.row.resolveComponentFactory(column, this.resolver);
+      if (!entryResolver) {
+        entryResolver = defaultEntryComponentResolver;
+      }
+      const component = this.rowViewContainer.createComponent(entryResolver);
+      component.instance.create(entry, column, columns, this.row, this.hostViewContainer, this.resolver);
+      this._components.push({ column, component });
+      this.applyHiddenStateForComponent(column, component);
+    });
   }
 
   public ngOnDestroy(): void {
-    this._components.forEach((component: ComponentRef<any>) => {
+    this._components.forEach(({ component }) => {
       component.destroy();
     });
+  }
+
+  private applyHiddenState(): void {
+    if (!this._components || this._components.length === 0) {
+      return;
+    }
+    this._components.forEach(({ column, component }) => {
+      this.applyHiddenStateForComponent(column, component);
+    });
+  }
+
+  private applyHiddenStateForComponent(column: TableColumn, component: ComponentRef<any>): void {
+    const nativeElement = component.location.nativeElement;
+    if (!nativeElement) {
+      return;
+    }
+    if (this._hiddenColumns.has(column.name)) {
+      this.renderer.addClass(nativeElement, 'hidden-column');
+      this.renderer.setStyle(nativeElement, 'display', 'none');
+    } else {
+      this.renderer.removeClass(nativeElement, 'hidden-column');
+      this.renderer.removeStyle(nativeElement, 'display');
+    }
   }
 }

@@ -7,7 +7,26 @@
 /app/frontend/npm-debug.log
 /app/frontend/package-lock.json
 
-# Front end build artifacts
+# Developer scripts
+/scripts
+
+# Developer instruments
+qodana.yaml
+qodana.sarif.json
+/.history
+/.vscode
+/.gemini
+.aiexclude
+
+# MacOs
+.DS_Store
+Thumbs.db
+
+# Test
+/database/test*
+/conf/application.local.conf
+
+# Frontend build artifacts
 /public/bundles
 
 # Docs build directories
@@ -23,8 +42,15 @@
 /.project
 /.settings
 *.DS_Store
+*.bak
 /RUNNING_PID
 /build
 /test/frontend/dll
 
 logs
+
+# Database
+database/*
+
+# Old_database
+/old_database

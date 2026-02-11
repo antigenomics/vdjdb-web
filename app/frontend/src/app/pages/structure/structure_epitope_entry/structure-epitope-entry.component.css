@@ -1,0 +1,313 @@
+/*
+ *     Copyright 2017-2019 Bagaev Dmitry
+ *
+ *     Licensed under the Apache License, Version 2.0 (the "License");
+ *     you may not use this file except in compliance with the License.
+ *     You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *     Unless required by applicable law or agreed to in writing, software
+ *     distributed under the License is distributed on an "AS IS" BASIS,
+ *     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *     See the License for the specific language governing permissions and
+ *     limitations under the License.
+ */
+
+.structure-epitope-entry {
+    padding: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.structure-epitope-entry__header {
+    margin: 0 0 0.75rem;
+}
+
+.structure-epitope-entry__title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1f1f1f;
+}
+
+.structure-epitope-entry__meta {
+    margin-top: 0.35rem;
+}
+
+.epitope-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 0.9rem;
+    font-size: 0.82rem;
+    color: rgba(0, 0, 0, 0.65);
+}
+
+.epitope-meta__label {
+    font-weight: 600;
+    margin-right: 4px;
+    color: rgba(0, 0, 0, 0.75);
+}
+
+.overlay-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding-bottom: 1rem;
+}
+
+.overlay-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    font-size: 0.95rem;
+    color: #303030;
+}
+
+.overlay-header__info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.overlay-header__title {
+    font-weight: 700;
+    letter-spacing: 0.2px;
+}
+
+.overlay-header__hint {
+    font-size: 0.85rem;
+    color: rgba(0, 0, 0, 0.55);
+}
+
+.overlay-header__counter {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 4px;
+    font-weight: 700;
+    color: #1f1f1f;
+    padding: 6px 10px;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 8px;
+    background: linear-gradient(180deg, #ffffff 0%, #f4f6fb 100%);
+}
+
+.overlay-header__counter-value {
+    font-size: 1.25rem;
+    color: #304ffe;
+}
+
+.overlay-header__counter-separator {
+    color: rgba(0, 0, 0, 0.35);
+}
+
+.overlay-layout {
+    display: flex;
+    align-items: stretch;
+    gap: 1rem;
+}
+
+.overlay-list {
+    flex: 0 0 320px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    min-height: 0;
+    align-self: stretch;
+}
+
+.overlay-list__scroller {
+    overflow-y: auto;
+    flex-grow: 1;
+    padding-right: 4px;
+    min-height: 0;
+    height: 100%;
+}
+
+.overlay-card {
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 6px;
+    padding: 0.7rem 0.75rem;
+    background: #ffffff;
+    cursor: pointer;
+}
+
+.overlay-card + .overlay-card {
+    margin-top: 0.6rem;
+}
+
+.overlay-card.is-selected {
+    border-color: #3d58f3;
+    background: #eef2ff;
+}
+
+.overlay-card.is-disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.overlay-card__line {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 6px;
+    font-size: 0.85rem;
+    color: #1f1f1f;
+}
+
+.overlay-card__line--cdr .overlay-card__value {
+    font-family: "Menlo", "Consolas", "Courier New", monospace;
+    color: #2e3c62;
+}
+
+.overlay-card__label {
+    font-weight: 600;
+    color: #1f1f1f;
+}
+
+.overlay-card__note {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    background: #ffe6e6;
+    color: #a33;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.overlay-card__links {
+    margin-top: 0.4rem;
+    font-size: 0.82rem;
+}
+
+.overlay-card__links a {
+    color: #1a4fb5;
+    font-weight: 600;
+}
+
+.overlay-card__links a.is-unavailable {
+    color: rgba(0, 0, 0, 0.4);
+    pointer-events: none;
+}
+
+.overlay-card__links a.is-available {
+    color: #1f7a3c;
+}
+
+.overlay-card__link--disabled {
+    color: rgba(0, 0, 0, 0.4);
+}
+
+.overlay-selection__hint {
+    font-size: 0.82rem;
+    color: rgba(0, 0, 0, 0.52);
+}
+
+.overlay-visualization {
+    flex: 1;
+    min-width: 0;
+}
+
+.structure-overlay {
+    position: relative;
+    width: 100%;
+    background-color: #f9fbff;
+    border: 1px solid #dfe3ed;
+    border-radius: 6px;
+    padding: 0;
+    overflow: hidden;
+}
+
+.structure-overlay__content {
+    position: relative;
+    user-select: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.structure-overlay__canvas {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+    transform-origin: center center;
+    cursor: grab;
+}
+
+.structure-overlay__canvas.is-dragging {
+    cursor: grabbing;
+}
+
+.structure-overlay__layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.structure-overlay__base {
+    position: relative;
+    width: 100%;
+}
+
+.structure-overlay__base .structure-html {
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.structure-overlay__layer .structure-html {
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.structure-overlay__base .structure-html > *,
+.structure-overlay__layer .structure-html > * {
+    max-width: 100%;
+    height: auto;
+}
+
+.structure-zoom {
+    position: absolute;
+    left: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 4px;
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 10px;
+}
+
+.structure-zoom__button {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    background: #ffffff;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    color: #2a2a2a;
+}
+
+.structure-zoom__button:active {
+    background: #eef2ff;
+}
+
+.structure-zoom__slider {
+    height: 120px;
+    width: 20px;
+    writing-mode: bt-lr;
+    -webkit-appearance: slider-vertical;
+}
