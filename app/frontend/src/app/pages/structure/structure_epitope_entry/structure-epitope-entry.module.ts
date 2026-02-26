@@ -16,10 +16,11 @@
 
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
+import { ModalsModule } from 'shared/modals/modals.module';
 import { StructureEpitopeEntryComponent } from './structure-epitope-entry.component';
 
 @NgModule({
-    imports:      [ CommonModule ],
+    imports:      [ CommonModule, ModalsModule ],
     declarations: [ StructureEpitopeEntryComponent ],
     exports:      [ StructureEpitopeEntryComponent ]
 })

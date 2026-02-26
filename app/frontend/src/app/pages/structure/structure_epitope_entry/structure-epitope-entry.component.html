@@ -50,9 +50,24 @@
                              [class.is-disabled]="isRowDisabled(row)"
                              (click)="isRowDisabled(row) ? null : onRowToggle(row, $event)">
                             <div class="overlay-card__line overlay-card__line--id">
-                                <span class="overlay-card__label">CDR3a/b cluster ID:</span>
-                                <span class="overlay-card__value">{{ row.alphaClusterId || '-' }}/{{ row.betaClusterId || '-' }}</span>
-                                <span class="overlay-card__note" *ngIf="!row.hasHtml">no HTML</span>
+                                <div class="overlay-card__id-meta">
+                                    <span class="overlay-card__label">CDR3a/b cluster ID:</span>
+                                    <span class="overlay-card__value">{{ row.alphaClusterId || '-' }}/{{ row.betaClusterId || '-' }}</span>
+                                    <span class="overlay-card__note" *ngIf="!row.hasHtml">no HTML</span>
+                                </div>
+                                <div class="ui compact selection dropdown overlay-card__download"
+                                     dropdown
+                                     [content]="downloadMenu"
+                                     (click)="onDownloadDropdownClick($event)"
+                                     (mousedown)="onDownloadDropdownClick($event)">
+                                    <div class="text"><b>{{ downloadTitle }}</b></div>
+                                    <i class="dropdown icon"></i>
+                                    <div class="menu fade element slow" tabindex="-1" #downloadMenu>
+                                        <div class="item overlay-card__download-item" (click)="onDownloadOptionClick(row, 'structure', $event)">Structure</div>
+                                        <div class="item overlay-card__download-item" (click)="onDownloadOptionClick(row, 'contacts', $event)">Contacts</div>
+                                        <div class="item overlay-card__download-item" (click)="onDownloadOptionClick(row, 'both', $event)">Both</div>
+                                    </div>
+                                </div>
                             </div>
                             <div class="overlay-card__line overlay-card__line--cdr">
                                 <span class="overlay-card__label">CDR3a:</span>

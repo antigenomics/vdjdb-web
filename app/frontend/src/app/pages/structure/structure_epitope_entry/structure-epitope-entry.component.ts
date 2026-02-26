@@ -23,6 +23,8 @@ import { StructureZoomController } from 'pages/structure/structure_zoom/structur
 import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
 
+type StructureDownloadOption = 'structure' | 'contacts' | 'both';
+
 interface IParsedChainLabel {
     cdr3?: string;
     v?: string;
@@ -58,6 +60,13 @@ interface IMotifParams {
     epitope: string;
 }
 
+const DOWNLOAD_NAME_TOKEN = '{hash}';
+const STRUCTURE_DOWNLOAD_FILE_PATTERNS: { [option in StructureDownloadOption]: string } = {
+    structure: `${DOWNLOAD_NAME_TOKEN}_coordinates.tsv`,
+    contacts: `${DOWNLOAD_NAME_TOKEN}_contacts.txt`,
+    both: `${DOWNLOAD_NAME_TOKEN}_structure.zip`
+};
+
 @Component({
     selector:        'structure-epitope-entry',
     templateUrl:     './structure-epitope-entry.component.html',
@@ -74,6 +83,8 @@ export class StructureEpitopeEntryComponent implements OnInit, OnDestroy {
     public isHidden: boolean = false;
     public overlayError: string | undefined;
     public readonly overlayLimit: number = 5;
+    public readonly downloadTitle: string = 'Download';
+    public readonly downloadDirectory: string = '/structure-files/structure';
     public overlayLayerList: Array<{ id: string, markup: SafeHtml, mode: 'standard' | 'simple' }> = [];
     public overlayTableRows: IOverlayTableRow[] = [];
     public overlayScrollerMaxHeight?: number;
@@ -200,6 +211,30 @@ export class StructureEpitopeEntryComponent implements OnInit, OnDestroy {
         const step = steps > 0 ? range / steps : range;
         const value = 1 - step * index;
         return value < minOpacity ? minOpacity : value;
+    }
+
+    public onDownloadDropdownClick(event: MouseEvent): void {
+        if (event) {
+            event.stopPropagation();
+        }
+    }
+
+    public onDownloadOptionClick(row: IOverlayTableRow, option: StructureDownloadOption, event: MouseEvent): void {
+        if (event) {
+            event.preventDefault();
+        }
+        if (!row || !row.cluster) {
+            return;
+        }
+
+        const hash = this.resolveStructureHash(row.cluster);
+        if (!hash) {
+            return;
+        }
+
+        const fileName = this.resolveDownloadFileName(hash, option);
+        const fileUrl = `${this.downloadDirectory}/${encodeURIComponent(fileName)}`;
+        this.startDownload(fileUrl, fileName);
     }
 
     private async ensureOverlayLayer(cluster: IStructureCluster): Promise<void> {
@@ -546,5 +581,26 @@ export class StructureEpitopeEntryComponent implements OnInit, OnDestroy {
             return false;
         }
         return selection.toString().trim().length > 0;
+    }
+
+    private resolveStructureHash(cluster: IStructureCluster): string {
+        if (!cluster || typeof cluster.clusterId !== 'string') {
+            return '';
+        }
+        return cluster.clusterId.trim();
+    }
+
+    private resolveDownloadFileName(hash: string, option: StructureDownloadOption): string {
+        const template = STRUCTURE_DOWNLOAD_FILE_PATTERNS[option];
+        return template.replace(DOWNLOAD_NAME_TOKEN, hash);
+    }
+
+    private startDownload(url: string, fileName: string): void {
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     }
 }

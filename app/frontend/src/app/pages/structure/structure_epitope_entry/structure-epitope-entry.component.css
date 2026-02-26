@@ -141,7 +141,6 @@
 }
 
 .overlay-card.is-disabled {
-    opacity: 0.5;
     cursor: not-allowed;
 }
 
@@ -157,6 +156,76 @@
 .overlay-card__line--cdr .overlay-card__value {
     font-family: "Menlo", "Consolas", "Courier New", monospace;
     color: #2e3c62;
+}
+
+.overlay-card__line--id {
+    position: relative;
+    align-items: baseline;
+    gap: 4px 6px;
+    padding-right: 118px;
+}
+
+.overlay-card__id-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px 6px;
+    min-width: 0;
+}
+
+.overlay-card__download.ui.dropdown {
+    position: absolute;
+    right: 0;
+    top: 0;
+    min-height: 0;
+    min-width: 0;
+    padding: 2px 20px 2px 8px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    line-height: 1.2;
+    box-shadow: none;
+}
+
+.overlay-card__download.ui.dropdown > .text {
+    font-size: inherit;
+    line-height: inherit;
+    font-weight: 700;
+    text-align: left;
+
+}
+
+.overlay-card__download.ui.dropdown > .dropdown.icon {
+    padding: 0;
+    width: 12px;
+    margin: 0;
+    right: 6px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.overlay-card__download.ui.dropdown .menu {
+    min-width: 100%;
+    padding: 0;
+}
+
+.overlay-card__download.ui.dropdown .menu > .overlay-card__download-item {
+    font-size: 0.85rem;
+    line-height: 1.2;
+    text-align: left;
+    padding: 4px 8px !important;
+    margin: 0;
+}
+
+.overlay-card__download-item--title {
+    font-weight: 700;
+}
+
+.overlay-card.is-disabled .overlay-card__line > :not(.overlay-card__download) {
+    opacity: 0.5;
+}
+
+.overlay-card.is-disabled .overlay-card__download.ui.dropdown {
+    opacity: 1;
 }
 
 .overlay-card__label {

@@ -6,6 +6,7 @@
 /app/frontend/coverage
 /app/frontend/npm-debug.log
 /app/frontend/package-lock.json
+/app/frontend/dist
 
 # Developer scripts
 /scripts
@@ -51,6 +52,7 @@ logs
 
 # Database
 database/*
+vdjdb*.zip
 
 # Old_database
 /old_database
