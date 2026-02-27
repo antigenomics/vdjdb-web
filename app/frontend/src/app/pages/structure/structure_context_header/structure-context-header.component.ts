@@ -14,7 +14,7 @@
  *     limitations under the License.
  */
 
-import { ChangeDetectionStrategy, Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, ParamMap, Router } from '@angular/router';
 import { IStructuresMetadata, IStructuresMetadataTreeLevelValue } from 'pages/structure/structure';
 import { Subscription } from 'rxjs';
@@ -36,6 +36,9 @@ interface IStructureQueryParams {
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class StructureContextHeaderComponent implements OnInit, OnDestroy {
+  @ViewChild('epitopeInputElement')
+  public epitopeInputElement: ElementRef;
+
   @Input()
   public set metadata(value: IStructuresMetadata | null) {
     this._metadata = value;
@@ -49,6 +52,9 @@ export class StructureContextHeaderComponent implements OnInit, OnDestroy {
   public mhcClassValue: string | null = null;
   public mhcGeneValue: string | null = null;
   public epitopeValue: string | null = null;
+  public epitopeInput: string = '';
+  public isEpitopeFocused: boolean = false;
+  public isEpitopeDropdownOpen: boolean = false;
   public cdr3Query: string = '';
 
   private routeSubscription: Subscription;
@@ -84,10 +90,43 @@ export class StructureContextHeaderComponent implements OnInit, OnDestroy {
     return node && node.next ? node.next.values : [];
   }
 
+  public get filteredEpitopeValues(): IStructuresMetadataTreeLevelValue[] {
+    const query = this.epitopeInput.trim().toLowerCase();
+    if (!query) {
+      return this.epitopeValues;
+    }
+    return this.epitopeValues.filter((value) => value.value.toLowerCase().indexOf(query) === 0);
+  }
+
+  public get epitopeInputValue(): string {
+    if (this.isEpitopeFocused) {
+      return this.epitopeInput;
+    }
+    if (this.epitopeInput.length !== 0) {
+      return this.epitopeInput;
+    }
+    return this.epitopeValue || '';
+  }
+
+  public get epitopeInputPlaceholder(): string {
+    if (this.isEpitopeFocused) {
+      if (this.epitopeInput.length !== 0) {
+        return '';
+      }
+      return this.epitopeValue || 'Select epitope';
+    }
+    if (!this.epitopeValue && this.epitopeInput.length === 0) {
+      return 'Select epitope';
+    }
+    return '';
+  }
+
   public onMhcClassSelect(value: IStructuresMetadataTreeLevelValue): void {
     this.mhcClassValue = value.value;
     this.mhcGeneValue = null;
     this.epitopeValue = null;
+    this.epitopeInput = '';
+    this.closeEpitopeDropdown();
     this.updateQueryParams({
       mhc_class: this.mhcClassValue,
       gene: null,
@@ -99,6 +138,8 @@ export class StructureContextHeaderComponent implements OnInit, OnDestroy {
   public onMhcGeneSelect(value: IStructuresMetadataTreeLevelValue): void {
     this.mhcGeneValue = value.value;
     this.epitopeValue = null;
+    this.epitopeInput = '';
+    this.closeEpitopeDropdown();
     this.updateQueryParams({
       mhc_class: this.mhcClassValue,
       gene: this.normalizeMhcPairParam(this.mhcGeneValue),
@@ -109,6 +150,9 @@ export class StructureContextHeaderComponent implements OnInit, OnDestroy {
 
   public onEpitopeSelect(value: IStructuresMetadataTreeLevelValue): void {
     this.epitopeValue = value.value;
+    this.epitopeInput = '';
+    this.closeEpitopeDropdown();
+    this.blurEpitopeInput();
     this.updateQueryParams({
       mhc_class: this.mhcClassValue,
       gene: this.normalizeMhcPairParam(this.mhcGeneValue),
@@ -116,6 +160,51 @@ export class StructureContextHeaderComponent implements OnInit, OnDestroy {
       structure_id: null,
       query: null
     });
+  }
+
+  public onEpitopeDropdownClick(event: MouseEvent): void {
+    if (!this.mhcGeneValue) {
+      return;
+    }
+    const target = event.target as any;
+    if (target && typeof target.closest === 'function' && target.closest('.menu')) {
+      return;
+    }
+    event.stopPropagation();
+    this.isEpitopeDropdownOpen = true;
+    if (this.epitopeInputElement && this.epitopeInputElement.nativeElement) {
+      this.epitopeInputElement.nativeElement.focus();
+    }
+  }
+
+  public onEpitopeInputFocus(): void {
+    if (!this.mhcGeneValue) {
+      return;
+    }
+    this.isEpitopeFocused = true;
+    this.isEpitopeDropdownOpen = true;
+  }
+
+  public onEpitopeInputBlur(): void {
+    this.isEpitopeFocused = false;
+    this.isEpitopeDropdownOpen = false;
+  }
+
+  public onEpitopeInputChange(value: string): void {
+    this.epitopeInput = value;
+    if (!this.isEpitopeDropdownOpen && this.mhcGeneValue) {
+      this.isEpitopeDropdownOpen = true;
+    }
+  }
+
+  public onEpitopeOptionMouseDown(event: MouseEvent, value: IStructuresMetadataTreeLevelValue): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.onEpitopeSelect(value);
+  }
+
+  public isNoEpitopeMatchesVisible(): boolean {
+    return this.epitopeInput.trim().length !== 0 && this.filteredEpitopeValues.length === 0;
   }
 
   public onCdr3Search(): void {
@@ -160,13 +249,17 @@ export class StructureContextHeaderComponent implements OnInit, OnDestroy {
   }
 
   private syncSelectionFromParams(): void {
+    const previousMhcClassValue = this.mhcClassValue;
+    const previousMhcGeneValue = this.mhcGeneValue;
     const query = this.currentParams.query || '';
     this.cdr3Query = query;
+    this.closeEpitopeDropdown();
 
     if (!this.metadata || !this.metadata.root) {
       this.mhcClassValue = null;
       this.mhcGeneValue = null;
       this.epitopeValue = null;
+      this.epitopeInput = '';
       return;
     }
 
@@ -175,6 +268,7 @@ export class StructureContextHeaderComponent implements OnInit, OnDestroy {
       this.mhcClassValue = null;
       this.mhcGeneValue = null;
       this.epitopeValue = null;
+      this.epitopeInput = '';
       return;
     }
     this.mhcClassValue = mhcClassNode.value;
@@ -183,12 +277,19 @@ export class StructureContextHeaderComponent implements OnInit, OnDestroy {
     if (!mhcGeneNode) {
       this.mhcGeneValue = null;
       this.epitopeValue = null;
+      this.epitopeInput = '';
       return;
     }
     this.mhcGeneValue = mhcGeneNode.value;
+    if (previousMhcClassValue !== this.mhcClassValue || previousMhcGeneValue !== this.mhcGeneValue) {
+      this.epitopeInput = '';
+    }
 
     const epitopeNode = this.findEpitopeNode(mhcGeneNode, this.currentParams.epitope_seq || null);
     this.epitopeValue = epitopeNode ? epitopeNode.value : null;
+    if (this.epitopeValue) {
+      this.epitopeInput = '';
+    }
   }
 
   private toQueryParams(params: ParamMap): IStructureQueryParams {
@@ -235,5 +336,16 @@ export class StructureContextHeaderComponent implements OnInit, OnDestroy {
     }
     const parts = value.split('/').map((part) => part.replace(/:.+/, '').trim()).filter((part) => part.length > 0);
     return parts.join('/');
+  }
+
+  private closeEpitopeDropdown(): void {
+    this.isEpitopeFocused = false;
+    this.isEpitopeDropdownOpen = false;
+  }
+
+  private blurEpitopeInput(): void {
+    if (this.epitopeInputElement && this.epitopeInputElement.nativeElement) {
+      this.epitopeInputElement.nativeElement.blur();
+    }
   }
 }

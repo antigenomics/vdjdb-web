@@ -87,53 +87,58 @@
                 </div>
                 <div class="overlay-visualization">
                     <div class="structure-overlay"
-                         *ngIf="overlayLayerList.length > 0; else overlayEmpty"
                          [style.width.px]="overlayWidth"
                          [style.height.px]="overlayHeight"
                          #structureOverlay>
-                        <div class="structure-overlay__content" (mousedown)="zoomState.onMouseDown($event)">
-                            <div class="structure-overlay__canvas"
-                                 [class.is-dragging]="zoomState.isDragging"
-                                 [style.transform]="zoomState.transform"
-                                 #zoomCanvas>
-                                <div class="structure-overlay__base">
-                                    <div class="structure-html" [innerHTML]="overlayLayerList[0].markup"></div>
-                                </div>
-                                <ng-container *ngFor="let layer of overlayLayerList; let i = index">
-                                    <ng-container *ngIf="i > 0">
-                                        <div class="structure-overlay__layer"
-                                             [style.z-index]="overlayLayerList.length - i"
-                                             [style.opacity]="computeOverlayOpacity(i)">
-                                            <div class="structure-html" [innerHTML]="layer.markup"></div>
-                                        </div>
-                                    </ng-container>
-                                </ng-container>
-                            </div>
-                        </div>
-                        <div class="structure-zoom">
-                            <button class="structure-zoom__button" type="button" (click)="zoomState.increaseZoom()">+</button>
-                            <input class="structure-zoom__slider" type="range"
-                                   [min]="zoomState.zoomMin"
-                                   [max]="zoomState.zoomMax"
-                                   [step]="zoomState.zoomStep"
-                                   [value]="zoomState.zoomLevel"
-                                   (input)="zoomState.onZoomInput($event)">
-                            <button class="structure-zoom__button" type="button" (click)="zoomState.decreaseZoom()">-</button>
-                        </div>
                         <div class="structure-counter" aria-hidden="true">
                             <span class="structure-counter__value">{{ overlaySelectionCount }}</span>
                             <span class="structure-counter__separator">/</span>
                             <span class="structure-counter__limit">{{ overlayLimit }}</span>
                         </div>
-                        <div class="structure-legend" aria-hidden="true">
-                            <img class="structure-legend__image"
-                                 src="/assets/images/tcr_skeleton_plots_legend.svg"
-                                 alt="">
-                        </div>
+                        <ng-container *ngIf="overlayLayerList.length > 0; else overlayEmpty">
+                            <div class="structure-overlay__content" (mousedown)="zoomState.onMouseDown($event)">
+                                <div class="structure-overlay__canvas"
+                                     [class.is-dragging]="zoomState.isDragging"
+                                     [style.transform]="zoomState.transform"
+                                     #zoomCanvas>
+                                    <div class="structure-overlay__base">
+                                        <div class="structure-html" [innerHTML]="overlayLayerList[0].markup"></div>
+                                    </div>
+                                    <ng-container *ngFor="let layer of overlayLayerList; let i = index">
+                                        <ng-container *ngIf="i > 0">
+                                            <div class="structure-overlay__layer"
+                                                 [style.z-index]="overlayLayerList.length - i"
+                                                 [style.opacity]="computeOverlayOpacity(i)">
+                                                <div class="structure-html" [innerHTML]="layer.markup"></div>
+                                            </div>
+                                        </ng-container>
+                                    </ng-container>
+                                </div>
+                            </div>
+                            <div class="structure-zoom">
+                                <button class="structure-zoom__button" type="button" (click)="zoomState.increaseZoom()">+</button>
+                                <input class="structure-zoom__slider" type="range"
+                                       [min]="zoomState.zoomMin"
+                                       [max]="zoomState.zoomMax"
+                                       [step]="zoomState.zoomStep"
+                                       [value]="zoomState.zoomLevel"
+                                       (input)="zoomState.onZoomInput($event)">
+                                <button class="structure-zoom__button" type="button" (click)="zoomState.decreaseZoom()">-</button>
+                            </div>
+                            <div class="structure-legend" aria-hidden="true">
+                                <img class="structure-legend__image"
+                                     src="/assets/images/tcr_skeleton_plots_legend.svg"
+                                     alt="">
+                            </div>
+                        </ng-container>
+                        <ng-template #overlayEmpty>
+                            <div class="structure-empty-placeholder">
+                                <div class="structure-empty-placeholder__text">
+                                    Select structures from the list to compare them.
+                                </div>
+                            </div>
+                        </ng-template>
                     </div>
-                    <ng-template #overlayEmpty>
-                        <div class="structure-empty-placeholder">Select structures from the list to compare them.</div>
-                    </ng-template>
                 </div>
             </div>
             <div class="ui tiny warning message" *ngIf="overlayError">{{ overlayError }}</div>

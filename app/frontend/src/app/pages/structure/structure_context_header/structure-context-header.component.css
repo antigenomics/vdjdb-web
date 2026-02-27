@@ -29,3 +29,32 @@
 .structure-context-form .ui.dropdown {
     min-width: 100%;
 }
+
+.structure-context-form .structure-epitope-dropdown {
+    min-height: 38px;
+}
+
+.structure-context-form .structure-epitope-dropdown__input {
+    width: 100%;
+    cursor: text;
+}
+
+.structure-context-form .structure-epitope-dropdown__input::placeholder {
+    color: rgba(191, 191, 191, 0.95);
+}
+
+.structure-context-form .structure-epitope-dropdown .menu {
+    width: 100%;
+    max-height: 220px;
+    overflow-y: auto;
+}
+
+.structure-context-form .structure-epitope-dropdown__no-matches {
+    color: rgba(0, 0, 0, 0.45);
+    cursor: default;
+    pointer-events: none;
+}
+
+.structure-context-form .structure-epitope-dropdown__no-matches:hover {
+    background: inherit !important;
+}

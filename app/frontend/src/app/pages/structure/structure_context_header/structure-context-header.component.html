@@ -39,11 +39,22 @@
             </div>
             <div class="four wide field">
                 <label>Antigen epitope</label>
-                <div class="ui fluid selection dropdown" dropdown [content]="epitopeMenu" [ngClass]="{ 'disabled': !mhcGeneValue }">
-                    <div class="text">{{ epitopeValue || 'Select epitope' }}</div>
+                <div class="ui fluid search selection dropdown structure-epitope-dropdown"
+                     [ngClass]="{ 'active visible': isEpitopeDropdownOpen, 'disabled': !mhcGeneValue }"
+                     (click)="onEpitopeDropdownClick($event)">
+                    <input #epitopeInputElement class="search structure-epitope-dropdown__input" type="text" autocomplete="off"
+                           [ngModel]="epitopeInputValue" (ngModelChange)="onEpitopeInputChange($event)"
+                           [attr.placeholder]="epitopeInputPlaceholder"
+                           [attr.disabled]="!mhcGeneValue ? true : null"
+                           (focus)="onEpitopeInputFocus()" (blur)="onEpitopeInputBlur()">
                     <i class="dropdown icon"></i>
-                    <div class="menu fade element slow padded" tabindex="-1" #epitopeMenu>
-                        <a class="item" *ngFor="let value of epitopeValues" (click)="onEpitopeSelect(value)">{{ value.value }}</a>
+                    <div class="menu transition visible fade element slow padded" tabindex="-1" style="display: block !important;" *ngIf="isEpitopeDropdownOpen">
+                        <a class="item" *ngFor="let value of filteredEpitopeValues" (mousedown)="onEpitopeOptionMouseDown($event, value)">
+                            {{ value.value }}
+                        </a>
+                        <div class="item structure-epitope-dropdown__no-matches" *ngIf="isNoEpitopeMatchesVisible()">
+                            No matches found
+                        </div>
                     </div>
                 </div>
             </div>

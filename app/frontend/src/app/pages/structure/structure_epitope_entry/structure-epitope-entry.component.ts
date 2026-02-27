@@ -84,7 +84,8 @@ export class StructureEpitopeEntryComponent implements OnInit, OnDestroy {
     private overlayLayerMap: Map<string, { standard?: SafeHtml, simple?: SafeHtml }> = new Map<string, { standard?: SafeHtml, simple?: SafeHtml }>();
     private overlayResizeObserver?: { observe(target: Element): void; disconnect(): void };
     private overlayElement?: HTMLElement;
-    private overlayAspectRatio?: number;
+    private overlayRecalcRafId?: number;
+    private overlayRecalcAttemptsLeft: number = 0;
 
     public meta: IStructureClusterMeta;
     public isHidden: boolean = false;
@@ -95,8 +96,8 @@ export class StructureEpitopeEntryComponent implements OnInit, OnDestroy {
     public overlayLayerList: Array<{ id: string, markup: SafeHtml, mode: 'standard' | 'simple' }> = [];
     public overlayTableRows: IOverlayTableRow[] = [];
     public overlayScrollerMaxHeight?: number;
-    public overlayWidth?: number;
-    public overlayHeight?: number;
+    public overlayWidth: number = StructureEpitopeEntryComponent.overlayMinWidthPx;
+    public overlayHeight: number = StructureEpitopeEntryComponent.overlayMinHeightPx;
     public zoomState: StructureZoomController;
     @Input('epitope') public epitope: IStructureEpitope;
     @Input('isNormalized') public isNormalized: boolean;
@@ -122,6 +123,8 @@ export class StructureEpitopeEntryComponent implements OnInit, OnDestroy {
         this.overlayTableRows = this.epitope.clusters.map((cluster) => this.buildOverlayRow(cluster));
         this.loadMotifAvailability();
         this.initializeOverlaySelection();
+        // Safe defaults until the overlay container is measured.
+        this.setOverlayScrollerMaxHeight(this.overlayHeight);
     }
 
     public discard(): void {
@@ -294,6 +297,7 @@ export class StructureEpitopeEntryComponent implements OnInit, OnDestroy {
     }
 
     private updateOverlayLayerList(): void {
+        const wasEmpty = this.overlayLayerList.length === 0;
         this.overlayLayerList = this.overlaySelection
             .map((id, index) => {
                 const entry = this.overlayLayerMap.get(id);
@@ -305,6 +309,12 @@ export class StructureEpitopeEntryComponent implements OnInit, OnDestroy {
                 return markup ? { id, markup, mode } : undefined;
             })
             .filter((entry): entry is { id: string, markup: SafeHtml, mode: 'standard' | 'simple' } => entry !== undefined);
+
+        // When overlay appears after being empty, we may measure before layout settles.
+        // Retry size calculation on the next frame(s) to avoid "huge" first render.
+        if (wasEmpty && this.overlayLayerList.length > 0) {
+            this.scheduleOverlayRecalc();
+        }
     }
 
     private initializeOverlaySelection(): void {
@@ -534,6 +544,7 @@ export class StructureEpitopeEntryComponent implements OnInit, OnDestroy {
 
     public ngOnDestroy(): void {
         this.disconnectOverlayObserver();
+        this.cancelOverlayRecalc();
         this.overlaySelection.forEach((id) => this.structureService.releaseHtmlVisualizationMarkup(id));
         if (this.subscription) {
             this.subscription.unsubscribe();
@@ -544,16 +555,9 @@ export class StructureEpitopeEntryComponent implements OnInit, OnDestroy {
     private attachOverlayObserver(ref: ElementRef<HTMLElement> | undefined): void {
         this.disconnectOverlayObserver();
         this.overlayElement = undefined;
-        this.overlayAspectRatio = undefined;
         if (!ref || !ref.nativeElement) {
             if (this.overlayScrollerMaxHeight !== undefined) {
                 this.overlayScrollerMaxHeight = undefined;
-            }
-            if (this.overlayWidth !== undefined) {
-                this.overlayWidth = undefined;
-            }
-            if (this.overlayHeight !== undefined) {
-                this.overlayHeight = undefined;
             }
             this.changeDetector.markForCheck();
             return;
@@ -562,11 +566,13 @@ export class StructureEpitopeEntryComponent implements OnInit, OnDestroy {
         const element = ref.nativeElement;
         this.overlayElement = element;
         this.recalculateOverlaySize();
+        this.scheduleOverlayRecalc();
         const ResizeObserverCtor = (window as any).ResizeObserver as (new (callback: (entries: Array<{ contentRect: { height: number } }>) => void)
             => { observe(target: Element): void; disconnect(): void });
         if (!ResizeObserverCtor) {
             this.setOverlayScrollerMaxHeight(element.getBoundingClientRect().height);
             this.recalculateOverlaySize();
+            this.scheduleOverlayRecalc();
             return;
         }
 
@@ -581,6 +587,7 @@ export class StructureEpitopeEntryComponent implements OnInit, OnDestroy {
         this.overlayResizeObserver.observe(element);
         this.setOverlayScrollerMaxHeight(element.getBoundingClientRect().height);
         this.recalculateOverlaySize();
+        this.scheduleOverlayRecalc();
     }
 
     private disconnectOverlayObserver(): void {
@@ -612,6 +619,8 @@ export class StructureEpitopeEntryComponent implements OnInit, OnDestroy {
         const parentElement = this.overlayElement.parentElement as HTMLElement | null;
         const parentWidth = parentElement ? Math.round(parentElement.getBoundingClientRect().width) : Math.round(this.overlayElement.getBoundingClientRect().width);
         if (parentWidth <= 0) {
+            // Fallback: at least cap by viewport to avoid the initial "huge" render.
+            this.recalculateOverlaySizeFallback();
             return;
         }
 
@@ -628,7 +637,7 @@ export class StructureEpitopeEntryComponent implements OnInit, OnDestroy {
             return;
         }
 
-        const aspectRatio = this.resolveOverlayAspectRatio();
+        const aspectRatio = StructureEpitopeEntryComponent.overlayFallbackAspectRatio;
         const minWidthByHeight = Math.round(StructureEpitopeEntryComponent.overlayMinHeightPx * aspectRatio);
         const minWidth = Math.max(StructureEpitopeEntryComponent.overlayMinWidthPx, minWidthByHeight);
 
@@ -647,49 +656,71 @@ export class StructureEpitopeEntryComponent implements OnInit, OnDestroy {
         }
     }
 
-    private resolveOverlayAspectRatio(): number {
-        if (this.overlayAspectRatio && this.overlayAspectRatio > 0) {
-            return this.overlayAspectRatio;
-        }
+    private scheduleOverlayRecalc(): void {
         if (!this.overlayElement) {
-            return StructureEpitopeEntryComponent.overlayFallbackAspectRatio;
+            return;
         }
-
-        const svg = this.overlayElement.querySelector('svg');
-        if (svg) {
-            const viewBox = svg.getAttribute('viewBox');
-            if (viewBox) {
-                const parts = viewBox.trim().split(/\s+/).map((token) => parseFloat(token));
-                if (parts.length === 4 && parts[2] > 0 && parts[3] > 0) {
-                    const viewBoxRatio = parts[2] / parts[3];
-                    if (isFinite(viewBoxRatio) && viewBoxRatio > 0) {
-                        this.overlayAspectRatio = viewBoxRatio;
-                        return viewBoxRatio;
-                    }
-                }
-            }
-
-            const widthAttr = this.parseDimensionToken(svg.getAttribute('width'));
-            const heightAttr = this.parseDimensionToken(svg.getAttribute('height'));
-            if (widthAttr > 0 && heightAttr > 0) {
-                const attrRatio = widthAttr / heightAttr;
-                if (isFinite(attrRatio) && attrRatio > 0) {
-                    this.overlayAspectRatio = attrRatio;
-                    return attrRatio;
-                }
-            }
+        // Try a few times to allow DOM + innerHTML SVG to mount and settle.
+        if (this.overlayRecalcAttemptsLeft <= 0) {
+            this.overlayRecalcAttemptsLeft = 3;
         }
+        if (this.overlayRecalcRafId !== undefined) {
+            return;
+        }
+        this.overlayRecalcRafId = window.requestAnimationFrame(() => {
+            this.overlayRecalcRafId = undefined;
+            this.overlayRecalcAttemptsLeft = Math.max(0, this.overlayRecalcAttemptsLeft - 1);
+            this.recalculateOverlaySize();
 
-        this.overlayAspectRatio = StructureEpitopeEntryComponent.overlayFallbackAspectRatio;
-        return this.overlayAspectRatio;
+            if ((this.overlayWidth === undefined || this.overlayHeight === undefined) && this.overlayRecalcAttemptsLeft > 0) {
+                this.scheduleOverlayRecalc();
+            }
+        });
     }
 
-    private parseDimensionToken(value?: string | null): number {
-        if (!value) {
-            return 0;
+    private cancelOverlayRecalc(): void {
+        if (this.overlayRecalcRafId !== undefined) {
+            window.cancelAnimationFrame(this.overlayRecalcRafId);
+            this.overlayRecalcRafId = undefined;
         }
-        const parsed = parseFloat(value);
-        return isFinite(parsed) ? parsed : 0;
+        this.overlayRecalcAttemptsLeft = 0;
+    }
+
+    private recalculateOverlaySizeFallback(): void {
+        const viewportHeight = Math.max(window.innerHeight || 0, document.documentElement ? document.documentElement.clientHeight : 0);
+        if (viewportHeight <= 0) {
+            return;
+        }
+
+        const topMenu = document.querySelector('.ui.top.fixed.borderless.inverted.menu.large') as HTMLElement | null;
+        const headerHeight = topMenu ? Math.max(0, Math.round(topMenu.getBoundingClientRect().height)) : 0;
+        const availableHeight = Math.max(
+            0,
+            viewportHeight
+            - headerHeight
+            - StructureEpitopeEntryComponent.overlayHeaderExtraPadding
+            - StructureEpitopeEntryComponent.overlayViewportBottomPadding
+        );
+        if (availableHeight <= 0) {
+            return;
+        }
+
+        const aspectRatio = StructureEpitopeEntryComponent.overlayFallbackAspectRatio;
+        const minWidthByHeight = Math.round(StructureEpitopeEntryComponent.overlayMinHeightPx * aspectRatio);
+        const minWidth = Math.max(StructureEpitopeEntryComponent.overlayMinWidthPx, minWidthByHeight);
+
+        const widthByHeightLimit = Math.round(availableHeight * aspectRatio);
+        const nextWidth = Math.max(minWidth, widthByHeightLimit);
+        const nextHeight = Math.round(nextWidth / aspectRatio);
+
+        const hasSizeChanged = this.overlayWidth !== nextWidth || this.overlayHeight !== nextHeight;
+        this.overlayWidth = nextWidth;
+        this.overlayHeight = nextHeight;
+        this.setOverlayScrollerMaxHeight(nextHeight);
+
+        if (hasSizeChanged) {
+            this.changeDetector.markForCheck();
+        }
     }
 
     private shouldSkipToggle(event?: MouseEvent): boolean {

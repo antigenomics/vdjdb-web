@@ -266,6 +266,27 @@
     overflow: hidden;
 }
 
+.structure-empty-placeholder {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2.25rem 1.5rem;
+    box-sizing: border-box;
+}
+
+.structure-empty-placeholder__text {
+    max-width: 520px;
+    text-align: center;
+    white-space: normal;
+    word-break: break-word;
+    line-height: 1.4;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: rgba(0, 0, 0, 0.55);
+}
+
 .structure-overlay__content {
     position: relative;
     user-select: none;
