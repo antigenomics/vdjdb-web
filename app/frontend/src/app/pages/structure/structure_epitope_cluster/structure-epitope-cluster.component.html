@@ -47,7 +47,7 @@
     <ng-container *ngIf="isHtmlVisualizationRequested(); else noVisualization">
         <ng-container *ngIf="hasHtmlVisualization(); else htmlLoading">
             <div class="structure-zoom-viewer">
-                <div class="structure-zoom-viewer__content" (mousedown)="zoomState.onMouseDown($event)">
+                <div class="structure-zoom-viewer__content" (mousedown)="zoomState.onMouseDown($event)" #zoomViewport>
                     <div class="structure-zoom-viewer__canvas"
                          [class.is-dragging]="zoomState.isDragging"
                          [style.transform]="zoomState.transform"
@@ -55,15 +55,22 @@
                         <div class="structure-html" [innerHTML]="htmlVisualization"></div>
                     </div>
                 </div>
-                <div class="structure-zoom">
-                    <button class="structure-zoom__button" type="button" (click)="zoomState.increaseZoom()">+</button>
-                    <input class="structure-zoom__slider" type="range"
-                           [min]="zoomState.zoomMin"
-                           [max]="zoomState.zoomMax"
-                           [step]="zoomState.zoomStep"
-                           [value]="zoomState.zoomLevel"
-                           (input)="zoomState.onZoomInput($event)">
-                    <button class="structure-zoom__button" type="button" (click)="zoomState.decreaseZoom()">-</button>
+                <div class="structure-zoom-controls">
+                    <div class="structure-zoom">
+                        <button class="structure-zoom__button" type="button" (click)="zoomState.increaseZoom()">+</button>
+                        <input class="structure-zoom__slider" type="range"
+                               [min]="zoomState.zoomMin"
+                               [max]="zoomState.zoomMax"
+                               [step]="zoomState.zoomStep"
+                               [value]="zoomState.zoomLevel"
+                               (input)="zoomState.onZoomInput($event)">
+                        <button class="structure-zoom__button" type="button" (click)="zoomState.decreaseZoom()">-</button>
+                    </div>
+                    <button class="structure-zoom__reset" type="button" (click)="zoomState.resetView()" aria-label="Reset zoom and center">
+                        <svg class="structure-zoom__reset-icon" viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M12 4L4 10V20H10V15H14V20H20V10L12 4Z"></path>
+                        </svg>
+                    </button>
                 </div>
                 <div class="structure-legend" aria-hidden="true">
                     <img class="structure-legend__image"

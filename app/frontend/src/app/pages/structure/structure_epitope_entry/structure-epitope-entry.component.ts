@@ -108,6 +108,9 @@ export class StructureEpitopeEntryComponent implements OnInit, OnDestroy {
     @ViewChild('zoomCanvas') public set zoomCanvasRef(ref: ElementRef<HTMLElement> | undefined) {
         this.zoomState.attachCanvas(ref ? ref.nativeElement : undefined);
     }
+    @ViewChild('zoomViewport') public set zoomViewportRef(ref: ElementRef<HTMLElement> | undefined) {
+        this.zoomState.attachViewport(ref ? ref.nativeElement : undefined);
+    }
 
     constructor(private structureService: StructureService, private availability: SearchAvailabilityService,
                 private changeDetector: ChangeDetectorRef, private sanitizer: DomSanitizer) {

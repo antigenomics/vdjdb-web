@@ -33,6 +33,7 @@ export class StructureZoomController {
     private dragMoveHandler: (event: MouseEvent) => void;
     private dragEndHandler: (event: MouseEvent) => void;
     private canvasElement?: HTMLElement;
+    private viewportElement?: HTMLElement;
 
     constructor(private changeDetector: ChangeDetectorRef) {
         this.dragMoveHandler = (event: MouseEvent) => {
@@ -53,15 +54,24 @@ export class StructureZoomController {
         if (isNaN(value)) {
             return;
         }
-        this.setZoom(value);
+        this.setZoom(value, this.getViewportCenter());
     }
 
     public increaseZoom(): void {
-        this.setZoom(this.zoomLevel + this.zoomStep);
+        this.setZoom(this.zoomLevel + this.zoomStep, this.getViewportCenter());
     }
 
     public decreaseZoom(): void {
-        this.setZoom(this.zoomLevel - this.zoomStep);
+        this.setZoom(this.zoomLevel - this.zoomStep, this.getViewportCenter());
+    }
+
+    public resetView(): void {
+        this.zoomLevel = this.zoomMin;
+        const centeredPan = this.getCenteredPan(this.zoomLevel);
+        this.panX = centeredPan.x;
+        this.panY = centeredPan.y;
+        this.updateTransform();
+        this.changeDetector.markForCheck();
     }
 
     public onMouseDown(event: MouseEvent): void {
@@ -86,6 +96,7 @@ export class StructureZoomController {
         window.removeEventListener('mouseleave', this.dragEndHandler);
         this.isDragging = false;
         this.canvasElement = undefined;
+        this.viewportElement = undefined;
     }
 
     public attachCanvas(element: HTMLElement | null | undefined): void {
@@ -93,12 +104,25 @@ export class StructureZoomController {
         this.applyTransform();
     }
 
-    private setZoom(value: number): void {
+    public attachViewport(element: HTMLElement | null | undefined): void {
+        this.viewportElement = element || undefined;
+    }
+
+    private setZoom(value: number, focusPoint?: { x: number, y: number }): void {
         const clamped = Math.min(this.zoomMax, Math.max(this.zoomMin, value));
         if (this.zoomLevel === clamped) {
             return;
         }
-        this.zoomLevel = clamped;
+        const previousZoom = this.zoomLevel;
+        if (focusPoint && previousZoom > 0) {
+            const focusStructureX = (focusPoint.x - this.panX) / previousZoom;
+            const focusStructureY = (focusPoint.y - this.panY) / previousZoom;
+            this.zoomLevel = clamped;
+            this.panX = focusPoint.x - focusStructureX * this.zoomLevel;
+            this.panY = focusPoint.y - focusStructureY * this.zoomLevel;
+        } else {
+            this.zoomLevel = clamped;
+        }
         this.updateTransform();
         this.changeDetector.markForCheck();
     }
@@ -129,6 +153,38 @@ export class StructureZoomController {
     private updateTransform(): void {
         this.transform = `translate(${this.panX}px, ${this.panY}px) scale(${this.zoomLevel})`;
         this.applyTransform();
+    }
+
+    private getViewportCenter(): { x: number, y: number } | undefined {
+        if (!this.viewportElement) {
+            return undefined;
+        }
+        const viewportWidth = this.viewportElement.clientWidth;
+        const viewportHeight = this.viewportElement.clientHeight;
+        if (viewportWidth <= 0 || viewportHeight <= 0) {
+            return undefined;
+        }
+        return {
+            x: viewportWidth / 2,
+            y: viewportHeight / 2
+        };
+    }
+
+    private getCenteredPan(zoom: number): { x: number, y: number } {
+        if (!this.viewportElement || !this.canvasElement) {
+            return { x: 0, y: 0 };
+        }
+        const viewportWidth = this.viewportElement.clientWidth;
+        const viewportHeight = this.viewportElement.clientHeight;
+        const canvasWidth = this.canvasElement.offsetWidth;
+        const canvasHeight = this.canvasElement.offsetHeight;
+        if (viewportWidth <= 0 || viewportHeight <= 0 || canvasWidth <= 0 || canvasHeight <= 0) {
+            return { x: 0, y: 0 };
+        }
+        return {
+            x: (viewportWidth - canvasWidth * zoom) / 2,
+            y: (viewportHeight - canvasHeight * zoom) / 2
+        };
     }
 
     private applyTransform(): void {
