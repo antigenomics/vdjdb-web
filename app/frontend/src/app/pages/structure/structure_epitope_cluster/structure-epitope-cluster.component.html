@@ -65,6 +65,11 @@
                            (input)="zoomState.onZoomInput($event)">
                     <button class="structure-zoom__button" type="button" (click)="zoomState.decreaseZoom()">-</button>
                 </div>
+                <div class="structure-legend" aria-hidden="true">
+                    <img class="structure-legend__image"
+                         src="/assets/images/tcr_skeleton_plots_legend.svg"
+                         alt="">
+                </div>
             </div>
         </ng-container>
         <ng-template #htmlLoading>

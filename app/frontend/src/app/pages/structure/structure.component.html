@@ -34,7 +34,7 @@
                  [style.height]="isStateSearchCDR3() ? '100%' : 'auto'"
                  [style.overflow]="isStateSearchCDR3() ? 'hidden' : 'visible'">
                 <div class="ui sixteen wide column"
-                     style="overflow-x: hidden;"
+                     [style.overflow-x]="isStateSearchCDR3() ? 'hidden' : 'auto'"
                      [style.overflow-y]="isStateSearchCDR3() ? 'auto' : 'visible'"
                      [style.height]="isStateSearchCDR3() ? '100%' : 'auto'"
                      #EpitopesContainer>

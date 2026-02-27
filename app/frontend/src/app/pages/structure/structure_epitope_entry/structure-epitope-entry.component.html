@@ -31,20 +31,13 @@
     </h4>
     <ng-container *ngIf="!isHidden">
         <div class="overlay-controls">
-            <div class="overlay-header">
-                <div class="overlay-header__info">
-                    <div class="overlay-header__title">Select up to {{ overlayLimit }} structures</div>
-                    <div class="overlay-header__hint">Click a card to add/remove it from overlay</div>
-                </div>
-                <div class="overlay-header__counter">
-                    <span class="overlay-header__counter-value">{{ overlaySelectionCount }}</span>
-                    <span class="overlay-header__counter-separator">/</span>
-                    <span class="overlay-header__counter-limit">{{ overlayLimit }}</span>
-                </div>
-            </div>
             <div class="overlay-layout">
-                <div class="overlay-list">
-                    <div class="overlay-list__scroller" [style.max-height.px]="overlayScrollerMaxHeight">
+                <div class="overlay-list" [style.height.px]="overlayHeight">
+                    <div class="overlay-list__instructions">
+                        <div class="overlay-list__instructions-title">Select up to {{ overlayLimit }} structures</div>
+                        <div class="overlay-list__instructions-hint">Click a card to add/remove it from overlay</div>
+                    </div>
+                    <div class="overlay-list__scroller">
                         <div class="overlay-card" *ngFor="let row of overlayTableRows; trackBy: trackRowBy"
                              [class.is-selected]="isClusterSelected(row.cluster)"
                              [class.is-disabled]="isRowDisabled(row)"
@@ -93,7 +86,11 @@
                     </div>
                 </div>
                 <div class="overlay-visualization">
-                    <div class="structure-overlay" *ngIf="overlayLayerList.length > 0; else overlayEmpty" #structureOverlay>
+                    <div class="structure-overlay"
+                         *ngIf="overlayLayerList.length > 0; else overlayEmpty"
+                         [style.width.px]="overlayWidth"
+                         [style.height.px]="overlayHeight"
+                         #structureOverlay>
                         <div class="structure-overlay__content" (mousedown)="zoomState.onMouseDown($event)">
                             <div class="structure-overlay__canvas"
                                  [class.is-dragging]="zoomState.isDragging"
@@ -122,6 +119,16 @@
                                    [value]="zoomState.zoomLevel"
                                    (input)="zoomState.onZoomInput($event)">
                             <button class="structure-zoom__button" type="button" (click)="zoomState.decreaseZoom()">-</button>
+                        </div>
+                        <div class="structure-counter" aria-hidden="true">
+                            <span class="structure-counter__value">{{ overlaySelectionCount }}</span>
+                            <span class="structure-counter__separator">/</span>
+                            <span class="structure-counter__limit">{{ overlayLimit }}</span>
+                        </div>
+                        <div class="structure-legend" aria-hidden="true">
+                            <img class="structure-legend__image"
+                                 src="/assets/images/tcr_skeleton_plots_legend.svg"
+                                 alt="">
                         </div>
                     </div>
                     <ng-template #overlayEmpty>
