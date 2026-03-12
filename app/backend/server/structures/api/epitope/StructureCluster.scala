@@ -30,7 +30,11 @@ case class StructureCluster(clusterId: String,
                             jsegm: String,
                             entries: Seq[StructureClusterEntry],
                             meta: StructureClusterMeta,
-                            visualization: Option[StructureVisualization])
+                            visualization: Option[StructureVisualization],
+                            cdr3aVEnd: Int = -1,
+                            cdr3aJStart: Int = -1,
+                            cdr3bVEnd: Int = -1,
+                            cdr3bJStart: Int = -1)
 
 object StructureCluster {
   implicit val structureClusterFormat: Format[StructureCluster] = Json.format[StructureCluster]

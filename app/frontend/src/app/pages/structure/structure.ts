@@ -91,6 +91,10 @@ export interface IStructureCluster {
   readonly length: number;
   readonly vsegm: string;
   readonly jsegm: string;
+  readonly cdr3aVEnd?: number;
+  readonly cdr3aJStart?: number;
+  readonly cdr3bVEnd?: number;
+  readonly cdr3bJStart?: number;
   readonly entries: IStructureClusterEntry[];
   readonly meta: IStructureClusterMeta;
   readonly visualization?: IStructureVisualization;
@@ -107,6 +111,7 @@ export interface IStructureEpitope {
 export interface IStructureCDR3SearchEntry {
   info: number;
   cdr3: string;
+  chain?: string;
   cluster: IStructureCluster;
 }
 

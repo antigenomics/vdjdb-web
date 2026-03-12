@@ -9,19 +9,23 @@ import ColorizedPatternRegion = Utils.SequencePattern.ColorizedPatternRegion;
 @Component({
   selector:        'td[search-table-entry-cdr]',
   template:        `
+    <!-- Motif browser links disabled; coloring is preserved without underline
     <ng-container *ngIf="hasMotif; else noMotif">
       <a [href]="link" class="motif-link motif-link--active">
         <span *ngFor="let region of regions" [style.color]="region.color">{{ region.part }}</span>
       </a>
     </ng-container>
     <ng-template #noMotif>
+    -->
       <span class="motif-link motif-link--inactive">
         <span *ngFor="let region of regions" [style.color]="region.color">{{ region.part }}</span>
       </span>
+    <!-- end motif browser links
     </ng-template>
+    -->
   `,
   styles: [
-    `.motif-link--active { color: #377eb8; text-decoration: underline; }
+    `/* .motif-link--active { color: #377eb8; text-decoration: underline; } */
      .motif-link--inactive { color: inherit; text-decoration: none; cursor: default; }`
   ],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -41,27 +45,29 @@ export class SearchTableEntryCdrComponent extends TableEntry {
     this.link = '#';
     this.hasMotif = false;
 
-    const motifLinkData = this.extractMotifLinkData(row, columns);
-    if (!motifLinkData) {
-      this.changeDetector.markForCheck();
-      return;
-    }
+    // Motif browser links disabled — keep coloring but no link
+    // const motifLinkData = this.extractMotifLinkData(row, columns);
+    // if (!motifLinkData) {
+    //   this.changeDetector.markForCheck();
+    //   return;
+    // }
+    // const { species, tcrChain, mhcClass, gene, epitopeSeq } = motifLinkData;
+    // this.availability.hasMotif(species, tcrChain, mhcClass, gene, epitopeSeq).then((available) => {
+    //   if (available) {
+    //     this.hasMotif = true;
+    //     this.link = this.generateMotifLink(species, tcrChain, mhcClass, gene, epitopeSeq);
+    //   } else {
+    //     this.hasMotif = false;
+    //     this.link = '#';
+    //   }
+    //   this.changeDetector.markForCheck();
+    // }).catch(() => {
+    //   this.hasMotif = false;
+    //   this.link = '#';
+    //   this.changeDetector.markForCheck();
+    // });
 
-    const { species, tcrChain, mhcClass, gene, epitopeSeq } = motifLinkData;
-    this.availability.hasMotif(species, tcrChain, mhcClass, gene, epitopeSeq).then((available) => {
-      if (available) {
-        this.hasMotif = true;
-        this.link = this.generateMotifLink(species, tcrChain, mhcClass, gene, epitopeSeq);
-      } else {
-        this.hasMotif = false;
-        this.link = '#';
-      }
-      this.changeDetector.markForCheck();
-    }).catch(() => {
-      this.hasMotif = false;
-      this.link = '#';
-      this.changeDetector.markForCheck();
-    });
+    this.changeDetector.markForCheck();
   }
 
   private getCellValue(row: SearchTableRow, columns: TableColumn[], columnName: string): string | undefined {

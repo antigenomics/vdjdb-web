@@ -19,16 +19,20 @@ package backend.server.structures.api.cdr3
 import backend.server.structures.api.epitope.StructureCluster
 import play.api.libs.json.{Format, Json}
 
-case class StructureCDR3SearchEntry(info: Double, cdr3: String, cluster: StructureCluster) {
+case class StructureCDR3SearchEntry(info: Double, cdr3: String, chain: Option[String], cluster: StructureCluster) {
 
   override def equals(obj: Any): Boolean = {
     obj match {
-      case that: StructureCDR3SearchEntry => that.info == this.info && that.cluster.equals(this.cluster)
+      case that: StructureCDR3SearchEntry =>
+        that.info == this.info &&
+          that.cdr3 == this.cdr3 &&
+          that.chain == this.chain &&
+          that.cluster.equals(this.cluster)
       case _ => false
     }
   }
 
-  override def hashCode(): Int = info.hashCode() + cluster.hashCode()
+  override def hashCode(): Int = info.hashCode() + cdr3.hashCode() + chain.hashCode() + cluster.hashCode()
 
 }
 

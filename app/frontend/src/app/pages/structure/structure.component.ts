@@ -14,7 +14,7 @@
  *     limitations under the License.
  */
 
-import { ChangeDetectionStrategy, Component, DoCheck, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, DoCheck, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import {
   IStructureCDR3SearchResult,
@@ -33,9 +33,10 @@ import { ContentWrapperService } from '../../content-wrapper.service';
 @Component({
   selector:        'structure',
   templateUrl:     './structure.component.html',
+  styleUrls:       [ './structure.component.css' ],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class StructurePageComponent implements OnInit, OnDestroy, DoCheck {
+export class StructurePageComponent implements OnInit, OnDestroy, DoCheck, AfterViewInit {
   private static readonly pageScrollEventDebounceTimeout: number = 10;
   private static readonly pageResizeEventDebounceTimeout: number = 200;
 
@@ -51,6 +52,7 @@ export class StructurePageComponent implements OnInit, OnDestroy, DoCheck {
   public readonly options: Observable<IStructureEpitopeViewOptions>;
   public readonly clusters: Observable<IStructureCDR3SearchResult>;
   public readonly cdr3SearchOptions: Observable<IStructureCDR3SearchResultOptions>;
+  public stickyHeaderOffsetPx: number = 0;
 
   @ViewChild('EpitopesContainer')
   public epitopesContainer: ElementRef;
@@ -73,6 +75,10 @@ export class StructurePageComponent implements OnInit, OnDestroy, DoCheck {
       const epitopeSeq = params.get('epitope_seq');
       const structureId = params.get('structure_id');
       const cdr3Query = params.get('query');
+      const substringParam = params.get('substring');
+      const cdr3ChainParam = params.get('cdr3_chain');
+      const substring = substringParam === '1' || substringParam === 'true';
+      const cdr3Gene = this.resolveCdr3Gene(cdr3ChainParam);
 
       const signature = [
         species,
@@ -81,7 +87,9 @@ export class StructurePageComponent implements OnInit, OnDestroy, DoCheck {
         mhcClass || '',
         epitopeSeq || '',
         structureId || '',
-        cdr3Query || ''
+        cdr3Query || '',
+        substring ? '1' : '0',
+        cdr3Gene
       ].join('|');
 
       if (signature === this.lastQuerySignature) {
@@ -102,23 +110,28 @@ export class StructurePageComponent implements OnInit, OnDestroy, DoCheck {
       }
 
       if (cdr3Query) {
-        this.structureService.searchCDR3ByUrl(cdr3Query);
+        this.structureService.searchCDR3ByUrl(cdr3Query, substring, cdr3Gene);
       } else {
         this.structureService.load();
       }
     });
 
-    this.onScrollObservable = fromEvent(this.epitopesContainer.nativeElement, 'scroll')
+    this.onScrollObservable = fromEvent(window, 'scroll')
         .pipe(debounce(() => timer(StructurePageComponent.pageScrollEventDebounceTimeout))).subscribe(() => {
           this.structureService.fireScrollUpdateEvent();
         });
 
     this.onResizeObservable = fromEvent(window, 'resize')
         .pipe(debounce(() => timer(StructurePageComponent.pageResizeEventDebounceTimeout))).subscribe(() => {
+          this.updateStickyHeaderOffset();
           this.structureService.fireResizeUpdateEvent();
         });
 
     this.syncScrollBlocking();
+  }
+
+  public ngAfterViewInit(): void {
+    this.updateStickyHeaderOffset();
   }
 
   public ngDoCheck(): void {
@@ -152,10 +165,27 @@ export class StructurePageComponent implements OnInit, OnDestroy, DoCheck {
       return;
     }
     this.lastSearchState = nextState;
-    if (nextState === StructureSearchState.SEARCH_CDR3) {
-      this.contentWrapper.blockScrolling();
-    } else {
-      this.contentWrapper.unblockScrolling();
+    this.contentWrapper.unblockScrolling();
+  }
+
+  private resolveCdr3Gene(chainParam: string | null): string {
+    switch ((chainParam || '').toLowerCase()) {
+      case 'a':
+        return 'TRA';
+      case 'b':
+        return 'TRB';
+      case 'ab':
+        return 'BOTH';
+      default:
+        return 'TRA';
+    }
+  }
+
+  private updateStickyHeaderOffset(): void {
+    const topMenu = document.querySelector('.ui.top.fixed.borderless.inverted.menu.large') as HTMLElement | null;
+    const nextOffset = topMenu ? Math.max(0, Math.round(topMenu.getBoundingClientRect().height)) : 0;
+    if (this.stickyHeaderOffsetPx !== nextOffset) {
+      this.stickyHeaderOffsetPx = nextOffset;
     }
   }
 }

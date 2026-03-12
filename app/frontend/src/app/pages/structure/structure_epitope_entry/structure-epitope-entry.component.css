@@ -13,10 +13,21 @@
  *     See the License for the specific language governing permissions and
  *     limitations under the License.
  */
-
 .structure-epitope-entry {
-    padding: 0.5rem;
+    --overlay-list-width: 320px;
+    --overlay-layout-gap: 1rem;
+    --overlay-min-width: 0px;
+    --overlay-right-margin: 8px;
+    --structure-entry-side-padding: 0.5rem;
+    padding: var(--structure-entry-side-padding);
     margin-bottom: 1rem;
+    min-width: calc(
+        var(--overlay-list-width)
+        + var(--overlay-layout-gap)
+        + var(--overlay-min-width)
+        + var(--overlay-right-margin)
+        + (var(--structure-entry-side-padding) * 2)
+    );
 }
 
 .structure-epitope-entry__header {
@@ -57,12 +68,14 @@
 .overlay-layout {
     display: flex;
     align-items: stretch;
-    gap: 1rem;
-    min-width: 856px;
+    gap: var(--overlay-layout-gap);
+    min-width: calc(var(--overlay-list-width) + var(--overlay-layout-gap) + var(--overlay-min-width) + var(--overlay-right-margin));
+    padding-right: var(--overlay-right-margin);
+    box-sizing: border-box;
 }
 
 .overlay-list {
-    flex: 0 0 320px;
+    flex: 0 0 var(--overlay-list-width);
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
@@ -70,8 +83,54 @@
     align-self: stretch;
 }
 
+.overlay-list__top-row {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.6rem;
+}
+
+.overlay-list__download-table {
+    position: absolute;
+    right: 12px;
+    order: 2;
+    margin-left: auto;
+    min-height: 0;
+    min-width: 0;
+    padding: 2px 8px 2px 8px !important;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    line-height: 1.2;
+    box-shadow: none;
+    border: 1px solid rgba(34, 36, 38, 0.15);
+    background: #ffffff;
+    color: rgba(0, 0, 0, 0.87);
+    font-weight: 700;
+    text-align: left;
+    cursor: pointer;
+    white-space: nowrap;
+    font-family: inherit;
+}
+
+.overlay-list__download-table:hover {
+    border-color: rgba(34, 36, 38, 0.35);
+}
+    .overlay-list__download-table:disabled {
+    opacity: 0.45;
+    cursor: default;
+}
+
 .overlay-list__instructions {
+    order: 1;
+    flex: 1 1 auto;
+    min-width: 0;
     padding: 0.1rem 0.1rem 0.35rem;
+}
+
+.overlay-list__instructions-title,
+.overlay-list__instructions-hint {
+    display: block;
 }
 
 .overlay-list__instructions-title {
@@ -79,6 +138,11 @@
     letter-spacing: 0.2px;
     font-size: 0.95rem;
     color: #303030;
+}
+
+.overlay-list__instructions-separator {
+    display: none;
+    color: rgba(0, 0, 0, 0.55);
 }
 
 .overlay-list__instructions-hint {
@@ -133,7 +197,6 @@
     position: relative;
     align-items: baseline;
     gap: 4px 6px;
-    padding-right: 118px;
 }
 
 .overlay-card__id-meta {
@@ -343,7 +406,7 @@
     left: 8px;
     top: 50%;
     transform: translateY(-50%);
-    z-index: 5;
+    z-index: 2;
     display: flex;
     flex-direction: column;
     align-items: stretch;
@@ -365,7 +428,7 @@
     position: absolute;
     left: 8px;
     top: 8px;
-    z-index: 5;
+    z-index: 2;
     display: inline-flex;
     align-items: baseline;
     gap: 4px;
@@ -439,7 +502,7 @@
     position: absolute;
     top: 10px;
     right: 10px;
-    z-index: 4;
+    z-index: 2;
     width: calc(var(--structure-legend-width-ratio) * 100%);
     pointer-events: none;
 }
@@ -448,4 +511,100 @@
     display: block;
     width: 100%;
     height: auto;
+}
+
+@media (max-width: 890px) and (min-width: 768px) {
+    .overlay-list__instructions-hint {
+        display: none;
+    }
+
+    .overlay-list__download-table {
+        position: static;
+    }
+
+    .overlay-list__top-row {
+        display: block;
+    }
+
+    .structure-epitope-entry {
+        --overlay-list-width: 290px;
+    }
+}
+
+@media (max-width: 767px) {
+    .structure-epitope-entry {
+        min-width: 0;
+        --overlay-list-width: 290px;
+    }
+
+    .structure-epitope-entry__header {
+        margin-bottom: 0.5rem;
+    }
+
+    .overlay-layout {
+        min-width: 0;
+        padding-right: 0;
+        flex-direction: column;
+        gap: 0.65rem;
+    }
+
+    .overlay-list {
+        order: -1;
+        flex: 0 0 auto;
+        width: 100%;
+        height: auto !important;
+    }
+
+    .overlay-list__download-table {
+        margin-left: auto;
+        order: 1;
+    }
+
+    .overlay-list__instructions {
+        order: 2;
+        width: 100%;
+        padding-bottom: 0.2rem;
+        white-space: nowrap;
+        overflow-x: auto;
+        overflow-y: hidden;
+    }
+
+    .overlay-list__instructions-title,
+    .overlay-list__instructions-hint,
+    .overlay-list__instructions-separator {
+        display: inline;
+        font-size: 0.85rem;
+    }
+
+    .overlay-list__instructions-hint {
+        margin-top: 0;
+    }
+
+    .overlay-list__instructions-separator {
+        margin: 0 0.22rem 0 0.15rem;
+    }
+
+    .overlay-list__scroller {
+        overflow-x: auto;
+        overflow-y: hidden;
+        display: flex;
+        flex-wrap: nowrap;
+        gap: 0.6rem;
+        padding-right: 0;
+        padding-bottom: 4px;
+    }
+
+    .overlay-list__scroller .overlay-card {
+        flex: 0 0 var(--overlay-list-width);
+    }
+
+    .overlay-list__scroller .overlay-card + .overlay-card {
+        margin-top: 0;
+    }
+}
+
+@media (max-width: 616px) {
+    .overlay-list__instructions-hint {
+        display: none;
+    }
 }

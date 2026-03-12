@@ -19,7 +19,7 @@
      [style.left]="boundingRect.left"
      [style.top]="boundingRect.top"
      [style.bottom]="boundingRect.bottom"
-     style="display: block !important; position: fixed; text-align: left !important; white-space: normal;">
+     style="display: block !important; position: fixed; text-align: left !important; white-space: normal; pointer-events: none;">
     <div class="header">{{ getHeaderContent() }}</div>
     <div class="ui divider" *ngIf="getHeaderContent()"></div>
     <div class="content" *ngIf="display === 'paragraph'">

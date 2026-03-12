@@ -22,8 +22,10 @@ import { StructureService, StructuresServiceEvents } from 'pages/structure/struc
 import { StructureZoomController } from 'pages/structure/structure_zoom/structure-zoom.controller';
 import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
+import { Utils } from 'utils/utils';
+import ColorizedPatternRegion = Utils.SequencePattern.ColorizedPatternRegion;
 
-type StructureDownloadOption = 'structure' | 'contacts' | 'both';
+type StructureDownloadOption = 'structure' | 'contacts' | 'ca_atoms' | 'all';
 
 interface IParsedChainLabel {
     cdr3?: string;
@@ -42,6 +44,8 @@ interface IOverlayTableRow {
     betaClusterId?: string;
     cdr3a?: string;
     cdr3b?: string;
+    cdr3aRegions: ColorizedPatternRegion[];
+    cdr3bRegions: ColorizedPatternRegion[];
     trav?: string;
     traj?: string;
     trbv?: string;
@@ -61,10 +65,12 @@ interface IMotifParams {
 }
 
 const DOWNLOAD_NAME_TOKEN = '{hash}';
+const OVERLAY_TABLE_FILE_SUFFIX = '_structure_overlay.tsv';
 const STRUCTURE_DOWNLOAD_FILE_PATTERNS: { [option in StructureDownloadOption]: string } = {
-    structure: `${DOWNLOAD_NAME_TOKEN}_coordinates.tsv`,
-    contacts: `${DOWNLOAD_NAME_TOKEN}_contacts.txt`,
-    both: `${DOWNLOAD_NAME_TOKEN}_structure.zip`
+    structure: `aligned_aligned_${DOWNLOAD_NAME_TOKEN}.pdb`,
+    contacts: `${DOWNLOAD_NAME_TOKEN}_contacts_aa.txt`,
+    ca_atoms: `${DOWNLOAD_NAME_TOKEN}_aa_coordinates.tsv`,
+    all: `${DOWNLOAD_NAME_TOKEN}_all.zip`
 };
 
 @Component({
@@ -74,11 +80,11 @@ const STRUCTURE_DOWNLOAD_FILE_PATTERNS: { [option in StructureDownloadOption]: s
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class StructureEpitopeEntryComponent implements OnInit, OnDestroy {
-    private static readonly overlayViewportBottomPadding: number = 12;
-    private static readonly overlayHeaderExtraPadding: number = 16;
-    private static readonly overlayMinWidthPx: number = 520;
-    private static readonly overlayMinHeightPx: number = 360;
-    private static readonly overlayFallbackAspectRatio: number = 4 / 3;
+    private static readonly overlayViewportBottomPadding: number = 35;
+    private static readonly overlayHeaderExtraPadding: number = 51;
+    private static readonly overlayMinWidthPx: number = 0;
+    private static readonly overlayMinHeightPx: number = 0;
+    private static readonly overlayFallbackAspectRatio: number = 6 / 5;
     private subscription: Subscription;
     private overlaySelection: string[] = [];
     private overlayLayerMap: Map<string, { standard?: SafeHtml, simple?: SafeHtml }> = new Map<string, { standard?: SafeHtml, simple?: SafeHtml }>();
@@ -156,6 +162,10 @@ export class StructureEpitopeEntryComponent implements OnInit, OnDestroy {
 
     public get overlaySelectionCount(): number {
         return this.overlaySelection.length;
+    }
+
+    public get filteredStructuresCount(): number {
+        return this.overlayTableRows.length;
     }
 
     public onRowToggle(row: IOverlayTableRow, event?: MouseEvent): void {
@@ -250,6 +260,39 @@ export class StructureEpitopeEntryComponent implements OnInit, OnDestroy {
         const fileName = this.resolveDownloadFileName(hash, option);
         const fileUrl = `${this.downloadDirectory}/${encodeURIComponent(fileName)}`;
         this.startDownload(fileUrl, fileName);
+    }
+
+    public onDownloadTableClick(event?: MouseEvent): void {
+        if (event) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+        if (!this.overlayTableRows || this.overlayTableRows.length === 0) {
+            return;
+        }
+        const content = this.buildOverlayTableTsv();
+        const safePrefix = (this.epitope && this.epitope.epitope ? this.epitope.epitope : 'structures').replace(/[^A-Za-z0-9._-]+/g, '_');
+        const fileName = `${safePrefix}${OVERLAY_TABLE_FILE_SUFFIX}`;
+        const blob = new Blob([ content ], { type: 'text/tab-separated-values;charset=utf-8' });
+        const objectUrl = URL.createObjectURL(blob);
+        this.startDownload(objectUrl, fileName);
+        window.setTimeout(() => {
+            URL.revokeObjectURL(objectUrl);
+        }, 0);
+    }
+
+    @HostListener('document:mousedown', [ '$event' ])
+    public onDocumentMouseDown(event: MouseEvent): void {
+        const target = event && event.target ? event.target as HTMLElement : undefined;
+        if (target && typeof target.closest === 'function' && target.closest('.overlay-card__download')) {
+            return;
+        }
+        this.closeDownloadDropdowns();
+    }
+
+    @HostListener('window:blur')
+    public onWindowBlur(): void {
+        this.closeDownloadDropdowns();
     }
 
     @HostListener('window:resize')
@@ -348,6 +391,8 @@ export class StructureEpitopeEntryComponent implements OnInit, OnDestroy {
         const clusterIds = this.parseClusterIds(cluster);
         const alpha = pairLabel.alpha || {};
         const beta = pairLabel.beta || {};
+        const cdr3a = typeof alpha.cdr3 === 'string' ? alpha.cdr3 : '';
+        const cdr3b = typeof beta.cdr3 === 'string' ? beta.cdr3 : '';
         const meta = cluster.meta || {} as IStructureClusterMeta;
         const motifParams = this.buildMotifParams(meta, this.epitope.epitope);
         const motifLink = motifParams ? this.buildMotifLink(motifParams) : undefined;
@@ -356,8 +401,10 @@ export class StructureEpitopeEntryComponent implements OnInit, OnDestroy {
             cluster,
             alphaClusterId: clusterIds.alpha,
             betaClusterId: clusterIds.beta,
-            cdr3a: typeof alpha.cdr3 === 'string' ? alpha.cdr3 : '',
-            cdr3b: typeof beta.cdr3 === 'string' ? beta.cdr3 : '',
+            cdr3a,
+            cdr3b,
+            cdr3aRegions: this.buildColorizedCdr3(cdr3a, cluster.cdr3aVEnd, cluster.cdr3aJStart),
+            cdr3bRegions: this.buildColorizedCdr3(cdr3b, cluster.cdr3bVEnd, cluster.cdr3bJStart),
             trav: typeof alpha.v === 'string' ? alpha.v : '',
             traj: typeof alpha.j === 'string' ? alpha.j : '',
             trbv: typeof beta.v === 'string' ? beta.v : '',
@@ -366,6 +413,16 @@ export class StructureEpitopeEntryComponent implements OnInit, OnDestroy {
             motifParams,
             motifLink
         };
+    }
+
+    private buildColorizedCdr3(cdr3: string, vEnd?: number, jStart?: number): ColorizedPatternRegion[] {
+        if (!cdr3) {
+            return [];
+        }
+        const safeVEnd = typeof vEnd === 'number' ? vEnd : -1;
+        const safeJStart = typeof jStart === 'number' ? jStart : -1;
+        return Utils.SequencePattern.colorizePattern(cdr3, safeVEnd, safeJStart)
+            .filter((region) => !!region && typeof region.part === 'string' && region.part.length > 0);
     }
 
     private buildMotifParams(meta: IStructureClusterMeta, epitope: string): IMotifParams | undefined {
@@ -749,6 +806,44 @@ export class StructureEpitopeEntryComponent implements OnInit, OnDestroy {
         return template.replace(DOWNLOAD_NAME_TOKEN, hash);
     }
 
+    private buildOverlayTableTsv(): string {
+        const headers = [
+            'structure.id',
+            'cdr3a.cluster.id',
+            'cdr3b.cluster.id',
+            'cdr3a',
+            'cdr3b',
+            'trav',
+            'traj',
+            'trbv',
+            'trbj',
+            'html.available'
+        ];
+        const rows = this.overlayTableRows.map((row) => [
+            row.cluster && row.cluster.clusterId ? row.cluster.clusterId : '',
+            row.alphaClusterId || '',
+            row.betaClusterId || '',
+            row.cdr3a || '',
+            row.cdr3b || '',
+            row.trav || '',
+            row.traj || '',
+            row.trbv || '',
+            row.trbj || '',
+            row.hasHtml ? '1' : '0'
+        ]);
+        return [ headers, ...rows ]
+            .map((row) => row.map((value) => this.escapeTsvValue(value)).join('\t'))
+            .join('\n');
+    }
+
+    private escapeTsvValue(value: string): string {
+        const source = value || '';
+        if (source.indexOf('\t') === -1 && source.indexOf('\n') === -1 && source.indexOf('\r') === -1 && source.indexOf('"') === -1) {
+            return source;
+        }
+        return `"${source.replace(/"/g, '""')}"`;
+    }
+
     private startDownload(url: string, fileName: string): void {
         const link = document.createElement('a');
         link.href = url;
@@ -756,5 +851,20 @@ export class StructureEpitopeEntryComponent implements OnInit, OnDestroy {
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+    }
+
+    private closeDownloadDropdowns(): void {
+        const dropdowns = Array.from(document.querySelectorAll('.overlay-card__download')) as HTMLElement[];
+        dropdowns.forEach((dropdown) => {
+            dropdown.classList.remove('active');
+            dropdown.classList.remove('visible');
+
+            const menu = dropdown.querySelector('.menu') as HTMLElement | null;
+            if (!menu) {
+                return;
+            }
+            menu.classList.remove('visible');
+            menu.style.removeProperty('display');
+        });
     }
 }

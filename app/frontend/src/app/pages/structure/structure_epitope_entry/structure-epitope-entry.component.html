@@ -33,9 +33,18 @@
         <div class="overlay-controls">
             <div class="overlay-layout">
                 <div class="overlay-list" [style.height.px]="overlayHeight">
-                    <div class="overlay-list__instructions">
-                        <div class="overlay-list__instructions-title">Select up to {{ overlayLimit }} structures</div>
-                        <div class="overlay-list__instructions-hint">Click a card to add/remove it from overlay</div>
+                    <div class="overlay-list__top-row">
+                        <div class="overlay-list__instructions">
+                            <span class="overlay-list__instructions-title">Select up to {{ overlayLimit }} structures from {{ filteredStructuresCount }}</span>
+                            <span class="overlay-list__instructions-separator">.</span>
+                            <span class="overlay-list__instructions-hint">Click a card to add/remove a structure from overlay</span>
+                        </div>
+                        <button class="overlay-list__download-table"
+                                type="button"
+                                [disabled]="overlayTableRows.length === 0"
+                                (click)="onDownloadTableClick($event)">
+                            Download table
+                        </button>
                     </div>
                     <div class="overlay-list__scroller">
                         <div class="overlay-card" *ngFor="let row of overlayTableRows; trackBy: trackRowBy"
@@ -44,7 +53,7 @@
                              (click)="isRowDisabled(row) ? null : onRowToggle(row, $event)">
                             <div class="overlay-card__line overlay-card__line--id">
                                 <div class="overlay-card__id-meta">
-                                    <span class="overlay-card__label">CDR3a/b cluster ID:</span>
+                                    <span class="overlay-card__label">CDR3α/β cluster ID:</span>
                                     <span class="overlay-card__value">{{ row.alphaClusterId || '-' }}/{{ row.betaClusterId || '-' }}</span>
                                     <span class="overlay-card__note" *ngIf="!row.hasHtml">no HTML</span>
                                 </div>
@@ -58,17 +67,28 @@
                                     <div class="menu fade element slow" tabindex="-1" #downloadMenu>
                                         <div class="item overlay-card__download-item" (click)="onDownloadOptionClick(row, 'structure', $event)">Structure</div>
                                         <div class="item overlay-card__download-item" (click)="onDownloadOptionClick(row, 'contacts', $event)">Contacts</div>
-                                        <div class="item overlay-card__download-item" (click)="onDownloadOptionClick(row, 'both', $event)">Both</div>
+                                        <div class="item overlay-card__download-item" (click)="onDownloadOptionClick(row, 'ca_atoms', $event)">Cα atoms</div>
+                                        <div class="item overlay-card__download-item" (click)="onDownloadOptionClick(row, 'all', $event)">All</div>
                                     </div>
                                 </div>
                             </div>
                             <div class="overlay-card__line overlay-card__line--cdr">
                                 <span class="overlay-card__label">CDR3a:</span>
-                                <span class="overlay-card__value">{{ row.cdr3a || '-' }}</span>
+                                <span class="overlay-card__value">
+                                    <ng-container *ngIf="row.cdr3aRegions.length > 0; else emptyCdr3a">
+                                        <span *ngFor="let region of row.cdr3aRegions" [style.color]="region.color">{{ region.part }}</span>
+                                    </ng-container>
+                                    <ng-template #emptyCdr3a>-</ng-template>
+                                </span>
                             </div>
                             <div class="overlay-card__line overlay-card__line--cdr">
                                 <span class="overlay-card__label">CDR3b:</span>
-                                <span class="overlay-card__value">{{ row.cdr3b || '-' }}</span>
+                                <span class="overlay-card__value">
+                                    <ng-container *ngIf="row.cdr3bRegions.length > 0; else emptyCdr3b">
+                                        <span *ngFor="let region of row.cdr3bRegions" [style.color]="region.color">{{ region.part }}</span>
+                                    </ng-container>
+                                    <ng-template #emptyCdr3b>-</ng-template>
+                                </span>
                             </div>
                             <div class="overlay-card__line">
                                 <span class="overlay-card__label">TRAV:</span>

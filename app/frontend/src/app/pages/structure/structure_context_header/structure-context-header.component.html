@@ -59,7 +59,29 @@
                 </div>
             </div>
             <div class="four wide field">
-                <label>CDR3 search</label>
+                <div class="structure-context-form__label-row">
+                    <div class="structure-context-form__cdr3-label">
+                        <div class="ui dropdown structure-context-form__chain-dropdown"
+                           role="link"
+                           tabindex="0"
+                           (keydown)="onCdr3ChainTriggerKeydown($event)"
+                           dropdown
+                           [content]="cdr3ChainMenu">
+                            <span class="structure-context-form__chain-dropdown-trigger">
+                                <span class="text">{{ cdr3ChainLabel }} </span> <i class="dropdown icon"></i>
+                            </span>
+                            <div class="menu fade element slow padded" tabindex="-1" #cdr3ChainMenu>
+                                <a class="item" *ngFor="let value of cdr3ChainOptions" (click)="setCdr3Chain(value)">{{ getCdr3ChainLabel(value) }}</a>
+                            </div>
+                        </div>
+                        <label class="structure-context-form__sequence-label">sequence</label>
+                    </div>
+                    <div class="structure-context-form__substring-toggle">
+                        <span class="structure-context-form__substring-text structure-context-form__substring-text--full">Search by substring</span>
+                        <span class="structure-context-form__substring-text structure-context-form__substring-text--short">By substring</span>
+                        <input type="checkbox" [(ngModel)]="cdr3Substring">
+                    </div>
+                </div>
                 <div class="ui fluid action input">
                     <input type="text" placeholder="Enter CDR3" [(ngModel)]="cdr3Query">
                     <button class="ui button" [ngClass]="{ 'disabled': !cdr3Query || !cdr3Query.trim() }" (click)="onCdr3Search()">Search</button>

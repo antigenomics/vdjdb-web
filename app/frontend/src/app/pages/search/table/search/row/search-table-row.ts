@@ -23,6 +23,7 @@ import { TableRow } from 'shared/table/row/table-row';
 import { SearchTableEntryCdrComponent } from '../entry/search-table-entry-cdr.component';
 import { SearchTableEntryContactComponent } from '../entry/search-table-entry-contact.component';
 import { SearchTableEntryGeneComponent } from '../entry/search-table-entry-gene.component';
+import { SearchTableEntryInfoComponent } from '../entry/search-table-entry-info.component';
 import { SearchTableEntryMetaComponent } from '../entry/search-table-entry-meta.component';
 import { SearchTableEntryUrlComponent } from '../entry/search-table-entry-url.component';
 import { getSearchTableReorderMap } from '../search-table-reorder-map';
@@ -81,6 +82,8 @@ export class SearchTableRow extends TableRow {
       return resolver.resolveComponentFactory(SearchTableEntryContactComponent);
     } else if (column.name === 'method' || column.name === 'meta' || column.name === 'cdr3fix') {
       return resolver.resolveComponentFactory(SearchTableEntryMetaComponent);
+    } else if (column.name === 'vdjdb.score') {
+      return resolver.resolveComponentFactory(SearchTableEntryInfoComponent);
     } else if (column.name === 'v.segm' || column.name === 'j.segm') {
       return resolver.resolveComponentFactory(SearchTableEntrySegmentComponent);
     } else if (column.name === 'mhc.a' || column.name === 'mhc.b') {

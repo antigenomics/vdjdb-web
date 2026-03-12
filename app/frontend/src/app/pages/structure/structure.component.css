@@ -14,14 +14,9 @@
  *     limitations under the License.
  */
 
-import { CommonModule } from '@angular/common';
-import { NgModule } from '@angular/core';
-import { ModalsModule } from 'shared/modals/modals.module';
-import { StructureEpitopeClusterComponent } from './structure-epitope-cluster.component';
-
-@NgModule({
-    imports:      [ CommonModule, ModalsModule ],
-    declarations: [ StructureEpitopeClusterComponent ],
-    exports:      [ StructureEpitopeClusterComponent ]
-})
-export class StructureEpitopeClusterModule {}
+.structure-context-header-segment {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    background: #ffffff;
+}

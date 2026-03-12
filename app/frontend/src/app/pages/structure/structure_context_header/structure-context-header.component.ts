@@ -27,6 +27,8 @@ interface IStructureQueryParams {
   epitope_seq?: string | null;
   structure_id?: string | null;
   query?: string | null;
+  substring?: string | null;
+  cdr3_chain?: string | null;
 }
 
 @Component({
@@ -36,6 +38,13 @@ interface IStructureQueryParams {
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class StructureContextHeaderComponent implements OnInit, OnDestroy {
+  private static readonly cdr3ChainValues: string[] = [ 'a', 'b', 'ab' ];
+  private static readonly cdr3ChainLabels: { [chain: string]: string } = {
+    a: 'CDR3α',
+    b: 'CDR3β',
+    ab: 'CDR3α/β'
+  };
+
   @ViewChild('epitopeInputElement')
   public epitopeInputElement: ElementRef;
 
@@ -56,6 +65,8 @@ export class StructureContextHeaderComponent implements OnInit, OnDestroy {
   public isEpitopeFocused: boolean = false;
   public isEpitopeDropdownOpen: boolean = false;
   public cdr3Query: string = '';
+  public cdr3Substring: boolean = false;
+  public cdr3Chain: string = 'a';
 
   private routeSubscription: Subscription;
   private currentParams: IStructureQueryParams = {};
@@ -131,7 +142,8 @@ export class StructureContextHeaderComponent implements OnInit, OnDestroy {
       mhc_class: this.mhcClassValue,
       gene: null,
       epitope_seq: null,
-      query: null
+      query: null,
+      substring: null
     });
   }
 
@@ -144,7 +156,8 @@ export class StructureContextHeaderComponent implements OnInit, OnDestroy {
       mhc_class: this.mhcClassValue,
       gene: this.normalizeMhcPairParam(this.mhcGeneValue),
       epitope_seq: null,
-      query: null
+      query: null,
+      substring: null
     });
   }
 
@@ -158,7 +171,8 @@ export class StructureContextHeaderComponent implements OnInit, OnDestroy {
       gene: this.normalizeMhcPairParam(this.mhcGeneValue),
       epitope_seq: this.epitopeValue,
       structure_id: null,
-      query: null
+      query: null,
+      substring: null
     });
   }
 
@@ -207,6 +221,36 @@ export class StructureContextHeaderComponent implements OnInit, OnDestroy {
     return this.epitopeInput.trim().length !== 0 && this.filteredEpitopeValues.length === 0;
   }
 
+  public get cdr3ChainOptions(): string[] {
+    const selected = this.normalizeCdr3Chain(this.cdr3Chain);
+    return StructureContextHeaderComponent.cdr3ChainValues.filter((value) => value !== selected);
+  }
+
+  public get cdr3ChainLabel(): string {
+    return this.getCdr3ChainLabel(this.cdr3Chain);
+  }
+
+  public getCdr3ChainLabel(value: string): string {
+    const normalized = this.normalizeCdr3Chain(value);
+    return StructureContextHeaderComponent.cdr3ChainLabels[normalized] || StructureContextHeaderComponent.cdr3ChainLabels.a;
+  }
+
+  public setCdr3Chain(value: string): void {
+    this.cdr3Chain = this.normalizeCdr3Chain(value);
+  }
+
+  public onCdr3ChainTriggerKeydown(event: KeyboardEvent): void {
+    if (event.key !== 'Enter' && event.key !== ' ') {
+      return;
+    }
+    event.preventDefault();
+    event.stopPropagation();
+    const target = event.currentTarget as HTMLElement;
+    if (target && typeof target.click === 'function') {
+      target.click();
+    }
+  }
+
   public onCdr3Search(): void {
     const query = this.cdr3Query ? this.cdr3Query.trim() : '';
     if (!query) {
@@ -214,6 +258,8 @@ export class StructureContextHeaderComponent implements OnInit, OnDestroy {
     }
     this.updateQueryParams({
       query,
+      substring: this.cdr3Substring ? '1' : null,
+      cdr3_chain: this.normalizeCdr3Chain(this.cdr3Chain),
       mhc_class: null,
       gene: null,
       epitope_seq: null,
@@ -232,6 +278,8 @@ export class StructureContextHeaderComponent implements OnInit, OnDestroy {
       epitope_seq: this.currentParams.epitope_seq || null,
       structure_id: this.currentParams.structure_id || null,
       query: this.currentParams.query || null,
+      substring: this.currentParams.substring || null,
+      cdr3_chain: this.currentParams.cdr3_chain || null,
       ...changes
     };
 
@@ -240,6 +288,9 @@ export class StructureContextHeaderComponent implements OnInit, OnDestroy {
       params.gene = null;
       params.epitope_seq = null;
       params.structure_id = null;
+    } else {
+      params.substring = null;
+      params.cdr3_chain = null;
     }
 
     this.router.navigate([], {
@@ -253,6 +304,8 @@ export class StructureContextHeaderComponent implements OnInit, OnDestroy {
     const previousMhcGeneValue = this.mhcGeneValue;
     const query = this.currentParams.query || '';
     this.cdr3Query = query;
+    this.cdr3Substring = this.currentParams.substring === '1' || this.currentParams.substring === 'true';
+    this.cdr3Chain = this.normalizeCdr3Chain(this.currentParams.cdr3_chain);
     this.closeEpitopeDropdown();
 
     if (!this.metadata || !this.metadata.root) {
@@ -300,7 +353,9 @@ export class StructureContextHeaderComponent implements OnInit, OnDestroy {
       gene: params.get('gene'),
       epitope_seq: params.get('epitope_seq'),
       structure_id: params.get('structure_id'),
-      query: params.get('query')
+      query: params.get('query'),
+      substring: params.get('substring'),
+      cdr3_chain: params.get('cdr3_chain')
     };
   }
 
@@ -336,6 +391,11 @@ export class StructureContextHeaderComponent implements OnInit, OnDestroy {
     }
     const parts = value.split('/').map((part) => part.replace(/:.+/, '').trim()).filter((part) => part.length > 0);
     return parts.join('/');
+  }
+
+  private normalizeCdr3Chain(value: string | null | undefined): string {
+    const normalized = (value || '').trim().toLowerCase();
+    return StructureContextHeaderComponent.cdr3ChainValues.indexOf(normalized) !== -1 ? normalized : 'a';
   }
 
   private closeEpitopeDropdown(): void {

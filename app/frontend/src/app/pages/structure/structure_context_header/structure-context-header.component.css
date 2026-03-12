@@ -58,3 +58,130 @@
 .structure-context-form .structure-epitope-dropdown__no-matches:hover {
     background: inherit !important;
 }
+
+.structure-context-form__label-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: .28571429rem;
+    min-height: 1.3rem;
+}
+
+.structure-context-form__cdr3-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    min-width: 0;
+}
+
+.structure-context-form__sequence-label {
+    margin: 0;
+    font-size: .92857143em;
+    font-weight: 700;
+}
+
+.structure-context-form__chain-dropdown {
+    display: inline-flex;
+    align-items: center;
+    position: relative;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    width: auto !important;
+    font-weight: 400;
+    color: rgba(0, 0, 0, 0.87);
+    cursor: pointer;
+    padding: 0 !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    border-radius: 0 !important;
+    vertical-align: baseline;
+}
+
+.structure-context-form__chain-dropdown .text {
+    font-size: .92857143em;
+    font-weight: 700;
+    display: inline;
+}
+
+.structure-context-form__chain-dropdown-trigger {
+    display: inline;
+    text-decoration: underline;
+    text-decoration-color: currentColor;
+    text-underline-offset: 0.1em;
+}
+
+.structure-context-form__chain-dropdown i {
+    position: static !important;
+    float: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: auto !important;
+    height: auto !important;
+    line-height: inherit !important;
+    vertical-align: baseline;
+}
+
+.structure-context-form__chain-dropdown:hover,
+.structure-context-form__chain-dropdown:focus,
+.structure-context-form__chain-dropdown:active {
+    color: rgba(0, 0, 0, 0.87);
+}
+
+.structure-context-form__chain-dropdown .menu .item {
+    font-weight: 400;
+    padding: 4px !important;
+}
+
+.structure-context-form__substring-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.35rem;
+    margin: 0;
+    white-space: nowrap;
+    font-weight: 400;
+}
+
+.structure-context-form__substring-text--short {
+    display: none;
+}
+
+.structure-context-form__substring-toggle > input {
+    margin: 0;
+}
+
+@media (max-width: 1170px) and (min-width: 768px) {
+    .structure-context-form__sequence-label {
+        display: none;
+    }
+}
+
+@media (max-width: 925px) and (min-width: 768px) {
+    .structure-context-form__substring-text--full {
+        display: none;
+    }
+
+    .structure-context-form__substring-text--short {
+        display: inline;
+    }
+
+    .structure-context-form .ui.button {
+        padding: 11px;
+    }
+}
+
+@media (max-width: 767px) {
+    .structure-context-form__sequence-label {
+        display: inline;
+    }
+
+    .structure-context-form__substring-text--full {
+        display: inline;
+    }
+
+    .structure-context-form__substring-text--short {
+        display: none;
+    }
+}

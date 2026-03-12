@@ -151,10 +151,10 @@ export class StructureService {
     return this.loadingState.asObservable();
   }
 
-  public async searchCDR3ByUrl(query: string): Promise<void> {
+  public async searchCDR3ByUrl(query: string, substring: boolean = false, gene: string = 'TRA'): Promise<void> {
     await this.load();
     this.setSearchState(StructureSearchState.SEARCH_CDR3);
-    this.searchCDR3(query);
+    this.searchCDR3(query, substring, gene);
   }
 
   public async filterByUrl(filters: { species: string, tcrChain: string, mhcClass: string, gene: string, epitopeSeq: string, structureId?: string }): Promise<void> {
@@ -566,6 +566,10 @@ export class StructureService {
 
     const displayId = item && typeof item.displayId === 'string' ? item.displayId : undefined;
     const tcrPairLabel = item && typeof item.tcrPairLabel === 'string' ? item.tcrPairLabel : undefined;
+    const cdr3aVEnd = this.pickIntValue(item, [ 'cdr3aVEnd' ]);
+    const cdr3aJStart = this.pickIntValue(item, [ 'cdr3aJStart' ]);
+    const cdr3bVEnd = this.pickIntValue(item, [ 'cdr3bVEnd' ]);
+    const cdr3bJStart = this.pickIntValue(item, [ 'cdr3bJStart' ]);
 
     const cluster: IStructureCluster = {
       clusterId,
@@ -575,6 +579,10 @@ export class StructureService {
       length: Number(item && item.length ? item.length : 0),
       vsegm: this.pickMetaValue(meta, [ 'v', 'vsegm', 'v.segm' ]) || '',
       jsegm: this.pickMetaValue(meta, [ 'j', 'jsegm', 'j.segm' ]) || '',
+      cdr3aVEnd,
+      cdr3aJStart,
+      cdr3bVEnd,
+      cdr3bJStart,
       entries,
       meta: clusterMeta,
       visualization
@@ -592,6 +600,25 @@ export class StructureService {
       const candidate = meta[key];
       if (typeof candidate === 'string' && candidate.trim().length > 0) {
         return candidate.trim();
+      }
+    }
+    return undefined;
+  }
+
+  private pickIntValue(source: any, keys: string[]): number | undefined {
+    if (!source) {
+      return undefined;
+    }
+    for (const key of keys) {
+      const candidate = source[key];
+      if (typeof candidate === 'number' && Number.isFinite(candidate)) {
+        return Math.trunc(candidate);
+      }
+      if (typeof candidate === 'string') {
+        const parsed = Number(candidate);
+        if (Number.isFinite(parsed)) {
+          return Math.trunc(parsed);
+        }
       }
     }
     return undefined;
