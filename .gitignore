@@ -17,6 +17,7 @@ qodana.sarif.json
 /.history
 /.vscode
 /.gemini
+/.claude
 .aiexclude
 
 # MacOs
