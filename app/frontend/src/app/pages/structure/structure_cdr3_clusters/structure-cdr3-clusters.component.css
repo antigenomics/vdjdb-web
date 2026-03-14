@@ -38,7 +38,7 @@
 }
 
 .structure-cdr3-results__entry {
-    margin-bottom: 1rem;
+    margin-bottom: 0.5rem;
 }
 
 .structure-cdr3-results__entry-title {
@@ -51,4 +51,8 @@
 
 .structure-cdr3-results__empty {
     padding-top: 1rem;
+}
+
+.structure-cdr3-results__entry:last-child ::ng-deep .structure-cdr3-layout {
+    border-bottom: none;
 }

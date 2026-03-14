@@ -19,16 +19,11 @@
         <ng-container *ngIf="clusters.clusters.length !== 0; else empty">
             <div class="structure-cdr3-results__list">
                 <div class="structure-cdr3-results__entry" *ngFor="let entry of getClustersEntries()">
-                    <h5 class="ui header structure-cdr3-results__entry-title">
-                        <div class="content">
-                            <span>Cluster size: {{ entry.cluster.size }}</span>
-                            <span class="structure-cdr3-results__meta-item">{{ getPatternHelpContent(entry) }}</span>
-                            <span class="structure-cdr3-results__meta-item" *ngIf="getChainHelpContent(entry)">{{ getChainHelpContent(entry) }}</span>
-                        </div>
-                    </h5>
                     <structure-epitope-cluster
                         [cluster]="entry.cluster"
                         [hit]="getCDR3Hitbox(entry)"
+                        [cdr3Pattern]="entry.cdr3"
+                        [chain]="entry.chain"
                         [isNormalized]="options.isNormalized"
                         [isCompactInCdr3Mode]="true"
                         [maxWidthPx]="cdr3MaxWidthPx"

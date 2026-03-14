@@ -41,6 +41,13 @@
 <ng-template #cdr3Layout>
     <div class="structure-cdr3-layout">
         <div class="structure-cdr3-info" *ngIf="cdr3Info">
+            <h5 class="ui header structure-cdr3-results__entry-title" *ngIf="cdr3Pattern || chain">
+                <div class="content">
+                    <span>Cluster size: {{ cluster.size }}</span>
+                    <span class="structure-cdr3-results__meta-item">{{ getPatternHelpContent() }}</span>
+                    <span class="structure-cdr3-results__meta-item" *ngIf="getChainHelpContent()">{{ getChainHelpContent() }}</span>
+                </div>
+            </h5>
             <div class="structure-cdr3-line structure-cdr3-line--id">
                 <span class="structure-cdr3-label">CDR3α/β cluster ID:</span>
                 <span class="structure-cdr3-value">{{ cdr3ClusterIdLabel }}</span>

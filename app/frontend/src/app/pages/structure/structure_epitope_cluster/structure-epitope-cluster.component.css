@@ -45,6 +45,9 @@
     align-items: flex-start;
     gap: 1.25rem;
     max-width: 100%;
+    padding-top: 0.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgb(212, 212, 213);
 }
 
 .structure-cdr3-info {
@@ -82,7 +85,6 @@
 
 .structure-cdr3-download.ui.dropdown {
     width: calc(100% - 12px);
-    margin: 0 6px;
     font-size: 1rem;
     line-height: 1.2;
 }
@@ -123,8 +125,9 @@
     border: 1px solid #dfe3ed;
     border-radius: 6px;
     padding: 0;
+    width: 100%;
     max-width: 960px;
-    margin: 0 auto 1rem;
+    /* margin: 0 auto 1rem; */
     position: relative;
     overflow: hidden;
 }

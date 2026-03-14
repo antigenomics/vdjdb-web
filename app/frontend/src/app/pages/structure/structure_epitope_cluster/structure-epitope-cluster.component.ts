@@ -68,6 +68,8 @@ export class StructureEpitopeClusterComponent implements OnInit, OnChanges, OnDe
 
     @Input('cluster') public cluster: IStructureCluster;
     @Input('hit') public hit: string;
+    @Input('cdr3Pattern') public cdr3Pattern?: string;
+    @Input('chain') public chain?: string;
     @Input('isNormalized') public isNormalized: boolean;
     @Input('isCompactInCdr3Mode') public isCompactInCdr3Mode: boolean = false;
     @Input('maxWidthPx') public maxWidthPx?: number;
@@ -160,6 +162,20 @@ export class StructureEpitopeClusterComponent implements OnInit, OnChanges, OnDe
             return '-/-';
         }
         return `${this.cdr3Info.alphaClusterId || '-'}/${this.cdr3Info.betaClusterId || '-'}`;
+    }
+
+    public getPatternHelpContent(): string {
+        if (!this.cdr3Pattern) {
+            return '';
+        }
+        return `Pattern: ${this.cdr3Pattern.replace(/X/g, 'x')}`;
+    }
+
+    public getChainHelpContent(): string {
+        if (!this.chain) {
+            return '';
+        }
+        return `Chain: ${this.chain}`;
     }
 
     private async loadHtmlVisualization(): Promise<void> {
