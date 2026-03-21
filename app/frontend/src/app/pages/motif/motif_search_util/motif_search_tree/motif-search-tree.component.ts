@@ -14,7 +14,7 @@
  *     limitations under the License.
  */
 
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { Router } from '@angular/router';
 import { IMotifsMetadata, IMotifsMetadataTreeLevelValue, IMotifsSearchTreeFilter, IMotifEpitopeViewOptions } from 'pages/motif/motif';
 import { MotifService } from 'pages/motif/motif.service';
@@ -24,7 +24,7 @@ import { MotifService } from 'pages/motif/motif.service';
   templateUrl:     './motif-search-tree.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class MotifSearchTreeComponent {
+export class MotifSearchTreeComponent implements OnChanges {
   @Input('metadata')
   public metadata: IMotifsMetadata;
 
@@ -36,11 +36,24 @@ export class MotifSearchTreeComponent {
 
   constructor(private motifService: MotifService, private router: Router) {}
 
+  public ngOnChanges(changes: SimpleChanges): void {
+    if (changes['options']) {
+      const prev = changes['options'].previousValue as IMotifEpitopeViewOptions;
+      const curr = changes['options'].currentValue as IMotifEpitopeViewOptions;
+      if (curr && curr.allowMultiple && (!prev || !prev.allowMultiple)) {
+        this.router.navigate([], { queryParams: {}, replaceUrl: true });
+      }
+    }
+  }
+
   public onFilterReceived(filter: IMotifsSearchTreeFilter): void {
     if (!this.options || !this.options.allowMultiple) {
-      // Exclusive select: discard all previous selections and clear epitopes first
+      // Exclusive select: discard all previous selections except the one being selected
       if (this.selected) {
-        this.selected.forEach((s) => this.motifService.discardTreeLevelValue(s));
+        const leafEntry = filter.entries.find((e) => e.name === 'antigen.epitope');
+        this.selected
+          .filter((s) => !leafEntry || s.value !== leafEntry.value)
+          .forEach((s) => this.motifService.discardTreeLevelValue(s));
       }
       this.motifService.clearEpitopes();
       this.motifService.select(filter);

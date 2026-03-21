@@ -66,7 +66,6 @@ interface IMotifParams {
 }
 
 const DOWNLOAD_NAME_TOKEN = '{hash}';
-const OVERLAY_TABLE_FILE_SUFFIX = '_structure_overlay.tsv';
 const STRUCTURE_DOWNLOAD_FILE_PATTERNS: { [option in StructureDownloadOption]: string } = {
     structure: `aligned_aligned_${DOWNLOAD_NAME_TOKEN}.pdb`,
     contacts: `${DOWNLOAD_NAME_TOKEN}_contacts_aa.txt`,
@@ -306,23 +305,18 @@ export class StructureEpitopeEntryComponent implements OnInit, OnDestroy {
         this.startDownload(fileUrl, fileName);
     }
 
-    public onDownloadTableClick(event?: MouseEvent): void {
+    public onShowTableClick(event?: MouseEvent): void {
         if (event) {
             event.preventDefault();
             event.stopPropagation();
         }
-        if (!this.overlayTableRows || this.overlayTableRows.length === 0) {
+        const epitopeSeq = this.epitope && this.epitope.epitope ? this.epitope.epitope.trim() : '';
+        if (!epitopeSeq) {
             return;
         }
-        const content = this.buildOverlayTableTsv();
-        const safePrefix = (this.epitope && this.epitope.epitope ? this.epitope.epitope : 'structures').replace(/[^A-Za-z0-9._-]+/g, '_');
-        const fileName = `${safePrefix}${OVERLAY_TABLE_FILE_SUFFIX}`;
-        const blob = new Blob([ content ], { type: 'text/tab-separated-values;charset=utf-8' });
-        const objectUrl = URL.createObjectURL(blob);
-        this.startDownload(objectUrl, fileName);
-        window.setTimeout(() => {
-            URL.revokeObjectURL(objectUrl);
-        }, 0);
+        const params = new URLSearchParams();
+        params.set('epitope_seq', epitopeSeq);
+        window.open(`/search?${params.toString()}`, '_blank');
     }
 
     @HostListener('document:mousedown', [ '$event' ])
@@ -852,43 +846,6 @@ export class StructureEpitopeEntryComponent implements OnInit, OnDestroy {
         return template.replace(DOWNLOAD_NAME_TOKEN, hash);
     }
 
-    private buildOverlayTableTsv(): string {
-        const headers = [
-            'structure.id',
-            'cdr3a.cluster.id',
-            'cdr3b.cluster.id',
-            'cdr3a',
-            'cdr3b',
-            'trav',
-            'traj',
-            'trbv',
-            'trbj',
-            'html.available'
-        ];
-        const rows = this.overlayTableRows.map((row) => [
-            row.cluster && row.cluster.clusterId ? row.cluster.clusterId : '',
-            row.alphaClusterId || '',
-            row.betaClusterId || '',
-            row.cdr3a || '',
-            row.cdr3b || '',
-            row.trav || '',
-            row.traj || '',
-            row.trbv || '',
-            row.trbj || '',
-            row.hasHtml ? '1' : '0'
-        ]);
-        return [ headers, ...rows ]
-            .map((row) => row.map((value) => this.escapeTsvValue(value)).join('\t'))
-            .join('\n');
-    }
-
-    private escapeTsvValue(value: string): string {
-        const source = value || '';
-        if (source.indexOf('\t') === -1 && source.indexOf('\n') === -1 && source.indexOf('\r') === -1 && source.indexOf('"') === -1) {
-            return source;
-        }
-        return `"${source.replace(/"/g, '""')}"`;
-    }
 
     private startDownload(url: string, fileName: string): void {
         const link = document.createElement('a');
