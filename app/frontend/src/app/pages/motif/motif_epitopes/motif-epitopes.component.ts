@@ -49,4 +49,8 @@ export class MotifEpitopesComponent {
     return epitope.hash;
   }
 
+  public hasMultipleSelected(): boolean {
+    return this.epitopes && this.epitopes.length > 1;
+  }
+
 }

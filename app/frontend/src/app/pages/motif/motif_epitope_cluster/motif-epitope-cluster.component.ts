@@ -14,7 +14,7 @@
  *     limitations under the License.
  */
 
-import { ChangeDetectionStrategy, Component, ElementRef, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Input, OnChanges, OnDestroy, OnInit, SimpleChanges, ViewChild } from '@angular/core';
 import { IMotifCluster } from 'pages/motif/motif';
 import { MotifService, MotifsServiceEvents } from 'pages/motif/motif.service';
 import { ReplaySubject, Subscription } from 'rxjs';
@@ -29,13 +29,14 @@ import { ISeqLogoChartConfiguration } from 'shared/charts/seqlogo/seqlogo-config
   styleUrls:       [ './motif-epitope-cluster.component.css' ],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class MotifEpitopeClusterComponent implements OnInit, OnDestroy {
+export class MotifEpitopeClusterComponent implements OnInit, OnChanges, OnDestroy {
   private onScrollObservable: Subscription;
   private onResizeObservable: Subscription;
   private isNormalized: boolean;
   private hit: string;
 
   public isRendered: boolean = false;
+  public isHighlighted: boolean = false;
   public stream: SeqLogoChartStreamType = new ReplaySubject(1);
   public configuration: ISeqLogoChartConfiguration = MotifService.clusterViewportChartConfiguration;
 
@@ -44,6 +45,9 @@ export class MotifEpitopeClusterComponent implements OnInit, OnDestroy {
 
   @Input('cluster')
   public cluster: IMotifCluster;
+
+  @Input('highlightedCid')
+  public highlightedCid: string | null = null;
 
   @Input('hit')
   public set setHit(hit: string) {
@@ -61,7 +65,7 @@ export class MotifEpitopeClusterComponent implements OnInit, OnDestroy {
     }
   }
 
-  constructor(private motifService: MotifService) {}
+  constructor(private motifService: MotifService, private changeDetector: ChangeDetectorRef) {}
 
   public ngOnInit(): void {
     this.onScrollObservable = this.motifService.getEvents().pipe(filter((event) => event === MotifsServiceEvents.UPDATE_SCROLL)).subscribe(() => {
@@ -72,6 +76,26 @@ export class MotifEpitopeClusterComponent implements OnInit, OnDestroy {
     this.onResizeObservable = this.motifService.getEvents().pipe(filter((event) => event === MotifsServiceEvents.UPDATE_RESIZE)).subscribe(() => {
       this.updateIfInViewport(ChartEventType.RESIZE);
     });
+    this.applyHighlight();
+  }
+
+  public ngOnChanges(changes: SimpleChanges): void {
+    if (changes.highlightedCid) {
+      this.applyHighlight();
+    }
+  }
+
+  private applyHighlight(): void {
+    const isMatch = !!(this.highlightedCid && this.cluster && this.cluster.clusterId === this.highlightedCid);
+    if (isMatch !== this.isHighlighted) {
+      this.isHighlighted = isMatch;
+      this.changeDetector.markForCheck();
+    }
+    if (isMatch && this.headerContent) {
+      setTimeout(() => {
+        this.headerContent.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 200);
+    }
   }
 
   public updateIfInViewport(type: ChartEventType): void {

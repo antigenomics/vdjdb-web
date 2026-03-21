@@ -70,8 +70,10 @@ export class MotifPageComponent implements OnInit, OnDestroy {
       const mhcClass = params.get('mhc_class');
       const epitopeSeq = params.get('epitope_seq');
 
+      const cid = params.get('cid') || undefined;
+
       if (species && tcrChain && mhcClass && gene && epitopeSeq) {
-        this.motifService.filterByUrl({ species, tcrChain, mhcClass, gene, epitopeSeq });
+        this.motifService.filterByUrl({ species, tcrChain, mhcClass, gene, epitopeSeq, cid });
 
       } else {
         const cdr3Query = params.get('query');

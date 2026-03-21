@@ -14,7 +14,8 @@
   ~     limitations under the License.
   -->
 
-<h5 class="ui left floated header" style="margin-top: 10px; margin-bottom: 10px" #HeaderContent>
+<h5 class="ui left floated header" style="margin-top: 10px; margin-bottom: 10px" #HeaderContent
+    [class.highlighted-cluster]="isHighlighted">
     <div class="content with-options">
         <span>ID: {{ cluster.clusterId }}</span>&nbsp;&nbsp;&nbsp;
         <span>Cluster size: {{ cluster.size }}</span>&nbsp;&nbsp;&nbsp;

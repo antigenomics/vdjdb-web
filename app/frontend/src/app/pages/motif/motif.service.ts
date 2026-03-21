@@ -72,6 +72,7 @@ export class MotifService {
   private selected: Subject<IMotifsMetadataTreeLevelValue[]> = new ReplaySubject(1);
   private epitopes: Subject<IMotifEpitope[]> = new ReplaySubject(1);
   private options: Subject<IMotifEpitopeViewOptions> = new ReplaySubject(1);
+  private highlightedCid: ReplaySubject<string | null> = new ReplaySubject(1);
 
   private clusters: Subject<IMotifCDR3SearchResult> = new ReplaySubject(1);
 
@@ -92,7 +93,7 @@ export class MotifService {
       this.metadata.next(metadata);
       this.selected.next([]);
       this.epitopes.next([]);
-      this.options.next({ isNormalized: false });
+      this.options.next({ isNormalized: false, allowMultiple: false });
       this.clusters.next({ options: { cdr3: '', top: 15, gene: 'Both', substring: false }, clusters: undefined, clustersNorm: undefined });
 
       this.isMetadataLoaded = true;
@@ -136,6 +137,10 @@ export class MotifService {
     return this.clusters.asObservable().pipe(map((c) => c.options));
   }
 
+  public getHighlightedCid(): Observable<string | null> {
+    return this.highlightedCid.asObservable();
+  }
+
   public setOptions(options: IMotifEpitopeViewOptions): void {
     this.options.next(options);
   }
@@ -162,7 +167,7 @@ export class MotifService {
     this.searchCDR3(query);
   }
 
-  public async filterByUrl(filters: { species: string, tcrChain: string, mhcClass: string, gene: string, epitopeSeq: string }): Promise<void> {
+  public async filterByUrl(filters: { species: string, tcrChain: string, mhcClass: string, gene: string, epitopeSeq: string, cid?: string }): Promise<void> {
     await this.load();
 
     this.metadata.pipe(take(1)).subscribe((metadata) => {
@@ -195,6 +200,7 @@ export class MotifService {
       ]
     };
 
+    this.highlightedCid.next(filters.cid || null);
     this.select(treeFilter);
   }
 
@@ -237,6 +243,10 @@ export class MotifService {
       this.loadingState.next(false);
       this.notifications.error('Motifs CDR3', 'Unable to load results');
     });
+  }
+
+  public clearEpitopes(): void {
+    this.epitopes.next([]);
   }
 
   public select(treeFilter: IMotifsSearchTreeFilter): void {

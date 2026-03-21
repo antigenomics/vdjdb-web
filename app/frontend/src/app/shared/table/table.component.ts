@@ -101,11 +101,12 @@ export class TableComponent implements OnInit, AfterViewInit, OnDestroy, OnChang
   }
 
   public ngOnChanges(changes: SimpleChanges): void {
-    if (changes.columns && !changes.columns.firstChange) {
-      this.hiddenColumns = (this.hiddenColumns || []).filter((name) => {
-        const columns = this.columns || [];
-        return columns.some((column) => column.name === name);
-      });
+    if (changes.columns) {
+      const columns = this.columns || [];
+      const skippedNames = columns.filter((c) => c.skip).map((c) => c.name);
+      const userHidden = (this.hiddenColumns || []).filter((name) => columns.some((c) => c.name === name));
+      const merged = Array.from(new Set([ ...skippedNames, ...userHidden ]));
+      this.hiddenColumns = merged;
       this.updateHiddenColumnsSet();
     }
   }

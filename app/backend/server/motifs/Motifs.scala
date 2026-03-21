@@ -39,6 +39,7 @@ case class Motifs @Inject()(database: Database)(implicit tfp: TemporaryFileProvi
   private final val table = Motifs.parseMotifFileIntoDataFrame(database.getMotifFile.map(_.getPath))
   private final val cdr3Range = Motifs.parseCDR3LengthRange(table)
   private final val availabilityKeys: Set[String] = Motifs.buildAvailabilityKeys(table)
+  private final val cidLookupIndex: Map[String, String] = Motifs.buildCidLookupIndex(members)
 
   private final val metadataLevels = Seq("species", "gene", "mhc.class", "mhc.a", "antigen.epitope")
   private final val metadata = MotifsMetadata.generateMetadataFromLevels(table, metadataLevels)
@@ -50,6 +51,8 @@ case class Motifs @Inject()(database: Database)(implicit tfp: TemporaryFileProvi
   def getMetadata: MotifsMetadata = metadata
 
   def getAvailabilityKeys: Set[String] = availabilityKeys
+
+  def getCidLookupIndex: Map[String, String] = cidLookupIndex
 
   def filter(filter: MotifsSearchTreeFilter)(implicit ec: ExecutionContext): Future[Option[MotifsSearchTreeFilterResult]] = {
     Future {
@@ -182,6 +185,37 @@ object Motifs {
       }
       builder.toSet
     }
+  }
+
+  def buildCidLookupIndex(members: Table): Map[String, String] = {
+    val required = Seq("species", "gene", "antigen.epitope", "cdr3aa", "v.segm", "j.segm", "cid")
+    if (!required.forall(members.columnNames().contains)) {
+      return Map.empty
+    }
+    val speciesCol = members.stringColumn("species")
+    val geneCol = members.stringColumn("gene")
+    val epitopeCol = members.stringColumn("antigen.epitope")
+    val cdr3Col = members.stringColumn("cdr3aa")
+    val vsegmCol = members.stringColumn("v.segm")
+    val jsegmCol = members.stringColumn("j.segm")
+    val cidCol = members.stringColumn("cid")
+    val builder = mutable.HashMap.empty[String, String]
+    var idx = 0
+    val total = members.rowCount()
+    while (idx < total) {
+      val parts = Seq(speciesCol.get(idx), geneCol.get(idx), epitopeCol.get(idx),
+        cdr3Col.get(idx), vsegmCol.get(idx), jsegmCol.get(idx))
+        .map(v => Option(v).map(_.trim).getOrElse("").toLowerCase(Locale.ROOT))
+      val cid = Option(cidCol.get(idx)).map(_.trim).getOrElse("")
+      if (parts.forall(_.nonEmpty) && cid.nonEmpty) {
+        val key = parts.mkString("|")
+        if (!builder.contains(key)) {
+          builder.update(key, cid)
+        }
+      }
+      idx += 1
+    }
+    builder.toMap
   }
 
   def parseMotifFileIntoDataFrame(path: Option[String]): Table = {

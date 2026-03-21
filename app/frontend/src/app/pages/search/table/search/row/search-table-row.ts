@@ -21,7 +21,6 @@ import { TableColumn } from 'shared/table/column/table-column';
 import { TableEntry } from 'shared/table/entry/table-entry';
 import { TableRow } from 'shared/table/row/table-row';
 import { SearchTableEntryCdrComponent } from '../entry/search-table-entry-cdr.component';
-import { SearchTableEntryContactComponent } from '../entry/search-table-entry-contact.component';
 import { SearchTableEntryGeneComponent } from '../entry/search-table-entry-gene.component';
 import { SearchTableEntryInfoComponent } from '../entry/search-table-entry-info.component';
 import { SearchTableEntryMetaComponent } from '../entry/search-table-entry-meta.component';
@@ -78,8 +77,6 @@ export class SearchTableRow extends TableRow {
       return resolver.resolveComponentFactory(SearchTableEntryCdrComponent);
     } else if (column.name === 'reference.id') {
       return resolver.resolveComponentFactory(SearchTableEntryUrlComponent);
-    } else if (column.name === 'contacts') {
-      return resolver.resolveComponentFactory(SearchTableEntryContactComponent);
     } else if (column.name === 'method' || column.name === 'meta' || column.name === 'cdr3fix') {
       return resolver.resolveComponentFactory(SearchTableEntryMetaComponent);
     } else if (column.name === 'vdjdb.score') {

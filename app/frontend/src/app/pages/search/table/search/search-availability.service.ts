@@ -11,6 +11,7 @@ interface ISearchAvailabilityResponse {
   structures: string[];
   motifs: string[];
   visualizations?: { [structureId: string]: IStructureVisualizationDescriptor };
+  motifCidIndex?: { [key: string]: string };
 }
 
 @Injectable({ providedIn: 'root' })
@@ -21,6 +22,7 @@ export class SearchAvailabilityService {
   private readonly structureIds: Set<string> = new Set<string>();
   private readonly motifKeys: Set<string> = new Set<string>();
   private readonly structureVisualizations: Map<string, IStructureVisualizationDescriptor> = new Map<string, IStructureVisualizationDescriptor>();
+  private readonly motifCidIndex: Map<string, string> = new Map<string, string>();
 
   private ensureLoaded(): Promise<void> {
     if (!this.loadPromise) {
@@ -60,9 +62,18 @@ export class SearchAvailabilityService {
             }
           });
         }
+        if (payload && payload.motifCidIndex) {
+          Object.keys(payload.motifCidIndex).forEach((key) => {
+            const cid = payload.motifCidIndex ? payload.motifCidIndex[ key ] : undefined;
+            if (key && cid) {
+              this.motifCidIndex.set(key.trim().toLowerCase(), cid.trim());
+            }
+          });
+        }
       }).catch((error) => {
         this.structureIds.clear();
         this.motifKeys.clear();
+        this.motifCidIndex.clear();
         this.loadPromise = null;
         throw error;
       });
@@ -110,4 +121,13 @@ export class SearchAvailabilityService {
     const key = this.buildMotifKey(species, tcrChain, mhcClass, gene, epitope);
     return key !== null && this.motifKeys.has(key);
   }
+
+  public async getMotifCid(species: string, tcrChain: string, epitope: string, cdr3: string, vSegm: string, jSegm: string): Promise<string | undefined> {
+    await this.ensureLoaded();
+    const parts = [ species, tcrChain, epitope, cdr3, vSegm, jSegm ].map((p) => this.normalizeMotifPart(p));
+    if (parts.some((p) => p.length === 0)) { return undefined; }
+    return this.motifCidIndex.get(parts.join('|'));
+  }
+
+
 }

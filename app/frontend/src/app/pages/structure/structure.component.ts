@@ -15,7 +15,7 @@
  */
 
 import { AfterViewInit, ChangeDetectionStrategy, Component, DoCheck, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import {
   IStructureCDR3SearchResult,
   IStructureCDR3SearchResultOptions,
@@ -27,7 +27,8 @@ import {
 import { StructureSearchState } from 'pages/structure/structure.service';
 import { StructureService } from 'pages/structure/structure.service';
 import { fromEvent, Observable, Subscription, timer } from 'rxjs';
-import { debounce } from 'rxjs/operators';
+import { debounce, takeUntil } from 'rxjs/operators';
+import { Subject } from 'rxjs';
 import { ContentWrapperService } from '../../content-wrapper.service';
 
 @Component({
@@ -43,7 +44,9 @@ export class StructurePageComponent implements OnInit, OnDestroy, DoCheck, After
   private onScrollObservable: Subscription;
   private onResizeObservable: Subscription;
   private routeSubscription: Subscription;
-  private lastQuerySignature: string | null = null;
+  private destroy$ = new Subject<void>();
+  private lastFilterSignature: string | null = null;
+  private lastHighlightHash: string | null = null;
   private lastSearchState: StructureSearchState | null = null;
 
   public readonly metadata: Observable<IStructuresMetadata>;
@@ -57,7 +60,8 @@ export class StructurePageComponent implements OnInit, OnDestroy, DoCheck, After
   @ViewChild('EpitopesContainer')
   public epitopesContainer: ElementRef;
 
-  constructor(private structureService: StructureService, private contentWrapper: ContentWrapperService, private route: ActivatedRoute) {
+  constructor(private structureService: StructureService, private contentWrapper: ContentWrapperService,
+              private route: ActivatedRoute, private router: Router) {
     this.metadata = structureService.getMetadata();
     this.selected = structureService.getSelected();
     this.epitopes = structureService.getEpitopes();
@@ -73,29 +77,36 @@ export class StructurePageComponent implements OnInit, OnDestroy, DoCheck, After
       const gene = params.get('gene');
       const mhcClass = params.get('mhc_class');
       const epitopeSeq = params.get('epitope_seq');
-      const structureId = params.get('structure_id');
+      const tcrHash = params.get('tcr_hash');
       const cdr3Query = params.get('query');
       const substringParam = params.get('substring');
       const cdr3ChainParam = params.get('cdr3_chain');
       const substring = substringParam === '1' || substringParam === 'true';
       const cdr3Gene = this.resolveCdr3Gene(cdr3ChainParam);
 
-      const signature = [
+      const filterSignature = [
         species,
         tcrChain,
         gene || '',
         mhcClass || '',
         epitopeSeq || '',
-        structureId || '',
         cdr3Query || '',
         substring ? '1' : '0',
         cdr3Gene
       ].join('|');
 
-      if (signature === this.lastQuerySignature) {
+      const hashChanged = tcrHash !== this.lastHighlightHash;
+
+      if (filterSignature === this.lastFilterSignature) {
+        // Filter params unchanged — only update highlight if tcr_hash changed
+        if (hashChanged) {
+          this.lastHighlightHash = tcrHash;
+          this.structureService.setHighlightedClusterIdx(tcrHash ? tcrHash.toLowerCase() : null);
+        }
         return;
       }
-      this.lastQuerySignature = signature;
+      this.lastFilterSignature = filterSignature;
+      this.lastHighlightHash = tcrHash;
 
       if (mhcClass && gene && epitopeSeq) {
         this.structureService.filterByUrl({
@@ -104,7 +115,7 @@ export class StructurePageComponent implements OnInit, OnDestroy, DoCheck, After
           mhcClass,
           gene,
           epitopeSeq,
-          structureId: structureId || undefined
+          tcrHash: tcrHash || undefined
         });
         return;
       }
@@ -128,6 +139,11 @@ export class StructurePageComponent implements OnInit, OnDestroy, DoCheck, After
         });
 
     this.syncScrollBlocking();
+
+    this.structureService.getSelectedClusterIds().pipe(takeUntil(this.destroy$)).subscribe((ids) => {
+      const cid = ids.length > 0 ? ids.join(',') : null;
+      this.router.navigate([], { queryParams: { cid, tcr_hash: null }, queryParamsHandling: 'merge', replaceUrl: true });
+    });
   }
 
   public ngAfterViewInit(): void {
@@ -149,6 +165,8 @@ export class StructurePageComponent implements OnInit, OnDestroy, DoCheck, After
     if (this.routeSubscription) {
       this.routeSubscription.unsubscribe();
     }
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   public isStateSearchTree(): boolean {

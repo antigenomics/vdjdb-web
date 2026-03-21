@@ -73,6 +73,8 @@ export class StructureService {
   private options: Subject<IStructureEpitopeViewOptions> = new ReplaySubject(1);
   private clusters: Subject<IStructureCDR3SearchResult> = new ReplaySubject(1);
   private loadingState: Subject<boolean> = new ReplaySubject(1);
+  private highlightedClusterIdx: ReplaySubject<string | null> = new ReplaySubject(1);
+  private selectedClusterIds: ReplaySubject<string[]> = new ReplaySubject(1);
   private htmlVisualizationCache: Map<string, string | null> = new Map<string, string | null>();
 
   constructor(private logger: LoggerService, private notifications: NotificationService) {}
@@ -90,6 +92,7 @@ export class StructureService {
       this.epitopes.next([]);
       this.options.next({ isNormalized: false });
       this.clusters.next({ options: { cdr3: '', top: 15, gene: 'Both', substring: false }, clusters: undefined, clustersNorm: undefined });
+      this.highlightedClusterIdx.next(null);
       this.isMetadataLoaded = true;
       this.isMetadataLoading = false;
     }
@@ -131,6 +134,22 @@ export class StructureService {
     return this.clusters.asObservable().pipe(map((c) => c.options));
   }
 
+  public getHighlightedClusterIdx(): Observable<string | null> {
+    return this.highlightedClusterIdx.asObservable();
+  }
+
+  public setHighlightedClusterIdx(hash: string | null): void {
+    this.highlightedClusterIdx.next(hash);
+  }
+
+  public getSelectedClusterIds(): Observable<string[]> {
+    return this.selectedClusterIds.asObservable();
+  }
+
+  public setSelectedClusterIds(ids: string[]): void {
+    this.selectedClusterIds.next(ids);
+  }
+
   public setOptions(options: IStructureEpitopeViewOptions): void {
     this.options.next(options);
   }
@@ -157,7 +176,7 @@ export class StructureService {
     this.searchCDR3(query, substring, gene);
   }
 
-  public async filterByUrl(filters: { species: string, tcrChain: string, mhcClass: string, gene: string, epitopeSeq: string, structureId?: string }): Promise<void> {
+  public async filterByUrl(filters: { species: string, tcrChain: string, mhcClass: string, gene: string, epitopeSeq: string, tcrHash?: string }): Promise<void> {
     await this.load();
     this.setSearchState(StructureSearchState.SEARCH_TREE);
 
@@ -177,21 +196,18 @@ export class StructureService {
       pathNodes.push(epitopeNode);
 
       pathNodes.forEach((node) => (node.isOpened = true));
+
+      const treeFilter: IStructuresSearchTreeFilter = {
+        entries: [
+          { name: 'mhc.class', value: mhcClassNode.value },
+          { name: 'mhc.pair', value: mhcNode.value },
+          { name: 'antigen.epitope', value: epitopeNode.value }
+        ]
+      };
+
+      this.select(treeFilter, 'replace');
+      this.highlightedClusterIdx.next(filters.tcrHash ? filters.tcrHash.toLowerCase() : null);
     });
-
-    const treeFilter: IStructuresSearchTreeFilter = {
-      entries: [
-        { name: 'mhc.class', value: filters.mhcClass },
-        { name: 'mhc.pair', value: filters.gene },
-        { name: 'antigen.epitope', value: filters.epitopeSeq }
-      ]
-    };
-
-    if (filters.structureId) {
-      treeFilter.entries.push({ name: 'structure.id', value: filters.structureId });
-    }
-
-    this.select(treeFilter, 'replace');
   }
 
   public searchCDR3(cdr3: string, substring: boolean = false, gene: string = 'BOTH', top: number = 15): void {

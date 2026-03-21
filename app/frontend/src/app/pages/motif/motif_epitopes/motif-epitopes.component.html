@@ -16,7 +16,7 @@
 
 <ng-container *ngIf="epitopes && epitopes.length !== 0; else empty">
     <ng-container *ngFor="let epitope of epitopes; trackBy:trackEpitopeBy">
-        <motif-epitope-entry [epitope]="epitope" [isNormalized]="options.isNormalized" (onDiscard)="onEpitopeDiscard($event)"></motif-epitope-entry>
+        <motif-epitope-entry [epitope]="epitope" [isNormalized]="options.isNormalized" [allowMultiple]="options.allowMultiple" [hasMultipleSelected]="hasMultipleSelected()" (onDiscard)="onEpitopeDiscard($event)"></motif-epitope-entry>
     </ng-container>
 </ng-container>
 <ng-template #empty>

@@ -15,7 +15,8 @@
  */
 
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { IMotifsMetadata, IMotifsMetadataTreeLevelValue, IMotifsSearchTreeFilter } from 'pages/motif/motif';
+import { Router } from '@angular/router';
+import { IMotifsMetadata, IMotifsMetadataTreeLevelValue, IMotifsSearchTreeFilter, IMotifEpitopeViewOptions } from 'pages/motif/motif';
 import { MotifService } from 'pages/motif/motif.service';
 
 @Component({
@@ -30,18 +31,38 @@ export class MotifSearchTreeComponent {
   @Input('selected')
   public selected: IMotifsMetadataTreeLevelValue[];
 
-  constructor(private motifService: MotifService) {}
+  @Input('options')
+  public options: IMotifEpitopeViewOptions;
+
+  constructor(private motifService: MotifService, private router: Router) {}
 
   public onFilterReceived(filter: IMotifsSearchTreeFilter): void {
-    this.motifService.select(filter);
+    if (!this.options || !this.options.allowMultiple) {
+      // Exclusive select: discard all previous selections and clear epitopes first
+      if (this.selected) {
+        this.selected.forEach((s) => this.motifService.discardTreeLevelValue(s));
+      }
+      this.motifService.clearEpitopes();
+      this.motifService.select(filter);
+      this.router.navigate([], { queryParams: this.filterToUrlParams(filter), replaceUrl: true });
+    } else {
+      this.motifService.select(filter);
+    }
   }
 
-  public onDiscardReceived(filter: IMotifsSearchTreeFilter): void {
-    this.motifService.discard(filter);
+  public onDiscardReceived(_filter: IMotifsSearchTreeFilter): void {
+    this.motifService.discard(_filter);
+    if (!this.options || !this.options.allowMultiple) {
+      this.router.navigate([], { queryParams: {}, replaceUrl: true });
+    }
   }
 
   public isSelectedExist(): boolean {
     return this.selected && this.selected.length !== 0;
+  }
+
+  public hasMultipleSelected(): boolean {
+    return this.selected && this.selected.length > 1;
   }
 
   public discardAll(): void {
@@ -50,9 +71,27 @@ export class MotifSearchTreeComponent {
     setTimeout(() => {
       this.motifService.updateEpitopes();
     });
+    if (!this.options || !this.options.allowMultiple) {
+      this.router.navigate([], { queryParams: {}, replaceUrl: true });
+    }
   }
 
   public hideAll(): void {
     this.motifService.fireHideEvent();
+  }
+
+  private filterToUrlParams(filter: IMotifsSearchTreeFilter): { [key: string]: string } {
+    const params: { [key: string]: string } = {};
+    const reversedEntries = [...filter.entries].reverse();
+    reversedEntries.forEach((entry) => {
+      switch (entry.name) {
+        case 'species':          params['species'] = entry.value; break;
+        case 'gene':             params['tcr_chain'] = entry.value; break;
+        case 'mhc.class':        params['mhc_class'] = entry.value; break;
+        case 'mhc.a':            params['gene'] = entry.value; break;
+        case 'antigen.epitope':  params['epitope_seq'] = entry.value; break;
+      }
+    });
+    return params;
   }
 }

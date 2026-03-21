@@ -178,36 +178,26 @@ export class SearchTableService {
     const reorderMap = originalColumns.map((_column, index) => index);
 
     const tcrHashIndex = originalColumns.findIndex((column) => column.name === 'TCR_hash');
+    const scoreIndex = originalColumns.findIndex((column) => column.name === 'vdjdb.score');
+
     if (tcrHashIndex === -1) {
       return { metadata: source, reorderMap };
     }
 
-    const referenceIndex = originalColumns.findIndex((column) => column.name === 'reference.id');
-    const order = reorderMap.slice();
-    order.splice(tcrHashIndex, 1);
-    const insertionPoint = referenceIndex === -1 ? order.length : order.indexOf(referenceIndex) + 1;
-    order.splice(insertionPoint, 0, tcrHashIndex);
-
-    const sourceColumn = originalColumns[ tcrHashIndex ];
-    const dataType = sourceColumn ? (sourceColumn.dataType || 'url') : 'url';
-    const comment = sourceColumn ? (sourceColumn.comment || 'Structure preview and motif browser link') : 'Structure preview and motif browser link';
-    const contactsColumn = new DatabaseColumnInfo('contacts',
-      sourceColumn ? sourceColumn.columnType : 'txt',
-      true,
-      dataType,
-      'Contacts',
-      comment,
-      []);
-
-    const transformedColumns = order.map((originalIndex) => {
+    const transformedColumns = reorderMap.map((originalIndex) => {
       if (originalIndex === tcrHashIndex) {
-        return contactsColumn;
+        const tcrHashCol = originalColumns[ tcrHashIndex ];
+        return new DatabaseColumnInfo('TCR_hash', tcrHashCol.columnType, false, tcrHashCol.dataType, tcrHashCol.title, tcrHashCol.comment, tcrHashCol.values);
+      }
+      if (originalIndex === scoreIndex) {
+        const sc = originalColumns[ scoreIndex ];
+        return new DatabaseColumnInfo('vdjdb.score', sc.columnType, sc.visible, sc.dataType, 'Evidence', sc.comment, sc.values);
       }
       return originalColumns[ originalIndex ];
     });
 
     const normalizedMetadata = new DatabaseMetadata(source.numberOfRecords, source.numberOfColumns, transformedColumns);
-    return { metadata: normalizedMetadata, reorderMap: order };
+    return { metadata: normalizedMetadata, reorderMap };
   }
 
 }

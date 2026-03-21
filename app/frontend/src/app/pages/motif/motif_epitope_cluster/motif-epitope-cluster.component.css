@@ -32,3 +32,11 @@
 .ui.header > .content.with-options:hover > .download-members-icon {
     opacity: 0.9 !important;
 }
+
+.highlighted-cluster {
+    background-color: rgba(255, 193, 7, 0.12) !important;
+    border-left: 3px solid rgba(255, 193, 7, 0.85) !important;
+    padding-left: 8px !important;
+    border-radius: 3px;
+    transition: background-color 0.4s ease;
+}

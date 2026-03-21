@@ -44,8 +44,8 @@
             <h5 class="ui header structure-cdr3-results__entry-title" *ngIf="cdr3Pattern || chain">
                 <div class="content">
                     <span>Cluster size: {{ cluster.size }}</span>
-                    <span class="structure-cdr3-results__meta-item">{{ getPatternHelpContent() }}</span>
-                    <span class="structure-cdr3-results__meta-item" *ngIf="getChainHelpContent()">{{ getChainHelpContent() }}</span>
+                    &nbsp;&nbsp;<span class="structure-cdr3-results__meta-item">{{ getPatternHelpContent() }}</span>
+                    <ng-container *ngIf="getChainHelpContent()">&nbsp;&nbsp;<span class="structure-cdr3-results__meta-item">{{ getChainHelpContent() }}</span></ng-container>
                 </div>
             </h5>
             <div class="structure-cdr3-line structure-cdr3-line--id">

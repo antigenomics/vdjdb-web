@@ -25,5 +25,14 @@
             This aids in removing large information scores produced by V/J germline parts at CDR3 boundaries." header="Subtract VDJ rearrangement background" position="left">
         <i class="help icon"></i>
     </div>
+    <div class="fourteen wide column" style="padding-top: 4px">
+        <div class="ui checkbox" (click)="toggleMultiple()">
+            <input type="checkbox" [ngModel]="options.allowMultiple">
+            <label>Multiple epitope selection</label>
+        </div>
+    </div>
+    <div class="two wide column cursor pointer" style="padding-top: 4px" popup="Allow selecting multiple epitopes simultaneously. When enabled, URL parameters are not updated and deeplinks from VDJdb are not tracked." header="Multiple epitope selection" position="left">
+        <i class="help icon"></i>
+    </div>
 </div>
 

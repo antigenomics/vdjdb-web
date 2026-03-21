@@ -13,7 +13,8 @@ import scala.concurrent.{ExecutionContext, Future}
 import backend.server.structures.api.epitope.StructureVisualization
 
 case class SearchAvailabilityResponse(structures: Seq[String], motifs: Seq[String],
-                                      visualizations: Map[String, StructureVisualization])
+                                      visualizations: Map[String, StructureVisualization],
+                                      motifCidIndex: Map[String, String])
 
 object SearchAvailabilityResponse {
   implicit val format: OFormat[SearchAvailabilityResponse] = Json.format[SearchAvailabilityResponse]
@@ -30,6 +31,7 @@ class SearchAvailabilityAPI @Inject()(cc: ControllerComponents,
     val structuresSet = structures.getAvailableStructureIds.toSeq
     val motifKeys = motifs.getAvailabilityKeys.toSeq
     val visualizationMap = structures.getHtmlVisualizations
-    Future.successful(Ok(Json.toJson(SearchAvailabilityResponse(structuresSet, motifKeys, visualizationMap))))
+    val cidIndex = motifs.getCidLookupIndex
+    Future.successful(Ok(Json.toJson(SearchAvailabilityResponse(structuresSet, motifKeys, visualizationMap, cidIndex))))
   }
 }

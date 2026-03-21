@@ -21,7 +21,8 @@ import { IStructureCluster, IStructureClusterMeta, IStructureEpitope } from 'pag
 import { StructureService, StructuresServiceEvents } from 'pages/structure/structure.service';
 import { StructureZoomController } from 'pages/structure/structure_zoom/structure-zoom.controller';
 import { Subscription } from 'rxjs';
-import { filter } from 'rxjs/operators';
+import { filter, take, takeUntil } from 'rxjs/operators';
+import { Subject } from 'rxjs';
 import { Utils } from 'utils/utils';
 import ColorizedPatternRegion = Utils.SequencePattern.ColorizedPatternRegion;
 
@@ -86,6 +87,7 @@ export class StructureEpitopeEntryComponent implements OnInit, OnDestroy {
     private static readonly overlayMinHeightPx: number = 0;
     private static readonly overlayFallbackAspectRatio: number = 6 / 5;
     private subscription: Subscription;
+    private destroy$ = new Subject<void>();
     private overlaySelection: string[] = [];
     private overlayLayerMap: Map<string, { standard?: SafeHtml, simple?: SafeHtml }> = new Map<string, { standard?: SafeHtml, simple?: SafeHtml }>();
     private overlayResizeObserver?: { observe(target: Element): void; disconnect(): void };
@@ -131,9 +133,49 @@ export class StructureEpitopeEntryComponent implements OnInit, OnDestroy {
         });
         this.overlayTableRows = this.epitope.clusters.map((cluster) => this.buildOverlayRow(cluster));
         this.loadMotifAvailability();
-        this.initializeOverlaySelection();
         // Safe defaults until the overlay container is measured.
         this.setOverlayScrollerMaxHeight(this.overlayHeight);
+
+        // Check for a highlighted tcrHash (navigating from VDJdb table).
+        // ReplaySubject replays synchronously, so we can read the current value via take(1).
+        let initialTcrHash: string | null = null;
+        this.structureService.getHighlightedClusterIdx().pipe(take(1)).subscribe((hash) => {
+          initialTcrHash = hash;
+        });
+
+        const findClusterByHash = (hash: string) =>
+          this.epitope.clusters.find((c) => c.clusterId.toLowerCase() === hash.toLowerCase());
+
+        if (initialTcrHash) {
+          const targetCluster = findClusterByHash(initialTcrHash);
+          if (targetCluster) {
+            this.overlaySelection = [ targetCluster.clusterId ];
+            this.overlayLayerMap.clear();
+            this.ensureOverlayLayer(targetCluster);
+            this.updateOverlayLayerList();
+            this.changeDetector.markForCheck();
+          } else {
+            this.initializeOverlaySelection();
+          }
+        } else {
+          this.initializeOverlaySelection();
+        }
+        this.structureService.setSelectedClusterIds(this.overlaySelection.slice());
+
+        // Also respond to future highlighted hash changes
+        this.structureService.getHighlightedClusterIdx().pipe(takeUntil(this.destroy$)).subscribe((hash) => {
+          if (hash) {
+            const targetCluster = findClusterByHash(hash);
+            if (targetCluster && !this.isClusterSelected(targetCluster)) {
+              this.overlaySelection = [ targetCluster.clusterId ];
+              this.overlayLayerMap.clear();
+              this.ensureOverlayLayer(targetCluster);
+              this.updateOverlayLayerList();
+              this.structureService.setSelectedClusterIds(this.overlaySelection.slice());
+              this.changeDetector.markForCheck();
+            }
+          }
+        });
     }
 
     public discard(): void {
@@ -199,6 +241,7 @@ export class StructureEpitopeEntryComponent implements OnInit, OnDestroy {
             this.overlaySelection.push(cluster.clusterId);
             this.overlayError = undefined;
             this.ensureOverlayLayer(cluster);
+            this.structureService.setSelectedClusterIds(this.overlaySelection.slice());
         } else {
             const index = this.overlaySelection.indexOf(cluster.clusterId);
             if (index !== -1) {
@@ -207,6 +250,7 @@ export class StructureEpitopeEntryComponent implements OnInit, OnDestroy {
                 this.structureService.releaseHtmlVisualizationMarkup(cluster);
                 this.updateOverlayLayerList();
                 this.overlayError = undefined;
+                this.structureService.setSelectedClusterIds(this.overlaySelection.slice());
                 this.changeDetector.markForCheck();
             }
         }
@@ -609,6 +653,8 @@ export class StructureEpitopeEntryComponent implements OnInit, OnDestroy {
         if (this.subscription) {
             this.subscription.unsubscribe();
         }
+        this.destroy$.next();
+        this.destroy$.complete();
         this.zoomState.destroy();
     }
 

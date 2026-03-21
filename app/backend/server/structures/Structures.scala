@@ -304,6 +304,7 @@ case class Structures @Inject()(database: Database)(implicit ec: ExecutionContex
 
   private def getTcrHashCol(t: Table): Option[StringColumn] =
     if (t.columnNames().contains("TCR_hash")) Some(t.stringColumn("TCR_hash"))
+    else if (t.columnNames().contains("contacts")) Some(t.stringColumn("contacts"))
     else None
 
   private val structureIdJsonKeys: Seq[String] = Seq(
@@ -460,6 +461,38 @@ case class Structures @Inject()(database: Database)(implicit ec: ExecutionContex
   private val metadata: MotifsMetadata =
     MotifsMetadata.generateMetadataFromLevels(structures, metadataLevels)
 
+  // cluster index within each (mhc.class, mhc.pair, antigen.epitope) group, sorted by cluster size descending
+  val clusterIndexByStructureId: Map[String, Int] = buildClusterIndexMap()
+
+  private def buildClusterIndexMap(): Map[String, Int] = {
+    val requiredCols = Seq("mhc.class", "mhc.pair", "antigen.epitope", "structure.id")
+    if (!requiredCols.forall(structures.columnNames().contains)) {
+      return Map.empty
+    }
+    val result = mutable.HashMap.empty[String, Int]
+    val epitopeGroups = structures.splitOn(structures.stringColumn("antigen.epitope")).asTableList().asScala
+    epitopeGroups.foreach { epitopeTable =>
+      // further split by mhc.class + mhc.pair to handle same epitope under different MHC
+      val mhcGroups = epitopeTable.splitOn(
+        epitopeTable.stringColumn("mhc.class"),
+        epitopeTable.stringColumn("mhc.pair")
+      ).asTableList().asScala
+      mhcGroups.foreach { groupTable =>
+        val clusterTables = groupTable.splitOn(groupTable.stringColumn("structure.id")).asTableList().asScala
+        val sorted = clusterTables
+          .flatMap(t => firstValue(t, "structure.id").map(id => (id, t.rowCount())))
+          .sortBy { case (id, size) => (-size, id) }
+        sorted.zipWithIndex.foreach { case ((structureId, _), idx) =>
+          val normalized = structureId.toLowerCase(Locale.ROOT)
+          if (!result.contains(normalized)) {
+            result.update(normalized, idx)
+          }
+        }
+      }
+    }
+    result.toMap
+  }
+
   private val structureIdIndex: Map[String, String] = {
     val idCol = structures.stringColumn("structure.id")
     val acc = mutable.LinkedHashMap.empty[String, String]
@@ -510,6 +543,7 @@ case class Structures @Inject()(database: Database)(implicit ec: ExecutionContex
           .asTableList()
           .asScala
           .flatMap(buildCluster)
+          .sortBy(c => (-c.size, c.clusterId))
           .toSeq
 
         if (clusters.nonEmpty) Some(StructureEpitope(epitopeName, hash, clusters)) else None

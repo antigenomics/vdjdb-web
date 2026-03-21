@@ -23,7 +23,6 @@ import { FiltersModule } from 'shared/filters/filters.module';
 import { ModalsModule } from 'shared/modals/modals.module';
 import { TableModule } from 'shared/table/table.module';
 import { SearchTableEntryCdrComponent } from './entry/search-table-entry-cdr.component';
-import { SearchTableEntryContactComponent } from './entry/search-table-entry-contact.component';
 import { SearchTableEntryGeneComponent } from './entry/search-table-entry-gene.component';
 import { SearchTableEntryInfoComponent } from './entry/search-table-entry-info.component';
 import { SearchTableEntryMetaComponent } from './entry/search-table-entry-meta.component';
@@ -40,7 +39,6 @@ import { SearchTableService } from './search-table.service';
     SearchTableEntryCdrComponent,
     SearchTableEntrySegmentComponent,
     SearchTableEntryMHCComponent,
-    SearchTableEntryContactComponent,
     SearchTableEntryInfoComponent ],
   exports:         [ SearchTableComponent ],
   entryComponents: [ SearchTableEntryMetaComponent,
@@ -49,7 +47,6 @@ import { SearchTableService } from './search-table.service';
     SearchTableEntryCdrComponent,
     SearchTableEntrySegmentComponent,
     SearchTableEntryMHCComponent,
-    SearchTableEntryContactComponent,
     SearchTableEntryInfoComponent ],
   providers:       [ SearchTableService ]
 })
