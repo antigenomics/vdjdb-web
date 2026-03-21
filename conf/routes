@@ -54,6 +54,9 @@ GET         /api/search/availability                       backend.controllers.S
 # Streams <db>/structure/cd[4|8]/<id>.png
 GET   /structure-files/*path   backend.controllers.ImageController.structure(path: String)
 
+# Pre-built motif chart HTML files (Plotly applets) served from <db>/motifs/
+GET   /motif-files/*path       backend.controllers.ImageController.motifChart(path: String)
+
 # Authorization API
 GET         /authorization/elogin                       backend.controllers.Authorization.login
 POST        /authorization/elogin                       backend.controllers.Authorization.onLogin
