@@ -20,44 +20,53 @@
         <div class="ui attached segment teal padded">
             <img class="ui fluid image" src="assets/images/paper-splash.png" alt="splash">
 
-            <p>VDJdb is a curated database of T-cell receptor (TCR) sequences with known antigen specificities.
-                The primary goal of VDJdb is to facilitate access to existing information on T-cell receptor
-                antigen specificities, i.e. the ability to recognize certain epitopes in a certain MHC
-                contexts.</p>
+            <p>
+                VDJdb is a curated database of T-cell receptor (TCR) sequences with known antigen specificities. 
+                Its primary goal is to provide easy access to existing information on TCR antigen recognition, 
+                including the ability of particular TCRs to recognize specific epitopes in defined MHC contexts.
+            </p>
 
-            <p>Our mission is to both aggregate the scarce TCR specificity information available so far and
-                to create a curated repository to store such data. In addition to routine database updates providing
-                the most up-to-date information fetched
-                from recently published studies utilizing TCR specificity assays, we make our best to ensure
-                data consistency and correct irregularities in TCR specificity reporting with a complex
-                database validation scheme:
+            <p>
+                Our mission is to bring together the limited TCR specificity data currently available 
+                and to maintain a high-quality, curated repository for this information. In addition 
+                to routine database updates that incorporate the latest results from studies using 
+                TCR specificity assays, we put significant effort into ensuring data consistency and 
+                rectifying irregularities in TCR specificity reporting through a comprehensive 
+                validation workflow:
             </p>
             <ul>
-                <li>We take into account all available information on experimental
-                    setup used to
-                    identify antigen-specific TCR sequences and assign a single confidence score to highlight
-                    most reliable
-                    records at the database generation stage.
+                <li>
+                    We consider all available information on the experimental setup used to identify 
+                    antigen-specific TCR sequences and assign a single confidence score to each record, 
+                    highlighting the most reliable entries at the database generation stage.
                 </li>
-                <li>Each database record is also automatically checked against a
-                    database of V/J segment
-                    germline sequences
-                    to ensure standardized and consistent reporting of V-J junctions and CDR3 sequences that
-                    define T-cell clones.
+                <li>
+                    Each record is automatically checked against a database of V and J segment 
+                    germline sequences to ensure standardized, consistent reporting of V–J junctions 
+                    and CDR3 regions that define T-cell clones.
+                </li>
+                <li>
+                    We also provide structural evidence from AI-based structure modeling, along with 
+                    evidence that the observed TCR sequence motifs differ from random V(D)J 
+                    rearrangement noise. This repertoire-level analysis helps identify biologically 
+                    valid sequences and efficiently filter out potential sequencing errors and 
+                    specificity assay artifacts.
                 </li>
             </ul>
 
-            <p>The web application you are viewing right now can be used to browse and query the database,
-                providing an intuitive interface for database navigation. Additionally, it can be used to query
-                immune repertoire sequencing (RepSeq) samples against the database and generate sample-level
-                summary of detected antigen specificities.</p>
+            <p>
+                The web application you are currently using provides an intuitive interface for 
+                browsing and querying the database. It also enables you to screen immune repertoire 
+                sequencing (RepSeq) samples against VDJdb and generate sample-level summaries of 
+                detected antigen specificities.
+            </p>
 
-            <h3>Click on the item in the menu above to proceed:</h3>
+            <h3>To get started, choose a section from the menu above:</h3>
             <ul>
-                <li>The <b>Browse</b> section allows interactive browsing and running complex database queries.</li>
-                <li>If you want to upload your RepSeq samples/perform batch queries, you can use the <b>Annotation</b> section.</li>
-                <li>If you want to browse the database of high-quality curated CDR3 motifs specific to different epitopes use the <b>Motif</b> section.</li>
-                <li>For more information on VDJdb and downstream analysis tools, citation information and contacts please visit the <b>About</b> section.</li>
+                <li><b>Browse</b> - interactively explore the database and run complex queries.</li>
+                <li><b>Annotation</b> - upload AIRR-seq samples and perform batch queries. (under development)</li>
+                <li><b>Motif</b> - browse the database of high-quality curated CDR3 motifs specific to different epitopes.</li>
+                <li><b>About</b> - get information on VDJdb raw data, downstream analysis tools, citation information, and contacts.</li>
             </ul>
         </div>
     </div>
