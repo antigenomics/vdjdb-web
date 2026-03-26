@@ -1,0 +1,94 @@
+<!--
+  ~     Copyright 2017-2019 Bagaev Dmitry
+  ~
+  ~     Licensed under the Apache License, Version 2.0 (the "License");
+  ~     you may not use this file except in compliance with the License.
+  ~     You may obtain a copy of the License at
+  ~
+  ~         http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~     Unless required by applicable law or agreed to in writing, software
+  ~     distributed under the License is distributed on an "AS IS" BASIS,
+  ~     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~     See the License for the specific language governing permissions and
+  ~     limitations under the License.
+  -->
+
+<h5 class="ui header structure-epitope-cluster__header" #HeaderContent>
+    <div class="content with-options">
+        <span>ID: {{ cluster.displayId || 'n/a' }}</span>&nbsp;&nbsp;&nbsp;
+        <ng-container *ngIf="cluster.tcrPairLabel">
+            <span>{{ cluster.tcrPairLabel }}</span>&nbsp;&nbsp;&nbsp;
+        </ng-container>
+        <div class="sub header">
+            <ng-container *ngIf="cluster.meta && cluster.meta.species">
+                <span>Species: {{ cluster.meta.species }}</span>&nbsp;&nbsp;&nbsp;
+            </ng-container>
+            <ng-container *ngIf="cluster.meta && cluster.meta.mhcclass">
+                <span>MHC class: {{ cluster.meta.mhcclass }}</span>&nbsp;&nbsp;&nbsp;
+            </ng-container>
+            <ng-container *ngIf="cluster.meta && (cluster.meta.mhca || cluster.meta.mhcb)">
+                <span>MHC A/B: {{ cluster.meta.mhca || '-' }}/{{ cluster.meta.mhcb || '-' }}</span>&nbsp;&nbsp;&nbsp;
+            </ng-container>
+            <span>Antigen.Gene: {{ cluster.meta && cluster.meta.antigenGene ? cluster.meta.antigenGene : '-' }}</span>&nbsp;&nbsp;&nbsp;
+            <span>Antigen.Species: {{ cluster.meta && cluster.meta.antigenSpecies ? cluster.meta.antigenSpecies : '-' }}</span>&nbsp;&nbsp;&nbsp;
+        </div>
+    </div>
+</h5>
+<!-- <div class="ui right floated header">
+    <div class="content with-options">
+        <button class="mini ui basic button download-members-icon" (click)="exportCID()">
+            <i class="icon download"></i>
+            Export
+        </button>
+    </div>
+</div> -->
+<div class="structure-visualization-segment" style="clear: both;">
+    <ng-container *ngIf="isHtmlVisualizationRequested(); else noVisualization">
+        <ng-container *ngIf="hasHtmlVisualization(); else htmlLoading">
+            <div class="structure-zoom-viewer">
+                <div class="structure-zoom-viewer__content" (mousedown)="zoomState.onMouseDown($event)" #zoomViewport>
+                    <div class="structure-zoom-viewer__canvas"
+                         [class.is-dragging]="zoomState.isDragging"
+                         [style.transform]="zoomState.transform"
+                         #zoomCanvas>
+                        <div class="structure-html" [innerHTML]="htmlVisualization"></div>
+                    </div>
+                </div>
+                <div class="structure-zoom-controls">
+                    <div class="structure-zoom">
+                        <button class="structure-zoom__button" type="button" (click)="zoomState.increaseZoom()">+</button>
+                        <input class="structure-zoom__slider" type="range"
+                               [min]="zoomState.zoomMin"
+                               [max]="zoomState.zoomMax"
+                               [step]="zoomState.zoomStep"
+                               [value]="zoomState.zoomLevel"
+                               (input)="zoomState.onZoomInput($event)">
+                        <button class="structure-zoom__button" type="button" (click)="zoomState.decreaseZoom()">-</button>
+                    </div>
+                    <button class="structure-zoom__reset" type="button" (click)="zoomState.resetView()" aria-label="Reset zoom and center">
+                        <svg class="structure-zoom__reset-icon" viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M12 4L4 10V20H10V15H14V20H20V10L12 4Z"></path>
+                        </svg>
+                    </button>
+                </div>
+                <div class="structure-legend" aria-hidden="true">
+                    <img class="structure-legend__image"
+                         src="/assets/images/tcr_skeleton_plots_legend.svg"
+                         alt="">
+                </div>
+            </div>
+        </ng-container>
+        <ng-template #htmlLoading>
+            <div class="structure-html structure-html--loading">
+                <div *ngIf="isHtmlVisualizationLoading; else htmlUnavailable" class="ui active inline loader"></div>
+                <ng-template #htmlUnavailable>
+                    <div class="structure-empty-placeholder">Unable to load visualization.</div>
+                </ng-template>
+            </div>
+        </ng-template>
+    </ng-container>
+</div>
+<ng-template #noVisualization>
+    <div class="structure-empty-placeholder">No visualization available for this cluster.</div>
+</ng-template>

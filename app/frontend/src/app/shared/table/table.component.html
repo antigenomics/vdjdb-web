@@ -17,7 +17,7 @@
 <table [attr.class]="tableClass">
     <thead class="cursor pointer">
     <tr *ngIf="!configuration.utils.disable">
-        <th [attr.colspan]="columns.length" style="padding: 1em">
+        <th [attr.colspan]="getVisibleColumnsCount()" style="padding: 1em">
             <table-pagination *ngIf="!configuration.utils.pagination.disable"
                               [page]="table.page" [range]="configuration.utils.pagination.pageRange" [pageCount]="table.pageCount"
                               (pageChange)="onPageChange.emit($event)"></table-pagination>
@@ -30,6 +30,9 @@
                           [options]="configuration.utils.export.options" [formats]="configuration.utils.export.formats"
                           (exportEvent)="onExport.emit($event)"></table-export>
 
+            <table-select-columns [columns]="columns" [hiddenColumns]="hiddenColumns"
+                                  (hiddenColumnsChange)="onHiddenColumnsChange($event)"></table-select-columns>
+
             <table-pagesize *ngIf="!configuration.utils.pageSize.disable"
                             [sizes]="configuration.utils.pageSize.sizes" [pageSize]="table.pageSize"
                             (changePageSize)="onPageSizeChange.emit($event)"></table-pagesize>
@@ -37,7 +40,10 @@
         </th>
     </tr>
     <tr [style.font-size]="headerFontSize">
-        <th class="{{ isSorted(column) }} {{ configuration.classes.columns }}" *ngFor="let column of columns; trackBy: trackColumnFn" (click)="onColumnClick.emit(column)">
+        <th class="{{ isSorted(column) }} {{ configuration.classes.columns }}" *ngFor="let column of columns; trackBy: trackColumnFn"
+            [class.hidden-column]="isColumnHidden(column.name)"
+            [style.display]="isColumnHidden(column.name) ? 'none' : null"
+            (click)="onColumnClick.emit(column)">
         <span class="header" [popup]="column.popupContent" [footer]="column.popupFooter" [header]="column.title" position="top" width="300" [disabled]="!column.popup">
             {{ column.title }}
         </span>
@@ -45,6 +51,6 @@
     </tr>
     </thead>
     <tbody [style.font-size]="contentFontSize">
-    <tr *ngFor="let row of table.getRows()" table-row [row]="row" [columns]="columns" class="{{ configuration.classes.rows }}"></tr>
+    <tr *ngFor="let row of table.getRows()" table-row [row]="row" [columns]="columns" [hiddenColumns]="hiddenColumns" class="{{ configuration.classes.rows }}"></tr>
     </tbody>
 </table>

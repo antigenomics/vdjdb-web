@@ -28,3 +28,7 @@ th span.header {
     height: 100%;
     cursor: pointer;
 }
+
+.hidden-column {
+    display: none !important;
+}

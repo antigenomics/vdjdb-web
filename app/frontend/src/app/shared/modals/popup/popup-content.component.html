@@ -38,6 +38,16 @@
     <div class="content" *ngIf="display === 'colored-text'">
         <span *ngFor="let item of getPopupContent()" [style.color]="item.split('|')[1]">{{ item.split('|')[0] }}</span>
     </div>
+    <div class="content" *ngIf="display === 'image'">
+        <div class="ui center aligned basic segment" style="padding:0">
+            <img [src]="getPopupContent()" style="max-width:100%; max-height:220px; object-fit:contain">
+        </div>
+    </div>
+    <div class="content" *ngIf="display === 'html'">
+        <div class="ui center aligned basic segment" style="padding:0">
+            <div [innerHTML]="getHtmlContent()" style="max-width:100%; max-height:220px; overflow:hidden;"></div>
+        </div>
+    </div>
     <div class="content" *ngIf="display === 'table'">
         <div class="description">
             <div class="ui grid">

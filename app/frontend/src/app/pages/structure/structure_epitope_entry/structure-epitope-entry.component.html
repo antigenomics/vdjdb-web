@@ -1,0 +1,154 @@
+<!--
+  ~     Copyright 2017-2019 Bagaev Dmitry
+  ~
+  ~     Licensed under the Apache License, Version 2.0 (the "License");
+  ~     you may not use this file except in compliance with the License.
+  ~     You may obtain a copy of the License at
+  ~
+  ~         http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~     Unless required by applicable law or agreed to in writing, software
+  ~     distributed under the License is distributed on an "AS IS" BASIS,
+  ~     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~     See the License for the specific language governing permissions and
+  ~     limitations under the License.
+  -->
+
+<div class="structure-epitope-entry">
+    <h4 class="ui header structure-epitope-entry__header">
+        <div class="structure-epitope-entry__title">
+            {{ epitope.epitope }}
+        </div>
+        <div class="structure-epitope-entry__meta">
+            <div class="epitope-meta">
+                <span class="epitope-meta__item"><span class="epitope-meta__label">Species:</span> {{ meta.species || '-' }}</span>
+                <span class="epitope-meta__item"><span class="epitope-meta__label">MHC class:</span> {{ meta.mhcclass || '-' }}</span>
+                <span class="epitope-meta__item"><span class="epitope-meta__label">MHC A/B:</span> {{ meta.mhca || '-' }}/{{ meta.mhcb || '-' }}</span>
+                <span class="epitope-meta__item"><span class="epitope-meta__label">Antigen.Gene:</span> {{ meta.antigenGene || '-' }}</span>
+                <span class="epitope-meta__item"><span class="epitope-meta__label">Antigen.Species:</span> {{ meta.antigenSpecies || '-' }}</span>
+            </div>
+        </div>
+    </h4>
+    <ng-container *ngIf="!isHidden">
+        <div class="overlay-controls">
+            <div class="overlay-layout">
+                <div class="overlay-list" [style.height.px]="overlayHeight">
+                    <div class="overlay-list__instructions">
+                        <div class="overlay-list__instructions-title">Select up to {{ overlayLimit }} structures</div>
+                        <div class="overlay-list__instructions-hint">Click a card to add/remove it from overlay</div>
+                    </div>
+                    <div class="overlay-list__scroller">
+                        <div class="overlay-card" *ngFor="let row of overlayTableRows; trackBy: trackRowBy"
+                             [class.is-selected]="isClusterSelected(row.cluster)"
+                             [class.is-disabled]="isRowDisabled(row)"
+                             (click)="isRowDisabled(row) ? null : onRowToggle(row, $event)">
+                            <div class="overlay-card__line overlay-card__line--id">
+                                <div class="overlay-card__id-meta">
+                                    <span class="overlay-card__label">CDR3a/b cluster ID:</span>
+                                    <span class="overlay-card__value">{{ row.alphaClusterId || '-' }}/{{ row.betaClusterId || '-' }}</span>
+                                    <span class="overlay-card__note" *ngIf="!row.hasHtml">no HTML</span>
+                                </div>
+                                <div class="ui compact selection dropdown overlay-card__download"
+                                     dropdown
+                                     [content]="downloadMenu"
+                                     (click)="onDownloadDropdownClick($event)"
+                                     (mousedown)="onDownloadDropdownClick($event)">
+                                    <div class="text"><b>{{ downloadTitle }}</b></div>
+                                    <i class="dropdown icon"></i>
+                                    <div class="menu fade element slow" tabindex="-1" #downloadMenu>
+                                        <div class="item overlay-card__download-item" (click)="onDownloadOptionClick(row, 'structure', $event)">Structure</div>
+                                        <div class="item overlay-card__download-item" (click)="onDownloadOptionClick(row, 'contacts', $event)">Contacts</div>
+                                        <div class="item overlay-card__download-item" (click)="onDownloadOptionClick(row, 'both', $event)">Both</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="overlay-card__line overlay-card__line--cdr">
+                                <span class="overlay-card__label">CDR3a:</span>
+                                <span class="overlay-card__value">{{ row.cdr3a || '-' }}</span>
+                            </div>
+                            <div class="overlay-card__line overlay-card__line--cdr">
+                                <span class="overlay-card__label">CDR3b:</span>
+                                <span class="overlay-card__value">{{ row.cdr3b || '-' }}</span>
+                            </div>
+                            <div class="overlay-card__line">
+                                <span class="overlay-card__label">TRAV:</span>
+                                <span class="overlay-card__value">{{ row.trav || '-' }}</span>
+                                <span class="overlay-card__label">TRAJ:</span>
+                                <span class="overlay-card__value">{{ row.traj || '-' }}</span>
+                            </div>
+                            <div class="overlay-card__line">
+                                <span class="overlay-card__label">TRBV:</span>
+                                <span class="overlay-card__value">{{ row.trbv || '-' }}</span>
+                                <span class="overlay-card__label">TRBJ:</span>
+                                <span class="overlay-card__value">{{ row.trbj || '-' }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="overlay-visualization">
+                    <div class="structure-overlay"
+                         [style.width.px]="overlayWidth"
+                         [style.height.px]="overlayHeight"
+                         #structureOverlay>
+                        <div class="structure-counter" aria-hidden="true">
+                            <span class="structure-counter__value">{{ overlaySelectionCount }}</span>
+                            <span class="structure-counter__separator">/</span>
+                            <span class="structure-counter__limit">{{ overlayLimit }}</span>
+                        </div>
+                        <ng-container *ngIf="overlayLayerList.length > 0; else overlayEmpty">
+                            <div class="structure-overlay__content" (mousedown)="zoomState.onMouseDown($event)" #zoomViewport>
+                                <div class="structure-overlay__canvas"
+                                     [class.is-dragging]="zoomState.isDragging"
+                                     [style.transform]="zoomState.transform"
+                                     #zoomCanvas>
+                                    <div class="structure-overlay__base">
+                                        <div class="structure-html" [innerHTML]="overlayLayerList[0].markup"></div>
+                                    </div>
+                                    <ng-container *ngFor="let layer of overlayLayerList; let i = index">
+                                        <ng-container *ngIf="i > 0">
+                                            <div class="structure-overlay__layer"
+                                                 [style.z-index]="overlayLayerList.length - i"
+                                                 [style.opacity]="computeOverlayOpacity(i)">
+                                                <div class="structure-html" [innerHTML]="layer.markup"></div>
+                                            </div>
+                                        </ng-container>
+                                    </ng-container>
+                                </div>
+                            </div>
+                            <div class="structure-zoom-controls">
+                                <div class="structure-zoom">
+                                    <button class="structure-zoom__button" type="button" (click)="zoomState.increaseZoom()">+</button>
+                                    <input class="structure-zoom__slider" type="range"
+                                           [min]="zoomState.zoomMin"
+                                           [max]="zoomState.zoomMax"
+                                           [step]="zoomState.zoomStep"
+                                           [value]="zoomState.zoomLevel"
+                                           (input)="zoomState.onZoomInput($event)">
+                                    <button class="structure-zoom__button" type="button" (click)="zoomState.decreaseZoom()">-</button>
+                                </div>
+                                <button class="structure-zoom__reset" type="button" (click)="zoomState.resetView()" aria-label="Reset zoom and center">
+                                    <svg class="structure-zoom__reset-icon" viewBox="0 0 24 24" aria-hidden="true">
+                                        <path d="M12 4L4 10V20H10V15H14V20H20V10L12 4Z"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                            <div class="structure-legend" aria-hidden="true">
+                                <img class="structure-legend__image"
+                                     src="/assets/images/tcr_skeleton_plots_legend.svg"
+                                     alt="">
+                            </div>
+                        </ng-container>
+                        <ng-template #overlayEmpty>
+                            <div class="structure-empty-placeholder">
+                                <div class="structure-empty-placeholder__text">
+                                    Select structures from the list to compare them.
+                                </div>
+                            </div>
+                        </ng-template>
+                    </div>
+                </div>
+            </div>
+            <div class="ui tiny warning message" *ngIf="overlayError">{{ overlayError }}</div>
+        </div>
+    </ng-container>
+</div>
