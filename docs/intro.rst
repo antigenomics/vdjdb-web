@@ -20,7 +20,7 @@ we make our best to ensure data consistency and correct irregularities in TCR sp
 .. note::
 
    This software is intended for advanced users.
-   We recommend using either the `VDJdb web portal <https://vdjdb.cdr3.net/>`__
+   We recommend using either the `VDJdb web portal <https://vdjdb.com/>`__
    or the standalone VDJdb application with command line interface that can be found `here <https://github.com/antigenomics/vdjdb-standalone>`__.
 
 See the :ref:`install` section for more details.

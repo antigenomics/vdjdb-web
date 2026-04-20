@@ -39,7 +39,7 @@ export interface IArticleMetadata {
 
 @Injectable()
 export class RefSearchService {
-    private static readonly refSearchBackendURL: string = 'https://vdjdb.cdr3.net/refsearch/';
+    private static readonly refSearchBackendURL: string = 'https://vdjdb.com/refsearch/';
     private static readonly isAliveInterval: number = 15000;
     private static readonly isAliveRequest = interval(RefSearchService.isAliveInterval).pipe(
         startWith(RefSearchBackendStates.UNDEFINED),
