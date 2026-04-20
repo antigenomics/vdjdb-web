@@ -1,20 +1,21 @@
 /*
- *     Copyright 2017-2019 Bagaev Dmitry
+ * Copyright 2017-2019 Bagaev Dmitry
  *
- *     Licensed under the Apache License, Version 2.0 (the "License");
- *     you may not use this file except in compliance with the License.
- *     You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *         http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- *     Unless required by applicable law or agreed to in writing, software
- *     distributed under the License is distributed on an "AS IS" BASIS,
- *     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *     See the License for the specific language governing permissions and
- *     limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 import { ChangeDetectionStrategy, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import {
   IMotifCDR3SearchResult,
   IMotifCDR3SearchResultOptions,
@@ -25,7 +26,7 @@ import {
 } from 'pages/motif/motif';
 import { MotifSearchState, MotifService } from 'pages/motif/motif.service';
 import { fromEvent, Observable, Subscription, timer } from 'rxjs';
-import { debounce } from 'rxjs/operators';
+import { debounce, take } from 'rxjs/operators';
 import { ContentWrapperService } from '../../content-wrapper.service';
 
 @Component({
@@ -34,7 +35,7 @@ import { ContentWrapperService } from '../../content-wrapper.service';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MotifPageComponent implements OnInit, OnDestroy {
-  private static readonly motifPageScrollEventDebounceTimeout: number = 10;
+  private static readonly pageScrollEventDebounceTimeout: number = 10;
   private static readonly motifPageResizeEventDebounceTimeout: number = 200;
 
   private onScrollObservable: Subscription;
@@ -50,7 +51,7 @@ export class MotifPageComponent implements OnInit, OnDestroy {
   @ViewChild('EpitopesContainer')
   public epitopesContainer: ElementRef;
 
-  constructor(private motifService: MotifService, private contentWrapper: ContentWrapperService) {
+  constructor(private motifService: MotifService, private contentWrapper: ContentWrapperService, private route: ActivatedRoute) {
     this.metadata = motifService.getMetadata();
     this.selected = motifService.getSelected();
     this.epitopes = motifService.getEpitopes();
@@ -60,20 +61,40 @@ export class MotifPageComponent implements OnInit, OnDestroy {
   }
 
   public ngOnInit(): void {
-    // noinspection JSIgnoredPromiseFromCall
     this.contentWrapper.blockScrolling();
-    this.motifService.load();
+
+    this.route.queryParamMap.pipe(take(1)).subscribe((params) => {
+      const species = params.get('species');
+      const tcrChain = params.get('tcr_chain');
+      const gene = params.get('gene');
+      const mhcClass = params.get('mhc_class');
+      const epitopeSeq = params.get('epitope_seq');
+
+      const cid = params.get('cid') || undefined;
+
+      if (species && tcrChain && mhcClass && gene && epitopeSeq) {
+        this.motifService.filterByUrl({ species, tcrChain, mhcClass, gene, epitopeSeq, cid });
+
+      } else {
+        const cdr3Query = params.get('query');
+        if (cdr3Query) {
+          this.motifService.searchCDR3ByUrl(cdr3Query);
+        } else {
+          this.motifService.load();
+        }
+      }
+    });
+
     this.onScrollObservable = fromEvent(this.epitopesContainer.nativeElement, 'scroll')
-      .pipe(debounce(() => timer(MotifPageComponent.motifPageScrollEventDebounceTimeout))).subscribe(() => {
-        this.motifService.fireScrollUpdateEvent();
-      });
+        .pipe(debounce(() => timer(MotifPageComponent.pageScrollEventDebounceTimeout))).subscribe(() => {
+          this.motifService.fireScrollUpdateEvent();
+        });
 
     this.onResizeObservable = fromEvent(window, 'resize')
       .pipe(debounce(() => timer(MotifPageComponent.motifPageResizeEventDebounceTimeout))).subscribe(() => {
         this.motifService.fireResizeUpdateEvent();
       });
   }
-
   public isEpitopesLoading(): Observable<boolean> {
     return this.motifService.isLoading();
   }

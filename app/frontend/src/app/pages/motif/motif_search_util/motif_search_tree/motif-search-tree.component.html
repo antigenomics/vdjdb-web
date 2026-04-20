@@ -19,7 +19,7 @@
         <div class="content">
             <div class="header">All motifs</div>
             <div class="description">Browse motifs using the tree</div>
-            <div class="ui list" motif-search-tree-level [level]="metadata.root" *ngIf="metadata; else loader"
+            <div class="ui list" motif-search-tree-level [level]="metadata.root" [allowMultiple]="options?.allowMultiple" [hasMultipleSelected]="hasMultipleSelected()" *ngIf="metadata; else loader"
                  (onSelect)="onFilterReceived($event)" (onDiscard)="onDiscardReceived($event)">
             </div>
         </div>

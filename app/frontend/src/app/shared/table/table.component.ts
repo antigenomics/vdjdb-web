@@ -14,7 +14,20 @@
  *     limitations under the License.
  */
 
-import { AfterViewInit, ChangeDetectorRef, Component, EventEmitter, HostBinding, Input, OnDestroy, OnInit, Output, Renderer2 } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectorRef,
+  Component,
+  EventEmitter,
+  HostBinding,
+  Input,
+  OnChanges,
+  OnDestroy,
+  OnInit,
+  Output,
+  Renderer2,
+  SimpleChanges
+} from '@angular/core';
 import { Subscription } from 'rxjs';
 import { createDefaultTableConfiguration, ITableConfigurationDescriptor } from 'shared/table/configuration/table-configuration';
 import { Configuration } from 'utils/configuration/configuration';
@@ -29,7 +42,7 @@ import { Table } from './table';
   templateUrl: './table.component.html',
   styleUrls:   [ './table.component.css' ]
 })
-export class TableComponent implements OnInit, AfterViewInit, OnDestroy {
+export class TableComponent implements OnInit, AfterViewInit, OnDestroy, OnChanges {
   private static _resizeEventWaitTime: number = 500;
 
   private _resizeEventListener: () => void;
@@ -40,6 +53,9 @@ export class TableComponent implements OnInit, AfterViewInit, OnDestroy {
 
   public headerFontSize: string = 'inherit';
   public contentFontSize: string = 'inherit';
+  public hiddenColumns: string[] = [];
+
+  private _hiddenColumnsSet: Set<string> = new Set();
 
   @HostBinding('style.overflow')
   public hostOverflowProperty: string = 'auto';
@@ -84,6 +100,17 @@ export class TableComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
+  public ngOnChanges(changes: SimpleChanges): void {
+    if (changes.columns) {
+      const columns = this.columns || [];
+      const skippedNames = columns.filter((c) => c.skip).map((c) => c.name);
+      const userHidden = (this.hiddenColumns || []).filter((name) => columns.some((c) => c.name === name));
+      const merged = Array.from(new Set([ ...skippedNames, ...userHidden ]));
+      this.hiddenColumns = merged;
+      this.updateHiddenColumnsSet();
+    }
+  }
+
   public ngAfterViewInit(): void {
     if (this.configuration.size.header.dynamicSizeEnabled || this.configuration.size.content.dynamicSizeEnabled) {
       this.updateFontSize();
@@ -99,6 +126,29 @@ export class TableComponent implements OnInit, AfterViewInit, OnDestroy {
 
   public trackColumnFn(_index: number, column: TableColumn) {
     return column.name;
+  }
+
+  public onHiddenColumnsChange(hidden: string[]): void {
+    this.hiddenColumns = hidden || [];
+    this.updateHiddenColumnsSet();
+    this.changeDetector.markForCheck();
+  }
+
+  public isColumnHidden(columnName: string): boolean {
+    return this._hiddenColumnsSet.has(columnName);
+  }
+
+  public getVisibleColumnsCount(): number {
+    if (!this.columns || this.columns.length === 0) {
+      return 1;
+    }
+    const visible = this.columns.reduce((count, column) => {
+      return count + (this.isColumnHidden(column.name) ? 0 : 1);
+    }, 0);
+    if (visible === 0) {
+      return this.columns.length;
+    }
+    return visible;
   }
 
   public ngOnDestroy(): void {
@@ -141,5 +191,9 @@ export class TableComponent implements OnInit, AfterViewInit, OnDestroy {
     const b = this.configuration.size.content.dynamicSizeWeightB;
     const contentFontSize = a * window.innerWidth + b;
     this.contentFontSize = contentFontSize + 'em';
+  }
+
+  private updateHiddenColumnsSet(): void {
+    this._hiddenColumnsSet = new Set(this.hiddenColumns || []);
   }
 }

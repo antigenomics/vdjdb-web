@@ -53,11 +53,18 @@ object SessionAction {
   def updateCookies[A](result: Result)(implicit userRequest: UserRequest[A], stp: SessionTokenProvider): Result = {
     if (userRequest.authorized) {
       val session = userRequest.session + ((stp.getAuthTokenSessionName, userRequest.token.get.token))
-      result
-        .withSession(session)
+      val updatedResult = result.withSession(session)
         .withCookies(Cookie("logged", URLEncoder.encode("true", "UTF-8"), httpOnly = false))
-        .withCookies(Cookie("email", URLEncoder.encode(userRequest.user.get.email, "UTF-8"), httpOnly = false))
-        .withCookies(Cookie("login", URLEncoder.encode(userRequest.user.get.login, "UTF-8"), httpOnly = false))
+
+      // Safely handle user data which might be null even when authorized
+      userRequest.user match {
+        case Some(user) =>
+          updatedResult
+            .withCookies(Cookie("email", URLEncoder.encode(user.email, "UTF-8"), httpOnly = false))
+            .withCookies(Cookie("login", URLEncoder.encode(user.login, "UTF-8"), httpOnly = false))
+        case None =>
+          updatedResult
+      }
     } else {
       SessionAction.clearSessionAndDiscardCookies(result)
     }

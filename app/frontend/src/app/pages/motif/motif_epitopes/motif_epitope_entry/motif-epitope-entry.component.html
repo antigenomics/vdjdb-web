@@ -22,13 +22,24 @@
         <div class="sub header">
             {{ meta.species }}&nbsp;&nbsp;>&nbsp;&nbsp;{{ meta.gene }}&nbsp;&nbsp;>&nbsp;&nbsp;{{ meta.mhcclass }}&nbsp;&nbsp;>&nbsp;&nbsp;{{ meta.mhca }}
         </div>
-        <i class="ui small close icon options-icon" (click)="discard()" style="right: 10px"></i>
-        <i class="ui small angle icon options-icon" [ngClass]="{'down': isHidden, 'up': !isHidden}" (click)="hide()" style="right: 40px"></i>
+        <i class="ui small close icon options-icon" *ngIf="allowMultiple || hasMultipleSelected" (click)="discard()" style="right: 10px"></i>
+        <i class="ui small angle icon options-icon" *ngIf="allowMultiple || hasMultipleSelected" [ngClass]="{'down': isHidden, 'up': !isHidden}" (click)="hide()" style="right: 40px"></i>
     </h4>
     <ng-container *ngIf="!isHidden">
+        <div *ngIf="!allowMultiple && (isChartLoading || chartUrl)" #chartHost
+             class="ui clearing segment" style="padding: 0; overflow: hidden;">
+            <div *ngIf="isChartLoading" class="ui active centered inline loader" style="margin: 24px auto; display: block;"></div>
+            <div *ngIf="chartUrl && chartWidth > 0" class="motif-chart-wrapper"
+                 [style.width.px]="chartWidth" [style.height.px]="chartHeight">
+                <iframe [src]="chartUrl" frameborder="0" scrolling="no"
+                        class="motif-chart-iframe"
+                        (load)="onChartIframeLoad($event)"></iframe>
+            </div>
+        </div>
         <div class="ui clearing segment">
             <motif-epitope-cluster *ngFor="let cluster of epitope.clusters; trackBy: trackClusterBy" [cluster]="cluster"
-                                   [isNormalized]="isNormalized"></motif-epitope-cluster>
+                                   [isNormalized]="isNormalized"
+                                   [highlightedCid]="highlightedCid"></motif-epitope-cluster>
         </div>
     </ng-container>
 </div>

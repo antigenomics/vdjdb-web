@@ -84,6 +84,7 @@ export class SearchTableEntryGeneComponent extends TableEntry {
         this._pairedRow = this._hostViewContainer.createComponent(rowResolver);
         this._pairedRow.instance.row = new SearchTableRow(pairedResponse.get('paired'), true);
         this._pairedRow.instance.columns = this._columns;
+        this._pairedRow.instance.hiddenColumns = this._columns.filter((c) => c.skip).map((c) => c.name);
         this._pairedRow.changeDetectorRef.detectChanges();
         this.renderer.addClass(this._pairedRow.location.nativeElement, 'warning');
         this.renderer.addClass(this._pairedRow.location.nativeElement, 'center');

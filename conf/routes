@@ -11,6 +11,7 @@ GET         /common-diseases                            backend.controllers.Appl
 GET         /self-antigen                               backend.controllers.Application.index
 GET         /overview                                   backend.controllers.Application.index
 GET         /motif                                      backend.controllers.Application.index
+GET         /structure                                  backend.controllers.Application.index
 GET         /refsearch                                  backend.controllers.Application.index
 GET         /links                                      backend.controllers.Application.index
 GET         /credits                                    backend.controllers.Application.index
@@ -39,6 +40,22 @@ POST        /api/motifs/filter                          backend.controllers.Moti
 POST        /api/motifs/cdr3                            backend.controllers.MotifsAPI.cdr3
 + nocsrf
 POST        /api/motifs/members                         backend.controllers.MotifsAPI.members
+
+# Structures API
+GET         /api/structures/metadata                        backend.controllers.StructuresAPI.getMetadata
++ nocsrf
+POST        /api/structures/filter                          backend.controllers.StructuresAPI.filter
++ nocsrf
+POST        /api/structures/cdr3                            backend.controllers.StructuresAPI.cdr3
+
+# Search availability
+GET         /api/search/availability                       backend.controllers.SearchAvailabilityAPI.availability
+
+# Streams <db>/structure/cd[4|8]/<id>.png
+GET   /structure-files/*path   backend.controllers.ImageController.structure(path: String)
+
+# Pre-built motif chart HTML files (Plotly applets) served from <db>/motifs/
+GET   /motif-files/*path       backend.controllers.ImageController.motifChart(path: String)
 
 # Authorization API
 GET         /authorization/elogin                       backend.controllers.Authorization.login

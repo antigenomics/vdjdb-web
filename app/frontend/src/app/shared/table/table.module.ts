@@ -25,6 +25,7 @@ import { TablePagesizeComponent } from './pagesize/table-pagesize.component';
 import { TablePaginationComponent } from './pagination/table-pagination.component';
 import { TableRowComponent } from './row/table-row.component';
 import { TableComponent } from './table.component';
+import { TableSelectColumnsComponent } from './select_columns/table-select-columns.component';
 
 @NgModule({
   imports:         [ CommonModule, ModalsModule ],
@@ -35,7 +36,8 @@ import { TableComponent } from './table.component';
     TableExportComponent,
     TablePagesizeComponent,
     TableEntryDefaultComponent,
-    TableEntryCenteredComponent ],
+    TableEntryCenteredComponent,
+    TableSelectColumnsComponent ],
   exports:         [ TableComponent,
     TablePaginationComponent,
     TableInfoComponent,

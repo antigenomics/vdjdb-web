@@ -42,16 +42,22 @@ class MotifsAPI @Inject()(cc: ControllerComponents, motifs: Motifs, configuratio
   }
 
   def filter: Action[AnyContent] = Action.async { implicit request =>
-    Future.successful {
-      request.body.asJson.map { json =>
-        json.validate[MotifsSearchTreeFilter].map {
-          filter => motifs.filter(filter).map { r => Ok(toJson(r)) }.getOrElse(BadRequest("Invalid filter provided"))
-        }.recoverTotal {
-          e => BadRequest("Detected error:" + JsError.toFlatForm(e))
+    request.body.asJson.map { json =>
+      json.validate[MotifsSearchTreeFilter].fold(
+        errors => {
+          Future.successful(BadRequest("Invalid JSON: " + JsError.toJson(errors)))
+        },
+        filter => {
+          motifs.filter(filter).map {
+            case Some(result) => Ok(toJson(result))
+            case None         => NotFound("No results found for this filter")
+          } recover {
+            case t: Throwable => InternalServerError("An error occurred: " + t.getMessage)
+          }
         }
-      }.getOrElse {
-        BadRequest("Expecting Json data")
-      }
+      )
+    }.getOrElse {
+      Future.successful(BadRequest("Expecting Json data"))
     }
   }
 

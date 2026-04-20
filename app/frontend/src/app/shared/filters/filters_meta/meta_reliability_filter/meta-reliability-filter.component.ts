@@ -24,10 +24,11 @@ import { MetaFiltersService } from '../meta-filters.service';
 export class MetaReliabilityFilterComponent {
   constructor(public meta: MetaFiltersService, private changeDetector: ChangeDetectorRef) {}
 
-  public checkConfidenceScore(score: number): void {
+  public checkConfidenceScore(rawScore: string | number | null | undefined): void {
     this.meta.reliability.minimalConfidenceScore = -1;
     this.changeDetector.detectChanges();
-    if (isNaN(Number(score)) || score === null || score === undefined) {
+    const score = rawScore !== null && rawScore !== undefined ? Number(rawScore) : NaN;
+    if (isNaN(score)) {
       this.meta.reliability.minimalConfidenceScore = this.meta.reliability.confidenceScoreMin;
     } else if (score > this.meta.reliability.confidenceScoreMax) {
       this.meta.reliability.minimalConfidenceScore = this.meta.reliability.confidenceScoreMax;

@@ -15,8 +15,12 @@
  */
 
 import { Component, OnDestroy, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { SearchTable } from 'pages/search/table/search/search-table';
+import { SetEntry } from 'shared/filters/common/set/set-entry';
 import { FiltersService } from 'shared/filters/filters.service';
+import { AGFiltersService } from 'shared/filters/filters_ag/ag-filters.service';
+import { TCRFiltersService } from 'shared/filters/filters_tcr/tcr-filters.service';
 import { TableColumn } from 'shared/table/column/table-column';
 import { AnalyticsService } from 'utils/analytics/analytics.service';
 import { LoggerService } from 'utils/logger/logger.service';
@@ -32,6 +36,7 @@ export class SearchPageComponent implements OnInit, OnDestroy {
   public table: SearchTable;
 
   constructor(private searchTableService: SearchTableService, private filters: FiltersService,
+              private route: ActivatedRoute, private ag: AGFiltersService, private tcr: TCRFiltersService,
               logger: LoggerService, notifications: NotificationService, analytics: AnalyticsService) {
     this.table = new SearchTable(searchTableService, filters, analytics, logger, notifications);
     if (this.searchTableService.isInitialized()) {
@@ -41,6 +46,13 @@ export class SearchPageComponent implements OnInit, OnDestroy {
   }
 
   public ngOnInit(): void {
+    const epitopeSeq = this.route.snapshot.queryParamMap.get('epitope_seq');
+    if (epitopeSeq) {
+      this.ag.epitope.epitopeSelected = [ new SetEntry(epitopeSeq, epitopeSeq, false) ];
+      this.tcr.general.tra = true;
+      this.tcr.general.trb = true;
+      this.tcr.general.pairedOnly = true;
+    }
     if (!this.searchTableService.isInitialized()) {
       this.searchTableService.waitInitialization().then(() => {
         this.fetchColumns();
@@ -71,7 +83,7 @@ export class SearchPageComponent implements OnInit, OnDestroy {
   private fetchColumns(): void {
     const metadata = this.searchTableService.getMetadata();
     this.columns = metadata.columns.map((c) => {
-      return new TableColumn(c.name, c.title, true, false, false, true, c.comment, 'Click to sort column');
+      return new TableColumn(c.name, c.title, true, !c.visible, false, true, c.comment, 'Click to sort column');
     });
   }
 }

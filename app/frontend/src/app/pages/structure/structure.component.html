@@ -1,0 +1,43 @@
+<!--
+  ~     Copyright 2017-2019 Bagaev Dmitry
+  ~
+  ~     Licensed under the Apache License, Version 2.0 (the "License");
+  ~     you may not use this file except in compliance with the License.
+  ~     You may obtain a copy of the License at
+  ~
+  ~         http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~     Unless required by applicable law or agreed to in writing, software
+  ~     distributed under the License is distributed on an "AS IS" BASIS,
+  ~     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~     See the License for the specific language governing permissions and
+  ~     limitations under the License.
+  -->
+
+<div class="ui main content text fade slow element soft-margin"
+     style="padding-bottom: 15px;">
+    <div class="ui raised segments">
+        <h3 class="ui top attached header">TCR structure database</h3>
+        <div class="ui attached segment structure-context-header-segment"
+             style="padding: 0.5rem;"
+             [style.top.px]="stickyHeaderOffsetPx">
+            <structure-context-header [metadata]="metadata | async"></structure-context-header>
+        </div>
+        <div class="ui attached segment structure-results-segment"
+             style="padding: 0 7px 0 7px;">
+            <div class="ui active inverted dimmer" *ngIf="isEpitopesLoading() | async">
+                <div class="ui text loader">Loading</div>
+            </div>
+            <div class="ui grid"
+                 style="margin-top: 0; overflow: visible;">
+                <div class="ui sixteen wide column"
+                     [style.overflow-x]="isStateSearchCDR3() ? 'hidden' : 'auto'"
+                     [style.padding-top]="isStateSearchCDR3() ? '0' : null"
+                     #EpitopesContainer>
+                    <structure-epitopes *ngIf="isStateSearchTree()" [options]="options | async" [epitopes]="epitopes | async"></structure-epitopes>
+                    <structure-cdr3-clusters *ngIf="isStateSearchCDR3()" [options]="options | async" [clusters]="clusters | async"></structure-cdr3-clusters>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

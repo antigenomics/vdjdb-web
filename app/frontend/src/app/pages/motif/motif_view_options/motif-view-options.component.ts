@@ -32,4 +32,8 @@ export class MotifViewOptionsComponent {
   public normalize(): void {
     this.onOptionsChange.emit({ ...this.options, isNormalized: !this.options.isNormalized });
   }
+
+  public toggleMultiple(): void {
+    this.onOptionsChange.emit({ ...this.options, allowMultiple: !this.options.allowMultiple });
+  }
 }

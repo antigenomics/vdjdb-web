@@ -1,17 +1,17 @@
 /*
- *     Copyright 2017-2019 Bagaev Dmitry
+ * Copyright 2017-2019 Bagaev Dmitry
  *
- *     Licensed under the Apache License, Version 2.0 (the "License");
- *     you may not use this file except in compliance with the License.
- *     You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *         http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- *     Unless required by applicable law or agreed to in writing, software
- *     distributed under the License is distributed on an "AS IS" BASIS,
- *     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *     See the License for the specific language governing permissions and
- *     limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 import { Injectable } from '@angular/core';
@@ -72,6 +72,7 @@ export class MotifService {
   private selected: Subject<IMotifsMetadataTreeLevelValue[]> = new ReplaySubject(1);
   private epitopes: Subject<IMotifEpitope[]> = new ReplaySubject(1);
   private options: Subject<IMotifEpitopeViewOptions> = new ReplaySubject(1);
+  private highlightedCid: ReplaySubject<string | null> = new ReplaySubject(1);
 
   private clusters: Subject<IMotifCDR3SearchResult> = new ReplaySubject(1);
 
@@ -92,7 +93,7 @@ export class MotifService {
       this.metadata.next(metadata);
       this.selected.next([]);
       this.epitopes.next([]);
-      this.options.next({ isNormalized: false });
+      this.options.next({ isNormalized: false, allowMultiple: false });
       this.clusters.next({ options: { cdr3: '', top: 15, gene: 'Both', substring: false }, clusters: undefined, clustersNorm: undefined });
 
       this.isMetadataLoaded = true;
@@ -136,6 +137,10 @@ export class MotifService {
     return this.clusters.asObservable().pipe(map((c) => c.options));
   }
 
+  public getHighlightedCid(): Observable<string | null> {
+    return this.highlightedCid.asObservable();
+  }
+
   public setOptions(options: IMotifEpitopeViewOptions): void {
     this.options.next(options);
   }
@@ -154,6 +159,49 @@ export class MotifService {
 
   public isLoading(): Observable<boolean> {
     return this.loadingState;
+  }
+
+  public async searchCDR3ByUrl(query: string): Promise<void> {
+    await this.load();
+    this.setSearchState(MotifSearchState.SEARCH_CDR3);
+    this.searchCDR3(query);
+  }
+
+  public async filterByUrl(filters: { species: string, tcrChain: string, mhcClass: string, gene: string, epitopeSeq: string, cid?: string }): Promise<void> {
+    await this.load();
+
+    this.metadata.pipe(take(1)).subscribe((metadata) => {
+      const speciesNode = metadata.root.values.find((v) => v.value === filters.species);
+      if (!speciesNode) { return; }
+
+      const tcrChainNode = speciesNode.next.values.find((v) => v.value === filters.tcrChain);
+      if (!tcrChainNode) { return; }
+
+      const mhcClassNode = tcrChainNode.next.values.find((v) => v.value === filters.mhcClass);
+      if (!mhcClassNode) { return; }
+
+      const geneNode = mhcClassNode.next.values.find((v) => v.value === filters.gene);
+      if (!geneNode) { return; }
+
+      const epitopeNode = geneNode.next.values.find((v) => v.value === filters.epitopeSeq);
+      if (!epitopeNode) { return; }
+
+      this.selectTreeLevelValue(epitopeNode);
+      this.updateSelected();
+    });
+
+    const treeFilter: IMotifsSearchTreeFilter = {
+      entries: [
+        { name: 'species', value: filters.species },
+        { name: 'gene', value: filters.tcrChain },
+        { name: 'mhc.class', value: filters.mhcClass },
+        { name: 'mhc.a', value: filters.gene },
+        { name: 'antigen.epitope', value: filters.epitopeSeq }
+      ]
+    };
+
+    this.highlightedCid.next(filters.cid || null);
+    this.select(treeFilter);
   }
 
   public searchCDR3(cdr3: string, substring: boolean = false, gene: string = 'BOTH', top: number = 15): void {
@@ -195,6 +243,10 @@ export class MotifService {
       this.loadingState.next(false);
       this.notifications.error('Motifs CDR3', 'Unable to load results');
     });
+  }
+
+  public clearEpitopes(): void {
+    this.epitopes.next([]);
   }
 
   public select(treeFilter: IMotifsSearchTreeFilter): void {
@@ -274,8 +326,8 @@ export class MotifService {
   public updateSelected(): void {
     this.metadata.pipe(take(1)).subscribe((metadata) => {
       this.selected.next(MotifService.extractMetadataTreeLeafValues(metadata.root)
-        .filter(([ _, value ]) => value.isSelected)
-        .map(([ _, value ]) => value)
+          .filter(([ _, value ]) => value.isSelected)
+          .map(([ _, value ]) => value)
       );
       this.events.next(MotifsServiceEvents.UPDATE_SELECTED);
       setTimeout(() => {
@@ -295,8 +347,8 @@ export class MotifService {
   public findTreeLevelValue(hash: string): Observable<IMotifsMetadataTreeLevelValue[]> {
     return this.metadata.pipe(take(1), map((metadata) => {
       return MotifService.extractMetadataTreeLeafValues(metadata.root)
-        .filter(([ h, _ ]) => h === hash)
-        .map(([ _, value ]) => value);
+          .filter(([ h, _ ]) => h === hash)
+          .map(([ _, value ]) => value);
     }));
   }
 

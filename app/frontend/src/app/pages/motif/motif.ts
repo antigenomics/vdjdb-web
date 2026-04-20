@@ -46,6 +46,7 @@ export interface IMotifsSearchTreeFilterResult {
 
 export interface IMotifEpitopeViewOptions {
   isNormalized: boolean;
+  allowMultiple: boolean;
 }
 
 // MotifsEpitopes

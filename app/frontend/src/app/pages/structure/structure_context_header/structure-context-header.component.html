@@ -1,0 +1,92 @@
+<!--
+  ~     Copyright 2017-2019 Bagaev Dmitry
+  ~
+  ~     Licensed under the Apache License, Version 2.0 (the "License");
+  ~     you may not use this file except in compliance with the License.
+  ~     You may obtain a copy of the License at
+  ~
+  ~         http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~     Unless required by applicable law or agreed to in writing, software
+  ~     distributed under the License is distributed on an "AS IS" BASIS,
+  ~     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~     See the License for the specific language governing permissions and
+  ~     limitations under the License.
+  -->
+
+<div class="structure-context-header">
+    <div class="ui form structure-context-form">
+        <div class="fields">
+            <div class="four wide field">
+                <label>MHC class</label>
+                <div class="ui fluid selection dropdown" dropdown [content]="mhcClassMenu">
+                    <div class="text">{{ mhcClassValue || 'Select MHC class' }}</div>
+                    <i class="dropdown icon"></i>
+                    <div class="menu fade element slow padded" tabindex="-1" #mhcClassMenu>
+                        <a class="item" *ngFor="let value of mhcClassValues" (click)="onMhcClassSelect(value)">{{ value.value }}</a>
+                    </div>
+                </div>
+            </div>
+            <div class="four wide field">
+                <label>MHC A/B</label>
+                <div class="ui fluid selection dropdown" dropdown [content]="mhcGeneMenu" [ngClass]="{ 'disabled': !mhcClassValue }">
+                    <div class="text">{{ mhcGeneValue || 'Select MHC A/B' }}</div>
+                    <i class="dropdown icon"></i>
+                    <div class="menu fade element slow padded" tabindex="-1" #mhcGeneMenu>
+                        <a class="item" *ngFor="let value of mhcGeneValues" (click)="onMhcGeneSelect(value)">{{ value.value }}</a>
+                    </div>
+                </div>
+            </div>
+            <div class="four wide field">
+                <label>Antigen epitope</label>
+                <div class="ui fluid search selection dropdown structure-epitope-dropdown"
+                     [ngClass]="{ 'active visible': isEpitopeDropdownOpen, 'disabled': !mhcGeneValue }"
+                     (click)="onEpitopeDropdownClick($event)">
+                    <input #epitopeInputElement class="search structure-epitope-dropdown__input" type="text" autocomplete="off"
+                           [ngModel]="epitopeInputValue" (ngModelChange)="onEpitopeInputChange($event)"
+                           [attr.placeholder]="epitopeInputPlaceholder"
+                           [attr.disabled]="!mhcGeneValue ? true : null"
+                           (focus)="onEpitopeInputFocus()" (blur)="onEpitopeInputBlur()">
+                    <i class="dropdown icon"></i>
+                    <div class="menu transition visible fade element slow padded" tabindex="-1" style="display: block !important;" *ngIf="isEpitopeDropdownOpen">
+                        <a class="item" *ngFor="let value of filteredEpitopeValues" (mousedown)="onEpitopeOptionMouseDown($event, value)">
+                            {{ value.value }}
+                        </a>
+                        <div class="item structure-epitope-dropdown__no-matches" *ngIf="isNoEpitopeMatchesVisible()">
+                            No matches found
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="four wide field">
+                <div class="structure-context-form__label-row">
+                    <div class="structure-context-form__cdr3-label">
+                        <div class="ui dropdown structure-context-form__chain-dropdown"
+                           role="link"
+                           tabindex="0"
+                           (keydown)="onCdr3ChainTriggerKeydown($event)"
+                           dropdown
+                           [content]="cdr3ChainMenu">
+                            <span class="structure-context-form__chain-dropdown-trigger">
+                                <span class="text">{{ cdr3ChainLabel }} </span> <i class="dropdown icon"></i>
+                            </span>
+                            <div class="menu fade element slow padded" tabindex="-1" #cdr3ChainMenu>
+                                <a class="item" *ngFor="let value of cdr3ChainOptions" (click)="setCdr3Chain(value)">{{ getCdr3ChainLabel(value) }}</a>
+                            </div>
+                        </div>
+                        <label class="structure-context-form__sequence-label">sequence</label>
+                    </div>
+                    <div class="structure-context-form__substring-toggle">
+                        <span class="structure-context-form__substring-text structure-context-form__substring-text--full">Search by substring</span>
+                        <span class="structure-context-form__substring-text structure-context-form__substring-text--short">By substring</span>
+                        <input type="checkbox" [(ngModel)]="cdr3Substring">
+                    </div>
+                </div>
+                <div class="ui fluid action input">
+                    <input type="text" placeholder="Enter CDR3" [(ngModel)]="cdr3Query">
+                    <button class="ui button" [ngClass]="{ 'disabled': !cdr3Query || !cdr3Query.trim() }" (click)="onCdr3Search()">Search</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

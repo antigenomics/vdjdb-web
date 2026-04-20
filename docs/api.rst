@@ -16,7 +16,7 @@ General information on database metadata (such as column IDs, names, etc..) can 
 
 .. code-block:: bash
 
-   $ curl -X GET https://vdjdb.cdr3.net/api/database/meta
+   $ curl -X GET https://vdjdb.com/api/database/meta
 
 The above command returns JSON structured like this:
 
@@ -59,7 +59,7 @@ Accessing specific column info
 
 .. code-block:: bash
 
-   $ curl -X GET https://vdjdb.cdr3.net/api/database/meta/columns/gene
+   $ curl -X GET https://vdjdb.com/api/database/meta/columns/gene
 
 The above command returns the following JSON structure:
 
@@ -134,7 +134,7 @@ Fetching information about ``CAAAASGGSYIPTF``.
 
 .. code-block:: bash
 
-   $ curl https://vdjdb.cdr3.net/api/database/search    \
+   $ curl https://vdjdb.com/api/database/search    \
       -H "Content-Type: application/json"               \
       -X POST                                           \
       -d '{ "filters" : [{ "column" : "cdr3", "value" : "CAAAASGGSYIPTF", "filterType" : "exact", "negative" : false }] }'
@@ -190,7 +190,7 @@ Fetching information about ``CAAAASGGSYIPTF`` and his paired record.
 
 .. code-block:: bash
 
-   $ curl https://vdjdb.cdr3.net/api/database/search    \
+   $ curl https://vdjdb.com/api/database/search    \
       -H "Content-Type: application/json"               \
       -X POST                                           \
       -d '{ "filters" : [{ "column" : "cdr3", "value" : "CAAAASGGSYIPTF", "filterType" : "exact", "negative" : false }], "paired": true }'

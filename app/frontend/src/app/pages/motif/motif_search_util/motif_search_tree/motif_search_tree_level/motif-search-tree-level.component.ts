@@ -15,7 +15,7 @@
  */
 
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
-import { IMotifsMetadataTreeLevel, IMotifsMetadataTreeLevelValue, IMotifsSearchTreeFilter } from 'pages/motif/motif';
+import { IMotifsMetadataTreeLevel, IMotifsMetadataTreeLevelValue, IMotifsSearchTreeFilter, /* IMotifEpitopeViewOptions */ } from 'pages/motif/motif';
 import { MotifService, MotifsServiceEvents } from 'pages/motif/motif.service';
 import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
@@ -31,6 +31,12 @@ export class MotifSearchTreeLevelComponent implements OnInit, OnDestroy {
 
   @Input('level')
   public level: IMotifsMetadataTreeLevel;
+
+  @Input('allowMultiple')
+  public allowMultiple: boolean = true;
+
+  @Input('hasMultipleSelected')
+  public hasMultipleSelected: boolean = false;
 
   @Output('onSelect')
   public onSelect = new EventEmitter<IMotifsSearchTreeFilter>();
@@ -58,10 +64,29 @@ export class MotifSearchTreeLevelComponent implements OnInit, OnDestroy {
     if (value.next !== null) {
       value.isOpened = !value.isOpened;
     } else {
-      if (value.isSelected) {
-        this.discard(value);
+      // Leaf node
+      if (this.allowMultiple) {
+        // Multiple mode: toggle select/discard
+        if (value.isSelected) {
+          this.discard(value);
+        } else {
+          this.select(value);
+        }
       } else {
-        this.select(value);
+        // Single mode:
+        // - If yellow (multiple selected) & clicking: select exclusive (becomes green)
+        // - If green (single selected) & clicking: deselect (nothing)
+        // - If not selected: select
+        if (this.hasMultipleSelected && value.isSelected) {
+          // Yellow state: convert to exclusive select
+          this.select(value);
+        } else if (!this.hasMultipleSelected && value.isSelected) {
+          // Green state: deselect
+          this.discard(value);
+        } else {
+          // Not selected: select
+          this.select(value);
+        }
       }
     }
   }
