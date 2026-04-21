@@ -36,6 +36,10 @@ export class TCRFiltersService implements FilterInterface {
     this.cdr3.setDefault();
   }
 
+  public isDefault(): boolean {
+    return this.general.isDefault() && this.segments.isDefault() && this.cdr3.isDefault();
+  }
+
   public setOptions(options: IFiltersOptions): void {
     const generalFilterId = this.general.getFilterId();
     if (options.hasOwnProperty(generalFilterId)) {

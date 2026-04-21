@@ -93,8 +93,17 @@ export class SearchAvailabilityService {
     return key ? key.trim().toLowerCase() : '';
   }
 
-  private buildMotifKey(species: string, tcrChain: string, mhcClass: string, gene: string, epitope: string): string | null {
-    const parts = [ species, tcrChain, mhcClass, gene, epitope ].map((part) => this.normalizeMotifPart(part));
+  private buildMotifKey(species: string, tcrChain: string, mhcClass: string, mhcAllele: string, epitope: string): string | null {
+    // Normalize MHC allele: remove subtype like :01, :02, etc. (matches Motifs.scala logic)
+    const parts = [ species, tcrChain, mhcClass, mhcAllele, epitope ]
+      .map((part, index) => {
+        const normalized = this.normalizeMotifPart(part);
+        // For MHC allele (index 3), also remove subtype to match backend normalization
+        if (index === 3 && normalized.includes('*')) {
+          return normalized.split(':')[0];
+        }
+        return normalized;
+      });
     if (parts.some((part) => part.length === 0)) {
       return null;
     }
@@ -116,9 +125,9 @@ export class SearchAvailabilityService {
     return this.structureVisualizations.get(normalized);
   }
 
-  public async hasMotif(species: string, tcrChain: string, mhcClass: string, gene: string, epitope: string): Promise<boolean> {
+  public async hasMotif(species: string, tcrChain: string, mhcClass: string, mhcAllele: string, epitope: string): Promise<boolean> {
     await this.ensureLoaded();
-    const key = this.buildMotifKey(species, tcrChain, mhcClass, gene, epitope);
+    const key = this.buildMotifKey(species, tcrChain, mhcClass, mhcAllele, epitope);
     return key !== null && this.motifKeys.has(key);
   }
 

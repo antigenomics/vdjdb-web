@@ -15,6 +15,7 @@
  */
 
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { Router } from '@angular/router';
 import { IMotifCDR3SearchResultOptions } from 'pages/motif/motif';
 import { MotifService } from 'pages/motif/motif.service';
 import { Utils } from 'utils/utils';
@@ -41,10 +42,23 @@ export class MotifSearchCDR3Component {
     return this.substring ? 'Search by CDR3 substring...' : 'Search by whole CDR3 sequence...';
   }
 
-  constructor(private motifService: MotifService) {}
+  constructor(private motifService: MotifService, private router: Router) {}
 
   public search(): void {
     this.motifService.searchCDR3(this.input, this.substring, this.gene);
+    this.router.navigate([], {
+      queryParams: {
+        query: this.input,
+        substring: this.substring ? 'true' : null,
+        species: null,
+        tcr_chain: null,
+        mhc_class: null,
+        gene: null,
+        epitope_seq: null,
+        cid: null
+      },
+      replaceUrl: true
+    });
   }
 
   public toggleSubstring(): void {

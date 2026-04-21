@@ -23,7 +23,9 @@ import backend.server.database.api.metadata.DatabaseMetadataResponse
 import backend.server.database.api.suggestions.{DatabaseColumnSuggestionsRequest, DatabaseColumnSuggestionsResponse}
 import backend.server.database.filters.{DatabaseFilterRequest, DatabaseFilterType, DatabaseFilters}
 import backend.server.limit.{IpLimit, RequestLimits}
+import backend.server.motifs.Motifs
 import backend.server.search.SearchTable
+import backend.server.structures.Structures
 import backend.server.search.api.export.{ExportDataRequest, ExportDataResponse}
 import backend.server.search.api.paired.{PairedDataRequest, PairedDataResponse}
 import backend.server.search.api.search.{SearchDataRequest, SearchDataResponse}
@@ -34,7 +36,7 @@ import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success}
 
 
-class DatabaseSearchWebSocketActor(out: ActorRef, limit: IpLimit, database: Database)
+class DatabaseSearchWebSocketActor(out: ActorRef, limit: IpLimit, database: Database, structures: Structures, motifs: Motifs)
                                   (implicit ec: ExecutionContext, as: ActorSystem, limits: RequestLimits, tfp: TemporaryFileProvider)
   extends WebSocketActor(out, limit) {
   private final val table: SearchTable = new SearchTable()
@@ -57,7 +59,7 @@ class DatabaseSearchWebSocketActor(out: ActorRef, limit: IpLimit, database: Data
             filters.warnings.foreach((message: String) => {
               out.warningMessage(message)
             })
-            table.update(filters, database)
+            table.update(filters, database, structures, motifs)
           }
 
           if (searchRequest.sort.nonEmpty) {
@@ -87,7 +89,7 @@ class DatabaseSearchWebSocketActor(out: ActorRef, limit: IpLimit, database: Data
             )
             val pairedFilters: DatabaseFilters = DatabaseFilters.createFromRequest(pairedFilterRequest, database)
             val pairedTable: SearchTable = new SearchTable()
-            pairedTable.update(pairedFilters, database)
+            pairedTable.update(pairedFilters, database, structures, motifs)
 
             if (pairedTable.getRecordsFound == 1) {
               out.success(PairedDataResponse(Some(pairedTable.getRows.head), found = true))
@@ -121,8 +123,8 @@ object DatabaseSearchWebSocketActor {
   final val unableToExportRequestMessage: String = "Unable to export"
   final val invalidActionMessage: String = "Invalid action"
 
-  def props(out: ActorRef, limit: IpLimit, database: Database)
+  def props(out: ActorRef, limit: IpLimit, database: Database, structures: Structures, motifs: Motifs)
            (implicit ec: ExecutionContext, as: ActorSystem, limits: RequestLimits, tfp: TemporaryFileProvider): Props =
-    Props(new DatabaseSearchWebSocketActor(out, limit, database))
+    Props(new DatabaseSearchWebSocketActor(out, limit, database, structures, motifs))
 }
 

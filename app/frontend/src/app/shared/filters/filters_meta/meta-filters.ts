@@ -39,6 +39,12 @@ export class MetaGeneralFilter implements FilterInterface {
     this.seqSingleCell = true;
   }
 
+  public isDefault(): boolean {
+    return this.referencesSelected.length === 0 &&
+      this.methodSort === true && this.methodCulture === true && this.methodOther === true &&
+      this.seqSanger === true && this.seqAmplicon === true && this.seqSingleCell === true;
+  }
+
   public setOptions(options: IFiltersOptions): void {
     /* Disable tslint to prevent ClosureCompiler mangling */
     /* tslint:disable:no-string-literal */
@@ -78,6 +84,10 @@ export class MetaGeneralFilter implements FilterInterface {
 }
 
 export class MetaReliabilityFilter implements FilterInterface {
+  // Values that indicate a positive evidence flag in VDJdb columns.
+  // Change these if the column encoding changes (e.g. 'yes', '1', 'true').
+  public static readonly EVIDENCE_POSITIVE_VALUE = '+';
+
   public confidenceScoreMin: number = 0;
   public confidenceScoreMax: number = 3;
 
@@ -85,10 +95,23 @@ export class MetaReliabilityFilter implements FilterInterface {
   public nonCanonical: boolean;
   public unmapped: boolean;
 
+  public evidenceValidation: boolean;
+  public evidenceMotif: boolean;
+  public evidenceStructure: boolean;
+
   public setDefault(): void {
     this.minimalConfidenceScore = 0;
     this.nonCanonical = false;
     this.unmapped = false;
+    this.evidenceValidation = false;
+    this.evidenceMotif = false;
+    this.evidenceStructure = false;
+  }
+
+  public isDefault(): boolean {
+    return this.minimalConfidenceScore === 0 &&
+      this.nonCanonical === false && this.unmapped === false &&
+      this.evidenceValidation === false && this.evidenceMotif === false && this.evidenceStructure === false;
   }
 
   public setOptions(_: IFiltersOptions): void {
@@ -107,6 +130,13 @@ export class MetaReliabilityFilter implements FilterInterface {
     }
     if (this.unmapped === false) {
       filters.push(new Filter('web.cdr3fix.unmp', FilterType.EXACT, true, 'yes'));
+    }
+    // evidenceValidation: UI-only placeholder, not implemented yet
+    if (this.evidenceMotif === true) {
+      filters.push(new Filter('availability:motif', FilterType.EXACT, false, 'true'));
+    }
+    if (this.evidenceStructure === true) {
+      filters.push(new Filter('availability:structure', FilterType.EXACT, false, 'true'));
     }
   }
 

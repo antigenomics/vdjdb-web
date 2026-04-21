@@ -28,6 +28,7 @@ export namespace CommonDiseaseType {
 
 @Injectable()
 export class DiseasesService {
+    public isPendingDisease: boolean = false;
 
     constructor(private readonly ag: AGFiltersService, private readonly tcr: TCRFiltersService, private readonly filters: FiltersService) {}
 

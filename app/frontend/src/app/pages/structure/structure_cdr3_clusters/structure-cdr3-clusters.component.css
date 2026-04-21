@@ -53,6 +53,14 @@
     padding-top: 1rem;
 }
 
+.structure-cdr3-pagination {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    padding: 0.3rem 0;
+    overflow: hidden;
+}
+
 .structure-cdr3-results__entry:last-child ::ng-deep .structure-cdr3-layout {
     border-bottom: none;
 }

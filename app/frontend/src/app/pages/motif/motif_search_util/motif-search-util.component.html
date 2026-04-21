@@ -21,7 +21,7 @@
     </div>
 </div>
 <div class="ui attached segment">
-    <motif-view-options [options]="options" (onOptionsChange)="onOptionsChange($event)"></motif-view-options>
+    <motif-view-options [options]="options" [showMultiple]="isStateSearchTree()" (onOptionsChange)="onOptionsChange($event)"></motif-view-options>
     <div class="ui divider"></div>
     <div style="margin-top: 15px">
         <motif-search-tree [metadata]="metadata" [selected]="selected" [options]="options" *ngIf="isStateSearchTree()"></motif-search-tree>

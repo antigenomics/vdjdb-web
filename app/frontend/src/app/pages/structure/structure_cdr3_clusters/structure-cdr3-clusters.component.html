@@ -17,6 +17,21 @@
 <ng-container *ngIf="clusters && clusters.clusters && clusters.clustersNorm; else notLoaded">
     <div class="structure-cdr3-results">
         <ng-container *ngIf="clusters.clusters.length !== 0; else empty">
+            <div class="structure-cdr3-pagination structure-cdr3-pagination--top">
+                <div class="ui pagination menu">
+                    <a class="item" (click)="selectPage(0)">First</a>
+                    <a class="item" (click)="selectPage(currentPage - 1)">Previous</a>
+                    <a class="item" *ngFor="let p of getPageNumbers()"
+                       [class.active]="currentPage === p - 1"
+                       (click)="selectPage(p - 1)">{{ p }}</a>
+                    <a class="item" (click)="selectPage(currentPage + 1)">Next</a>
+                    <a class="item" (click)="selectPage(getPageCount() - 1)">Last</a>
+                </div>
+                <div class="ui right floated menu">
+                    <a class="item">Found: {{ getAllEntries().length }}</a>
+                </div>
+            </div>
+
             <div class="structure-cdr3-results__list">
                 <div class="structure-cdr3-results__entry" *ngFor="let entry of getClustersEntries()">
                     <structure-epitope-cluster
@@ -29,6 +44,21 @@
                         [maxWidthPx]="cdr3MaxWidthPx"
                         [maxHeightPx]="cdr3MaxHeightPx">
                     </structure-epitope-cluster>
+                </div>
+            </div>
+
+            <div class="structure-cdr3-pagination structure-cdr3-pagination--bottom">
+                <div class="ui pagination menu">
+                    <a class="item" (click)="selectPage(0)">First</a>
+                    <a class="item" (click)="selectPage(currentPage - 1)">Previous</a>
+                    <a class="item" *ngFor="let p of getPageNumbers()"
+                       [class.active]="currentPage === p - 1"
+                       (click)="selectPage(p - 1)">{{ p }}</a>
+                    <a class="item" (click)="selectPage(currentPage + 1)">Next</a>
+                    <a class="item" (click)="selectPage(getPageCount() - 1)">Last</a>
+                </div>
+                <div class="ui right floated menu">
+                    <a class="item">Found: {{ getAllEntries().length }}</a>
                 </div>
             </div>
         </ng-container>

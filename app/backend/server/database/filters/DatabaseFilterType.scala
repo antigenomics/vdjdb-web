@@ -25,4 +25,6 @@ object DatabaseFilterType extends Enumeration {
   val Level = "level"
   val Range = "range"
   val Sequence = "sequence"
+  val StructureAvailability = "availability:structure"
+  val MotifAvailability = "availability:motif"
 }

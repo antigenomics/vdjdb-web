@@ -28,7 +28,7 @@ import {
   IMotifsSearchTreeFilter,
   IMotifsSearchTreeFilterResult
 } from 'pages/motif/motif';
-import { combineLatest, Observable, ReplaySubject, Subject } from 'rxjs';
+import { BehaviorSubject, combineLatest, Observable, ReplaySubject, Subject } from 'rxjs';
 import { map, take } from 'rxjs/operators';
 import { ISeqLogoChartConfiguration } from 'shared/charts/seqlogo/seqlogo-configuration';
 import { LoggerService } from 'utils/logger/logger.service';
@@ -65,6 +65,9 @@ export class MotifService {
   private isMetadataLoaded: boolean = false;
   private isMetadataLoading: boolean = false;
 
+  private lastEpitopeUrlParams: { [key: string]: string } | null = null;
+  private lastCDR3SearchOptions: IMotifCDR3SearchResultOptions | null = null;
+
   private state: MotifSearchState = MotifSearchState.SEARCH_TREE;
 
   private events: Subject<MotifsServiceEvents> = new Subject<MotifsServiceEvents>();
@@ -77,6 +80,7 @@ export class MotifService {
   private clusters: Subject<IMotifCDR3SearchResult> = new ReplaySubject(1);
 
   private loadingState: Subject<boolean> = new ReplaySubject(1);
+  private contentReady: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(true);
 
   constructor(private logger: LoggerService, private notifications: NotificationService) {}
 
@@ -145,6 +149,34 @@ export class MotifService {
     this.options.next(options);
   }
 
+  public isLoaded(): boolean {
+    return this.isMetadataLoaded;
+  }
+
+  public setLoading(value: boolean): void {
+    this.loadingState.next(value);
+  }
+
+  public setLastEpitopeUrlParams(params: { [key: string]: string } | null): void {
+    this.lastEpitopeUrlParams = params;
+  }
+
+  public getLastEpitopeUrlParams(): { [key: string]: string } | null {
+    return this.lastEpitopeUrlParams;
+  }
+
+  public getLastCDR3SearchOptions(): IMotifCDR3SearchResultOptions | null {
+    return this.lastCDR3SearchOptions;
+  }
+
+  public getContentReady(): Observable<boolean> {
+    return this.contentReady.asObservable();
+  }
+
+  public setContentReady(value: boolean): void {
+    this.contentReady.next(value);
+  }
+
   public fireScrollUpdateEvent(): void {
     this.events.next(MotifsServiceEvents.UPDATE_SCROLL);
   }
@@ -161,10 +193,10 @@ export class MotifService {
     return this.loadingState;
   }
 
-  public async searchCDR3ByUrl(query: string): Promise<void> {
+  public async searchCDR3ByUrl(query: string, substring: boolean = false): Promise<void> {
     await this.load();
     this.setSearchState(MotifSearchState.SEARCH_CDR3);
-    this.searchCDR3(query);
+    this.searchCDR3(query, substring);
   }
 
   public async filterByUrl(filters: { species: string, tcrChain: string, mhcClass: string, gene: string, epitopeSeq: string, cid?: string }): Promise<void> {
@@ -236,6 +268,7 @@ export class MotifService {
       result.clusters.sort(comparator);
       result.clustersNorm.sort(comparator);
 
+      this.lastCDR3SearchOptions = result.options;
       this.clusters.next(result);
       this.loadingState.next(false);
       this.notifications.info('Motifs CDR3', 'Loaded successfully', 1000); // tslint:disable-line:no-magic-numbers

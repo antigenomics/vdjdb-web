@@ -27,8 +27,8 @@
                                        [cdr3SearchOptions]="cdr3SearchOptions | async"></motif-search-util>
                 </div>
                 <div class="ui eleven wide column" style="overflow-x: hidden; overflow-y: auto; height: 100%" #EpitopesContainer>
-                    <motif-epitopes *ngIf="isStateSearchTree()" [options]="options | async" [epitopes]="epitopes | async"></motif-epitopes>
-                    <motif-cdr3-clusters *ngIf="isStateSearchCDR3()" [options]="options | async" [clusters]="clusters | async"></motif-cdr3-clusters>
+                    <motif-epitopes *ngIf="isStateSearchTree() && contentReady" [options]="options | async" [epitopes]="epitopes | async"></motif-epitopes>
+                    <motif-cdr3-clusters *ngIf="isStateSearchCDR3() && contentReady" [options]="options | async" [clusters]="clusters | async"></motif-cdr3-clusters>
                 </div>
             </div>
         </div>

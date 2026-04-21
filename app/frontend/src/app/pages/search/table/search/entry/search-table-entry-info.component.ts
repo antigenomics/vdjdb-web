@@ -193,18 +193,17 @@ export class SearchTableEntryInfoComponent extends TableEntry {
   }
 
   private extractMotifLinkData(row: SearchTableRow, columns: TableColumn[]):
-    { species: string; tcrChain: string; mhcClass: string; gene: string; epitopeSeq: string } | null {
+    { species: string; tcrChain: string; mhcClass: string; mhcAllele: string; epitopeSeq: string } | null {
     const species = this.getCellValue(row, columns, 'species');
     const tcrChain = this.getCellValue(row, columns, 'gene');
     const mhcClass = this.getCellValue(row, columns, 'mhc.class');
     const mhcValue = this.getCellValue(row, columns, 'mhc.a');
-    const gene = mhcValue ? mhcValue.replace(/:.+/, '') : undefined;
     const epitopeSeq = this.getCellValue(row, columns, 'antigen.epitope');
 
-    if (!species || !tcrChain || !mhcClass || !gene || !epitopeSeq) {
+    if (!species || !tcrChain || !mhcClass || !mhcValue || !epitopeSeq) {
       return null;
     }
-    return { species, tcrChain, mhcClass, gene, epitopeSeq };
+    return { species, tcrChain, mhcClass, mhcAllele: mhcValue, epitopeSeq };
   }
 
   private resolveMotif(row: SearchTableRow, columns: TableColumn[]): void {
@@ -213,12 +212,13 @@ export class SearchTableEntryInfoComponent extends TableEntry {
       return;
     }
 
-    const { species, tcrChain, mhcClass, gene, epitopeSeq } = motifData;
+    const { species, tcrChain, mhcClass, mhcAllele, epitopeSeq } = motifData;
+    const epitopeGene = this.getCellValue(row, columns, 'antigen.gene') || '';
     const cdr3 = this.getCellValue(row, columns, 'cdr3') || '';
     const vSegm = this.getCellValue(row, columns, 'v.segm') || '';
     const jSegm = this.getCellValue(row, columns, 'j.segm') || '';
 
-    this.availability.hasMotif(species, tcrChain, mhcClass, gene, epitopeSeq).then(async (available) => {
+    this.availability.hasMotif(species, tcrChain, mhcClass, mhcAllele, epitopeSeq).then(async (available) => {
       if (available) {
         const cid = await this.availability.getMotifCid(species, tcrChain, epitopeSeq, cdr3, vSegm, jSegm).catch(() => undefined);
         if (cid) {
@@ -226,7 +226,7 @@ export class SearchTableEntryInfoComponent extends TableEntry {
           params.set('species', species);
           params.set('tcr_chain', tcrChain);
           params.set('mhc_class', mhcClass);
-          params.set('gene', gene);
+          params.set('gene', epitopeGene);
           params.set('epitope_seq', epitopeSeq);
           params.set('cid', cid);
           const link = `/motif?${params.toString()}`;

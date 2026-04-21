@@ -15,6 +15,7 @@
  */
 
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { Router } from '@angular/router';
 import { IMotifCDR3SearchResultOptions, IMotifEpitopeViewOptions, IMotifsMetadata, IMotifsMetadataTreeLevelValue } from 'pages/motif/motif';
 import { MotifSearchState, MotifService } from 'pages/motif/motif.service';
 
@@ -38,14 +39,29 @@ export class MotifSearchUtilComponent {
   @Input('cdr3SearchOptions')
   public cdr3SearchOptions: IMotifCDR3SearchResultOptions;
 
-  constructor(private motifService: MotifService) {}
+  constructor(private motifService: MotifService, private router: Router) {}
 
   public setStateSearchTree(): void {
     this.motifService.setSearchState(MotifSearchState.SEARCH_TREE);
+    const lastEpitopeParams = this.motifService.getLastEpitopeUrlParams();
+    this.router.navigate([], {
+      queryParams: { ...(lastEpitopeParams || {}), query: null, substring: null },
+      replaceUrl: true
+    });
   }
 
   public setStateSearchCDR3(): void {
     this.motifService.setSearchState(MotifSearchState.SEARCH_CDR3);
+    const opts = this.cdr3SearchOptions;
+    const hasCdr3 = opts && opts.cdr3;
+    this.router.navigate([], {
+      queryParams: {
+        query: hasCdr3 ? opts.cdr3 : null,
+        substring: hasCdr3 && opts.substring ? 'true' : null,
+        species: null, tcr_chain: null, mhc_class: null, gene: null, epitope_seq: null, cid: null
+      },
+      replaceUrl: true
+    });
   }
 
   public isStateSearchTree(): boolean {

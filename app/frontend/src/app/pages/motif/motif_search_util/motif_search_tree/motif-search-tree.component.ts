@@ -57,7 +57,9 @@ export class MotifSearchTreeComponent implements OnChanges {
       }
       this.motifService.clearEpitopes();
       this.motifService.select(filter);
-      this.router.navigate([], { queryParams: this.filterToUrlParams(filter), replaceUrl: true });
+      const urlParams = this.filterToUrlParams(filter);
+      this.motifService.setLastEpitopeUrlParams(urlParams);
+      this.router.navigate([], { queryParams: urlParams, replaceUrl: true });
     } else {
       this.motifService.select(filter);
     }
@@ -66,6 +68,7 @@ export class MotifSearchTreeComponent implements OnChanges {
   public onDiscardReceived(_filter: IMotifsSearchTreeFilter): void {
     this.motifService.discard(_filter);
     if (!this.options || !this.options.allowMultiple) {
+      this.motifService.setLastEpitopeUrlParams(null);
       this.router.navigate([], { queryParams: {}, replaceUrl: true });
     }
   }
@@ -85,6 +88,7 @@ export class MotifSearchTreeComponent implements OnChanges {
       this.motifService.updateEpitopes();
     });
     if (!this.options || !this.options.allowMultiple) {
+      this.motifService.setLastEpitopeUrlParams(null);
       this.router.navigate([], { queryParams: {}, replaceUrl: true });
     }
   }
