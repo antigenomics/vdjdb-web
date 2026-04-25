@@ -131,7 +131,9 @@ export class MetaReliabilityFilter implements FilterInterface {
     if (this.unmapped === false) {
       filters.push(new Filter('web.cdr3fix.unmp', FilterType.EXACT, true, 'yes'));
     }
-    // evidenceValidation: UI-only placeholder, not implemented yet
+    if (this.evidenceValidation === true) {
+      filters.push(new Filter('availability:validation', FilterType.EXACT, false, 'true'));
+    }
     if (this.evidenceMotif === true) {
       filters.push(new Filter('availability:motif', FilterType.EXACT, false, 'true'));
     }

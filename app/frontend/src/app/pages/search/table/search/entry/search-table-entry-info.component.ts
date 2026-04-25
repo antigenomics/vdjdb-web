@@ -99,11 +99,12 @@ export class SearchTableEntryInfoComponent extends TableEntry {
 
     this.badges = [
       this.buildScoreBadge(scoreValue),
-      this.buildValidationBadge(),
+      this.buildValidationBadge(undefined),
       this.buildMotifBadge(false, null),
       this.buildStructureBadge(false, null)
     ];
 
+    this.resolveValidation(row, columns);
     this.resolveMotif(row, columns);
     this.resolveStructure(row, columns);
   }
@@ -121,7 +122,31 @@ export class SearchTableEntryInfoComponent extends TableEntry {
     };
   }
 
-  private buildValidationBadge(): BadgeInfo {
+  private buildValidationBadge(status: string | undefined): BadgeInfo {
+    if (status === 'positive' || status === 'both') {
+      return {
+        letter: 'V',
+        subscript: '',
+        color: 'rgba(76, 175, 80, 0.15)',
+        borderColor: 'rgba(76, 175, 80, 0.8)',
+        active: true,
+        popupLines: [`is_validated : ${status}`, 'method : TCRvdb'],
+        popupHeader: 'Validation',
+        link: ''
+      };
+    }
+    if (status === 'negative') {
+      return {
+        letter: 'V',
+        subscript: '',
+        color: 'rgba(255, 152, 0, 0.15)',
+        borderColor: 'rgba(255, 152, 0, 0.8)',
+        active: true,
+        popupLines: ['is_validated : negative', 'method : TCRvdb'],
+        popupHeader: 'Validation',
+        link: ''
+      };
+    }
     return {
       letter: 'V',
       subscript: '',
@@ -204,6 +229,17 @@ export class SearchTableEntryInfoComponent extends TableEntry {
       return null;
     }
     return { species, tcrChain, mhcClass, mhcAllele: mhcValue, epitopeSeq };
+  }
+
+  private resolveValidation(row: SearchTableRow, columns: TableColumn[]): void {
+    const cdr3 = this.getCellValue(row, columns, 'cdr3') || '';
+    const epitope = this.getCellValue(row, columns, 'antigen.epitope') || '';
+    if (!cdr3 || !epitope) { return; }
+
+    this.availability.getValidationStatus(cdr3, epitope).then((status) => {
+      this.badges[1] = this.buildValidationBadge(status);
+      this.changeDetector.markForCheck();
+    }).catch(() => {});
   }
 
   private resolveMotif(row: SearchTableRow, columns: TableColumn[]): void {

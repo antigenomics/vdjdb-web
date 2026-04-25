@@ -12,6 +12,7 @@ interface ISearchAvailabilityResponse {
   motifs: string[];
   visualizations?: { [structureId: string]: IStructureVisualizationDescriptor };
   motifCidIndex?: { [key: string]: string };
+  validationIndex?: { [key: string]: string };
 }
 
 @Injectable({ providedIn: 'root' })
@@ -23,6 +24,7 @@ export class SearchAvailabilityService {
   private readonly motifKeys: Set<string> = new Set<string>();
   private readonly structureVisualizations: Map<string, IStructureVisualizationDescriptor> = new Map<string, IStructureVisualizationDescriptor>();
   private readonly motifCidIndex: Map<string, string> = new Map<string, string>();
+  private readonly validationIndex: Map<string, string> = new Map<string, string>();
 
   private ensureLoaded(): Promise<void> {
     if (!this.loadPromise) {
@@ -70,10 +72,19 @@ export class SearchAvailabilityService {
             }
           });
         }
+        if (payload && payload.validationIndex) {
+          Object.keys(payload.validationIndex).forEach((key) => {
+            const status = payload.validationIndex ? payload.validationIndex[ key ] : undefined;
+            if (key && status) {
+              this.validationIndex.set(key.trim().toLowerCase(), status.trim());
+            }
+          });
+        }
       }).catch((error) => {
         this.structureIds.clear();
         this.motifKeys.clear();
         this.motifCidIndex.clear();
+        this.validationIndex.clear();
         this.loadPromise = null;
         throw error;
       });
@@ -138,5 +149,9 @@ export class SearchAvailabilityService {
     return this.motifCidIndex.get(parts.join('|'));
   }
 
-
+  public async getValidationStatus(cdr3: string, epitope: string): Promise<string | undefined> {
+    await this.ensureLoaded();
+    const key = `${cdr3.trim().toLowerCase()}|${epitope.trim().toLowerCase()}`;
+    return this.validationIndex.get(key);
+  }
 }

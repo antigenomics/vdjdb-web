@@ -26,7 +26,7 @@ import scala.collection.JavaConverters._
 import scala.collection.mutable.ListBuffer
 
 case class DatabaseFilters(text: util.ArrayList[TextFilter], sequence: util.ArrayList[SequenceFilter], options: Seq[(String, Boolean)],
-                          filterStructure: Boolean, filterMotif: Boolean, warnings: Seq[String])
+                          filterStructure: Boolean, filterMotif: Boolean, filterValidation: Boolean, warnings: Seq[String])
 
 object DatabaseFilters {
   def createFromRequest(request: List[DatabaseFilterRequest], database: Database): DatabaseFilters = {
@@ -34,8 +34,9 @@ object DatabaseFilters {
     val text = new util.ArrayList[TextFilter]()
     val sequence = new util.ArrayList[SequenceFilter]()
     val options = request.filter(_.column.startsWith("option:")).map(f => (f.column.stripPrefix("option:"), f.value.toBoolean))
-    val filterStructure = request.exists(f => f.column == DatabaseFilterType.StructureAvailability && !f.negative)
-    val filterMotif = request.exists(f => f.column == DatabaseFilterType.MotifAvailability && !f.negative)
+    val filterStructure  = request.exists(f => f.column == DatabaseFilterType.StructureAvailability  && !f.negative)
+    val filterMotif      = request.exists(f => f.column == DatabaseFilterType.MotifAvailability      && !f.negative)
+    val filterValidation = request.exists(f => f.column == DatabaseFilterType.ValidationAvailability && !f.negative)
 
     request.filter(f => !f.column.startsWith("option:") && !f.column.startsWith("availability:")).foreach((filter: DatabaseFilterRequest) => {
       if (database.getInstance.getDbInstance.getColumns.asScala.exists(_.getName == filter.column)) {
@@ -66,7 +67,7 @@ object DatabaseFilters {
         warnings += ("Invalid column name: " + filter.column)
       }
     })
-    DatabaseFilters(text, sequence, options, filterStructure, filterMotif, warnings)
+    DatabaseFilters(text, sequence, options, filterStructure, filterMotif, filterValidation, warnings)
   }
 
 }

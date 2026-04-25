@@ -90,12 +90,16 @@ export class MotifEpitopeEntryComponent implements OnInit, OnDestroy {
     }
   }
 
-  /** File naming: {species}_{gene}_{epitope}.html (all lowercase, alphanumeric only).
-   *  Served from application.motifCharts.path via /motif-files/ route.
-   *  Modify this function to change the naming or location. */
-  public static resolveMotifChartUrl(species: string, gene: string, epitope: string): string {
-    const normalize = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
-    return `/motif-files/${normalize(species)}_${normalize(gene)}_${normalize(epitope)}.html`;
+  /**
+   * TCRNet: /motif-files/tcrnet/{species}_{gene}_{epitope}.html
+   * RedCEA: /motif-files/redcea/{species}_{epitope}_{gene}.html
+   */
+  public static resolveMotifChartUrl(species: string, gene: string, epitope: string, method: string): string {
+    const n = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
+    if (method === 'redcea') {
+      return `/motif-files/redcea/${n(species)}_${n(epitope)}_${n(gene)}.html`;
+    }
+    return `/motif-files/tcrnet/${n(species)}_${n(gene)}_${n(epitope)}.html`;
   }
 
   public onChartIframeLoad(event: Event): void {
@@ -111,7 +115,8 @@ export class MotifEpitopeEntryComponent implements OnInit, OnDestroy {
       doc.head.appendChild(style);
 
       // override the hardcoded inline dimensions on the plotly div
-      const plotDiv = doc.querySelector('.plotly-graph-div') as HTMLElement;
+      // TCRNet uses id="plot-...", RedCEA uses class="plotly-graph-div"
+      const plotDiv = (doc.querySelector('.plotly-graph-div') ?? doc.querySelector('[id^="plot-"]')) as HTMLElement;
       if (plotDiv) {
         plotDiv.style.width = '100%';
         plotDiv.style.height = '100%';
@@ -204,7 +209,7 @@ export class MotifEpitopeEntryComponent implements OnInit, OnDestroy {
     if (!meta || !meta.species || !meta.gene || !this.epitope.epitope) {
       return;
     }
-    const url = MotifEpitopeEntryComponent.resolveMotifChartUrl(meta.species, meta.gene, this.epitope.epitope);
+    const url = MotifEpitopeEntryComponent.resolveMotifChartUrl(meta.species, meta.gene, this.epitope.epitope, this.motifService.getMethod());
     this.isChartLoading = true;
     this.changeDetector.markForCheck();
     Utils.HTTP.head(url).then(() => {

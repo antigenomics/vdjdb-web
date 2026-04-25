@@ -45,7 +45,7 @@ export class MotifSearchUtilComponent {
     this.motifService.setSearchState(MotifSearchState.SEARCH_TREE);
     const lastEpitopeParams = this.motifService.getLastEpitopeUrlParams();
     this.router.navigate([], {
-      queryParams: { ...(lastEpitopeParams || {}), query: null, substring: null },
+      queryParams: { method: this.motifService.getMethod(), ...(lastEpitopeParams || {}), query: null, substring: null },
       replaceUrl: true
     });
   }
@@ -56,6 +56,7 @@ export class MotifSearchUtilComponent {
     const hasCdr3 = opts && opts.cdr3;
     this.router.navigate([], {
       queryParams: {
+        method: this.motifService.getMethod(),
         query: hasCdr3 ? opts.cdr3 : null,
         substring: hasCdr3 && opts.substring ? 'true' : null,
         species: null, tcr_chain: null, mhc_class: null, gene: null, epitope_seq: null, cid: null

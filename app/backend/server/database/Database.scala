@@ -77,6 +77,16 @@ case class Database @Inject()(configuration: Configuration) {
     }
   }
 
+  def getMotifFileRedCEA: Option[File] = {
+    val f = new File(getLocation + "/" + "motif_pwms_redcea.txt")
+    if (f.exists()) Some(f) else None
+  }
+
+  def getClusterMembersFileRedCEA: Option[File] = {
+    val f = new File(getLocation + "/" + "cluster_members_redcea.txt")
+    if (f.exists()) Some(f) else None
+  }
+
   def getSuggestionsAvailableColumns: Seq[String] = Seq("antigen.epitope")
 
   def getSuggestions(column: String): Option[DatabaseColumnSuggestionsResponse] = {

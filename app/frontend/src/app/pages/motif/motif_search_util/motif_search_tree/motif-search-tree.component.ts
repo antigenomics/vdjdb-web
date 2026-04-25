@@ -41,7 +41,7 @@ export class MotifSearchTreeComponent implements OnChanges {
       const prev = changes['options'].previousValue as IMotifEpitopeViewOptions;
       const curr = changes['options'].currentValue as IMotifEpitopeViewOptions;
       if (curr && curr.allowMultiple && (!prev || !prev.allowMultiple)) {
-        this.router.navigate([], { queryParams: {}, replaceUrl: true });
+        this.router.navigate([], { queryParams: { method: this.motifService.getMethod() }, replaceUrl: true });
       }
     }
   }
@@ -69,7 +69,7 @@ export class MotifSearchTreeComponent implements OnChanges {
     this.motifService.discard(_filter);
     if (!this.options || !this.options.allowMultiple) {
       this.motifService.setLastEpitopeUrlParams(null);
-      this.router.navigate([], { queryParams: {}, replaceUrl: true });
+      this.router.navigate([], { queryParams: { method: this.motifService.getMethod() }, replaceUrl: true });
     }
   }
 
@@ -89,7 +89,7 @@ export class MotifSearchTreeComponent implements OnChanges {
     });
     if (!this.options || !this.options.allowMultiple) {
       this.motifService.setLastEpitopeUrlParams(null);
-      this.router.navigate([], { queryParams: {}, replaceUrl: true });
+      this.router.navigate([], { queryParams: { method: this.motifService.getMethod() }, replaceUrl: true });
     }
   }
 
@@ -98,7 +98,7 @@ export class MotifSearchTreeComponent implements OnChanges {
   }
 
   private filterToUrlParams(filter: IMotifsSearchTreeFilter): { [key: string]: string } {
-    const params: { [key: string]: string } = {};
+    const params: { [key: string]: string } = { method: this.motifService.getMethod() };
     const reversedEntries = [...filter.entries].reverse();
     reversedEntries.forEach((entry) => {
       switch (entry.name) {

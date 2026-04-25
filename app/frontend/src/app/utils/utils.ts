@@ -258,7 +258,7 @@ export namespace Utils {
   export namespace HTTP {
 
     export const SUCCESS_STATUS: number = 200;
-    export const FAIL_STATUSES: number[] = [ 400, 401, 402, 403, 404, 405 ]; // tslint:disable-line:no-magic-numbers
+    export const FAIL_STATUSES: number[] = [ 400, 401, 402, 403, 404, 405, 500, 502, 503, 504 ]; // tslint:disable-line:no-magic-numbers
 
     export function head(url: string): Promise<void> {
       return new Promise<void>((resolve, reject) => {

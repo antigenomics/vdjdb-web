@@ -48,6 +48,7 @@ export class MotifSearchCDR3Component {
     this.motifService.searchCDR3(this.input, this.substring, this.gene);
     this.router.navigate([], {
       queryParams: {
+        method: this.motifService.getMethod(),
         query: this.input,
         substring: this.substring ? 'true' : null,
         species: null,
