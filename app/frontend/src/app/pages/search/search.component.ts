@@ -21,6 +21,7 @@ import { SetEntry } from 'shared/filters/common/set/set-entry';
 import { FiltersService } from 'shared/filters/filters.service';
 import { AGFiltersService } from 'shared/filters/filters_ag/ag-filters.service';
 import { TCRFiltersService } from 'shared/filters/filters_tcr/tcr-filters.service';
+import { DiseasesService } from 'shared/filters/diseases.service';
 import { TableColumn } from 'shared/table/column/table-column';
 import { AnalyticsService } from 'utils/analytics/analytics.service';
 import { LoggerService } from 'utils/logger/logger.service';
@@ -37,6 +38,7 @@ export class SearchPageComponent implements OnInit, OnDestroy {
 
   constructor(private searchTableService: SearchTableService, private filters: FiltersService,
               private route: ActivatedRoute, private ag: AGFiltersService, private tcr: TCRFiltersService,
+              private diseases: DiseasesService,
               logger: LoggerService, notifications: NotificationService, analytics: AnalyticsService) {
     this.table = new SearchTable(searchTableService, filters, analytics, logger, notifications);
     if (this.searchTableService.isInitialized()) {
@@ -47,17 +49,27 @@ export class SearchPageComponent implements OnInit, OnDestroy {
 
   public ngOnInit(): void {
     const epitopeSeq = this.route.snapshot.queryParamMap.get('epitope_seq');
+    const isFromDisease = this.diseases.isPendingDisease;
+
+    // Reset filters unless coming from a disease action component
+    if (!isFromDisease) {
+      this.filters.setDefault();
+    }
+
+    // Apply epitope filter if provided via query parameter
     if (epitopeSeq) {
       this.ag.epitope.epitopeSelected = [ new SetEntry(epitopeSeq, epitopeSeq, false) ];
       this.tcr.general.tra = true;
       this.tcr.general.trb = true;
       this.tcr.general.pairedOnly = true;
     }
+
     if (!this.searchTableService.isInitialized()) {
       this.searchTableService.waitInitialization().then(() => {
         this.fetchColumns();
         this.table.updateNumberOfRecords(this.searchTableService.getMetadata().numberOfRecords);
-        if (!this.table.dirty) {
+        // Always search if filters were reset or no cached data exists
+        if (!isFromDisease || !this.table.dirty) {
           this.table.update();
         }
       });

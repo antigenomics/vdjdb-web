@@ -18,7 +18,7 @@ package backend.server.motifs.api.filter
 
 import play.api.libs.json.{Format, Json}
 
-case class MotifsSearchTreeFilter(entries: Seq[MotifsSearchTreeFilterEntry])
+case class MotifsSearchTreeFilter(entries: Seq[MotifsSearchTreeFilterEntry], method: Option[String] = None)
 
 object MotifsSearchTreeFilter {
   implicit val motifsSearchTreeFilterFormat: Format[MotifsSearchTreeFilter] = Json.format[MotifsSearchTreeFilter]

@@ -12,6 +12,7 @@ interface ISearchAvailabilityResponse {
   motifs: string[];
   visualizations?: { [structureId: string]: IStructureVisualizationDescriptor };
   motifCidIndex?: { [key: string]: string };
+  validationIndex?: { [key: string]: string };
 }
 
 @Injectable({ providedIn: 'root' })
@@ -23,6 +24,7 @@ export class SearchAvailabilityService {
   private readonly motifKeys: Set<string> = new Set<string>();
   private readonly structureVisualizations: Map<string, IStructureVisualizationDescriptor> = new Map<string, IStructureVisualizationDescriptor>();
   private readonly motifCidIndex: Map<string, string> = new Map<string, string>();
+  private readonly validationIndex: Map<string, string> = new Map<string, string>();
 
   private ensureLoaded(): Promise<void> {
     if (!this.loadPromise) {
@@ -70,10 +72,19 @@ export class SearchAvailabilityService {
             }
           });
         }
+        if (payload && payload.validationIndex) {
+          Object.keys(payload.validationIndex).forEach((key) => {
+            const status = payload.validationIndex ? payload.validationIndex[ key ] : undefined;
+            if (key && status) {
+              this.validationIndex.set(key.trim().toLowerCase(), status.trim());
+            }
+          });
+        }
       }).catch((error) => {
         this.structureIds.clear();
         this.motifKeys.clear();
         this.motifCidIndex.clear();
+        this.validationIndex.clear();
         this.loadPromise = null;
         throw error;
       });
@@ -93,8 +104,17 @@ export class SearchAvailabilityService {
     return key ? key.trim().toLowerCase() : '';
   }
 
-  private buildMotifKey(species: string, tcrChain: string, mhcClass: string, gene: string, epitope: string): string | null {
-    const parts = [ species, tcrChain, mhcClass, gene, epitope ].map((part) => this.normalizeMotifPart(part));
+  private buildMotifKey(species: string, tcrChain: string, mhcClass: string, mhcAllele: string, epitope: string): string | null {
+    // Normalize MHC allele: remove subtype like :01, :02, etc. (matches Motifs.scala logic)
+    const parts = [ species, tcrChain, mhcClass, mhcAllele, epitope ]
+      .map((part, index) => {
+        const normalized = this.normalizeMotifPart(part);
+        // For MHC allele (index 3), also remove subtype to match backend normalization
+        if (index === 3 && normalized.includes('*')) {
+          return normalized.split(':')[0];
+        }
+        return normalized;
+      });
     if (parts.some((part) => part.length === 0)) {
       return null;
     }
@@ -116,9 +136,9 @@ export class SearchAvailabilityService {
     return this.structureVisualizations.get(normalized);
   }
 
-  public async hasMotif(species: string, tcrChain: string, mhcClass: string, gene: string, epitope: string): Promise<boolean> {
+  public async hasMotif(species: string, tcrChain: string, mhcClass: string, mhcAllele: string, epitope: string): Promise<boolean> {
     await this.ensureLoaded();
-    const key = this.buildMotifKey(species, tcrChain, mhcClass, gene, epitope);
+    const key = this.buildMotifKey(species, tcrChain, mhcClass, mhcAllele, epitope);
     return key !== null && this.motifKeys.has(key);
   }
 
@@ -129,5 +149,9 @@ export class SearchAvailabilityService {
     return this.motifCidIndex.get(parts.join('|'));
   }
 
-
+  public async getValidationStatus(cdr3: string, epitope: string): Promise<string | undefined> {
+    await this.ensureLoaded();
+    const key = `${cdr3.trim().toLowerCase()}|${epitope.trim().toLowerCase()}`;
+    return this.validationIndex.get(key);
+  }
 }

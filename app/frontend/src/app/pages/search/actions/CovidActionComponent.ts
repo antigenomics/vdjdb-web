@@ -15,9 +15,11 @@ export class Covid19ActionComponent implements OnInit {
     }
 
     public ngOnInit(): void {
+        this.diseases.isPendingDisease = true;
         this.router.navigateByUrl('/search')
         this.search.waitInitialization().then(() => {
             this.diseases.selectDisease(CommonDiseaseType.SARSCOV);
+            this.diseases.isPendingDisease = false;
             this.info.state.next('filter.ag');
         })
     }

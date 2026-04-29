@@ -41,7 +41,7 @@ export class MotifSearchTreeComponent implements OnChanges {
       const prev = changes['options'].previousValue as IMotifEpitopeViewOptions;
       const curr = changes['options'].currentValue as IMotifEpitopeViewOptions;
       if (curr && curr.allowMultiple && (!prev || !prev.allowMultiple)) {
-        this.router.navigate([], { queryParams: {}, replaceUrl: true });
+        this.router.navigate([], { queryParams: { method: this.motifService.getMethod() }, replaceUrl: true });
       }
     }
   }
@@ -57,7 +57,9 @@ export class MotifSearchTreeComponent implements OnChanges {
       }
       this.motifService.clearEpitopes();
       this.motifService.select(filter);
-      this.router.navigate([], { queryParams: this.filterToUrlParams(filter), replaceUrl: true });
+      const urlParams = this.filterToUrlParams(filter);
+      this.motifService.setLastEpitopeUrlParams(urlParams);
+      this.router.navigate([], { queryParams: urlParams, replaceUrl: true });
     } else {
       this.motifService.select(filter);
     }
@@ -66,7 +68,8 @@ export class MotifSearchTreeComponent implements OnChanges {
   public onDiscardReceived(_filter: IMotifsSearchTreeFilter): void {
     this.motifService.discard(_filter);
     if (!this.options || !this.options.allowMultiple) {
-      this.router.navigate([], { queryParams: {}, replaceUrl: true });
+      this.motifService.setLastEpitopeUrlParams(null);
+      this.router.navigate([], { queryParams: { method: this.motifService.getMethod() }, replaceUrl: true });
     }
   }
 
@@ -85,7 +88,8 @@ export class MotifSearchTreeComponent implements OnChanges {
       this.motifService.updateEpitopes();
     });
     if (!this.options || !this.options.allowMultiple) {
-      this.router.navigate([], { queryParams: {}, replaceUrl: true });
+      this.motifService.setLastEpitopeUrlParams(null);
+      this.router.navigate([], { queryParams: { method: this.motifService.getMethod() }, replaceUrl: true });
     }
   }
 
@@ -94,7 +98,7 @@ export class MotifSearchTreeComponent implements OnChanges {
   }
 
   private filterToUrlParams(filter: IMotifsSearchTreeFilter): { [key: string]: string } {
-    const params: { [key: string]: string } = {};
+    const params: { [key: string]: string } = { method: this.motifService.getMethod() };
     const reversedEntries = [...filter.entries].reverse();
     reversedEntries.forEach((entry) => {
       switch (entry.name) {

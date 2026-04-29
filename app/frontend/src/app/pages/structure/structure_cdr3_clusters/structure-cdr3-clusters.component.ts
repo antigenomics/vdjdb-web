@@ -14,7 +14,7 @@
  *     limitations under the License.
  */
 
-import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, HostListener, Input, OnDestroy, OnInit } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, HostListener, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
 import {
     IStructureCDR3SearchEntry,
     IStructureCDR3SearchResult,
@@ -27,12 +27,14 @@ import {
     styleUrls:       [ './structure-cdr3-clusters.component.css' ],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class StructureCDR3ClustersComponent implements OnInit, AfterViewInit, OnDestroy {
+export class StructureCDR3ClustersComponent implements OnInit, OnChanges, AfterViewInit, OnDestroy {
     private static readonly cdr3ModeHeaderExtraPadding: number = 51;
     private static readonly cdr3ModeViewportBottomPadding: number = 35;
     private static readonly cdr3ModeAspectRatio: number = 6 / 5;
     private static readonly cdr3ModeMaxWidthPx: number = 960 - 180;
     private static readonly cdr3ModeMinWidthPx: number = 560;
+
+    private static readonly pageSize: number = 10;
 
     private isHitboxVisible: boolean = true;
     private resizeObserver?: { observe(target: Element): void; disconnect(): void };
@@ -43,11 +45,18 @@ export class StructureCDR3ClustersComponent implements OnInit, AfterViewInit, On
     public clusters: IStructureCDR3SearchResult;
     public cdr3MaxWidthPx?: number;
     public cdr3MaxHeightPx?: number;
+    public currentPage: number = 0;
 
     constructor(private changeDetector: ChangeDetectorRef) {}
 
     public ngOnInit(): void {
         this.scheduleCdr3SizeRecalc();
+    }
+
+    public ngOnChanges(changes: SimpleChanges): void {
+        if (changes['clusters']) {
+            this.currentPage = 0;
+        }
     }
 
     public ngAfterViewInit(): void {
@@ -71,14 +80,36 @@ export class StructureCDR3ClustersComponent implements OnInit, AfterViewInit, On
         this.scheduleCdr3SizeRecalc();
     }
 
+    public getAllEntries(): IStructureCDR3SearchEntry[] {
+        return (this.options && this.options.isNormalized) ? this.clusters.clustersNorm : this.clusters.clusters;
+    }
+
     public getClustersEntries(): IStructureCDR3SearchEntry[] {
-        let entries: IStructureCDR3SearchEntry[];
-        if (this.options && this.options.isNormalized) {
-            entries = this.clusters.clustersNorm;
-        } else {
-            entries = this.clusters.clusters;
+        const start = this.currentPage * StructureCDR3ClustersComponent.pageSize;
+        return this.getAllEntries().slice(start, start + StructureCDR3ClustersComponent.pageSize);
+    }
+
+    public getPageCount(): number {
+        return Math.max(1, Math.ceil(this.getAllEntries().length / StructureCDR3ClustersComponent.pageSize));
+    }
+
+    public getPageNumbers(): number[] {
+        const range = 3;
+        const count = this.getPageCount();
+        let min = this.currentPage - range;
+        let max = this.currentPage + range;
+        if (min < 0) { max = Math.min(count - 1, max - min); min = 0; }
+        if (max > count - 1) { min = Math.max(0, min - (max - (count - 1))); max = count - 1; }
+        const pages: number[] = [];
+        for (let i = min; i <= max; i++) { pages.push(i + 1); }
+        return pages;
+    }
+
+    public selectPage(page: number): void {
+        if (page >= 0 && page < this.getPageCount() && this.currentPage !== page) {
+            this.currentPage = page;
+            this.changeDetector.markForCheck();
         }
-        return entries.slice(0, 10);
     }
 
     public getCDR3Hitbox(entry: IStructureCDR3SearchEntry): string {

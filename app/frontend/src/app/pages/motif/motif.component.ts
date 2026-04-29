@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import { ChangeDetectionStrategy, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import {
   IMotifCDR3SearchResult,
   IMotifCDR3SearchResultOptions,
@@ -24,7 +24,7 @@ import {
   IMotifsMetadata,
   IMotifsMetadataTreeLevelValue
 } from 'pages/motif/motif';
-import { MotifSearchState, MotifService } from 'pages/motif/motif.service';
+import { MotifMethod, MotifSearchState, MotifService } from 'pages/motif/motif.service';
 import { fromEvent, Observable, Subscription, timer } from 'rxjs';
 import { debounce, take } from 'rxjs/operators';
 import { ContentWrapperService } from '../../content-wrapper.service';
@@ -38,8 +38,8 @@ export class MotifPageComponent implements OnInit, OnDestroy {
   private static readonly pageScrollEventDebounceTimeout: number = 10;
   private static readonly motifPageResizeEventDebounceTimeout: number = 200;
 
-  private onScrollObservable: Subscription;
-  private onResizeObservable: Subscription;
+  private onScrollObservable!: Subscription;
+  private onResizeObservable!: Subscription;
 
   public readonly metadata: Observable<IMotifsMetadata>;
   public readonly selected: Observable<IMotifsMetadataTreeLevelValue[]>;
@@ -47,11 +47,13 @@ export class MotifPageComponent implements OnInit, OnDestroy {
   public readonly options: Observable<IMotifEpitopeViewOptions>;
   public readonly clusters: Observable<IMotifCDR3SearchResult>;
   public readonly cdr3SearchOptions: Observable<IMotifCDR3SearchResultOptions>;
+  public contentReady: boolean = true;
 
   @ViewChild('EpitopesContainer')
-  public epitopesContainer: ElementRef;
+  public epitopesContainer!: ElementRef;
 
-  constructor(private motifService: MotifService, private contentWrapper: ContentWrapperService, private route: ActivatedRoute) {
+  constructor(private motifService: MotifService, private contentWrapper: ContentWrapperService,
+              private route: ActivatedRoute, private router: Router, private cdr: ChangeDetectorRef) {
     this.metadata = motifService.getMetadata();
     this.selected = motifService.getSelected();
     this.epitopes = motifService.getEpitopes();
@@ -63,22 +65,56 @@ export class MotifPageComponent implements OnInit, OnDestroy {
   public ngOnInit(): void {
     this.contentWrapper.blockScrolling();
 
-    this.route.queryParamMap.pipe(take(1)).subscribe((params) => {
+    this.route.queryParamMap.pipe(take(1)).subscribe(async (params) => {
+      const urlMethod = (params.get('method') || 'tcrnet') as MotifMethod;
+      if (!params.get('method')) {
+        this.router.navigate([], { queryParams: { method: urlMethod }, queryParamsHandling: 'merge', replaceUrl: true });
+      }
+      if (urlMethod !== this.motifService.getMethod()) {
+        await this.motifService.switchMethod(urlMethod);
+      }
+
       const species = params.get('species');
       const tcrChain = params.get('tcr_chain');
       const gene = params.get('gene');
       const mhcClass = params.get('mhc_class');
       const epitopeSeq = params.get('epitope_seq');
-
       const cid = params.get('cid') || undefined;
 
       if (species && tcrChain && mhcClass && gene && epitopeSeq) {
         this.motifService.filterByUrl({ species, tcrChain, mhcClass, gene, epitopeSeq, cid });
-
       } else {
         const cdr3Query = params.get('query');
         if (cdr3Query) {
-          this.motifService.searchCDR3ByUrl(cdr3Query);
+          const cdr3Substring = params.get('substring') === 'true';
+          this.motifService.searchCDR3ByUrl(cdr3Query, cdr3Substring);
+        } else if (this.motifService.isLoaded()) {
+          // Returning to tab with cached state — hide content, show loader, restore URL,
+          // then reveal content after browser paints the loader
+          this.motifService.setContentReady(false);
+          this.motifService.setLoading(true);
+
+          const method = this.motifService.getMethod();
+          const state = this.motifService.getSearchState();
+          if (state === MotifSearchState.SEARCH_CDR3) {
+            const opts = this.motifService.getLastCDR3SearchOptions();
+            if (opts && opts.cdr3) {
+              this.router.navigate([], {
+                queryParams: { method, query: opts.cdr3, substring: opts.substring ? 'true' : null },
+                replaceUrl: true
+              });
+            }
+          } else {
+            const epitopeParams = this.motifService.getLastEpitopeUrlParams();
+            if (epitopeParams) {
+              this.router.navigate([], { queryParams: { method, ...epitopeParams }, replaceUrl: true });
+            }
+          }
+
+          requestAnimationFrame(() => {
+            this.motifService.setContentReady(true);
+            this.motifService.setLoading(false);
+          });
         } else {
           this.motifService.load();
         }
@@ -95,6 +131,7 @@ export class MotifPageComponent implements OnInit, OnDestroy {
         this.motifService.fireResizeUpdateEvent();
       });
   }
+
   public isEpitopesLoading(): Observable<boolean> {
     return this.motifService.isLoading();
   }
@@ -107,6 +144,20 @@ export class MotifPageComponent implements OnInit, OnDestroy {
     this.contentWrapper.unblockScrolling();
     this.onScrollObservable.unsubscribe();
     this.onResizeObservable.unsubscribe();
+  }
+
+  public getCurrentMethod(): MotifMethod {
+    return this.motifService.getMethod();
+  }
+
+  public setMethod(method: MotifMethod): void {
+    if (method === this.motifService.getMethod()) {
+      return;
+    }
+    this.motifService.switchMethod(method).then(() => {
+      this.router.navigate([], { queryParams: { method }, replaceUrl: true });
+      this.cdr.markForCheck();
+    });
   }
 
   public isStateSearchTree(): boolean {

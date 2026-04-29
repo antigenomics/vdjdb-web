@@ -20,7 +20,7 @@
         <span>ID: {{ cluster.clusterId }}</span>&nbsp;&nbsp;&nbsp;
         <span>Cluster size: {{ cluster.size }}</span>&nbsp;&nbsp;&nbsp;
         <span>CDR3 length: {{ cluster.length }}</span>&nbsp;&nbsp;&nbsp;
-        <span>{{ cluster.vsegm }}&nbsp;/&nbsp;{{ cluster.jsegm }}</span>
+        <span>{{ cluster.vsegm.join(', ') }}&nbsp;/&nbsp;{{ cluster.jsegm.join(', ') }}</span>
         <div class="sub header">
             <span>Species: {{ cluster.meta.species }}</span>&nbsp;&nbsp;&nbsp;
             <span>Gene: {{ cluster.meta.gene }}</span>&nbsp;&nbsp;&nbsp;

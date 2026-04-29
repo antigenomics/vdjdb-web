@@ -29,6 +29,8 @@ import play.api.Configuration
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable
+import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
 
 @Singleton
 case class Database @Inject()(configuration: Configuration) {
@@ -36,6 +38,11 @@ case class Database @Inject()(configuration: Configuration) {
   private final val metadata: DatabaseMetadata = DatabaseMetadata.createFromInstance(instance)
   private final val databaseLocation: String = Database.getDatabaseLocation(configuration)
   private final val suggestions = mutable.HashMap[String, DatabaseColumnSuggestionsResponse]()
+
+  // Eagerly warm up suggestions cache at startup to avoid blocking first user request
+  Future {
+    getSuggestions("antigen.epitope")
+  }
 
   def getMetadata: DatabaseMetadata = metadata
 
@@ -68,6 +75,16 @@ case class Database @Inject()(configuration: Configuration) {
     } else {
       None
     }
+  }
+
+  def getMotifFileRedCEA: Option[File] = {
+    val f = new File(getLocation + "/" + "motif_pwms_redcea.txt")
+    if (f.exists()) Some(f) else None
+  }
+
+  def getClusterMembersFileRedCEA: Option[File] = {
+    val f = new File(getLocation + "/" + "cluster_members_redcea.txt")
+    if (f.exists()) Some(f) else None
   }
 
   def getSuggestionsAvailableColumns: Seq[String] = Seq("antigen.epitope")

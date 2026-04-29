@@ -125,7 +125,8 @@ export class WebSocketConnection {
     message.id = this._uniqueMessageID++;
     return new Promise<WebSocketResponseData>(async (resolve) => {
       this._messages.pipe(filter((response: IWebSocketResponseData) => {
-        return (message.action === response.action) && (message.id === response.id);
+        return (message.action === response.action) && (message.id === response.id) &&
+          response.status !== WebSocketResponseStatus.WARNING;
       }), take(1)).subscribe((response: IWebSocketResponseData) => {
         resolve(new WebSocketResponseData(response));
       });

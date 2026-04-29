@@ -24,8 +24,11 @@ import backend.server.database.api.metadata.{DatabaseColumnInfoResponse, Databas
 import backend.server.database.filters.DatabaseFilters
 import backend.server.database.{Database, DatabaseColumnInfo}
 import backend.server.limit.RequestLimits
+import backend.server.motifs.Motifs
 import backend.server.search.api.search.{SearchDataRequest, SearchDataResponse}
 import backend.server.search.{SearchTable, SearchTableRow}
+import backend.server.structures.Structures
+import backend.server.validation.ValidationDB
 import javax.inject._
 import play.api.Configuration
 import play.api.libs.json.Json.toJson
@@ -35,7 +38,7 @@ import play.api.mvc._
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class DatabaseAPI @Inject()(cc: ControllerComponents, database: Database, configuration: Configuration)
+class DatabaseAPI @Inject()(cc: ControllerComponents, database: Database, structures: Structures, motifs: Motifs, validation: ValidationDB, configuration: Configuration)
                            (implicit as: ActorSystem, mat: Materializer, ec: ExecutionContext, limits: RequestLimits, tfp: TemporaryFileProvider)
   extends AbstractController(cc) {
 
@@ -75,7 +78,7 @@ class DatabaseAPI @Inject()(cc: ControllerComponents, database: Database, config
             val table = new SearchTable()
             val filters = DatabaseFilters.createFromRequest(data.get.filters.get, database)
 
-            table.update(filters, database)
+            table.update(filters, database, structures, motifs, validation)
             if (data.get.sort.nonEmpty) {
               val sorting = data.get.sort.get.split(":")
               val columnName = sorting(0)
@@ -117,7 +120,7 @@ class DatabaseAPI @Inject()(cc: ControllerComponents, database: Database, config
   def connect: WebSocket = WebSocket.acceptOrResult[JsValue, JsValue] { implicit request =>
     Future.successful(if (limits.allowConnection(request)) {
       Right(ActorFlow.actorRef { out =>
-        DatabaseSearchWebSocketActor.props(out, limits.getLimit(request), database)
+        DatabaseSearchWebSocketActor.props(out, limits.getLimit(request), database, structures, motifs, validation)
       })
     } else {
       Left(Forbidden)

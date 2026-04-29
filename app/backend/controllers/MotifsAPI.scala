@@ -35,9 +35,9 @@ class MotifsAPI @Inject()(cc: ControllerComponents, motifs: Motifs, configuratio
                          (implicit as: ActorSystem, mat: Materializer, ec: ExecutionContext, limits: RequestLimits)
   extends AbstractController(cc) {
 
-  def getMetadata: Action[AnyContent] = Action.async {
+  def getMetadata(method: Option[String]): Action[AnyContent] = Action.async {
     Future.successful {
-      Ok(toJson(motifs.getMetadata))
+      Ok(toJson(motifs.getMetadata(method)))
     }
   }
 
@@ -52,7 +52,9 @@ class MotifsAPI @Inject()(cc: ControllerComponents, motifs: Motifs, configuratio
             case Some(result) => Ok(toJson(result))
             case None         => NotFound("No results found for this filter")
           } recover {
-            case t: Throwable => InternalServerError("An error occurred: " + t.getMessage)
+            case t: Throwable =>
+              t.printStackTrace()
+              InternalServerError("An error occurred: " + t.getClass.getName + ": " + t.getMessage)
           }
         }
       )
@@ -64,7 +66,7 @@ class MotifsAPI @Inject()(cc: ControllerComponents, motifs: Motifs, configuratio
   def cdr3: Action[AnyContent] = Action.async { implicit request =>
     request.body.asJson.map { json =>
       json.validate[MotifCDR3SearchRequest].map {
-        search => motifs.cdr3(search.cdr3, search.substring, search.gene, search.top).map { r => Ok(toJson(r)) }.recover { case _ => BadRequest("Bad request") }
+        search => motifs.cdr3(search.cdr3, search.substring, search.gene, search.top, search.method).map { r => Ok(toJson(r)) }.recover { case _ => BadRequest("Bad request") }
       }.recoverTotal {
         e => Future.successful(BadRequest("Detected error:" + JsError.toFlatForm(e)))
       }
@@ -77,7 +79,7 @@ class MotifsAPI @Inject()(cc: ControllerComponents, motifs: Motifs, configuratio
     request.body.asJson.map { json =>
       json.validate[ClusterMembersExportRequest].map {
         export =>
-          motifs.members(export.cid, export.format).map(_.map(link =>
+          motifs.members(export.cid, export.format, export.method).map(_.map(link =>
             Ok(toJson(ClusterMembersExportResponse(link.getDownloadLink))))
           ).getOrElse(Future.successful(BadRequest("Invalid format provided")))
       }.recoverTotal {

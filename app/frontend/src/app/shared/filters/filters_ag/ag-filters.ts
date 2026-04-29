@@ -31,6 +31,10 @@ export class AGOriginFilter implements FilterInterface {
     this.genesSelected = [];
   }
 
+  public isDefault(): boolean {
+    return this.speciesSelected.length === 0 && this.genesSelected.length === 0;
+  }
+
   public setOptions(options: IFiltersOptions): void {
     /* Disable tslint to prevent ClosureCompiler mangling */
     /* tslint:disable:no-string-literal */
@@ -71,6 +75,12 @@ export class AGEpitopeFilter implements FilterInterface {
     this.epitopePattern = '';
     this.epitopePatternSubstring = false;
     this.epitopePatternValid = true;
+  }
+
+  public isDefault(): boolean {
+    return this.epitopeSelected.length === 0 &&
+      this.epitopePattern === '' &&
+      this.epitopePatternSubstring === false;
   }
 
   public setOptions(options: IFiltersOptions): void {

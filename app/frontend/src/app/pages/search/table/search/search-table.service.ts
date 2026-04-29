@@ -92,14 +92,16 @@ export class SearchTableService {
       this.metadata = metadata;
       this.filters.setOptions(metadataOptions.unpack());
 
+      // Mark as initialized immediately after metadata is ready (not waiting for suggestions)
+      this.initialized = true;
+      this.events.next(SearchTableServiceEvents.INITIALIZED);
+
+      // Load suggestions in background without blocking initialization
       const suggestionResponse = await suggestionsRequest;
       this.logger.debug('Suggestions', suggestionResponse);
       const suggestionsOptions = new FiltersOptions();
       suggestionsOptions.add('ag.epitope.epitopeSuggestions', suggestionResponse.get('suggestions'));
       this.filters.setOptions(suggestionsOptions.unpack());
-
-      this.initialized = true;
-      this.events.next(SearchTableServiceEvents.INITIALIZED);
     });
     this.connection.getMessages().pipe(filter((message: WebSocketResponseData) => {
       return message.isSuccess() && message.get('action') === SearchTableWebSocketActions.SEARCH;

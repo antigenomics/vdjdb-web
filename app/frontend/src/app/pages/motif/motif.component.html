@@ -16,7 +16,13 @@
 
 <div class="ui main content text fade slow element soft-margin" style="padding-bottom: 15px; height: 100%; overflow: hidden;">
     <div class="ui raised segments" style="height: 85%">
-        <h3 class="ui top attached header">CDR3 motif database</h3>
+        <h3 class="ui top attached header" style="display: flex; align-items: center; padding-top: 6px; padding-bottom: 6px;">
+            <span style="flex: 1">CDR3 motif database</span>
+            <div class="ui pagination menu" style="margin: 0; font-size: 0.9em;">
+                <a class="item" [class.active]="getCurrentMethod() === 'tcrnet'" (click)="setMethod('tcrnet')">TCRNet</a>
+                <a class="item" [class.active]="getCurrentMethod() === 'redcea'" (click)="setMethod('redcea')">RedCEA <span style="font-size: 0.75em; opacity: 0.75; margin-left: 3px">(new)</span></a>
+            </div>
+        </h3>
         <div class="ui attached segment" style="height: 100%">
             <div class="ui active inverted dimmer" *ngIf="isEpitopesLoading() | async">
                 <div class="ui text loader">Loading</div>
@@ -27,8 +33,8 @@
                                        [cdr3SearchOptions]="cdr3SearchOptions | async"></motif-search-util>
                 </div>
                 <div class="ui eleven wide column" style="overflow-x: hidden; overflow-y: auto; height: 100%" #EpitopesContainer>
-                    <motif-epitopes *ngIf="isStateSearchTree()" [options]="options | async" [epitopes]="epitopes | async"></motif-epitopes>
-                    <motif-cdr3-clusters *ngIf="isStateSearchCDR3()" [options]="options | async" [clusters]="clusters | async"></motif-cdr3-clusters>
+                    <motif-epitopes *ngIf="isStateSearchTree() && contentReady" [options]="options | async" [epitopes]="epitopes | async"></motif-epitopes>
+                    <motif-cdr3-clusters *ngIf="isStateSearchCDR3() && contentReady" [options]="options | async" [clusters]="clusters | async"></motif-cdr3-clusters>
                 </div>
             </div>
         </div>

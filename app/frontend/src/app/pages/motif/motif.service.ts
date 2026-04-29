@@ -28,7 +28,7 @@ import {
   IMotifsSearchTreeFilter,
   IMotifsSearchTreeFilterResult
 } from 'pages/motif/motif';
-import { combineLatest, Observable, ReplaySubject, Subject } from 'rxjs';
+import { BehaviorSubject, combineLatest, Observable, ReplaySubject, Subject } from 'rxjs';
 import { map, take } from 'rxjs/operators';
 import { ISeqLogoChartConfiguration } from 'shared/charts/seqlogo/seqlogo-configuration';
 import { LoggerService } from 'utils/logger/logger.service';
@@ -55,6 +55,8 @@ export namespace MotifSearchState {
 
 export type MotifSearchState = number;
 
+export type MotifMethod = 'tcrnet' | 'redcea';
+
 @Injectable()
 export class MotifService {
   public static readonly minSubstringCDR3Length: number = 3;
@@ -65,7 +67,11 @@ export class MotifService {
   private isMetadataLoaded: boolean = false;
   private isMetadataLoading: boolean = false;
 
+  private lastEpitopeUrlParams: { [key: string]: string } | null = null;
+  private lastCDR3SearchOptions: IMotifCDR3SearchResultOptions | null = null;
+
   private state: MotifSearchState = MotifSearchState.SEARCH_TREE;
+  private method: MotifMethod = 'tcrnet';
 
   private events: Subject<MotifsServiceEvents> = new Subject<MotifsServiceEvents>();
   private metadata: Subject<IMotifsMetadata> = new ReplaySubject(1);
@@ -77,13 +83,38 @@ export class MotifService {
   private clusters: Subject<IMotifCDR3SearchResult> = new ReplaySubject(1);
 
   private loadingState: Subject<boolean> = new ReplaySubject(1);
+  private contentReady: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(true);
 
   constructor(private logger: LoggerService, private notifications: NotificationService) {}
+
+  public getMethod(): MotifMethod {
+    return this.method;
+  }
+
+  public async switchMethod(newMethod: MotifMethod): Promise<void> {
+    if (this.method === newMethod && this.isMetadataLoaded) {
+      return;
+    }
+    this.method = newMethod;
+    this.isMetadataLoaded = false;
+    this.isMetadataLoading = false;
+    this.state = MotifSearchState.SEARCH_TREE;
+    this.lastEpitopeUrlParams = null;
+    this.lastCDR3SearchOptions = null;
+    this.highlightedCid.next(null);
+    this.selected.next([]);
+    this.epitopes.next([]);
+    this.options.next({ isNormalized: false, allowMultiple: false });
+    this.clusters.next({ options: { cdr3: '', top: 15, gene: 'Both', substring: false }, clusters: undefined, clustersNorm: undefined });
+    this.loadingState.next(true);
+    await this.load();
+    this.loadingState.next(false);
+  }
 
   public async load(): Promise<void> {
     if (!this.isMetadataLoaded && !this.isMetadataLoading) {
       this.isMetadataLoading = true;
-      const response = await Utils.HTTP.get('/api/motifs/metadata');
+      const response = await Utils.HTTP.get(`/api/motifs/metadata?method=${this.method}`);
       const root = JSON.parse(response.response) as { root: IMotifsMetadataTreeLevel };
       const metadata = { root: root.root };
       this.logger.debug('Motifs metadata', metadata);
@@ -145,6 +176,34 @@ export class MotifService {
     this.options.next(options);
   }
 
+  public isLoaded(): boolean {
+    return this.isMetadataLoaded;
+  }
+
+  public setLoading(value: boolean): void {
+    this.loadingState.next(value);
+  }
+
+  public setLastEpitopeUrlParams(params: { [key: string]: string } | null): void {
+    this.lastEpitopeUrlParams = params;
+  }
+
+  public getLastEpitopeUrlParams(): { [key: string]: string } | null {
+    return this.lastEpitopeUrlParams;
+  }
+
+  public getLastCDR3SearchOptions(): IMotifCDR3SearchResultOptions | null {
+    return this.lastCDR3SearchOptions;
+  }
+
+  public getContentReady(): Observable<boolean> {
+    return this.contentReady.asObservable();
+  }
+
+  public setContentReady(value: boolean): void {
+    this.contentReady.next(value);
+  }
+
   public fireScrollUpdateEvent(): void {
     this.events.next(MotifsServiceEvents.UPDATE_SCROLL);
   }
@@ -161,10 +220,10 @@ export class MotifService {
     return this.loadingState;
   }
 
-  public async searchCDR3ByUrl(query: string): Promise<void> {
+  public async searchCDR3ByUrl(query: string, substring: boolean = false): Promise<void> {
     await this.load();
     this.setSearchState(MotifSearchState.SEARCH_CDR3);
-    this.searchCDR3(query);
+    this.searchCDR3(query, substring);
   }
 
   public async filterByUrl(filters: { species: string, tcrChain: string, mhcClass: string, gene: string, epitopeSeq: string, cid?: string }): Promise<void> {
@@ -214,7 +273,7 @@ export class MotifService {
       return;
     }
     this.loadingState.next(true);
-    Utils.HTTP.post('/api/motifs/cdr3', { cdr3, substring, gene, top }).then((response) => {
+    Utils.HTTP.post('/api/motifs/cdr3', { cdr3, substring, gene, top, method: this.method }).then((response) => {
       const result = JSON.parse(response.response) as IMotifCDR3SearchResult;
 
       const comparator = (l: IMotifCDR3SearchEntry, r: IMotifCDR3SearchEntry) => {
@@ -236,6 +295,7 @@ export class MotifService {
       result.clusters.sort(comparator);
       result.clustersNorm.sort(comparator);
 
+      this.lastCDR3SearchOptions = result.options;
       this.clusters.next(result);
       this.loadingState.next(false);
       this.notifications.info('Motifs CDR3', 'Loaded successfully', 1000); // tslint:disable-line:no-magic-numbers
@@ -252,7 +312,7 @@ export class MotifService {
   public select(treeFilter: IMotifsSearchTreeFilter): void {
     this.updateSelected();
     this.loadingState.next(true);
-    Utils.HTTP.post('/api/motifs/filter', treeFilter).then((response) => {
+    Utils.HTTP.post('/api/motifs/filter', { ...treeFilter, method: this.method }).then((response) => {
       const result = JSON.parse(response.response) as IMotifsSearchTreeFilterResult;
       this.epitopes.pipe(take(1)).subscribe((epitopes) => {
         const hashes = epitopes.map((epitope) => epitope.hash);
@@ -279,7 +339,7 @@ export class MotifService {
   }
 
   public members(cid: string): void {
-    Utils.HTTP.post('/api/motifs/members', { cid, format: 'tsv' }).then((response) => {
+    Utils.HTTP.post('/api/motifs/members', { cid, format: 'tsv', method: this.method }).then((response) => {
       const result = JSON.parse(response.response) as IMotifClusterMembersExportResponse;
       Utils.File.download(result.link);
       this.notifications.info('Motifs export', 'Download will start automatically');

@@ -14,26 +14,83 @@
  *     limitations under the License.
  */
 
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy } from '@angular/core';
-import {Observable, Subscription} from 'rxjs';
+import { Component, OnDestroy } from '@angular/core';
+import { Observable, Subscription } from 'rxjs';
 import { FiltersService, FiltersServiceEventType } from 'shared/filters/filters.service';
-import {SearchInfoService} from "pages/search/info/search-info.service";
-import {map} from "rxjs/operators";
+import { AGFiltersService } from 'shared/filters/filters_ag/ag-filters.service';
+import { MetaFiltersService } from 'shared/filters/filters_meta/meta-filters.service';
+import { MHCFiltersService } from 'shared/filters/filters_mhc/mhc-filters.service';
+import { TCRFiltersService } from 'shared/filters/filters_tcr/tcr-filters.service';
+import { SearchInfoService } from 'pages/search/info/search-info.service';
+import { map } from 'rxjs/operators';
 
 @Component({
-  selector:        'search-info',
-  templateUrl:     './search-info.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush
+  selector:    'search-info',
+  templateUrl: './search-info.component.html',
+  styles: [`
+    .ag-filter-grid {
+      display: grid !important;
+      grid-template-columns: 1fr 1fr;
+      grid-template-areas:
+        "origin  epitope"
+        "diseases epitope";
+      width: 100%;
+      flex-wrap: unset !important;
+    }
+    .ag-origin-col, .ag-epitope-col, .ag-diseases-col {
+      padding: 1em 1em;
+      width: auto !important;
+      min-width: 0;
+    }
+    .ag-origin-col   { grid-area: origin; }
+    .ag-epitope-col  { grid-area: epitope; }
+    .ag-diseases-col { grid-area: diseases; align-self: start; }
+    @media (max-width: 767px) {
+      .ag-filter-grid {
+        grid-template-columns: 1fr;
+        grid-template-areas:
+          "origin"
+          "epitope"
+          "diseases";
+      }
+    }
+    .filter-changed-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      background-color: #db2828;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .filter-tab-dot {
+      position: absolute;
+      right: 6px;
+      width: 7px;
+      height: 7px;
+      background-color: #db2828;
+      border-radius: 50%;
+    }
+    .filter-changed-label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: #db2828;
+      font-size: 0.9em;
+    }
+  `]
 })
 export class SearchInfoComponent implements OnDestroy {
   private _resetEvent: Subscription;
 
-  constructor(private filters: FiltersService, private info: SearchInfoService, private changeDetector: ChangeDetectorRef) {
-    this._resetEvent = this.filters.getEvents().subscribe((event: FiltersServiceEventType) => {
-      if (event === FiltersServiceEventType.RESET) {
-        this.changeDetector.detectChanges();
-      }
-    });
+  constructor(
+    private filters: FiltersService,
+    private tcr: TCRFiltersService,
+    private ag: AGFiltersService,
+    private mhc: MHCFiltersService,
+    private meta: MetaFiltersService,
+    private info: SearchInfoService
+  ) {
+    this._resetEvent = this.filters.getEvents().subscribe((_event: FiltersServiceEventType) => {});
   }
 
   public isCurrentState(state: string): Observable<boolean> {
@@ -41,7 +98,27 @@ export class SearchInfoComponent implements OnDestroy {
   }
 
   public setCurrentState(state: string): void {
-    this.info.state.next(state)
+    this.info.state.next(state);
+  }
+
+  public hasCdr3Changes(): boolean {
+    return !this.tcr.isDefault();
+  }
+
+  public hasAgChanges(): boolean {
+    return !this.ag.isDefault();
+  }
+
+  public hasMhcChanges(): boolean {
+    return !this.mhc.isDefault();
+  }
+
+  public hasMetaChanges(): boolean {
+    return !this.meta.isDefault();
+  }
+
+  public hasAnyChanges(): boolean {
+    return this.hasCdr3Changes() || this.hasAgChanges() || this.hasMhcChanges() || this.hasMetaChanges();
   }
 
   public ngOnDestroy() {

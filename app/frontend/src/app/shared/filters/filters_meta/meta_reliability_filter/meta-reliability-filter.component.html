@@ -40,4 +40,21 @@
             <label>Include unmapped V/J</label>
         </div>
     </div>
+    <div class="three wide column filters label"><b>Evidence</b></div>
+    <div class="twelve wide column">
+        <div class="ui checkbox">
+            <input type="checkbox" [checked]="meta.reliability.evidenceValidation" (change)="meta.reliability.evidenceValidation = $event.target.checked">
+            <label>Validation</label>
+        </div>
+        <br>
+        <div class="ui checkbox">
+            <input type="checkbox" [checked]="meta.reliability.evidenceMotif" (change)="meta.reliability.evidenceMotif = $event.target.checked">
+            <label>Motif</label>
+        </div>
+        <br>
+        <div class="ui checkbox">
+            <input type="checkbox" [checked]="meta.reliability.evidenceStructure" (change)="meta.reliability.evidenceStructure = $event.target.checked">
+            <label>Structure</label>
+        </div>
+    </div>
 </div>
