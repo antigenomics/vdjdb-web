@@ -24,7 +24,10 @@ import { IMotifEpitopeViewOptions } from 'pages/motif/motif';
 })
 export class MotifViewOptionsComponent {
   @Input('options')
-  public options: IMotifEpitopeViewOptions;
+  public options!: IMotifEpitopeViewOptions;
+
+  @Input('showMultiple')
+  public showMultiple: boolean = true;
 
   @Output('onOptionsChange')
   public onOptionsChange = new EventEmitter<IMotifEpitopeViewOptions>();

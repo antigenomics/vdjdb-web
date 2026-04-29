@@ -18,7 +18,7 @@ package backend.server.motifs.api.export
 
 import play.api.libs.json.{Format, Json}
 
-case class ClusterMembersExportRequest(cid: String, format: String)
+case class ClusterMembersExportRequest(cid: String, format: String, method: Option[String] = None)
 
 object ClusterMembersExportRequest {
   implicit val clusterMembersExportRequestFormat: Format[ClusterMembersExportRequest] = Json.format[ClusterMembersExportRequest]

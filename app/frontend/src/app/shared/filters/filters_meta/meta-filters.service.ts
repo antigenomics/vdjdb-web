@@ -33,6 +33,10 @@ export class MetaFiltersService implements FilterInterface {
     this.reliability.setDefault();
   }
 
+  public isDefault(): boolean {
+    return this.general.isDefault() && this.reliability.isDefault();
+  }
+
   public setOptions(options: IFiltersOptions): void {
     const generalFilterId = this.general.getFilterId();
     if (options.hasOwnProperty(generalFilterId)) {

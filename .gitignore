@@ -55,5 +55,12 @@ logs
 database/*
 vdjdb*.zip
 
+# Motif charts
+motif-charts/tcrnet/*
+motif-charts/redcea/*
+
+# Third-party validation databases (unpublished, must not be committed)
+/validation-db/
+
 # Old_database
 /old_database

@@ -99,11 +99,12 @@ export class SearchTableEntryInfoComponent extends TableEntry {
 
     this.badges = [
       this.buildScoreBadge(scoreValue),
-      this.buildValidationBadge(),
+      this.buildValidationBadge(undefined),
       this.buildMotifBadge(false, null),
       this.buildStructureBadge(false, null)
     ];
 
+    this.resolveValidation(row, columns);
     this.resolveMotif(row, columns);
     this.resolveStructure(row, columns);
   }
@@ -121,7 +122,31 @@ export class SearchTableEntryInfoComponent extends TableEntry {
     };
   }
 
-  private buildValidationBadge(): BadgeInfo {
+  private buildValidationBadge(status: string | undefined): BadgeInfo {
+    if (status === 'positive' || status === 'both') {
+      return {
+        letter: 'V',
+        subscript: '',
+        color: 'rgba(76, 175, 80, 0.15)',
+        borderColor: 'rgba(76, 175, 80, 0.8)',
+        active: true,
+        popupLines: [`is_validated : ${status}`, 'method : TCRvdb'],
+        popupHeader: 'Validation',
+        link: ''
+      };
+    }
+    if (status === 'negative') {
+      return {
+        letter: 'V',
+        subscript: '',
+        color: 'rgba(255, 152, 0, 0.15)',
+        borderColor: 'rgba(255, 152, 0, 0.8)',
+        active: true,
+        popupLines: ['is_validated : negative', 'method : TCRvdb'],
+        popupHeader: 'Validation',
+        link: ''
+      };
+    }
     return {
       letter: 'V',
       subscript: '',
@@ -193,18 +218,28 @@ export class SearchTableEntryInfoComponent extends TableEntry {
   }
 
   private extractMotifLinkData(row: SearchTableRow, columns: TableColumn[]):
-    { species: string; tcrChain: string; mhcClass: string; gene: string; epitopeSeq: string } | null {
+    { species: string; tcrChain: string; mhcClass: string; mhcAllele: string; epitopeSeq: string } | null {
     const species = this.getCellValue(row, columns, 'species');
     const tcrChain = this.getCellValue(row, columns, 'gene');
     const mhcClass = this.getCellValue(row, columns, 'mhc.class');
     const mhcValue = this.getCellValue(row, columns, 'mhc.a');
-    const gene = mhcValue ? mhcValue.replace(/:.+/, '') : undefined;
     const epitopeSeq = this.getCellValue(row, columns, 'antigen.epitope');
 
-    if (!species || !tcrChain || !mhcClass || !gene || !epitopeSeq) {
+    if (!species || !tcrChain || !mhcClass || !mhcValue || !epitopeSeq) {
       return null;
     }
-    return { species, tcrChain, mhcClass, gene, epitopeSeq };
+    return { species, tcrChain, mhcClass, mhcAllele: mhcValue, epitopeSeq };
+  }
+
+  private resolveValidation(row: SearchTableRow, columns: TableColumn[]): void {
+    const cdr3 = this.getCellValue(row, columns, 'cdr3') || '';
+    const epitope = this.getCellValue(row, columns, 'antigen.epitope') || '';
+    if (!cdr3 || !epitope) { return; }
+
+    this.availability.getValidationStatus(cdr3, epitope).then((status) => {
+      this.badges[1] = this.buildValidationBadge(status);
+      this.changeDetector.markForCheck();
+    }).catch(() => {});
   }
 
   private resolveMotif(row: SearchTableRow, columns: TableColumn[]): void {
@@ -213,12 +248,13 @@ export class SearchTableEntryInfoComponent extends TableEntry {
       return;
     }
 
-    const { species, tcrChain, mhcClass, gene, epitopeSeq } = motifData;
+    const { species, tcrChain, mhcClass, mhcAllele, epitopeSeq } = motifData;
+    const epitopeGene = this.getCellValue(row, columns, 'antigen.gene') || '';
     const cdr3 = this.getCellValue(row, columns, 'cdr3') || '';
     const vSegm = this.getCellValue(row, columns, 'v.segm') || '';
     const jSegm = this.getCellValue(row, columns, 'j.segm') || '';
 
-    this.availability.hasMotif(species, tcrChain, mhcClass, gene, epitopeSeq).then(async (available) => {
+    this.availability.hasMotif(species, tcrChain, mhcClass, mhcAllele, epitopeSeq).then(async (available) => {
       if (available) {
         const cid = await this.availability.getMotifCid(species, tcrChain, epitopeSeq, cdr3, vSegm, jSegm).catch(() => undefined);
         if (cid) {
@@ -226,7 +262,7 @@ export class SearchTableEntryInfoComponent extends TableEntry {
           params.set('species', species);
           params.set('tcr_chain', tcrChain);
           params.set('mhc_class', mhcClass);
-          params.set('gene', gene);
+          params.set('gene', epitopeGene);
           params.set('epitope_seq', epitopeSeq);
           params.set('cid', cid);
           const link = `/motif?${params.toString()}`;
