@@ -116,7 +116,7 @@ export class MotifEpitopeEntryComponent implements OnInit, OnDestroy {
 
       // override the hardcoded inline dimensions on the plotly div
       // TCRNet uses id="plot-...", RedCEA uses class="plotly-graph-div"
-      const plotDiv = (doc.querySelector('.plotly-graph-div') ?? doc.querySelector('[id^="plot-"]')) as HTMLElement;
+      const plotDiv = (doc.querySelector('.plotly-graph-div') ? doc.querySelector('.plotly-graph-div') : doc.querySelector('[id^="plot-"]')) as HTMLElement;
       if (plotDiv) {
         plotDiv.style.width = '100%';
         plotDiv.style.height = '100%';
