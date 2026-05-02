@@ -111,7 +111,7 @@ export class MotifEpitopeEntryComponent implements OnInit, OnDestroy {
 
       // remove body margins so content fills the iframe exactly
       const style = doc.createElement('style');
-      style.textContent = 'html, body { margin: 0 !important; padding: 0 !important; overflow: hidden !important; }';
+      style.textContent = 'html, body { margin: 0 !important; padding: 0 !important; width: 100% !important; height: 100% !important; overflow: hidden !important; }';
       doc.head.appendChild(style);
 
       // override the hardcoded inline dimensions on the plotly div
