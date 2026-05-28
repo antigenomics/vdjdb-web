@@ -84,10 +84,6 @@ export class MetaGeneralFilter implements FilterInterface {
 }
 
 export class MetaReliabilityFilter implements FilterInterface {
-  // Values that indicate a positive evidence flag in VDJdb columns.
-  // Change these if the column encoding changes (e.g. 'yes', '1', 'true').
-  public static readonly EVIDENCE_POSITIVE_VALUE = '+';
-
   public confidenceScoreMin: number = 0;
   public confidenceScoreMax: number = 3;
 
@@ -95,23 +91,40 @@ export class MetaReliabilityFilter implements FilterInterface {
   public nonCanonical: boolean;
   public unmapped: boolean;
 
-  public evidenceValidation: boolean;
-  public evidenceMotif: boolean;
-  public evidenceStructure: boolean;
+  // Evidence: Validation
+  public valSameStudy: boolean;
+  public valIndependent: boolean;
+  public valTcrvdb: boolean;
+
+  // Evidence: Motif
+  public motifTcrnet: boolean;
+  public motifRedcea: boolean;
+
+  // Evidence: Structure
+  public structNative: boolean;
+  public structContacts: boolean;
+  public structQuality: boolean;
 
   public setDefault(): void {
     this.minimalConfidenceScore = 0;
     this.nonCanonical = false;
     this.unmapped = false;
-    this.evidenceValidation = false;
-    this.evidenceMotif = false;
-    this.evidenceStructure = false;
+    this.valSameStudy = false;
+    this.valIndependent = false;
+    this.valTcrvdb = false;
+    this.motifTcrnet = false;
+    this.motifRedcea = false;
+    this.structNative = false;
+    this.structContacts = false;
+    this.structQuality = false;
   }
 
   public isDefault(): boolean {
     return this.minimalConfidenceScore === 0 &&
       this.nonCanonical === false && this.unmapped === false &&
-      this.evidenceValidation === false && this.evidenceMotif === false && this.evidenceStructure === false;
+      this.valSameStudy === false && this.valIndependent === false && this.valTcrvdb === false &&
+      this.motifTcrnet === false && this.motifRedcea === false &&
+      this.structNative === false && this.structContacts === false && this.structQuality === false;
   }
 
   public setOptions(_: IFiltersOptions): void {
@@ -131,14 +144,28 @@ export class MetaReliabilityFilter implements FilterInterface {
     if (this.unmapped === false) {
       filters.push(new Filter('web.cdr3fix.unmp', FilterType.EXACT, true, 'yes'));
     }
-    if (this.evidenceValidation === true) {
-      filters.push(new Filter('availability:validation', FilterType.EXACT, false, 'true'));
+
+    const validationModes: string[] = [];
+    if (this.valSameStudy) { validationModes.push('same.study'); }
+    if (this.valIndependent) { validationModes.push('independent'); }
+    if (this.valTcrvdb) { validationModes.push('tcrvdb'); }
+    if (validationModes.length > 0) {
+      filters.push(new Filter('evidence:validation', FilterType.EXACT, false, validationModes.join(',')));
     }
-    if (this.evidenceMotif === true) {
-      filters.push(new Filter('availability:motif', FilterType.EXACT, false, 'true'));
+
+    const motifModes: string[] = [];
+    if (this.motifTcrnet) { motifModes.push('tcrnet'); }
+    if (this.motifRedcea) { motifModes.push('redcea'); }
+    if (motifModes.length > 0) {
+      filters.push(new Filter('evidence:motif', FilterType.EXACT, false, motifModes.join(',')));
     }
-    if (this.evidenceStructure === true) {
-      filters.push(new Filter('availability:structure', FilterType.EXACT, false, 'true'));
+
+    const structureModes: string[] = [];
+    if (this.structNative) { structureModes.push('native'); }
+    if (this.structContacts) { structureModes.push('contacts'); }
+    if (this.structQuality) { structureModes.push('quality'); }
+    if (structureModes.length > 0) {
+      filters.push(new Filter('evidence:structure', FilterType.EXACT, false, structureModes.join(',')));
     }
   }
 

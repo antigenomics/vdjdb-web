@@ -41,20 +41,54 @@
         </div>
     </div>
     <div class="three wide column filters label"><b>Evidence</b></div>
-    <div class="twelve wide column">
-        <div class="ui checkbox">
-            <input type="checkbox" [checked]="meta.reliability.evidenceValidation" (change)="meta.reliability.evidenceValidation = $event.target.checked">
-            <label>Validation</label>
-        </div>
-        <br>
-        <div class="ui checkbox">
-            <input type="checkbox" [checked]="meta.reliability.evidenceMotif" (change)="meta.reliability.evidenceMotif = $event.target.checked">
-            <label>Motif</label>
-        </div>
-        <br>
-        <div class="ui checkbox">
-            <input type="checkbox" [checked]="meta.reliability.evidenceStructure" (change)="meta.reliability.evidenceStructure = $event.target.checked">
-            <label>Structure</label>
+    <div class="thirteen wide column">
+        <div class="ui three column stackable top aligned grid">
+            <div class="column">
+                <div class="filters label" style="margin-bottom: 6px; text-align: center;"><b>Validation</b></div>
+                <div class="ui checkbox">
+                    <input type="checkbox" [checked]="meta.reliability.valSameStudy" (change)="meta.reliability.valSameStudy = $event.target.checked">
+                    <label>Same study</label>
+                </div>
+                <br>
+                <div class="ui checkbox">
+                    <input type="checkbox" [checked]="meta.reliability.valIndependent" (change)="meta.reliability.valIndependent = $event.target.checked">
+                    <label>Independent</label>
+                </div>
+                <br>
+                <div class="ui checkbox">
+                    <input type="checkbox" [checked]="meta.reliability.valTcrvdb" (change)="meta.reliability.valTcrvdb = $event.target.checked">
+                    <label>TCRvdb or similar</label>
+                </div>
+            </div>
+            <div class="column">
+                <div class="filters label" style="margin-bottom: 6px; text-align: center;"><b>Structure</b></div>
+                <div class="ui checkbox">
+                    <input type="checkbox" [checked]="meta.reliability.structNative" (change)="meta.reliability.structNative = $event.target.checked">
+                    <label>Native</label>
+                </div>
+                <br>
+                <div class="ui checkbox">
+                    <input type="checkbox" [checked]="meta.reliability.structContacts" (change)="meta.reliability.structContacts = $event.target.checked">
+                    <label>Model with contacts</label>
+                </div>
+                <br>
+                <div class="ui checkbox">
+                    <input type="checkbox" [checked]="meta.reliability.structQuality" (change)="meta.reliability.structQuality = $event.target.checked">
+                    <label>Good quality model</label>
+                </div>
+            </div>
+            <div class="column">
+                <div class="filters label" style="margin-bottom: 6px; text-align: center;"><b>Motif</b></div>
+                <div class="ui checkbox">
+                    <input type="checkbox" [checked]="meta.reliability.motifTcrnet" (change)="meta.reliability.motifTcrnet = $event.target.checked">
+                    <label>TCRNET</label>
+                </div>
+                <br>
+                <div class="ui checkbox">
+                    <input type="checkbox" [checked]="meta.reliability.motifRedcea" (change)="meta.reliability.motifRedcea = $event.target.checked">
+                    <label>REDCEA</label>
+                </div>
+            </div>
         </div>
     </div>
 </div>

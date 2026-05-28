@@ -14,8 +14,10 @@ import scala.concurrent.{ExecutionContext, Future}
 import backend.server.structures.api.epitope.StructureVisualization
 
 case class SearchAvailabilityResponse(structures: Seq[String], motifs: Seq[String],
+                                      motifsRedcea: Seq[String],
                                       visualizations: Map[String, StructureVisualization],
                                       motifCidIndex: Map[String, String],
+                                      motifCidIndexRedcea: Map[String, String],
                                       validationIndex: Map[String, String])
 
 object SearchAvailabilityResponse {
@@ -31,11 +33,14 @@ class SearchAvailabilityAPI @Inject()(cc: ControllerComponents,
   extends AbstractController(cc) {
 
   def availability: Action[AnyContent] = Action.async {
-    val structuresSet   = structures.getAvailableStructureIds.toSeq
-    val motifKeys       = motifs.getAvailabilityKeys().toSeq
-    val visualizationMap = structures.getHtmlVisualizations
-    val cidIndex        = motifs.getCidLookupIndex()
-    val validationIdx   = validation.getStatusIndex()
-    Future.successful(Ok(Json.toJson(SearchAvailabilityResponse(structuresSet, motifKeys, visualizationMap, cidIndex, validationIdx))))
+    val structuresSet     = structures.getAvailableStructureIds.toSeq
+    val motifKeys         = motifs.getAvailabilityKeys().toSeq
+    val motifKeysRedcea   = motifs.getAvailabilityKeys(Some("redcea")).toSeq
+    val visualizationMap  = structures.getHtmlVisualizations
+    val cidIndex          = motifs.getCidLookupIndex()
+    val cidIndexRedcea    = motifs.getCidLookupIndex(Some("redcea"))
+    val validationIdx     = validation.getStatusIndex()
+    Future.successful(Ok(Json.toJson(SearchAvailabilityResponse(
+      structuresSet, motifKeys, motifKeysRedcea, visualizationMap, cidIndex, cidIndexRedcea, validationIdx))))
   }
 }
