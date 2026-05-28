@@ -71,12 +71,12 @@ class SearchTable extends ResultsTable[SearchTableRow] {
       }
     }
 
-    // Motif evidence: OR within {tcrnet, redcea}
+    // Motif evidence: OR within {tcrnet, tcremp}
     if (filters.motifModes.nonEmpty) {
       val tcrnetIndex = if (filters.motifModes.contains("tcrnet")) motifs.getCidLookupIndex() else Map.empty[String, String]
-      val redceaIndex = if (filters.motifModes.contains("redcea")) motifs.getCidLookupIndex(Some("redcea")) else Map.empty[String, String]
+      val tcrempIndex = if (filters.motifModes.contains("tcremp")) motifs.getCidLookupIndex(Some("tcremp")) else Map.empty[String, String]
       filtered = filtered.filter { result =>
-        motifKey(result.getRow).exists(key => tcrnetIndex.contains(key) || redceaIndex.contains(key))
+        motifKey(result.getRow).exists(key => tcrnetIndex.contains(key) || tcrempIndex.contains(key))
       }
     }
 

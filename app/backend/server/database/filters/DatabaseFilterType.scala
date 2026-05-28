@@ -28,7 +28,7 @@ object DatabaseFilterType extends Enumeration {
 
   // Evidence group filters. Value is a comma-separated list of selected sub-options.
   // Validation modes:  same.study | independent | tcrvdb
-  // Motif modes:       tcrnet | redcea
+  // Motif modes:       tcrnet | tcremp
   // Structure modes:   native | contacts | quality
   val EvidenceValidation = "evidence:validation"
   val EvidenceMotif      = "evidence:motif"

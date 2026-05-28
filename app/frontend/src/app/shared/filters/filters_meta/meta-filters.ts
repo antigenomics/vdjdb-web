@@ -98,7 +98,7 @@ export class MetaReliabilityFilter implements FilterInterface {
 
   // Evidence: Motif
   public motifTcrnet: boolean;
-  public motifRedcea: boolean;
+  public motifTcremp: boolean;
 
   // Evidence: Structure
   public structNative: boolean;
@@ -113,7 +113,7 @@ export class MetaReliabilityFilter implements FilterInterface {
     this.valIndependent = false;
     this.valTcrvdb = false;
     this.motifTcrnet = false;
-    this.motifRedcea = false;
+    this.motifTcremp = false;
     this.structNative = false;
     this.structContacts = false;
     this.structQuality = false;
@@ -123,7 +123,7 @@ export class MetaReliabilityFilter implements FilterInterface {
     return this.minimalConfidenceScore === 0 &&
       this.nonCanonical === false && this.unmapped === false &&
       this.valSameStudy === false && this.valIndependent === false && this.valTcrvdb === false &&
-      this.motifTcrnet === false && this.motifRedcea === false &&
+      this.motifTcrnet === false && this.motifTcremp === false &&
       this.structNative === false && this.structContacts === false && this.structQuality === false;
   }
 
@@ -155,7 +155,7 @@ export class MetaReliabilityFilter implements FilterInterface {
 
     const motifModes: string[] = [];
     if (this.motifTcrnet) { motifModes.push('tcrnet'); }
-    if (this.motifRedcea) { motifModes.push('redcea'); }
+    if (this.motifTcremp) { motifModes.push('tcremp'); }
     if (motifModes.length > 0) {
       filters.push(new Filter('evidence:motif', FilterType.EXACT, false, motifModes.join(',')));
     }
