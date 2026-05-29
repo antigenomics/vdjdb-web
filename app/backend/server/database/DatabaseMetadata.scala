@@ -35,6 +35,19 @@ object DatabaseMetadata {
   final val numberOfRecordsRequirementErrorMessage: String = "number of records should be greater than zero"
   final val numberOfColumnsRequirementErrorMessage: String = "number of columns should be greater than zero"
 
+  // Columns kept invisible in the table UI but still sent to the frontend so that
+  // the Evidence badges can read them. The frontend hides them in normalizeMetadata.
+  final val EvidenceColumns: Seq[String] = Seq(
+    "evidence.validation.same.study",
+    "evidence.validation.independent",
+    "evidence.structure.native",
+    "evidence.structure.contacts",
+    "evidence.structure.quality"
+  )
+
+  // Columns forced through to the frontend regardless of their meta "visible" flag.
+  final val ForcedColumns: Set[String] = EvidenceColumns.toSet + "TCR_hash"
+
   implicit val databaseMetadataFormat: Format[DatabaseMetadata] = Json.format[DatabaseMetadata]
 
   def createFromInstance(instance: VdjdbInstance): DatabaseMetadata = {
@@ -44,7 +57,7 @@ object DatabaseMetadata {
       .asScala
       .map((c: Column) => DatabaseColumnInfo.createInfoFromColumn(c))
       .map((info: DatabaseColumnInfo) =>
-        if (info.name == "TCR_hash") info.copy(visible = true) else info
+        if (ForcedColumns.contains(info.name)) info.copy(visible = true) else info
       )
 
     val columns = rawColumns

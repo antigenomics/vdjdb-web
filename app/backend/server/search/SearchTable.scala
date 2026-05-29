@@ -45,31 +45,51 @@ class SearchTable extends ResultsTable[SearchTableRow] {
     val allResults = database.getInstance.getDbInstance.search(filters.text, filters.sequence)
     var filtered = allResults.asScala
 
-    if (filters.filterStructure) {
-      val availableIds = structures.getAvailableStructureIds
+    def columnIsTrue(row: com.antigenomics.vdjdb.db.Row, col: String): Boolean =
+      Option(row.getAt(col)).exists(_.getValue.trim.equalsIgnoreCase("true"))
+
+    def motifKey(row: com.antigenomics.vdjdb.db.Row): Option[String] = {
+      val parts = Seq("species", "gene", "antigen.epitope", "cdr3", "v.segm", "j.segm")
+        .map(col => Option(row.getAt(col)).map(_.getValue.trim.toLowerCase).getOrElse(""))
+      if (parts.forall(_.nonEmpty)) Some(parts.mkString("|")) else None
+    }
+
+    // Validation evidence: OR within {same.study, independent, tcrvdb}
+    if (filters.validationModes.nonEmpty) {
+      val validationKeys = if (filters.validationModes.contains("tcrvdb")) validation.getValidationKeys() else Set.empty[String]
       filtered = filtered.filter { result =>
-        val hash = Option(result.getRow.getAt("TCR_hash")).map(_.getValue.trim.toLowerCase).getOrElse("")
-        hash.nonEmpty && availableIds.contains(hash)
+        val row = result.getRow
+        filters.validationModes.exists {
+          case "same.study"  => columnIsTrue(row, "evidence.validation.same.study")
+          case "independent" => columnIsTrue(row, "evidence.validation.independent")
+          case "tcrvdb" =>
+            val cdr3    = Option(row.getAt("cdr3")).map(_.getValue.trim.toLowerCase).getOrElse("")
+            val epitope = Option(row.getAt("antigen.epitope")).map(_.getValue.trim.toLowerCase).getOrElse("")
+            cdr3.nonEmpty && epitope.nonEmpty && validationKeys.contains(s"$cdr3|$epitope")
+          case _ => false
+        }
       }
     }
 
-    if (filters.filterMotif) {
-      val cidIndex = motifs.getCidLookupIndex()
+    // Motif evidence: OR within {tcrnet, tcremp}
+    if (filters.motifModes.nonEmpty) {
+      val tcrnetIndex = if (filters.motifModes.contains("tcrnet")) motifs.getCidLookupIndex() else Map.empty[String, String]
+      val tcrempIndex = if (filters.motifModes.contains("tcremp")) motifs.getCidLookupIndex(Some("tcremp")) else Map.empty[String, String]
       filtered = filtered.filter { result =>
-        val row = result.getRow
-        val parts = Seq("species", "gene", "antigen.epitope", "cdr3", "v.segm", "j.segm")
-          .map(col => Option(row.getAt(col)).map(_.getValue.trim.toLowerCase).getOrElse(""))
-        parts.forall(_.nonEmpty) && cidIndex.contains(parts.mkString("|"))
+        motifKey(result.getRow).exists(key => tcrnetIndex.contains(key) || tcrempIndex.contains(key))
       }
     }
 
-    if (filters.filterValidation) {
-      val validationKeys = validation.getValidationKeys()
+    // Structure evidence: OR within {native, contacts, quality}
+    if (filters.structureModes.nonEmpty) {
       filtered = filtered.filter { result =>
         val row = result.getRow
-        val cdr3    = Option(row.getAt("cdr3")).map(_.getValue.trim.toLowerCase).getOrElse("")
-        val epitope = Option(row.getAt("antigen.epitope")).map(_.getValue.trim.toLowerCase).getOrElse("")
-        cdr3.nonEmpty && epitope.nonEmpty && validationKeys.contains(s"$cdr3|$epitope")
+        filters.structureModes.exists {
+          case "native"   => columnIsTrue(row, "evidence.structure.native")
+          case "contacts" => columnIsTrue(row, "evidence.structure.contacts")
+          case "quality"  => columnIsTrue(row, "evidence.structure.quality")
+          case _ => false
+        }
       }
     }
 

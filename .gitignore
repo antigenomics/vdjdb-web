@@ -19,6 +19,7 @@ qodana.sarif.json
 /.gemini
 /.claude
 .aiexclude
+/*.yml
 
 # MacOs
 .DS_Store

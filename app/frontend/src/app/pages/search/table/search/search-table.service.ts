@@ -186,6 +186,14 @@ export class SearchTableService {
       return { metadata: source, reorderMap };
     }
 
+    const hiddenColumnNames = new Set<string>([
+      'evidence.validation.same.study',
+      'evidence.validation.independent',
+      'evidence.structure.native',
+      'evidence.structure.contacts',
+      'evidence.structure.quality'
+    ]);
+
     const transformedColumns = reorderMap.map((originalIndex) => {
       if (originalIndex === tcrHashIndex) {
         const tcrHashCol = originalColumns[ tcrHashIndex ];
@@ -195,7 +203,11 @@ export class SearchTableService {
         const sc = originalColumns[ scoreIndex ];
         return new DatabaseColumnInfo('vdjdb.score', sc.columnType, sc.visible, sc.dataType, 'Evidence', sc.comment, sc.values);
       }
-      return originalColumns[ originalIndex ];
+      const col = originalColumns[ originalIndex ];
+      if (hiddenColumnNames.has(col.name)) {
+        return new DatabaseColumnInfo(col.name, col.columnType, false, col.dataType, col.title, col.comment, col.values);
+      }
+      return col;
     });
 
     const normalizedMetadata = new DatabaseMetadata(source.numberOfRecords, source.numberOfColumns, transformedColumns);

@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-Преобразует TCRNet HTML графики в формат RedCEA.
+Преобразует TCRNet HTML графики в формат TCREMP.
 
 TCRNet: div без style, width/height в layout JSON
-RedCEA: div с style="width:1100px; height:760px;", width/height не в layout
+TCREMP: div с style="width:1100px; height:760px;", width/height не в layout
 """
 
 import re
@@ -12,7 +12,7 @@ from pathlib import Path
 
 
 def convert_content(html: str) -> str:
-    """Конвертирует HTML из TCRNet формата в RedCEA формат."""
+    """Конвертирует HTML из TCRNet формата в TCREMP формат."""
     result = html
 
     # 1. Найти div с id="plot-..." и добавить style

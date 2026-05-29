@@ -77,12 +77,12 @@ case class Database @Inject()(configuration: Configuration) {
     }
   }
 
-  def getMotifFileRedCEA: Option[File] = {
+  def getMotifFileTCREMP: Option[File] = {
     val f = new File(getLocation + "/" + "motif_pwms_redcea.txt")
     if (f.exists()) Some(f) else None
   }
 
-  def getClusterMembersFileRedCEA: Option[File] = {
+  def getClusterMembersFileTCREMP: Option[File] = {
     val f = new File(getLocation + "/" + "cluster_members_redcea.txt")
     if (f.exists()) Some(f) else None
   }

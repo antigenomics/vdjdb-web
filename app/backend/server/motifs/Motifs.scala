@@ -45,37 +45,37 @@ case class Motifs @Inject()(database: Database)(implicit tfp: TemporaryFileProvi
   private final val cidLookupIndexTcrnet: Map[String, String] = Motifs.buildCidLookupIndex(membersTcrnet)
   private final val metadataTcrnet = MotifsMetadata.generateMetadataFromLevels(tableTcrnet, metadataLevels)
 
-  // RedCEA dataset
-  private final val membersRedcea = Motifs.parseClusterMembersFileIntoDataFrame(database.getClusterMembersFileRedCEA.map(_.getPath))
-  private final val tableRedcea   = Motifs.parseMotifFileIntoDataFrame(database.getMotifFileRedCEA.map(_.getPath))
-  private final val cdr3RangeRedcea      = Motifs.parseCDR3LengthRange(tableRedcea)
-  private final val availabilityKeysRedcea: Set[String] = Motifs.buildAvailabilityKeys(tableRedcea)
-  private final val cidLookupIndexRedcea: Map[String, String] = Motifs.buildCidLookupIndex(membersRedcea)
-  private final val metadataRedcea = MotifsMetadata.generateMetadataFromLevels(tableRedcea, metadataLevels)
+  // TCREMP dataset
+  private final val membersTcremp = Motifs.parseClusterMembersFileIntoDataFrame(database.getClusterMembersFileTCREMP.map(_.getPath))
+  private final val tableTcremp   = Motifs.parseMotifFileIntoDataFrame(database.getMotifFileTCREMP.map(_.getPath))
+  private final val cdr3RangeTcremp      = Motifs.parseCDR3LengthRange(tableTcremp)
+  private final val availabilityKeysTcremp: Set[String] = Motifs.buildAvailabilityKeys(tableTcremp)
+  private final val cidLookupIndexTcremp: Map[String, String] = Motifs.buildCidLookupIndex(membersTcremp)
+  private final val metadataTcremp = MotifsMetadata.generateMetadataFromLevels(tableTcremp, metadataLevels)
 
-  private def isRedcea(method: Option[String]): Boolean = method.exists(_.toLowerCase == "redcea")
+  private def isTcremp(method: Option[String]): Boolean = method.exists(_.toLowerCase == "tcremp")
 
   private def resolveTable(method: Option[String]): Table =
-    if (isRedcea(method)) tableRedcea else tableTcrnet
+    if (isTcremp(method)) tableTcremp else tableTcrnet
 
   private def resolveMembers(method: Option[String]): Table =
-    if (isRedcea(method)) membersRedcea else membersTcrnet
+    if (isTcremp(method)) membersTcremp else membersTcrnet
 
   private def resolveCdr3Range(method: Option[String]): (Int, Int) =
-    if (isRedcea(method)) cdr3RangeRedcea else cdr3RangeTcrnet
+    if (isTcremp(method)) cdr3RangeTcremp else cdr3RangeTcrnet
 
   def getMembers(method: Option[String] = None): Table = resolveMembers(method)
 
   def getTable(method: Option[String] = None): Table = resolveTable(method)
 
   def getMetadata(method: Option[String] = None): MotifsMetadata =
-    if (isRedcea(method)) metadataRedcea else metadataTcrnet
+    if (isTcremp(method)) metadataTcremp else metadataTcrnet
 
   def getAvailabilityKeys(method: Option[String] = None): Set[String] =
-    if (isRedcea(method)) availabilityKeysRedcea else availabilityKeysTcrnet
+    if (isTcremp(method)) availabilityKeysTcremp else availabilityKeysTcrnet
 
   def getCidLookupIndex(method: Option[String] = None): Map[String, String] =
-    if (isRedcea(method)) cidLookupIndexRedcea else cidLookupIndexTcrnet
+    if (isTcremp(method)) cidLookupIndexTcremp else cidLookupIndexTcrnet
 
   def filter(filter: MotifsSearchTreeFilter)(implicit ec: ExecutionContext): Future[Option[MotifsSearchTreeFilterResult]] = {
     val table = resolveTable(filter.method)
@@ -100,7 +100,7 @@ case class Motifs @Inject()(database: Database)(implicit tfp: TemporaryFileProvi
             hash,
             epitopeTable.splitOn(epitopeTable.stringColumn("cid")).asTableList().asScala.flatMap { cidTable =>
               cidTable.splitOn(cidTable.intColumn("len")).asTableList().asScala.map { cidLenTable =>
-                MotifCluster.fromTable(cidLenTable, strict = !isRedcea(filter.method))
+                MotifCluster.fromTable(cidLenTable, strict = !isTcremp(filter.method))
               }
             }
           )
@@ -125,7 +125,7 @@ case class Motifs @Inject()(database: Database)(implicit tfp: TemporaryFileProvi
 
   private def whole_cdr3(cdr3: String, gene: String, top: Int, method: Option[String]): Future[MotifCDR3SearchResult] = Future.successful {
     val table = resolveTable(method)
-    val redcea = isRedcea(method)
+    val tcremp = isTcremp(method)
     val filterRules = table.intColumn("len").isEqualTo(cdr3.length.toDouble)
       .and(
         if (gene != "TRA" && gene != "TRB")
@@ -142,7 +142,7 @@ case class Motifs @Inject()(database: Database)(implicit tfp: TemporaryFileProvi
         val pos = posSet.head
         val target = String.valueOf(cdr3(pos))
 
-        val i: (Double, Double) = if (redcea) {
+        val i: (Double, Double) = if (tcremp) {
           val h = backend.server.motifs.api.epitope.MotifClusterEntry.recomputeHeightForAA(p, target)
           (h, h)
         } else {
@@ -158,7 +158,7 @@ case class Motifs @Inject()(database: Database)(implicit tfp: TemporaryFileProvi
         i
       }
       val reduced = info.reduce((l, r) => (l._1 + r._1, l._2 + r._2))
-      (reduced._1, reduced._2, MotifCluster.fromTable(t, strict = !redcea))
+      (reduced._1, reduced._2, MotifCluster.fromTable(t, strict = !tcremp))
     }
 
     val safeTop = Math.max(1, Math.min(Motifs.maxTopValueInCDR3Search, top))

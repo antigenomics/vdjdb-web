@@ -10,8 +10,10 @@ interface IStructureVisualizationDescriptor {
 interface ISearchAvailabilityResponse {
   structures: string[];
   motifs: string[];
+  motifsTcremp?: string[];
   visualizations?: { [structureId: string]: IStructureVisualizationDescriptor };
   motifCidIndex?: { [key: string]: string };
+  motifCidIndexTcremp?: { [key: string]: string };
   validationIndex?: { [key: string]: string };
 }
 
@@ -22,8 +24,10 @@ export class SearchAvailabilityService {
   private loadPromise: Promise<void> | null = null;
   private readonly structureIds: Set<string> = new Set<string>();
   private readonly motifKeys: Set<string> = new Set<string>();
+  private readonly motifKeysTcremp: Set<string> = new Set<string>();
   private readonly structureVisualizations: Map<string, IStructureVisualizationDescriptor> = new Map<string, IStructureVisualizationDescriptor>();
   private readonly motifCidIndex: Map<string, string> = new Map<string, string>();
+  private readonly motifCidIndexTcremp: Map<string, string> = new Map<string, string>();
   private readonly validationIndex: Map<string, string> = new Map<string, string>();
 
   private ensureLoaded(): Promise<void> {
@@ -64,11 +68,27 @@ export class SearchAvailabilityService {
             }
           });
         }
+        if (payload && Array.isArray(payload.motifsTcremp)) {
+          payload.motifsTcremp.forEach((key) => {
+            const normalized = this.normalizeMotifKey(key);
+            if (normalized) {
+              this.motifKeysTcremp.add(normalized);
+            }
+          });
+        }
         if (payload && payload.motifCidIndex) {
           Object.keys(payload.motifCidIndex).forEach((key) => {
             const cid = payload.motifCidIndex ? payload.motifCidIndex[ key ] : undefined;
             if (key && cid) {
               this.motifCidIndex.set(key.trim().toLowerCase(), cid.trim());
+            }
+          });
+        }
+        if (payload && payload.motifCidIndexTcremp) {
+          Object.keys(payload.motifCidIndexTcremp).forEach((key) => {
+            const cid = payload.motifCidIndexTcremp ? payload.motifCidIndexTcremp[ key ] : undefined;
+            if (key && cid) {
+              this.motifCidIndexTcremp.set(key.trim().toLowerCase(), cid.trim());
             }
           });
         }
@@ -83,7 +103,9 @@ export class SearchAvailabilityService {
       }).catch((error) => {
         this.structureIds.clear();
         this.motifKeys.clear();
+        this.motifKeysTcremp.clear();
         this.motifCidIndex.clear();
+        this.motifCidIndexTcremp.clear();
         this.validationIndex.clear();
         this.loadPromise = null;
         throw error;
@@ -136,17 +158,20 @@ export class SearchAvailabilityService {
     return this.structureVisualizations.get(normalized);
   }
 
-  public async hasMotif(species: string, tcrChain: string, mhcClass: string, mhcAllele: string, epitope: string): Promise<boolean> {
+  public async hasMotif(species: string, tcrChain: string, mhcClass: string, mhcAllele: string, epitope: string,
+                        method: 'tcrnet' | 'tcremp' = 'tcrnet'): Promise<boolean> {
     await this.ensureLoaded();
     const key = this.buildMotifKey(species, tcrChain, mhcClass, mhcAllele, epitope);
-    return key !== null && this.motifKeys.has(key);
+    if (key === null) { return false; }
+    return method === 'tcremp' ? this.motifKeysTcremp.has(key) : this.motifKeys.has(key);
   }
 
-  public async getMotifCid(species: string, tcrChain: string, epitope: string, cdr3: string, vSegm: string, jSegm: string): Promise<string | undefined> {
+  public async getMotifCid(species: string, tcrChain: string, epitope: string, cdr3: string, vSegm: string, jSegm: string,
+                           method: 'tcrnet' | 'tcremp' = 'tcrnet'): Promise<string | undefined> {
     await this.ensureLoaded();
     const parts = [ species, tcrChain, epitope, cdr3, vSegm, jSegm ].map((p) => this.normalizeMotifPart(p));
     if (parts.some((p) => p.length === 0)) { return undefined; }
-    return this.motifCidIndex.get(parts.join('|'));
+    return method === 'tcremp' ? this.motifCidIndexTcremp.get(parts.join('|')) : this.motifCidIndex.get(parts.join('|'));
   }
 
   public async getValidationStatus(cdr3: string, epitope: string): Promise<string | undefined> {
