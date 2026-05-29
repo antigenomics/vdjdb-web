@@ -18,7 +18,7 @@
     --overlay-layout-gap: 1rem;
     --overlay-min-width: 0px;
     --overlay-right-margin: 8px;
-    --structure-entry-side-padding: 0.5rem;
+    --structure-entry-side-padding: 0 0.5rem 0 0.5rem;
     padding: var(--structure-entry-side-padding);
     margin-bottom: 1rem;
     min-width: calc(

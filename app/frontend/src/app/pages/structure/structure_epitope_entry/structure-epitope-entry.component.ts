@@ -80,9 +80,10 @@ const STRUCTURE_DOWNLOAD_FILE_PATTERNS: { [option in StructureDownloadOption]: s
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class StructureEpitopeEntryComponent implements OnInit, OnDestroy {
-    private static readonly overlayViewportBottomPadding: number = 35;
+    private static readonly overlayViewportBottomPadding: number = 150;
     private static readonly overlayHeaderExtraPadding: number = 51;
     private static readonly overlayMinWidthPx: number = 0;
+    private static readonly overlayHeaderMargin: number = 12;
     private static readonly overlayMinHeightPx: number = 0;
     private static readonly overlayFallbackAspectRatio: number = 6 / 5;
     private subscription: Subscription;
@@ -731,6 +732,7 @@ export class StructureEpitopeEntryComponent implements OnInit, OnDestroy {
             viewportHeight
             - headerHeight
             - StructureEpitopeEntryComponent.overlayHeaderExtraPadding
+            - StructureEpitopeEntryComponent.overlayHeaderMargin
             - StructureEpitopeEntryComponent.overlayViewportBottomPadding
         );
         if (availableHeight <= 0) {
@@ -799,6 +801,7 @@ export class StructureEpitopeEntryComponent implements OnInit, OnDestroy {
             viewportHeight
             - headerHeight
             - StructureEpitopeEntryComponent.overlayHeaderExtraPadding
+            - StructureEpitopeEntryComponent.overlayHeaderMargin
             - StructureEpitopeEntryComponent.overlayViewportBottomPadding
         );
         if (availableHeight <= 0) {

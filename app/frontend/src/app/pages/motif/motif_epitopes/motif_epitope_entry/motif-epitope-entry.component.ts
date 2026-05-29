@@ -92,12 +92,12 @@ export class MotifEpitopeEntryComponent implements OnInit, OnDestroy {
 
   /**
    * TCRNet: /motif-files/tcrnet/{species}_{gene}_{epitope}.html
-   * RedCEA: /motif-files/redcea/{species}_{epitope}_{gene}.html
+   * TCREMP: /motif-files/tcremp/{species}_{epitope}_{gene}.html
    */
   public static resolveMotifChartUrl(species: string, gene: string, epitope: string, method: string): string {
     const n = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
-    if (method === 'redcea') {
-      return `/motif-files/redcea/${n(species)}_${n(epitope)}_${n(gene)}.html`;
+    if (method === 'tcremp') {
+      return `/motif-files/tcremp/${n(species)}_${n(epitope)}_${n(gene)}.html`;
     }
     return `/motif-files/tcrnet/${n(species)}_${n(gene)}_${n(epitope)}.html`;
   }
@@ -115,7 +115,7 @@ export class MotifEpitopeEntryComponent implements OnInit, OnDestroy {
       doc.head.appendChild(style);
 
       // override the hardcoded inline dimensions on the plotly div
-      // TCRNet uses id="plot-...", RedCEA uses class="plotly-graph-div"
+      // TCRNet uses id="plot-...", TCREMP uses class="plotly-graph-div"
       const plotDiv = (doc.querySelector('.plotly-graph-div') ? doc.querySelector('.plotly-graph-div') : doc.querySelector('[id^="plot-"]')) as HTMLElement;
       if (plotDiv) {
         plotDiv.style.width = '100%';

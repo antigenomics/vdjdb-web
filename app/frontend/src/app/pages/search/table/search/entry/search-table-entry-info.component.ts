@@ -99,7 +99,7 @@ export class SearchTableEntryInfoComponent extends TableEntry {
 
     this.badges = [
       this.buildScoreBadge(scoreValue),
-      this.buildValidationBadge(undefined),
+      this.buildValidationBadge([]),
       this.buildMotifBadge(false, null),
       this.buildStructureBadge(false, null)
     ];
@@ -107,6 +107,10 @@ export class SearchTableEntryInfoComponent extends TableEntry {
     this.resolveValidation(row, columns);
     this.resolveMotif(row, columns);
     this.resolveStructure(row, columns);
+  }
+
+  private columnTrue(row: SearchTableRow, columns: TableColumn[], columnName: string): boolean {
+    return (this.getCellValue(row, columns, columnName) || '').trim().toLowerCase() === 'true';
   }
 
   private buildScoreBadge(score: number): BadgeInfo {
@@ -122,52 +126,31 @@ export class SearchTableEntryInfoComponent extends TableEntry {
     };
   }
 
-  private buildValidationBadge(status: string | undefined): BadgeInfo {
-    if (status === 'positive' || status === 'both') {
-      return {
-        letter: 'V',
-        subscript: '',
-        color: 'rgba(76, 175, 80, 0.15)',
-        borderColor: 'rgba(76, 175, 80, 0.8)',
-        active: true,
-        popupLines: [`is_validated : ${status}`, 'method : TCRvdb'],
-        popupHeader: 'Validation',
-        link: ''
-      };
-    }
-    if (status === 'negative') {
-      return {
-        letter: 'V',
-        subscript: '',
-        color: 'rgba(255, 152, 0, 0.15)',
-        borderColor: 'rgba(255, 152, 0, 0.8)',
-        active: true,
-        popupLines: ['is_validated : negative', 'method : TCRvdb'],
-        popupHeader: 'Validation',
-        link: ''
-      };
-    }
+  private buildValidationBadge(sources: string[]): BadgeInfo {
+    const active = sources.length > 0;
     return {
       letter: 'V',
       subscript: '',
       color: 'rgba(76, 175, 80, 0.15)',
       borderColor: 'rgba(76, 175, 80, 0.8)',
-      active: false,
-      popupLines: ['is_validated : \u2013'],
+      active,
+      popupLines: active ? sources : ['is_validated : \u2013'],
       popupHeader: 'Validation',
       link: ''
     };
   }
 
-  private buildMotifBadge(available: boolean, link: string | null, cid?: string): BadgeInfo {
+  private buildMotifBadge(available: boolean, link: string | null, cid?: string, methods?: Array<'tcrnet' | 'tcremp'>): BadgeInfo {
     if (available) {
+      const methodLabels = (methods && methods.length > 0 ? methods : [ 'tcrnet' ])
+        .map((m) => (m === 'tcremp' ? 'TCREMP' : 'TCRNET'));
       return {
         letter: 'M',
         subscript: '',
         color: 'rgba(255, 193, 7, 0.2)',
         borderColor: 'rgba(255, 193, 7, 0.85)',
         active: true,
-        popupLines: ['has_motif : +', 'method : TCRNET', `cid : ${cid || '?'}`],
+        popupLines: ['has_motif : +', `method : ${methodLabels.join(', ')}`, `cid : ${cid || '?'}`],
         popupHeader: 'Motif',
         link: link || ''
       };
@@ -232,17 +215,26 @@ export class SearchTableEntryInfoComponent extends TableEntry {
   }
 
   private resolveValidation(row: SearchTableRow, columns: TableColumn[]): void {
+    const sources: string[] = [];
+    if (this.columnTrue(row, columns, 'evidence.validation.same.study')) { sources.push('same_study : +'); }
+    if (this.columnTrue(row, columns, 'evidence.validation.independent')) { sources.push('independent : +'); }
+    this.badges[1] = this.buildValidationBadge(sources);
+
     const cdr3 = this.getCellValue(row, columns, 'cdr3') || '';
     const epitope = this.getCellValue(row, columns, 'antigen.epitope') || '';
     if (!cdr3 || !epitope) { return; }
 
     this.availability.getValidationStatus(cdr3, epitope).then((status) => {
-      this.badges[1] = this.buildValidationBadge(status);
-      this.changeDetector.markForCheck();
+      if (status) {
+        const updated = sources.slice();
+        updated.push(`TCRvdb : ${status}`);
+        this.badges[1] = this.buildValidationBadge(updated);
+        this.changeDetector.markForCheck();
+      }
     }).catch(() => {});
   }
 
-  private resolveMotif(row: SearchTableRow, columns: TableColumn[]): void {
+  private async resolveMotif(row: SearchTableRow, columns: TableColumn[]): Promise<void> {
     const motifData = this.extractMotifLinkData(row, columns);
     if (!motifData) {
       return;
@@ -254,92 +246,99 @@ export class SearchTableEntryInfoComponent extends TableEntry {
     const vSegm = this.getCellValue(row, columns, 'v.segm') || '';
     const jSegm = this.getCellValue(row, columns, 'j.segm') || '';
 
-    this.availability.hasMotif(species, tcrChain, mhcClass, mhcAllele, epitopeSeq).then(async (available) => {
-      if (available) {
-        const cid = await this.availability.getMotifCid(species, tcrChain, epitopeSeq, cdr3, vSegm, jSegm).catch(() => undefined);
-        if (cid) {
+    const methods: Array<'tcrnet' | 'tcremp'> = [ 'tcrnet', 'tcremp' ];
+    const availableMethods: Array<'tcrnet' | 'tcremp'> = [];
+    let link: string | null = null;
+    let cid: string | undefined;
+
+    for (const method of methods) {
+      try {
+        const available = await this.availability.hasMotif(species, tcrChain, mhcClass, mhcAllele, epitopeSeq, method);
+        if (!available) { continue; }
+        const methodCid = await this.availability.getMotifCid(species, tcrChain, epitopeSeq, cdr3, vSegm, jSegm, method).catch(() => undefined);
+        if (!methodCid) { continue; }
+        availableMethods.push(method);
+        if (link === null) {
+          cid = methodCid;
           const params = new URLSearchParams();
           params.set('species', species);
           params.set('tcr_chain', tcrChain);
           params.set('mhc_class', mhcClass);
           params.set('gene', epitopeGene);
           params.set('epitope_seq', epitopeSeq);
-          params.set('cid', cid);
-          const link = `/motif?${params.toString()}`;
-          this.badges[2] = this.buildMotifBadge(true, link, cid);
-        } else {
-          this.badges[2] = this.buildMotifBadge(false, null);
+          params.set('cid', methodCid);
+          if (method === 'tcremp') { params.set('method', 'tcremp'); }
+          link = `/motif?${params.toString()}`;
         }
-      } else {
-        this.badges[2] = this.buildMotifBadge(false, null);
-      }
-      this.changeDetector.markForCheck();
-    }).catch(() => {});
+      } catch { /* try next method */ }
+    }
+
+    this.badges[2] = availableMethods.length > 0
+      ? this.buildMotifBadge(true, link, cid, availableMethods)
+      : this.buildMotifBadge(false, null);
+    this.changeDetector.markForCheck();
   }
 
   private resolveStructure(row: SearchTableRow, columns: TableColumn[]): void {
-    const metaValue = this.getCellValue(row, columns, 'meta');
+    const isNative = this.columnTrue(row, columns, 'evidence.structure.native');
+    const types: string[] = [];
+    if (isNative) { types.push('native : +'); }
+    if (this.columnTrue(row, columns, 'evidence.structure.contacts')) { types.push('model_with_contacts : +'); }
+    if (this.columnTrue(row, columns, 'evidence.structure.quality')) { types.push('good_quality_model : +'); }
 
-    // PDB priority: extract 4-char PDB ID from meta["structure.id"]
-    const pdbId = this.extractPdbId(metaValue);
-    if (pdbId) {
-      const link = `https://www.rcsb.org/structure/${pdbId.toUpperCase()}`;
-      const popupLines = this.buildStructurePopupLines('PDB', pdbId.toUpperCase(), row, columns);
-      this.badges[3] = this.buildStructureBadge(true, link, popupLines);
+    if (types.length === 0) {
+      this.badges[3] = this.buildStructureBadge(false, null);
+      return;
+    }
+
+    const popup = [ ...types ];
+
+    // Native experimental structure => surface its PDB reference (meta["structure.id"]).
+    // Link to RCSB only when the id is a real 4-char PDB accession (some entries hold free-text refs).
+    let pdbLink: string | null = null;
+    if (isNative) {
+      const structId = this.extractStructureId(this.getCellValue(row, columns, 'meta'));
+      if (structId) {
+        popup.push(`pdb_id : ${structId}`);
+        if (/^[A-Za-z0-9]{4}$/.test(structId)) {
+          pdbLink = `https://www.rcsb.org/structure/${structId.toUpperCase()}`;
+        }
+      }
+    }
+
+    if (pdbLink) {
+      this.badges[3] = this.buildStructureBadge(true, pdbLink, popup);
       this.changeDetector.markForCheck();
       return;
     }
 
-    // Model fallback: use TCR_hash of this specific row
+    // No PDB link; fall back to a model viewer link via TCR_hash if available.
+    this.badges[3] = this.buildStructureBadge(true, null, popup);
     const tcrHash = (this.getCellValue(row, columns, 'TCR_hash') || '').trim();
     if (!tcrHash) {
       return;
     }
 
     this.availability.hasStructure(tcrHash.toLowerCase()).then((available) => {
-      if (available) {
-        const link = this.generateStructureLink(row, columns, tcrHash);
-        if (link) {
-          const popupLines = this.buildStructurePopupLines('model', null, row, columns);
-          this.badges[3] = this.buildStructureBadge(true, link, popupLines);
-        } else {
-          this.badges[3] = this.buildStructureBadge(false, null);
-        }
-      } else {
-        this.badges[3] = this.buildStructureBadge(false, null);
-      }
+      const link = available ? this.generateStructureLink(row, columns, tcrHash) : null;
+      this.badges[3] = this.buildStructureBadge(true, link, popup);
       this.changeDetector.markForCheck();
     }).catch(() => {});
   }
 
-  private extractPdbId(metaValue?: string): string | null {
+  private extractStructureId(metaValue?: string): string | null {
     if (!metaValue) { return null; }
     try {
       const parsed = JSON.parse(metaValue);
       const raw = parsed['structure.id'];
       if (typeof raw === 'string') {
         const trimmed = raw.trim();
-        if (/^[A-Za-z0-9]{4}$/.test(trimmed)) {
+        if (trimmed.length > 0) {
           return trimmed;
         }
       }
     } catch { /* not JSON */ }
     return null;
-  }
-
-
-  private buildStructurePopupLines(kind: 'PDB' | 'model', id: string | null, row: SearchTableRow, columns: TableColumn[]): string[] {
-    const lines: string[] = [`has_structure : ${kind}`];
-    if (id) { lines.push(`id : ${id}`); }
-    const cdr3 = this.getCellValue(row, columns, 'cdr3');
-    const gene = this.getCellValue(row, columns, 'gene');
-    const epitope = this.getCellValue(row, columns, 'antigen.epitope');
-    if (gene && cdr3) {
-      const chainLabel = (gene === 'TRA') ? 'TRA-peptide' : 'TRB-peptide';
-      lines.push(`${chainLabel} : ${cdr3}`);
-    }
-    if (epitope) { lines.push(`epitope : ${epitope}`); }
-    return lines;
   }
 
   private generateStructureLink(row: SearchTableRow, columns: TableColumn[], cids: string): string | null {

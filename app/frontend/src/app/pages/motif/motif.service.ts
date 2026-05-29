@@ -55,7 +55,7 @@ export namespace MotifSearchState {
 
 export type MotifSearchState = number;
 
-export type MotifMethod = 'tcrnet' | 'redcea';
+export type MotifMethod = 'tcrnet' | 'tcremp';
 
 @Injectable()
 export class MotifService {
