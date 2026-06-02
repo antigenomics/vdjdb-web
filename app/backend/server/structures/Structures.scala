@@ -387,7 +387,7 @@ case class Structures @Inject()(database: Database)(implicit ec: ExecutionContex
 
   private def pickFromJson(metaStr: String, keys: Seq[String]): String = {
     if (metaStr == null || metaStr.isEmpty) return ""
-    val js = scala.util.Try(Json.parse(metaStr)).toOption.getOrElse(JsNull)
+    val js = Json.parse(metaStr)
 
     // Try flat keys like "structure.id" first, then nested "structure" -> "id"
     def lookup(jsv: JsValue, key: String): Option[String] = {
