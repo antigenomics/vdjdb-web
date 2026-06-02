@@ -108,7 +108,7 @@ object Database {
 
   private def sanitizeDataStream(stream: InputStream): InputStream = {
     val content = scala.io.Source.fromInputStream(stream, "UTF-8").mkString
-    val lines   = content.split("\n", -1)
+    val lines   = content.split("\n")
     if (lines.isEmpty) return new ByteArrayInputStream(Array.emptyByteArray)
     val headerCols = lines.head.split("\t", -1).length
     val sanitized = lines.zipWithIndex.map {
