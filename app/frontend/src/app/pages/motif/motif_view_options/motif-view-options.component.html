@@ -16,9 +16,10 @@
 
 <div class="ui grid" *ngIf="options">
     <div class="fourteen wide column">
-        <div class="ui checkbox" (click)="normalize()">
-            <input type="checkbox" [ngModel]="options.isNormalized">
-            <label>Subtract VDJ rearrangement background</label>
+        <div class="ui checkbox" [class.disabled]="normalizeDisabled" (click)="normalize()">
+            <input type="checkbox" [ngModel]="options.isNormalized" [disabled]="normalizeDisabled">
+            <label [style.opacity]="normalizeDisabled ? '0.45' : null"
+                   [style.cursor]="normalizeDisabled ? 'not-allowed' : null">Subtract VDJ rearrangement background</label>
         </div>
     </div>
     <div class="two wide column cursor pointer" popup="Normalize position-weight matrices by background frequency of CDR3 residues in naive T-cell repertoire.

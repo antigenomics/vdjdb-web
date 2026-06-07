@@ -207,58 +207,28 @@
     min-width: 0;
 }
 
-.overlay-card__download.ui.dropdown {
+.overlay-card__download {
     position: absolute;
     right: 0;
     top: 0;
-    min-height: 0;
-    min-width: 0;
-    padding: 2px 20px 2px 8px;
+    padding: 2px 8px;
     border-radius: 4px;
     font-size: 0.85rem;
     line-height: 1.2;
-    box-shadow: none;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    background: #ffffff;
+    cursor: pointer;
 }
 
-.overlay-card__download.ui.dropdown > .text {
-    font-size: inherit;
-    line-height: inherit;
-    font-weight: 700;
-    text-align: left;
-
-}
-
-.overlay-card__download.ui.dropdown > .dropdown.icon {
-    padding: 0;
-    width: 12px;
-    margin: 0;
-    right: 6px;
-    top: 50%;
-    transform: translateY(-50%);
-}
-
-.overlay-card__download.ui.dropdown .menu {
-    min-width: 100%;
-    padding: 0;
-}
-
-.overlay-card__download.ui.dropdown .menu > .overlay-card__download-item {
-    font-size: 0.85rem;
-    line-height: 1.2;
-    text-align: left;
-    padding: 4px 8px !important;
-    margin: 0;
-}
-
-.overlay-card__download-item--title {
-    font-weight: 700;
+.overlay-card__download:active {
+    background: #eef2ff;
 }
 
 .overlay-card.is-disabled .overlay-card__line > :not(.overlay-card__download) {
     opacity: 0.5;
 }
 
-.overlay-card.is-disabled .overlay-card__download.ui.dropdown {
+.overlay-card.is-disabled .overlay-card__download {
     opacity: 1;
 }
 
