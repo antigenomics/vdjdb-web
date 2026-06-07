@@ -57,8 +57,9 @@ database/*
 vdjdb*.zip
 
 # Motif charts
+motif-charts/*
 motif-charts/tcrnet/*
-motif-charts/redcea/*
+motif-charts/tcremp/*
 
 # Third-party validation databases (unpublished, must not be committed)
 /validation-db/

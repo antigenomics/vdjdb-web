@@ -55,8 +55,8 @@
                     <label>Independent</label>
                 </div>
                 <br>
-                <div class="ui checkbox">
-                    <input type="checkbox" [checked]="meta.reliability.valTcrvdb" (change)="meta.reliability.valTcrvdb = $event.target.checked">
+                <div class="ui checkbox disabled">
+                    <input type="checkbox" disabled [checked]="meta.reliability.valTcrvdb">
                     <label>TCRvdb or similar</label>
                 </div>
             </div>

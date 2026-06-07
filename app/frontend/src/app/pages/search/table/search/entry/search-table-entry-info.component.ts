@@ -328,16 +328,14 @@ export class SearchTableEntryInfoComponent extends TableEntry {
 
   private extractStructureId(metaValue?: string): string | null {
     if (!metaValue) { return null; }
-    try {
-      const parsed = JSON.parse(metaValue);
-      const raw = parsed['structure.id'];
-      if (typeof raw === 'string') {
-        const trimmed = raw.trim();
-        if (trimmed.length > 0) {
-          return trimmed;
-        }
+    const parsed = JSON.parse(metaValue);
+    const raw = parsed['structure.id'];
+    if (typeof raw === 'string') {
+      const trimmed = raw.trim();
+      if (trimmed.length > 0) {
+        return trimmed;
       }
-    } catch { /* not JSON */ }
+    }
     return null;
   }
 

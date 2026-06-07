@@ -26,8 +26,6 @@ import { Subject } from 'rxjs';
 import { Utils } from 'utils/utils';
 import ColorizedPatternRegion = Utils.SequencePattern.ColorizedPatternRegion;
 
-type StructureDownloadOption = 'structure' | 'contacts' | 'ca_atoms' | 'all';
-
 interface IParsedChainLabel {
     cdr3?: string;
     v?: string;
@@ -64,14 +62,6 @@ interface IMotifParams {
     gene: string;
     epitope: string;
 }
-
-const DOWNLOAD_NAME_TOKEN = '{hash}';
-const STRUCTURE_DOWNLOAD_FILE_PATTERNS: { [option in StructureDownloadOption]: string } = {
-    structure: `aligned_aligned_${DOWNLOAD_NAME_TOKEN}.pdb`,
-    contacts: `${DOWNLOAD_NAME_TOKEN}_contacts_aa.txt`,
-    ca_atoms: `${DOWNLOAD_NAME_TOKEN}_aa_coordinates.tsv`,
-    all: `${DOWNLOAD_NAME_TOKEN}_all.zip`
-};
 
 @Component({
     selector:        'structure-epitope-entry',
@@ -282,26 +272,20 @@ export class StructureEpitopeEntryComponent implements OnInit, OnDestroy {
         return value < minOpacity ? minOpacity : value;
     }
 
-    public onDownloadDropdownClick(event: MouseEvent): void {
-        if (event) {
-            event.stopPropagation();
-        }
-    }
-
-    public onDownloadOptionClick(row: IOverlayTableRow, option: StructureDownloadOption, event: MouseEvent): void {
+    public onDownloadClick(row: IOverlayTableRow, event: MouseEvent): void {
         if (event) {
             event.preventDefault();
+            event.stopPropagation();
         }
         if (!row || !row.cluster) {
             return;
         }
-
         const hash = this.resolveStructureHash(row.cluster);
         if (!hash) {
             return;
         }
-
-        const fileName = this.resolveDownloadFileName(hash, option);
+        const epitope = this.epitope && this.epitope.epitope ? this.epitope.epitope.trim() : '';
+        const fileName = `${epitope}_${hash.slice(0, 6)}.zip`;
         const fileUrl = `${this.downloadDirectory}/${encodeURIComponent(fileName)}`;
         this.startDownload(fileUrl, fileName);
     }
@@ -317,21 +301,8 @@ export class StructureEpitopeEntryComponent implements OnInit, OnDestroy {
         }
         const params = new URLSearchParams();
         params.set('epitope_seq', epitopeSeq);
+        params.set('struct', 'native,contacts,quality');
         window.open(`/search?${params.toString()}`, '_blank');
-    }
-
-    @HostListener('document:mousedown', [ '$event' ])
-    public onDocumentMouseDown(event: MouseEvent): void {
-        const target = event && event.target ? event.target as HTMLElement : undefined;
-        if (target && typeof target.closest === 'function' && target.closest('.overlay-card__download')) {
-            return;
-        }
-        this.closeDownloadDropdowns();
-    }
-
-    @HostListener('window:blur')
-    public onWindowBlur(): void {
-        this.closeDownloadDropdowns();
     }
 
     @HostListener('window:resize')
@@ -844,12 +815,6 @@ export class StructureEpitopeEntryComponent implements OnInit, OnDestroy {
         return cluster.clusterId.trim();
     }
 
-    private resolveDownloadFileName(hash: string, option: StructureDownloadOption): string {
-        const template = STRUCTURE_DOWNLOAD_FILE_PATTERNS[option];
-        return template.replace(DOWNLOAD_NAME_TOKEN, hash);
-    }
-
-
     private startDownload(url: string, fileName: string): void {
         const link = document.createElement('a');
         link.href = url;
@@ -859,18 +824,4 @@ export class StructureEpitopeEntryComponent implements OnInit, OnDestroy {
         document.body.removeChild(link);
     }
 
-    private closeDownloadDropdowns(): void {
-        const dropdowns = Array.from(document.querySelectorAll('.overlay-card__download')) as HTMLElement[];
-        dropdowns.forEach((dropdown) => {
-            dropdown.classList.remove('active');
-            dropdown.classList.remove('visible');
-
-            const menu = dropdown.querySelector('.menu') as HTMLElement | null;
-            if (!menu) {
-                return;
-            }
-            menu.classList.remove('visible');
-            menu.style.removeProperty('display');
-        });
-    }
 }

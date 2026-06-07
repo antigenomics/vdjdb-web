@@ -27,6 +27,7 @@ import { AnalyticsService } from 'utils/analytics/analytics.service';
 import { LoggerService } from 'utils/logger/logger.service';
 import { NotificationService } from 'utils/notifications/notification.service';
 import { SearchTableService } from './table/search/search-table.service';
+import { MetaFiltersService } from 'shared/filters/filters_meta/meta-filters.service';
 
 @Component({
   selector:    'search',
@@ -38,7 +39,7 @@ export class SearchPageComponent implements OnInit, OnDestroy {
 
   constructor(private searchTableService: SearchTableService, private filters: FiltersService,
               private route: ActivatedRoute, private ag: AGFiltersService, private tcr: TCRFiltersService,
-              private diseases: DiseasesService,
+              private diseases: DiseasesService, private meta: MetaFiltersService,
               logger: LoggerService, notifications: NotificationService, analytics: AnalyticsService) {
     this.table = new SearchTable(searchTableService, filters, analytics, logger, notifications);
     if (this.searchTableService.isInitialized()) {
@@ -62,6 +63,14 @@ export class SearchPageComponent implements OnInit, OnDestroy {
       this.tcr.general.tra = true;
       this.tcr.general.trb = true;
       this.tcr.general.pairedOnly = true;
+    }
+
+    const structParam = this.route.snapshot.queryParamMap.get('struct');
+    if (structParam) {
+      const modes = structParam.split(',').map((s) => s.trim());
+      if (modes.indexOf('native') !== -1) { this.meta.reliability.structNative = true; }
+      if (modes.indexOf('contacts') !== -1) { this.meta.reliability.structContacts = true; }
+      if (modes.indexOf('quality') !== -1) { this.meta.reliability.structQuality = true; }
     }
 
     if (!this.searchTableService.isInitialized()) {
