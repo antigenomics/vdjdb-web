@@ -21,7 +21,6 @@ import backend.server.database.Database
 import backend.server.database.filters.DatabaseFilters
 import backend.server.motifs.Motifs
 import backend.server.structures.Structures
-import backend.server.validation.ValidationDB
 
 import scala.collection.JavaConverters._
 import scala.math.Ordering.String
@@ -41,7 +40,7 @@ class SearchTable extends ResultsTable[SearchTableRow] {
     }
   }
 
-  def update(filters: DatabaseFilters, database: Database, structures: Structures, motifs: Motifs, validation: ValidationDB): SearchTable = {
+  def update(filters: DatabaseFilters, database: Database, structures: Structures, motifs: Motifs): SearchTable = {
     val allResults = database.getInstance.getDbInstance.search(filters.text, filters.sequence)
     var filtered = allResults.asScala
 
@@ -54,18 +53,13 @@ class SearchTable extends ResultsTable[SearchTableRow] {
       if (parts.forall(_.nonEmpty)) Some(parts.mkString("|")) else None
     }
 
-    // Validation evidence: OR within {same.study, independent, tcrvdb}
+    // Validation evidence: OR within {same.study, independent}
     if (filters.validationModes.nonEmpty) {
-      val validationKeys = if (filters.validationModes.contains("tcrvdb")) validation.getValidationKeys() else Set.empty[String]
       filtered = filtered.filter { result =>
         val row = result.getRow
         filters.validationModes.exists {
           case "same.study"  => columnIsTrue(row, "evidence.validation.same.study")
           case "independent" => columnIsTrue(row, "evidence.validation.independent")
-          case "tcrvdb" =>
-            val cdr3    = Option(row.getAt("cdr3")).map(_.getValue.trim.toLowerCase).getOrElse("")
-            val epitope = Option(row.getAt("antigen.epitope")).map(_.getValue.trim.toLowerCase).getOrElse("")
-            cdr3.nonEmpty && epitope.nonEmpty && validationKeys.contains(s"$cdr3|$epitope")
           case _ => false
         }
       }

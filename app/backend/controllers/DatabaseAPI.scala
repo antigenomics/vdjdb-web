@@ -28,7 +28,6 @@ import backend.server.motifs.Motifs
 import backend.server.search.api.search.{SearchDataRequest, SearchDataResponse}
 import backend.server.search.{SearchTable, SearchTableRow}
 import backend.server.structures.Structures
-import backend.server.validation.ValidationDB
 import javax.inject._
 import play.api.Configuration
 import play.api.libs.json.Json.toJson
@@ -38,7 +37,7 @@ import play.api.mvc._
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class DatabaseAPI @Inject()(cc: ControllerComponents, database: Database, structures: Structures, motifs: Motifs, validation: ValidationDB, configuration: Configuration)
+class DatabaseAPI @Inject()(cc: ControllerComponents, database: Database, structures: Structures, motifs: Motifs, configuration: Configuration)
                            (implicit as: ActorSystem, mat: Materializer, ec: ExecutionContext, limits: RequestLimits, tfp: TemporaryFileProvider)
   extends AbstractController(cc) {
 
@@ -78,7 +77,7 @@ class DatabaseAPI @Inject()(cc: ControllerComponents, database: Database, struct
             val table = new SearchTable()
             val filters = DatabaseFilters.createFromRequest(data.get.filters.get, database)
 
-            table.update(filters, database, structures, motifs, validation)
+            table.update(filters, database, structures, motifs)
             if (data.get.sort.nonEmpty) {
               val sorting = data.get.sort.get.split(":")
               val columnName = sorting(0)
@@ -120,7 +119,7 @@ class DatabaseAPI @Inject()(cc: ControllerComponents, database: Database, struct
   def connect: WebSocket = WebSocket.acceptOrResult[JsValue, JsValue] { implicit request =>
     Future.successful(if (limits.allowConnection(request)) {
       Right(ActorFlow.actorRef { out =>
-        DatabaseSearchWebSocketActor.props(out, limits.getLimit(request), database, structures, motifs, validation)
+        DatabaseSearchWebSocketActor.props(out, limits.getLimit(request), database, structures, motifs)
       })
     } else {
       Left(Forbidden)
