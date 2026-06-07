@@ -27,56 +27,95 @@ import javax.inject.{Inject, Singleton}
 import tech.tablesaw.api.{ColumnType, Table}
 import tech.tablesaw.io.csv.CsvReadOptions
 
+import java.util.Locale
 import scala.collection.JavaConverters._
+import scala.collection.mutable
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Success
 
 @Singleton
 case class Motifs @Inject()(database: Database)(implicit tfp: TemporaryFileProvider, ec: ExecutionContext) {
-  private final val members = Motifs.parseClusterMembersFileIntoDataFrame(database.getClusterMembersFile.map(_.getPath))
-  private final val table = Motifs.parseMotifFileIntoDataFrame(database.getMotifFile.map(_.getPath))
-  private final val cdr3Range = Motifs.parseCDR3LengthRange(table)
-
   private final val metadataLevels = Seq("species", "gene", "mhc.class", "mhc.a", "antigen.epitope")
-  private final val metadata = MotifsMetadata.generateMetadataFromLevels(table, metadataLevels)
 
-  def getMembers: Table = members
+  // TCRNet dataset (default)
+  private final val membersTcrnet = Motifs.parseClusterMembersFileIntoDataFrame(database.getClusterMembersFile.map(_.getPath))
+  private final val tableTcrnet   = Motifs.parseMotifFileIntoDataFrame(database.getMotifFile.map(_.getPath))
+  private final val cdr3RangeTcrnet      = Motifs.parseCDR3LengthRange(tableTcrnet)
+  private final val availabilityKeysTcrnet: Set[String] = Motifs.buildAvailabilityKeys(tableTcrnet)
+  private final val cidLookupIndexTcrnet: Map[String, String] = Motifs.buildCidLookupIndex(membersTcrnet)
+  private final val metadataTcrnet = MotifsMetadata.generateMetadataFromLevels(tableTcrnet, metadataLevels)
 
-  def getTable: Table = table
+  // TCREMP dataset
+  private final val membersTcremp = Motifs.parseClusterMembersFileIntoDataFrame(database.getClusterMembersFileTCREMP.map(_.getPath))
+  private final val tableTcremp   = Motifs.parseMotifFileIntoDataFrame(database.getMotifFileTCREMP.map(_.getPath))
+  private final val cdr3RangeTcremp      = Motifs.parseCDR3LengthRange(tableTcremp)
+  private final val availabilityKeysTcremp: Set[String] = Motifs.buildAvailabilityKeys(tableTcremp)
+  private final val cidLookupIndexTcremp: Map[String, String] = Motifs.buildCidLookupIndex(membersTcremp)
+  private final val metadataTcremp = MotifsMetadata.generateMetadataFromLevels(tableTcremp, metadataLevels)
 
-  def getMetadata: MotifsMetadata = metadata
+  private def isTcremp(method: Option[String]): Boolean = method.exists(_.toLowerCase == "tcremp")
 
-  def filter(filter: MotifsSearchTreeFilter): Option[MotifsSearchTreeFilterResult] = {
-    filter.entries.map(h => table.stringColumn(h.name).isEqualTo(h.value)).reduceRightOption((left, right) => left.and(right)).map { selection =>
-      table.where(selection).splitOn(table.stringColumn("antigen.epitope")).asTableList().asScala.map { epitopeTable =>
-        val epitopes = epitopeTable.stringColumn("antigen.epitope").asSet()
+  private def resolveTable(method: Option[String]): Table =
+    if (isTcremp(method)) tableTcremp else tableTcrnet
 
-        assert(epitopes.size == 1)
+  private def resolveMembers(method: Option[String]): Table =
+    if (isTcremp(method)) membersTcremp else membersTcrnet
 
-        val hash = CommonUtils.md5(metadataLevels.map(level => {
-          val meta = epitopeTable.stringColumn(level).asSet.asScala
+  private def resolveCdr3Range(method: Option[String]): (Int, Int) =
+    if (isTcremp(method)) cdr3RangeTcremp else cdr3RangeTcrnet
 
-          assert(meta.nonEmpty)
+  def getMembers(method: Option[String] = None): Table = resolveMembers(method)
 
-          meta.head
-        }).reduce(_ + _))
+  def getTable(method: Option[String] = None): Table = resolveTable(method)
 
-        MotifEpitope(
-          epitopes.asScala.toSeq.head,
-          hash,
-          epitopeTable.splitOn(table.stringColumn("cid")).asTableList().asScala.map(MotifCluster.fromTable)
-        )
+  def getMetadata(method: Option[String] = None): MotifsMetadata =
+    if (isTcremp(method)) metadataTcremp else metadataTcrnet
+
+  def getAvailabilityKeys(method: Option[String] = None): Set[String] =
+    if (isTcremp(method)) availabilityKeysTcremp else availabilityKeysTcrnet
+
+  def getCidLookupIndex(method: Option[String] = None): Map[String, String] =
+    if (isTcremp(method)) cidLookupIndexTcremp else cidLookupIndexTcrnet
+
+  def filter(filter: MotifsSearchTreeFilter)(implicit ec: ExecutionContext): Future[Option[MotifsSearchTreeFilterResult]] = {
+    val table = resolveTable(filter.method)
+    Future {
+      filter.entries.map(h => table.stringColumn(h.name).isEqualTo(h.value)).reduceRightOption((left, right) => left.and(right)).map { selection =>
+        val filtered = table.where(selection)
+        filtered.splitOn(filtered.stringColumn("antigen.epitope")).asTableList().asScala.map { epitopeTable =>
+          val epitopes = epitopeTable.stringColumn("antigen.epitope").asSet()
+
+          assert(epitopes.size == 1)
+
+          val hash = CommonUtils.md5(metadataLevels.map(level => {
+            val meta = epitopeTable.stringColumn(level).asSet.asScala
+
+            assert(meta.nonEmpty)
+
+            meta.head
+          }).reduce(_ + _))
+
+          MotifEpitope(
+            epitopes.asScala.toSeq.head,
+            hash,
+            epitopeTable.splitOn(epitopeTable.stringColumn("cid")).asTableList().asScala.flatMap { cidTable =>
+              cidTable.splitOn(cidTable.intColumn("len")).asTableList().asScala.map { cidLenTable =>
+                MotifCluster.fromTable(cidLenTable, strict = !isTcremp(filter.method))
+              }
+            }
+          )
+        }
+      }.map { epitopes =>
+        MotifsSearchTreeFilterResult(epitopes)
       }
-    }.map { epitopes =>
-      MotifsSearchTreeFilterResult(epitopes)
     }
   }
 
-  def cdr3(cdr3: String, substring: Boolean, gene: String, top: Int): Future[MotifCDR3SearchResult] = {
+  def cdr3(cdr3: String, substring: Boolean, gene: String, top: Int, method: Option[String] = None): Future[MotifCDR3SearchResult] = {
     val results = if (substring) {
-      substring_cdr3(cdr3, gene, top)
+      substring_cdr3(cdr3, gene, top, method)
     } else {
-      whole_cdr3(cdr3, gene, top)
+      whole_cdr3(cdr3, gene, top, method)
     }
 
     results.map { r =>
@@ -84,7 +123,9 @@ case class Motifs @Inject()(database: Database)(implicit tfp: TemporaryFileProvi
     }
   }
 
-  private def whole_cdr3(cdr3: String, gene: String, top: Int): Future[MotifCDR3SearchResult] = Future.successful {
+  private def whole_cdr3(cdr3: String, gene: String, top: Int, method: Option[String]): Future[MotifCDR3SearchResult] = Future.successful {
+    val table = resolveTable(method)
+    val tcremp = isTcremp(method)
     val filterRules = table.intColumn("len").isEqualTo(cdr3.length.toDouble)
       .and(
         if (gene != "TRA" && gene != "TRB")
@@ -99,20 +140,25 @@ case class Motifs @Inject()(database: Database)(implicit tfp: TemporaryFileProvi
         assert(posSet.size == 1)
 
         val pos = posSet.head
-        val index = p.stringColumn("aa").firstIndexOf(String.valueOf(cdr3(pos)))
+        val target = String.valueOf(cdr3(pos))
 
-        val i: (Double, Double) = if (index != -1) {
-          val I = p.doubleColumn("height.I").get(index)
-          val Inorm = p.doubleColumn("height.I.norm").get(index)
-
-          (I, Inorm)
+        val i: (Double, Double) = if (tcremp) {
+          val h = backend.server.motifs.api.epitope.MotifClusterEntry.recomputeHeightForAA(p, target)
+          (h, h)
         } else {
-          (0.0d, 0.0d)
+          val index = p.stringColumn("aa").firstIndexOf(target)
+          if (index != -1) {
+            val I = p.doubleColumn("height.I").get(index)
+            val Inorm = p.doubleColumn("height.I.norm").get(index)
+            (I, Inorm)
+          } else {
+            (0.0d, 0.0d)
+          }
         }
         i
       }
       val reduced = info.reduce((l, r) => (l._1 + r._1, l._2 + r._2))
-      (reduced._1, reduced._2, MotifCluster.fromTable(t))
+      (reduced._1, reduced._2, MotifCluster.fromTable(t, strict = !tcremp))
     }
 
     val safeTop = Math.max(1, Math.min(Motifs.maxTopValueInCDR3Search, top))
@@ -122,7 +168,8 @@ case class Motifs @Inject()(database: Database)(implicit tfp: TemporaryFileProvi
     MotifCDR3SearchResult(MotifCDR3SearchResultOptions(cdr3, safeTop, gene, substring = false), clusters, clustersNorm)
   }
 
-  private def substring_cdr3(cdr3: String, gene: String, top: Int): Future[MotifCDR3SearchResult] = {
+  private def substring_cdr3(cdr3: String, gene: String, top: Int, method: Option[String]): Future[MotifCDR3SearchResult] = {
+    val cdr3Range = resolveCdr3Range(method)
     if (cdr3.length < Motifs.minSubstringCDR3Length) {
       Future.failed(new IllegalArgumentException("Illegal CDR3 length"))
     } else if (cdr3.length > cdr3Range._2) {
@@ -134,7 +181,7 @@ case class Motifs @Inject()(database: Database)(implicit tfp: TemporaryFileProvi
         (0 to (length - cdr3.length)).map(f => ("X" * f) + cdr3 + ("X" * (length - cdr3.length - f)))
       })
 
-      val futureResults = Future.sequence(fakeCDR3s.map(fake => whole_cdr3(fake, gene, safeTop)).map(_.transform(Success(_)))).map(_.collect { case Success(x) => x })
+      val futureResults = Future.sequence(fakeCDR3s.map(fake => whole_cdr3(fake, gene, safeTop, method)).map(_.transform(Success(_)))).map(_.collect { case Success(x) => x })
       val topEntries = futureResults.map(_.map(s => (s.clusters, s.clustersNorm)).reduce((l, r) => (l._1 ++ r._1, l._2 ++ r._2))).map(d => {
         (d._1.distinct.sortWith(_.info > _.info).take(safeTop), d._2.distinct.sortWith(_.info > _.info).take(safeTop))
       })
@@ -143,7 +190,8 @@ case class Motifs @Inject()(database: Database)(implicit tfp: TemporaryFileProvi
     }
   }
 
-  def members(cid: String, format: String): Option[Future[TemporaryFileLink]] = {
+  def members(cid: String, format: String, method: Option[String] = None): Option[Future[TemporaryFileLink]] = {
+    val members = resolveMembers(method)
     ClusterMembersConverter.getConverter(format).map(_.convert(members.where(members.stringColumn("cid").isEqualTo(cid)), cid))
   }
 }
@@ -152,10 +200,65 @@ object Motifs {
   private final val maxTopValueInCDR3Search: Int = 15
   private final val minSubstringCDR3Length: Int = 3
 
+  private def buildAvailabilityKeys(table: Table): Set[String] = {
+    val requiredColumns = Seq("species", "gene", "mhc.class", "mhc.a", "antigen.epitope")
+    if (!requiredColumns.forall(table.columnNames().contains)) {
+      Set.empty
+    } else {
+      val speciesCol = table.stringColumn("species")
+      val geneCol = table.stringColumn("gene")
+      val mhcClassCol = table.stringColumn("mhc.class")
+      val mhcACol = table.stringColumn("mhc.a")
+      val epitopeCol = table.stringColumn("antigen.epitope")
+      val builder = mutable.HashSet.empty[String]
+      var idx = 0
+      val total = table.rowCount()
+      while (idx < total) {
+        val values = Seq(speciesCol.get(idx), geneCol.get(idx), mhcClassCol.get(idx), mhcACol.get(idx), epitopeCol.get(idx))
+          .map(v => Option(v).map(_.trim).getOrElse(""))
+        if (values.forall(_.nonEmpty)) {
+          builder += values.map(_.toLowerCase(Locale.ROOT)).mkString("|")
+        }
+        idx += 1
+      }
+      builder.toSet
+    }
+  }
+
+  def buildCidLookupIndex(members: Table): Map[String, String] = {
+    val required = Seq("species", "gene", "antigen.epitope", "cdr3aa", "v.segm", "j.segm", "cid")
+    if (!required.forall(members.columnNames().contains)) {
+      return Map.empty
+    }
+    val speciesCol = members.stringColumn("species")
+    val geneCol = members.stringColumn("gene")
+    val epitopeCol = members.stringColumn("antigen.epitope")
+    val cdr3Col = members.stringColumn("cdr3aa")
+    val vsegmCol = members.stringColumn("v.segm")
+    val jsegmCol = members.stringColumn("j.segm")
+    val cidCol = members.stringColumn("cid")
+    val builder = mutable.HashMap.empty[String, String]
+    var idx = 0
+    val total = members.rowCount()
+    while (idx < total) {
+      val parts = Seq(speciesCol.get(idx), geneCol.get(idx), epitopeCol.get(idx),
+        cdr3Col.get(idx), vsegmCol.get(idx), jsegmCol.get(idx))
+        .map(v => Option(v).map(_.trim).getOrElse("").toLowerCase(Locale.ROOT))
+      val cid = Option(cidCol.get(idx)).map(_.trim).getOrElse("")
+      if (parts.forall(_.nonEmpty) && cid.nonEmpty) {
+        val key = parts.mkString("|")
+        if (!builder.contains(key)) {
+          builder.update(key, cid)
+        }
+      }
+      idx += 1
+    }
+    builder.toMap
+  }
+
   def parseMotifFileIntoDataFrame(path: Option[String]): Table = {
     path match {
       case Some(p) =>
-        // TODO metadata file
         val columnTypes: Array[ColumnType] = Array(
           ColumnType.STRING, // species
           ColumnType.STRING, // antigen.epitope
@@ -166,7 +269,7 @@ object Motifs {
           ColumnType.STRING, // v.segm.repr
           ColumnType.STRING, // j.segm.repr
           ColumnType.STRING, // cid
-          ColumnType.INTEGER, // csz
+          ColumnType.DOUBLE, // csz
           ColumnType.INTEGER, // count
           ColumnType.SKIP, // count.bg
           ColumnType.SKIP, // total.bg
@@ -234,7 +337,11 @@ object Motifs {
   }
 
   def parseCDR3LengthRange(table: Table): (Int, Int) = {
-    val lengths = table.intColumn("len").asScala.toSet
-    (lengths.min, lengths.max)
+    if (table.columnNames().contains("len")) {
+      val lengths = table.intColumn("len").asScala.toSet
+      if (lengths.nonEmpty) (lengths.min, lengths.max) else (0, 0)
+    } else {
+      (0, 0)
+    }
   }
 }

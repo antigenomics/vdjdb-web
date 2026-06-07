@@ -24,12 +24,23 @@ import { IMotifEpitopeViewOptions } from 'pages/motif/motif';
 })
 export class MotifViewOptionsComponent {
   @Input('options')
-  public options: IMotifEpitopeViewOptions;
+  public options!: IMotifEpitopeViewOptions;
+
+  @Input('showMultiple')
+  public showMultiple: boolean = true;
+
+  @Input('normalizeDisabled')
+  public normalizeDisabled: boolean = false;
 
   @Output('onOptionsChange')
   public onOptionsChange = new EventEmitter<IMotifEpitopeViewOptions>();
 
   public normalize(): void {
+    if (this.normalizeDisabled) { return; }
     this.onOptionsChange.emit({ ...this.options, isNormalized: !this.options.isNormalized });
+  }
+
+  public toggleMultiple(): void {
+    this.onOptionsChange.emit({ ...this.options, allowMultiple: !this.options.allowMultiple });
   }
 }

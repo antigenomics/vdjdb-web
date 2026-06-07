@@ -24,7 +24,10 @@ import backend.server.database.Database
 import backend.server.database.api.metadata.DatabaseMetadataResponse
 import backend.server.database.api.suggestions.{DatabaseColumnSuggestionsRequest, DatabaseColumnSuggestionsResponse}
 import backend.server.database.filters.{DatabaseFilterRequest, DatabaseFilterType, DatabaseFilters}
+import backend.server.motifs.Motifs
 import backend.server.search.SearchTable
+import backend.server.structures.Structures
+import backend.server.validation.ValidationDB
 import backend.server.search.api.export.{ExportDataRequest, ExportDataResponse}
 import backend.server.search.api.paired.{PairedDataRequest, PairedDataResponse}
 import backend.server.search.api.search.{SearchDataRequest, SearchDataResponse}
@@ -37,8 +40,11 @@ import scala.language.reflectiveCalls
 class DatabaseSearchWebSocketActorSpec extends ActorsTestSpec {
     lazy implicit val tfp: TemporaryFileProvider = app.injector.instanceOf[TemporaryFileProvider]
     lazy implicit val database: Database = app.injector.instanceOf[Database]
+    lazy val structures: Structures = app.injector.instanceOf[Structures]
+    lazy val motifs: Motifs = app.injector.instanceOf[Motifs]
+    lazy val validation: ValidationDB = app.injector.instanceOf[ValidationDB]
     lazy implicit val probe = TestProbe()
-    lazy implicit val ws = system.actorOf(DatabaseSearchWebSocketActor.props(probe.ref, fakeLimit, database))
+    lazy implicit val ws = system.actorOf(DatabaseSearchWebSocketActor.props(probe.ref, fakeLimit, database, structures, motifs, validation))
 
     "DatabaseSearchWebSocketActor" should {
         "be able to handle invalid messages" taggedAs ActorsTestTag in {
@@ -77,7 +83,7 @@ class DatabaseSearchWebSocketActorSpec extends ActorsTestSpec {
             val table: SearchTable = new SearchTable()
             val filters: List[DatabaseFilterRequest] = List(DatabaseFilterRequest("gene", DatabaseFilterType.Exact, negative = false, "TRA"))
 
-            table.update(DatabaseFilters.createFromRequest(filters, database), database)
+            table.update(DatabaseFilters.createFromRequest(filters, database), database, structures, motifs, validation)
 
             ws ! createClientRequest(SearchDataResponse.Action, Some(SearchDataRequest(Some(filters), None, None, None, None, None)))
             val searchResponse = expectSuccessMessageOfType[SearchDataResponse](SearchDataResponse.Action)

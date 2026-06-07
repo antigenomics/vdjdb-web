@@ -20,10 +20,16 @@ import backend.BaseTestSpecWithApplication
 import backend.server.ResultsTable
 import backend.server.database.Database
 import backend.server.database.filters.{DatabaseFilterRequest, DatabaseFilterType, DatabaseFilters}
+import backend.server.motifs.Motifs
 import backend.server.search.SearchTable
+import backend.server.structures.Structures
+import backend.server.validation.ValidationDB
 
 class SearchTableSpec extends BaseTestSpecWithApplication {
     val database: Database = app.injector.instanceOf[Database]
+    val structures: Structures = app.injector.instanceOf[Structures]
+    val motifs: Motifs = app.injector.instanceOf[Motifs]
+    val validation: ValidationDB = app.injector.instanceOf[ValidationDB]
 
     "Search table" should {
 
@@ -31,7 +37,7 @@ class SearchTableSpec extends BaseTestSpecWithApplication {
             val request: List[DatabaseFilterRequest] = List(DatabaseFilterRequest("gene", DatabaseFilterType.Exact, negative = false, "TRA"))
             val filters = DatabaseFilters.createFromRequest(request, database)
 
-            val table = new SearchTable().update(filters, database)
+            val table = new SearchTable().update(filters, database, structures, motifs, validation)
 
             table.getRecordsFound should be > 0
             table.getRows.size should be > 0
@@ -45,7 +51,7 @@ class SearchTableSpec extends BaseTestSpecWithApplication {
         "give the correct rows while changing pages" in {
             val request: List[DatabaseFilterRequest] = List(DatabaseFilterRequest("vdjdb.score", DatabaseFilterType.Level, negative = false, "3"))
             val filters = DatabaseFilters.createFromRequest(request, database)
-            val table = new SearchTable().update(filters, database)
+            val table = new SearchTable().update(filters, database, structures, motifs, validation)
 
             val testPageSizes = Seq(25, 50, 100)
             val rows = table.getRows
@@ -77,7 +83,7 @@ class SearchTableSpec extends BaseTestSpecWithApplication {
                 DatabaseFilterRequest("cdr3", DatabaseFilterType.Range, negative = false, "9:10")
             )
             val filters = DatabaseFilters.createFromRequest(request, database)
-            val table = new SearchTable().update(filters, database)
+            val table = new SearchTable().update(filters, database, structures, motifs, validation)
 
             for (sortType <- List("asc", "desc")) {
                 for (columnIndex <- 0 to 10) {

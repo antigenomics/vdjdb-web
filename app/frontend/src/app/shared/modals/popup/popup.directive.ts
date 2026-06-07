@@ -14,7 +14,8 @@
  *     limitations under the License.
  */
 
-import { AfterViewInit, ComponentFactoryResolver, ComponentRef, Directive, Input, OnDestroy, Renderer2, ViewContainerRef } from '@angular/core';
+import { AfterViewInit, ApplicationRef, ComponentFactoryResolver, ComponentRef, Directive, EmbeddedViewRef, Injector, Input, OnDestroy, Renderer2, ViewContainerRef } from '@angular/core';
+import { SafeHtml } from '@angular/platform-browser';
 import { PopupContentTable } from './popup-content-table';
 import { PopupContentComponent } from './popup-content.component';
 
@@ -31,7 +32,7 @@ export class PopupDirective implements AfterViewInit, OnDestroy {
   private _mouseLeaveListener: () => void;
 
   @Input('popup')
-  public popupContent: string | string[] | PopupContentTable;
+  public popupContent: string | string[] | PopupContentTable | SafeHtml;
 
   @Input('header')
   public headerContent: string;
@@ -46,7 +47,7 @@ export class PopupDirective implements AfterViewInit, OnDestroy {
   public position: 'left' | 'right' | 'top' | 'bottom' = 'left';
 
   @Input('display')
-  public display: 'paragraph' | 'list' | 'colored-text' | 'table' = 'paragraph';
+  public display: 'paragraph' | 'list' | 'colored-text' | 'image' | 'table' | 'html' = 'paragraph';
 
   @Input('topShift')
   public topShift: number = 0;
@@ -73,7 +74,8 @@ export class PopupDirective implements AfterViewInit, OnDestroy {
   public popupTableRowClass: string = 'center aligned';
 
   constructor(private viewContainerRef: ViewContainerRef, private renderer: Renderer2,
-              private resolver: ComponentFactoryResolver) {}
+              private resolver: ComponentFactoryResolver, private appRef: ApplicationRef,
+              private injector: Injector) {}
 
   public ngAfterViewInit(): void {
     this.bindEnterEvents();
@@ -110,7 +112,10 @@ export class PopupDirective implements AfterViewInit, OnDestroy {
   public show(): void {
     if (!this._visible && !this.disabled) {
       const factory = this.resolver.resolveComponentFactory<PopupContentComponent>(PopupContentComponent);
-      this._tooltip = this.viewContainerRef.createComponent<PopupContentComponent>(factory);
+      this._tooltip = factory.create(this.injector);
+      this.appRef.attachView(this._tooltip.hostView);
+      const domElem = (this._tooltip.hostView as EmbeddedViewRef<any>).rootNodes[ 0 ] as HTMLElement;
+      document.body.appendChild(domElem);
       this.bindLeaveEvents();
       this.updateView();
       this._visible = true;
@@ -120,6 +125,11 @@ export class PopupDirective implements AfterViewInit, OnDestroy {
   public hide(): void {
     if (this._visible) {
       if (this._tooltip) {
+        const domElem = (this._tooltip.hostView as EmbeddedViewRef<any>).rootNodes[ 0 ] as HTMLElement;
+        if (domElem.parentNode) {
+          domElem.parentNode.removeChild(domElem);
+        }
+        this.appRef.detachView(this._tooltip.hostView);
         this._tooltip.destroy();
         this.unbindLeaveEvents();
       }
@@ -128,6 +138,7 @@ export class PopupDirective implements AfterViewInit, OnDestroy {
   }
 
   public ngOnDestroy(): void {
+    this.hide();
     this.unbindEvents();
   }
 

@@ -31,6 +31,10 @@ export class TCRSegmentsFilter implements FilterInterface {
     this.jSegmentSelected = [];
   }
 
+  public isDefault(): boolean {
+    return this.vSegmentSelected.length === 0 && this.jSegmentSelected.length === 0;
+  }
+
   public setOptions(options: IFiltersOptions): void {
     /* Disable tslint to prevent ClosureCompiler mangling */
     /* tslint:disable:no-string-literal */
@@ -102,6 +106,12 @@ export class TCRGeneralFilter implements FilterInterface {
     this.appendPaired = false;
   }
 
+  public isDefault(): boolean {
+    return this._tra === false && this._trb === true &&
+      this.pairedOnly === false && this.appendPaired === false &&
+      this.human === true && this.monkey === true && this.mouse === true;
+  }
+
   public setOptions(_: IFiltersOptions): void {
     return;
   }
@@ -160,6 +170,16 @@ export class TCRcdr3Filter implements FilterInterface {
     this.levensteinSubstitutions = 0;
     this.levensteinInsertions = 0;
     this.levensteinDeletions = 0;
+  }
+
+  public isDefault(): boolean {
+    return this.pattern === '' &&
+      this.patternSubstring === false &&
+      (!this.length || (this.length.min === this.lengthMin && this.length.max === this.lengthMax)) &&
+      this.levenstein === '' &&
+      this.levensteinSubstitutions === 0 &&
+      this.levensteinInsertions === 0 &&
+      this.levensteinDeletions === 0;
   }
 
   public setOptions(_: IFiltersOptions): void {

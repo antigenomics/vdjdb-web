@@ -26,6 +26,10 @@ export class MHCGeneralFilter implements FilterInterface {
     this.mhcii = true;
   }
 
+  public isDefault(): boolean {
+    return this.mhci === true && this.mhcii === true;
+  }
+
   public setOptions(_: IFiltersOptions): void {
     return;
   }
@@ -54,6 +58,10 @@ export class MHCHaplotypeFilter implements FilterInterface {
   public setDefault(): void {
     this.firstChainSelected = [];
     this.secondChainSelected = [];
+  }
+
+  public isDefault(): boolean {
+    return this.firstChainSelected.length === 0 && this.secondChainSelected.length === 0;
   }
 
   public setOptions(options: IFiltersOptions): void {

@@ -18,6 +18,10 @@
     color: #48af75 !important;
 }
 
+.multi-selected {
+    color: #f0ad4e !important;
+}
+
 .content .header span.extra {
     visibility: hidden;
     font-weight: normal;

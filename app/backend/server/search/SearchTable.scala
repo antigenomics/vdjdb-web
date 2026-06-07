@@ -19,6 +19,8 @@ package backend.server.search
 import backend.server.ResultsTable
 import backend.server.database.Database
 import backend.server.database.filters.DatabaseFilters
+import backend.server.motifs.Motifs
+import backend.server.structures.Structures
 
 import scala.collection.JavaConverters._
 import scala.math.Ordering.String
@@ -38,9 +40,54 @@ class SearchTable extends ResultsTable[SearchTableRow] {
     }
   }
 
-  def update(filters: DatabaseFilters, database: Database): SearchTable = {
-    val results = database.getInstance.getDbInstance.search(filters.text, filters.sequence)
-    this.rows = results.asScala.map(r => SearchTableRow.createFromRow(r.getRow))
+  def update(filters: DatabaseFilters, database: Database, structures: Structures, motifs: Motifs): SearchTable = {
+    val allResults = database.getInstance.getDbInstance.search(filters.text, filters.sequence)
+    var filtered = allResults.asScala
+
+    def columnIsTrue(row: com.antigenomics.vdjdb.db.Row, col: String): Boolean =
+      Option(row.getAt(col)).exists(_.getValue.trim.equalsIgnoreCase("true"))
+
+    def motifKey(row: com.antigenomics.vdjdb.db.Row): Option[String] = {
+      val parts = Seq("species", "gene", "antigen.epitope", "cdr3", "v.segm", "j.segm")
+        .map(col => Option(row.getAt(col)).map(_.getValue.trim.toLowerCase).getOrElse(""))
+      if (parts.forall(_.nonEmpty)) Some(parts.mkString("|")) else None
+    }
+
+    // Validation evidence: OR within {same.study, independent}
+    if (filters.validationModes.nonEmpty) {
+      filtered = filtered.filter { result =>
+        val row = result.getRow
+        filters.validationModes.exists {
+          case "same.study"  => columnIsTrue(row, "evidence.validation.same.study")
+          case "independent" => columnIsTrue(row, "evidence.validation.independent")
+          case _ => false
+        }
+      }
+    }
+
+    // Motif evidence: OR within {tcrnet, tcremp}
+    if (filters.motifModes.nonEmpty) {
+      val tcrnetIndex = if (filters.motifModes.contains("tcrnet")) motifs.getCidLookupIndex() else Map.empty[String, String]
+      val tcrempIndex = if (filters.motifModes.contains("tcremp")) motifs.getCidLookupIndex(Some("tcremp")) else Map.empty[String, String]
+      filtered = filtered.filter { result =>
+        motifKey(result.getRow).exists(key => tcrnetIndex.contains(key) || tcrempIndex.contains(key))
+      }
+    }
+
+    // Structure evidence: OR within {native, contacts, quality}
+    if (filters.structureModes.nonEmpty) {
+      filtered = filtered.filter { result =>
+        val row = result.getRow
+        filters.structureModes.exists {
+          case "native"   => columnIsTrue(row, "evidence.structure.native")
+          case "contacts" => columnIsTrue(row, "evidence.structure.contacts")
+          case "quality"  => columnIsTrue(row, "evidence.structure.quality")
+          case _ => false
+        }
+      }
+    }
+
+    this.rows = filtered.map(r => SearchTableRow.createFromRow(r.getRow))
     filters.options.foreach {
       case ("append-paired", enabled) =>
         if (enabled) {

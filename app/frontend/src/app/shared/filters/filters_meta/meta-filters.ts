@@ -39,6 +39,12 @@ export class MetaGeneralFilter implements FilterInterface {
     this.seqSingleCell = true;
   }
 
+  public isDefault(): boolean {
+    return this.referencesSelected.length === 0 &&
+      this.methodSort === true && this.methodCulture === true && this.methodOther === true &&
+      this.seqSanger === true && this.seqAmplicon === true && this.seqSingleCell === true;
+  }
+
   public setOptions(options: IFiltersOptions): void {
     /* Disable tslint to prevent ClosureCompiler mangling */
     /* tslint:disable:no-string-literal */
@@ -85,10 +91,40 @@ export class MetaReliabilityFilter implements FilterInterface {
   public nonCanonical: boolean;
   public unmapped: boolean;
 
+  // Evidence: Validation
+  public valSameStudy: boolean;
+  public valIndependent: boolean;
+  public valTcrvdb: boolean;
+
+  // Evidence: Motif
+  public motifTcrnet: boolean;
+  public motifTcremp: boolean;
+
+  // Evidence: Structure
+  public structNative: boolean;
+  public structContacts: boolean;
+  public structQuality: boolean;
+
   public setDefault(): void {
     this.minimalConfidenceScore = 0;
     this.nonCanonical = false;
     this.unmapped = false;
+    this.valSameStudy = false;
+    this.valIndependent = false;
+    this.valTcrvdb = false;
+    this.motifTcrnet = false;
+    this.motifTcremp = false;
+    this.structNative = false;
+    this.structContacts = false;
+    this.structQuality = false;
+  }
+
+  public isDefault(): boolean {
+    return this.minimalConfidenceScore === 0 &&
+      this.nonCanonical === false && this.unmapped === false &&
+      this.valSameStudy === false && this.valIndependent === false && this.valTcrvdb === false &&
+      this.motifTcrnet === false && this.motifTcremp === false &&
+      this.structNative === false && this.structContacts === false && this.structQuality === false;
   }
 
   public setOptions(_: IFiltersOptions): void {
@@ -107,6 +143,29 @@ export class MetaReliabilityFilter implements FilterInterface {
     }
     if (this.unmapped === false) {
       filters.push(new Filter('web.cdr3fix.unmp', FilterType.EXACT, true, 'yes'));
+    }
+
+    const validationModes: string[] = [];
+    if (this.valSameStudy) { validationModes.push('same.study'); }
+    if (this.valIndependent) { validationModes.push('independent'); }
+    if (this.valTcrvdb) { validationModes.push('tcrvdb'); }
+    if (validationModes.length > 0) {
+      filters.push(new Filter('evidence:validation', FilterType.EXACT, false, validationModes.join(',')));
+    }
+
+    const motifModes: string[] = [];
+    if (this.motifTcrnet) { motifModes.push('tcrnet'); }
+    if (this.motifTcremp) { motifModes.push('tcremp'); }
+    if (motifModes.length > 0) {
+      filters.push(new Filter('evidence:motif', FilterType.EXACT, false, motifModes.join(',')));
+    }
+
+    const structureModes: string[] = [];
+    if (this.structNative) { structureModes.push('native'); }
+    if (this.structContacts) { structureModes.push('contacts'); }
+    if (this.structQuality) { structureModes.push('quality'); }
+    if (structureModes.length > 0) {
+      filters.push(new Filter('evidence:structure', FilterType.EXACT, false, structureModes.join(',')));
     }
   }
 

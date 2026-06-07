@@ -33,6 +33,10 @@ export class AGFiltersService implements FilterInterface {
     this.origin.setDefault();
   }
 
+  public isDefault(): boolean {
+    return this.epitope.isDefault() && this.origin.isDefault();
+  }
+
   public setOptions(options: IFiltersOptions): void {
     const epitopeFilterId = this.epitope.getFilterId();
     if (options.hasOwnProperty(epitopeFilterId)) {

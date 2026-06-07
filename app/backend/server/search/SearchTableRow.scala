@@ -16,6 +16,7 @@
 
 package backend.server.search
 
+import backend.server.database.DatabaseMetadata
 import com.antigenomics.vdjdb.db.Row
 import play.api.libs.json.{Format, Json}
 
@@ -26,8 +27,12 @@ object SearchTableRow {
 
   def createFromRow(r: Row): SearchTableRow = {
     val entries = r.getEntries
-      .filter(_.getColumn.getMetadata.get("visible") == "1")
+      .filter { entry =>
+        val metadata = entry.getColumn.getMetadata
+        metadata.get("visible") == "1" || DatabaseMetadata.ForcedColumns.contains(entry.getColumn.getName)
+      }
       .map(_.getValue)
+
     val metadata = SearchTableRowMetadata.createFromRow(r)
     SearchTableRow(entries, metadata)
   }

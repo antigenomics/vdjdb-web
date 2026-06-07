@@ -1,0 +1,76 @@
+<!--
+  ~     Copyright 2017-2019 Bagaev Dmitry
+  ~
+  ~     Licensed under the Apache License, Version 2.0 (the "License");
+  ~     you may not use this file except in compliance with the License.
+  ~     You may obtain a copy of the License at
+  ~
+  ~         http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~     Unless required by applicable law or agreed to in writing, software
+  ~     distributed under the License is distributed on an "AS IS" BASIS,
+  ~     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~     See the License for the specific language governing permissions and
+  ~     limitations under the License.
+  -->
+
+<ng-container *ngIf="clusters && clusters.clusters && clusters.clustersNorm; else notLoaded">
+    <div class="structure-cdr3-results">
+        <ng-container *ngIf="clusters.clusters.length !== 0; else empty">
+            <div class="structure-cdr3-pagination structure-cdr3-pagination--top">
+                <div class="ui pagination menu">
+                    <a class="item" (click)="selectPage(0)">First</a>
+                    <a class="item" (click)="selectPage(currentPage - 1)">Previous</a>
+                    <a class="item" *ngFor="let p of getPageNumbers()"
+                       [class.active]="currentPage === p - 1"
+                       (click)="selectPage(p - 1)">{{ p }}</a>
+                    <a class="item" (click)="selectPage(currentPage + 1)">Next</a>
+                    <a class="item" (click)="selectPage(getPageCount() - 1)">Last</a>
+                </div>
+                <div class="ui right floated menu">
+                    <a class="item">Found: {{ getAllEntries().length }}</a>
+                </div>
+            </div>
+
+            <div class="structure-cdr3-results__list">
+                <div class="structure-cdr3-results__entry" *ngFor="let entry of getClustersEntries()">
+                    <structure-epitope-cluster
+                        [cluster]="entry.cluster"
+                        [hit]="getCDR3Hitbox(entry)"
+                        [cdr3Pattern]="entry.cdr3"
+                        [chain]="entry.chain"
+                        [isNormalized]="options.isNormalized"
+                        [isCompactInCdr3Mode]="true"
+                        [maxWidthPx]="cdr3MaxWidthPx"
+                        [maxHeightPx]="cdr3MaxHeightPx">
+                    </structure-epitope-cluster>
+                </div>
+            </div>
+
+            <div class="structure-cdr3-pagination structure-cdr3-pagination--bottom">
+                <div class="ui pagination menu">
+                    <a class="item" (click)="selectPage(0)">First</a>
+                    <a class="item" (click)="selectPage(currentPage - 1)">Previous</a>
+                    <a class="item" *ngFor="let p of getPageNumbers()"
+                       [class.active]="currentPage === p - 1"
+                       (click)="selectPage(p - 1)">{{ p }}</a>
+                    <a class="item" (click)="selectPage(currentPage + 1)">Next</a>
+                    <a class="item" (click)="selectPage(getPageCount() - 1)">Last</a>
+                </div>
+                <div class="ui right floated menu">
+                    <a class="item">Found: {{ getAllEntries().length }}</a>
+                </div>
+            </div>
+        </ng-container>
+        <ng-template #empty>
+            <div class="structure-cdr3-results__empty">
+                <h2 class="ui center aligned icon header" style="margin-top: 25px">No clusters found for {{ clusters.options.cdr3 }}</h2>
+            </div>
+        </ng-template>
+    </div>
+</ng-container>
+<ng-template #notLoaded>
+    <h2 class="ui center aligned icon header" style="margin-top: 10px"><i class="search icon"></i> Empty search input
+        <div class="sub header">To find clusters associated with specific CDR3 you can use the filter input on the left side of the page</div>
+    </h2>
+</ng-template>

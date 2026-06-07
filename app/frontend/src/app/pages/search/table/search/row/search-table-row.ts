@@ -22,8 +22,10 @@ import { TableEntry } from 'shared/table/entry/table-entry';
 import { TableRow } from 'shared/table/row/table-row';
 import { SearchTableEntryCdrComponent } from '../entry/search-table-entry-cdr.component';
 import { SearchTableEntryGeneComponent } from '../entry/search-table-entry-gene.component';
+import { SearchTableEntryInfoComponent } from '../entry/search-table-entry-info.component';
 import { SearchTableEntryMetaComponent } from '../entry/search-table-entry-meta.component';
 import { SearchTableEntryUrlComponent } from '../entry/search-table-entry-url.component';
+import { getSearchTableReorderMap } from '../search-table-reorder-map';
 
 export class SearchTableRowMetadata {
   public readonly pairedID: string;
@@ -48,7 +50,13 @@ export class SearchTableRow extends TableRow {
   constructor(row: any, pairedDisabled: boolean = false) {
     /* tslint:disable:no-string-literal */
     super();
-    this.entries = row[ 'entries' ];
+    const rawEntries: string[] = row[ 'entries' ];
+    const reorder = getSearchTableReorderMap();
+    if (reorder && reorder.length === rawEntries.length && reorder.every((index) => index < rawEntries.length)) {
+      this.entries = reorder.map((originalIndex) => rawEntries[ originalIndex ]);
+    } else {
+      this.entries = rawEntries.slice();
+    }
     this.metadata = new SearchTableRowMetadata(row[ 'metadata' ]);
     this.pairedDisabled = pairedDisabled;
     /* tslint:enable:no-string-literal */
@@ -71,6 +79,8 @@ export class SearchTableRow extends TableRow {
       return resolver.resolveComponentFactory(SearchTableEntryUrlComponent);
     } else if (column.name === 'method' || column.name === 'meta' || column.name === 'cdr3fix') {
       return resolver.resolveComponentFactory(SearchTableEntryMetaComponent);
+    } else if (column.name === 'vdjdb.score') {
+      return resolver.resolveComponentFactory(SearchTableEntryInfoComponent);
     } else if (column.name === 'v.segm' || column.name === 'j.segm') {
       return resolver.resolveComponentFactory(SearchTableEntrySegmentComponent);
     } else if (column.name === 'mhc.a' || column.name === 'mhc.b') {

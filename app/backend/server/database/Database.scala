@@ -16,7 +16,7 @@
 
 package backend.server.database
 
-import java.io.{File, FileInputStream}
+import java.io.{ByteArrayInputStream, File, FileInputStream, InputStream}
 import java.nio.file.{Files, Paths}
 
 import backend.server.database.api.suggestions.{DatabaseColumnSuggestion, DatabaseColumnSuggestionsResponse}
@@ -29,6 +29,8 @@ import play.api.Configuration
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable
+import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
 
 @Singleton
 case class Database @Inject()(configuration: Configuration) {
@@ -36,6 +38,11 @@ case class Database @Inject()(configuration: Configuration) {
   private final val metadata: DatabaseMetadata = DatabaseMetadata.createFromInstance(instance)
   private final val databaseLocation: String = Database.getDatabaseLocation(configuration)
   private final val suggestions = mutable.HashMap[String, DatabaseColumnSuggestionsResponse]()
+
+  // Eagerly warm up suggestions cache at startup to avoid blocking first user request
+  Future {
+    getSuggestions("antigen.epitope")
+  }
 
   def getMetadata: DatabaseMetadata = metadata
 
@@ -70,6 +77,16 @@ case class Database @Inject()(configuration: Configuration) {
     }
   }
 
+  def getMotifFileTCREMP: Option[File] = {
+    val f = new File(getLocation + "/" + "motif_pwms_tcremp.txt")
+    if (f.exists()) Some(f) else None
+  }
+
+  def getClusterMembersFileTCREMP: Option[File] = {
+    val f = new File(getLocation + "/" + "cluster_members_tcremp.txt")
+    if (f.exists()) Some(f) else None
+  }
+
   def getSuggestionsAvailableColumns: Seq[String] = Seq("antigen.epitope")
 
   def getSuggestions(column: String): Option[DatabaseColumnSuggestionsResponse] = {
@@ -89,6 +106,20 @@ case class Database @Inject()(configuration: Configuration) {
 
 object Database {
 
+  private def sanitizeDataStream(stream: InputStream): InputStream = {
+    val content = scala.io.Source.fromInputStream(stream, "UTF-8").mkString
+    val lines   = content.split("\n")
+    if (lines.isEmpty) return new ByteArrayInputStream(Array.emptyByteArray)
+    val headerCols = lines.head.split("\t", -1).length
+    val sanitized = lines.zipWithIndex.map {
+      case (line, 0) => line
+      case (line, _) =>
+        val cols = line.split("\t", -1).length
+        if (cols < headerCols) line + ("\t" * (headerCols - cols)) else line
+    }
+    new ByteArrayInputStream(sanitized.mkString("\n").getBytes("UTF-8"))
+  }
+
   private def createInstanceFromConfiguration(configuration: Configuration): VdjdbInstance = {
     val databaseConfiguration = configuration.get[DatabaseConfiguration]("application.database")
     if (databaseConfiguration.useLocal) {
@@ -96,7 +127,7 @@ object Database {
       val dataFilePath = databaseConfiguration.path + "vdjdb.txt"
 
       if (Files.exists(Paths.get(metaFilePath)) && Files.exists(Paths.get(dataFilePath))) {
-        new VdjdbInstance(new FileInputStream(metaFilePath), new FileInputStream(dataFilePath))
+        new VdjdbInstance(new FileInputStream(metaFilePath), sanitizeDataStream(new FileInputStream(dataFilePath)))
       } else {
         val logger = Logger(LoggerFactory.getLogger(this.getClass))
         logger.warn("Local database is missing in '" + databaseConfiguration.path + "'")

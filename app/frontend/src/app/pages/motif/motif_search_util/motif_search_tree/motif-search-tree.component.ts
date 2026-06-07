@@ -14,8 +14,9 @@
  *     limitations under the License.
  */
 
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { IMotifsMetadata, IMotifsMetadataTreeLevelValue, IMotifsSearchTreeFilter } from 'pages/motif/motif';
+import { ChangeDetectionStrategy, Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { Router } from '@angular/router';
+import { IMotifsMetadata, IMotifsMetadataTreeLevelValue, IMotifsSearchTreeFilter, IMotifEpitopeViewOptions } from 'pages/motif/motif';
 import { MotifService } from 'pages/motif/motif.service';
 
 @Component({
@@ -23,25 +24,61 @@ import { MotifService } from 'pages/motif/motif.service';
   templateUrl:     './motif-search-tree.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class MotifSearchTreeComponent {
+export class MotifSearchTreeComponent implements OnChanges {
   @Input('metadata')
   public metadata: IMotifsMetadata;
 
   @Input('selected')
   public selected: IMotifsMetadataTreeLevelValue[];
 
-  constructor(private motifService: MotifService) {}
+  @Input('options')
+  public options: IMotifEpitopeViewOptions;
 
-  public onFilterReceived(filter: IMotifsSearchTreeFilter): void {
-    this.motifService.select(filter);
+  constructor(private motifService: MotifService, private router: Router) {}
+
+  public ngOnChanges(changes: SimpleChanges): void {
+    if (changes['options']) {
+      const prev = changes['options'].previousValue as IMotifEpitopeViewOptions;
+      const curr = changes['options'].currentValue as IMotifEpitopeViewOptions;
+      if (curr && curr.allowMultiple && (!prev || !prev.allowMultiple)) {
+        this.router.navigate([], { queryParams: { method: this.motifService.getMethod() }, replaceUrl: true });
+      }
+    }
   }
 
-  public onDiscardReceived(filter: IMotifsSearchTreeFilter): void {
-    this.motifService.discard(filter);
+  public onFilterReceived(filter: IMotifsSearchTreeFilter): void {
+    if (!this.options || !this.options.allowMultiple) {
+      // Exclusive select: discard all previous selections except the one being selected
+      if (this.selected) {
+        const leafEntry = filter.entries.find((e) => e.name === 'antigen.epitope');
+        this.selected
+          .filter((s) => !leafEntry || s.value !== leafEntry.value)
+          .forEach((s) => this.motifService.discardTreeLevelValue(s));
+      }
+      this.motifService.clearEpitopes();
+      this.motifService.select(filter);
+      const urlParams = this.filterToUrlParams(filter);
+      this.motifService.setLastEpitopeUrlParams(urlParams);
+      this.router.navigate([], { queryParams: urlParams, replaceUrl: true });
+    } else {
+      this.motifService.select(filter);
+    }
+  }
+
+  public onDiscardReceived(_filter: IMotifsSearchTreeFilter): void {
+    this.motifService.discard(_filter);
+    if (!this.options || !this.options.allowMultiple) {
+      this.motifService.setLastEpitopeUrlParams(null);
+      this.router.navigate([], { queryParams: { method: this.motifService.getMethod() }, replaceUrl: true });
+    }
   }
 
   public isSelectedExist(): boolean {
     return this.selected && this.selected.length !== 0;
+  }
+
+  public hasMultipleSelected(): boolean {
+    return this.selected && this.selected.length > 1;
   }
 
   public discardAll(): void {
@@ -50,9 +87,28 @@ export class MotifSearchTreeComponent {
     setTimeout(() => {
       this.motifService.updateEpitopes();
     });
+    if (!this.options || !this.options.allowMultiple) {
+      this.motifService.setLastEpitopeUrlParams(null);
+      this.router.navigate([], { queryParams: { method: this.motifService.getMethod() }, replaceUrl: true });
+    }
   }
 
   public hideAll(): void {
     this.motifService.fireHideEvent();
+  }
+
+  private filterToUrlParams(filter: IMotifsSearchTreeFilter): { [key: string]: string } {
+    const params: { [key: string]: string } = { method: this.motifService.getMethod() };
+    const reversedEntries = [...filter.entries].reverse();
+    reversedEntries.forEach((entry) => {
+      switch (entry.name) {
+        case 'species':          params['species'] = entry.value; break;
+        case 'gene':             params['tcr_chain'] = entry.value; break;
+        case 'mhc.class':        params['mhc_class'] = entry.value; break;
+        case 'mhc.a':            params['gene'] = entry.value; break;
+        case 'antigen.epitope':  params['epitope_seq'] = entry.value; break;
+      }
+    });
+    return params;
   }
 }

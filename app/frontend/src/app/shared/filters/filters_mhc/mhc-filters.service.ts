@@ -33,6 +33,10 @@ export class MHCFiltersService implements FilterInterface {
     this.haplotype.setDefault();
   }
 
+  public isDefault(): boolean {
+    return this.general.isDefault() && this.haplotype.isDefault();
+  }
+
   public setOptions(options: IFiltersOptions): void {
     const generalFilterId = this.general.getFilterId();
     if (options.hasOwnProperty(generalFilterId)) {

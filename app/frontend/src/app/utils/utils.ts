@@ -258,7 +258,29 @@ export namespace Utils {
   export namespace HTTP {
 
     export const SUCCESS_STATUS: number = 200;
-    export const FAIL_STATUSES: number[] = [ 400, 401, 402, 403, 404, 405 ]; // tslint:disable-line:no-magic-numbers
+    export const FAIL_STATUSES: number[] = [ 400, 401, 402, 403, 404, 405, 500, 502, 503, 504 ]; // tslint:disable-line:no-magic-numbers
+
+    export function head(url: string): Promise<void> {
+      return new Promise<void>((resolve, reject) => {
+        try {
+          const xhttp = new XMLHttpRequest();
+          const lastReadyState = 4;
+          xhttp.onreadystatechange = function() {
+            if (this.readyState === lastReadyState && this.status === HTTP.SUCCESS_STATUS) {
+              resolve();
+            } else if (this.readyState === lastReadyState && HTTP.FAIL_STATUSES.indexOf(this.status) !== -1) {
+              reject();
+            }
+          };
+          xhttp.onerror = function() { reject(); };
+          xhttp.onabort = function() { reject(); };
+          xhttp.open('HEAD', url, true);
+          xhttp.send();
+        } catch (e) {
+          reject();
+        }
+      });
+    }
 
     export function get(url: string): Promise<XMLHttpRequest> {
       return new Promise<XMLHttpRequest>((resolve, reject) => {

@@ -46,6 +46,7 @@ export interface IMotifsSearchTreeFilterResult {
 
 export interface IMotifEpitopeViewOptions {
   isNormalized: boolean;
+  allowMultiple: boolean;
 }
 
 // MotifsEpitopes
@@ -80,8 +81,8 @@ export interface IMotifCluster {
   readonly clusterId: string;
   readonly size: number;
   readonly length: number;
-  readonly vsegm: string;
-  readonly jsegm: string;
+  readonly vsegm: string[];
+  readonly jsegm: string[];
   readonly entries: IMotifClusterEntry[];
   readonly meta: IMotifClusterMeta;
 }

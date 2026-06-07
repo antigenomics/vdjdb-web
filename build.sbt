@@ -3,7 +3,7 @@ import play.sbt.PlayImport.PlayKeys.playRunHooks
 
 name := """VDJdb-web"""
 
-version := "2.5.3"
+version := "2.6.2"
 scalaVersion := "2.12.8"
 
 val now = System.currentTimeMillis()
@@ -137,7 +137,7 @@ maintainer in Docker := "bvdmitri"
 
 defaultLinuxInstallLocation in Docker := "/home/vdjdb"
 
-dockerBaseImage := "openjdk:11-stretch"
+dockerBaseImage := "amazoncorretto:8"
 dockerEntrypoint := Seq("bin/vdjdb-web", "-Dconfig.file=/home/vdjdb/environment/application.conf", "-Dpidfile.path=/dev/null")
 dockerExposedPorts := Seq(9000)
 dockerExposedVolumes := Seq("/home/vdjdb/environment",

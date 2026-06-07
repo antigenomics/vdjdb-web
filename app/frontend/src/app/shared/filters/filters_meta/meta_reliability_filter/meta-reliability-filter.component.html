@@ -24,20 +24,71 @@
     <div class="four wide column">
         <div class="ui input fluid">
             <input class="form-control" value="0" type="number" [attr.min]="meta.reliability.confidenceScoreMin" [attr.max]="meta.reliability.confidenceScoreMax"
-                   [ngModel]="meta.reliability.minimalConfidenceScore" (ngModelChange)="checkConfidenceScore($event)"/>
+                   [value]="meta.reliability.minimalConfidenceScore" (input)="checkConfidenceScore($event.target.value)"/>
         </div>
     </div>
     <div class="two wide column"></div>
     <div class="two wide column filters label"><b>Spurious CDR3</b></div>
     <div class="five wide column">
         <div class="ui checkbox">
-            <input [(ngModel)]="meta.reliability.nonCanonical" type="checkbox">
+            <input type="checkbox" [checked]="meta.reliability.nonCanonical" (change)="meta.reliability.nonCanonical = $event.target.checked">
             <label>Include non-canonical</label>
         </div>
         <br>
         <div class="ui checkbox">
-            <input [(ngModel)]="meta.reliability.unmapped" type="checkbox">
+            <input type="checkbox" [checked]="meta.reliability.unmapped" (change)="meta.reliability.unmapped = $event.target.checked">
             <label>Include unmapped V/J</label>
+        </div>
+    </div>
+    <div class="three wide column filters label"><b>Evidence</b></div>
+    <div class="thirteen wide column">
+        <div class="ui three column stackable top aligned grid">
+            <div class="column">
+                <div class="filters label" style="margin-bottom: 6px; text-align: center;"><b>Validation</b></div>
+                <div class="ui checkbox">
+                    <input type="checkbox" [checked]="meta.reliability.valSameStudy" (change)="meta.reliability.valSameStudy = $event.target.checked">
+                    <label>Same study</label>
+                </div>
+                <br>
+                <div class="ui checkbox">
+                    <input type="checkbox" [checked]="meta.reliability.valIndependent" (change)="meta.reliability.valIndependent = $event.target.checked">
+                    <label>Independent</label>
+                </div>
+                <br>
+                <div class="ui checkbox disabled">
+                    <input type="checkbox" disabled [checked]="meta.reliability.valTcrvdb">
+                    <label>TCRvdb or similar</label>
+                </div>
+            </div>
+            <div class="column">
+                <div class="filters label" style="margin-bottom: 6px; text-align: center;"><b>Structure</b></div>
+                <div class="ui checkbox">
+                    <input type="checkbox" [checked]="meta.reliability.structNative" (change)="meta.reliability.structNative = $event.target.checked">
+                    <label>Native</label>
+                </div>
+                <br>
+                <div class="ui checkbox">
+                    <input type="checkbox" [checked]="meta.reliability.structContacts" (change)="meta.reliability.structContacts = $event.target.checked">
+                    <label>Model with contacts</label>
+                </div>
+                <br>
+                <div class="ui checkbox">
+                    <input type="checkbox" [checked]="meta.reliability.structQuality" (change)="meta.reliability.structQuality = $event.target.checked">
+                    <label>Good quality model</label>
+                </div>
+            </div>
+            <div class="column">
+                <div class="filters label" style="margin-bottom: 6px; text-align: center;"><b>Motif</b></div>
+                <div class="ui checkbox">
+                    <input type="checkbox" [checked]="meta.reliability.motifTcrnet" (change)="meta.reliability.motifTcrnet = $event.target.checked">
+                    <label>TCRNET</label>
+                </div>
+                <br>
+                <div class="ui checkbox">
+                    <input type="checkbox" [checked]="meta.reliability.motifTcremp" (change)="meta.reliability.motifTcremp = $event.target.checked">
+                    <label>TCREMP</label>
+                </div>
+            </div>
         </div>
     </div>
 </div>

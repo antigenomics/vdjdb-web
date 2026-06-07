@@ -16,14 +16,26 @@
 
 <div class="ui grid" *ngIf="options">
     <div class="fourteen wide column">
-        <div class="ui checkbox" (click)="normalize()">
-            <input type="checkbox" [ngModel]="options.isNormalized">
-            <label>Subtract VDJ rearrangement background</label>
+        <div class="ui checkbox" [class.disabled]="normalizeDisabled" (click)="normalize()">
+            <input type="checkbox" [ngModel]="options.isNormalized" [disabled]="normalizeDisabled">
+            <label [style.opacity]="normalizeDisabled ? '0.45' : null"
+                   [style.cursor]="normalizeDisabled ? 'not-allowed' : null">Subtract VDJ rearrangement background</label>
         </div>
     </div>
     <div class="two wide column cursor pointer" popup="Normalize position-weight matrices by background frequency of CDR3 residues in naive T-cell repertoire.
             This aids in removing large information scores produced by V/J germline parts at CDR3 boundaries." header="Subtract VDJ rearrangement background" position="left">
         <i class="help icon"></i>
     </div>
+    <ng-container *ngIf="showMultiple">
+    <div class="fourteen wide column" style="padding-top: 4px">
+        <div class="ui checkbox" (click)="toggleMultiple()">
+            <input type="checkbox" [ngModel]="options.allowMultiple">
+            <label>Multiple epitope selection</label>
+        </div>
+    </div>
+    <div class="two wide column cursor pointer" style="padding-top: 4px" popup="Allow selecting multiple epitopes simultaneously. When enabled, URL parameters are not updated, deeplinks from VDJdb are not tracked, and sequence embedding charts are hidden." header="Multiple epitope selection" position="left">
+        <i class="help icon"></i>
+    </div>
+    </ng-container>
 </div>
 

@@ -19,7 +19,15 @@ import { AGFiltersService } from '../ag-filters.service';
 
 @Component({
   selector:    'ag-epitope-filter',
-  templateUrl: './ag-epitope-filter.component.html'
+  templateUrl: './ag-epitope-filter.component.html',
+  styles: [`
+    :host ::ng-deep input:focus,
+    :host ::ng-deep input:focus-visible {
+      outline: none !important;
+      box-shadow: none !important;
+      -webkit-box-shadow: none !important;
+    }
+  `]
 })
 export class AGEpitopeFilterComponent {
   constructor(public ag: AGFiltersService) {}
