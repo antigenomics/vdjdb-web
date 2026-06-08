@@ -73,9 +73,6 @@ export class MotifSearchUtilComponent {
     return this.motifService.getSearchState() === MotifSearchState.SEARCH_CDR3;
   }
 
-  public isMethodTcremp(): boolean {
-    return this.motifService.getMethod() === 'tcremp';
-  }
 
   public onOptionsChange(options: IMotifEpitopeViewOptions): void {
     this.motifService.setOptions(options);

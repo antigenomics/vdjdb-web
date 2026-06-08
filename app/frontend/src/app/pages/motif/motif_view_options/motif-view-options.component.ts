@@ -29,14 +29,10 @@ export class MotifViewOptionsComponent {
   @Input('showMultiple')
   public showMultiple: boolean = true;
 
-  @Input('normalizeDisabled')
-  public normalizeDisabled: boolean = false;
-
   @Output('onOptionsChange')
   public onOptionsChange = new EventEmitter<IMotifEpitopeViewOptions>();
 
   public normalize(): void {
-    if (this.normalizeDisabled) { return; }
     this.onOptionsChange.emit({ ...this.options, isNormalized: !this.options.isNormalized });
   }
 
