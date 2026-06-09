@@ -26,6 +26,9 @@ case class MotifClusterEntry(position: Int, aa: Seq[MotifClusterEntryAA])
 object MotifClusterEntry {
   implicit val motifClusterEntryFormat: Format[MotifClusterEntry] = Json.format[MotifClusterEntry]
 
+  private val Log2: Double = Math.log(2.0)
+  private val Log2_20: Double = Math.log(20.0) / Log2
+
   def fromTable(table: Table, aggregate: Boolean = false): MotifClusterEntry = {
     val pos = table.intColumn("pos").asList.asScala.toSet
 
@@ -34,32 +37,46 @@ object MotifClusterEntry {
     val position = pos.head
 
     if (aggregate) {
-      // tcremp: a (cid, len) group spans multiple v/j representatives, so each (pos, aa) has one
-      // row per representative. Collapse by amino-acid letter, preserving the precomputed heights:
-      // height.I is background-independent (constant across reprs) -> raw H; height.I.norm varies
-      // per V/J background -> mean -> HNorm. (For tcrnet there is a single repr, so mean == value.)
-      case class Acc(count: Int, freqSum: Double, iSum: Double, hISum: Double, hINormSum: Double, n: Int, len: Int)
+      // tcremp: each row is one representative member of the cluster (count == 1, freq == 1/csz),
+      // so a position holds one row per representative and `freq`/`height.I` are per-member weights,
+      // NOT per-position letter frequencies. Build the cluster PWM from letter frequencies instead:
+      //   freq(aa) = countSum(aa) / countSum(all)         (fraction of members carrying aa here)
+      //   I (raw)  = 1 - H(freq)/log2(20)                 -> conserved positions reach height 1.0
+      //   I.norm   = mean of the precomputed per-representative I.norm (VDJ background removed)
+      //   H = freq*I (raw height),  HNorm = freq*I.norm (background-subtracted height, same scale)
+      case class Acc(countSum: Int, len: Int)
       val byLetter = scala.collection.mutable.LinkedHashMap.empty[String, Acc]
+      var totalCount = 0
+      var iNormSumAll = 0.0
+      var rowsAll = 0
       table.doWithRows { row =>
         val letter = row.getString("aa")
-        val prev = byLetter.getOrElse(letter, Acc(0, 0.0, 0.0, 0.0, 0.0, 0, 0))
-        byLetter(letter) = Acc(
-          prev.count + row.getInt("count"),
-          prev.freqSum + row.getDouble("freq"),
-          prev.iSum + row.getDouble("I"),
-          prev.hISum + row.getDouble("height.I"),
-          prev.hINormSum + row.getDouble("height.I.norm"),
-          prev.n + 1,
-          row.getInt("len")
-        )
+        val c = row.getInt("count")
+        val prev = byLetter.getOrElse(letter, Acc(0, 0))
+        byLetter(letter) = Acc(prev.countSum + c, row.getInt("len"))
+        totalCount += c
+        iNormSumAll += row.getDouble("I.norm")
+        rowsAll += 1
       }
 
-      val aa = byLetter.toSeq.map { case (letter, a) =>
-        val n = math.max(1, a.n)
-        MotifClusterEntryAA(letter, a.len, a.count, a.freqSum / n, a.iSum / n, a.iSum / n, a.hISum / n, a.hINormSum / n)
-      }.sortBy(-_.H)
+      if (totalCount <= 0 || rowsAll == 0) {
+        MotifClusterEntry(position, Seq.empty)
+      } else {
+        val total = totalCount.toDouble
+        val H = byLetter.values.foldLeft(0.0) { (acc, a) =>
+          val p = a.countSum / total
+          if (p > 0.0) acc - p * (Math.log(p) / Log2) else acc
+        }
+        val I = math.max(0.0, 1.0 - H / Log2_20)
+        val INormPos = math.max(0.0, iNormSumAll / rowsAll)
 
-      MotifClusterEntry(position, aa)
+        val aa = byLetter.toSeq.map { case (letter, a) =>
+          val freq = a.countSum / total
+          MotifClusterEntryAA(letter, a.len, a.countSum, freq, I, INormPos, freq * I, freq * INormPos)
+        }.sortBy(-_.H)
+
+        MotifClusterEntry(position, aa)
+      }
     } else {
       val aa = scala.collection.mutable.ListBuffer.empty[MotifClusterEntryAA]
 
