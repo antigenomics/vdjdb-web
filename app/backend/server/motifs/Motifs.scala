@@ -143,8 +143,19 @@ case class Motifs @Inject()(database: Database)(implicit tfp: TemporaryFileProvi
         val target = String.valueOf(cdr3(pos))
 
         val i: (Double, Double) = if (tcremp) {
-          val h = backend.server.motifs.api.epitope.MotifClusterEntry.recomputeHeightForAA(p, target)
-          (h, h)
+          // tcremp: multiple v/j representatives per (cid, pos) -> mean the precomputed heights for
+          // the target AA. height.I (raw) is constant across reprs; height.I.norm varies per background.
+          var rawSum = 0.0
+          var normSum = 0.0
+          var n = 0
+          p.doWithRows { row =>
+            if (row.getString("aa") == target) {
+              rawSum += row.getDouble("height.I")
+              normSum += row.getDouble("height.I.norm")
+              n += 1
+            }
+          }
+          if (n == 0) (0.0d, 0.0d) else (rawSum / n, normSum / n)
         } else {
           val index = p.stringColumn("aa").firstIndexOf(target)
           if (index != -1) {
