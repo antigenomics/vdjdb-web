@@ -99,7 +99,7 @@ Request JSON structure:
         "pageSize":  Optional[Number],      // Optional: page size, used only if ``page`` is specified. Default: 25
         "paired":    Optional[Boolean],     // Optional: specifies whether to include the paired records. Default: false
         "sort":      Optional[String],      // Optional: sort rule, it has the following structure: "<columnName>:<sortType>".
-                                            //           Available sort types: 'asc' - asceding order, 'desc' - descending order
+                                            //           Available sort types: 'asc' - ascending order, 'desc' - descending order
                                             //           Example: "gene:asc"
     }
 
@@ -139,7 +139,7 @@ Fetching information about ``CAAAASGGSYIPTF``.
       -X POST                                           \
       -d '{ "filters" : [{ "column" : "cdr3", "value" : "CAAAASGGSYIPTF", "filterType" : "exact", "negative" : false }] }'
 
-The above command will response in:
+The above command will respond with:
 
 .. code-block:: javascript
 
@@ -166,7 +166,7 @@ The above response has the following JSON structure:
         "page":         Number,          // Current page, equals -1 if 'page' argument was not specified in request
         "pageSize":     Number,          // Page size, equals -1 if 'page' argument was not specified in request
         "pageCount":    Number,          // Pages count, equals -1 if 'page' argument was not specified in request
-        "recordsFound": Number,          // Filtered records count (it is not include paired rows)
+        "recordsFound": Number,          // Filtered records count (it does not include paired rows)
         "rows":         Array[SearchRow] // Filtered database entries
     }
 
@@ -186,7 +186,7 @@ The above response has the following JSON structure:
 
 **Example 2**
 
-Fetching information about ``CAAAASGGSYIPTF`` and his paired record.
+Fetching information about ``CAAAASGGSYIPTF`` and its paired record.
 
 .. code-block:: bash
 
@@ -195,7 +195,7 @@ Fetching information about ``CAAAASGGSYIPTF`` and his paired record.
       -X POST                                           \
       -d '{ "filters" : [{ "column" : "cdr3", "value" : "CAAAASGGSYIPTF", "filterType" : "exact", "negative" : false }], "paired": true }'
 
-The above command will response in:
+The above command will respond with:
 
 .. code-block:: javascript
 
