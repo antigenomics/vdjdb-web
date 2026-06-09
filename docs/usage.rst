@@ -21,7 +21,7 @@ General way to run VDJdb server would be the following:
 
       $ ./vdjdb-server -J-Xmx16G
 
-   If insufficient amount memory is allocated, the Java Virtual Machine
+   If an insufficient amount of memory is allocated, the Java Virtual Machine
    could drop with a *Java Heap Space Out of Memory* error.
 
 Advanced configuration
@@ -86,8 +86,8 @@ Example:
    $ ./vdjdb-server -Dapplication.temporary.path=/tmp -Dapplication.temporary.interval=30minutes -Dapplication.temporary.keep=1hour
 
 
-Autorization configuration
-""""""""""""""""""""""""""
+Authorization configuration
+"""""""""""""""""""""""""""
 
 Common configuration:
 
@@ -127,7 +127,7 @@ Demo user configuration:
 List of available permissions ID:
 
 * **0** - No-limits
-* **1** - Standart, max files count is equal to 10, max file size is equal to 16MB
+* **1** - Standard, max files count is equal to 10, max file size is equal to 16MB
 * **2** - Demo account, uploading is not allowed
 
 Verification token configuration:
@@ -150,7 +150,7 @@ Example
 
 .. code-block:: console
 
-   //Disable verfication
+   //Disable verification
    $ ./vdjdb-server -Dapplication.auth.verification.required=false
 
 
