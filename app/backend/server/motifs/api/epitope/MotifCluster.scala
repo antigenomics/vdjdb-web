@@ -42,7 +42,7 @@ object MotifCluster {
     val clusterId = cid.head
     val size = csz.head
     val length = len.toSeq.sorted.head
-    val entries = table.splitOn(table.intColumn("pos")).asTableList().asScala.map(MotifClusterEntry.fromTable(_, recomputePWM = !strict))
+    val entries = table.splitOn(table.intColumn("pos")).asTableList().asScala.map(MotifClusterEntry.fromTable(_, aggregate = !strict))
 
     val species = table.stringColumn("species").asSet.asScala
     val gene = table.stringColumn("gene").asSet.asScala

@@ -2,6 +2,11 @@ name: Dev Docker Publish (manual)
 
 on:
   workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Docker image tag to publish'
+        required: false
+        default: 'dev'
 
 jobs:
   dev-publish:
@@ -42,4 +47,4 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Publish dev Docker image
-        run: sbt 'set Docker / version := "dev"' Docker/publish
+        run: sbt 'set Docker / version := "${{ github.event.inputs.tag }}"' Docker/publish
