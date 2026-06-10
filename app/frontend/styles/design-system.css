@@ -218,15 +218,6 @@ a:hover { color: var(--ds-teal); }
 .overlay-selection__hint,
 .structure-empty-placeholder__text { color: var(--ds-muted) !important; }
 
-/* ---- Structure contacts plot — hover behaviour on injected SVG labels.
-   Plot is matplotlib SVG injected via innerHTML, so rules must be global.
-   Labels are <g id="text_N"> glyph groups; overlay layers set pointer-events:
-   none, so re-enable it on the labels themselves so they are hoverable. ---- */
-.structure-html svg g[id^="text_"] {
-  pointer-events: all;
-  cursor: pointer;
-}
-/* While the mouse is over a residue label: make it fully opaque. No glow.
-   Bring-to-front (raise its layer + re-append) is handled in TS; opacity is
-   driven by the .is-hovered class (added on mouseenter, removed on mouseleave). */
-.structure-html svg g[id^="text_"].is-hovered { opacity: 1 !important; }
+/* Structure contacts plot: residue labels (matplotlib <g id="text_N">) are
+   already painted after the line groups, so the badges sit on top by default.
+   (No hover interaction — the glyph-only hit-area made it unreliable.) */
