@@ -43,6 +43,10 @@ export class BuildInfoComponent implements OnInit {
       this.info = JSON.parse(response) as IBuildInfo;
       this.loading = false;
       this.changeDetector.detectChanges();
+    }).catch(() => {
+      // never spin forever if the request or parse fails
+      this.loading = false;
+      this.changeDetector.detectChanges();
     });
   }
 }
