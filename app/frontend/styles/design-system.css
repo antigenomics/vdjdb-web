@@ -139,6 +139,10 @@ a:hover { color: var(--ds-teal); }
 .ui.inverted.menu .item:hover,
 .ui.inverted.menu a.item:hover { color: #ffffff !important; }
 
+/* Consistent gap below the fixed navbar on every page (some pages carried a
+   .container and others didn't, giving 70px vs 80px tops). */
+.ui.main.content { margin-top: 5em !important; }
+
 /* ---- Navbar brand logo (replaces the old "VDJdb" wordmark) ---------------- */
 .navbar-brand { padding-top: 0 !important; padding-bottom: 0 !important; }
 .navbar-brand__logo {
@@ -191,7 +195,7 @@ a:hover { color: var(--ds-teal); }
 .structure-overlay {
   background-color: var(--ds-surface) !important;
   border: 1px solid var(--ds-hairline) !important;
-  border-radius: 10px !important;
+  border-radius: var(--ds-radius) !important;
 }
 .structure-cdr3-layout { border-bottom-color: var(--ds-hairline) !important; }
 .overlay-card { border-color: var(--ds-hairline) !important; }
