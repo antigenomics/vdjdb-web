@@ -624,23 +624,58 @@ export class StructureEpitopeEntryComponent implements OnInit, OnDestroy {
         this.zoomState.destroy();
     }
 
-    /* Bring a hovered residue label (amino-acid + number, a <g id="text_*"> glyph
-       group in the injected matplotlib SVG) to the front and mark it opaque.
-       SVG paint order follows document order, so re-appending raises it. */
+    /* Residue-label hover (amino-acid + number = a <g id="text_*"> glyph group in
+       the injected matplotlib SVG). While the mouse is inside a label: make it
+       fully opaque and bring it to the front (raise its overlay layer's z-index
+       and re-append within its SVG, since SVG paint order follows document order).
+       Restore everything when the mouse leaves. */
+    private hoveredLabel?: SVGGElement;
+    private hoveredLayer?: HTMLElement;
+    private hoveredLayerPrevZ: string = '';
+
     private onOverlayLabelOver = (event: MouseEvent): void => {
         const target = event.target as Element | null;
         const group = target && target.closest ? (target.closest('g[id^="text_"]') as SVGGElement | null) : null;
-        if (group && group.parentNode) {
+        if (!group || group === this.hoveredLabel) {
+            return;
+        }
+        this.clearHoveredLabel();
+        this.hoveredLabel = group;
+        group.classList.add('is-hovered');
+        const layer = group.closest('.structure-overlay__layer, .structure-overlay__base') as HTMLElement | null;
+        if (layer) {
+            this.hoveredLayer = layer;
+            this.hoveredLayerPrevZ = layer.style.zIndex;
+            layer.style.zIndex = '9999';
+        }
+        if (group.parentNode) {
             group.parentNode.appendChild(group);
-            group.classList.add('is-hovered');
         }
     }
 
     private onOverlayLabelOut = (event: MouseEvent): void => {
         const target = event.target as Element | null;
         const group = target && target.closest ? (target.closest('g[id^="text_"]') as SVGGElement | null) : null;
-        if (group) {
-            group.classList.remove('is-hovered');
+        if (!group || group !== this.hoveredLabel) {
+            return;
+        }
+        // Ignore moves that stay within the same label (mouseout bubbles between glyphs).
+        const related = event.relatedTarget as Node | null;
+        if (related && group.contains(related)) {
+            return;
+        }
+        this.clearHoveredLabel();
+    }
+
+    private clearHoveredLabel(): void {
+        if (this.hoveredLabel) {
+            this.hoveredLabel.classList.remove('is-hovered');
+            this.hoveredLabel = undefined;
+        }
+        if (this.hoveredLayer) {
+            this.hoveredLayer.style.zIndex = this.hoveredLayerPrevZ;
+            this.hoveredLayer = undefined;
+            this.hoveredLayerPrevZ = '';
         }
     }
 
