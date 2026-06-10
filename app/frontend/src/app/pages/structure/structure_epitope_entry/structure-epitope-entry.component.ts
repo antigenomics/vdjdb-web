@@ -624,6 +624,26 @@ export class StructureEpitopeEntryComponent implements OnInit, OnDestroy {
         this.zoomState.destroy();
     }
 
+    /* Bring a hovered residue label (amino-acid + number, a <g id="text_*"> glyph
+       group in the injected matplotlib SVG) to the front and mark it opaque.
+       SVG paint order follows document order, so re-appending raises it. */
+    private onOverlayLabelOver = (event: MouseEvent): void => {
+        const target = event.target as Element | null;
+        const group = target && target.closest ? (target.closest('g[id^="text_"]') as SVGGElement | null) : null;
+        if (group && group.parentNode) {
+            group.parentNode.appendChild(group);
+            group.classList.add('is-hovered');
+        }
+    }
+
+    private onOverlayLabelOut = (event: MouseEvent): void => {
+        const target = event.target as Element | null;
+        const group = target && target.closest ? (target.closest('g[id^="text_"]') as SVGGElement | null) : null;
+        if (group) {
+            group.classList.remove('is-hovered');
+        }
+    }
+
     private attachOverlayObserver(ref: ElementRef<HTMLElement> | undefined): void {
         this.disconnectOverlayObserver();
         this.overlayElement = undefined;
@@ -637,6 +657,8 @@ export class StructureEpitopeEntryComponent implements OnInit, OnDestroy {
 
         const element = ref.nativeElement;
         this.overlayElement = element;
+        element.addEventListener('mouseover', this.onOverlayLabelOver);
+        element.addEventListener('mouseout', this.onOverlayLabelOut);
         this.recalculateOverlaySize();
         this.scheduleOverlayRecalc();
         const ResizeObserverCtor = (window as any).ResizeObserver as (new (callback: (entries: Array<{ contentRect: { height: number } }>) => void)
