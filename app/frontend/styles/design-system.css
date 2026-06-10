@@ -133,7 +133,7 @@ a:hover { color: var(--ds-teal); }
 .ui.top.fixed.menu .item {
   font-weight: 500;
   letter-spacing: -0.01em;
-  font-size: 0.95rem;
+  font-size: 1.2rem;
   align-items: center;
 }
 .ui.inverted.menu .item:hover,
@@ -221,15 +221,9 @@ a:hover { color: var(--ds-teal); }
    none, so re-enable it on the labels themselves so they are hoverable. ---- */
 .structure-html svg g[id^="text_"] {
   pointer-events: all;
-  transition: filter 0.12s ease, opacity 0.12s ease;
   cursor: pointer;
 }
-/* On hover: fully opaque, glow, and a white halo so the amino-acid + number
-   reads clearly above the overlaid structures. Bring-to-front is handled in TS
-   (re-append) since SVG paint order can't be changed by CSS. */
-.structure-html svg g[id^="text_"]:hover,
-.structure-html svg g[id^="text_"].is-hovered {
-  opacity: 1 !important;
-  filter: drop-shadow(0 0 1px #fff) drop-shadow(0 0 1px #fff)
-          drop-shadow(0 0 3px rgba(33, 133, 208, 0.95));
-}
+/* While the mouse is over a residue label: make it fully opaque. No glow.
+   Bring-to-front (raise its layer + re-append) is handled in TS; opacity is
+   driven by the .is-hovered class (added on mouseenter, removed on mouseleave). */
+.structure-html svg g[id^="text_"].is-hovered { opacity: 1 !important; }
