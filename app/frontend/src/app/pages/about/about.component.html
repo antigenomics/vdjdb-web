@@ -20,8 +20,14 @@
         <div class="ui attached segment teal padded">
             <h4>Getting VDJdb in plain text format</h4>
 
-            The latest version of the VDJdb database in tab-delimited format is available
-            <a href="https://github.com/antigenomics/vdjdb-db/releases/latest" target="_blank" rel="noopener">here</a>.
+            The latest version of the VDJdb database in tab-delimited format is available as a single archive in
+            <a href="https://github.com/antigenomics/vdjdb-db/releases/latest" target="_blank" rel="noopener">GitHub</a> release section.
+
+            AI-predicted TCR:pMHC structures can be found at our 
+            <a href="https://huggingface.co/datasets/isalgo/vdjdb_structure_models" target="_blank" rel="noopener">HuggingFace</a> repository.
+
+            Inferred paratope (V+CDR3) motifs can be found in the corresponding 
+            <a href="https://github.com/antigenomics/vdjdb-motifs" target="_blank" rel="noopener">GitHub</a> repository.
 
             <h4>Contributing</h4>
 
@@ -73,54 +79,33 @@
         <div class="ui attached segment teal padded">
             <h4>Standalone application</h4>
 
-            A command line interface software (VDJdbmatch2) should be preferred in cases when huge amounts of immune repertoire
+            A command line interface software (VDJmatch2) should be preferred in cases when huge amounts of immune repertoire
             sequencing data are being analyzed or when users are interested in obtaining unprocessed output for carrying
-            out statistical analysis of the results on their own. The corresponding software package is available
-            <a href="https://github.com/antigenomics/vdjmatch2" target="_blank" rel="noopener">here</a>. VDJdbmatch2 is a 
+            out statistical analysis of the results on their own. VDJmatch2 is a 
             command line tools written in C++17 that comes together with example usage scripts and notebooks in Python, 
-            for additional details see the README file in the repository linked above.
+            for additional details see the README file in the repository linked above. You can find the latest version of the software
+            <a href="https://github.com/antigenomics/vdjmatch2" target="_blank" rel="noopener">here</a>.
 
             <h4>Web server (Advanced)</h4>
 
             VDJdb web browser application is an open-source software implemented using Play Framework, Angular and Semantic UI. A standalone
             browser version of the software can be installed locally, the following
             <a href="https://github.com/antigenomics/vdjdb-web" target="_blank" rel="noopener">link</a>
-            contains the software package and installation instructions.
-
-            <h4>Other</h4>
-
-            You might be also interested in our lightweight immune repertoire browser
-            <a href="https://github.com/antigenomics/vdjviz" target="_blank" rel="noopener">VDJviz</a> and our immune repertoire sequencing data analysis
-            software
-            <a href="https://github.com/mikessh/vdjtools" target="_blank" rel="noopener">VDJtools</a>.
+            contains the software package and installation instructions.            
 
             <h4>Public API and documentation</h4>
 
             VDJdb web browser application uses public and fully documented API to query the database.
-            The documentation, API description and usage examples can be found at <a href="https://vdjdb-web.readthedocs.io/en/latest/intro.html" target="_blank" rel="noopener">ReadTheDocs</a> website.
+            The documentation, API description and usage examples can be found at 
+            <a href="https://vdjdb-web.readthedocs.io/en/latest/intro.html" target="_blank" rel="noopener">ReadTheDocs</a> website.
+
+            <h4>More</h4>
+
+            You might be also interested in other software tools developed by us at the 
+            <a href="https://isalgo.dev/#tools" target="_blank" rel="noopener">ISALGO</a> laboratory.
         </div>
         <div class="ui attached secondary clearing segment">
             <build-info></build-info>
-        </div>
-    </div>
-    <div class="ui raised segments">
-        <h3 class="ui top attached header centered">Star us on GitHub</h3>
-        <div class="ui attached segment teal padded">
-            <a class="ui small button" href="https://github.com/antigenomics/vdjdb-web" target="_blank" rel="noopener">
-                <i class="star icon"></i>antigenomics/vdjdb-web
-            </a>
-            <a class="ui small button" href="https://github.com/antigenomics/vdjdb-db" target="_blank" rel="noopener">
-                <i class="star icon"></i>antigenomics/vdjdb-db
-            </a>
-            <a class="ui small button" href="https://github.com/antigenomics/vdjdb-motifs" target="_blank" rel="noopener">
-                <i class="star icon"></i>antigenomics/vdjdb-motifs
-            </a>
-            <a class="ui small button" href="https://github.com/antigenomics/vdjmatch" target="_blank" rel="noopener">
-                <i class="star icon"></i>antigenomics/vdjmatch
-            </a>
-            <a class="ui small button" href="https://github.com/antigenomics/vdjmatch2" target="_blank" rel="noopener">
-                <i class="star icon"></i>antigenomics/vdjmatch2
-            </a>
         </div>
     </div>
 </div>

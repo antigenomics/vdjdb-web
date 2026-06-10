@@ -14,13 +14,19 @@
   ~     limitations under the License.
   -->
 
-<filters-header headerTitle="Record reliability" headerHelp="<p>Filter records based on VDJdb confidence score: the higher the better, defined according to assay metadata, more details can be found in VDJdb specification.</p>
-    <p>Check the corresponding box to include non-canonical CDR3 sequences, i.e. those that do not start with a conserved Cys and end with a conserved Phe/Trp, or CDR3
-       sequences for which our dedicated algorithm was not unable to fix missing V/J segments or map them.</p>">
+<filters-header headerTitle="Record reliability" headerHelp="<p>Filter records based on VDJdb confidence score: 
+    the higher the better, defined according to assay metadata, more details can be found in VDJdb specification.</p>
+    <p>Check the corresponding box to include non-canonical CDR3 sequences, i.e. those that do not start with a conserved 
+        Cys and end with a conserved Phe/Trp, or CDR3
+       sequences for which our dedicated algorithm was not unable to fix missing V/J segments or map them.</p>
+       <p>You can also choose only records additionally validated in the same study and independently confirmed in other studies; 
+        records having native or AI-predicted structures with CDR3-peptide contacts and high model quality; records belonging to 
+        paratope motifs predicted by TCRNET and TCREMP.</p>
+        <p>Additional experimental validation datasets (such as TCRvdb) are coming soon.</p>">
 </filters-header>
 
 <div class="ui grid middle aligned">
-    <div class="three wide column filters label"><b>Minimal confidence score</b></div>
+    <div class="three wide column filters label"><b>Min. assay confidence score</b></div>
     <div class="four wide column">
         <div class="ui input fluid">
             <input class="form-control" value="0" type="number" [attr.min]="meta.reliability.confidenceScoreMin" [attr.max]="meta.reliability.confidenceScoreMax"
