@@ -39,18 +39,7 @@ export interface IArticleMetadata {
 
 @Injectable()
 export class RefSearchService {
-    // Resolve the refsearch backend per deployment: the web app on vdjN.bvdmitri.me is paired
-    // with the refsearch service on vdj(N+1).bvdmitri.me (vdj1->vdj2 prod, vdj3->vdj4 dev).
-    // Falls back to the production path-routed endpoint on any other host.
-    private static get refSearchBackendURL(): string {
-        try {
-            const match = window.location.hostname.match(/^vdj(\d+)\.bvdmitri\.me$/i);
-            if (match) {
-                return `https://vdj${parseInt(match[1], 10) + 1}.bvdmitri.me/`;
-            }
-        } catch (e) { /* no window (SSR) */ }
-        return 'https://vdjdb.com/refsearch/';
-    }
+    private static readonly refSearchBackendURL: string = 'https://vdjdb.com/refsearch/';
     private static readonly isAliveInterval: number = 15000;
     private static readonly isAliveRequest = interval(RefSearchService.isAliveInterval).pipe(
         startWith(RefSearchBackendStates.UNDEFINED),
