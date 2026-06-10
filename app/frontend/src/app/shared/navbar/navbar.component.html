@@ -14,9 +14,9 @@
   ~     limitations under the License.
   -->
 
-<div class="ui top fixed borderless inverted menu large">
+<div class="ui top fixed borderless inverted menu large" [class.navbar--hidden]="hidden">
     <div class="ui container">
-        <div class="header item"><h1>VDJdb</h1></div>
+        <a route="/" class="header item navbar-brand"><img src="assets/images/favicon.svg" alt="VDJdb" class="navbar-brand__logo"></a>
         <a route="/" class="item">Home</a>
         <a (click)="redirectOnUrl('self-antigen')" class="item">
             <span style="color: #f2711c!important">Self-antigens</span>

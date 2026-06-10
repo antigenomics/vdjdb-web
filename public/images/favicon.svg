@@ -7,8 +7,30 @@
    preserveAspectRatio="xMidYMid"
    version="1.0"
    id="svg5"
+   sodipodi:docname="favicon.svg"
+   inkscape:version="1.4.4 (dcaf3e7, 2026-05-05)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns="http://www.w3.org/2000/svg"
    xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="0.4807262"
+     inkscape:cx="231.94076"
+     inkscape:cy="346.351"
+     inkscape:window-width="1373"
+     inkscape:window-height="812"
+     inkscape:window-x="0"
+     inkscape:window-y="33"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="g6" />
   <defs
      id="defs1">
     <clipPath
@@ -26,15 +48,19 @@
        fill="#34495e"
        fill-opacity="1"
        id="g4"
-       transform="translate(-506.86719,-304.89316)">
+       transform="translate(-506.86719,-304.89316)"
+       style="fill:#cccccc">
       <g
          transform="translate(544.30252,1034.3996)"
-         id="g3">
+         id="g3"
+         style="fill:#cccccc">
         <g
-           id="g2">
+           id="g2"
+           style="fill:#cccccc">
           <path
              d="m 510.75,-522.875 c 9.1875,0 16.90625,0.36719 23.15625,1.09375 v 5.51563 c -22.79297,1.10546 -42.46484,6.62109 -59.01563,16.54687 -18.75,11.39844 -32.07812,21.96875 -39.98437,31.71875 -7.90625,9.74219 -14.16406,17.64844 -18.76563,23.71875 -4.59375,6.0625 -9.09375,13.32422 -13.5,21.78125 -6.99218,12.875 -13.42968,25.5625 -19.3125,38.0625 l -147.8125,323.21875 c -16.91796,36.398438 -25.92968,60.480469 -27.03125,72.25 h -4.96875 L 36.40625,-349.14062 c -5.523438,-10.28907 -12.511719,-18.10157 -20.96875,-23.4375 -8.460938,-5.33204 -17.097656,-8 -25.921875,-8 h -4.40625 v -5.51563 H 160.5 v 5.51563 h -4.40625 c -8.09375,0 -14.07422,2.48437 -17.9375,7.45312 -3.85547,4.96094 -5.78125,9.64844 -5.78125,14.0625 0,4.40625 0.73437,8.82031 2.20312,13.23438 l 93.76563,227.79687 114.17187,-266.40625 c 17.28125,-40.8125 37.50391,-71.51562 60.67188,-92.10937 34.19531,-30.88282 70.05078,-46.32813 107.5625,-46.32813 z m 0,0"
-             id="path2" />
+             id="path2"
+             style="fill:#cccccc" />
         </g>
       </g>
     </g>

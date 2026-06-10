@@ -67,7 +67,9 @@ export class MetaGeneralFilter implements FilterInterface {
       filters.push(new Filter('web.method', FilterType.EXACT, true, 'culture'));
     }
     if (this.methodPhage === false) {
-      filters.push(new Filter('web.method', FilterType.EXACT, true, 'phage'));
+      // Phage-display records are bucketed as web.method='other'; the distinguishing signal is the
+      // raw method metadata ("identification": "phage display, ..."), matched here via regex.
+      filters.push(new Filter('method', FilterType.PATTERN, true, '.*phage.*'));
     }
     if (this.methodOther === false) {
       filters.push(new Filter('web.method', FilterType.EXACT, true, 'other'));
