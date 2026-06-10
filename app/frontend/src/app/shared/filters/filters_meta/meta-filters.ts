@@ -23,6 +23,7 @@ export class MetaGeneralFilter implements FilterInterface {
 
   public methodSort: boolean;
   public methodCulture: boolean;
+  public methodPhage: boolean;
   public methodOther: boolean;
 
   public seqSanger: boolean;
@@ -33,6 +34,7 @@ export class MetaGeneralFilter implements FilterInterface {
     this.referencesSelected = [];
     this.methodSort = true;
     this.methodCulture = true;
+    this.methodPhage = true;
     this.methodOther = true;
     this.seqSanger = true;
     this.seqAmplicon = true;
@@ -41,7 +43,7 @@ export class MetaGeneralFilter implements FilterInterface {
 
   public isDefault(): boolean {
     return this.referencesSelected.length === 0 &&
-      this.methodSort === true && this.methodCulture === true && this.methodOther === true &&
+      this.methodSort === true && this.methodCulture === true && this.methodPhage === true && this.methodOther === true &&
       this.seqSanger === true && this.seqAmplicon === true && this.seqSingleCell === true;
   }
 
@@ -63,6 +65,9 @@ export class MetaGeneralFilter implements FilterInterface {
     }
     if (this.methodCulture === false) {
       filters.push(new Filter('web.method', FilterType.EXACT, true, 'culture'));
+    }
+    if (this.methodPhage === false) {
+      filters.push(new Filter('web.method', FilterType.EXACT, true, 'phage'));
     }
     if (this.methodOther === false) {
       filters.push(new Filter('web.method', FilterType.EXACT, true, 'other'));
