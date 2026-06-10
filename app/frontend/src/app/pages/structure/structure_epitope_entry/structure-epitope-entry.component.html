@@ -117,9 +117,8 @@
                                     </div>
                                     <ng-container *ngFor="let layer of overlayLayerList; let i = index">
                                         <ng-container *ngIf="i > 0">
-                                            <div class="structure-overlay__layer"
-                                                 [style.z-index]="overlayLayerList.length - i"
-                                                 [style.opacity]="computeOverlayOpacity(i)">
+                                            <div class="structure-overlay__layer structure-overlay__layer--secondary"
+                                                 [style.z-index]="overlayLayerList.length - i">
                                                 <div class="structure-html" [innerHTML]="layer.markup"></div>
                                             </div>
                                         </ng-container>
