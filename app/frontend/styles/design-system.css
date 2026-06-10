@@ -95,6 +95,32 @@ a:hover { color: var(--ds-teal); }
 /* The teal "attached segment" header accent kept but softened */
 .ui.top.attached.header.centered { letter-spacing: -0.01em; }
 
+/* ---- Redesign the heavy green segment bars into clean hairlines ----------- */
+/* Semantic colored ("teal") attached segments render a thick 2px green top border;
+   replace it with a 1px neutral hairline so panels read as clean Apple-style cards.
+   Teal is preserved for headings, links and active states. */
+.ui.segment[class*="teal"],
+.ui.attached.segment[class*="teal"],
+.ui[class*="attached"].segment[class*="teal"],
+.ui.attached.header[class*="teal"] {
+  border-top: 1px solid var(--ds-hairline) !important;
+}
+/* A segment that directly follows an attached header needs no second top rule */
+.ui.attached.header + .ui.attached.segment { border-top: none !important; }
+.ui.attached.header {
+  border-color: var(--ds-hairline) !important;
+  color: var(--ds-ink) !important;
+  font-weight: 600;
+}
+
+/* ---- Navbar brand logo (replaces the old "VDJdb" wordmark) ---------------- */
+.navbar-brand { padding-top: 0.4rem !important; padding-bottom: 0.4rem !important; }
+.navbar-brand__logo {
+  height: 30px;
+  width: auto;
+  display: block;
+}
+
 /* ---- Navbar: keep dark, refine into an Apple-style translucent bar ------- */
 .ui.top.fixed.menu,
 .ui.top.fixed.inverted.menu {
