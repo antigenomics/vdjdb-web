@@ -100,14 +100,14 @@ export class TCRGeneralFilter implements FilterInterface {
     this.monkey = true;
     this.mouse = true;
 
-    this.tra = false;
+    this.tra = true;
     this.trb = true;
     this.pairedOnly = false;
     this.appendPaired = false;
   }
 
   public isDefault(): boolean {
-    return this._tra === false && this._trb === true &&
+    return this._tra === true && this._trb === true &&
       this.pairedOnly === false && this.appendPaired === false &&
       this.human === true && this.monkey === true && this.mouse === true;
   }
