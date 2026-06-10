@@ -141,9 +141,10 @@ a:hover { color: var(--ds-teal); }
 .ui.inverted.menu .item:hover,
 .ui.inverted.menu a.item:hover { color: #ffffff !important; }
 
-/* Consistent gap below the fixed navbar on every page (some pages carried a
-   .container and others didn't, giving 70px vs 80px tops). */
-.ui.main.content { margin-top: 5em !important; }
+/* Consistent gap below the fixed navbar on every page. Must be a fixed length,
+   not em: Semantic's base font-size differs between container (16px) and
+   non-container (14px) pages, so "5em" rendered as 80px vs 70px. */
+.ui.main.content { margin-top: 84px !important; }
 
 /* ---- Navbar brand logo (replaces the old "VDJdb" wordmark) ---------------- */
 .navbar-brand { padding-top: 0 !important; padding-bottom: 0 !important; }
