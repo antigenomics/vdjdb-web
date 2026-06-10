@@ -130,6 +130,18 @@ a:hover { color: var(--ds-teal); }
   box-shadow: none !important;
 }
 .ui.top.fixed.menu > .container { min-height: 68px; align-items: stretch; }
+
+/* Fancy auto-hide: slide the bar up out of view; it eases back in on scroll-up
+   or when the pointer nears the top edge. */
+.ui.top.fixed.menu {
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease;
+  will-change: transform;
+}
+.ui.top.fixed.menu.navbar--hidden {
+  transform: translateY(-100%);
+  opacity: 0;
+  pointer-events: none;
+}
 /* Items stretch to the full bar height (so hover shading spans bottom-to-top,
    matching prod) while their text/icon stays vertically centred. */
 .ui.top.fixed.menu .item {
@@ -144,7 +156,7 @@ a:hover { color: var(--ds-teal); }
 /* Consistent gap below the fixed navbar on every page. Must be a fixed length,
    not em: Semantic's base font-size differs between container (16px) and
    non-container (14px) pages, so "5em" rendered as 80px vs 70px. */
-.ui.main.content { margin-top: 84px !important; }
+.ui.main.content { margin-top: 104px !important; }
 
 /* ---- Navbar brand logo (replaces the old "VDJdb" wordmark) ---------------- */
 .navbar-brand { padding-top: 0 !important; padding-bottom: 0 !important; }
@@ -218,6 +230,12 @@ a:hover { color: var(--ds-teal); }
 .overlay-selection__hint,
 .structure-empty-placeholder__text { color: var(--ds-muted) !important; }
 
-/* Structure contacts plot: residue labels (matplotlib <g id="text_N">) are
-   already painted after the line groups, so the badges sit on top by default.
-   (No hover interaction — the glyph-only hit-area made it unreliable.) */
+/* Structure contacts plot (matplotlib SVG injected via innerHTML).
+   For the multi-structure overlay we no longer fade whole secondary layers
+   (that dimmed the node boxes + labels too). Instead we fade ONLY the
+   connecting edges of secondary structures, keeping the node boxes (marker
+   <use> groups) and the residue labels (<text> groups) fully opaque. They are
+   painted after the edges, so boxes + labels always sit on top, non-transparent. */
+.structure-overlay__layer--secondary .structure-html svg g[id^="line2d_"]:not(:has(use)) {
+  opacity: 0.28;
+}
