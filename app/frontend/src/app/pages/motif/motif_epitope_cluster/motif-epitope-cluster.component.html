@@ -17,6 +17,8 @@
 <h5 class="ui left floated header" style="margin-top: 10px; margin-bottom: 10px" #HeaderContent
     [class.highlighted-cluster]="isHighlighted">
     <div class="content with-options">
+        <i class="minus circle icon motif-remove-icon" (click)="remove()"
+           title="Remove this motif and deselect its points in the plot"></i>
         <span>ID: {{ cluster.clusterId }}</span>&nbsp;&nbsp;&nbsp;
         <span>Cluster size: {{ cluster.size }}</span>&nbsp;&nbsp;&nbsp;
         <span>CDR3 length: {{ cluster.length }}</span>&nbsp;&nbsp;&nbsp;

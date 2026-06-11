@@ -158,6 +158,11 @@ export class SearchAvailabilityService {
     return this.structureVisualizations.get(normalized);
   }
 
+  /** Warm the availability index ahead of badge rendering (fire-and-forget). */
+  public prefetch(): void {
+    void this.ensureLoaded();
+  }
+
   public async hasMotif(species: string, tcrChain: string, mhcClass: string, mhcAllele: string, epitope: string,
                         method: 'tcrnet' | 'tcremp' = 'tcrnet'): Promise<boolean> {
     await this.ensureLoaded();

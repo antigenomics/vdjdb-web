@@ -14,7 +14,7 @@
  *     limitations under the License.
  */
 
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, NgZone, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { IMotifCluster, IMotifClusterMeta, IMotifEpitope } from 'pages/motif/motif';
 import { MotifService, MotifsServiceEvents } from 'pages/motif/motif.service';
@@ -40,10 +40,15 @@ export class MotifEpitopeEntryComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
   private chartResizeObserver?: { observe(target: Element): void; disconnect(): void };
   private chartResizeHandler?: () => void;
+  private plotDiv?: HTMLElement;
+  private plotlyWin?: any;
 
   public meta: IMotifClusterMeta;
   public isHidden: boolean = false;
   public highlightedCid: string | null = null;
+  // When set, only clusters whose id is in this set are listed below the chart.
+  // Driven by the URL `cid` (deep-link from Browse) and by Plotly legend interactions.
+  public activeCids: Set<string> | null = null;
   public chartUrl: SafeResourceUrl | null = null;
   public isChartLoading: boolean = false;
   public chartWidth: number = 0;
@@ -73,7 +78,14 @@ export class MotifEpitopeEntryComponent implements OnInit, OnDestroy {
   public onDiscard = new EventEmitter<IMotifEpitope>();
 
   constructor(private motifService: MotifService, private changeDetector: ChangeDetectorRef,
-              private sanitizer: DomSanitizer) {}
+              private sanitizer: DomSanitizer, private ngZone: NgZone) {}
+
+  /** Clusters shown below the chart, filtered by the active cid selection (cid deep-link or Plotly legend).
+   *  activeCids === null -> no filtering (show all). An (even empty) set -> show exactly those cids,
+   *  so when no points are selected in the chart, no motifs are listed. */
+  public get displayedClusters(): IMotifCluster[] {
+    return this.activeCids ? this.epitope.clusters.filter((c) => this.activeCids!.has(c.clusterId)) : this.epitope.clusters;
+  }
 
   public ngOnInit(): void {
     this.meta = this.epitope.clusters[ 0 ].meta;
@@ -83,6 +95,8 @@ export class MotifEpitopeEntryComponent implements OnInit, OnDestroy {
     });
     this.motifService.getHighlightedCid().pipe(takeUntil(this.destroy$)).subscribe((cid) => {
       this.highlightedCid = cid;
+      // Deep-link from Browse (the "M" evidence badge) carries a cid -> show only that cluster's PWM.
+      this.activeCids = (cid && this.epitope.clusters.some((c) => c.clusterId === cid)) ? new Set([ cid ]) : null;
       this.changeDetector.markForCheck();
     });
     if (!this.allowMultiple) {
@@ -104,6 +118,9 @@ export class MotifEpitopeEntryComponent implements OnInit, OnDestroy {
 
   public onChartIframeLoad(event: Event): void {
     const iframe = event.target as HTMLIFrameElement;
+    // The iframe (and its inline Plotly render) has finished -> hide the loading spinner.
+    this.isChartLoading = false;
+    this.changeDetector.markForCheck();
     try {
       const doc = iframe.contentDocument;
       const win = iframe.contentWindow as any;
@@ -138,7 +155,53 @@ export class MotifEpitopeEntryComponent implements OnInit, OnDestroy {
       } else if (win) {
         win.dispatchEvent(new Event('resize'));
       }
+
+      // Sync the PWM list below to the chart: each Plotly trace is named by cid (+ a background
+      // "Other epitopes" trace). On legend click / double-click (which fires plotly_restyle),
+      // list only the clusters whose traces remain visible. All visible -> show all.
+      this.plotDiv = plotDiv || undefined;
+      this.plotlyWin = win;
+      if (plotDiv && typeof (plotDiv as any).on === 'function') {
+        (plotDiv as any).on('plotly_restyle', () => this.syncClustersToChart(plotDiv));
+      }
+
+      // Deep-linked with a cid (from Browse "M" badge): isolate that trace so the chart shows
+      // only the linked cluster (matching the filtered PWM list), like a Plotly legend double-click.
+      if (win && win.Plotly && plotDiv && this.highlightedCid) {
+        const data: any[] = (plotDiv as any).data || [];
+        if (data.some((t) => t && t.name === this.highlightedCid)) {
+          const visibility = data.map((t) => (t && t.name === this.highlightedCid) ? true : 'legendonly');
+          win.Plotly.restyle(plotDiv, { visible: visibility });
+        }
+      }
     } catch (_) {}
+  }
+
+  /** Read which cluster traces are visible in the Plotly chart and filter the PWM list to match. */
+  private syncClustersToChart(plotDiv: HTMLElement): void {
+    const data: any[] = (plotDiv as any).data || [];
+    const clusterTraces = data.filter((t) => t && typeof t.name === 'string' && t.name !== 'Other epitopes');
+    if (clusterTraces.length === 0) { return; }
+    const visible = clusterTraces.filter((t) => t.visible !== 'legendonly' && t.visible !== false).map((t) => t.name as string);
+    this.ngZone.run(() => {
+      // All cluster traces visible -> no filtering (show every PWM). Otherwise restrict to the visible cids.
+      this.activeCids = (visible.length === clusterTraces.length) ? null : new Set<string>(visible);
+      this.changeDetector.markForCheck();
+    });
+  }
+
+  /** Remove a PWM from the list (via its "−" button) and deselect the matching trace in the chart. */
+  public removeCluster(clusterId: string): void {
+    const remaining = this.displayedClusters.map((c) => c.clusterId).filter((id) => id !== clusterId);
+    this.activeCids = new Set<string>(remaining);
+    this.changeDetector.markForCheck();
+    if (this.plotlyWin && this.plotlyWin.Plotly && this.plotDiv) {
+      const data: any[] = (this.plotDiv as any).data || [];
+      const idx = data.findIndex((t) => t && t.name === clusterId);
+      if (idx >= 0) {
+        this.plotlyWin.Plotly.restyle(this.plotDiv, { visible: 'legendonly' }, [ idx ]);
+      }
+    }
   }
 
   public discard(): void {
@@ -215,8 +278,8 @@ export class MotifEpitopeEntryComponent implements OnInit, OnDestroy {
     this.isChartLoading = true;
     this.changeDetector.markForCheck();
     Utils.HTTP.head(url).then(() => {
+      // Keep the spinner up until the iframe finishes loading + Plotly renders (onChartIframeLoad).
       this.chartUrl = this.sanitizer.bypassSecurityTrustResourceUrl(url);
-      this.isChartLoading = false;
       this.changeDetector.markForCheck();
     }).catch(() => {
       this.chartUrl = null;

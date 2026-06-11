@@ -40,3 +40,14 @@
     border-radius: 3px;
     transition: background-color 0.4s ease;
 }
+.motif-remove-icon {
+    cursor: pointer;
+    opacity: 0.4;
+    margin-right: 10px;
+    transition: opacity 0.15s ease, color 0.15s ease;
+}
+
+.motif-remove-icon:hover {
+    opacity: 1;
+    color: #db2828;
+}

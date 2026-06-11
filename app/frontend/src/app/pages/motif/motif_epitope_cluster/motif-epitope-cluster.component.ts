@@ -14,7 +14,7 @@
  *     limitations under the License.
  */
 
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Input, OnChanges, OnDestroy, OnInit, SimpleChanges, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core';
 import { IMotifCluster } from 'pages/motif/motif';
 import { MotifService, MotifsServiceEvents } from 'pages/motif/motif.service';
 import { ReplaySubject, Subscription } from 'rxjs';
@@ -48,6 +48,13 @@ export class MotifEpitopeClusterComponent implements OnInit, OnChanges, OnDestro
 
   @Input('highlightedCid')
   public highlightedCid: string | null = null;
+
+  @Output('onRemove')
+  public onRemove = new EventEmitter<string>();
+
+  public remove(): void {
+    this.onRemove.emit(this.cluster.clusterId);
+  }
 
   @Input('hit')
   public set setHit(hit: string) {
