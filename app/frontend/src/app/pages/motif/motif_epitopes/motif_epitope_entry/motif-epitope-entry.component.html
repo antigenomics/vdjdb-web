@@ -27,10 +27,13 @@
     </h4>
     <ng-container *ngIf="!isHidden">
         <div *ngIf="!allowMultiple && (isChartLoading || chartUrl)" #chartHost
-             class="ui clearing segment" style="padding: 0; overflow: hidden;">
-            <div *ngIf="isChartLoading" class="ui active centered inline loader" style="margin: 24px auto; display: block;"></div>
+             class="ui clearing segment" style="padding: 0; overflow: hidden; position: relative;"
+             [style.min-height.px]="isChartLoading ? (chartHeight > 0 ? chartHeight : 300) : null">
+            <div *ngIf="isChartLoading" class="ui active loader"
+                 style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 2;"></div>
             <div *ngIf="chartUrl && chartWidth > 0" class="motif-chart-wrapper"
-                 [style.width.px]="chartWidth" [style.height.px]="chartHeight">
+                 [style.width.px]="chartWidth" [style.height.px]="chartHeight"
+                 [style.visibility]="isChartLoading ? 'hidden' : 'visible'">
                 <iframe [src]="chartUrl" frameborder="0" scrolling="no"
                         class="motif-chart-iframe"
                         (load)="onChartIframeLoad($event)"></iframe>

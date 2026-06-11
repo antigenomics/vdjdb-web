@@ -27,6 +27,7 @@ import { AnalyticsService } from 'utils/analytics/analytics.service';
 import { LoggerService } from 'utils/logger/logger.service';
 import { NotificationService } from 'utils/notifications/notification.service';
 import { SearchTableService } from './table/search/search-table.service';
+import { SearchAvailabilityService } from './table/search/search-availability.service';
 import { MetaFiltersService } from 'shared/filters/filters_meta/meta-filters.service';
 
 @Component({
@@ -40,8 +41,12 @@ export class SearchPageComponent implements OnInit, OnDestroy {
   constructor(private searchTableService: SearchTableService, private filters: FiltersService,
               private route: ActivatedRoute, private ag: AGFiltersService, private tcr: TCRFiltersService,
               private diseases: DiseasesService, private meta: MetaFiltersService,
+              private availability: SearchAvailabilityService,
               logger: LoggerService, notifications: NotificationService, analytics: AnalyticsService) {
     this.table = new SearchTable(searchTableService, filters, analytics, logger, notifications);
+    // Warm the (large) evidence availability index up front so the Evidence-column "M" badges
+    // colour as soon as possible instead of after the table first renders.
+    this.availability.prefetch();
     if (this.searchTableService.isInitialized()) {
       this.fetchColumns();
       this.table.updateNumberOfRecords(this.searchTableService.getMetadata().numberOfRecords);

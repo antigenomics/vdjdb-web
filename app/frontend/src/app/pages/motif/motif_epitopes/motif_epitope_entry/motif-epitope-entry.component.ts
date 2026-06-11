@@ -118,6 +118,9 @@ export class MotifEpitopeEntryComponent implements OnInit, OnDestroy {
 
   public onChartIframeLoad(event: Event): void {
     const iframe = event.target as HTMLIFrameElement;
+    // The iframe (and its inline Plotly render) has finished -> hide the loading spinner.
+    this.isChartLoading = false;
+    this.changeDetector.markForCheck();
     try {
       const doc = iframe.contentDocument;
       const win = iframe.contentWindow as any;
@@ -275,8 +278,8 @@ export class MotifEpitopeEntryComponent implements OnInit, OnDestroy {
     this.isChartLoading = true;
     this.changeDetector.markForCheck();
     Utils.HTTP.head(url).then(() => {
+      // Keep the spinner up until the iframe finishes loading + Plotly renders (onChartIframeLoad).
       this.chartUrl = this.sanitizer.bypassSecurityTrustResourceUrl(url);
-      this.isChartLoading = false;
       this.changeDetector.markForCheck();
     }).catch(() => {
       this.chartUrl = null;
