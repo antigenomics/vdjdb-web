@@ -37,7 +37,7 @@
             </div>
         </div>
         <div class="ui clearing segment">
-            <motif-epitope-cluster *ngFor="let cluster of epitope.clusters; trackBy: trackClusterBy" [cluster]="cluster"
+            <motif-epitope-cluster *ngFor="let cluster of displayedClusters; trackBy: trackClusterBy" [cluster]="cluster"
                                    [isNormalized]="isNormalized"
                                    [highlightedCid]="highlightedCid"></motif-epitope-cluster>
         </div>

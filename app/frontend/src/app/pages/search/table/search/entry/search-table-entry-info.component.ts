@@ -241,7 +241,9 @@ export class SearchTableEntryInfoComponent extends TableEntry {
     }
 
     const { species, tcrChain, mhcClass, mhcAllele, epitopeSeq } = motifData;
-    const epitopeGene = this.getCellValue(row, columns, 'antigen.gene') || '';
+    // The motif page matches `gene` against the trimmed MHC allele (mhc.a, e.g. HLA-A*02),
+    // NOT antigen.gene. Trim the ":..." suffix to match the motif metadata tree.
+    const motifGene = mhcAllele.replace(/:.+/, '');
     const cdr3 = this.getCellValue(row, columns, 'cdr3') || '';
     const vSegm = this.getCellValue(row, columns, 'v.segm') || '';
     const jSegm = this.getCellValue(row, columns, 'j.segm') || '';
@@ -264,7 +266,7 @@ export class SearchTableEntryInfoComponent extends TableEntry {
           params.set('species', species);
           params.set('tcr_chain', tcrChain);
           params.set('mhc_class', mhcClass);
-          params.set('gene', epitopeGene);
+          params.set('gene', motifGene);
           params.set('epitope_seq', epitopeSeq);
           params.set('cid', methodCid);
           if (method === 'tcremp') { params.set('method', 'tcremp'); }

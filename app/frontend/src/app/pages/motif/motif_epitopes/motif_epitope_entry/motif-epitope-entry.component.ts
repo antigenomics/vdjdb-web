@@ -14,7 +14,7 @@
  *     limitations under the License.
  */
 
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, NgZone, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { IMotifCluster, IMotifClusterMeta, IMotifEpitope } from 'pages/motif/motif';
 import { MotifService, MotifsServiceEvents } from 'pages/motif/motif.service';
@@ -44,6 +44,9 @@ export class MotifEpitopeEntryComponent implements OnInit, OnDestroy {
   public meta: IMotifClusterMeta;
   public isHidden: boolean = false;
   public highlightedCid: string | null = null;
+  // When set, only clusters whose id is in this set are listed below the chart.
+  // Driven by the URL `cid` (deep-link from Browse) and by Plotly legend interactions.
+  public activeCids: Set<string> | null = null;
   public chartUrl: SafeResourceUrl | null = null;
   public isChartLoading: boolean = false;
   public chartWidth: number = 0;
@@ -73,7 +76,16 @@ export class MotifEpitopeEntryComponent implements OnInit, OnDestroy {
   public onDiscard = new EventEmitter<IMotifEpitope>();
 
   constructor(private motifService: MotifService, private changeDetector: ChangeDetectorRef,
-              private sanitizer: DomSanitizer) {}
+              private sanitizer: DomSanitizer, private ngZone: NgZone) {}
+
+  /** Clusters shown below the chart, filtered by the active cid selection (cid deep-link or Plotly legend). */
+  public get displayedClusters(): IMotifCluster[] {
+    if (!this.activeCids) {
+      return this.epitope.clusters;
+    }
+    const filtered = this.epitope.clusters.filter((c) => this.activeCids!.has(c.clusterId));
+    return filtered.length > 0 ? filtered : this.epitope.clusters;
+  }
 
   public ngOnInit(): void {
     this.meta = this.epitope.clusters[ 0 ].meta;
@@ -83,6 +95,8 @@ export class MotifEpitopeEntryComponent implements OnInit, OnDestroy {
     });
     this.motifService.getHighlightedCid().pipe(takeUntil(this.destroy$)).subscribe((cid) => {
       this.highlightedCid = cid;
+      // Deep-link from Browse (the "M" evidence badge) carries a cid -> show only that cluster's PWM.
+      this.activeCids = (cid && this.epitope.clusters.some((c) => c.clusterId === cid)) ? new Set([ cid ]) : null;
       this.changeDetector.markForCheck();
     });
     if (!this.allowMultiple) {
@@ -138,7 +152,27 @@ export class MotifEpitopeEntryComponent implements OnInit, OnDestroy {
       } else if (win) {
         win.dispatchEvent(new Event('resize'));
       }
+
+      // Sync the PWM list below to the chart: each Plotly trace is named by cid (+ a background
+      // "Other epitopes" trace). On legend click / double-click (which fires plotly_restyle),
+      // list only the clusters whose traces remain visible. All visible -> show all.
+      if (plotDiv && typeof (plotDiv as any).on === 'function') {
+        (plotDiv as any).on('plotly_restyle', () => this.syncClustersToChart(plotDiv));
+      }
     } catch (_) {}
+  }
+
+  /** Read which cluster traces are visible in the Plotly chart and filter the PWM list to match. */
+  private syncClustersToChart(plotDiv: HTMLElement): void {
+    const data: any[] = (plotDiv as any).data || [];
+    const clusterTraces = data.filter((t) => t && typeof t.name === 'string' && t.name !== 'Other epitopes');
+    if (clusterTraces.length === 0) { return; }
+    const visible = clusterTraces.filter((t) => t.visible !== 'legendonly' && t.visible !== false).map((t) => t.name as string);
+    this.ngZone.run(() => {
+      // All cluster traces visible -> no filtering (show every PWM). Otherwise restrict to the visible cids.
+      this.activeCids = (visible.length === clusterTraces.length) ? null : new Set<string>(visible);
+      this.changeDetector.markForCheck();
+    });
   }
 
   public discard(): void {
