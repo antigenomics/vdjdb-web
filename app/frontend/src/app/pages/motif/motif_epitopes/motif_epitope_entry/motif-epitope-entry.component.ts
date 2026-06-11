@@ -159,6 +159,16 @@ export class MotifEpitopeEntryComponent implements OnInit, OnDestroy {
       if (plotDiv && typeof (plotDiv as any).on === 'function') {
         (plotDiv as any).on('plotly_restyle', () => this.syncClustersToChart(plotDiv));
       }
+
+      // Deep-linked with a cid (from Browse "M" badge): isolate that trace so the chart shows
+      // only the linked cluster (matching the filtered PWM list), like a Plotly legend double-click.
+      if (win && win.Plotly && plotDiv && this.highlightedCid) {
+        const data: any[] = (plotDiv as any).data || [];
+        if (data.some((t) => t && t.name === this.highlightedCid)) {
+          const visibility = data.map((t) => (t && t.name === this.highlightedCid) ? true : 'legendonly');
+          win.Plotly.restyle(plotDiv, { visible: visibility });
+        }
+      }
     } catch (_) {}
   }
 
