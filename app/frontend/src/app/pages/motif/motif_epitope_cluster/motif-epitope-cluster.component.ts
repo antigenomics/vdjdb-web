@@ -99,9 +99,25 @@ export class MotifEpitopeClusterComponent implements OnInit, OnChanges, OnDestro
       this.changeDetector.markForCheck();
     }
     if (isMatch && this.headerContent) {
-      setTimeout(() => {
-        this.headerContent.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }, 200);
+      // Scroll the linked cluster into view by moving ONLY the right-panel scroll container
+      // (not the window/body). scrollIntoView() would scroll every ancestor, shifting the whole
+      // body up; this keeps the page static and only fires when arriving via a Browse cid link.
+      setTimeout(() => this.scrollWithinContainer(this.headerContent.nativeElement), 200);
+    }
+  }
+
+  private scrollWithinContainer(el: HTMLElement): void {
+    let parent = el.parentElement as HTMLElement | null;
+    while (parent) {
+      const overflowY = getComputedStyle(parent).overflowY;
+      if ((overflowY === 'auto' || overflowY === 'scroll') && parent.scrollHeight > parent.clientHeight) {
+        const elRect = el.getBoundingClientRect();
+        const pRect = parent.getBoundingClientRect();
+        const target = parent.scrollTop + (elRect.top - pRect.top) - (parent.clientHeight - el.offsetHeight) / 2;
+        parent.scrollTo({ top: Math.max(0, target), behavior: 'smooth' });
+        return;
+      }
+      parent = parent.parentElement;
     }
   }
 
