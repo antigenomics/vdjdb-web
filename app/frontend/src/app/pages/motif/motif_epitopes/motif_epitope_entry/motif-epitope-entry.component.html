@@ -39,7 +39,8 @@
         <div class="ui clearing segment">
             <motif-epitope-cluster *ngFor="let cluster of displayedClusters; trackBy: trackClusterBy" [cluster]="cluster"
                                    [isNormalized]="isNormalized"
-                                   [highlightedCid]="highlightedCid"></motif-epitope-cluster>
+                                   [highlightedCid]="highlightedCid"
+                                   (onRemove)="removeCluster($event)"></motif-epitope-cluster>
         </div>
     </ng-container>
 </div>

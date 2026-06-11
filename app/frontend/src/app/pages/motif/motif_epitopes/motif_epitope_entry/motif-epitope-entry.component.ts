@@ -40,6 +40,8 @@ export class MotifEpitopeEntryComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
   private chartResizeObserver?: { observe(target: Element): void; disconnect(): void };
   private chartResizeHandler?: () => void;
+  private plotDiv?: HTMLElement;
+  private plotlyWin?: any;
 
   public meta: IMotifClusterMeta;
   public isHidden: boolean = false;
@@ -78,13 +80,11 @@ export class MotifEpitopeEntryComponent implements OnInit, OnDestroy {
   constructor(private motifService: MotifService, private changeDetector: ChangeDetectorRef,
               private sanitizer: DomSanitizer, private ngZone: NgZone) {}
 
-  /** Clusters shown below the chart, filtered by the active cid selection (cid deep-link or Plotly legend). */
+  /** Clusters shown below the chart, filtered by the active cid selection (cid deep-link or Plotly legend).
+   *  activeCids === null -> no filtering (show all). An (even empty) set -> show exactly those cids,
+   *  so when no points are selected in the chart, no motifs are listed. */
   public get displayedClusters(): IMotifCluster[] {
-    if (!this.activeCids) {
-      return this.epitope.clusters;
-    }
-    const filtered = this.epitope.clusters.filter((c) => this.activeCids!.has(c.clusterId));
-    return filtered.length > 0 ? filtered : this.epitope.clusters;
+    return this.activeCids ? this.epitope.clusters.filter((c) => this.activeCids!.has(c.clusterId)) : this.epitope.clusters;
   }
 
   public ngOnInit(): void {
@@ -156,6 +156,8 @@ export class MotifEpitopeEntryComponent implements OnInit, OnDestroy {
       // Sync the PWM list below to the chart: each Plotly trace is named by cid (+ a background
       // "Other epitopes" trace). On legend click / double-click (which fires plotly_restyle),
       // list only the clusters whose traces remain visible. All visible -> show all.
+      this.plotDiv = plotDiv || undefined;
+      this.plotlyWin = win;
       if (plotDiv && typeof (plotDiv as any).on === 'function') {
         (plotDiv as any).on('plotly_restyle', () => this.syncClustersToChart(plotDiv));
       }
@@ -183,6 +185,20 @@ export class MotifEpitopeEntryComponent implements OnInit, OnDestroy {
       this.activeCids = (visible.length === clusterTraces.length) ? null : new Set<string>(visible);
       this.changeDetector.markForCheck();
     });
+  }
+
+  /** Remove a PWM from the list (via its "−" button) and deselect the matching trace in the chart. */
+  public removeCluster(clusterId: string): void {
+    const remaining = this.displayedClusters.map((c) => c.clusterId).filter((id) => id !== clusterId);
+    this.activeCids = new Set<string>(remaining);
+    this.changeDetector.markForCheck();
+    if (this.plotlyWin && this.plotlyWin.Plotly && this.plotDiv) {
+      const data: any[] = (this.plotDiv as any).data || [];
+      const idx = data.findIndex((t) => t && t.name === clusterId);
+      if (idx >= 0) {
+        this.plotlyWin.Plotly.restyle(this.plotDiv, { visible: 'legendonly' }, [ idx ]);
+      }
+    }
   }
 
   public discard(): void {

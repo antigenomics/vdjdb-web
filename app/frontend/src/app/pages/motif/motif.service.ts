@@ -245,6 +245,12 @@ export class MotifService {
       const epitopeNode = geneNode.next.values.find((v) => v.value === filters.epitopeSeq);
       if (!epitopeNode) { return; }
 
+      // Unpack the tree down to the linked epitope so its parent path is revealed on arrival.
+      speciesNode.isOpened = true;
+      tcrChainNode.isOpened = true;
+      mhcClassNode.isOpened = true;
+      geneNode.isOpened = true;
+
       this.selectTreeLevelValue(epitopeNode);
       this.updateSelected();
     });
