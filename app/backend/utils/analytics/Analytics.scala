@@ -24,10 +24,6 @@ case class Analytics @Inject()(configuration: Configuration) {
 
   def isAnalyticsEnabled: Boolean = analyticsConfiguration.enabled
 
-  def isYandexAnalyticsAvailable: Boolean = analyticsConfiguration.yandexID != "none"
-
-  def getYandexAnalyticsID: String = analyticsConfiguration.yandexID
-
   def isGoogleAnalyticsAvailable: Boolean = analyticsConfiguration.googleID != "none"
 
   def getGoogleAnalyticsID: String = analyticsConfiguration.googleID

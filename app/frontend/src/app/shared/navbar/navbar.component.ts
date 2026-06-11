@@ -14,7 +14,7 @@
  *     limitations under the License.
  */
 
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, HostListener } from '@angular/core';
 import { LoggerService } from 'utils/logger/logger.service';
 import { Utils } from 'utils/utils';
 
@@ -28,7 +28,44 @@ export class NavigationBarComponent {
   private readonly _userEmail: string = '';
   private readonly _userLogin: string = '';
 
-  constructor(logger: LoggerService) {
+  // Auto-hide header: slides up when scrolling down, reappears when scrolling
+  // up or when the pointer approaches the top edge of the viewport.
+  public hidden: boolean = false;
+  private static readonly topRevealZone: number = 60;
+  private static readonly scrollHideThreshold: number = 120;
+  private static readonly scrollDelta: number = 6;
+  private lastScrollY: number = 0;
+
+  @HostListener('window:scroll')
+  public onWindowScroll(): void {
+    const y = window.pageYOffset || document.documentElement.scrollTop || 0;
+    let next = this.hidden;
+    if (y < NavigationBarComponent.scrollHideThreshold) {
+      next = false;
+    } else if (y > this.lastScrollY + NavigationBarComponent.scrollDelta) {
+      next = true;
+    } else if (y < this.lastScrollY - NavigationBarComponent.scrollDelta) {
+      next = false;
+    }
+    this.lastScrollY = y;
+    this.setHidden(next);
+  }
+
+  @HostListener('window:mousemove', [ '$event' ])
+  public onWindowMouseMove(event: MouseEvent): void {
+    if (event.clientY <= NavigationBarComponent.topRevealZone) {
+      this.setHidden(false);
+    }
+  }
+
+  private setHidden(value: boolean): void {
+    if (this.hidden !== value) {
+      this.hidden = value;
+      this.changeDetector.markForCheck();
+    }
+  }
+
+  constructor(logger: LoggerService, private changeDetector: ChangeDetectorRef) {
     this._isLogged = Utils.Cookies.getCookie('logged') === 'true';
     this._userEmail = Utils.Cookies.getCookie('email');
     this._userLogin = Utils.Cookies.getCookie('login');

@@ -17,9 +17,10 @@
 import { ChangeDetectorRef } from '@angular/core';
 
 export class StructureZoomController {
-    public zoomMin: number = 1;
+    public zoomMin: number = 0.5;
     public zoomMax: number = 2;
     public zoomStep: number = 0.1;
+    public zoomDefault: number = 1;
     public zoomLevel: number = 1;
     public panX: number = 0;
     public panY: number = 0;
@@ -66,7 +67,7 @@ export class StructureZoomController {
     }
 
     public resetView(): void {
-        this.zoomLevel = this.zoomMin;
+        this.zoomLevel = this.zoomDefault;
         const centeredPan = this.getCenteredPan(this.zoomLevel);
         this.panX = centeredPan.x;
         this.panY = centeredPan.y;

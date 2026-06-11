@@ -15,14 +15,16 @@
   -->
 
 <div class="ui main content container text fade slow element soft-margin" style="padding-bottom: 75px;">
+    <div class="home-hero">
+        <h1 class="home-hero__title">Welcome to the VDJdb!</h1>
+        <p class="home-hero__subtitle">A curated database of T-cell receptor sequences with known antigen specificity.</p>
+        <img class="home-hero__image" src="assets/images/paper-splash.svg" alt="VDJdb">
+    </div>
     <div class="ui raised segments">
-        <h3 class="ui top attached header centered">Welcome to the VDJdb browser</h3>
         <div class="ui attached segment teal padded">
-            <img class="ui fluid image" src="assets/images/paper-splash.png" alt="splash">
-
+            <h3>About the database:</h3>
             <p>
-                VDJdb is a curated database of T-cell receptor (TCR) sequences with known antigen specificities. 
-                Its primary goal is to provide easy access to existing information on TCR antigen recognition, 
+                We provide easy access to existing information on TCR antigen recognition,
                 including the ability of particular TCRs to recognize specific epitopes in defined MHC contexts.
             </p>
 
@@ -65,7 +67,8 @@
             <ul>
                 <li><b>Browse</b> - interactively explore the database and run complex queries.</li>
                 <li><b>Annotation</b> - upload AIRR-seq samples and perform batch queries. (under development)</li>
-                <li><b>Motif</b> - browse the database of high-quality curated CDR3 motifs specific to different epitopes.</li>
+                <li><b>Motif</b> - browse the database of high-quality curated paratope (V+CDR3) motifs specific to different epitopes.</li>
+                <li><b>Structure</b> - explore complementarity maps of TCR-pMHC interactions and download AI-predicted structural data.</li>
                 <li><b>About</b> - get information on VDJdb raw data, downstream analysis tools, citation information, and contacts.</li>
             </ul>
         </div>

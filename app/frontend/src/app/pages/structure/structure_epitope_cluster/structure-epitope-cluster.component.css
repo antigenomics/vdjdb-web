@@ -182,24 +182,31 @@
     cursor: grabbing;
 }
 
-.structure-zoom-controls {
-    position: absolute;
-    right: 8px;
-    top: 50%;
-    transform: translateY(-50%);
-    z-index: 2;
+/* Toolbar above the plot — keeps legend + zoom controls out of the plot area
+   so they never overlap the contacts visualization. */
+.structure-toolbar {
     display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 6px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 8px 12px;
+    background: #ffffff;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.structure-zoom-controls {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
 }
 
 .structure-zoom {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
-    gap: 6px;
-    padding: 6px 4px;
+    gap: 8px;
+    padding: 4px 8px;
     background: rgba(255, 255, 255, 0.9);
     border: 1px solid rgba(0, 0, 0, 0.08);
     border-radius: 10px;
@@ -222,14 +229,13 @@
 }
 
 .structure-zoom__slider {
-    height: 120px;
-    width: 20px;
-    writing-mode: bt-lr;
-    -webkit-appearance: slider-vertical;
+    height: 20px;
+    width: 120px;
+    -webkit-appearance: auto;
 }
 
 .structure-zoom__reset {
-    width: 100%;
+    width: 36px;
     height: 36px;
     border-radius: 8px;
     border: 1px solid rgba(0, 0, 0, 0.12);
@@ -254,16 +260,15 @@
 }
 
 .structure-legend {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    z-index: 2;
-    width: calc(var(--structure-legend-width-ratio) * 100%);
+    flex: 0 1 auto;
+    min-width: 0;
     pointer-events: none;
 }
 
 .structure-legend__image {
     display: block;
-    width: 100%;
+    max-height: 46px;
+    width: auto;
+    max-width: 100%;
     height: auto;
 }

@@ -24,7 +24,7 @@
                 "output": "."
               }
             ],
-            "styles": [ "styles/semantic/dist/semantic.min.css", "styles/semantic-extensions.css", "styles/main.css" ],
+            "styles": [ "styles/semantic/dist/semantic.min.css", "styles/semantic-extensions.css", "styles/main.css", "styles/design-system.css" ],
             "scripts": [ ],
             "deployUrl": "/develop/angular/"
           },

@@ -143,8 +143,10 @@ case class Motifs @Inject()(database: Database)(implicit tfp: TemporaryFileProvi
         val target = String.valueOf(cdr3(pos))
 
         val i: (Double, Double) = if (tcremp) {
-          val h = backend.server.motifs.api.epitope.MotifClusterEntry.recomputeHeightForAA(p, target)
-          (h, h)
+          // tcremp: reuse the cluster-PWM aggregation (letter-frequency based) so the CDR3-search
+          // ranking matches the displayed logo. Pick the target AA's raw and background-subtracted heights.
+          val entry = backend.server.motifs.api.epitope.MotifClusterEntry.fromTable(p, aggregate = true)
+          entry.aa.find(_.letter == target).map(a => (a.H, a.HNorm)).getOrElse((0.0d, 0.0d))
         } else {
           val index = p.stringColumn("aa").firstIndexOf(target)
           if (index != -1) {
