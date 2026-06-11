@@ -111,7 +111,8 @@ export class MotifEpitopeEntryComponent implements OnInit, OnDestroy {
 
       // remove body margins so content fills the iframe exactly
       const style = doc.createElement('style');
-      style.textContent = 'html, body { margin: 0 !important; padding: 0 !important; width: 100% !important; height: 100% !important; overflow: hidden !important; }';
+      // hide the Plotly chart title (.gtitle) — it duplicates the epitope shown in the panel header above
+      style.textContent = 'html, body { margin: 0 !important; padding: 0 !important; width: 100% !important; height: 100% !important; overflow: hidden !important; } .gtitle { display: none !important; }';
       doc.head.appendChild(style);
 
       // override the hardcoded inline dimensions on the plotly div
@@ -126,9 +127,10 @@ export class MotifEpitopeEntryComponent implements OnInit, OnDestroy {
       if (win && win.Plotly && plotDiv) {
         win.Plotly.relayout(plotDiv, {
           autosize: true,
+          'title.text': '',
           'margin.l': 30,
           'margin.r': 10,
-          'margin.t': 40,
+          'margin.t': 10,
           'margin.b': 30
         }).then(() => {
           win.Plotly.Plots.resize(plotDiv);

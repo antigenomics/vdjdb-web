@@ -1,0 +1,241 @@
+/*
+ * Apple-inspired design refinement for VDJdb.
+ * Loaded last (after semantic.min.css, semantic-extensions.css, main.css) so it overrides.
+ * Goals: Inter typography, generous whitespace, 1px hairlines, near-white surfaces, clarity.
+ * Constraints: preserve day mode, the teal brand (#48af75), and Semantic UI structure.
+ */
+
+:root {
+  --ds-font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --ds-ink: #1d1d1f;            /* Apple near-black for headings */
+  --ds-text: #2f3134;          /* body text */
+  --ds-muted: #6e6e73;         /* secondary text */
+  --ds-bg: #fbfbfd;            /* page background */
+  --ds-surface: #ffffff;       /* cards / segments */
+  --ds-hairline: rgba(0, 0, 0, 0.08);
+  --ds-teal: #48af75;          /* brand */
+  --ds-radius: 12px;
+}
+
+/* ---- Typography ---------------------------------------------------------- */
+body,
+.ui.menu,
+.ui.header,
+.ui.form,
+.ui.button,
+.ui.input,
+.ui.table,
+.ui.message,
+.ui.list,
+.ui.statistic > .value,
+input,
+textarea,
+select,
+h1, h2, h3, h4, h5 {
+  font-family: var(--ds-font);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background-color: var(--ds-bg) !important;
+  color: var(--ds-text);
+  letter-spacing: -0.003em;
+}
+
+.ui.header,
+h1, h2, h3, h4, h5 {
+  color: var(--ds-ink);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+p, li {
+  line-height: 1.55;
+}
+
+a {
+  color: #0f7a4d; /* teal-tinted link that stays legible on white */
+}
+a:hover { color: var(--ds-teal); }
+
+/* ---- Surfaces: hairlines, soft radius, gentle shadow --------------------- */
+.ui.segment,
+.ui.segments,
+.ui.card,
+.ui.cards > .card {
+  border-color: var(--ds-hairline) !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+}
+
+.ui.raised.segments,
+.ui.raised.segment {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06) !important;
+  border-radius: var(--ds-radius) !important;
+}
+
+.ui.segments { border-radius: var(--ds-radius) !important; }
+.ui.attached.segment { border-radius: 0 !important; }
+.ui.segments > .segment:first-child,
+.ui.top.attached.header { border-radius: var(--ds-radius) var(--ds-radius) 0 0 !important; }
+.ui.segments > .segment:last-child { border-radius: 0 0 var(--ds-radius) var(--ds-radius) !important; }
+
+.ui.segment.padded { padding: 1.75em 2em; }
+
+.ui.divider { border-top-color: var(--ds-hairline); border-bottom: none; }
+
+/* Tables: lighter rules */
+.ui.table { border-color: var(--ds-hairline); }
+.ui.table th { font-weight: 600; }
+.ui.table td, .ui.table th { border-color: var(--ds-hairline) !important; }
+
+/* Buttons: a touch more rounded, Inter, calmer */
+.ui.button { border-radius: 8px; font-weight: 500; letter-spacing: -0.01em; }
+
+/* The teal "attached segment" header accent kept but softened */
+.ui.top.attached.header.centered { letter-spacing: -0.01em; }
+
+/* ---- Redesign the heavy green segment bars into clean hairlines ----------- */
+/* Semantic colored ("teal") attached segments render a thick 2px green top border;
+   replace it with a 1px neutral hairline so panels read as clean Apple-style cards.
+   Teal is preserved for headings, links and active states. */
+.ui.segment[class*="teal"],
+.ui.attached.segment[class*="teal"],
+.ui[class*="attached"].segment[class*="teal"],
+.ui.attached.header[class*="teal"] {
+  border-top: 1px solid var(--ds-hairline) !important;
+}
+/* A segment that directly follows an attached header needs no second top rule */
+.ui.attached.header + .ui.attached.segment { border-top: none !important; }
+/* The FIRST segment of a group (e.g. home "About the database") sits flush under
+   the rounded container top — no dark top line. Fixes the black line on home. */
+.ui.segments > .segment:first-child,
+.ui.raised.segments > .segment:first-child { border-top: none !important; }
+.ui.attached.header {
+  border-color: var(--ds-hairline) !important;
+  color: var(--ds-ink) !important;
+  font-weight: 600;
+}
+
+/* ---- Navbar: keep dark, refine into an Apple-style translucent bar ------- */
+/* Taller, comfortable bar (~2x the old thin one) with vertically-centred items. */
+.ui.top.fixed.menu,
+.ui.top.fixed.inverted.menu {
+  min-height: 68px;
+  align-items: stretch;
+  background: rgba(29, 29, 31, 0.92) !important;
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  backdrop-filter: saturate(180%) blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: none !important;
+}
+.ui.top.fixed.menu > .container { min-height: 68px; align-items: stretch; }
+
+/* Fancy auto-hide: slide the bar up out of view; it eases back in on scroll-up
+   or when the pointer nears the top edge. */
+.ui.top.fixed.menu {
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease;
+  will-change: transform;
+}
+.ui.top.fixed.menu.navbar--hidden {
+  transform: translateY(-100%);
+  opacity: 0;
+  pointer-events: none;
+}
+/* Items stretch to the full bar height (so hover shading spans bottom-to-top,
+   matching prod) while their text/icon stays vertically centred. */
+.ui.top.fixed.menu .item {
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  font-size: 1.2rem;
+  align-items: center;
+}
+.ui.inverted.menu .item:hover,
+.ui.inverted.menu a.item:hover { color: #ffffff !important; }
+
+/* Consistent gap below the fixed navbar on every page. Must be a fixed length,
+   not em: Semantic's base font-size differs between container (16px) and
+   non-container (14px) pages, so "5em" rendered as 80px vs 70px. */
+.ui.main.content { margin-top: 104px !important; }
+
+/* ---- Navbar brand logo (replaces the old "VDJdb" wordmark) ---------------- */
+.navbar-brand { padding-top: 0 !important; padding-bottom: 0 !important; }
+.navbar-brand__logo {
+  height: 40px;
+  width: auto;
+  display: block;
+}
+
+/* ---- Home hero ----------------------------------------------------------- */
+.home-hero {
+  text-align: center;
+  padding: 0.5em 0 0.25em;
+}
+.home-hero__title {
+  font-size: 2.6rem;
+  font-weight: 700;
+  letter-spacing: -0.022em;
+  color: var(--ds-ink);
+  margin: 0.2em 0 0.15em;
+  line-height: 1.08;
+}
+.home-hero__subtitle {
+  font-size: 1.15rem;
+  font-weight: 400;
+  color: var(--ds-muted);
+  max-width: 640px;
+  margin: 0 auto 1.25em;
+  line-height: 1.5;
+}
+.home-hero__image {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin: 0 auto 0.5em;
+}
+
+/* ---- Fix C: Overview embedded HTML images (innerHTML — needs global rule)
+   center within the block and span full width. ---------------------------- */
+.overview img {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin: 1em auto;
+}
+
+/* ---- Structure panels: unify borders/greys with the rest of the site ----- */
+/* Component CSS used ad-hoc greys (#dfe3ed, rgb(212,212,213), #f9fbff); align
+   them to the shared hairline/surface so structure & motif panels match. */
+.structure-visualization-segment,
+.structure-overlay {
+  background-color: var(--ds-surface) !important;
+  border: 1px solid var(--ds-hairline) !important;
+  border-radius: var(--ds-radius) !important;
+}
+.structure-cdr3-layout { border-bottom-color: var(--ds-hairline) !important; }
+.overlay-card { border-color: var(--ds-hairline) !important; }
+.structure-toolbar { border-bottom-color: var(--ds-hairline) !important; }
+
+/* Normalise the ad-hoc grey text tones (#1f1f1f, #303030, rgba(0,0,0,.5–.75))
+   onto the shared ink/text/muted scale for visual consistency. */
+.structure-epitope-entry__title,
+.overlay-card__label,
+.overlay-card__line,
+.structure-cdr3-label,
+.structure-cdr3-info,
+.overlay-list__instructions-title { color: var(--ds-ink) !important; }
+.epitope-meta,
+.epitope-meta__label,
+.overlay-list__instructions-hint,
+.overlay-selection__hint,
+.structure-empty-placeholder__text { color: var(--ds-muted) !important; }
+
+/* Structure contacts plot (matplotlib SVG injected via innerHTML).
+   For the multi-structure overlay we no longer fade whole secondary layers
+   (that dimmed the node boxes + labels too). Instead we fade ONLY the
+   connecting edges of secondary structures, keeping the node boxes (marker
+   <use> groups) and the residue labels (<text> groups) fully opaque. They are
+   painted after the edges, so boxes + labels always sit on top, non-transparent. */
+.structure-overlay__layer--secondary .structure-html svg g[id^="line2d_"]:not(:has(use)) {
+  opacity: 0.28;
+}
