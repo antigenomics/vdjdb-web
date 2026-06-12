@@ -414,9 +414,21 @@ export class MotifService {
           .filter(([ _, value ]) => value.isSelected)
           .map(([ _, value ]) => value);
       this.selected.next(selectedValues);
-      if (selectedValues.length === 0) {
-        // Full deselection — drop the cross-page epitope memory.
+      // Cross-page memory points at the FIRST selected epitope (tree order), so it
+      // works in "multiple epitopes" mode too — the tree stops updating
+      // lastEpitopeUrlParams there, but the isSelected flags are always correct.
+      const selectedParams = MotifService.collectSelectedEpitopeParams(metadata.root);
+      if (selectedParams.length === 0) {
         this.bridge.clear();
+      } else {
+        const first = selectedParams[0];
+        this.bridge.set({
+          species:    first['species'],
+          tcrChain:   first['tcr_chain'],
+          mhcClass:   first['mhc_class'],
+          gene:       first['gene'],
+          epitopeSeq: first['epitope_seq']
+        });
       }
       this.events.next(MotifsServiceEvents.UPDATE_SELECTED);
       setTimeout(() => {
@@ -481,33 +493,37 @@ export class MotifService {
   // selection (single or multiple) — unlike lastEpitopeUrlParams, which the tree
   // stops maintaining once "multiple epitopes" mode is on.
   public getSelectedEpitopeParams(): Observable<Array<{ [key: string]: string }>> {
-    return this.metadata.pipe(take(1), map((metadata) => {
-      const out: Array<{ [key: string]: string }> = [];
-      for (const speciesNode of metadata.root.values) {
-        if (!speciesNode.next) { continue; }
-        for (const chainNode of speciesNode.next.values) {
-          if (!chainNode.next) { continue; }
-          for (const classNode of chainNode.next.values) {
-            if (!classNode.next) { continue; }
-            for (const geneNode of classNode.next.values) {
-              if (!geneNode.next) { continue; }
-              for (const epitopeNode of geneNode.next.values) {
-                if (epitopeNode.isSelected) {
-                  out.push({
-                    species:     speciesNode.value,
-                    tcr_chain:   chainNode.value,
-                    mhc_class:   classNode.value,
-                    gene:        geneNode.value,
-                    epitope_seq: epitopeNode.value
-                  });
-                }
+    return this.metadata.pipe(take(1), map((metadata) => MotifService.collectSelectedEpitopeParams(metadata.root)));
+  }
+
+  // Walk the tree (species/tcr_chain/mhc.class/mhc.a/epitope) collecting the full
+  // URL params of every selected epitope leaf, in tree order.
+  private static collectSelectedEpitopeParams(root: IMotifsMetadataTreeLevel): Array<{ [key: string]: string }> {
+    const out: Array<{ [key: string]: string }> = [];
+    for (const speciesNode of root.values) {
+      if (!speciesNode.next) { continue; }
+      for (const chainNode of speciesNode.next.values) {
+        if (!chainNode.next) { continue; }
+        for (const classNode of chainNode.next.values) {
+          if (!classNode.next) { continue; }
+          for (const geneNode of classNode.next.values) {
+            if (!geneNode.next) { continue; }
+            for (const epitopeNode of geneNode.next.values) {
+              if (epitopeNode.isSelected) {
+                out.push({
+                  species:     speciesNode.value,
+                  tcr_chain:   chainNode.value,
+                  mhc_class:   classNode.value,
+                  gene:        geneNode.value,
+                  epitope_seq: epitopeNode.value
+                });
               }
             }
           }
         }
       }
-      return out;
-    }));
+    }
+    return out;
   }
 
   public findTreeLevelValue(hash: string): Observable<IMotifsMetadataTreeLevelValue[]> {
