@@ -35,13 +35,27 @@ export class NavigationBarComponent implements OnInit, OnDestroy {
   private static readonly scrollHideThreshold: number = 120;
   private static readonly scrollDelta: number = 6;
   private lastScrollY: number = 0;
+  private lastScrollTarget: EventTarget | null = null;
 
   // Bound handlers registered OUTSIDE Angular (see ngOnInit) so scroll/mousemove don't trigger a
   // change-detection pass on every event; we re-enter the zone only when visibility flips.
-  // Only the window/body scroll drives auto-hide — inner panel scrolls (Motif/Structure side
-  // and result columns) must NOT move the bar, so this listens on window without capture.
-  private readonly scrollHandler = (): void => {
-    const y = window.pageYOffset || document.documentElement.scrollTop || 0;
+  // Registered in CAPTURE phase so it also fires for inner scroll containers: Motif/Structure use
+  // fixed-height panels with their own overflow:auto, so the window itself never scrolls there.
+  // Scroll events don't bubble, but a capture-phase listener on window still sees descendant
+  // scrolls. We read the scrolled element's scrollTop; on switching containers we reset the
+  // baseline so a stale lastScrollY from another element can't trigger a spurious hide/show.
+  private readonly scrollHandler = (event?: Event): void => {
+    const target = event ? event.target : null;
+    let y: number;
+    if (target && target instanceof HTMLElement && target !== document.documentElement && target !== document.body) {
+      y = target.scrollTop;
+    } else {
+      y = window.pageYOffset || document.documentElement.scrollTop || 0;
+    }
+    if (target !== this.lastScrollTarget) {
+      this.lastScrollTarget = target;
+      this.lastScrollY = y;
+    }
     let next = this.hidden;
     if (y < NavigationBarComponent.scrollHideThreshold) {
       next = false;
@@ -71,13 +85,13 @@ export class NavigationBarComponent implements OnInit, OnDestroy {
 
   public ngOnInit(): void {
     this.ngZone.runOutsideAngular(() => {
-      window.addEventListener('scroll', this.scrollHandler, { passive: true });
+      window.addEventListener('scroll', this.scrollHandler, { passive: true, capture: true });
       window.addEventListener('mousemove', this.mouseMoveHandler, { passive: true });
     });
   }
 
   public ngOnDestroy(): void {
-    window.removeEventListener('scroll', this.scrollHandler);
+    window.removeEventListener('scroll', this.scrollHandler, true);
     window.removeEventListener('mousemove', this.mouseMoveHandler);
   }
 
