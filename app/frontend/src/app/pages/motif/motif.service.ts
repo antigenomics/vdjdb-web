@@ -34,6 +34,7 @@ import { ISeqLogoChartConfiguration } from 'shared/charts/seqlogo/seqlogo-config
 import { LoggerService } from 'utils/logger/logger.service';
 import { NotificationService } from 'utils/notifications/notification.service';
 import { Utils } from 'utils/utils';
+import { EpitopeBridgeService, IBridgeEpitope } from '../../epitope-bridge.service';
 
 export namespace MotifsServiceWebSocketActions {
   export const METADATA = 'meta';
@@ -85,7 +86,7 @@ export class MotifService {
   private loadingState: Subject<boolean> = new ReplaySubject(1);
   private contentReady: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(true);
 
-  constructor(private logger: LoggerService, private notifications: NotificationService) {}
+  constructor(private logger: LoggerService, private notifications: NotificationService, private bridge: EpitopeBridgeService) {}
 
   public getMethod(): MotifMethod {
     return this.method;
@@ -186,6 +187,15 @@ export class MotifService {
 
   public setLastEpitopeUrlParams(params: { [key: string]: string } | null): void {
     this.lastEpitopeUrlParams = params;
+    if (params && params['epitope_seq']) {
+      this.bridge.set({
+        species:    params['species'],
+        tcrChain:   params['tcr_chain'],
+        mhcClass:   params['mhc_class'],
+        gene:       params['gene'],
+        epitopeSeq: params['epitope_seq']
+      });
+    }
   }
 
   public getLastEpitopeUrlParams(): { [key: string]: string } | null {
@@ -265,6 +275,13 @@ export class MotifService {
       ]
     };
 
+    this.bridge.set({
+      species:    filters.species,
+      tcrChain:   filters.tcrChain,
+      mhcClass:   filters.mhcClass,
+      gene:       filters.gene,
+      epitopeSeq: filters.epitopeSeq
+    });
     this.highlightedCid.next(filters.cid || null);
     this.select(treeFilter);
   }
@@ -278,6 +295,8 @@ export class MotifService {
       this.notifications.warn('Motifs CDR3', `Length of CDR3 substring should be greater of equal than ${MotifService.minSubstringCDR3Length}`);
       return;
     }
+    // CDR3 search has no single selected epitope to carry across pages.
+    this.bridge.clear();
     this.loadingState.next(true);
     Utils.HTTP.post('/api/motifs/cdr3', { cdr3, substring, gene, top, method: this.method }).then((response) => {
       const result = JSON.parse(response.response) as IMotifCDR3SearchResult;
@@ -391,10 +410,14 @@ export class MotifService {
 
   public updateSelected(): void {
     this.metadata.pipe(take(1)).subscribe((metadata) => {
-      this.selected.next(MotifService.extractMetadataTreeLeafValues(metadata.root)
+      const selectedValues = MotifService.extractMetadataTreeLeafValues(metadata.root)
           .filter(([ _, value ]) => value.isSelected)
-          .map(([ _, value ]) => value)
-      );
+          .map(([ _, value ]) => value);
+      this.selected.next(selectedValues);
+      if (selectedValues.length === 0) {
+        // Full deselection — drop the cross-page epitope memory.
+        this.bridge.clear();
+      }
       this.events.next(MotifsServiceEvents.UPDATE_SELECTED);
       setTimeout(() => {
         this.events.next(MotifsServiceEvents.UPDATE_SCROLL);
@@ -408,6 +431,49 @@ export class MotifService {
       const remainingEpitopes = epitopes.filter((e) => selectedEpitopeHashes.indexOf(e.hash) !== -1);
       this.epitopes.next(remainingEpitopes);
     });
+  }
+
+  // Resolve a (possibly cross-page) epitope descriptor against the currently
+  // loaded metadata tree, returning the URL params for the matching leaf or null
+  // if this method/page does not contain that epitope. Matching is best-effort:
+  // epitope sequence + MHC class are required; MHC head and species/chain refine
+  // when provided. Used to keep a selection across the tcrnet/tcremp switch and
+  // when arriving from the Structure page.
+  public resolveEpitopeParams(target: IBridgeEpitope): Observable<{ [key: string]: string } | null> {
+    return this.metadata.pipe(take(1), map((metadata) => {
+      const wantEpitope = target.epitopeSeq.toLowerCase();
+      const wantClass = target.mhcClass.toLowerCase();
+      const wantHead = EpitopeBridgeService.mhcHead(target.gene);
+      for (const speciesNode of metadata.root.values) {
+        if (target.species && speciesNode.value.toLowerCase() !== target.species.toLowerCase()) { continue; }
+        if (!speciesNode.next) { continue; }
+        for (const chainNode of speciesNode.next.values) {
+          if (target.tcrChain && chainNode.value.toLowerCase() !== target.tcrChain.toLowerCase()) { continue; }
+          if (!chainNode.next) { continue; }
+          for (const classNode of chainNode.next.values) {
+            if (classNode.value.toLowerCase() !== wantClass) { continue; }
+            if (!classNode.next) { continue; }
+            for (const geneNode of classNode.next.values) {
+              if (wantHead && EpitopeBridgeService.mhcHead(geneNode.value) !== wantHead) { continue; }
+              if (!geneNode.next) { continue; }
+              for (const epitopeNode of geneNode.next.values) {
+                if (epitopeNode.value.toLowerCase() === wantEpitope) {
+                  return {
+                    method:      this.method,
+                    species:     speciesNode.value,
+                    tcr_chain:   chainNode.value,
+                    mhc_class:   classNode.value,
+                    gene:        geneNode.value,
+                    epitope_seq: epitopeNode.value
+                  };
+                }
+              }
+            }
+          }
+        }
+      }
+      return null;
+    }));
   }
 
   public findTreeLevelValue(hash: string): Observable<IMotifsMetadataTreeLevelValue[]> {

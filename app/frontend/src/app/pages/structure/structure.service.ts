@@ -38,6 +38,7 @@ import { map, take } from 'rxjs/operators';
 import { LoggerService } from 'utils/logger/logger.service';
 import { NotificationService } from 'utils/notifications/notification.service';
 import { Utils } from 'utils/utils';
+import { EpitopeBridgeService, IBridgeEpitope } from '../../epitope-bridge.service';
 
 export namespace StructuresServiceWebSocketActions {
   export const METADATA = 'meta';
@@ -77,7 +78,7 @@ export class StructureService {
   private selectedClusterIds: ReplaySubject<string[]> = new ReplaySubject(1);
   private htmlVisualizationCache: Map<string, string | null> = new Map<string, string | null>();
 
-  constructor(private logger: LoggerService, private notifications: NotificationService) {}
+  constructor(private logger: LoggerService, private notifications: NotificationService, private bridge: EpitopeBridgeService) {}
 
   public async load(): Promise<void> {
     if (!this.isMetadataLoaded && !this.isMetadataLoading) {
@@ -220,6 +221,8 @@ export class StructureService {
       this.notifications.warn('Structure CDR3', `Length of CDR3 substring should be greater or equal than ${StructureService.minSubstringCDR3Length}`);
       return;
     }
+    // CDR3 search has no single selected epitope to carry across pages.
+    this.bridge.clear();
     this.loadingState.next(true);
     Utils.HTTP.post('/api/structures/cdr3', { cdr3, substring, gene, top }).then((response) => {
      const raw = JSON.parse(response.response);
@@ -298,6 +301,7 @@ export class StructureService {
 
   public select(treeFilter: IStructuresSearchTreeFilter, mode: 'append' | 'replace' = 'append'): void {
     this.setSearchState(StructureSearchState.SEARCH_TREE);
+    this.rememberBridgeEpitope(treeFilter);
     if (mode === 'replace') {
       this.metadata.pipe(take(1)).subscribe((metadata) => {
         this.clearSelectedValues(metadata);
@@ -419,10 +423,14 @@ export class StructureService {
 
   public updateSelected(): void {
     this.metadata.pipe(take(1)).subscribe((metadata) => {
-      this.selected.next(StructureService.extractMetadataTreeLeafValues(metadata.root)
+      const selectedValues = StructureService.extractMetadataTreeLeafValues(metadata.root)
           .filter(([ _, value ]) => value.isSelected)
-          .map(([ _, value ]) => value)
-      );
+          .map(([ _, value ]) => value);
+      this.selected.next(selectedValues);
+      if (selectedValues.length === 0) {
+        // Full deselection — drop the cross-page epitope memory.
+        this.bridge.clear();
+      }
       this.events.next(StructuresServiceEvents.UPDATE_SELECTED);
       setTimeout(() => {
         this.events.next(StructuresServiceEvents.UPDATE_SCROLL);
@@ -437,6 +445,55 @@ export class StructureService {
       const remainingEpitopes = epitopes.filter((e) => selectedEpitopeHashes.indexOf(e.hash) !== -1);
       this.epitopes.next(remainingEpitopes);
     });
+  }
+
+  // Record the just-selected epitope into the cross-page bridge so the Motif page
+  // can re-open it. The structure tree only knows mhc.class / mhc.pair / epitope
+  // (no species or tcr_chain), which is enough for best-effort matching.
+  private rememberBridgeEpitope(treeFilter: IStructuresSearchTreeFilter): void {
+    const entries = Array.isArray(treeFilter && treeFilter.entries) ? treeFilter.entries : [];
+    const mhcClass = entries.find((e) => e && e.name === 'mhc.class');
+    const mhcPair = entries.find((e) => e && e.name === 'mhc.pair');
+    const epitope = entries.find((e) => e && e.name === 'antigen.epitope');
+    if (mhcClass && mhcPair && epitope) {
+      this.bridge.set({
+        mhcClass:   mhcClass.value,
+        gene:       mhcPair.value,
+        epitopeSeq: epitope.value
+      });
+    }
+  }
+
+  // Resolve a (possibly cross-page) epitope descriptor against the loaded metadata
+  // tree, returning the URL params for the matching leaf or null if this page does
+  // not contain that epitope. Matching is best-effort on epitope sequence + MHC
+  // class, refined by MHC head. Used when arriving from the Motif page.
+  public resolveEpitopeParams(target: IBridgeEpitope): Observable<{ [key: string]: string } | null> {
+    return this.metadata.pipe(take(1), map((metadata) => {
+      const wantEpitope = target.epitopeSeq.toLowerCase();
+      const wantClass = target.mhcClass.toLowerCase();
+      const wantHead = EpitopeBridgeService.mhcHead(target.gene);
+      for (const classNode of metadata.root.values) {
+        if (classNode.value.toLowerCase() !== wantClass) { continue; }
+        if (!classNode.next) { continue; }
+        for (const pairNode of classNode.next.values) {
+          if (wantHead && EpitopeBridgeService.mhcHead(pairNode.value) !== wantHead) { continue; }
+          if (!pairNode.next) { continue; }
+          for (const epitopeNode of pairNode.next.values) {
+            if (epitopeNode.value.toLowerCase() === wantEpitope) {
+              return {
+                species:     target.species || '',
+                tcr_chain:   target.tcrChain || '',
+                mhc_class:   classNode.value,
+                gene:        pairNode.value,
+                epitope_seq: epitopeNode.value
+              };
+            }
+          }
+        }
+      }
+      return null;
+    }));
   }
 
   public findTreeLevelValue(hash: string): Observable<IStructuresMetadataTreeLevelValue[]> {

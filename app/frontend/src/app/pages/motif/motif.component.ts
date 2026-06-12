@@ -28,6 +28,7 @@ import { MotifMethod, MotifSearchState, MotifService } from 'pages/motif/motif.s
 import { fromEvent, Observable, Subscription, timer } from 'rxjs';
 import { debounce, take } from 'rxjs/operators';
 import { ContentWrapperService } from '../../content-wrapper.service';
+import { EpitopeBridgeService } from '../../epitope-bridge.service';
 
 @Component({
   selector:        'motif',
@@ -53,7 +54,8 @@ export class MotifPageComponent implements OnInit, OnDestroy {
   public epitopesContainer!: ElementRef;
 
   constructor(private motifService: MotifService, private contentWrapper: ContentWrapperService,
-              private route: ActivatedRoute, private router: Router, private cdr: ChangeDetectorRef) {
+              private route: ActivatedRoute, private router: Router, private cdr: ChangeDetectorRef,
+              private epitopeBridge: EpitopeBridgeService) {
     this.metadata = motifService.getMetadata();
     this.selected = motifService.getSelected();
     this.epitopes = motifService.getEpitopes();
@@ -88,7 +90,7 @@ export class MotifPageComponent implements OnInit, OnDestroy {
         if (cdr3Query) {
           const cdr3Substring = params.get('substring') === 'true';
           this.motifService.searchCDR3ByUrl(cdr3Query, cdr3Substring);
-        } else if (this.motifService.isLoaded()) {
+        } else if (this.motifService.isLoaded() && this.hasOwnSelection()) {
           // Returning to tab with cached state — hide content, show loader, restore URL,
           // then reveal content after browser paints the loader
           this.motifService.setContentReady(false);
@@ -116,7 +118,9 @@ export class MotifPageComponent implements OnInit, OnDestroy {
             this.motifService.setLoading(false);
           });
         } else {
-          this.motifService.load();
+          // Nothing of our own to show — carry over the epitope selected on the
+          // Structure page (if any), otherwise just load the empty tree.
+          this.applyBridgeOrLoad();
         }
       }
     });
@@ -154,10 +158,84 @@ export class MotifPageComponent implements OnInit, OnDestroy {
     if (method === this.motifService.getMethod()) {
       return;
     }
+    // Capture the current selection BEFORE switching — switchMethod() clears it
+    // synchronously. We re-apply it on the new method if that motif exists there,
+    // instead of dropping back to "nothing selected".
+    const prevState = this.motifService.getSearchState();
+    const prevEpitope = this.motifService.getLastEpitopeUrlParams();
+    const prevCdr3 = this.motifService.getLastCDR3SearchOptions();
+
     this.motifService.switchMethod(method).then(() => {
-      this.router.navigate([], { queryParams: { method }, replaceUrl: true });
-      this.cdr.markForCheck();
+      if (prevState === MotifSearchState.SEARCH_CDR3 && prevCdr3 && prevCdr3.cdr3) {
+        this.router.navigate([], {
+          queryParams: { method, query: prevCdr3.cdr3, substring: prevCdr3.substring ? 'true' : null },
+          replaceUrl: true
+        });
+        this.motifService.searchCDR3ByUrl(prevCdr3.cdr3, prevCdr3.substring);
+        this.cdr.markForCheck();
+      } else if (prevState === MotifSearchState.SEARCH_TREE && prevEpitope && prevEpitope['epitope_seq']) {
+        this.motifService.resolveEpitopeParams({
+          species:    prevEpitope['species'],
+          tcrChain:   prevEpitope['tcr_chain'],
+          mhcClass:   prevEpitope['mhc_class'],
+          gene:       prevEpitope['gene'],
+          epitopeSeq: prevEpitope['epitope_seq']
+        }).pipe(take(1)).subscribe((resolved) => {
+          if (resolved) {
+            this.router.navigate([], { queryParams: resolved, replaceUrl: true });
+            this.motifService.filterByUrl({
+              species:    resolved['species'],
+              tcrChain:   resolved['tcr_chain'],
+              mhcClass:   resolved['mhc_class'],
+              gene:       resolved['gene'],
+              epitopeSeq: resolved['epitope_seq']
+            });
+          } else {
+            this.router.navigate([], { queryParams: { method }, replaceUrl: true });
+          }
+          this.cdr.markForCheck();
+        });
+      } else {
+        this.router.navigate([], { queryParams: { method }, replaceUrl: true });
+        this.cdr.markForCheck();
+      }
     });
+  }
+
+  private hasOwnSelection(): boolean {
+    const cdr3 = this.motifService.getLastCDR3SearchOptions();
+    if (this.motifService.getSearchState() === MotifSearchState.SEARCH_CDR3 && cdr3 && cdr3.cdr3) {
+      return true;
+    }
+    const epitope = this.motifService.getLastEpitopeUrlParams();
+    return !!(epitope && epitope['epitope_seq']);
+  }
+
+  // No selection of our own: re-open the epitope carried over from the Structure
+  // page (matched against this method's tree) if there is one; otherwise load the
+  // empty tree. Only fills when this page is empty — it never overrides a selection.
+  private applyBridgeOrLoad(): void {
+    const bridge = this.epitopeBridge.get();
+    const apply = () => {
+      if (!bridge) { return; }
+      this.motifService.resolveEpitopeParams(bridge).pipe(take(1)).subscribe((resolved) => {
+        if (resolved) {
+          this.router.navigate([], { queryParams: resolved, replaceUrl: true });
+          this.motifService.filterByUrl({
+            species:    resolved['species'],
+            tcrChain:   resolved['tcr_chain'],
+            mhcClass:   resolved['mhc_class'],
+            gene:       resolved['gene'],
+            epitopeSeq: resolved['epitope_seq']
+          });
+        }
+      });
+    };
+    if (this.motifService.isLoaded()) {
+      apply();
+    } else {
+      this.motifService.load().then(apply);
+    }
   }
 
   public isStateSearchTree(): boolean {

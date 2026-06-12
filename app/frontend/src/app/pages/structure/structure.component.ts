@@ -27,9 +27,10 @@ import {
 import { StructureSearchState } from 'pages/structure/structure.service';
 import { StructureService } from 'pages/structure/structure.service';
 import { fromEvent, Observable, Subscription, timer } from 'rxjs';
-import { debounce, takeUntil } from 'rxjs/operators';
+import { debounce, take, takeUntil } from 'rxjs/operators';
 import { Subject } from 'rxjs';
 import { ContentWrapperService } from '../../content-wrapper.service';
+import { EpitopeBridgeService } from '../../epitope-bridge.service';
 
 @Component({
   selector:        'structure',
@@ -61,7 +62,7 @@ export class StructurePageComponent implements OnInit, OnDestroy, DoCheck, After
   public epitopesContainer: ElementRef;
 
   constructor(private structureService: StructureService, private contentWrapper: ContentWrapperService,
-              private route: ActivatedRoute, private router: Router) {
+              private route: ActivatedRoute, private router: Router, private epitopeBridge: EpitopeBridgeService) {
     this.metadata = structureService.getMetadata();
     this.selected = structureService.getSelected();
     this.epitopes = structureService.getEpitopes();
@@ -123,7 +124,7 @@ export class StructurePageComponent implements OnInit, OnDestroy, DoCheck, After
       if (cdr3Query) {
         this.structureService.searchCDR3ByUrl(cdr3Query, substring, cdr3Gene);
       } else {
-        this.structureService.load();
+        this.applyBridgeOrLoad();
       }
     });
 
@@ -175,6 +176,29 @@ export class StructurePageComponent implements OnInit, OnDestroy, DoCheck, After
 
   public isStateSearchCDR3(): boolean {
     return this.structureService.getSearchState() === StructureSearchState.SEARCH_CDR3;
+  }
+
+  // Nothing requested via URL: if this page has no selection of its own, re-open
+  // the epitope carried over from the Motif page (matched against the structure
+  // tree). Navigating with the resolved params lets the existing route handler do
+  // the filtering. Only fills when empty — never overrides an existing selection.
+  private applyBridgeOrLoad(): void {
+    this.structureService.load().then(() => {
+      const bridge = this.epitopeBridge.get();
+      if (!bridge) {
+        return;
+      }
+      this.structureService.getSelected().pipe(take(1)).subscribe((selected) => {
+        if (selected && selected.length > 0) {
+          return;
+        }
+        this.structureService.resolveEpitopeParams(bridge).pipe(take(1)).subscribe((resolved) => {
+          if (resolved) {
+            this.router.navigate([], { queryParams: resolved, queryParamsHandling: 'merge', replaceUrl: true });
+          }
+        });
+      });
+    });
   }
 
   private syncScrollBlocking(): void {
