@@ -52,6 +52,17 @@ export class MotifSearchTreeLevelComponent implements OnInit, OnDestroy {
     });
   }
 
+  // Display-only label. Some TCREMP clusters carry a comma-joined MHC value in
+  // the data (e.g. "HLA-A*02,HLA-A*02:01"); show just the first allele truncated
+  // to its first field ("HLA-A*02"). The raw value.value is kept untouched so the
+  // backend filter still matches.
+  public displayLabel(value: string): string {
+    if (!value || value.indexOf(',') === -1) {
+      return value;
+    }
+    return value.split(',')[0].split(':')[0].trim();
+  }
+
   public open(value: IMotifsMetadataTreeLevelValue): void {
     value.isOpened = true;
   }

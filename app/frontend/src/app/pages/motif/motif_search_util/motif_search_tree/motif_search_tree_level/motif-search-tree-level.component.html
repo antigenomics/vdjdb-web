@@ -21,7 +21,7 @@
     </ng-container>
     <div class="content">
         <div class="header" [ngClass]="{ 'selected': isSelected(value), 'multi-selected': isSelected(value) && !allowMultiple && hasMultipleSelected }">
-            <span (click)="header(value)">{{ value.value }}</span>
+            <span (click)="header(value)">{{ displayLabel(value.value) }}</span>
             &nbsp;&nbsp;&nbsp;<span class="extra" *ngIf="value.next && !isSelected(value) && allowMultiple" (click)="select(value)"><i class="ui icon small circle outline"></i>Select all</span>
             &nbsp;&nbsp;&nbsp;<span class="extra" *ngIf="value.next && isSelected(value) && allowMultiple" (click)="discard(value)"><i class="ui icon small circle outline"></i>Discard all</span>
         </div>
