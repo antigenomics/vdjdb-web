@@ -15,22 +15,23 @@
   -->
 
 <div class="ui main content text fade slow element soft-margin"
-     style="padding-bottom: 15px;">
-    <div class="ui raised segments">
-        <h3 class="ui top attached header">TCR structure database</h3>
+     style="padding-bottom: 15px; height: calc(100vh - 104px); overflow: visible; display: flex; flex-direction: column;">
+    <div class="ui raised segments" style="flex: 1 1 auto; min-height: 0; margin: 0; display: flex; flex-direction: column;">
+        <h3 class="ui top attached header" style="flex: 0 0 auto;">TCR structure database</h3>
         <div class="ui attached segment structure-context-header-segment"
-             style="padding: 0.5rem;"
+             style="flex: 0 0 auto; padding: 0.5rem;"
              [style.top.px]="stickyHeaderOffsetPx">
             <structure-context-header [metadata]="metadata | async"></structure-context-header>
         </div>
         <div class="ui attached segment structure-results-segment"
-             style="padding: 0 7px 0 7px;">
+             style="flex: 1 1 auto; min-height: 0; overflow: hidden; padding: 0 7px 0 7px;">
             <div class="ui active inverted dimmer" *ngIf="isEpitopesLoading() | async">
                 <div class="ui text loader">Loading</div>
             </div>
             <div class="ui grid"
-                 style="margin-top: 0; overflow: visible;">
+                 style="margin-top: 0; height: 100%; overflow: hidden;">
                 <div class="ui sixteen wide column"
+                     style="height: 100%; overflow-y: auto;"
                      [style.overflow-x]="isStateSearchCDR3() ? 'hidden' : 'auto'"
                      [style.padding-top]="isStateSearchCDR3() ? '0' : null"
                      #EpitopesContainer>

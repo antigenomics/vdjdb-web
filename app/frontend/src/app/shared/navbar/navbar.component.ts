@@ -34,36 +34,23 @@ export class NavigationBarComponent implements OnInit, OnDestroy {
   private static readonly topRevealZone: number = 60;
   private static readonly scrollHideThreshold: number = 120;
   private static readonly scrollDelta: number = 6;
-  // Last scroll position tracked per scrolling element. Motif/Structure scroll an
-  // inner container (window stays put), so we key by event target instead of a
-  // single window offset — otherwise switching between two scroll panes corrupts
-  // the up/down direction calc.
-  private readonly lastScrollByTarget: WeakMap<EventTarget, number> = new WeakMap();
+  private lastScrollY: number = 0;
 
   // Bound handlers registered OUTSIDE Angular (see ngOnInit) so scroll/mousemove don't trigger a
   // change-detection pass on every event; we re-enter the zone only when visibility flips.
-  // Registered in the capture phase so scrolls from inner containers (which don't bubble) are
-  // still observed — this is what makes auto-hide work on Motif/Structure, not just Browse.
-  private readonly scrollHandler = (event: Event): void => {
-    const target = event.target;
-    let y: number;
-    if (target instanceof HTMLElement && target !== document.documentElement && target !== document.body) {
-      y = target.scrollTop;
-    } else if (target) {
-      y = window.pageYOffset || document.documentElement.scrollTop || 0;
-    } else {
-      return;
-    }
-    const last = this.lastScrollByTarget.get(target) || 0;
+  // Only the window/body scroll drives auto-hide — inner panel scrolls (Motif/Structure side
+  // and result columns) must NOT move the bar, so this listens on window without capture.
+  private readonly scrollHandler = (): void => {
+    const y = window.pageYOffset || document.documentElement.scrollTop || 0;
     let next = this.hidden;
     if (y < NavigationBarComponent.scrollHideThreshold) {
       next = false;
-    } else if (y > last + NavigationBarComponent.scrollDelta) {
+    } else if (y > this.lastScrollY + NavigationBarComponent.scrollDelta) {
       next = true;
-    } else if (y < last - NavigationBarComponent.scrollDelta) {
+    } else if (y < this.lastScrollY - NavigationBarComponent.scrollDelta) {
       next = false;
     }
-    this.lastScrollByTarget.set(target, y);
+    this.lastScrollY = y;
     this.setHidden(next);
   }
 
@@ -84,13 +71,13 @@ export class NavigationBarComponent implements OnInit, OnDestroy {
 
   public ngOnInit(): void {
     this.ngZone.runOutsideAngular(() => {
-      window.addEventListener('scroll', this.scrollHandler, { passive: true, capture: true });
+      window.addEventListener('scroll', this.scrollHandler, { passive: true });
       window.addEventListener('mousemove', this.mouseMoveHandler, { passive: true });
     });
   }
 
   public ngOnDestroy(): void {
-    window.removeEventListener('scroll', this.scrollHandler, true);
+    window.removeEventListener('scroll', this.scrollHandler);
     window.removeEventListener('mousemove', this.mouseMoveHandler);
   }
 
