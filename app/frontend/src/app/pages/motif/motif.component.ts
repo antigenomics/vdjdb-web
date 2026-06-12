@@ -159,11 +159,13 @@ export class MotifPageComponent implements OnInit, OnDestroy {
       return;
     }
     // Capture the current selection BEFORE switching — switchMethod() clears it
-    // synchronously. We re-apply it on the new method if that motif exists there,
-    // instead of dropping back to "nothing selected".
+    // synchronously. We re-apply it on the new method (for the epitopes that exist
+    // there) instead of dropping back to "nothing selected". Read the selection
+    // straight from the tree so it is correct even after "multiple epitopes" mode.
     const prevState = this.motifService.getSearchState();
-    const prevEpitope = this.motifService.getLastEpitopeUrlParams();
     const prevCdr3 = this.motifService.getLastCDR3SearchOptions();
+    let prevEpitopes: Array<{ [key: string]: string }> = [];
+    this.motifService.getSelectedEpitopeParams().pipe(take(1)).subscribe((list) => { prevEpitopes = list; });
 
     this.motifService.switchMethod(method).then(() => {
       if (prevState === MotifSearchState.SEARCH_CDR3 && prevCdr3 && prevCdr3.cdr3) {
@@ -173,33 +175,49 @@ export class MotifPageComponent implements OnInit, OnDestroy {
         });
         this.motifService.searchCDR3ByUrl(prevCdr3.cdr3, prevCdr3.substring);
         this.cdr.markForCheck();
-      } else if (prevState === MotifSearchState.SEARCH_TREE && prevEpitope && prevEpitope['epitope_seq']) {
-        this.motifService.resolveEpitopeParams({
-          species:    prevEpitope['species'],
-          tcrChain:   prevEpitope['tcr_chain'],
-          mhcClass:   prevEpitope['mhc_class'],
-          gene:       prevEpitope['gene'],
-          epitopeSeq: prevEpitope['epitope_seq']
-        }).pipe(take(1)).subscribe((resolved) => {
-          if (resolved) {
-            this.router.navigate([], { queryParams: resolved, replaceUrl: true });
-            this.motifService.filterByUrl({
-              species:    resolved['species'],
-              tcrChain:   resolved['tcr_chain'],
-              mhcClass:   resolved['mhc_class'],
-              gene:       resolved['gene'],
-              epitopeSeq: resolved['epitope_seq']
-            });
-          } else {
-            this.router.navigate([], { queryParams: { method }, replaceUrl: true });
-          }
-          this.cdr.markForCheck();
+      } else if (prevEpitopes.length > 0) {
+        // Keep only the epitopes that also exist under the new method (resolve
+        // against its freshly loaded tree). metadata is a ReplaySubject, so each
+        // resolve emits synchronously here.
+        const resolved: Array<{ [key: string]: string }> = [];
+        prevEpitopes.forEach((p) => {
+          this.motifService.resolveEpitopeParams({
+            species:    p['species'],
+            tcrChain:   p['tcr_chain'],
+            mhcClass:   p['mhc_class'],
+            gene:       p['gene'],
+            epitopeSeq: p['epitope_seq']
+          }).pipe(take(1)).subscribe((r) => { if (r) { resolved.push(r); } });
         });
+
+        if (resolved.length === 0) {
+          this.router.navigate([], { queryParams: { method }, replaceUrl: true });
+        } else if (resolved.length === 1) {
+          this.router.navigate([], { queryParams: resolved[0], replaceUrl: true });
+          this.motifService.filterByUrl(this.toEpitopeFilter(resolved[0]));
+        } else {
+          // Multiple epitopes can't live in the URL — turn the mode on and append
+          // each one, mirroring how the tree builds a multi-selection.
+          this.motifService.setOptions({ isNormalized: false, allowMultiple: true });
+          this.router.navigate([], { queryParams: { method }, replaceUrl: true });
+          resolved.forEach((r) => this.motifService.filterByUrl(this.toEpitopeFilter(r)));
+        }
+        this.cdr.markForCheck();
       } else {
         this.router.navigate([], { queryParams: { method }, replaceUrl: true });
         this.cdr.markForCheck();
       }
     });
+  }
+
+  private toEpitopeFilter(p: { [key: string]: string }): { species: string, tcrChain: string, mhcClass: string, gene: string, epitopeSeq: string } {
+    return {
+      species:    p['species'],
+      tcrChain:   p['tcr_chain'],
+      mhcClass:   p['mhc_class'],
+      gene:       p['gene'],
+      epitopeSeq: p['epitope_seq']
+    };
   }
 
   private hasOwnSelection(): boolean {

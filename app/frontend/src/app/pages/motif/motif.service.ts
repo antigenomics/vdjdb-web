@@ -476,6 +476,40 @@ export class MotifService {
     }));
   }
 
+  // Read the full URL params of every currently-selected epitope leaf straight
+  // from the tree's isSelected flags. This is the source of truth for the active
+  // selection (single or multiple) — unlike lastEpitopeUrlParams, which the tree
+  // stops maintaining once "multiple epitopes" mode is on.
+  public getSelectedEpitopeParams(): Observable<Array<{ [key: string]: string }>> {
+    return this.metadata.pipe(take(1), map((metadata) => {
+      const out: Array<{ [key: string]: string }> = [];
+      for (const speciesNode of metadata.root.values) {
+        if (!speciesNode.next) { continue; }
+        for (const chainNode of speciesNode.next.values) {
+          if (!chainNode.next) { continue; }
+          for (const classNode of chainNode.next.values) {
+            if (!classNode.next) { continue; }
+            for (const geneNode of classNode.next.values) {
+              if (!geneNode.next) { continue; }
+              for (const epitopeNode of geneNode.next.values) {
+                if (epitopeNode.isSelected) {
+                  out.push({
+                    species:     speciesNode.value,
+                    tcr_chain:   chainNode.value,
+                    mhc_class:   classNode.value,
+                    gene:        geneNode.value,
+                    epitope_seq: epitopeNode.value
+                  });
+                }
+              }
+            }
+          }
+        }
+      }
+      return out;
+    }));
+  }
+
   public findTreeLevelValue(hash: string): Observable<IMotifsMetadataTreeLevelValue[]> {
     return this.metadata.pipe(take(1), map((metadata) => {
       return MotifService.extractMetadataTreeLeafValues(metadata.root)
