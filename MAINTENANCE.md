@@ -49,12 +49,12 @@ maintainers.)
   points relies on this: reading visible traces by name → `activeCids`. "No points selected → no
   PWMs" (no show-all fallback). Per-PWM "−" remove button restyles the trace to
   `visible:'legendonly'`.
-- **Navbar auto-hide** (`navbar.component.ts`): listens for `scroll` in the **capture phase** on
-  `window` so it also fires for **inner scroll containers** — Motif/Structure are fixed-height
-  (`calc(100vh - 104px)`) flex columns whose result panels scroll internally, so the window never
-  scrolls there. Direction is computed from the scrolled element's `scrollTop`; the baseline
-  resets when the scrolled element changes (avoids cross-container glitches). History: added in
-  `81ef4c8e`, reverted to body-only in `84d7632f`, re-enabled per explicit user request.
+- **Navbar auto-hide** (`navbar.component.ts`): listens for `scroll` on **window only** (no capture
+  phase). It hides only on true full-page scroll (Browse and other tall pages). Motif/Structure are
+  fixed-height (`calc(100vh - 104px)`) flex columns that block whole-page scroll, so the header
+  **stays put** there by design — inner panel scrolls must NOT move the bar (explicit user
+  preference). History: a capture-phase variant that also hid on inner scroll was tried twice
+  (`81ef4c8e`, `f46c3582`) and reverted both times — do not reintroduce it.
 - **Motif page layout:** body is **static** (must not jump on load); only the right
   `#EpitopesContainer` panel scrolls, and it scrolls down to the linked motif **only** when
   arriving via a Browse deep link. Inner-container scroll uses `scrollWithinContainer` with
@@ -93,11 +93,4 @@ maintainers.)
 
 ## TODO / Roadmap
 
-- [ ] Confirm navbar auto-hide visually slides (transform/opacity) in real browsers on
-      Motif/Structure — note: in **headless** Chrome the `navbar--hidden` class applies but
-      `transform`/`opacity` did not (suspected `backdrop-filter` compositing quirk). If users
-      report the slide not animating, switch from `transform: translateY(-100%)` to a `top`-based
-      hide.
-- [ ] When the navbar hides on a fixed-height page, a 104px top gap remains (margin-top is fixed).
-      Cosmetic; revisit if it looks off.
 - [ ] Keep this file and the deployment memory in sync after any infra/data/UX change.
