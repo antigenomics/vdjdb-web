@@ -91,6 +91,11 @@ export class TableComponent implements OnInit, AfterViewInit, OnDestroy, OnChang
   @Output('onExport')
   public onExport = new EventEmitter<IExportFormat>();
 
+  /** Stable identity for *ngFor so rows are reused (not re-created) when the page/data refreshes. */
+  public trackRow(_: number, row: TableRow): string {
+    return row.hash();
+  }
+
   constructor(private changeDetector: ChangeDetectorRef, private renderer: Renderer2) {
   }
 

@@ -14,7 +14,7 @@
  *     limitations under the License.
  */
 
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, OnChanges } from '@angular/core';
 import { IMotifCDR3SearchEntry, IMotifCDR3SearchResult, IMotifEpitopeViewOptions } from 'pages/motif/motif';
 
 @Component({
@@ -22,7 +22,7 @@ import { IMotifCDR3SearchEntry, IMotifCDR3SearchResult, IMotifEpitopeViewOptions
   templateUrl:     './motif-cdr3-clusters.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class MotifCDR3ClustersComponent {
+export class MotifCDR3ClustersComponent implements OnChanges {
   private isHitboxVisible: boolean = true;
 
   public top: number = 5;
@@ -33,14 +33,25 @@ export class MotifCDR3ClustersComponent {
   @Input('clusters')
   public clusters: IMotifCDR3SearchResult;
 
-  public getClustersEntries(): IMotifCDR3SearchEntry[] {
-    let entries: IMotifCDR3SearchEntry[] = [];
-    if (this.options.isNormalized) {
-      entries = this.clusters.clustersNorm;
-    } else {
-      entries = this.clusters.clusters;
+  // Cached so the template *ngFor doesn't get a new array (and re-render every seqlogo) on each
+  // change-detection cycle. Recomputed only when inputs or the visible count change.
+  public clustersEntries: IMotifCDR3SearchEntry[] = [];
+
+  public ngOnChanges(): void {
+    this.recomputeEntries();
+  }
+
+  public trackEntry(_: number, entry: IMotifCDR3SearchEntry): string {
+    return entry.cluster.clusterId;
+  }
+
+  private recomputeEntries(): void {
+    if (!this.clusters) {
+      this.clustersEntries = [];
+      return;
     }
-    return entries.slice(0, this.top);
+    const entries = (this.options && this.options.isNormalized) ? this.clusters.clustersNorm : this.clusters.clusters;
+    this.clustersEntries = (entries || []).slice(0, this.top);
   }
 
   public getCDR3Hitbox(entry: IMotifCDR3SearchEntry): string {
@@ -57,5 +68,6 @@ export class MotifCDR3ClustersComponent {
 
   public setTop(top: number): void {
     this.top = top;
+    this.recomputeEntries();
   }
 }

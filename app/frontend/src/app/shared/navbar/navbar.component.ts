@@ -14,7 +14,7 @@
  *     limitations under the License.
  */
 
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, HostListener } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, NgZone, OnDestroy, OnInit } from '@angular/core';
 import { LoggerService } from 'utils/logger/logger.service';
 import { Utils } from 'utils/utils';
 
@@ -23,7 +23,7 @@ import { Utils } from 'utils/utils';
   templateUrl:     './navbar.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class NavigationBarComponent {
+export class NavigationBarComponent implements OnInit, OnDestroy {
   private readonly _isLogged: boolean = false;
   private readonly _userEmail: string = '';
   private readonly _userLogin: string = '';
@@ -36,8 +36,9 @@ export class NavigationBarComponent {
   private static readonly scrollDelta: number = 6;
   private lastScrollY: number = 0;
 
-  @HostListener('window:scroll')
-  public onWindowScroll(): void {
+  // Bound handlers registered OUTSIDE Angular (see ngOnInit) so scroll/mousemove don't trigger a
+  // change-detection pass on every event; we re-enter the zone only when visibility flips.
+  private readonly scrollHandler = (): void => {
     const y = window.pageYOffset || document.documentElement.scrollTop || 0;
     let next = this.hidden;
     if (y < NavigationBarComponent.scrollHideThreshold) {
@@ -51,8 +52,7 @@ export class NavigationBarComponent {
     this.setHidden(next);
   }
 
-  @HostListener('window:mousemove', [ '$event' ])
-  public onWindowMouseMove(event: MouseEvent): void {
+  private readonly mouseMoveHandler = (event: MouseEvent): void => {
     if (event.clientY <= NavigationBarComponent.topRevealZone) {
       this.setHidden(false);
     }
@@ -60,12 +60,26 @@ export class NavigationBarComponent {
 
   private setHidden(value: boolean): void {
     if (this.hidden !== value) {
-      this.hidden = value;
-      this.changeDetector.markForCheck();
+      this.ngZone.run(() => {
+        this.hidden = value;
+        this.changeDetector.markForCheck();
+      });
     }
   }
 
-  constructor(logger: LoggerService, private changeDetector: ChangeDetectorRef) {
+  public ngOnInit(): void {
+    this.ngZone.runOutsideAngular(() => {
+      window.addEventListener('scroll', this.scrollHandler, { passive: true });
+      window.addEventListener('mousemove', this.mouseMoveHandler, { passive: true });
+    });
+  }
+
+  public ngOnDestroy(): void {
+    window.removeEventListener('scroll', this.scrollHandler);
+    window.removeEventListener('mousemove', this.mouseMoveHandler);
+  }
+
+  constructor(logger: LoggerService, private changeDetector: ChangeDetectorRef, private ngZone: NgZone) {
     this._isLogged = Utils.Cookies.getCookie('logged') === 'true';
     this._userEmail = Utils.Cookies.getCookie('email');
     this._userLogin = Utils.Cookies.getCookie('login');
