@@ -207,7 +207,11 @@ export class StructurePageComponent implements OnInit, OnDestroy, DoCheck, After
       return;
     }
     this.lastSearchState = nextState;
-    this.contentWrapper.unblockScrolling();
+    // Block whole-page scrolling like the Motif page: the body is a fixed-height
+    // (calc(100vh - 104px)) flex column whose result panel scrolls internally, so the
+    // document must NOT scroll — otherwise it grows past the viewport into empty white
+    // space below. ngOnDestroy unblocks again so other (tall) pages keep body scroll.
+    this.contentWrapper.blockScrolling();
   }
 
   private resolveCdr3Gene(chainParam: string | null): string {
