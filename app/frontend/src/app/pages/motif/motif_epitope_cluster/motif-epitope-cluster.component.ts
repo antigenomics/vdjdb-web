@@ -102,7 +102,10 @@ export class MotifEpitopeClusterComponent implements OnInit, OnChanges, OnDestro
       // Scroll the linked cluster into view by moving ONLY the right-panel scroll container
       // (not the window/body). scrollIntoView() would scroll every ancestor, shifting the whole
       // body up; this keeps the page static and only fires when arriving via a Browse cid link.
-      setTimeout(() => this.scrollWithinContainer(this.headerContent.nativeElement), 200);
+      // Retry a few times: the Plotly chart above loads asynchronously and pushes the cluster
+      // down after the first attempt, so a single timeout sometimes lands in the wrong place.
+      [ 250, 900, 1800 ].forEach((delay) =>
+        setTimeout(() => { if (this.isHighlighted) { this.scrollWithinContainer(this.headerContent.nativeElement); } }, delay));
     }
   }
 
