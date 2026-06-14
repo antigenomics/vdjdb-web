@@ -37,6 +37,7 @@ import { MetaFiltersService } from 'shared/filters/filters_meta/meta-filters.ser
 export class SearchPageComponent implements OnInit, OnDestroy {
   public columns: TableColumn[] = [];
   public table: SearchTable;
+  public filtersCollapsed: boolean = false;
 
   constructor(private searchTableService: SearchTableService, private filters: FiltersService,
               private route: ActivatedRoute, private ag: AGFiltersService, private tcr: TCRFiltersService,
@@ -88,6 +89,10 @@ export class SearchPageComponent implements OnInit, OnDestroy {
         }
       });
     }
+  }
+
+  public toggleFilters(): void {
+    this.filtersCollapsed = !this.filtersCollapsed;
   }
 
   public search(): void {

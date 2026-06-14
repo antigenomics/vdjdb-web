@@ -65,7 +65,8 @@ export class MotifPageComponent implements OnInit, OnDestroy {
   }
 
   public ngOnInit(): void {
-    this.contentWrapper.blockScrolling();
+    // The page flows naturally and scrolls the whole document (like Browse), so the navbar
+    // auto-hides on body scroll here too — do NOT block whole-page scrolling.
 
     this.route.queryParamMap.pipe(take(1)).subscribe(async (params) => {
       const urlMethod = (params.get('method') || 'tcrnet') as MotifMethod;
@@ -125,7 +126,9 @@ export class MotifPageComponent implements OnInit, OnDestroy {
       }
     });
 
-    this.onScrollObservable = fromEvent(this.epitopesContainer.nativeElement, 'scroll')
+    // Body-scroll layout: lazy chart rendering is driven by window scroll (isInViewport() is
+    // measured against the viewport), matching how the page now grows with its content.
+    this.onScrollObservable = fromEvent(window, 'scroll')
         .pipe(debounce(() => timer(MotifPageComponent.pageScrollEventDebounceTimeout))).subscribe(() => {
           this.motifService.fireScrollUpdateEvent();
         });

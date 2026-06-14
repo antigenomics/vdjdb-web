@@ -122,6 +122,9 @@ export class MotifEpitopeClusterComponent implements OnInit, OnChanges, OnDestro
       }
       parent = parent.parentElement;
     }
+    // Body-scroll layout: no inner scroll container, so center the cluster in the viewport by
+    // scrolling the page itself.
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
 
   public updateIfInViewport(type: ChartEventType): void {

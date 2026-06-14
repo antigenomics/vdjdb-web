@@ -15,6 +15,9 @@
  */
 
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, NgZone, OnDestroy, OnInit } from '@angular/core';
+import { NavigationEnd, Router } from '@angular/router';
+import { Subscription } from 'rxjs';
+import { filter } from 'rxjs/operators';
 import { LoggerService } from 'utils/logger/logger.service';
 import { Utils } from 'utils/utils';
 
@@ -31,6 +34,11 @@ export class NavigationBarComponent implements OnInit, OnDestroy {
   // Auto-hide header: slides up when scrolling down, reappears when scrolling
   // up or when the pointer approaches the top edge of the viewport.
   public hidden: boolean = false;
+
+  // Active-tab highlight: the current router URL (without query string), updated on navigation.
+  public currentUrl: string = '/';
+  private routerSubscription!: Subscription;
+
   private static readonly topRevealZone: number = 60;
   private static readonly scrollHideThreshold: number = 120;
   private static readonly scrollDelta: number = 6;
@@ -75,14 +83,39 @@ export class NavigationBarComponent implements OnInit, OnDestroy {
       window.addEventListener('scroll', this.scrollHandler, { passive: true });
       window.addEventListener('mousemove', this.mouseMoveHandler, { passive: true });
     });
+
+    this.currentUrl = this.stripQuery(this.router.url);
+    this.routerSubscription = this.router.events
+      .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd))
+      .subscribe((event) => {
+        this.currentUrl = this.stripQuery(event.urlAfterRedirects || event.url);
+        this.changeDetector.markForCheck();
+      });
   }
 
   public ngOnDestroy(): void {
     window.removeEventListener('scroll', this.scrollHandler);
     window.removeEventListener('mousemove', this.mouseMoveHandler);
+    if (this.routerSubscription) {
+      this.routerSubscription.unsubscribe();
+    }
   }
 
-  constructor(logger: LoggerService, private changeDetector: ChangeDetectorRef, private ngZone: NgZone) {
+  private stripQuery(url: string): string {
+    return url.split('?')[0].split('#')[0];
+  }
+
+  // Highlight the menu item whose route matches the current page. The self-antigen / COVID-19
+  // shortcuts redirect to /search, so Browse lights up on those pages (as expected).
+  public isActive(route: string): boolean {
+    if (route === '/') {
+      return this.currentUrl === '/';
+    }
+    return this.currentUrl === route || this.currentUrl.startsWith(route + '/');
+  }
+
+  constructor(logger: LoggerService, private changeDetector: ChangeDetectorRef, private ngZone: NgZone,
+              private router: Router) {
     this._isLogged = Utils.Cookies.getCookie('logged') === 'true';
     this._userEmail = Utils.Cookies.getCookie('email');
     this._userLogin = Utils.Cookies.getCookie('login');

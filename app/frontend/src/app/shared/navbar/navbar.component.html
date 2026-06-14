@@ -17,15 +17,15 @@
 <div class="ui top fixed borderless inverted menu large" [class.navbar--hidden]="hidden">
     <div class="ui container">
         <a route="/" class="header item navbar-brand"><img src="assets/images/favicon.svg" alt="VDJdb" class="navbar-brand__logo"></a>
-        <a route="/" class="item">Home</a>
+        <a route="/" class="item" [class.active]="isActive('/')">Home</a>
         <a (click)="redirectOnUrl('self-antigen')" class="item">
             <span style="color: #f2711c!important">Self-antigens</span>
         </a>
         <a (click)="redirectOnUrl('covid19')" class="item">
             <span style="color: #f2711c!important">COVID-19</span>
         </a>
-        <a route="/overview" class="item">Overview</a>
-        <a route="/search" class="item">Browse</a>
+        <a route="/overview" class="item" [class.active]="isActive('/overview')">Overview</a>
+        <a route="/search" class="item" [class.active]="isActive('/search')">Browse</a>
 
         <a class="ui dropdown item" dropdown [content]="content" *ngIf="!isLogged()">
             Annotation
@@ -39,17 +39,17 @@
             </div>
         </a>
 
-        <a route="/annotations/info" class="item" *ngIf="isLogged()">
+        <a route="/annotations/info" class="item" *ngIf="isLogged()" [class.active]="isActive('/annotations')">
             Annotation
         </a>
 
-        <a route="/motif" class="item">Motif</a>
-        <a route="/structure" class="item">Structure</a>
-        <a route="/refsearch" class="item">Refsearch</a>
+        <a route="/motif" class="item" [class.active]="isActive('/motif')">Motif</a>
+        <a route="/structure" class="item" [class.active]="isActive('/structure')">Structure</a>
+        <a route="/refsearch" class="item" [class.active]="isActive('/refsearch')">Refsearch</a>
 
-        <a route="/about" class="item">About</a>
-        <a route="/links" class="item">Links</a>
-        <a route="/credits" class="item">Credits</a>
+        <a route="/about" class="item" [class.active]="isActive('/about')">About</a>
+        <a route="/links" class="item" [class.active]="isActive('/links')">Links</a>
+        <a route="/credits" class="item" [class.active]="isActive('/credits')">Credits</a>
 
         <div class="right menu" *ngIf="!isLogged()">
             <a route="/authorization/login" external="true" class="item">Login</a>

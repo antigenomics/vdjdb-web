@@ -14,25 +14,25 @@
   ~     limitations under the License.
   -->
 
-<div class="ui main content text fade slow element soft-margin" style="padding-bottom: 15px; height: calc(100vh - 104px); overflow: visible; display: flex; flex-direction: column;">
-    <div class="ui raised segments" style="flex: 1 1 auto; min-height: 0; margin: 0; display: flex; flex-direction: column;">
-        <h3 class="ui top attached header" style="flex: 0 0 auto; display: flex; align-items: center; padding-top: 6px; padding-bottom: 6px;">
+<div class="ui main content text fade slow element soft-margin" style="padding-bottom: 75px">
+    <div class="ui raised segments">
+        <h3 class="ui top attached header" style="display: flex; align-items: center; padding-top: 6px; padding-bottom: 6px;">
             <span style="flex: 1">CDR3 motif database</span>
             <div class="ui pagination menu" style="margin: 0; font-size: 0.9em;">
                 <a class="item" [class.active]="getCurrentMethod() === 'tcrnet'" (click)="setMethod('tcrnet')">TCRNet</a>
                 <a class="item" [class.active]="getCurrentMethod() === 'tcremp'" (click)="setMethod('tcremp')">TCREMP</a>
             </div>
         </h3>
-        <div class="ui attached segment" style="flex: 1 1 auto; min-height: 0;">
+        <div class="ui attached segment">
             <div class="ui active inverted dimmer" *ngIf="isEpitopesLoading() | async">
                 <div class="ui text loader">Loading</div>
             </div>
-            <div class="ui grid" style="height: 100%; overflow: hidden">
-                <div class="ui five wide column" style="overflow-x: hidden; overflow-y: auto; height: 100%">
+            <div class="ui grid">
+                <div class="ui five wide column">
                     <motif-search-util [metadata]="metadata | async" [options]="options | async" [selected]="selected | async"
                                        [cdr3SearchOptions]="cdr3SearchOptions | async"></motif-search-util>
                 </div>
-                <div class="ui eleven wide column" style="overflow-x: hidden; overflow-y: auto; height: 100%" #EpitopesContainer>
+                <div class="ui eleven wide column" #EpitopesContainer>
                     <motif-epitopes *ngIf="isStateSearchTree() && contentReady" [options]="options | async" [epitopes]="epitopes | async"></motif-epitopes>
                     <motif-cdr3-clusters *ngIf="isStateSearchCDR3() && contentReady" [options]="options | async" [clusters]="clusters | async"></motif-cdr3-clusters>
                 </div>

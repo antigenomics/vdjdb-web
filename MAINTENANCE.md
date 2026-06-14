@@ -50,16 +50,23 @@ maintainers.)
   PWMs" (no show-all fallback). Per-PWM "−" remove button restyles the trace to
   `visible:'legendonly'`.
 - **Navbar auto-hide** (`navbar.component.ts`): listens for `scroll` on **window only** (no capture
-  phase). It hides only on true full-page scroll (Browse and other tall pages). Motif/Structure are
-  fixed-height (`calc(100vh - 104px)`) flex columns that block whole-page scroll, so the header
-  **stays put** there by design — inner panel scrolls must NOT move the bar (explicit user
-  preference). History: a capture-phase variant that also hid on inner scroll was tried twice
-  (`81ef4c8e`, `f46c3582`) and reverted both times — do not reintroduce it.
-- **Motif page layout:** body is **static** (must not jump on load); only the right
-  `#EpitopesContainer` panel scrolls, and it scrolls down to the linked motif **only** when
-  arriving via a Browse deep link. Inner-container scroll uses `scrollWithinContainer` with
-  retries `[250, 900, 1800]ms` (not `scrollIntoView`, which moved the whole window). Top frame
-  uses `overflow: visible` so the panel's top box-shadow hairline isn't clipped.
+  phase). It hides on full-page (document) scroll and reappears on scroll-up / when the pointer
+  nears the top edge. Browse, Motif and Structure all flow naturally and body-scroll, so the bar
+  auto-hides uniformly on all of them. (A capture-phase variant that also hid on *inner-container*
+  scroll was tried twice — `81ef4c8e`, `f46c3582` — and reverted both times; do not reintroduce it.)
+- **Navbar active-tab highlight:** `isActive(route)` compares the current router URL (query
+  stripped) to each item's route, adding `.item.active` (brand-teal underline in
+  `design-system.css`). The Self-antigens / COVID-19 shortcuts `navigateByUrl('/search')` (action
+  components under `pages/search/actions/`), so **Browse** lights up on those pages.
+- **Motif & Structure page layout:** both flow naturally and **scroll the whole document like
+  Browse** (no fixed `calc(100vh - …)` height, no inner-panel `overflow:auto`). Neither blocks
+  whole-page scrolling (Motif does NOT call `contentWrapper.blockScrolling()`; Structure
+  `unblockScrolling()`s). Motif's lazy chart rendering (`updateIfInViewport`, viewport-measured)
+  is driven by **window** scroll; the Browse→Motif deep-link scroll-to-motif uses
+  `scrollWithinContainer`, which now falls back to `scrollIntoView({block:'center'})` since there's
+  no inner scroll container. Structure keeps its **sticky** context-header (pinned below the navbar
+  via `stickyHeaderOffsetPx`). History: a fixed-height/internal-scroll variant (`84d7632f`) was
+  tried and reverted per user preference for Browse-like body scroll.
 - **Cross-tab / cross-page selection memory** (already implemented):
   - **tcrnet↔tcremp:** `setMethod()` captures the selected epitope(s) before `switchMethod()`
     clears state, then re-selects via `resolveEpitopeParams`/`filterByUrl` against the new
@@ -75,6 +82,9 @@ maintainers.)
 - **tcremp "Subtract VDJ rearrangement background" is intentionally disabled** with an explanatory
   tooltip (the background model is tcrnet-specific). Don't re-enable for tcremp.
 - **Default TCR chains in Browse = both TRA + TRB** (`tcr-filters.ts` `setDefault`/`isDefault`).
+- **Browse page labels/collapse** (`search.component`): the filter frame header is **"Filters"**
+  (was "Database browser") and is collapsible via a plus/minus icon (`filtersCollapsed` /
+  `toggleFilters()`); the table frame header is **"Records"** (was "Results").
 - **refsearch URL is intentionally HARDCODED to `https://vdjdb.com/refsearch/`** — do NOT derive
   it from the current host. It is "safer and managed via DNS on prod" (explicit user instruction;
   a host-derived version was tried and reverted).

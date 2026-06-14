@@ -16,17 +16,21 @@
 
 <div class="ui main content fade slow element soft-margin" style="padding-bottom: 75px">
     <div class="ui segments">
-        <h3 class="ui top attached header">Database browser</h3>
-        <div class="ui attached segment teal padded">
+        <h3 class="ui top attached header" style="cursor: pointer; display: flex; align-items: center;" (click)="toggleFilters()">
+            <span style="flex: 1">Filters</span>
+            <i class="icon" [ngClass]="filtersCollapsed ? 'plus' : 'minus'" style="margin: 0; font-size: 0.85em; opacity: 0.7;"
+               [title]="filtersCollapsed ? 'Show filters' : 'Hide filters'"></i>
+        </h3>
+        <div class="ui attached segment teal padded" *ngIf="!filtersCollapsed">
             <search-info></search-info>
         </div>
-        <div class="ui attached secondary clearing segment">
+        <div class="ui attached secondary clearing segment" *ngIf="!filtersCollapsed">
             <button class="ui blue button right floated" (click)="reset()">Reset filters</button>
             <button class="ui teal button left floated" [ngClass]="{'loading':isLoading()}" (click)="search()">Refresh table</button>
         </div>
     </div>
     <div class="ui segments">
-        <h3 class="ui top attached header">Results</h3>
+        <h3 class="ui top attached header">Records</h3>
         <div class="ui attached teal blurring segment">
             <div class="ui inverted dimmer" [ngClass]="{'active':isLoading()}">
                 <div class="ui large text loader top element">Updating</div>

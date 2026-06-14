@@ -153,6 +153,15 @@ a:hover { color: var(--ds-teal); }
 .ui.inverted.menu .item:hover,
 .ui.inverted.menu a.item:hover { color: #ffffff !important; }
 
+/* Active page highlight: brand-teal underline + brighter text on the dark bar. */
+.ui.top.fixed.menu .item.active,
+.ui.top.fixed.inverted.menu .item.active {
+  color: #ffffff !important;
+  background: rgba(255, 255, 255, 0.06) !important;
+  box-shadow: inset 0 -3px 0 0 #48af75 !important;
+  font-weight: 600;
+}
+
 /* Consistent gap below the fixed navbar on every page. Must be a fixed length,
    not em: Semantic's base font-size differs between container (16px) and
    non-container (14px) pages, so "5em" rendered as 80px vs 70px. */
