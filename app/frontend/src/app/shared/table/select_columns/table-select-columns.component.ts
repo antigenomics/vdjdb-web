@@ -29,9 +29,9 @@ interface ISelectableColumnDescriptor {
 })
 export class TableSelectColumnsComponent {
   private static readonly _selectableColumns: ISelectableColumnDescriptor[] = [
-    { name: 'method', fallbackTitle: 'Method' },
-    { name: 'meta', fallbackTitle: 'Meta' },
-    { name: 'cdr3fix', fallbackTitle: 'CDR3 Fix' }
+    { name: 'mhc.class', fallbackTitle: 'MHC class' },
+    { name: 'antigen.species', fallbackTitle: 'Epitope species' },
+    { name: 'reference.id', fallbackTitle: 'Reference' }
   ];
 
   @Input('columns')

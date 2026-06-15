@@ -83,8 +83,18 @@ maintainers.)
   tooltip (the background model is tcrnet-specific). Don't re-enable for tcremp.
 - **Default TCR chains in Browse = both TRA + TRB** (`tcr-filters.ts` `setDefault`/`isDefault`).
 - **Browse page labels/collapse** (`search.component`): the filter frame header is **"Filters"**
-  (was "Database browser") and is collapsible via a plus/minus icon (`filtersCollapsed` /
-  `toggleFilters()`); the table frame header is **"Records"** (was "Results").
+  (was "Database browser") and is collapsible (`filtersCollapsed` / `toggleFilters()`) via a
+  chevron that points **up when expanded**, rotating 180° to point down when collapsed
+  (`.filters-toggle` in `design-system.css`); the table frame header is **"Records"** (was
+  "Results").
+- **Records table columns dropdown** (`table-select-columns` + `search.component.ts`
+  `fetchColumns`): the dropdown header reads **"Show"** (was "Toggle columns"). Only **MHC class,
+  Epitope species, Reference** are user-toggleable (shown by default, `_forceShownColumns`).
+  **Epitope gene (`antigen.gene`), Method, Meta, CDR3 Fix** are force-hidden by default and NOT
+  offered in the dropdown (`_forceHiddenColumns` → `skip:true`). To add/remove a toggleable column,
+  edit `_selectableColumns` (the dropdown whitelist) AND the force-shown/hidden lists together.
+- **Page titles:** Motif page header = **"Paratope motifs"** (was "CDR3 motif database"); Structure
+  page header = **"Native and predicted structures"** (was "TCR structure database").
 - **refsearch URL is intentionally HARDCODED to `https://vdjdb.com/refsearch/`** — do NOT derive
   it from the current host. It is "safer and managed via DNS on prod" (explicit user instruction;
   a host-derived version was tried and reverted).

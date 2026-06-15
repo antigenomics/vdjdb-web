@@ -153,6 +153,33 @@ a:hover { color: var(--ds-teal); }
 .ui.inverted.menu .item:hover,
 .ui.inverted.menu a.item:hover { color: #ffffff !important; }
 
+/* ---- Collapsible "Filters" frame toggle (Browse) ------------------------- */
+/* A single chevron in a soft circular hit-area. Points UP when the frame is
+   expanded; rotates 180deg to point DOWN when collapsed. */
+.filters-header .filters-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  color: var(--pst-color-text-base, #6e6e73);
+  opacity: 0.65;
+  transition: background 0.2s ease, opacity 0.2s ease;
+}
+.filters-header:hover .filters-toggle {
+  background: rgba(0, 0, 0, 0.06);
+  opacity: 1;
+}
+.filters-header .filters-toggle .icon {
+  margin: 0;
+  font-size: 0.8em;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.filters-header .filters-toggle--collapsed .icon {
+  transform: rotate(180deg);
+}
+
 /* Active page highlight: brand-teal underline + brighter text on the dark bar. */
 .ui.top.fixed.menu .item.active,
 .ui.top.fixed.inverted.menu .item.active {

@@ -16,10 +16,12 @@
 
 <div class="ui main content fade slow element soft-margin" style="padding-bottom: 75px">
     <div class="ui segments">
-        <h3 class="ui top attached header" style="cursor: pointer; display: flex; align-items: center;" (click)="toggleFilters()">
+        <h3 class="ui top attached header filters-header" style="cursor: pointer; display: flex; align-items: center;" (click)="toggleFilters()">
             <span style="flex: 1">Filters</span>
-            <i class="icon" [ngClass]="filtersCollapsed ? 'plus' : 'minus'" style="margin: 0; font-size: 0.85em; opacity: 0.7;"
-               [title]="filtersCollapsed ? 'Show filters' : 'Hide filters'"></i>
+            <span class="filters-toggle" [class.filters-toggle--collapsed]="filtersCollapsed"
+                  [title]="filtersCollapsed ? 'Show filters' : 'Hide filters'">
+                <i class="chevron up icon"></i>
+            </span>
         </h3>
         <div class="ui attached segment teal padded" *ngIf="!filtersCollapsed">
             <search-info></search-info>

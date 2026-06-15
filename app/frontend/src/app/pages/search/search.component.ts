@@ -111,10 +111,21 @@ export class SearchPageComponent implements OnInit, OnDestroy {
     this.table.destroy();
   }
 
+  // Hidden by default and NOT offered in the "Columns" dropdown (always off).
+  private static readonly _forceHiddenColumns: string[] = [ 'antigen.gene', 'method', 'meta', 'cdr3fix' ];
+  // Shown by default but hideable via the "Columns" dropdown (see table-select-columns).
+  private static readonly _forceShownColumns: string[] = [ 'mhc.class', 'antigen.species', 'reference.id' ];
+
   private fetchColumns(): void {
     const metadata = this.searchTableService.getMetadata();
     this.columns = metadata.columns.map((c) => {
-      return new TableColumn(c.name, c.title, true, !c.visible, false, true, c.comment, 'Click to sort column');
+      let skip = !c.visible;
+      if (SearchPageComponent._forceHiddenColumns.indexOf(c.name) !== -1) {
+        skip = true;
+      } else if (SearchPageComponent._forceShownColumns.indexOf(c.name) !== -1) {
+        skip = false;
+      }
+      return new TableColumn(c.name, c.title, true, skip, false, true, c.comment, 'Click to sort column');
     });
   }
 }
