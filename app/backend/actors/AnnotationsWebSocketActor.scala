@@ -141,7 +141,7 @@ class AnnotationsWebSocketActor(out: ActorRef, limit: IpLimit, user: User, detai
                     request.newTagID
                   ))
                 case Failure(_) =>
-                  out.errorMessage("An error occured during sample updating")
+                  out.errorMessage("An error occurred during sample updating")
               }
             case None =>
               out.errorMessage("Invalid file name")
@@ -187,9 +187,9 @@ class AnnotationsWebSocketActor(out: ActorRef, limit: IpLimit, user: User, detai
                       sample.updateSampleFileTagID(id)
                     })
                     out.success(CreateTagResponse(id))
-                  case Failure(_) => out.errorMessage("An error occured during samples tagging")
+                  case Failure(_) => out.errorMessage("An error occurred during samples tagging")
                 }
-              case Failure(_) => out.errorMessage("An error occured during tag creating")
+              case Failure(_) => out.errorMessage("An error occurred during tag creating")
             }
           } else {
             out.errorMessage("Invalid request")
@@ -205,9 +205,9 @@ class AnnotationsWebSocketActor(out: ActorRef, limit: IpLimit, user: User, detai
                   stp.delete(tag).onComplete {
                     case Success(_) =>
                       out.success(DeleteTagResponse(deleteTagRequest.tagID))
-                    case _ => out.errorMessage("An error occured during tag deleting")
+                    case _ => out.errorMessage("An error occurred during tag deleting")
                   }
-                case _ => out.errorMessage("An error occured during samples untagging")
+                case _ => out.errorMessage("An error occurred during samples untagging")
               }
             case _ => out.errorMessage("Invalid request")
           }
@@ -228,7 +228,7 @@ class AnnotationsWebSocketActor(out: ActorRef, limit: IpLimit, user: User, detai
               })
               out.success(UpdateTagResponse(tag.get.id))
             } else {
-              out.errorMessage("An error occured during tag updating")
+              out.errorMessage("An error occurred during tag updating")
             }
           } else {
             out.errorMessage("Invalid request")

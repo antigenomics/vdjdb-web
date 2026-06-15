@@ -93,7 +93,7 @@ export class UpdateSampleModalComponent implements OnInit, OnDestroy {
       this.sampleNewProps.sample, this.sampleNewProps.newName, this.sampleNewProps.newSoftware, this.sampleNewProps.newTagID
     );
     if (!success) {
-      this.notifications.error('Sample update', 'An error occured during sample updating');
+      this.notifications.error('Sample update', 'An error occurred during sample updating');
     } else {
       this.notifications.success('Sample update', 'Sample successfully updated');
       this.hide();
