@@ -90,9 +90,15 @@ maintainers.)
 - **Records table columns dropdown** (`table-select-columns` + `search.component.ts`
   `fetchColumns`): the dropdown header reads **"Show"** (was "Toggle columns"). Only **MHC class,
   Epitope species, Reference** are user-toggleable (shown by default, `_forceShownColumns`).
-  **Epitope gene (`antigen.gene`), Method, Meta, CDR3 Fix** are force-hidden by default and NOT
-  offered in the dropdown (`_forceHiddenColumns` → `skip:true`). To add/remove a toggleable column,
-  edit `_selectableColumns` (the dropdown whitelist) AND the force-shown/hidden lists together.
+  **Epitope gene (`antigen.gene`), Method, Meta, CDR3 Fix** are listed but **deselected by
+  default** (`_forceHiddenColumns` → `skip:true` seeds the initial hidden set; they stay
+  toggleable). To add/remove a toggleable column, edit `_selectableColumns` (the dropdown
+  whitelist) AND the force-shown/hidden lists together.
+- **Paired (TRA+TRB) sub-rows follow the live hidden-columns set.** `TableRowComponent`
+  pushes the current hidden set into any entry exposing `setHiddenColumns()`; the gene cell
+  (`search-table-entry-gene`) applies it to its paired sub-row both at creation and on every
+  toggle — so the sub-row never misaligns with the main row (it no longer derives columns from the
+  static `skip` flag).
 - **Page titles:** Motif page header = **"Paratope motifs"** (was "CDR3 motif database"); Structure
   page header = **"Native and predicted structures"** (was "TCR structure database").
 - **refsearch URL is intentionally HARDCODED to `https://vdjdb.com/refsearch/`** — do NOT derive

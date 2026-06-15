@@ -172,7 +172,13 @@ a:hover { color: var(--ds-teal); }
   opacity: 1;
 }
 .filters-header .filters-toggle .icon {
+  /* Semantic's i.icon reserves a fixed 1.18em width with right-side glyph padding, which
+     leaves the glyph off-centre inside the circle. width/height:auto + line-height:1 lets the
+     glyph itself be the centred element. */
   margin: 0;
+  width: auto;
+  height: auto;
+  line-height: 1;
   font-size: 0.8em;
   transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }

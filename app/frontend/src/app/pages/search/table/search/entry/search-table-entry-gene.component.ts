@@ -44,6 +44,9 @@ export class SearchTableEntryGeneComponent extends TableEntry {
   private _resolver: ComponentFactoryResolver;
   private _columns: TableColumn[];
   private _pairedRow: ComponentRef<any>;
+  // Live hidden-columns set, kept in sync by the owning TableRowComponent so the paired
+  // (TRA+TRB) sub-row mirrors the main row's columns even as the user toggles them.
+  private _hiddenColumns: string[] = [];
 
   public visible: boolean = false;
   public pairedLoading: boolean = false;
@@ -65,6 +68,16 @@ export class SearchTableEntryGeneComponent extends TableEntry {
     this._columns = columns;
   }
 
+  // Called by the owning TableRowComponent whenever the live hidden-columns set changes.
+  // Keep the open paired sub-row aligned with the main row's visible columns.
+  public setHiddenColumns(hidden: string[]): void {
+    this._hiddenColumns = hidden || [];
+    if (this._pairedRow) {
+      this._pairedRow.instance.hiddenColumns = this._hiddenColumns;
+      this._pairedRow.changeDetectorRef.detectChanges();
+    }
+  }
+
   @HostListener('click')
   public async checkPaired(): Promise<void> {
     if (this.pairedID === '0') {
@@ -84,7 +97,7 @@ export class SearchTableEntryGeneComponent extends TableEntry {
         this._pairedRow = this._hostViewContainer.createComponent(rowResolver);
         this._pairedRow.instance.row = new SearchTableRow(pairedResponse.get('paired'), true);
         this._pairedRow.instance.columns = this._columns;
-        this._pairedRow.instance.hiddenColumns = this._columns.filter((c) => c.skip).map((c) => c.name);
+        this._pairedRow.instance.hiddenColumns = this._hiddenColumns;
         this._pairedRow.changeDetectorRef.detectChanges();
         this.renderer.addClass(this._pairedRow.location.nativeElement, 'warning');
         this.renderer.addClass(this._pairedRow.location.nativeElement, 'center');

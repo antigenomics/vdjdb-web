@@ -106,5 +106,10 @@ export class TableRowComponent implements OnInit, OnDestroy {
       this.renderer.removeClass(nativeElement, 'hidden-column');
       this.renderer.removeStyle(nativeElement, 'display');
     }
+    // Entries that own a nested row (the gene cell's paired TRA+TRB sub-row) follow the live
+    // hidden set so the sub-row mirrors this row's visible columns on every toggle.
+    if (typeof component.instance.setHiddenColumns === 'function') {
+      component.instance.setHiddenColumns(Array.from(this._hiddenColumns));
+    }
   }
 }
