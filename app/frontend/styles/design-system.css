@@ -190,7 +190,7 @@ a:hover { color: var(--ds-teal); }
 /* White background + muted (#525252) text, with a ↳ marker in the Gene column. The CDR3
    cell colours its own V/J regions (green/blue) with explicit colours, so those are
    preserved — only the inherited "black" text shifts to #525252. */
-tr.paired-row { background-color: #f0f0f0 !important; }
+tr.paired-row { background-color: #f5f5f5 !important; }
 tr.paired-row > td { color: #525252; }
 .paired-gene-arrow { margin-right: 5px; color: #525252; }
 
