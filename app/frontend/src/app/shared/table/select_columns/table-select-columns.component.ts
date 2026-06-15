@@ -28,10 +28,17 @@ interface ISelectableColumnDescriptor {
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TableSelectColumnsComponent {
+  // All columns offered in the "Show" dropdown. Default on/off is decided elsewhere
+  // (search.component.ts force-shown/-hidden lists); `skip` only sets the INITIAL state, so even
+  // default-hidden columns here stay toggleable back on.
   private static readonly _selectableColumns: ISelectableColumnDescriptor[] = [
     { name: 'mhc.class', fallbackTitle: 'MHC class' },
     { name: 'antigen.species', fallbackTitle: 'Epitope species' },
-    { name: 'reference.id', fallbackTitle: 'Reference' }
+    { name: 'reference.id', fallbackTitle: 'Reference' },
+    { name: 'antigen.gene', fallbackTitle: 'Epitope gene' },
+    { name: 'method', fallbackTitle: 'Method' },
+    { name: 'meta', fallbackTitle: 'Meta' },
+    { name: 'cdr3fix', fallbackTitle: 'CDR3 Fix' }
   ];
 
   @Input('columns')
