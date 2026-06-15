@@ -192,7 +192,7 @@ export class MotifService {
         species:    params['species'],
         tcrChain:   params['tcr_chain'],
         mhcClass:   params['mhc_class'],
-        gene:       params['gene'],
+        gene:       params['mhc_a'] || params['gene'],
         epitopeSeq: params['epitope_seq']
       });
     }
@@ -426,7 +426,7 @@ export class MotifService {
           species:    first['species'],
           tcrChain:   first['tcr_chain'],
           mhcClass:   first['mhc_class'],
-          gene:       first['gene'],
+          gene:       first['mhc_a'] || first['gene'],
           epitopeSeq: first['epitope_seq']
         });
       }
@@ -475,7 +475,7 @@ export class MotifService {
                     species:     speciesNode.value,
                     tcr_chain:   chainNode.value,
                     mhc_class:   classNode.value,
-                    gene:        geneNode.value,
+                    mhc_a:       geneNode.value,
                     epitope_seq: epitopeNode.value
                   };
                 }
@@ -514,7 +514,7 @@ export class MotifService {
                   species:     speciesNode.value,
                   tcr_chain:   chainNode.value,
                   mhc_class:   classNode.value,
-                  gene:        geneNode.value,
+                  mhc_a:       geneNode.value,
                   epitope_seq: epitopeNode.value
                 });
               }

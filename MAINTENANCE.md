@@ -76,7 +76,15 @@ maintainers.)
   - **Motif↔Structure bridge:** the first selected epitope is tracked and re-opened on the other
     page (`applyBridgeOrLoad`) **only when that page has no selection of its own** — it never
     overrides an explicit selection, and falls back to the empty tree if the epitope is absent.
-- **Browse → Motif "M" badge** deep link: the `gene` URL param must be the trimmed MHC allele
+- **Motif URL param `mhc_a`** (the MHC allele): the Motif page's MHC-allele query param is
+  **`mhc_a`** (renamed from the misleading `gene`). Writers: motif search tree `filterToUrlParams`
+  (`mhc.a` → `mhc_a`), `resolveEpitopeParams`/`collectSelectedEpitopeParams`, and the Browse→Motif
+  badge. Readers accept `mhc_a` first, falling back to the old `gene` so existing links still work.
+  The *internal* `gene` field (filterByUrl param object, the EpitopeBridge object, the backend
+  filter named `gene`=TCR chain, the `gene` table column, and the CDR3 chain option) are unchanged.
+  **Structure still uses `gene`** in its URL — the cross-page bridge passes the internal `gene`
+  field, not the URL key, so the two schemes don't need to match.
+- **Browse → Motif "M" badge** deep link: the `mhc_a` URL param is the trimmed MHC allele
   (`mhc.a.replace(/:.+/, '')`), NOT `antigen.gene` (which is "M"). Method order [tcrnet, tcremp]:
   tcrnet-first / tcremp-only / tcrnet-when-both.
 - **tcremp "Subtract VDJ rearrangement background" is intentionally disabled** with an explanatory

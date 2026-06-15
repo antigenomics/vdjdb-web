@@ -105,7 +105,7 @@ export class MotifSearchTreeComponent implements OnChanges {
         case 'species':          params['species'] = entry.value; break;
         case 'gene':             params['tcr_chain'] = entry.value; break;
         case 'mhc.class':        params['mhc_class'] = entry.value; break;
-        case 'mhc.a':            params['gene'] = entry.value; break;
+        case 'mhc.a':            params['mhc_a'] = entry.value; break;
         case 'antigen.epitope':  params['epitope_seq'] = entry.value; break;
       }
     });

@@ -79,7 +79,7 @@ export class MotifPageComponent implements OnInit, OnDestroy {
 
       const species = params.get('species');
       const tcrChain = params.get('tcr_chain');
-      const gene = params.get('gene');
+      const gene = params.get('mhc_a') || params.get('gene');
       const mhcClass = params.get('mhc_class');
       const epitopeSeq = params.get('epitope_seq');
       const cid = params.get('cid') || undefined;
@@ -188,7 +188,7 @@ export class MotifPageComponent implements OnInit, OnDestroy {
             species:    p['species'],
             tcrChain:   p['tcr_chain'],
             mhcClass:   p['mhc_class'],
-            gene:       p['gene'],
+            gene:       p['mhc_a'] || p['gene'],
             epitopeSeq: p['epitope_seq']
           }).pipe(take(1)).subscribe((r) => { if (r) { resolved.push(r); } });
         });
@@ -218,7 +218,7 @@ export class MotifPageComponent implements OnInit, OnDestroy {
       species:    p['species'],
       tcrChain:   p['tcr_chain'],
       mhcClass:   p['mhc_class'],
-      gene:       p['gene'],
+      gene:       p['mhc_a'] || p['gene'],
       epitopeSeq: p['epitope_seq']
     };
   }
@@ -246,7 +246,7 @@ export class MotifPageComponent implements OnInit, OnDestroy {
             species:    resolved['species'],
             tcrChain:   resolved['tcr_chain'],
             mhcClass:   resolved['mhc_class'],
-            gene:       resolved['gene'],
+            gene:       resolved['mhc_a'] || resolved['gene'],
             epitopeSeq: resolved['epitope_seq']
           });
         }

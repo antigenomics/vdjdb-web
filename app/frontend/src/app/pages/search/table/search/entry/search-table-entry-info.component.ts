@@ -266,7 +266,7 @@ export class SearchTableEntryInfoComponent extends TableEntry {
           params.set('species', species);
           params.set('tcr_chain', tcrChain);
           params.set('mhc_class', mhcClass);
-          params.set('gene', motifGene);
+          params.set('mhc_a', motifGene);
           params.set('epitope_seq', epitopeSeq);
           params.set('cid', methodCid);
           if (method === 'tcremp') { params.set('method', 'tcremp'); }
