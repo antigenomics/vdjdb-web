@@ -25,6 +25,7 @@ import { TableModule } from 'shared/table/table.module';
 import { SearchTableEntryCdrComponent } from './entry/search-table-entry-cdr.component';
 import { SearchTableEntryGeneComponent } from './entry/search-table-entry-gene.component';
 import { SearchTableEntryInfoComponent } from './entry/search-table-entry-info.component';
+import { SearchTableEntryPairedGeneComponent } from './entry/search-table-entry-paired-gene.component';
 import { SearchTableEntryMetaComponent } from './entry/search-table-entry-meta.component';
 import { SearchTableEntryUrlComponent } from './entry/search-table-entry-url.component';
 import { SearchTableComponent } from './search-table.component';
@@ -36,6 +37,7 @@ import { SearchTableService } from './search-table.service';
     SearchTableEntryMetaComponent,
     SearchTableEntryUrlComponent,
     SearchTableEntryGeneComponent,
+    SearchTableEntryPairedGeneComponent,
     SearchTableEntryCdrComponent,
     SearchTableEntrySegmentComponent,
     SearchTableEntryMHCComponent,
@@ -44,6 +46,7 @@ import { SearchTableService } from './search-table.service';
   entryComponents: [ SearchTableEntryMetaComponent,
     SearchTableEntryUrlComponent,
     SearchTableEntryGeneComponent,
+    SearchTableEntryPairedGeneComponent,
     SearchTableEntryCdrComponent,
     SearchTableEntrySegmentComponent,
     SearchTableEntryMHCComponent,

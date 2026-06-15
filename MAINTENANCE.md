@@ -99,6 +99,11 @@ maintainers.)
   (`search-table-entry-gene`) applies it to its paired sub-row both at creation and on every
   toggle — so the sub-row never misaligns with the main row (it no longer derives columns from the
   static `skip` flag).
+- **Paired sub-row look:** the sub-row uses the `paired-row` class (white bg, `#525252` text;
+  `design-system.css`) instead of Semantic's yellow `warning`. Its Gene cell is a dedicated
+  `SearchTableEntryPairedGeneComponent` (a ↳ marker + gene name) rather than the expandable gene
+  component (`resolveComponentFactory` branches on `pairedDisabled`). CDR3 V/J regions keep their
+  green/blue (explicit colours, not overridden by the row's `#525252`).
 - **Page titles:** Motif page header = **"Paratope motifs"** (was "CDR3 motif database"); Structure
   page header = **"Native and predicted structures"** (was "TCR structure database").
 - **refsearch URL is intentionally HARDCODED to `https://vdjdb.com/refsearch/`** — do NOT derive

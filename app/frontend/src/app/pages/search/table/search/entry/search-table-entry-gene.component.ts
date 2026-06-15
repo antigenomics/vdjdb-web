@@ -99,7 +99,7 @@ export class SearchTableEntryGeneComponent extends TableEntry {
         this._pairedRow.instance.columns = this._columns;
         this._pairedRow.instance.hiddenColumns = this._hiddenColumns;
         this._pairedRow.changeDetectorRef.detectChanges();
-        this.renderer.addClass(this._pairedRow.location.nativeElement, 'warning');
+        this.renderer.addClass(this._pairedRow.location.nativeElement, 'paired-row');
         this.renderer.addClass(this._pairedRow.location.nativeElement, 'center');
         this.renderer.addClass(this._pairedRow.location.nativeElement, 'aligned');
         this.visible = true;

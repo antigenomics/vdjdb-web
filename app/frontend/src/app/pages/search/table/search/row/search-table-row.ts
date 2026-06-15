@@ -24,6 +24,7 @@ import { SearchTableEntryCdrComponent } from '../entry/search-table-entry-cdr.co
 import { SearchTableEntryGeneComponent } from '../entry/search-table-entry-gene.component';
 import { SearchTableEntryInfoComponent } from '../entry/search-table-entry-info.component';
 import { SearchTableEntryMetaComponent } from '../entry/search-table-entry-meta.component';
+import { SearchTableEntryPairedGeneComponent } from '../entry/search-table-entry-paired-gene.component';
 import { SearchTableEntryUrlComponent } from '../entry/search-table-entry-url.component';
 import { getSearchTableReorderMap } from '../search-table-reorder-map';
 
@@ -73,6 +74,9 @@ export class SearchTableRow extends TableRow {
   public resolveComponentFactory(column: TableColumn, resolver: ComponentFactoryResolver): ComponentFactory<TableEntry> {
     if (column.name === 'gene' && !this.pairedDisabled) {
       return resolver.resolveComponentFactory(SearchTableEntryGeneComponent);
+    } else if (column.name === 'gene' && this.pairedDisabled) {
+      // Paired (second-chain) sub-row: ↳-prefixed gene cell instead of the expandable one.
+      return resolver.resolveComponentFactory(SearchTableEntryPairedGeneComponent);
     } else if (column.name === 'cdr3') {
       return resolver.resolveComponentFactory(SearchTableEntryCdrComponent);
     } else if (column.name === 'reference.id') {
