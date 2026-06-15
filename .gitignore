@@ -66,3 +66,6 @@ motif-charts/tcremp/*
 
 # Old_database
 /old_database
+
+# Maintainer notes (local only, not for public repo)
+MAINTENANCE.md

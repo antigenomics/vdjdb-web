@@ -14,16 +14,4 @@
  *     limitations under the License.
  */
 
-/* Semantic's .ui.segments sets overflow:hidden, which turns it into a scroll container and
-   breaks position:sticky on the context header (it scrolls away with the page). Let the panel
-   overflow visible so the header can stick to the viewport. */
-.ui.raised.segments {
-    overflow: visible;
-}
-
-.structure-context-header-segment {
-    position: sticky;
-    top: 0;
-    z-index: 3;
-    background: #ffffff;
-}
+/* The context header scrolls with the page (same as the Motif page) — not sticky. */
