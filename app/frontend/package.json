@@ -17,7 +17,7 @@
   "author": "Dmitry Bagaev",
   "homepage": "https://github.com/antigenomics/vdjdb-web-private",
   "dependencies": {
-    "@angular/common": "7.2.9",
+    "@angular/common": "20.3.25",
     "@angular/compiler": "7.2.9",
     "@angular/core": "7.2.9",
     "@angular/forms": "7.2.9",
