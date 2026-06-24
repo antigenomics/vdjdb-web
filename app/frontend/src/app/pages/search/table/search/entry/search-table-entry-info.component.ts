@@ -13,6 +13,7 @@ interface BadgeInfo {
   popupLines: string[];
   popupHeader: string;
   link: string;
+  footer?: string;
 }
 
 @Component({
@@ -25,7 +26,7 @@ interface BadgeInfo {
            [style.background]="badge.color"
            [style.border-color]="badge.borderColor"
            [attr.href]="badge.link" target="_blank" rel="noopener"
-           [popup]="badge.popupLines" [header]="badge.popupHeader"
+           [popup]="badge.popupLines" [header]="badge.popupHeader" [footer]="badge.footer"
            topShift="-25" shiftStrategy="per-item" width="250" display="list">
           <span class="info-badge__letter">{{ badge.letter }}</span><span
             *ngIf="badge.subscript" class="info-badge__sub">{{ badge.subscript }}</span>
@@ -34,7 +35,7 @@ interface BadgeInfo {
           <span class="info-badge" [class.info-badge--inactive]="!badge.active"
                 [style.background]="badge.color"
                 [style.border-color]="badge.borderColor"
-                [popup]="badge.popupLines" [header]="badge.popupHeader"
+                [popup]="badge.popupLines" [header]="badge.popupHeader" [footer]="badge.footer"
                 topShift="-25" shiftStrategy="per-item" width="250" display="list">
             <span class="info-badge__letter">{{ badge.letter }}</span><span
               *ngIf="badge.subscript" class="info-badge__sub">{{ badge.subscript }}</span>
@@ -152,7 +153,8 @@ export class SearchTableEntryInfoComponent extends TableEntry {
         active: true,
         popupLines: ['has_motif : +', `method : ${methodLabels.join(', ')}`, `cid : ${cid || '?'}`],
         popupHeader: 'Motif',
-        link: link || ''
+        link: link || '',
+        footer: 'Click on the icon to open the motif page'
       };
     }
     return {
@@ -163,7 +165,8 @@ export class SearchTableEntryInfoComponent extends TableEntry {
       active: false,
       popupLines: ['has_motif : \u2013'],
       popupHeader: 'Motif',
-      link: ''
+      link: '',
+      footer: 'No motif is available for this record'
     };
   }
 
@@ -177,7 +180,8 @@ export class SearchTableEntryInfoComponent extends TableEntry {
         active: true,
         popupLines: popupLines || ['has_structure : +'],
         popupHeader: 'Structure',
-        link: link || ''
+        link: link || '',
+        footer: link ? 'Click on the icon to open the structure page' : undefined
       };
     }
     return {
@@ -188,7 +192,8 @@ export class SearchTableEntryInfoComponent extends TableEntry {
       active: false,
       popupLines: ['has_structure : \u2013'],
       popupHeader: 'Structure',
-      link: ''
+      link: '',
+      footer: 'No structure is available for this record'
     };
   }
 
