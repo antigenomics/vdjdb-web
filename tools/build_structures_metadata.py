@@ -26,9 +26,11 @@ from pathlib import Path
 import numpy as np
 from scipy.stats import gaussian_kde
 
-# Notebook code uses < 0.10 of peak density; the Fig 4e legend says < 5%.
-# Default to the notebook value; change here to reconcile with the figure legend.
-OUTLIER_DENSITY_FRACTION = 0.10
+# Outlier binding mode: model whose (scanning_angle, pitch_angle) 2D-KDE density is below
+# this fraction of peak density. Set to 0.05 to match the published Figure 4 legend
+# ("< 5% of peak density"). NB: the figure-generating notebook code used 0.10 — the figure
+# and its legend should be reconciled (re-render at 5%, or change the legend to 10%).
+OUTLIER_DENSITY_FRACTION = 0.05
 
 
 def _open(path: Path):
