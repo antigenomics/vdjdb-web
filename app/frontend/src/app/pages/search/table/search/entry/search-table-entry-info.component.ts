@@ -300,29 +300,20 @@ export class SearchTableEntryInfoComponent extends TableEntry {
 
     const popup = [ ...types ];
 
-    // Native experimental structure => surface a PDB id ONLY when meta["structure.id"] is a real
-    // PDB accession — legacy 4-char (1ABC) or the new extended form pdb_XXXXXXXX (12 chars, e.g.
-    // pdb_00001abc; see wwpdb.org/documentation/new-format-for-pdb-ids). Free-text refs (e.g.
-    // "Fig 9, Supp Table 5-8") are NOT shown — the literature reference is in the table's Reference column.
-    let pdbLink: string | null = null;
+    // Native experimental structure => surface the PDB accession in the tooltip ONLY (text, no link)
+    // when meta["structure.id"] is a real PDB id — legacy 4-char (1ABC) or the extended pdb_XXXXXXXX
+    // form (see wwpdb.org/documentation/new-format-for-pdb-ids). The badge itself links to the internal
+    // /structure viewer via TCR_hash (same as models); the RCSB/PDB link lives in the Reference column.
     if (isNative) {
       const structId = this.extractStructureId(this.getCellValue(row, columns, 'meta'));
       if (structId && this.isPdbId(structId)) {
         popup.push(`PDB : ${structId}`);
-        pdbLink = `https://www.rcsb.org/structure/${structId.toUpperCase()}`;
       }
     }
 
     const tcrHash = (this.getCellValue(row, columns, 'TCR_hash') || '').trim();
 
-    if (pdbLink) {
-      this.badges[3] = this.buildStructureBadge(true, pdbLink, popup);
-      this.changeDetector.markForCheck();
-      this.appendStructureMetrics(tcrHash, popup);
-      return;
-    }
-
-    // No PDB link; fall back to a model viewer link via TCR_hash if available.
+    // Native and model alike resolve to the internal /structure viewer when a visualization exists.
     this.badges[3] = this.buildStructureBadge(true, null, popup);
     this.appendStructureMetrics(tcrHash, popup);
     if (!tcrHash) {
