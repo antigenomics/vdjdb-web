@@ -48,10 +48,6 @@
                     <ng-container *ngIf="getChainHelpContent()">&nbsp;&nbsp;<span class="structure-cdr3-results__meta-item">{{ getChainHelpContent() }}</span></ng-container>
                 </div>
             </h5>
-            <div class="structure-cdr3-line structure-cdr3-line--id">
-                <span class="structure-cdr3-label">CDR3α/β cluster ID:</span>
-                <span class="structure-cdr3-value">{{ cdr3ClusterIdLabel }}</span>
-            </div>
             <div class="structure-cdr3-line structure-cdr3-line--cdr">
                 <span class="structure-cdr3-label">CDR3a:</span>
                 <span class="structure-cdr3-value">
@@ -100,6 +96,10 @@
                 </span>
                 <span class="structure-cdr3-metric structure-cdr3-metric--warn" *ngIf="m.bindingModeOutlier" title="docking angle outside 95% CI">⚠ outlier binding mode</span>
                 <span class="structure-cdr3-metric structure-cdr3-metric--native" *ngIf="m.isNative" title="experimentally-determined structure">✓ native structure</span>
+            </div>
+            <div class="structure-cdr3-line structure-cdr3-line--id">
+                <span class="structure-cdr3-label">α/β cluster ID suffix:</span>
+                <span class="structure-cdr3-value">{{ cdr3ClusterIdLabel }}</span>
             </div>
             <div class="structure-cdr3-download-row">
                 <div class="ui fluid selection dropdown structure-cdr3-download"

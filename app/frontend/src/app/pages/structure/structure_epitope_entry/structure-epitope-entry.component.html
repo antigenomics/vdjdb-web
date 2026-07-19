@@ -50,13 +50,6 @@
                              [class.is-selected]="isClusterSelected(row.cluster)"
                              [class.is-disabled]="isRowDisabled(row)"
                              (click)="isRowDisabled(row) ? null : onRowToggle(row, $event)">
-                            <div class="overlay-card__line overlay-card__line--id">
-                                <div class="overlay-card__id-meta">
-                                    <span class="overlay-card__label">CDR3α/β cluster ID:</span>
-                                    <span class="overlay-card__value">{{ row.alphaClusterId || '-' }}/{{ row.betaClusterId || '-' }}</span>
-                                    <span class="overlay-card__note" *ngIf="!row.hasHtml">no HTML</span>
-                                </div>
-                            </div>
                             <div class="overlay-card__line overlay-card__line--cdr">
                                 <span class="overlay-card__label">CDR3a:</span>
                                 <span class="overlay-card__value">
@@ -105,6 +98,13 @@
                                 </span>
                                 <span class="overlay-card__metric overlay-card__metric--warn" *ngIf="m.bindingModeOutlier" title="docking angle outside 95% CI">⚠ outlier binding mode</span>
                                 <span class="overlay-card__metric overlay-card__metric--native" *ngIf="m.isNative" title="experimentally-determined structure">✓ native structure</span>
+                            </div>
+                            <div class="overlay-card__line overlay-card__line--id">
+                                <div class="overlay-card__id-meta">
+                                    <span class="overlay-card__label">α/β cluster ID suffix:</span>
+                                    <span class="overlay-card__value">{{ row.alphaClusterId || '-' }}/{{ row.betaClusterId || '-' }}</span>
+                                    <span class="overlay-card__note" *ngIf="!row.hasHtml">no HTML</span>
+                                </div>
                             </div>
                             <div class="overlay-card__actions">
                                 <a class="overlay-card__action" *ngIf="row.alphaMotifLink; else alphaMotifOff"
