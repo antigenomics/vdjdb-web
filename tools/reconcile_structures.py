@@ -16,6 +16,7 @@
 from __future__ import annotations
 
 import argparse
+import csv
 import gzip
 import hashlib
 import io
@@ -79,17 +80,34 @@ def load_pdb_natives(path: Path):
     return rows
 
 
+def load_cdr3fix(path: Path):
+    """(species, cdr3, v, j) -> cdr3fix JSON string, from py_src/compute_pdb_cdr3fix.py output.
+    Populates generated native rows so their cdr3fix is real vdjdb-db fixer output rather than
+    an empty string (which crashes the web search-table stream on Json.parse)."""
+    if path is None:
+        return {}
+    lk = {}
+    with open(path, encoding="utf-8") as fh:
+        for r in csv.DictReader(fh, delimiter="\t"):
+            lk[(r["species"], r["cdr3"], r["v"], r["j"])] = r["cdr3fix"]
+    return lk
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("vdjdb", type=Path, help="deployed vdjdb.txt")
     ap.add_argument("--metadata", type=Path, required=True, help="corrected vdjdb_structures_metadata.tsv.gz")
     ap.add_argument("--pdb-db", type=Path, required=True, help="vdjdb-db chunks/PDB_Database.txt")
+    ap.add_argument("--cdr3fix", type=Path, default=None,
+                    help="cdr3fix lookup TSV (py_src/compute_pdb_cdr3fix.py output) for generated rows")
     ap.add_argument("-o", "--output", type=Path, required=True)
     ap.add_argument("--dry-run", action="store_true", help="report counts, do not write")
     args = ap.parse_args()
 
     contacts, quality = load_corrected(args.metadata)
     print(f"corrected: {len(contacts)} model-with-contacts hashes, {len(quality)} good-quality hashes")
+    cdr3fix_lk = load_cdr3fix(args.cdr3fix)
+    print(f"cdr3fix lookup: {len(cdr3fix_lk)} entries")
 
     with open(args.vdjdb, encoding="utf-8") as fh:
         header = fh.readline().rstrip("\n").split("\t")
@@ -159,13 +177,16 @@ def main() -> int:
         qua = "true" if h in quality else "false"
         for gene, cdr3, v, j in [("TRA", r["cdr3.alpha"], r["v.alpha"], r["j.alpha"]),
                                  ("TRB", r["cdr3.beta"], r["v.beta"], r["j.beta"])]:
+            # real vdjdb-db fixer output for this chain; "{}" keeps it valid JSON if unmatched
+            # (an empty string would crash the web search-table stream on Json.parse).
+            cdr3fix = cdr3fix_lk.get((r["species"], cdr3, v, j), "{}")
             row = {c: "" for c in header}
             row.update({
                 "complex.id": str(cid), "gene": gene, "cdr3": cdr3, "v.segm": v, "j.segm": j,
                 "species": r["species"], "mhc.a": r["mhc.a"], "mhc.b": r["mhc.b"], "mhc.class": r["mhc.class"],
                 "antigen.epitope": r["antigen.epitope"], "antigen.gene": r.get("antigen.gene", ""),
                 "antigen.species": r.get("antigen.species", ""), "reference.id": ref, "vdjdb.score": "3",
-                "TCR_hash": h, "meta": meta, "method": "", "cdr3fix": "",
+                "TCR_hash": h, "meta": meta, "method": "", "cdr3fix": cdr3fix,
                 "evidence.structure.native": "true", "evidence.structure.contacts": con,
                 "evidence.structure.quality": qua,
             })

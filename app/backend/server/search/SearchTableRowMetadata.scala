@@ -25,7 +25,10 @@ object SearchTableRowMetadata {
   implicit val searchTableRowMetadataFormat: Format[SearchTableRowMetadata] = Json.format[SearchTableRowMetadata]
 
   def createFromRow(r: Row): SearchTableRowMetadata = {
-    val cdr3fix = Json.parse(r.getAt("cdr3fix").getValue)
+    // A blank cdr3fix cell would make Json.parse throw and kill the whole search-table stream
+    // (one bad row → empty Browse table). Treat blank as an empty object.
+    val cdr3fixRaw = r.getAt("cdr3fix").getValue
+    val cdr3fix = if (cdr3fixRaw == null || cdr3fixRaw.trim.isEmpty) Json.obj() else Json.parse(cdr3fixRaw)
 
     val cdr3vEnd = (cdr3fix \ "vEnd").validate[Int].asOpt.getOrElse(-1)
     val cdr3jStart = (cdr3fix \ "jStart").validate[Int].asOpt.getOrElse(-1)
