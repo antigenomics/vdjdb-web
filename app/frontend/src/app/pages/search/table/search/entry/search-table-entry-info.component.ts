@@ -300,32 +300,56 @@ export class SearchTableEntryInfoComponent extends TableEntry {
 
     const popup = [ ...types ];
 
-    // Native experimental structure => surface the PDB accession in the tooltip ONLY (text, no link)
-    // when meta["structure.id"] is a real PDB id — legacy 4-char (1ABC) or the extended pdb_XXXXXXXX
-    // form (see wwpdb.org/documentation/new-format-for-pdb-ids). The badge itself links to the internal
-    // /structure viewer via TCR_hash (same as models); the RCSB/PDB link lives in the Reference column.
+    // Native experimental structure => surface the PDB accession (tooltip line + RCSB fallback link).
+    // The badge prefers the internal /structure viewer; when the complex isn't visualized in VDJdb yet
+    // it falls back to the PDB entry and is flagged with a "!" badge. isPdbId matches a legacy 4-char
+    // accession (1ABC) or the extended pdb_XXXXXXXX form (wwpdb.org/documentation/new-format-for-pdb-ids).
+    let pdbLink: string | null = null;
     if (isNative) {
       const structId = this.extractStructureId(this.getCellValue(row, columns, 'meta'));
       if (structId && this.isPdbId(structId)) {
         popup.push(`PDB : ${structId}`);
+        pdbLink = `https://www.rcsb.org/structure/${structId.toUpperCase()}`;
       }
     }
 
     const tcrHash = (this.getCellValue(row, columns, 'TCR_hash') || '').trim();
 
-    // Native and model alike resolve to the internal /structure viewer when a visualization exists.
     this.badges[3] = this.buildStructureBadge(true, null, popup);
     this.appendStructureMetrics(tcrHash, popup);
-    if (!tcrHash) {
-      return;
-    }
 
     this.availability.hasStructure(tcrHash.toLowerCase()).then((available) => {
-      const link = available ? this.generateStructureLink(row, columns, tcrHash) : null;
+      let link: string | null = null;
+      if (tcrHash && available) {
+        // Internal complementarity-map viewer exists → open it.
+        link = this.generateStructureLink(row, columns, tcrHash);
+      } else if (pdbLink) {
+        // Native structure not yet in VDJdb → link to the PDB entry and flag it with a "!" badge.
+        link = pdbLink;
+        this.addNotInVdjdbBadge();
+      }
       const currentFooter = this.badges[3] ? this.badges[3].footer : undefined;
       this.badges[3] = this.buildStructureBadge(true, link, popup, currentFooter);
       this.changeDetector.markForCheck();
     }).catch(() => {});
+  }
+
+  // Flags a native experimental structure whose complex is not yet visualized in VDJdb; the "S" badge
+  // falls back to the PDB entry in that case. Informational only (tooltip, no link).
+  private addNotInVdjdbBadge(): void {
+    if (this.badges.some((badge) => badge.letter === '!')) {
+      return;
+    }
+    this.badges.push({
+      letter: '!',
+      subscript: '',
+      color: 'rgba(244, 67, 54, 0.15)',
+      borderColor: 'rgba(244, 67, 54, 0.85)',
+      active: true,
+      popupLines: [ 'Structure not yet in VDJdb' ],
+      popupHeader: 'Structure',
+      link: ''
+    });
   }
 
   // Structure model metrics (contacts / ipTM / confidence / binding-mode) are joined by

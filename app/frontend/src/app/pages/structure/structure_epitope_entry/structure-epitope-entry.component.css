@@ -232,6 +232,49 @@
     opacity: 1;
 }
 
+.overlay-card__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    margin-top: 0.6rem;
+    padding-top: 0.55rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.overlay-card__action {
+    padding: 3px 10px;
+    border-radius: 4px;
+    font-size: 0.82rem;
+    line-height: 1.25;
+    font-weight: 600;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    background: #ffffff;
+    color: #1f1f1f;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.overlay-card__action:not(.overlay-card__action--disabled):hover {
+    background: #eef2ff;
+    border-color: #3d58f3;
+}
+
+.overlay-card__action--disabled {
+    opacity: 0.4;
+    cursor: default;
+    pointer-events: none;
+}
+
+/* Keep the actions usable even when the card itself is disabled for overlay selection. */
+.overlay-card.is-disabled .overlay-card__actions {
+    opacity: 1;
+}
+
+.overlay-card__action--download {
+    margin-left: auto;
+}
+
 .overlay-card__label {
     font-weight: 600;
     color: #1f1f1f;

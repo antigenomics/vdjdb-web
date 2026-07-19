@@ -56,12 +56,6 @@
                                     <span class="overlay-card__value">{{ row.alphaClusterId || '-' }}/{{ row.betaClusterId || '-' }}</span>
                                     <span class="overlay-card__note" *ngIf="!row.hasHtml">no HTML</span>
                                 </div>
-                                <button class="overlay-card__download"
-                                        type="button"
-                                        (click)="onDownloadClick(row, $event)"
-                                        (mousedown)="$event.stopPropagation()">
-                                    <b>{{ downloadTitle }}</b>
-                                </button>
                             </div>
                             <div class="overlay-card__line overlay-card__line--cdr">
                                 <span class="overlay-card__label">CDR3a:</span>
@@ -111,6 +105,22 @@
                                 </span>
                                 <span class="overlay-card__metric overlay-card__metric--warn" *ngIf="m.bindingModeOutlier" title="docking angle outside 95% CI">⚠ outlier binding mode</span>
                                 <span class="overlay-card__metric overlay-card__metric--native" *ngIf="m.isNative" title="experimentally-determined structure">✓ native structure</span>
+                            </div>
+                            <div class="overlay-card__actions">
+                                <a class="overlay-card__action" *ngIf="row.alphaMotifLink; else alphaMotifOff"
+                                   [attr.href]="row.alphaMotifLink" target="_blank" rel="noopener"
+                                   (click)="$event.stopPropagation()" (mousedown)="$event.stopPropagation()">Alpha motif</a>
+                                <ng-template #alphaMotifOff>
+                                    <span class="overlay-card__action overlay-card__action--disabled" title="No alpha-chain motif for this record">Alpha motif</span>
+                                </ng-template>
+                                <a class="overlay-card__action" *ngIf="row.betaMotifLink; else betaMotifOff"
+                                   [attr.href]="row.betaMotifLink" target="_blank" rel="noopener"
+                                   (click)="$event.stopPropagation()" (mousedown)="$event.stopPropagation()">Beta motif</a>
+                                <ng-template #betaMotifOff>
+                                    <span class="overlay-card__action overlay-card__action--disabled" title="No beta-chain motif for this record">Beta motif</span>
+                                </ng-template>
+                                <button class="overlay-card__action overlay-card__action--download" type="button"
+                                        (click)="onDownloadClick(row, $event)" (mousedown)="$event.stopPropagation()">{{ downloadTitle }}</button>
                             </div>
                         </div>
                     </div>
