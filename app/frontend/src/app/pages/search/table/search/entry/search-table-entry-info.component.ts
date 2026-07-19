@@ -298,12 +298,13 @@ export class SearchTableEntryInfoComponent extends TableEntry {
     const popup = [ ...types ];
 
     // Native experimental structure => surface a PDB id ONLY when meta["structure.id"] is a real
-    // 4-char PDB accession (+ RCSB link). Free-text refs (e.g. "Fig 9, Supp Table 5-8") are NOT
-    // shown here — the literature reference is already handled by the table's Reference column.
+    // PDB accession — legacy 4-char (1ABC) or the new extended form pdb_XXXXXXXX (12 chars, e.g.
+    // pdb_00001abc; see wwpdb.org/documentation/new-format-for-pdb-ids). Free-text refs (e.g.
+    // "Fig 9, Supp Table 5-8") are NOT shown — the literature reference is in the table's Reference column.
     let pdbLink: string | null = null;
     if (isNative) {
       const structId = this.extractStructureId(this.getCellValue(row, columns, 'meta'));
-      if (structId && /^[A-Za-z0-9]{4}$/.test(structId)) {
+      if (structId && this.isPdbId(structId)) {
         popup.push(`PDB : ${structId}`);
         pdbLink = `https://www.rcsb.org/structure/${structId.toUpperCase()}`;
       }
@@ -383,6 +384,11 @@ export class SearchTableEntryInfoComponent extends TableEntry {
       parts.push('outlier = docking angle outside 95% CI');
     }
     return parts.length > 0 ? parts.join('; ') : undefined;
+  }
+
+  private isPdbId(id: string): boolean {
+    // Legacy 4-char accession (e.g. 1ABC) or the extended pdb_XXXXXXXX form (e.g. pdb_00001abc).
+    return /^[A-Za-z0-9]{4}$/.test(id) || /^pdb_[A-Za-z0-9]{8}$/i.test(id);
   }
 
   private extractStructureId(metaValue?: string): string | null {
