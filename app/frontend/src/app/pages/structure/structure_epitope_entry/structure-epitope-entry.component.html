@@ -110,7 +110,7 @@
                                     <span class="overlay-card__pct" *ngIf="m.confidencePct != null" title="rank across all modelled VDJdb structures">({{ m.confidencePct }}%)</span>
                                 </span>
                                 <span class="overlay-card__metric overlay-card__metric--warn" *ngIf="m.bindingModeOutlier" title="docking angle outside 95% CI">⚠ outlier binding mode</span>
-                                <span class="overlay-card__metric overlay-card__metric--native" *ngIf="m.isNative">experimental (PDB)</span>
+                                <span class="overlay-card__metric overlay-card__metric--native" *ngIf="m.isNative" title="experimentally-determined structure">✓ native structure</span>
                             </div>
                         </div>
                     </div>

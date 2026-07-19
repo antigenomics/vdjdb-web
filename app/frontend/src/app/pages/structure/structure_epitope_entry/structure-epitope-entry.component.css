@@ -277,7 +277,7 @@
 
 .overlay-card__metric--native {
     color: #2e7d32;
-    font-style: italic;
+    font-weight: 600;
 }
 
 .overlay-card__metric-note {

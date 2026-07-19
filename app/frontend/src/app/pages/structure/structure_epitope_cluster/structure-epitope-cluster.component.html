@@ -99,7 +99,7 @@
                     <span class="structure-cdr3-metric-pct" *ngIf="m.confidencePct != null" title="rank across all modelled VDJdb structures">({{ m.confidencePct }}%)</span>
                 </span>
                 <span class="structure-cdr3-metric structure-cdr3-metric--warn" *ngIf="m.bindingModeOutlier" title="docking angle outside 95% CI">⚠ outlier binding mode</span>
-                <span class="structure-cdr3-metric structure-cdr3-metric--native" *ngIf="m.isNative">experimental (PDB)</span>
+                <span class="structure-cdr3-metric structure-cdr3-metric--native" *ngIf="m.isNative" title="experimentally-determined structure">✓ native structure</span>
             </div>
             <div class="structure-cdr3-download-row">
                 <div class="ui fluid selection dropdown structure-cdr3-download"

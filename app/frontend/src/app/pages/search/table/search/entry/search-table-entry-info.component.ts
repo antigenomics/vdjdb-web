@@ -135,7 +135,7 @@ export class SearchTableEntryInfoComponent extends TableEntry {
       color: 'rgba(76, 175, 80, 0.15)',
       borderColor: 'rgba(76, 175, 80, 0.8)',
       active,
-      popupLines: active ? sources : ['No validation'],
+      popupLines: active ? sources : ['Not validated'],
       popupHeader: 'Validation',
       link: ''
     };
@@ -218,8 +218,8 @@ export class SearchTableEntryInfoComponent extends TableEntry {
 
   private resolveValidation(row: SearchTableRow, columns: TableColumn[]): void {
     const sources: string[] = [];
-    if (this.columnTrue(row, columns, 'evidence.validation.same.study')) { sources.push('Additional assay (same study)'); }
-    if (this.columnTrue(row, columns, 'evidence.validation.independent')) { sources.push('Independent study'); }
+    if (this.columnTrue(row, columns, 'evidence.validation.same.study')) { sources.push('Additional assay (same study) ✔'); }
+    if (this.columnTrue(row, columns, 'evidence.validation.independent')) { sources.push('Independent study ✔'); }
     this.badges[1] = this.buildValidationBadge(sources);
 
     const cdr3 = this.getCellValue(row, columns, 'cdr3') || '';
@@ -229,7 +229,7 @@ export class SearchTableEntryInfoComponent extends TableEntry {
     this.availability.getValidationStatus(cdr3, epitope).then((status) => {
       if (status) {
         const updated = sources.slice();
-        updated.push(`TCRvdb : ${status}`);
+        updated.push(`TCRvdb : ${status} ✔`);
         this.badges[1] = this.buildValidationBadge(updated);
         this.changeDetector.markForCheck();
       }
@@ -297,19 +297,15 @@ export class SearchTableEntryInfoComponent extends TableEntry {
 
     const popup = [ ...types ];
 
-    // Native experimental structure => surface its reference (meta["structure.id"]).
-    // Link to RCSB only when the id is a real 4-char PDB accession; otherwise it is a
-    // free-text literature/figure reference (e.g. "Fig 9, Supp Table 5-8"), shown as such.
+    // Native experimental structure => surface a PDB id ONLY when meta["structure.id"] is a real
+    // 4-char PDB accession (+ RCSB link). Free-text refs (e.g. "Fig 9, Supp Table 5-8") are NOT
+    // shown here — the literature reference is already handled by the table's Reference column.
     let pdbLink: string | null = null;
     if (isNative) {
       const structId = this.extractStructureId(this.getCellValue(row, columns, 'meta'));
-      if (structId) {
-        if (/^[A-Za-z0-9]{4}$/.test(structId)) {
-          popup.push(`PDB : ${structId}`);
-          pdbLink = `https://www.rcsb.org/structure/${structId.toUpperCase()}`;
-        } else {
-          popup.push(`Reference : ${structId}`);
-        }
+      if (structId && /^[A-Za-z0-9]{4}$/.test(structId)) {
+        popup.push(`PDB : ${structId}`);
+        pdbLink = `https://www.rcsb.org/structure/${structId.toUpperCase()}`;
       }
     }
 
