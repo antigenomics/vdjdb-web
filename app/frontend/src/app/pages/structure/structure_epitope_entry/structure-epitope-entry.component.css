@@ -249,6 +249,49 @@
     letter-spacing: 0.5px;
 }
 
+.overlay-card__metrics {
+    margin-top: 4px;
+    padding-top: 6px;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+    gap: 4px 12px;
+}
+
+.overlay-card__metric {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 4px;
+    white-space: nowrap;
+}
+
+.overlay-card__pct {
+    color: #6b7280;
+    font-size: 0.78rem;
+}
+
+.overlay-card__metric--warn,
+.overlay-card__metric--warn .overlay-card__label,
+.overlay-card__metric--warn .overlay-card__value {
+    color: #a33;
+    font-weight: 600;
+}
+
+.overlay-card__metric--native {
+    color: #2e7d32;
+    font-style: italic;
+}
+
+.overlay-card__metric-note {
+    display: inline-block;
+    margin-left: 4px;
+    padding: 1px 6px;
+    border-radius: 10px;
+    background: #ffe6e6;
+    color: #a33;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
 .overlay-card__links {
     margin-top: 0.4rem;
     font-size: 0.82rem;

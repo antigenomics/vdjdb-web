@@ -34,7 +34,8 @@ case class StructureCluster(clusterId: String,
                             cdr3aVEnd: Int = -1,
                             cdr3aJStart: Int = -1,
                             cdr3bVEnd: Int = -1,
-                            cdr3bJStart: Int = -1)
+                            cdr3bJStart: Int = -1,
+                            metrics: Option[StructureModelMetrics] = None)
 
 object StructureCluster {
   implicit val structureClusterFormat: Format[StructureCluster] = Json.format[StructureCluster]

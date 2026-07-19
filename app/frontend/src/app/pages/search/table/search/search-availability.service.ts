@@ -7,6 +7,16 @@ interface IStructureVisualizationDescriptor {
   simpleUrl?: string;
 }
 
+export interface IStructureMetrics {
+  isNative: boolean;
+  numContacts?: number;
+  iptm?: number;
+  confidence?: number;
+  iptmPct?: number;
+  confidencePct?: number;
+  bindingModeOutlier?: boolean;
+}
+
 interface ISearchAvailabilityResponse {
   structures: string[];
   motifs: string[];
@@ -15,6 +25,7 @@ interface ISearchAvailabilityResponse {
   motifCidIndex?: { [key: string]: string };
   motifCidIndexTcremp?: { [key: string]: string };
   validationIndex?: { [key: string]: string };
+  structureMetrics?: { [structureId: string]: IStructureMetrics };
 }
 
 @Injectable({ providedIn: 'root' })
@@ -29,6 +40,7 @@ export class SearchAvailabilityService {
   private readonly motifCidIndex: Map<string, string> = new Map<string, string>();
   private readonly motifCidIndexTcremp: Map<string, string> = new Map<string, string>();
   private readonly validationIndex: Map<string, string> = new Map<string, string>();
+  private readonly structureMetrics: Map<string, IStructureMetrics> = new Map<string, IStructureMetrics>();
 
   private ensureLoaded(): Promise<void> {
     if (!this.loadPromise) {
@@ -100,6 +112,15 @@ export class SearchAvailabilityService {
             }
           });
         }
+        if (payload && payload.structureMetrics) {
+          Object.keys(payload.structureMetrics).forEach((key) => {
+            const metrics = payload.structureMetrics ? payload.structureMetrics[ key ] : undefined;
+            const normalized = this.normalizeStructureId(key);
+            if (normalized && metrics) {
+              this.structureMetrics.set(normalized, metrics);
+            }
+          });
+        }
       }).catch((error) => {
         this.structureIds.clear();
         this.motifKeys.clear();
@@ -107,6 +128,7 @@ export class SearchAvailabilityService {
         this.motifCidIndex.clear();
         this.motifCidIndexTcremp.clear();
         this.validationIndex.clear();
+        this.structureMetrics.clear();
         this.loadPromise = null;
         throw error;
       });
@@ -183,5 +205,11 @@ export class SearchAvailabilityService {
     await this.ensureLoaded();
     const key = `${cdr3.trim().toLowerCase()}|${epitope.trim().toLowerCase()}`;
     return this.validationIndex.get(key);
+  }
+
+  public async getStructureMetrics(structureId: string): Promise<IStructureMetrics | undefined> {
+    await this.ensureLoaded();
+    const normalized = this.normalizeStructureId(structureId);
+    return normalized ? this.structureMetrics.get(normalized) : undefined;
   }
 }

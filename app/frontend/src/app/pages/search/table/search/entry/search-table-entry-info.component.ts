@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ComponentFactory
 import { TableColumn } from 'shared/table/column/table-column';
 import { TableEntry } from 'shared/table/entry/table-entry';
 import { SearchTableRow } from '../row/search-table-row';
-import { SearchAvailabilityService } from '../search-availability.service';
+import { IStructureMetrics, SearchAvailabilityService } from '../search-availability.service';
 
 interface BadgeInfo {
   letter: string;
@@ -308,15 +308,18 @@ export class SearchTableEntryInfoComponent extends TableEntry {
       }
     }
 
+    const tcrHash = (this.getCellValue(row, columns, 'TCR_hash') || '').trim();
+
     if (pdbLink) {
       this.badges[3] = this.buildStructureBadge(true, pdbLink, popup);
       this.changeDetector.markForCheck();
+      this.appendStructureMetrics(tcrHash, popup);
       return;
     }
 
     // No PDB link; fall back to a model viewer link via TCR_hash if available.
     this.badges[3] = this.buildStructureBadge(true, null, popup);
-    const tcrHash = (this.getCellValue(row, columns, 'TCR_hash') || '').trim();
+    this.appendStructureMetrics(tcrHash, popup);
     if (!tcrHash) {
       return;
     }
@@ -326,6 +329,46 @@ export class SearchTableEntryInfoComponent extends TableEntry {
       this.badges[3] = this.buildStructureBadge(true, link, popup);
       this.changeDetector.markForCheck();
     }).catch(() => {});
+  }
+
+  // Structure model metrics (contacts / ipTM / confidence / binding-mode) are joined by
+  // TCR_hash from the availability index and appended to the "S" badge tooltip.
+  private appendStructureMetrics(tcrHash: string, popup: string[]): void {
+    if (!tcrHash) {
+      return;
+    }
+    this.availability.getStructureMetrics(tcrHash.toLowerCase()).then((metrics) => {
+      if (!metrics) {
+        return;
+      }
+      const lines = this.buildStructureMetricLines(metrics);
+      if (lines.length === 0) {
+        return;
+      }
+      lines.forEach((line) => popup.push(line));
+      const currentLink = this.badges[3] ? this.badges[3].link : '';
+      this.badges[3] = this.buildStructureBadge(true, currentLink || null, popup);
+      this.changeDetector.markForCheck();
+    }).catch(() => {});
+  }
+
+  private buildStructureMetricLines(m: IStructureMetrics): string[] {
+    const lines: string[] = [];
+    if (m.numContacts !== undefined && m.numContacts !== null) {
+      lines.push(m.numContacts === 0 ? 'n_contacts : 0 (no CDR3-peptide contacts)' : `n_contacts : ${m.numContacts}`);
+    }
+    if (m.iptm !== undefined && m.iptm !== null) {
+      const pct = (m.iptmPct !== undefined && m.iptmPct !== null) ? ` (${m.iptmPct}%)` : '';
+      lines.push(`iptm : ${m.iptm.toFixed(2)}${pct}`);
+    }
+    if (m.confidence !== undefined && m.confidence !== null) {
+      const pct = (m.confidencePct !== undefined && m.confidencePct !== null) ? ` (${m.confidencePct}%)` : '';
+      lines.push(`model_confidence : ${m.confidence.toFixed(2)}${pct}`);
+    }
+    if (m.bindingModeOutlier) {
+      lines.push('binding_mode : outlier');
+    }
+    return lines;
   }
 
   private extractStructureId(metaValue?: string): string | null {

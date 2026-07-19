@@ -5,7 +5,7 @@ import backend.server.database.Database
 import backend.server.motifs.MotifsMetadata
 import backend.server.motifs.api.filter.MotifsSearchTreeFilter
 import backend.server.structures.api.cdr3.{StructureCDR3SearchEntry, StructureCDR3SearchResult, StructureCDR3SearchResultOptions}
-import backend.server.structures.api.epitope.{StructureCluster, StructureClusterMeta, StructureEpitope, StructureVisualization}
+import backend.server.structures.api.epitope.{StructureCluster, StructureClusterMeta, StructureEpitope, StructureModelMetrics, StructureVisualization}
 import backend.server.structures.api.filter.StructuresSearchTreeFilterResult
 import backend.utils.CommonUtils
 import play.api.libs.json._
@@ -29,6 +29,48 @@ case class Structures @Inject()(database: Database)(implicit ec: ExecutionContex
   private val visualizationMappings: Map[String, StructureVisualization] = loadVisualizationMappings()
   private lazy val motifClusterIdIndex: Map[String, String] = loadMotifClusterIdIndex(buildStructureKeySet())
   private val maxTopValueInCDR3Search: Int = 15
+  // Per-model confidence metrics, keyed by lower-cased structure hash (see
+  // tools/build_structures_metadata.py). Empty map if the companion file is absent.
+  private val structureMetricsIndex: Map[String, StructureModelMetrics] = loadStructureMetrics()
+
+  private def loadStructureMetrics(): Map[String, StructureModelMetrics] = {
+    val path = Paths.get(database.getLocation).resolve("structures_metadata.tsv")
+    if (!Files.isRegularFile(path)) {
+      Map.empty
+    } else {
+      val source = Source.fromFile(path.toFile, StandardCharsets.UTF_8.name())
+      try {
+        val iter = source.getLines()
+        if (!iter.hasNext) {
+          Map.empty
+        } else {
+          val idx = iter.next().split("\t", -1).map(_.trim).zipWithIndex.toMap
+          def col(cols: Array[String], name: String): Option[String] =
+            idx.get(name).flatMap(i => if (i < cols.length) Option(cols(i)).map(_.trim).filter(_.nonEmpty) else None)
+          val builder = mutable.HashMap.empty[String, StructureModelMetrics]
+          iter.foreach { line =>
+            val cols = line.split("\t", -1)
+            col(cols, "hash").map(_.toLowerCase(Locale.ROOT)).foreach { h =>
+              if (!builder.contains(h)) {
+                builder.update(h, StructureModelMetrics(
+                  isNative = col(cols, "is_native").exists(_.equalsIgnoreCase("true")),
+                  numContacts = col(cols, "num_contacts").flatMap(s => Try(s.toInt).toOption),
+                  iptm = col(cols, "iptm").flatMap(s => Try(s.toDouble).toOption),
+                  confidence = col(cols, "confidence").flatMap(s => Try(s.toDouble).toOption),
+                  iptmPct = col(cols, "iptm_pct").flatMap(s => Try(s.toInt).toOption),
+                  confidencePct = col(cols, "confidence_pct").flatMap(s => Try(s.toInt).toOption),
+                  bindingModeOutlier = col(cols, "binding_mode_outlier").map(_.equalsIgnoreCase("true"))
+                ))
+              }
+            }
+          }
+          builder.toMap
+        }
+      } finally {
+        source.close()
+      }
+    }
+  }
 
   private def loadVisualizationMappings(): Map[String, StructureVisualization] = {
     val indexPath = structureFilesRoot.resolve("structure_html_mapping.json")
@@ -516,6 +558,10 @@ case class Structures @Inject()(database: Database)(implicit ec: ExecutionContex
 
   def getAvailableStructureIds: Set[String] = availableStructureIds
 
+  // Metrics only for structures that actually have a visualization, keyed by lower-cased hash.
+  def getStructureMetrics: Map[String, StructureModelMetrics] =
+    availableStructureIds.iterator.flatMap(id => structureMetricsIndex.get(id).map(id -> _)).toMap
+
   def getHtmlVisualizations: Map[String, StructureVisualization] = {
     structureIdIndex.flatMap { case (normalized, rawId) =>
       resolveVisualization(rawId).filter(_.kind.equalsIgnoreCase("html")).map(normalized -> _)
@@ -737,8 +783,10 @@ case class Structures @Inject()(database: Database)(implicit ec: ExecutionContex
         cellSubset = cellSubsetValue
       )
 
+      val metricsOpt = structureMetricsIndex.get(trimmedId.toLowerCase(Locale.ROOT))
+
       Some(StructureCluster(trimmedId, displayId, tcrPairLabel, size, length, vsegm, jsegm, Seq.empty, meta, visualizationOpt,
-        cdr3aVEnd, cdr3aJStart, cdr3bVEnd, cdr3bJStart))
+        cdr3aVEnd, cdr3aJStart, cdr3bVEnd, cdr3bJStart, metricsOpt))
     }
   }
 

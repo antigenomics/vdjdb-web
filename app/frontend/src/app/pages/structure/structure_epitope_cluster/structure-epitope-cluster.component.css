@@ -79,6 +79,49 @@
     font-weight: 600;
 }
 
+.structure-cdr3-metrics {
+    margin-top: 0.5rem;
+    padding-top: 0.4rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+    gap: 4px 14px;
+}
+
+.structure-cdr3-metric {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 4px;
+    white-space: nowrap;
+}
+
+.structure-cdr3-metric-pct {
+    color: #6b7280;
+    font-size: 0.85em;
+}
+
+.structure-cdr3-metric--warn,
+.structure-cdr3-metric--warn .structure-cdr3-label,
+.structure-cdr3-metric--warn .structure-cdr3-value {
+    color: #a33;
+    font-weight: 600;
+}
+
+.structure-cdr3-metric--native {
+    color: #2e7d32;
+    font-style: italic;
+}
+
+.structure-cdr3-metric-note {
+    display: inline-block;
+    margin-left: 4px;
+    padding: 1px 6px;
+    border-radius: 10px;
+    background: #ffe6e6;
+    color: #a33;
+    font-size: 0.72em;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
 .structure-cdr3-download-row {
     margin-top: 0.6rem;
 }

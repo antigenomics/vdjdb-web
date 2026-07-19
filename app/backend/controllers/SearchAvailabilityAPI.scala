@@ -10,13 +10,14 @@ import play.api.mvc._
 
 import scala.concurrent.{ExecutionContext, Future}
 
-import backend.server.structures.api.epitope.StructureVisualization
+import backend.server.structures.api.epitope.{StructureModelMetrics, StructureVisualization}
 
 case class SearchAvailabilityResponse(structures: Seq[String], motifs: Seq[String],
                                       motifsTcremp: Seq[String],
                                       visualizations: Map[String, StructureVisualization],
                                       motifCidIndex: Map[String, String],
-                                      motifCidIndexTcremp: Map[String, String])
+                                      motifCidIndexTcremp: Map[String, String],
+                                      structureMetrics: Map[String, StructureModelMetrics])
 
 object SearchAvailabilityResponse {
   implicit val format: OFormat[SearchAvailabilityResponse] = Json.format[SearchAvailabilityResponse]
@@ -36,7 +37,8 @@ class SearchAvailabilityAPI @Inject()(cc: ControllerComponents,
     val visualizationMap = structures.getHtmlVisualizations
     val cidIndex         = motifs.getCidLookupIndex()
     val cidIndexTcremp   = motifs.getCidLookupIndex(Some("tcremp"))
+    val structureMetrics = structures.getStructureMetrics
     Future.successful(Ok(Json.toJson(SearchAvailabilityResponse(
-      structuresSet, motifKeys, motifKeysTcremp, visualizationMap, cidIndex, cidIndexTcremp))))
+      structuresSet, motifKeys, motifKeysTcremp, visualizationMap, cidIndex, cidIndexTcremp, structureMetrics))))
   }
 }

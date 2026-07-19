@@ -83,6 +83,19 @@ export interface IStructureVisualization {
   readonly simpleUrl?: string;
 }
 
+// Per-model confidence metrics (see backend StructureModelMetrics). iptm = TCR:pMHC
+// interface ipTM; confidence = AlphaFold2 ranking confidence; *Pct = percentile among
+// modelled structures. Model-specific fields are absent for native (PDB) structures.
+export interface IStructureModelMetrics {
+  readonly isNative: boolean;
+  readonly numContacts?: number;
+  readonly iptm?: number;
+  readonly confidence?: number;
+  readonly iptmPct?: number;
+  readonly confidencePct?: number;
+  readonly bindingModeOutlier?: boolean;
+}
+
 export interface IStructureCluster {
   readonly clusterId: string;
   readonly displayId?: string;
@@ -98,6 +111,7 @@ export interface IStructureCluster {
   readonly entries: IStructureClusterEntry[];
   readonly meta: IStructureClusterMeta;
   readonly visualization?: IStructureVisualization;
+  readonly metrics?: IStructureModelMetrics;
 }
 
 export interface IStructureEpitope {
