@@ -14,6 +14,7 @@ interface BadgeInfo {
   popupHeader: string;
   link: string;
   footer?: string;
+  teal?: boolean;
 }
 
 @Component({
@@ -170,18 +171,21 @@ export class SearchTableEntryInfoComponent extends TableEntry {
     };
   }
 
-  private buildStructureBadge(available: boolean, link: string | null, popupLines?: string[], footer?: string): BadgeInfo {
+  private buildStructureBadge(available: boolean, link: string | null, popupLines?: string[], footer?: string, teal: boolean = false): BadgeInfo {
     if (available) {
       return {
         letter: 'S',
         subscript: '',
-        color: 'rgba(55, 126, 184, 0.15)',
-        borderColor: 'rgba(55, 126, 184, 0.8)',
+        // Teal marks a native structure not yet in VDJdb (the badge links to PDB); normal blue links
+        // to the internal /structure viewer. The "not yet in VDJdb" note lives in the tooltip.
+        color: teal ? 'rgba(0, 150, 136, 0.15)' : 'rgba(55, 126, 184, 0.15)',
+        borderColor: teal ? 'rgba(0, 150, 136, 0.9)' : 'rgba(55, 126, 184, 0.8)',
         active: true,
         popupLines: popupLines || [],
         popupHeader: 'Structure',
         link: link || '',
-        footer: footer !== undefined ? footer : (link ? 'Click on the icon to open the structure page' : undefined)
+        footer: footer !== undefined ? footer : (link ? 'Click on the icon to open the structure page' : undefined),
+        teal
       };
     }
     return {
@@ -302,7 +306,7 @@ export class SearchTableEntryInfoComponent extends TableEntry {
 
     // Native experimental structure => surface the PDB accession (tooltip line + RCSB fallback link).
     // The badge prefers the internal /structure viewer; when the complex isn't visualized in VDJdb yet
-    // it falls back to the PDB entry and is flagged with a "!" badge. isPdbId matches a legacy 4-char
+    // it turns teal, links to the PDB entry, and says so in its tooltip. isPdbId matches a legacy 4-char
     // accession (1ABC) or the extended pdb_XXXXXXXX form (wwpdb.org/documentation/new-format-for-pdb-ids).
     let pdbLink: string | null = null;
     if (isNative) {
@@ -320,36 +324,20 @@ export class SearchTableEntryInfoComponent extends TableEntry {
 
     this.availability.hasStructure(tcrHash.toLowerCase()).then((available) => {
       let link: string | null = null;
+      let teal = false;
       if (tcrHash && available) {
         // Internal complementarity-map viewer exists → open it.
         link = this.generateStructureLink(row, columns, tcrHash);
       } else if (pdbLink) {
-        // Native structure not yet in VDJdb → link to the PDB entry and flag it with a "!" badge.
+        // Native structure not yet in VDJdb → teal badge linking to the PDB entry; flag it in the tooltip.
         link = pdbLink;
-        this.addNotInVdjdbBadge();
+        teal = true;
+        popup.push('Not yet in VDJdb — opens PDB entry');
       }
       const currentFooter = this.badges[3] ? this.badges[3].footer : undefined;
-      this.badges[3] = this.buildStructureBadge(true, link, popup, currentFooter);
+      this.badges[3] = this.buildStructureBadge(true, link, popup, currentFooter, teal);
       this.changeDetector.markForCheck();
     }).catch(() => {});
-  }
-
-  // Flags a native experimental structure whose complex is not yet visualized in VDJdb; the "S" badge
-  // falls back to the PDB entry in that case. Informational only (tooltip, no link).
-  private addNotInVdjdbBadge(): void {
-    if (this.badges.some((badge) => badge.letter === '!')) {
-      return;
-    }
-    this.badges.push({
-      letter: '!',
-      subscript: '',
-      color: 'rgba(244, 67, 54, 0.15)',
-      borderColor: 'rgba(244, 67, 54, 0.85)',
-      active: true,
-      popupLines: [ 'Structure not yet in VDJdb' ],
-      popupHeader: 'Structure',
-      link: ''
-    });
   }
 
   // Structure model metrics (contacts / ipTM / confidence / binding-mode) are joined by
@@ -369,7 +357,8 @@ export class SearchTableEntryInfoComponent extends TableEntry {
       lines.forEach((line) => popup.push(line));
       const footer = this.buildStructureFooter(metrics);
       const currentLink = this.badges[3] ? this.badges[3].link : '';
-      this.badges[3] = this.buildStructureBadge(true, currentLink || null, popup, footer);
+      const currentTeal = this.badges[3] ? !!this.badges[3].teal : false;
+      this.badges[3] = this.buildStructureBadge(true, currentLink || null, popup, footer, currentTeal);
       this.changeDetector.markForCheck();
     }).catch(() => {});
   }
