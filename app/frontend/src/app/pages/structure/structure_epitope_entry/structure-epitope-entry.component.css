@@ -86,16 +86,16 @@
 .overlay-list__top-row {
     position: relative;
     display: flex;
+    flex-wrap: wrap;
     align-items: flex-start;
     justify-content: space-between;
-    gap: 0.6rem;
+    gap: 0.4rem 0.6rem;
 }
 
 .overlay-list__download-table {
-    position: absolute;
-    right: 12px;
     order: 2;
     margin-left: auto;
+    flex: 0 0 auto;
     min-height: 0;
     min-width: 0;
     padding: 2px 8px 2px 8px !important;
@@ -618,11 +618,11 @@
 
     .overlay-list__download-table {
         margin-left: auto;
-        order: 1;
+        order: 2;
     }
 
     .overlay-list__instructions {
-        order: 2;
+        order: 1;
         width: 100%;
         padding-bottom: 0.2rem;
         white-space: nowrap;
