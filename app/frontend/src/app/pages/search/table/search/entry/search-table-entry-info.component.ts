@@ -12,8 +12,8 @@ interface BadgeInfo {
   active: boolean;
   popupLines: string[];
   popupHeader: string;
-  popupFooter?: string;
   link: string;
+  footer?: string;
 }
 
 @Component({
@@ -26,7 +26,7 @@ interface BadgeInfo {
            [style.background]="badge.color"
            [style.border-color]="badge.borderColor"
            [attr.href]="badge.link" target="_blank" rel="noopener"
-           [popup]="badge.popupLines" [header]="badge.popupHeader" [footer]="badge.popupFooter"
+           [popup]="badge.popupLines" [header]="badge.popupHeader" [footer]="badge.footer"
            topShift="-25" shiftStrategy="per-item" width="250" display="list">
           <span class="info-badge__letter">{{ badge.letter }}</span><span
             *ngIf="badge.subscript" class="info-badge__sub">{{ badge.subscript }}</span>
@@ -35,7 +35,7 @@ interface BadgeInfo {
           <span class="info-badge" [class.info-badge--inactive]="!badge.active"
                 [style.background]="badge.color"
                 [style.border-color]="badge.borderColor"
-                [popup]="badge.popupLines" [header]="badge.popupHeader" [footer]="badge.popupFooter"
+                [popup]="badge.popupLines" [header]="badge.popupHeader" [footer]="badge.footer"
                 topShift="-25" shiftStrategy="per-item" width="250" display="list">
             <span class="info-badge__letter">{{ badge.letter }}</span><span
               *ngIf="badge.subscript" class="info-badge__sub">{{ badge.subscript }}</span>
@@ -153,7 +153,8 @@ export class SearchTableEntryInfoComponent extends TableEntry {
         active: true,
         popupLines: [`Algorithm : ${methodLabels.join(', ')}`, `Motif id : ${cid || '?'}`],
         popupHeader: 'Motif',
-        link: link || ''
+        link: link || '',
+        footer: 'Click on the icon to open the motif page'
       };
     }
     return {
@@ -164,7 +165,8 @@ export class SearchTableEntryInfoComponent extends TableEntry {
       active: false,
       popupLines: ['No motif'],
       popupHeader: 'Motif',
-      link: ''
+      link: '',
+      footer: 'No motif is available for this record'
     };
   }
 
@@ -178,8 +180,8 @@ export class SearchTableEntryInfoComponent extends TableEntry {
         active: true,
         popupLines: popupLines || [],
         popupHeader: 'Structure',
-        popupFooter: footer,
-        link: link || ''
+        link: link || '',
+        footer: footer !== undefined ? footer : (link ? 'Click on the icon to open the structure page' : undefined)
       };
     }
     return {
@@ -190,7 +192,8 @@ export class SearchTableEntryInfoComponent extends TableEntry {
       active: false,
       popupLines: ['No data'],
       popupHeader: 'Structure',
-      link: ''
+      link: '',
+      footer: 'No structure is available for this record'
     };
   }
 
@@ -328,7 +331,7 @@ export class SearchTableEntryInfoComponent extends TableEntry {
 
     this.availability.hasStructure(tcrHash.toLowerCase()).then((available) => {
       const link = available ? this.generateStructureLink(row, columns, tcrHash) : null;
-      const currentFooter = this.badges[3] ? this.badges[3].popupFooter : undefined;
+      const currentFooter = this.badges[3] ? this.badges[3].footer : undefined;
       this.badges[3] = this.buildStructureBadge(true, link, popup, currentFooter);
       this.changeDetector.markForCheck();
     }).catch(() => {});
