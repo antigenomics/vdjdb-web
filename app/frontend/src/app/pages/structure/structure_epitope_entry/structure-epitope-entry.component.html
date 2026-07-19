@@ -102,14 +102,14 @@
                                 <span class="overlay-card__metric" *ngIf="m.iptm != null">
                                     <span class="overlay-card__label">ipTM:</span>
                                     <span class="overlay-card__value">{{ m.iptm | number:'1.2-2' }}</span>
-                                    <span class="overlay-card__pct" *ngIf="m.iptmPct != null">({{ m.iptmPct }}%)</span>
+                                    <span class="overlay-card__pct" *ngIf="m.iptmPct != null" title="rank across all modelled VDJdb structures">({{ m.iptmPct }}%)</span>
                                 </span>
                                 <span class="overlay-card__metric" *ngIf="m.confidence != null">
-                                    <span class="overlay-card__label">Conf:</span>
+                                    <span class="overlay-card__label">TCRmodel2 conf:</span>
                                     <span class="overlay-card__value">{{ m.confidence | number:'1.2-2' }}</span>
-                                    <span class="overlay-card__pct" *ngIf="m.confidencePct != null">({{ m.confidencePct }}%)</span>
+                                    <span class="overlay-card__pct" *ngIf="m.confidencePct != null" title="rank across all modelled VDJdb structures">({{ m.confidencePct }}%)</span>
                                 </span>
-                                <span class="overlay-card__metric overlay-card__metric--warn" *ngIf="m.bindingModeOutlier">⚠ outlier binding mode</span>
+                                <span class="overlay-card__metric overlay-card__metric--warn" *ngIf="m.bindingModeOutlier" title="docking angle outside 95% CI">⚠ outlier binding mode</span>
                                 <span class="overlay-card__metric overlay-card__metric--native" *ngIf="m.isNative">experimental (PDB)</span>
                             </div>
                         </div>

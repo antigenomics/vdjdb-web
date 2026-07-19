@@ -12,6 +12,7 @@ interface BadgeInfo {
   active: boolean;
   popupLines: string[];
   popupHeader: string;
+  popupFooter?: string;
   link: string;
 }
 
@@ -25,7 +26,7 @@ interface BadgeInfo {
            [style.background]="badge.color"
            [style.border-color]="badge.borderColor"
            [attr.href]="badge.link" target="_blank" rel="noopener"
-           [popup]="badge.popupLines" [header]="badge.popupHeader"
+           [popup]="badge.popupLines" [header]="badge.popupHeader" [footer]="badge.popupFooter"
            topShift="-25" shiftStrategy="per-item" width="250" display="list">
           <span class="info-badge__letter">{{ badge.letter }}</span><span
             *ngIf="badge.subscript" class="info-badge__sub">{{ badge.subscript }}</span>
@@ -34,7 +35,7 @@ interface BadgeInfo {
           <span class="info-badge" [class.info-badge--inactive]="!badge.active"
                 [style.background]="badge.color"
                 [style.border-color]="badge.borderColor"
-                [popup]="badge.popupLines" [header]="badge.popupHeader"
+                [popup]="badge.popupLines" [header]="badge.popupHeader" [footer]="badge.popupFooter"
                 topShift="-25" shiftStrategy="per-item" width="250" display="list">
             <span class="info-badge__letter">{{ badge.letter }}</span><span
               *ngIf="badge.subscript" class="info-badge__sub">{{ badge.subscript }}</span>
@@ -120,7 +121,7 @@ export class SearchTableEntryInfoComponent extends TableEntry {
       color: 'rgba(123, 94, 167, 0.15)',
       borderColor: 'rgba(123, 94, 167, 0.8)',
       active: true,
-      popupLines: [`vdjdb_confidence_score : ${score}`],
+      popupLines: [`Assay confidence : ${score}`],
       popupHeader: 'Confidence',
       link: ''
     };
@@ -134,7 +135,7 @@ export class SearchTableEntryInfoComponent extends TableEntry {
       color: 'rgba(76, 175, 80, 0.15)',
       borderColor: 'rgba(76, 175, 80, 0.8)',
       active,
-      popupLines: active ? sources : ['is_validated : \u2013'],
+      popupLines: active ? sources : ['No validation'],
       popupHeader: 'Validation',
       link: ''
     };
@@ -150,7 +151,7 @@ export class SearchTableEntryInfoComponent extends TableEntry {
         color: 'rgba(255, 193, 7, 0.2)',
         borderColor: 'rgba(255, 193, 7, 0.85)',
         active: true,
-        popupLines: ['has_motif : +', `method : ${methodLabels.join(', ')}`, `cid : ${cid || '?'}`],
+        popupLines: [`Algorithm : ${methodLabels.join(', ')}`, `Motif id : ${cid || '?'}`],
         popupHeader: 'Motif',
         link: link || ''
       };
@@ -161,13 +162,13 @@ export class SearchTableEntryInfoComponent extends TableEntry {
       color: 'rgba(255, 193, 7, 0.2)',
       borderColor: 'rgba(255, 193, 7, 0.85)',
       active: false,
-      popupLines: ['has_motif : \u2013'],
+      popupLines: ['No motif'],
       popupHeader: 'Motif',
       link: ''
     };
   }
 
-  private buildStructureBadge(available: boolean, link: string | null, popupLines?: string[]): BadgeInfo {
+  private buildStructureBadge(available: boolean, link: string | null, popupLines?: string[], footer?: string): BadgeInfo {
     if (available) {
       return {
         letter: 'S',
@@ -175,8 +176,9 @@ export class SearchTableEntryInfoComponent extends TableEntry {
         color: 'rgba(55, 126, 184, 0.15)',
         borderColor: 'rgba(55, 126, 184, 0.8)',
         active: true,
-        popupLines: popupLines || ['has_structure : +'],
+        popupLines: popupLines || [],
         popupHeader: 'Structure',
+        popupFooter: footer,
         link: link || ''
       };
     }
@@ -186,7 +188,7 @@ export class SearchTableEntryInfoComponent extends TableEntry {
       color: 'rgba(55, 126, 184, 0.15)',
       borderColor: 'rgba(55, 126, 184, 0.8)',
       active: false,
-      popupLines: ['has_structure : \u2013'],
+      popupLines: ['No data'],
       popupHeader: 'Structure',
       link: ''
     };
@@ -216,8 +218,8 @@ export class SearchTableEntryInfoComponent extends TableEntry {
 
   private resolveValidation(row: SearchTableRow, columns: TableColumn[]): void {
     const sources: string[] = [];
-    if (this.columnTrue(row, columns, 'evidence.validation.same.study')) { sources.push('same_study : +'); }
-    if (this.columnTrue(row, columns, 'evidence.validation.independent')) { sources.push('independent : +'); }
+    if (this.columnTrue(row, columns, 'evidence.validation.same.study')) { sources.push('Additional assay (same study)'); }
+    if (this.columnTrue(row, columns, 'evidence.validation.independent')) { sources.push('Independent study'); }
     this.badges[1] = this.buildValidationBadge(sources);
 
     const cdr3 = this.getCellValue(row, columns, 'cdr3') || '';
@@ -284,9 +286,9 @@ export class SearchTableEntryInfoComponent extends TableEntry {
   private resolveStructure(row: SearchTableRow, columns: TableColumn[]): void {
     const isNative = this.columnTrue(row, columns, 'evidence.structure.native');
     const types: string[] = [];
-    if (isNative) { types.push('native : +'); }
-    if (this.columnTrue(row, columns, 'evidence.structure.contacts')) { types.push('model_with_contacts : +'); }
-    if (this.columnTrue(row, columns, 'evidence.structure.quality')) { types.push('good_quality_model : +'); }
+    if (isNative) { types.push('Native (experimental)'); }
+    if (this.columnTrue(row, columns, 'evidence.structure.contacts')) { types.push('Model with contacts'); }
+    if (this.columnTrue(row, columns, 'evidence.structure.quality')) { types.push('Good-quality model'); }
 
     if (types.length === 0) {
       this.badges[3] = this.buildStructureBadge(false, null);
@@ -295,15 +297,18 @@ export class SearchTableEntryInfoComponent extends TableEntry {
 
     const popup = [ ...types ];
 
-    // Native experimental structure => surface its PDB reference (meta["structure.id"]).
-    // Link to RCSB only when the id is a real 4-char PDB accession (some entries hold free-text refs).
+    // Native experimental structure => surface its reference (meta["structure.id"]).
+    // Link to RCSB only when the id is a real 4-char PDB accession; otherwise it is a
+    // free-text literature/figure reference (e.g. "Fig 9, Supp Table 5-8"), shown as such.
     let pdbLink: string | null = null;
     if (isNative) {
       const structId = this.extractStructureId(this.getCellValue(row, columns, 'meta'));
       if (structId) {
-        popup.push(`pdb_id : ${structId}`);
         if (/^[A-Za-z0-9]{4}$/.test(structId)) {
+          popup.push(`PDB : ${structId}`);
           pdbLink = `https://www.rcsb.org/structure/${structId.toUpperCase()}`;
+        } else {
+          popup.push(`Reference : ${structId}`);
         }
       }
     }
@@ -326,7 +331,8 @@ export class SearchTableEntryInfoComponent extends TableEntry {
 
     this.availability.hasStructure(tcrHash.toLowerCase()).then((available) => {
       const link = available ? this.generateStructureLink(row, columns, tcrHash) : null;
-      this.badges[3] = this.buildStructureBadge(true, link, popup);
+      const currentFooter = this.badges[3] ? this.badges[3].popupFooter : undefined;
+      this.badges[3] = this.buildStructureBadge(true, link, popup, currentFooter);
       this.changeDetector.markForCheck();
     }).catch(() => {});
   }
@@ -346,8 +352,9 @@ export class SearchTableEntryInfoComponent extends TableEntry {
         return;
       }
       lines.forEach((line) => popup.push(line));
+      const footer = this.buildStructureFooter(metrics);
       const currentLink = this.badges[3] ? this.badges[3].link : '';
-      this.badges[3] = this.buildStructureBadge(true, currentLink || null, popup);
+      this.badges[3] = this.buildStructureBadge(true, currentLink || null, popup, footer);
       this.changeDetector.markForCheck();
     }).catch(() => {});
   }
@@ -355,20 +362,31 @@ export class SearchTableEntryInfoComponent extends TableEntry {
   private buildStructureMetricLines(m: IStructureMetrics): string[] {
     const lines: string[] = [];
     if (m.numContacts !== undefined && m.numContacts !== null) {
-      lines.push(m.numContacts === 0 ? 'n_contacts : 0 (no CDR3-peptide contacts)' : `n_contacts : ${m.numContacts}`);
+      lines.push(m.numContacts === 0 ? 'Contacts : 0 (no CDR3–peptide contacts)' : `Contacts : ${m.numContacts}`);
     }
     if (m.iptm !== undefined && m.iptm !== null) {
       const pct = (m.iptmPct !== undefined && m.iptmPct !== null) ? ` (${m.iptmPct}%)` : '';
-      lines.push(`iptm : ${m.iptm.toFixed(2)}${pct}`);
+      lines.push(`ipTM : ${m.iptm.toFixed(2)}${pct}`);
     }
     if (m.confidence !== undefined && m.confidence !== null) {
       const pct = (m.confidencePct !== undefined && m.confidencePct !== null) ? ` (${m.confidencePct}%)` : '';
-      lines.push(`model_confidence : ${m.confidence.toFixed(2)}${pct}`);
+      lines.push(`TCRmodel2 conf : ${m.confidence.toFixed(2)}${pct}`);
     }
     if (m.bindingModeOutlier) {
-      lines.push('binding_mode : outlier');
+      lines.push('Binding mode : outlier');
     }
     return lines;
+  }
+
+  private buildStructureFooter(m: IStructureMetrics): string | undefined {
+    const parts: string[] = [];
+    if ((m.iptmPct !== undefined && m.iptmPct !== null) || (m.confidencePct !== undefined && m.confidencePct !== null)) {
+      parts.push('% = rank across all modelled VDJdb structures');
+    }
+    if (m.bindingModeOutlier) {
+      parts.push('outlier = docking angle outside 95% CI');
+    }
+    return parts.length > 0 ? parts.join('; ') : undefined;
   }
 
   private extractStructureId(metaValue?: string): string | null {
