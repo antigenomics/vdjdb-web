@@ -53,6 +53,8 @@ interface IOverlayTableRow {
     motifLink?: string;
     motifAvailable?: boolean;
     motifParams?: IMotifParams;
+    alphaMotifLink?: string;
+    betaMotifLink?: string;
 }
 
 interface IMotifParams {
@@ -89,7 +91,7 @@ export class StructureEpitopeEntryComponent implements OnInit, OnDestroy {
     public isHidden: boolean = false;
     public overlayError: string | undefined;
     public readonly overlayLimit: number = 5;
-    public readonly downloadTitle: string = 'Download';
+    public readonly downloadTitle: string = 'Download data';
     public readonly downloadDirectory: string = '/structure-files/structure';
     public overlayLayerList: Array<{ id: string, markup: SafeHtml, mode: 'standard' | 'simple' }> = [];
     public overlayTableRows: IOverlayTableRow[] = [];
@@ -406,11 +408,14 @@ export class StructureEpitopeEntryComponent implements OnInit, OnDestroy {
         const meta = cluster.meta || {} as IStructureClusterMeta;
         const motifParams = this.buildMotifParams(meta, this.epitope.epitope);
         const motifLink = motifParams ? this.buildMotifLink(motifParams) : undefined;
+        const chainCids = this.parseChainCids(cluster);
 
         return {
             cluster,
             alphaClusterId: clusterIds.alpha,
             betaClusterId: clusterIds.beta,
+            alphaMotifLink: chainCids.alpha ? this.buildChainMotifLink(meta, this.epitope.epitope, 'TRA', chainCids.alpha) : undefined,
+            betaMotifLink: chainCids.beta ? this.buildChainMotifLink(meta, this.epitope.epitope, 'TRB', chainCids.beta) : undefined,
             cdr3a,
             cdr3b,
             cdr3aRegions: this.buildColorizedCdr3(cdr3a, cluster.cdr3aVEnd, cluster.cdr3aJStart),
@@ -467,6 +472,38 @@ export class StructureEpitopeEntryComponent implements OnInit, OnDestroy {
 
     private normalizeMhcGene(value: string): string {
         return value ? value.replace(/:.+/, '').trim() : '';
+    }
+
+    // Full motif cluster id per chain (e.g. "H.A.RPIIRPATL.2" / "H.B.RPIIRPATL.1"), parsed from the
+    // cluster's displayId. Only chains whose id unambiguously identifies alpha/beta get a link.
+    private parseChainCids(cluster: IStructureCluster): { alpha?: string; beta?: string } {
+        const result: { alpha?: string; beta?: string } = {};
+        this.splitDisplayIds(cluster.displayId).forEach((id) => {
+            const chain = this.detectChainFromId(id);
+            if (chain === 'alpha' && !result.alpha) {
+                result.alpha = id;
+            } else if (chain === 'beta' && !result.beta) {
+                result.beta = id;
+            }
+        });
+        return result;
+    }
+
+    private buildChainMotifLink(meta: IStructureClusterMeta, epitope: string, chain: 'TRA' | 'TRB', cid: string): string | undefined {
+        const species = meta && meta.species ? meta.species : '';
+        const mhcClass = meta && meta.mhcclass ? meta.mhcclass : '';
+        const gene = this.normalizeMhcGene(meta && meta.mhca ? meta.mhca : '');
+        if (!species || !mhcClass || !gene || !epitope || !cid) {
+            return undefined;
+        }
+        const search = new URLSearchParams();
+        search.set('species', species);
+        search.set('tcr_chain', chain);
+        search.set('mhc_class', mhcClass);
+        search.set('mhc_a', gene);
+        search.set('epitope_seq', epitope);
+        search.set('cid', cid);
+        return `/motif?${search.toString()}`;
     }
 
     private loadMotifAvailability(): void {

@@ -232,6 +232,49 @@
     opacity: 1;
 }
 
+.overlay-card__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    margin-top: 0.6rem;
+    padding-top: 0.55rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.overlay-card__action {
+    padding: 3px 10px;
+    border-radius: 4px;
+    font-size: 0.82rem;
+    line-height: 1.25;
+    font-weight: 600;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    background: #ffffff;
+    color: #1f1f1f;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.overlay-card__action:not(.overlay-card__action--disabled):hover {
+    background: #eef2ff;
+    border-color: #3d58f3;
+}
+
+.overlay-card__action--disabled {
+    opacity: 0.4;
+    cursor: default;
+    pointer-events: none;
+}
+
+/* Keep the actions usable even when the card itself is disabled for overlay selection. */
+.overlay-card.is-disabled .overlay-card__actions {
+    opacity: 1;
+}
+
+.overlay-card__action--download {
+    margin-left: auto;
+}
+
 .overlay-card__label {
     font-weight: 600;
     color: #1f1f1f;
@@ -247,6 +290,49 @@
     font-size: 0.72rem;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+}
+
+.overlay-card__metrics {
+    margin-top: 4px;
+    padding-top: 6px;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+    gap: 4px 12px;
+}
+
+.overlay-card__metric {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 4px;
+    white-space: nowrap;
+}
+
+.overlay-card__pct {
+    color: #6b7280;
+    font-size: 0.78rem;
+}
+
+.overlay-card__metric--warn,
+.overlay-card__metric--warn .overlay-card__label,
+.overlay-card__metric--warn .overlay-card__value {
+    color: #a33;
+    font-weight: 600;
+}
+
+.overlay-card__metric--native {
+    color: #2e7d32;
+    font-weight: 600;
+}
+
+.overlay-card__metric-note {
+    display: inline-block;
+    margin-left: 4px;
+    padding: 1px 6px;
+    border-radius: 10px;
+    background: #ffe6e6;
+    color: #a33;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
 }
 
 .overlay-card__links {

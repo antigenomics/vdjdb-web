@@ -23,6 +23,7 @@ import {
   IStructureClusterEntry,
   IStructureClusterMeta,
   IStructureClusterMembersExportResponse,
+  IStructureModelMetrics,
   IStructureVisualization,
   IStructureEpitope,
   IStructureEpitopeViewOptions,
@@ -658,11 +659,31 @@ export class StructureService {
       cdr3bJStart,
       entries,
       meta: clusterMeta,
-      visualization
+      visualization,
+      metrics: this.asStructureMetrics(item && item.metrics)
     } as IStructureCluster;
 
     (cluster as any).rawMeta = meta;
     return cluster;
+  }
+
+  private asStructureMetrics(raw: any): IStructureModelMetrics | undefined {
+    if (!raw || typeof raw !== 'object') {
+      return undefined;
+    }
+    const num = (v: any): number | undefined => {
+      const parsed = typeof v === 'number' ? v : (typeof v === 'string' ? Number(v) : NaN);
+      return Number.isFinite(parsed) ? parsed : undefined;
+    };
+    return {
+      isNative: raw.isNative === true,
+      numContacts: num(raw.numContacts),
+      iptm: num(raw.iptm),
+      confidence: num(raw.confidence),
+      iptmPct: num(raw.iptmPct),
+      confidencePct: num(raw.confidencePct),
+      bindingModeOutlier: typeof raw.bindingModeOutlier === 'boolean' ? raw.bindingModeOutlier : undefined
+    };
   }
 
   private pickMetaValue(meta: any, keys: string[]): string | undefined {

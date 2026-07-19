@@ -1,0 +1,12 @@
+/* The .ui.raised.segments group already carries the card's border, shadow and outer 12px
+   radius, so the inner `raised` segments must NOT round or shadow individually — otherwise
+   every segment junction shows a mismatched "pill" corner under the "Reference search" header.
+   Flatten inner segments into one cohesive card; only the last one rounds the bottom. */
+.ui.raised.segments > .ui.segment {
+    border-radius: 0 !important;
+    box-shadow: none !important;
+}
+
+.ui.raised.segments > .ui.segment:last-child {
+    border-radius: 0 0 12px 12px !important;
+}

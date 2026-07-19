@@ -22,6 +22,7 @@ import { RefSearchBackendState, RefSearchService } from './refsearch.service';
 @Component({
   selector:        'refsearch',
   templateUrl:     './refsearch.component.html',
+  styleUrls:       [ './refsearch.component.css' ],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class RefSearchPageComponent {

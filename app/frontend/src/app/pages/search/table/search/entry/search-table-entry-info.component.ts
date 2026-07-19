@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ComponentFactory
 import { TableColumn } from 'shared/table/column/table-column';
 import { TableEntry } from 'shared/table/entry/table-entry';
 import { SearchTableRow } from '../row/search-table-row';
-import { SearchAvailabilityService } from '../search-availability.service';
+import { IStructureMetrics, SearchAvailabilityService } from '../search-availability.service';
 
 interface BadgeInfo {
   letter: string;
@@ -121,7 +121,7 @@ export class SearchTableEntryInfoComponent extends TableEntry {
       color: 'rgba(123, 94, 167, 0.15)',
       borderColor: 'rgba(123, 94, 167, 0.8)',
       active: true,
-      popupLines: [`vdjdb_confidence_score : ${score}`],
+      popupLines: [`Assay confidence : ${score}`],
       popupHeader: 'Confidence',
       link: ''
     };
@@ -135,7 +135,7 @@ export class SearchTableEntryInfoComponent extends TableEntry {
       color: 'rgba(76, 175, 80, 0.15)',
       borderColor: 'rgba(76, 175, 80, 0.8)',
       active,
-      popupLines: active ? sources : ['is_validated : \u2013'],
+      popupLines: active ? sources : ['Not validated'],
       popupHeader: 'Validation',
       link: ''
     };
@@ -151,7 +151,7 @@ export class SearchTableEntryInfoComponent extends TableEntry {
         color: 'rgba(255, 193, 7, 0.2)',
         borderColor: 'rgba(255, 193, 7, 0.85)',
         active: true,
-        popupLines: ['has_motif : +', `method : ${methodLabels.join(', ')}`, `cid : ${cid || '?'}`],
+        popupLines: [`Algorithm : ${methodLabels.join(', ')}`, `Motif id : ${cid || '?'}`],
         popupHeader: 'Motif',
         link: link || '',
         footer: 'Click on the icon to open the motif page'
@@ -163,14 +163,14 @@ export class SearchTableEntryInfoComponent extends TableEntry {
       color: 'rgba(255, 193, 7, 0.2)',
       borderColor: 'rgba(255, 193, 7, 0.85)',
       active: false,
-      popupLines: ['has_motif : \u2013'],
+      popupLines: ['No motif'],
       popupHeader: 'Motif',
       link: '',
       footer: 'No motif is available for this record'
     };
   }
 
-  private buildStructureBadge(available: boolean, link: string | null, popupLines?: string[]): BadgeInfo {
+  private buildStructureBadge(available: boolean, link: string | null, popupLines?: string[], footer?: string): BadgeInfo {
     if (available) {
       return {
         letter: 'S',
@@ -178,10 +178,10 @@ export class SearchTableEntryInfoComponent extends TableEntry {
         color: 'rgba(55, 126, 184, 0.15)',
         borderColor: 'rgba(55, 126, 184, 0.8)',
         active: true,
-        popupLines: popupLines || ['has_structure : +'],
+        popupLines: popupLines || [],
         popupHeader: 'Structure',
         link: link || '',
-        footer: link ? 'Click on the icon to open the structure page' : undefined
+        footer: footer !== undefined ? footer : (link ? 'Click on the icon to open the structure page' : undefined)
       };
     }
     return {
@@ -190,7 +190,7 @@ export class SearchTableEntryInfoComponent extends TableEntry {
       color: 'rgba(55, 126, 184, 0.15)',
       borderColor: 'rgba(55, 126, 184, 0.8)',
       active: false,
-      popupLines: ['has_structure : \u2013'],
+      popupLines: ['No data'],
       popupHeader: 'Structure',
       link: '',
       footer: 'No structure is available for this record'
@@ -221,8 +221,8 @@ export class SearchTableEntryInfoComponent extends TableEntry {
 
   private resolveValidation(row: SearchTableRow, columns: TableColumn[]): void {
     const sources: string[] = [];
-    if (this.columnTrue(row, columns, 'evidence.validation.same.study')) { sources.push('same_study : +'); }
-    if (this.columnTrue(row, columns, 'evidence.validation.independent')) { sources.push('independent : +'); }
+    if (this.columnTrue(row, columns, 'evidence.validation.same.study')) { sources.push('Additional assay (same study) ✔'); }
+    if (this.columnTrue(row, columns, 'evidence.validation.independent')) { sources.push('Independent study ✔'); }
     this.badges[1] = this.buildValidationBadge(sources);
 
     const cdr3 = this.getCellValue(row, columns, 'cdr3') || '';
@@ -232,7 +232,7 @@ export class SearchTableEntryInfoComponent extends TableEntry {
     this.availability.getValidationStatus(cdr3, epitope).then((status) => {
       if (status) {
         const updated = sources.slice();
-        updated.push(`TCRvdb : ${status}`);
+        updated.push(`TCRvdb : ${status} ✔`);
         this.badges[1] = this.buildValidationBadge(updated);
         this.changeDetector.markForCheck();
       }
@@ -289,9 +289,9 @@ export class SearchTableEntryInfoComponent extends TableEntry {
   private resolveStructure(row: SearchTableRow, columns: TableColumn[]): void {
     const isNative = this.columnTrue(row, columns, 'evidence.structure.native');
     const types: string[] = [];
-    if (isNative) { types.push('native : +'); }
-    if (this.columnTrue(row, columns, 'evidence.structure.contacts')) { types.push('model_with_contacts : +'); }
-    if (this.columnTrue(row, columns, 'evidence.structure.quality')) { types.push('good_quality_model : +'); }
+    if (isNative) { types.push('Native (experimental)'); }
+    if (this.columnTrue(row, columns, 'evidence.structure.contacts')) { types.push('Model with contacts'); }
+    if (this.columnTrue(row, columns, 'evidence.structure.quality')) { types.push('Good-quality model'); }
 
     if (types.length === 0) {
       this.badges[3] = this.buildStructureBadge(false, null);
@@ -300,37 +300,113 @@ export class SearchTableEntryInfoComponent extends TableEntry {
 
     const popup = [ ...types ];
 
-    // Native experimental structure => surface its PDB reference (meta["structure.id"]).
-    // Link to RCSB only when the id is a real 4-char PDB accession (some entries hold free-text refs).
+    // Native experimental structure => surface the PDB accession (tooltip line + RCSB fallback link).
+    // The badge prefers the internal /structure viewer; when the complex isn't visualized in VDJdb yet
+    // it falls back to the PDB entry and is flagged with a "!" badge. isPdbId matches a legacy 4-char
+    // accession (1ABC) or the extended pdb_XXXXXXXX form (wwpdb.org/documentation/new-format-for-pdb-ids).
     let pdbLink: string | null = null;
     if (isNative) {
       const structId = this.extractStructureId(this.getCellValue(row, columns, 'meta'));
-      if (structId) {
-        popup.push(`pdb_id : ${structId}`);
-        if (/^[A-Za-z0-9]{4}$/.test(structId)) {
-          pdbLink = `https://www.rcsb.org/structure/${structId.toUpperCase()}`;
-        }
+      if (structId && this.isPdbId(structId)) {
+        popup.push(`PDB : ${structId}`);
+        pdbLink = `https://www.rcsb.org/structure/${structId.toUpperCase()}`;
       }
     }
 
-    if (pdbLink) {
-      this.badges[3] = this.buildStructureBadge(true, pdbLink, popup);
+    const tcrHash = (this.getCellValue(row, columns, 'TCR_hash') || '').trim();
+
+    this.badges[3] = this.buildStructureBadge(true, null, popup);
+    this.appendStructureMetrics(tcrHash, popup);
+
+    this.availability.hasStructure(tcrHash.toLowerCase()).then((available) => {
+      let link: string | null = null;
+      if (tcrHash && available) {
+        // Internal complementarity-map viewer exists → open it.
+        link = this.generateStructureLink(row, columns, tcrHash);
+      } else if (pdbLink) {
+        // Native structure not yet in VDJdb → link to the PDB entry and flag it with a "!" badge.
+        link = pdbLink;
+        this.addNotInVdjdbBadge();
+      }
+      const currentFooter = this.badges[3] ? this.badges[3].footer : undefined;
+      this.badges[3] = this.buildStructureBadge(true, link, popup, currentFooter);
       this.changeDetector.markForCheck();
+    }).catch(() => {});
+  }
+
+  // Flags a native experimental structure whose complex is not yet visualized in VDJdb; the "S" badge
+  // falls back to the PDB entry in that case. Informational only (tooltip, no link).
+  private addNotInVdjdbBadge(): void {
+    if (this.badges.some((badge) => badge.letter === '!')) {
       return;
     }
+    this.badges.push({
+      letter: '!',
+      subscript: '',
+      color: 'rgba(244, 67, 54, 0.15)',
+      borderColor: 'rgba(244, 67, 54, 0.85)',
+      active: true,
+      popupLines: [ 'Structure not yet in VDJdb' ],
+      popupHeader: 'Structure',
+      link: ''
+    });
+  }
 
-    // No PDB link; fall back to a model viewer link via TCR_hash if available.
-    this.badges[3] = this.buildStructureBadge(true, null, popup);
-    const tcrHash = (this.getCellValue(row, columns, 'TCR_hash') || '').trim();
+  // Structure model metrics (contacts / ipTM / confidence / binding-mode) are joined by
+  // TCR_hash from the availability index and appended to the "S" badge tooltip.
+  private appendStructureMetrics(tcrHash: string, popup: string[]): void {
     if (!tcrHash) {
       return;
     }
-
-    this.availability.hasStructure(tcrHash.toLowerCase()).then((available) => {
-      const link = available ? this.generateStructureLink(row, columns, tcrHash) : null;
-      this.badges[3] = this.buildStructureBadge(true, link, popup);
+    this.availability.getStructureMetrics(tcrHash.toLowerCase()).then((metrics) => {
+      if (!metrics) {
+        return;
+      }
+      const lines = this.buildStructureMetricLines(metrics);
+      if (lines.length === 0) {
+        return;
+      }
+      lines.forEach((line) => popup.push(line));
+      const footer = this.buildStructureFooter(metrics);
+      const currentLink = this.badges[3] ? this.badges[3].link : '';
+      this.badges[3] = this.buildStructureBadge(true, currentLink || null, popup, footer);
       this.changeDetector.markForCheck();
     }).catch(() => {});
+  }
+
+  private buildStructureMetricLines(m: IStructureMetrics): string[] {
+    const lines: string[] = [];
+    if (m.numContacts !== undefined && m.numContacts !== null) {
+      lines.push(m.numContacts === 0 ? 'Contacts : 0 (no CDR3–peptide contacts)' : `Contacts : ${m.numContacts}`);
+    }
+    if (m.iptm !== undefined && m.iptm !== null) {
+      const pct = (m.iptmPct !== undefined && m.iptmPct !== null) ? ` (${m.iptmPct}%)` : '';
+      lines.push(`ipTM : ${m.iptm.toFixed(2)}${pct}`);
+    }
+    if (m.confidence !== undefined && m.confidence !== null) {
+      const pct = (m.confidencePct !== undefined && m.confidencePct !== null) ? ` (${m.confidencePct}%)` : '';
+      lines.push(`TCRmodel2 conf : ${m.confidence.toFixed(2)}${pct}`);
+    }
+    if (m.bindingModeOutlier) {
+      lines.push('Binding mode : outlier');
+    }
+    return lines;
+  }
+
+  private buildStructureFooter(m: IStructureMetrics): string | undefined {
+    const parts: string[] = [];
+    if ((m.iptmPct !== undefined && m.iptmPct !== null) || (m.confidencePct !== undefined && m.confidencePct !== null)) {
+      parts.push('% = rank across all modelled VDJdb structures');
+    }
+    if (m.bindingModeOutlier) {
+      parts.push('outlier = docking angle outside 95% CI');
+    }
+    return parts.length > 0 ? parts.join('; ') : undefined;
+  }
+
+  private isPdbId(id: string): boolean {
+    // Legacy 4-char accession (e.g. 1ABC) or the extended pdb_XXXXXXXX form (e.g. pdb_00001abc).
+    return /^[A-Za-z0-9]{4}$/.test(id) || /^pdb_[A-Za-z0-9]{8}$/i.test(id);
   }
 
   private extractStructureId(metaValue?: string): string | null {
