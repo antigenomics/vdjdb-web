@@ -20,6 +20,7 @@
         border: 1px solid rgba(0, 0, 0, 0.08); border-radius: 12px;
         box-shadow: 0 6px 24px rgba(0, 0, 0, 0.14);
     }
+    #vdjdb-cookie-consent[hidden] { display: none !important; } /* author display:flex above beats UA [hidden]; make hidden win */
     #vdjdb-cookie-consent .vcc-text { flex: 1 1 auto; min-width: 200px; }
     #vdjdb-cookie-consent .vcc-actions { display: flex; gap: 8px; flex: 0 0 auto; }
     #vdjdb-cookie-consent .vcc-btn { font: inherit; cursor: pointer; padding: 7px 16px; border-radius: 8px; border: 1px solid transparent; }
