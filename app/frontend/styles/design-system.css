@@ -244,6 +244,30 @@ tr.paired-row > td { color: #525252; }
   margin: 0 auto 0.5em;
 }
 
+/* ---- Home "About" card ---------------------------------------------------- */
+/* The inner segment is `attached` (square corners); clip it to the rounded card
+   so its square top corners don't poke through (fixes the glitched top line). */
+.home-about { overflow: hidden; }
+
+/* "developed by ..." footer inside the About card */
+.home-lab-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.7em;
+  margin-top: 1.75em;
+  padding-top: 1.35em;
+  border-top: 1px solid var(--ds-hairline);
+  color: var(--ds-muted);
+  font-size: 0.95rem;
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+.home-lab-footer:hover { color: var(--ds-teal); }
+.home-lab-footer__logo { height: 30px; width: auto; flex: 0 0 auto; }
+.home-lab-footer__text { font-weight: 500; }
+
 /* ---- Fix C: Overview embedded HTML images (innerHTML — needs global rule)
    center within the block and span full width. ---------------------------- */
 .overview img {
