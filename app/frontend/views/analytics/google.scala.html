@@ -1,13 +1,68 @@
 @(googleID: String)
-<!-- Global Site Tag (gtag.js) - Google Analytics -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=@googleID"></script>
+@* Google Analytics, gated behind a minimal cookie-consent banner.
+ * gtag loads only after the visitor accepts; the choice is remembered in localStorage.
+ * Rendered prod-only (guarded at the call site in main.scala.html). *@
+<div id="vdjdb-cookie-consent" role="dialog" aria-label="Cookie consent" hidden>
+    <span class="vcc-text">VDJdb uses cookies for anonymous usage statistics (Google Analytics).</span>
+    <span class="vcc-actions">
+        <button type="button" class="vcc-btn vcc-accept">Accept</button>
+        <button type="button" class="vcc-btn vcc-decline">Decline</button>
+    </span>
+</div>
+<style>
+    #vdjdb-cookie-consent {
+        position: fixed; left: 16px; right: 16px; bottom: 16px; z-index: 9999;
+        display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 10px 16px;
+        max-width: 720px; margin: 0 auto; padding: 12px 18px;
+        background: #ffffff; color: #2f3134;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        font-size: 14px; line-height: 1.4;
+        border: 1px solid rgba(0, 0, 0, 0.08); border-radius: 12px;
+        box-shadow: 0 6px 24px rgba(0, 0, 0, 0.14);
+    }
+    #vdjdb-cookie-consent .vcc-text { flex: 1 1 auto; min-width: 200px; }
+    #vdjdb-cookie-consent .vcc-actions { display: flex; gap: 8px; flex: 0 0 auto; }
+    #vdjdb-cookie-consent .vcc-btn { font: inherit; cursor: pointer; padding: 7px 16px; border-radius: 8px; border: 1px solid transparent; }
+    #vdjdb-cookie-consent .vcc-accept { background: #48af75; color: #fff; }
+    #vdjdb-cookie-consent .vcc-accept:hover { background: #3d9765; }
+    #vdjdb-cookie-consent .vcc-decline { background: transparent; color: #6e6e73; border-color: rgba(0, 0, 0, 0.15); }
+    #vdjdb-cookie-consent .vcc-decline:hover { color: #2f3134; }
+</style>
 <script>
-        window.dataLayer = window.dataLayer || [];
+        (function () {
+            var KEY = 'vdjdb-cookie-consent';
 
-        function gtag() {
-            dataLayer.push(arguments)
-        }
+            function loadAnalytics() {
+                var s = document.createElement('script');
+                s.async = true;
+                s.src = 'https://www.googletagmanager.com/gtag/js?id=@googleID';
+                document.head.appendChild(s);
+                window.dataLayer = window.dataLayer || [];
+                window.gtag = function () { dataLayer.push(arguments); };
+                gtag('js', new Date());
+                gtag('config', '@googleID');
+            }
 
-        gtag('js', new Date());
-        gtag('config', '@googleID');
+            var choice;
+            try {
+                choice = localStorage.getItem(KEY);
+            } catch (e) {
+                return; // storage blocked → no analytics, no banner
+            }
+            if (choice === 'accepted') { loadAnalytics(); return; }
+            if (choice === 'declined') { return; }
+
+            var el = document.getElementById('vdjdb-cookie-consent');
+            if (!el) { return; }
+            el.hidden = false;
+
+            function decide(value, run) {
+                try { localStorage.setItem(KEY, value); } catch (e) { /* ignore */ }
+                el.hidden = true;
+                if (run) { run(); }
+            }
+
+            el.querySelector('.vcc-accept').addEventListener('click', function () { decide('accepted', loadAnalytics); });
+            el.querySelector('.vcc-decline').addEventListener('click', function () { decide('declined'); });
+        })();
 </script>

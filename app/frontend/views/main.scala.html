@@ -49,6 +49,8 @@
     </head>
     <body>
     @content
+    @if(environment.mode == Mode.Prod) {
+        @frontend.views.html.analytics.analytics()
+    }
     </body>
-    @frontend.views.html.analytics.analytics()
 </html>
