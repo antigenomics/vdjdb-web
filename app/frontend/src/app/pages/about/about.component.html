@@ -75,6 +75,43 @@
         </div>
     </div>
     <div class="ui raised segments">
+        <h3 class="ui top attached header centered">TCR structure modeling</h3>
+        <div class="ui attached segment teal padded">
+            <p>
+                <a href="https://doi.org/10.1093/nar/gkad356" target="_blank" rel="noopener">TCRmodel2</a>
+                (accessed 5 August 2025) software was selected because of its
+                <a href="https://doi.org/10.1093/nar/gkad356" target="_blank" rel="noopener">high performance</a>
+                in TCR structure modeling, straightforward installation and usage, and free distribution. The tool
+                was run with default parameters and the AlphaFold database provided by the authors. Only VDJdb
+                records containing both TCR α and β chains were selected for modeling and subsequent processing. To
+                prepare each VDJdb record for modeling, we used the
+                <a href="https://doi.org/10.1093/nar/gkac190" target="_blank" rel="noopener">stitchr</a>
+                Python library (v. 1.3.1) to generate complete TCR sequences and retrieved MHC sequences from the
+                IMGT database (accessed 12 August 2025). Modeling was performed on the
+                <a href="https://doi.org/10.1134/S1063779624030559" target="_blank" rel="noopener">Aldan3 computing cluster</a>
+                and orchestrated via the SLURM Workload Manager. Of the five structures generated for each record,
+                only the best-ranked structure was retained. Generation of one VDJdb record took approximately 10
+                minutes of wall-clock time.
+            </p>
+            <p>
+                To ensure better comparability among the models, we subsequently aligned them twice using the PyMOL
+                Python API. The first alignment was performed across all structures of the same MHC class, and the
+                second alignment was performed among structures recognizing the same epitope. Following alignment,
+                the 3D Cα coordinates of the CDR3 loops and the peptide from each structure were projected onto a
+                single 2D plane that was uniform for all structures. Inter-chain amino acid contacts were annotated
+                when the distance between any atoms of two residues was less than 5 Å. The resulting 2D projections
+                with marked contacts (Skeleton plot) for the VDJdb records are now displayed in the VDJdb structure
+                browser. Each VDJdb record for which a structure was generated was annotated with the AlphaFold2
+                ranking confidence, the number of TCR–peptide contacts, and the scanning and pitch angles calculated
+                using the
+                <a href="https://doi.org/10.1093/bioinformatics/btaf566" target="_blank" rel="noopener">stcrpy</a>
+                library (v. 1.0.6). PDB files of the generated structures, tables of contacts, and Cα coordinates are
+                freely available via the structure browser interface and on
+                <a href="https://huggingface.co/datasets/isalgo/vdjdb_structure_models" target="_blank" rel="noopener">Hugging Face</a>.
+            </p>
+        </div>
+    </div>
+    <div class="ui raised segments">
         <h3 class="ui top attached header centered">Software</h3>
         <div class="ui attached segment teal padded">
             <h4>Standalone application</h4>
