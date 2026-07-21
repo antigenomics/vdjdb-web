@@ -198,9 +198,13 @@ class UserProvider @Inject()(
   }
 
   /** The reaper only runs every `interval`, so an expired token can still resolve to a row. Check the
-    * keep window at login too, otherwise expiry is best-effort. */
+    * keep window at login too, otherwise expiry is best-effort.
+    *
+    * Measured from LAST_ACCESSED_ON, not CREATED_ON: on CREATED_ON the window is an absolute lifetime,
+    * so an account is destroyed `keep` after signup no matter what its owner is doing — mid-session,
+    * with their uploaded samples. Idle time is the thing this is meant to reclaim. */
   def isTemporaryExpired(user: User): Boolean = {
-    user.createdOn.before(TimeUtils.getCreatedAt(temporaryUserConfiguration.keep))
+    user.lastAccessedOn.before(TimeUtils.getCreatedAt(temporaryUserConfiguration.keep))
   }
 
   /** Tokens are generated server-side with a CSPRNG. 26 characters over a 31-symbol alphabet is
@@ -230,11 +234,21 @@ class UserProvider @Inject()(
     db.run(table.withPermissions.filter(_._1.email === email).result.headOption)
   }
 
+  /** Every account paired with its permission row, so a caller that has to branch on the permission
+    * level (the retention sweeper, which exempts DEMO and UNLIMITED) does it in one query instead of
+    * one lookup per user. `User.permissionID` is `private[authorization]`, so the join is the only
+    * way to get at it from outside this package. */
+  def getAllWithPermissions: Future[Seq[(User, UserPermissions)]] = {
+    db.run(table.withPermissions.result)
+  }
+
+  /** Expiry is measured from LAST_ACCESSED_ON — see `isTemporaryExpired`; reaping on CREATED_ON
+    * deletes an account, and the samples in it, while its owner is still using it. */
   def getTemporaryUsers(expiredOnly: Boolean = false): Future[Seq[User]] = {
     if (!expiredOnly) {
       db.run(table.filter(fm => fm.isTemporary).result)
     } else {
-      db.run(table.filter(fm => fm.isTemporary && fm.createdOn < TimeUtils.getCreatedAt(temporaryUserConfiguration.keep)).result)
+      db.run(table.filter(fm => fm.isTemporary && fm.lastAccessedOn < TimeUtils.getCreatedAt(temporaryUserConfiguration.keep)).result)
     }
   }
 

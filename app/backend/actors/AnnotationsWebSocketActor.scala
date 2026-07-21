@@ -23,6 +23,7 @@ import backend.models.files.FileMetadataProvider
 import backend.models.files.sample.{SampleFileForm, SampleFileProvider}
 import backend.models.files.sample.tags.{SampleTag, SampleTagProvider, SampleTagTable}
 import backend.models.files.temporary.TemporaryFileProvider
+import backend.models.usage.UsageProvider
 import backend.server.annotations.IntersectionTable
 import backend.server.annotations.api.annotate.{SampleAnnotateRequest, SampleAnnotateResponse}
 import backend.server.annotations.api.export.{AnnotationsExportDataRequest, AnnotationsExportDataResponse}
@@ -51,7 +52,8 @@ import scala.collection.concurrent.TrieMap
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success}
 
-class AnnotationsWebSocketActor(out: ActorRef, limit: IpLimit, user: User, details: UserDetails, database: Database, motifs: Motifs)
+class AnnotationsWebSocketActor(out: ActorRef, limit: IpLimit, user: User, details: UserDetails, database: Database,
+                                motifs: Motifs, usage: UsageProvider)
                                (implicit ec: ExecutionContext, as: ActorSystem, limits: RequestLimits, up: UserProvider, stp: SampleTagProvider,
                                 upp: UserPermissionsProvider, sfp: SampleFileProvider, fmp: FileMetadataProvider, tfp: TemporaryFileProvider)
   extends WebSocketActor(out, limit) {
@@ -100,41 +102,52 @@ class AnnotationsWebSocketActor(out: ActorRef, limit: IpLimit, user: User, detai
           }
         })
       case SampleAnnotateResponse.Action =>
-        validateData(out, data, (intersectRequest: SampleAnnotateRequest) => async {
-          val sampleFile = await(user.getSampleFileByNameWithMetadata(intersectRequest.sampleName))
-          sampleFile match {
-            case Some(file) =>
-              try {
-                out.success(SampleAnnotateResponse.ParseState)
-                val sample = SampleFileConnection.load(file._2.path, Software.valueOf(file._1.software))
+        validateData(out, data, (intersectRequest: SampleAnnotateRequest) => {
+          // Checked before anything is loaded: an annotation run parses the whole sample and searches
+          // every clonotype against the database, so it is the most expensive thing one session can
+          // ask for and the one worth a daily ceiling. The check is deliberately outside the async
+          // block — the counter is a plain in-memory read, and keeping it here leaves the state
+          // machine below exactly as it was.
+          usage.checkAnnotate(user, details.permissions) match {
+            case Some(message) =>
+              out.errorMessage(message)
+            case None => async {
+              val sampleFile = await(user.getSampleFileByNameWithMetadata(intersectRequest.sampleName))
+              sampleFile match {
+                case Some(file) =>
+                  try {
+                    out.success(SampleAnnotateResponse.ParseState)
+                    val sample = SampleFileConnection.load(file._2.path, Software.valueOf(file._1.software))
 
-                if (file._1.isSampleFileInfoEmpty) {
-                  val readsCount = sample.getCount
-                  val clonotypesCount = sample.getDiversity.toLong
-                  file._1.updateSampleFileInfo(readsCount, clonotypesCount).onComplete {
-                    case Success(_) => out.success(
-                      UpdateSampleStatsInfoResponse(file._1.sampleName, readsCount, clonotypesCount),
-                      UpdateSampleStatsInfoResponse.Action)
-                    case Failure(t) => logger.error(s"Update sample file info failed: ${t.getMessage}")
+                    if (file._1.isSampleFileInfoEmpty) {
+                      val readsCount = sample.getCount
+                      val clonotypesCount = sample.getDiversity.toLong
+                      file._1.updateSampleFileInfo(readsCount, clonotypesCount).onComplete {
+                        case Success(_) => out.success(
+                          UpdateSampleStatsInfoResponse(file._1.sampleName, readsCount, clonotypesCount),
+                          UpdateSampleStatsInfoResponse.Action)
+                        case Failure(t) => logger.error(s"Update sample file info failed: ${t.getMessage}")
+                      }
+                    }
+
+                    val table = new IntersectionTable()
+                    out.success(SampleAnnotateResponse.AnnotateState)
+                    table.update(intersectRequest, sample, database, motifs)
+                    out.success(SampleAnnotateResponse.LoadingState)
+                    intersectionTableResults += (file._1.sampleName -> table)
+                    out.success(SampleAnnotateResponse.CompletedState(table.getRows, table.summary))
+                  } catch {
+                    case e: Exception =>
+                      // Every failure used to collapse into "Unable to intersect", which told the user
+                      // nothing and left the real cause only in a stack trace on stdout.
+                      logger.error(s"Annotation failed for sample '${file._1.sampleName}'", e)
+                      val reason = Option(e.getMessage).filter(_.nonEmpty).getOrElse(e.getClass.getSimpleName)
+                      out.errorMessage(s"Unable to annotate this sample: $reason")
                   }
-                }
-
-                val table = new IntersectionTable()
-                out.success(SampleAnnotateResponse.AnnotateState)
-                table.update(intersectRequest, sample, database, motifs)
-                out.success(SampleAnnotateResponse.LoadingState)
-                intersectionTableResults += (file._1.sampleName -> table)
-                out.success(SampleAnnotateResponse.CompletedState(table.getRows, table.summary))
-              } catch {
-                case e: Exception =>
-                  // Every failure used to collapse into "Unable to intersect", which told the user
-                  // nothing and left the real cause only in a stack trace on stdout.
-                  logger.error(s"Annotation failed for sample '${file._1.sampleName}'", e)
-                  val reason = Option(e.getMessage).filter(_.nonEmpty).getOrElse(e.getClass.getSimpleName)
-                  out.errorMessage(s"Unable to annotate this sample: $reason")
+                case None =>
+                  out.errorMessage("Invalid file name")
               }
-            case None =>
-              out.errorMessage("Invalid file name")
+            }
           }
         })
       case UpdateSamplePropsInfoResponse.Action =>
@@ -252,8 +265,9 @@ class AnnotationsWebSocketActor(out: ActorRef, limit: IpLimit, user: User, detai
 }
 
 object AnnotationsWebSocketActor {
-  def props(out: ActorRef, limit: IpLimit, user: User, details: UserDetails, database: Database, motifs: Motifs)
+  def props(out: ActorRef, limit: IpLimit, user: User, details: UserDetails, database: Database, motifs: Motifs,
+            usage: UsageProvider)
            (implicit ec: ExecutionContext, as: ActorSystem, limits: RequestLimits, up: UserProvider, stp: SampleTagProvider,
             upp: UserPermissionsProvider, sfp: SampleFileProvider, fmp: FileMetadataProvider, tfp: TemporaryFileProvider): Props =
-    Props(new AnnotationsWebSocketActor(out, limit, user, details, database, motifs))
+    Props(new AnnotationsWebSocketActor(out, limit, user, details, database, motifs, usage))
 }
