@@ -36,22 +36,34 @@
         <div class="four wide column filters label">
             <b>Edit distance</b>
             <i class="filters help icon" popup
-               popup="Hamming allows a single substitution and keeps the CDR3 length fixed. Levenshtein allows one edit of any kind - a substitution, an insertion or a deletion - so it also matches CDR3s one residue longer or shorter."
+               popup="Exact matches the CDR3 as written. Hamming allows substitutions and keeps the CDR3 length fixed. Levenshtein allows one edit of any kind - a substitution, an insertion or a deletion - so it also matches CDR3s one residue longer or shorter."
                header="Edit distance"
-               footer="Levenshtein is the wider search and takes longer">
+               footer="Wider searches match more records and take longer">
             </i>
         </div>
         <div class="five wide column">
             <div class="ui radio checkbox">
                 <input [attr.disabled]="isDisabled()" type="radio" name="editDistance"
-                       [checked]="!isLevenshtein()" (change)="setLevenshtein(false)">
-                <label>Hamming &mdash; 1 substitution</label>
+                       [checked]="isMode('exact')" (change)="setMode('exact')">
+                <label>Exact</label>
             </div>
             <br>
             <div class="ui radio checkbox">
                 <input [attr.disabled]="isDisabled()" type="radio" name="editDistance"
-                       [checked]="isLevenshtein()" (change)="setLevenshtein(true)">
-                <label>Levenshtein &mdash; 1 substitution, insertion or deletion</label>
+                       [checked]="isMode('hamming1')" (change)="setMode('hamming1')">
+                <label>Hamming &le; 1</label>
+            </div>
+            <br>
+            <div class="ui radio checkbox">
+                <input [attr.disabled]="isDisabled()" type="radio" name="editDistance"
+                       [checked]="isMode('hamming2')" (change)="setMode('hamming2')">
+                <label>Hamming &le; 2</label>
+            </div>
+            <br>
+            <div class="ui radio checkbox">
+                <input [attr.disabled]="isDisabled()" type="radio" name="editDistance"
+                       [checked]="isMode('levenshtein')" (change)="setMode('levenshtein')">
+                <label>Levenshtein &le; 1</label>
             </div>
         </div>
     </div>

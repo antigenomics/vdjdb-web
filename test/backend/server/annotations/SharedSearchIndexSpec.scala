@@ -43,8 +43,8 @@ class SharedSearchIndexSpec extends BaseTestSpecWithApplication {
       AnnotationsVDJMatchScoringHitFilteringOptions(50, "top", 3, weightByInfo = false)))
 
   private def parameters(species: String = "HomoSapiens", gene: String = "TRB",
-                         mhc: String = "MHCI+II", confidenceThreshold: Int = 0) =
-    AnnotationsDatabaseQueryParams(species, gene, mhc, confidenceThreshold, 0, None, None, None, None, None)
+                         mhc: String = "MHCI+II") =
+    AnnotationsDatabaseQueryParams(species, gene, mhc, 0, None, None, None, None, None)
 
   private def searchScope(matchV: Boolean = false, matchJ: Boolean = false) =
     AnnotationsSearchScope(matchV, matchJ, AnnotationsSearchScopeHammingDistance.Hamming)
@@ -54,7 +54,7 @@ class SharedSearchIndexSpec extends BaseTestSpecWithApplication {
     IntersectionTable.indexesFor(database, parameters(), searchScope(), scoring)._1
 
   /** A `ClonotypeDatabase` built the way every request used to build one, for the same search scope. */
-  private def legacyIndex(species: String, gene: String, mhc: String, confidence: Int,
+  private def legacyIndex(species: String, gene: String, mhc: String,
                           matchV: Boolean, matchJ: Boolean): ClonotypeDatabase = {
     val filters = new java.util.ArrayList[TextFilter]()
     if (mhc != "MHCI+II") {
@@ -64,7 +64,7 @@ class SharedSearchIndexSpec extends BaseTestSpecWithApplication {
     database.getInstance.filter(filters).asClonotypeDatabase(species, gene,
       new SearchScope(hamming.substitutions, hamming.deletions, hamming.insertions, hamming.total, false, false),
       ScoringBundle.getDUMMY, DummyWeightFunctionFactory.INSTANCE, DummyResultFilter.INSTANCE,
-      matchV, matchJ, confidence, 0)
+      matchV, matchJ, 0, 0)
   }
 
   private def valueAt(row: Row, column: String): String = row.getAt(column).getValue
@@ -114,17 +114,21 @@ class SharedSearchIndexSpec extends BaseTestSpecWithApplication {
       levenshtein should not be theSameInstanceAs(shared)
     }
 
-    "find exactly what a species, gene, MHC and confidence filtered index found" in {
-      Seq(("HomoSapiens", "TRB", "MHCI+II", 0),
-          ("HomoSapiens", "TRB", "MHCI", 0),
-          ("HomoSapiens", "TRA", "MHCII", 0),
-          ("HomoSapiens", "TRB", "MHCI+II", 1),
-          ("MusMusculus", "TRB", "MHCI+II", 0)).map { case (species, gene, mhc, confidence) =>
-        val request = parameters(species, gene, mhc, confidence)
-        val legacy  = legacyIndex(species, gene, mhc, confidence, matchV = false, matchJ = false)
+    "find exactly what a species, gene and MHC filtered index found" in {
+      // The shared index is built at Hamming2 while the legacy one is built at Hamming, so it returns
+      // strictly more; `withinDistance` is what takes the difference back off. Applying it here is not
+      // test scaffolding - it is the same predicate `databaseRestrictions` installs in production.
+      val hamming = AnnotationsSearchScopeHammingDistance.Hamming
+      Seq(("HomoSapiens", "TRB", "MHCI+II"),
+          ("HomoSapiens", "TRB", "MHCI"),
+          ("HomoSapiens", "TRA", "MHCII"),
+          ("MusMusculus", "TRB", "MHCI+II")).map { case (species, gene, mhc) =>
+        val request = parameters(species, gene, mhc)
+        val legacy  = legacyIndex(species, gene, mhc, matchV = false, matchJ = false)
 
         queries.map { case (v, j, cdr3) =>
           val fromShared = shared.search(v, j, cdr3).asScala.toList
+            .filter(hit => IntersectionTable.withinDistance(hamming, hit))
             .map(_.getRow)
             .filter(row => IntersectionTable.accepts(request)(column => valueAt(row, column)))
           val fromLegacy = legacy.search(v, j, cdr3).asScala.toList.map(_.getRow)
@@ -133,14 +137,37 @@ class SharedSearchIndexSpec extends BaseTestSpecWithApplication {
       }.last
     }
 
+    "narrow the shared index to each offered scope by counting mutations" in {
+      val exact       = AnnotationsSearchScopeHammingDistance.Exact
+      val hamming     = AnnotationsSearchScopeHammingDistance.Hamming
+      val hamming2    = AnnotationsSearchScopeHammingDistance.Hamming2
+
+      queries.map { case (v, j, cdr3) =>
+        val hits = shared.search(v, j, cdr3).asScala.toList
+
+        // Every hit of a narrower scope is a hit of a wider one, and exact means no edits at all.
+        val atExact    = hits.filter(hit => IntersectionTable.withinDistance(exact, hit))
+        val atHamming  = hits.filter(hit => IntersectionTable.withinDistance(hamming, hit))
+        val atHamming2 = hits.filter(hit => IntersectionTable.withinDistance(hamming2, hit))
+
+        atExact.foreach(hit => hit.getHit.getMutations.size shouldEqual 0)
+        atHamming.foreach(hit => hit.getHit.getMutations.countOfIndels shouldEqual 0)
+        atExact.size should be <= atHamming.size
+        atHamming.size should be <= atHamming2.size
+        atHamming2.size shouldEqual hits.size
+      }.last
+    }
+
     "find exactly what a V and J matching index found" in {
       // matchV/matchJ were never index inputs - the engine built a SegmentFilter per search from the
       // query clonotype - so this is the same comparison with the segment rule applied by hand.
       val request = parameters()
-      val legacy  = legacyIndex("HomoSapiens", "TRB", "MHCI+II", 0, matchV = true, matchJ = true)
+      val legacy  = legacyIndex("HomoSapiens", "TRB", "MHCI+II", matchV = true, matchJ = true)
+      val hamming = AnnotationsSearchScopeHammingDistance.Hamming
 
       queries.map { case (v, j, cdr3) =>
         val fromShared = shared.search(v, j, cdr3).asScala.toList
+          .filter(hit => IntersectionTable.withinDistance(hamming, hit))
           .map(_.getRow)
           .filter(row => IntersectionTable.accepts(request)(column => valueAt(row, column)))
           .filter(row => IntersectionTable.segmentsMatch(v, valueAt(row, "v.segm")))

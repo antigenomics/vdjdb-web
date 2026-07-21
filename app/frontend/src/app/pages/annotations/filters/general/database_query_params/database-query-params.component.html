@@ -15,7 +15,7 @@
   -->
 
 <div class="ui horizontal divider">
-    Database query parameters
+    Source filters
 </div>
 <div class="ui grid">
     <div class="ui row middle aligned">
@@ -29,20 +29,6 @@
                     <div class="item" (click)="filters.databaseQueryParams.species='MacacaMulatta'">MacacaMulatta</div>
                     <div class="item" (click)="filters.databaseQueryParams.species='MusMusculus'">MusMusculus</div>
                 </div>
-            </div>
-        </div>
-        <div class="one wide column"></div>
-        <div class="four wide column filters label"><b>Confidence score threshold</b></div>
-        <div class="four wide column">
-            <!-- Annotations filters help: confidence score threshold-->
-            <i class="fitted filters corner help icon"
-               popup="VDJdb record confidence level threshold, from 0 (lowest) to 3 (highest)."
-               header="VDJdb confidence score threshold"
-               footer="Default is 0">
-            </i>
-            <div class="ui input fluid">
-                <input [attr.disabled]="isDisabled()" type="number" min="0" max="3" [ngModel]="filters.databaseQueryParams.confidenceThreshold"
-                       (ngModelChange)="checkConfidenceThreshold($event)">
             </div>
         </div>
     </div>
@@ -102,8 +88,14 @@
             </div>
         </div>
     </div>
+</div>
+
+<div class="ui horizontal divider">
+    Evidence
+</div>
+<div class="ui grid">
     <div class="ui row middle aligned">
-        <div class="two wide column filters label"><b>Evidence</b></div>
+        <div class="two wide column filters label"><b>Supported by</b></div>
         <div class="ten wide column">
             <!-- Annotations filters help: evidence filters-->
             <i class="fitted filters corner help icon"
@@ -130,7 +122,7 @@
                 <input [attr.disabled]="isDisabled()" type="checkbox"
                        [ngModel]="filters.databaseQueryParams.minConfidenceScore > 0"
                        (ngModelChange)="filters.databaseQueryParams.minConfidenceScore = $event ? 1 : 0">
-                <label>Minimal confidence assay score (&ge; 1)</label>
+                <label>Assay confidence score &ge; 1</label>
             </div>
         </div>
     </div>

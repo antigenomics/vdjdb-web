@@ -38,14 +38,14 @@ import play.api.libs.json.{Format, Json}
   * The five filters above are all `Option`, so a client that predates them still parses — `Json.format`
   * reads a missing `Option` field as `None`.
   *
-  * Nothing in this class reaches a database build any more. `species`, `gene`, `mhc` and
-  * `confidenceThreshold` used to select the rows a per-request index was built from; they are now
+  * Nothing in this class reaches a database build any more. `species`, `gene` and `mhc` used to
+  * select the rows a per-request index was built from; they are now
   * predicates over the results of one shared index, alongside the five above — see
   * [[backend.server.annotations.IntersectionTable]]. `minEpitopeSize` only thins the summary charts.
   * The one input the index still depends on is the search scope, which lives in
   * [[AnnotationsSearchScope]].
   */
-case class AnnotationsDatabaseQueryParams(species: String, gene: String, mhc: String, confidenceThreshold: Int,
+case class AnnotationsDatabaseQueryParams(species: String, gene: String, mhc: String,
                                           minEpitopeSize: Int, hla: Option[String],
                                           inTcrempMotif: Option[Boolean], inTcrnetMotif: Option[Boolean],
                                           independentValidationOnly: Option[Boolean], minConfidenceScore: Option[Int])
