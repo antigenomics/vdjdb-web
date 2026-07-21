@@ -25,4 +25,20 @@ object AnnotationsAnnotateScoring {
 
   final val SIMPLE = 0
   final val VDJMATCH = 1
+
+  /** Snap a client-supplied scoring type onto the only one the application offers.
+    *
+    * VDJMatch scoring is unreachable from the UI: `ScoringTypeComponent` and `ScoringVDJMatchComponent`
+    * were declared in `annotations-filters.module.ts` but rendered by no template, and the filter model
+    * hardcodes `type: SIMPLE`. The request still arrives as plain JSON over a websocket, though, so the
+    * server cannot assume the client sent SIMPLE.
+    *
+    * Snapping it here is what lets the CDR3 search index be built once and shared: VDJMatch scoring is
+    * the only thing that ever made the index depend on the request at all beyond its search scope —
+    * `ScoringProvider.loadScoringBundle` takes the species and the gene, and the hit-filtering options
+    * became a `ResultFilter` baked into the built database. With SIMPLE forced, every one of those
+    * inputs is the DUMMY, for every request.
+    */
+  def sanitize(scoring: AnnotationsAnnotateScoring): AnnotationsAnnotateScoring =
+    if (scoring.`type` == SIMPLE) scoring else scoring.copy(`type` = SIMPLE)
 }

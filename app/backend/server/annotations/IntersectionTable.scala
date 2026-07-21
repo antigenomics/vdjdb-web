@@ -16,21 +16,18 @@
 
 package backend.server.annotations
 
-import java.util
-
 import backend.server.ResultsTable
 import backend.server.annotations.api.annotate.SampleAnnotateRequest
 import backend.server.annotations.api.filters.{AnnotationsAnnotateScoring, AnnotationsDatabaseQueryParams, AnnotationsSearchScope, AnnotationsSearchScopeHammingDistance}
 import backend.server.annotations.charts.summary.{SummaryClonotypeCounter, SummaryCounters, SummaryFieldCounter}
 import backend.server.database.Database
 import backend.server.motifs.Motifs
-import com.antigenomics.vdjdb.db.Row
-import com.antigenomics.vdjdb.impl.filter.{DummyResultFilter, MaxScoreResultFilter, TopNResultFilter}
-import com.antigenomics.vdjdb.impl.weights.{DegreeWeightFunctionFactory, DummyWeightFunctionFactory}
-import com.antigenomics.vdjdb.impl.{ClonotypeDatabase, ClonotypeSearchResult, ScoringBundle, ScoringProvider}
-import com.antigenomics.vdjdb.sequence.SearchScope
-import com.antigenomics.vdjdb.text.{ExactTextFilter, TextFilter}
 import com.antigenomics.vdjdb.VdjdbInstance
+import com.antigenomics.vdjdb.db.Row
+import com.antigenomics.vdjdb.impl.filter.DummyResultFilter
+import com.antigenomics.vdjdb.impl.weights.DummyWeightFunctionFactory
+import com.antigenomics.vdjdb.impl.{ClonotypeDatabase, ClonotypeSearchResult, ScoringBundle}
+import com.antigenomics.vdjdb.sequence.SearchScope
 import com.antigenomics.vdjtools.sample.{Clonotype, Sample}
 import org.slf4j.LoggerFactory
 
@@ -55,13 +52,18 @@ class IntersectionTable(var summary: Option[SummaryCounters] = None) extends Res
   }
 
   def update(request: SampleAnnotateRequest, sample: Sample, database: Database, motifs: Motifs): IntersectionTable = {
-    val (instance, summaryIndex) =
-      IntersectionTable.createClonotypeDatabase(database, request.databaseQueryParams, request.searchScope, request.scoring)
-    val postFilters = IntersectionTable.postSearchFilters(request.databaseQueryParams, motifs)
+    val (index, summaryIndex) =
+      IntersectionTable.indexesFor(database, request.databaseQueryParams, request.searchScope, request.scoring)
 
-    val raw = instance.search(sample)
+    // The restrictions that used to be built into the database come first, then the ones that were
+    // always applied here. `forall` over one list, so the order is immaterial to the outcome.
+    val filters = IntersectionTable.databaseRestrictions(request.databaseQueryParams, request.searchScope) ++
+      IntersectionTable.postSearchFilters(request.databaseQueryParams, motifs)
+
+    val raw = index.search(sample)
     val found = raw.asScala.toList
-      .map { case (clonotype, hits) => (clonotype, hits.asScala.toList.filter(hit => postFilters.forall(allows => allows(hit)))) }
+      .map { case (clonotype, hits) =>
+        (clonotype, hits.asScala.toList.filter(hit => filters.forall(allows => allows(clonotype, hit)))) }
       .filter { case (_, hits) => hits.nonEmpty }
       .sortWith { case ((c1, _), (c2, _)) => c1.getFreq > c2.getFreq }
 
@@ -96,7 +98,25 @@ object IntersectionTable {
   // bound one per column and ANDed, so an OR across two columns is only available here.
   private final val MhcColumns: Seq[String] = Seq("mhc.a", "mhc.b")
 
-  private type HitFilter = ClonotypeSearchResult => Boolean
+  // Column names as literals, the way every other column in this file is named. The engine declares
+  // them on ClonotypeDatabase as Groovy properties, which are not reachable as Java constants.
+  private final val SpeciesColumn    = "species"
+  private final val GeneColumn       = "gene"
+  private final val MhcClassColumn   = "mhc.class"
+  private final val ConfidenceColumn = "vdjdb.score"
+  private final val VColumn          = "v.segm"
+  private final val JColumn          = "j.segm"
+
+  /** The value of `mhc` that means "do not restrict by MHC class at all". */
+  private final val BothMhcClasses = "MHCI+II"
+
+  /** A restriction on a single hit, given the sample clonotype it was found for.
+    *
+    * The clonotype is part of the signature because V/J matching needs it: `SegmentFilter` compares the
+    * *query's* segments against the record's, and a `ClonotypeSearchResult` does not carry the query.
+    * Every other restriction ignores it.
+    */
+  type HitFilter = (Clonotype, ClonotypeSearchResult) => Boolean
 
   /** Restrictions applied to search *results* rather than to the database that gets built.
     *
@@ -104,19 +124,17 @@ object IntersectionTable {
     * column and ANDs the lot, which covers neither the OR across `mhc.a`/`mhc.b`, nor a lookup against
     * an externally loaded motif index.
     *
-    * Filtering here rather than at build time is also what keeps the `ClonotypeDatabase` cache useful:
-    * every parameter below is blanked out of the cache key, so two requests differing only in these
-    * share one (expensive) build. That is why the confidence checkbox exists alongside the numeric
-    * `confidenceThreshold` — the numeric one is passed into the build and rebuilds the database.
-    *
     * Returned as a list, empty when nothing is restricted, so the caller can tell "no filtering
     * happened" from "filtering happened and removed nothing" — the summary counters depend on it.
+    *
+    * These are the annotate page's own filters. [[databaseRestrictions]] holds the ones that used to
+    * be baked into the built database, which every caller of the shared index has to apply.
     */
   private def postSearchFilters(parameters: AnnotationsDatabaseQueryParams, motifs: Motifs): Seq[HitFilter] = {
     val donor = HlaAllele.parseAll(parameters.hla.getOrElse(""))
     val donorFilter: Option[HitFilter] =
       if (donor.isEmpty) None
-      else Some((hit: ClonotypeSearchResult) =>
+      else Some((_: Clonotype, hit: ClonotypeSearchResult) =>
         MhcColumns.exists(column => HlaAllele.matches(hit.getRow.getAt(column).getValue, donor)))
 
     // The index is a Map already built at startup by the Motifs singleton and shared with the search
@@ -125,23 +143,102 @@ object IntersectionTable {
     def motifFilter(enabled: Option[Boolean], method: Option[String]): Option[HitFilter] =
       if (enabled.contains(true)) {
         val index = motifs.getCidLookupIndex(method)
-        Some((hit: ClonotypeSearchResult) => Motifs.motifKey(hit.getRow).exists(key => index.contains(key)))
+        Some((_: Clonotype, hit: ClonotypeSearchResult) => Motifs.motifKey(hit.getRow).exists(key => index.contains(key)))
       } else {
         None
       }
 
     val validationFilter: Option[HitFilter] =
       if (parameters.independentValidationOnly.contains(true)) {
-        Some((hit: ClonotypeSearchResult) => independentlyValidated(hit.getRow))
+        Some((_: Clonotype, hit: ClonotypeSearchResult) => independentlyValidated(hit.getRow))
       } else {
         None
       }
 
     val confidenceFilter: Option[HitFilter] = parameters.minConfidenceScore.filter(_ > 0)
-      .map(threshold => (hit: ClonotypeSearchResult) => confidenceScore(hit.getRow) >= threshold)
+      .map(threshold => (_: Clonotype, hit: ClonotypeSearchResult) => confidenceScore(hit.getRow) >= threshold)
 
     Seq(donorFilter, motifFilter(parameters.inTcrempMotif, Some("tcremp")),
       motifFilter(parameters.inTcrnetMotif, None), validationFilter, confidenceFilter).flatten
+  }
+
+  /** The database population a request is asking to be annotated against, as a predicate.
+    *
+    * These four used to select the rows the per-request `ClonotypeDatabase` was built from, and are
+    * reproduced here exactly:
+    *
+    *  - `asClonotypeDatabase` added `ExactTextFilter(species)` and `ExactTextFilter(gene)`, each only
+    *    when the value is non-empty — Groovy's `if (species)` is false for `null` and for `""`.
+    *  - the caller added `ExactTextFilter("mhc.class")` unless the request asked for both classes.
+    *  - `asClonotypeDatabase` added `LevelFilter("vdjdb.score")` only when the threshold is positive.
+    *
+    * `ExactTextFilter` compares with `equalsIgnoreCase`, so this does too — not `==`.
+    *
+    * Written over a column lookup rather than a `Row` so the rule can be exercised without a database.
+    */
+  private[annotations] def accepts(parameters: AnnotationsDatabaseQueryParams)(valueAt: String => String): Boolean = {
+    def exact(column: String, value: String): Boolean = valueAt(column).equalsIgnoreCase(value)
+
+    (parameters.species.isEmpty || exact(SpeciesColumn, parameters.species)) &&
+      (parameters.gene.isEmpty || exact(GeneColumn, parameters.gene)) &&
+      (parameters.mhc == BothMhcClasses || exact(MhcClassColumn, parameters.mhc)) &&
+      (parameters.confidenceThreshold <= 0 || atLeastConfidence(valueAt(ConfidenceColumn), parameters.confidenceThreshold))
+  }
+
+  /** Same predicate, over a database row. */
+  private def acceptedRow(parameters: AnnotationsDatabaseQueryParams): Row => Boolean =
+    (row: Row) => accepts(parameters)(column => row.getAt(column).getValue)
+
+  /** `LevelFilter.passInner`, replicated: the entry is read as a double and passes when it is at least
+    * the threshold, and anything unparseable *fails*.
+    *
+    * Deliberately not [[confidenceScore]], which treats an unreadable score as zero. The two agree on
+    * every value VDJdb actually carries; they are kept apart because they replicate two different
+    * filters, and the confidence checkbox is not the confidence threshold.
+    */
+  private[annotations] def atLeastConfidence(value: String, threshold: Int): Boolean =
+    Try(value.trim.toDouble).toOption.exists(_ >= threshold.toDouble)
+
+  /** `SegmentFilter.passInner`, replicated.
+    *
+    * The engine installed this per search, not per database: `ClonotypeDatabase.search(v, j, cdr3aa)`
+    * built a `SegmentFilter` from the *query* clonotype's segment and ran it over the candidate rows.
+    * So moving it out of the index costs nothing and changes nothing — it was never an index input.
+    *
+    * A segment string is a comma-separated list, upper-cased, with the allele suffix dropped. Either
+    * side auto-passes when it is empty or names `.`, VDJdb's "not recorded"; otherwise the two lists
+    * have to intersect. The intersection is tested in both directions, exactly as the original does.
+    */
+  private[annotations] def segmentsMatch(query: String, entry: String): Boolean = {
+    val queried = segmentSet(query)
+    val stored  = segmentSet(entry)
+    autoPass(queried) || autoPass(stored) ||
+      stored.exists(segment => queried.contains(segment)) || queried.exists(segment => stored.contains(segment))
+  }
+
+  private def segmentSet(value: String): Seq[String] =
+    value.toUpperCase.split(",").map(_.split("\\*")(0)).toSeq
+
+  private def autoPass(segments: Seq[String]): Boolean = segments.isEmpty || segments.contains(".")
+
+  /** Everything that used to be decided when the `ClonotypeDatabase` was built, as predicates over the
+    * results of searching the one shared index.
+    *
+    * Public because the multisample analysis searches the same shared index and has to narrow it the
+    * same way. It applies only these, not [[postSearchFilters]] — which it has never applied.
+    */
+  def databaseRestrictions(parameters: AnnotationsDatabaseQueryParams,
+                           searchScope: AnnotationsSearchScope): Seq[HitFilter] = {
+    val accepted = acceptedRow(parameters)
+    val population: HitFilter = (_: Clonotype, hit: ClonotypeSearchResult) => accepted(hit.getRow)
+
+    def segment(column: String, queried: Clonotype => String): HitFilter =
+      (clonotype: Clonotype, hit: ClonotypeSearchResult) =>
+        segmentsMatch(queried(clonotype), hit.getRow.getAt(column).getValue)
+
+    Seq(Some(population),
+      if (searchScope.matchV) Some(segment(VColumn, (c: Clonotype) => c.getV)) else None,
+      if (searchScope.matchJ) Some(segment(JColumn, (c: Clonotype) => c.getJ)) else None).flatten
   }
 
   /** The curated `evidence.validation.independent` flag — "antigen specificity independently validated
@@ -160,7 +257,7 @@ object IntersectionTable {
   /** `vdjdb.score` as an int, 0 for anything unparseable or absent — a record whose confidence cannot
     * be read is treated as the lowest confidence rather than silently kept. */
   private def confidenceScore(row: Row): Int =
-    Option(row.getAt("vdjdb.score")).map(_.getValue.trim).flatMap(value => Try(value.toInt).toOption).getOrElse(0)
+    Option(row.getAt(ConfidenceColumn)).map(_.getValue.trim).flatMap(value => Try(value.toInt).toOption).getOrElse(0)
 
   private final val EpitopeField = "antigen.epitope"
 
@@ -213,72 +310,58 @@ object IntersectionTable {
       found.map { case (clonotype, _) => clonotype.getFreq }.sum,
       found.map { case (clonotype, _) => clonotype.getCount.toLong }.sum)
 
-  /** How many built databases to keep. Each holds a materialized copy of the matching VDJdb rows plus
-    * its CDR3 tree, so this stays deliberately small: in practice nearly every request arrives with the
-    * default parameters and hits the same entry, and a second slot only has to cover one user running
-    * a different species or gene alongside them.
+  /** The CDR3 search index, keyed on its search scope and on nothing else.
     *
-    * Kept small on purpose rather than sized against the heap — the app runs with no `-Xmx` at all, so
-    * its ceiling is the JVM default of a quarter of host RAM (6.8 GB here) and would move if the host
-    * or its other containers changed. The `Built clonotype database ... heap N MB` line logged below is
-    * what to read before raising this. Note `.jvmopts` is sbt-only and does not reach the packaged app.
-    */
-  // Two, because the chain split makes TRA+TRB the normal working set: annotating both halves of a
-  // split sample alternates gene=TRA and gene=TRB, and at size 1 each eviction guarantees the next
-  // annotation misses — the cache would never hit for the workflow the splitter itself creates.
-  //
-  // This was briefly 1, on a heap figure that turned out to be unsound: sampling total-free around the
-  // build attributes any GC that happens mid-build to the build, and produced a NEGATIVE delta in
-  // production. `buildHeapCost` below measures after a collection instead.
-  private final val MaxCachedDatabases = 2
-
-  /** Keyed on the *entire* set of build inputs, so it cannot go stale by omission: every one of these
-    * is a case class, so equality is structural all the way down.
+    * Every restriction a request can express is now a predicate over results — see
+    * [[databaseRestrictions]] — so the index no longer varies with species, gene, MHC class, confidence
+    * or V/J matching, and with VDJMatch scoring snapped away it does not vary with scoring either. The
+    * only remaining input is the scope, which is what the CDR3 tree walk itself consumes, and
+    * `AnnotationsSearchScopeHammingDistance.sanitize` leaves exactly two of those.
     *
-    * `VdjdbInstance` is part of the key by reference identity (it overrides nothing), which keeps two
-    * `Database` instances — as separate test applications produce — from sharing a cached build. Note
-    * that `Database` itself is a case class, so keying on *it* would have compared configurations and
-    * conflated them.
+    * So this holds at most two entries per database and never evicts. It is deliberately not built at
+    * boot: most traffic is the Browse tab, which must not pay for a facility it does not use.
+    *
+    * Measured in production, against the real database: the unfiltered index holds 228,214 rows to the
+    * default human/TRB index's 114,196, builds in the same ~1.5 s, and *retains less heap* — 435 MB
+    * against 491-494 MB — because it is built once from the instance rather than through the deep
+    * copies `VdjdbInstance.filter` makes on the way. Searching 63,737 clonotypes single-threaded costs
+    * 378-406 ms against 326-441 ms (Hamming) and 604-637 ms against 565-607 ms (Levenshtein). Two full
+    * indexes is 870 MB standing, against ~985 MB steady and ~1,475 MB peak for the cache this replaces.
+    *
+    * `VdjdbInstance` is in the key by reference identity (it overrides nothing), which keeps two
+    * `Database` instances — as separate test applications produce — from sharing one index. Keying on
+    * `Database` instead would have compared configurations, which are equal across test applications.
     */
-  private type ClonotypeDatabaseKey =
-    (VdjdbInstance, AnnotationsDatabaseQueryParams, AnnotationsSearchScope, AnnotationsAnnotateScoring)
+  private type SearchIndexKey = (VdjdbInstance, AnnotationsSearchScopeHammingDistance)
 
-  /** The index travels with the database it describes. Caching one without the other would leave the
-    * summary denominators to be recomputed per request, which is the expensive half — see
-    * [[SummaryIndex]]. */
-  private type CachedDatabase = (ClonotypeDatabase, SummaryIndex)
+  private final val searchIndexes = mutable.HashMap.empty[SearchIndexKey, ClonotypeDatabase]
 
-  private final val cache = new java.util.LinkedHashMap[ClonotypeDatabaseKey, CachedDatabase](4, 0.75f, true) {
-    override def removeEldestEntry(eldest: java.util.Map.Entry[ClonotypeDatabaseKey, CachedDatabase]): Boolean =
-      size() > MaxCachedDatabases
+  /** Denominators are keyed on the population they describe, *not* on the search scope.
+    *
+    * This is the trap in sharing one index. `SummaryIndex` answers "how many distinct CDR3s does the
+    * database hold for this column value", and it used to answer it from the rows of a species- and
+    * gene-filtered database. Computed over the shared index instead it would silently span every
+    * species and gene, and every chart denominator would change with no error anywhere.
+    *
+    * So it is computed from the shared index but counts only the rows [[accepts]] admits, and cached
+    * under exactly the parameters that predicate reads. These are counts rather than sets — small, and
+    * few enough distinct combinations that the LRU below is a formality.
+    */
+  private type SummaryIndexKey = (VdjdbInstance, String, String, String, Int)
+
+  private final val MaxCachedSummaryIndexes = 16
+
+  private final val summaryIndexes = new java.util.LinkedHashMap[SummaryIndexKey, SummaryIndex](16, 0.75f, true) {
+    override def removeEldestEntry(eldest: java.util.Map.Entry[SummaryIndexKey, SummaryIndex]): Boolean =
+      size() > MaxCachedSummaryIndexes
   }
 
-  /** Building a `ClonotypeDatabase` re-materializes every VDJdb row and rebuilds the CDR3 tree, and the
-    * engine does it more than once per call: `asClonotypeDatabase`, plus a full `VdjdbInstance.filter`
-    * deep copy inside the epitope-size filter, plus another when `mhc.class` is restricted. None of it
-    * depends on the sample, so identical parameters rebuilt an identical object on every annotation.
-    *
-    * Sharing one instance across concurrent searches is safe, verified against the `legacy-java`
-    * engine source rather than assumed: `weightFunction` is the only non-final field on
-    * `ClonotypeDatabase`, and its only writer, `onAdd()`, is called from `Database.addEntries` at build
-    * time — no search path touches it. `search(Sample)` and `search(v, j, cdr3aa)` allocate their
-    * result containers per call, and `TopNResultFilter`/`MaxScoreResultFilter` hold only final fields.
-    *
-    * That field is neither final nor volatile, though, so a reader on another thread needs a
-    * happens-before edge to be guaranteed to see it — which is why the build happens inside the same
-    * monitor that publishes it, and not through an unsynchronized map.
-    *
-    * Holding the lock across the build also serializes two simultaneous misses. That is the intent:
-    * concurrent builds would double the peak heap of the most memory-hungry operation the app
-    * performs. If a slow build behind the lock ever becomes the bottleneck, the upgrade is a per-key
-    * lock, not a bigger cache.
-    */
   /** Heap in use after asking for a collection, so the reading reflects what is actually *retained*.
     *
     * The naive total-free sample taken around a build charges it for any garbage that happened to be
     * collected meanwhile, which in production produced a negative "cost". System.gc is only a hint and
-    * this is not free, but it runs once per cache miss — rare by construction — and a number that can
-    * come out negative is worse than a slightly expensive one.
+    * this is not free, but it runs twice per index built and there are at most two indexes for the
+    * lifetime of the process, where it used to run on every cache miss.
     */
   private def settledHeapBytes(): Long = {
     val runtime = Runtime.getRuntime
@@ -286,99 +369,89 @@ object IntersectionTable {
     runtime.totalMemory - runtime.freeMemory
   }
 
-  /** Every field that participates in the cache key. The first version logged only the database
-    * parameters, which made two entries differing in scope or scoring look identical in the log and
-    * left "why did this miss?" unanswerable. */
-  private def describe(parameters: AnnotationsDatabaseQueryParams, searchScope: AnnotationsSearchScope,
-                       scoring: AnnotationsAnnotateScoring): String = {
-    val d = AnnotationsSearchScopeHammingDistance.sanitize(searchScope.hammingDistance)
+  private def describeScope(scope: AnnotationsSearchScopeHammingDistance): String =
+    s"${scope.substitutions}/${scope.insertions}/${scope.deletions}/${scope.total}"
+
+  private def describePopulation(parameters: AnnotationsDatabaseQueryParams): String =
     s"species=${parameters.species}, gene=${parameters.gene}, mhc=${parameters.mhc}, " +
-      s"confidence=${parameters.confidenceThreshold}, " +
-      s"scope=${d.substitutions}/${d.insertions}/${d.deletions}/${d.total}, " +
-      s"matchV=${searchScope.matchV}, matchJ=${searchScope.matchJ}, scoring=${scoring.`type`}"
+      s"confidence=${parameters.confidenceThreshold}"
+
+  /** The two shared indexes an annotation runs against: the CDR3 search index for the request's scope,
+    * and the summary denominators for the population the request restricts the database to.
+    *
+    * Both are built on first use and kept. Neither depends on the sample, and after this change
+    * neither depends on the request beyond the two keys above.
+    */
+  def indexesFor(database: Database, parameters: AnnotationsDatabaseQueryParams,
+                 searchScope: AnnotationsSearchScope, scoring: AnnotationsAnnotateScoring): (ClonotypeDatabase, SummaryIndex) = {
+    if (AnnotationsAnnotateScoring.sanitize(scoring).`type` != scoring.`type`) {
+      logger.warn(s"Annotate scoring type ${scoring.`type`} is not supported and was ignored; using SIMPLE")
+    }
+    val index = searchIndex(database, AnnotationsSearchScopeHammingDistance.sanitize(searchScope.hammingDistance))
+    (index, summaryIndex(database.getInstance, index, parameters))
   }
 
-  def createClonotypeDatabase(database: Database, parameters: AnnotationsDatabaseQueryParams,
-                              searchScope: AnnotationsSearchScope, scoring: AnnotationsAnnotateScoring): CachedDatabase = {
-    // Everything `postSearchFilters` handles is applied to search results rather than to the database,
-    // so requests differing only in those share one build. Blanking them here is not an optimization
-    // detail — leaving them in would make the two-entry cache thrash, since the motif checkbox alone
-    // doubles the number of distinct keys the default UI can produce.
-    //
-    // `minEpitopeSize` is blanked for the same reason: it now only thins the summary charts and no
-    // longer reaches the database build, so two requests differing only in it must not each pay for
-    // a rebuild.
-    val key: ClonotypeDatabaseKey = (database.getInstance,
-      parameters.copy(hla = None, inTcrempMotif = None, inTcrnetMotif = None,
-        independentValidationOnly = None, minConfidenceScore = None, minEpitopeSize = 0),
-      searchScope.copy(hammingDistance = AnnotationsSearchScopeHammingDistance.sanitize(searchScope.hammingDistance)), scoring)
-
-    cache.synchronized {
-      val cached = cache.get(key)
-      if (cached != null) {
-        // Log hits too. Logging only misses makes the log unreadable as evidence: two builds in a row
-        // look identical to a cache that is never hit AND to one that is working with two distinct
-        // parameter sets, and the difference is the whole point of having the cache.
-        logger.info(s"Reusing cached clonotype database [${describe(parameters, searchScope, scoring)}]")
-        cached
-      } else {
-        val startedAt  = System.currentTimeMillis
-        val usedBefore = settledHeapBytes()
-        val built      = buildClonotypeDatabase(database, parameters, searchScope, scoring)
-        val builtAt    = System.currentTimeMillis
-        // The denominators are built here, with the database, and never per request. Timed separately
-        // because it used to be the whole cost of an annotation and the two numbers should stay
-        // visible next to each other if either regresses.
-        val index      = SummaryIndex.build(built, SummaryFields)
-        val entry      = (built, index)
-        val _          = cache.put(key, entry)
-        val cost       = (settledHeapBytes() - usedBefore) / (1024L * 1024L)
-        logger.info(s"Built clonotype database [${describe(parameters, searchScope, scoring)}] in " +
-          s"${builtAt - startedAt} ms + ${System.currentTimeMillis - builtAt} ms summary index, " +
-          s"retained ~$cost MB, cached ${cache.size}/$MaxCachedDatabases")
-        entry
+  /** Building a `ClonotypeDatabase` materializes a `Row` per VDJdb record and builds the CDR3 tree over
+    * them, so this is by far the most memory-hungry thing the application does. Sharing one instance
+    * across concurrent searches is safe, verified against the engine source rather than assumed:
+    * `weightFunction` is the only non-final field on `ClonotypeDatabase`, and its only writer,
+    * `onAdd()`, runs from `Database.addEntries` at build time — no search path touches it.
+    * `search(Sample)` and `search(v, j, cdr3aa)` allocate their result containers per call.
+    *
+    * That field is neither final nor volatile, though, so a reader on another thread needs a
+    * happens-before edge to be guaranteed to see it — which is why the build happens inside the same
+    * monitor that publishes it, and not through an unsynchronized map. Holding the lock across the
+    * build also serializes two simultaneous first calls, which is the intent: concurrent builds would
+    * double the peak heap of the most memory-hungry operation the app performs.
+    */
+  private def searchIndex(database: Database, scope: AnnotationsSearchScopeHammingDistance): ClonotypeDatabase =
+    searchIndexes.synchronized {
+      val key = (database.getInstance, scope)
+      searchIndexes.get(key) match {
+        case Some(index) =>
+          index
+        case None =>
+          val startedAt  = System.currentTimeMillis
+          val usedBefore = settledHeapBytes()
+          val built      = buildSearchIndex(database, scope)
+          searchIndexes.update(key, built)
+          val cost       = (settledHeapBytes() - usedBefore) / (1024L * 1024L)
+          logger.info(s"Built search index [scope=${describeScope(scope)}] over ${built.getRows.size} rows in " +
+            s"${System.currentTimeMillis - startedAt} ms, retained ~$cost MB, ${searchIndexes.size} index(es) held")
+          built
       }
     }
+
+  private def buildSearchIndex(database: Database, scope: AnnotationsSearchScopeHammingDistance): ClonotypeDatabase = {
+    // `exhaustive` and `greedy` were only ever turned on by VDJMatch scoring, which the server snaps
+    // away; SIMPLE always produced (false, false). The argument order — substitutions, deletions,
+    // insertions, total — is the engine's, not this class's field order.
+    val searchScope = new SearchScope(scope.substitutions, scope.deletions, scope.insertions, scope.total, false, false)
+
+    // null species and null gene, so `asClonotypeDatabase` installs no filter for either: Groovy's
+    // `if (species)` is false for null. Zero for the confidence threshold and for the epitope size
+    // switches those two off the same way. That leaves an index over every row of the database, which
+    // is the whole point — everything that used to narrow it is a predicate in `databaseRestrictions`
+    // now, and `minEpitopeSize` stopped reaching the build when it became a chart-thinning number.
+    database.getInstance.asClonotypeDatabase(null, null, searchScope, ScoringBundle.getDUMMY,
+      DummyWeightFunctionFactory.INSTANCE, DummyResultFilter.INSTANCE, false, false, 0, 0)
   }
 
-  private def buildClonotypeDatabase(database: Database, parameters: AnnotationsDatabaseQueryParams,
-                                     searchScope: AnnotationsSearchScope, scoring: AnnotationsAnnotateScoring): ClonotypeDatabase = {
-    val hdistance = AnnotationsSearchScopeHammingDistance.sanitize(searchScope.hammingDistance)
-    val scope = new SearchScope(hdistance.substitutions, hdistance.deletions, hdistance.insertions, hdistance.total,
-      scoring.`type` == AnnotationsAnnotateScoring.VDJMATCH && scoring.vdjmatch.exhaustiveAlignment > 0,
-      scoring.`type` == AnnotationsAnnotateScoring.VDJMATCH && scoring.vdjmatch.exhaustiveAlignment < 2)
-    val filters = new util.ArrayList[TextFilter]()
-    if (parameters.mhc != "MHCI+II") {
-      filters.add(new ExactTextFilter("mhc.class", parameters.mhc, false))
+  private def summaryIndex(instance: VdjdbInstance, index: ClonotypeDatabase,
+                           parameters: AnnotationsDatabaseQueryParams): SummaryIndex =
+    summaryIndexes.synchronized {
+      val key = (instance, parameters.species, parameters.gene, parameters.mhc, parameters.confidenceThreshold)
+      val cached = summaryIndexes.get(key)
+      if (cached != null) {
+        cached
+      } else {
+        val startedAt = System.currentTimeMillis
+        val built     = SummaryIndex.build(index, SummaryFields, acceptedRow(parameters))
+        val _         = summaryIndexes.put(key, built)
+        logger.info(s"Built summary index [${describePopulation(parameters)}] over " +
+          s"${built.databaseCdr3Count} distinct CDR3s in ${System.currentTimeMillis - startedAt} ms, " +
+          s"cached ${summaryIndexes.size}/$MaxCachedSummaryIndexes")
+        built
+      }
     }
-
-    val scoringBundle = scoring.`type` match {
-      case AnnotationsAnnotateScoring.VDJMATCH => ScoringProvider.loadScoringBundle(parameters.species, parameters.gene, scoring.vdjmatch.scoringMode == 0)
-      case _ => ScoringBundle.getDUMMY
-    }
-
-    val weightFunction = scoring.`type` match {
-      case AnnotationsAnnotateScoring.VDJMATCH =>
-        if (scoring.vdjmatch.hitFiltering.weightByInfo) DegreeWeightFunctionFactory.DEFAULT else DummyWeightFunctionFactory.INSTANCE
-      case _ => DummyWeightFunctionFactory.INSTANCE
-    }
-
-    val resultFilter = scoring.`type` match {
-      case AnnotationsAnnotateScoring.VDJMATCH =>
-        scoring.vdjmatch.hitFiltering.hitType match {
-          case "best" => new MaxScoreResultFilter(scoring.vdjmatch.hitFiltering.probabilityThreshold / 100.0f)
-          case "top" => new TopNResultFilter(scoring.vdjmatch.hitFiltering.probabilityThreshold / 100.0f, scoring.vdjmatch.hitFiltering.topHitsCount)
-          case "all" => new TopNResultFilter(scoring.vdjmatch.hitFiltering.probabilityThreshold / 100.0f, 1000)
-          case _ => DummyResultFilter.INSTANCE
-        }
-      case _ => DummyResultFilter.INSTANCE
-    }
-
-    // minEpitopeSize is passed as 0 — deliberately not wired through any more. It used to build the
-    // index without epitopes the database had few records for, which made those annotations
-    // unreachable rather than merely noisy, and forced a full rebuild whenever the number changed.
-    // It now thins the summary charts only; see `chartable`.
-    database.getInstance.filter(filters).asClonotypeDatabase(parameters.species, parameters.gene, scope, scoringBundle,
-      weightFunction, resultFilter, searchScope.matchV, searchScope.matchJ, parameters.confidenceThreshold, 0)
-  }
 }
