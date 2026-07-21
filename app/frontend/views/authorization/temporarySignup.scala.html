@@ -40,7 +40,7 @@
                     'fieldType -> "hidden")
                 <h4>Your access token is:</h4>
                 <div class="ui message" style="display:block">
-                    <span id="tokenView"></span>
+                    <span id="tokenView">@form("token").value.getOrElse("")</span>
                 </div>
                 <button class="ui fluid large teal button" type="submit" form="signup">@messages("authorization.forms.signup.temporarySignup")</button>
                 <div class="ui divider"></div>
@@ -56,15 +56,4 @@
         }
         </div>
     </div>
-    <script>
-        function randomString(length, chars) {
-            var result = '';
-            for (var i = length; i > 0; --i) result += chars[Math.floor(Math.random() * chars.length)];
-            return result;
-        }
-        var rString = randomString(16, '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ');
-        document.getElementById('tokenInput').value = rString;
-        document.getElementById('tokenView').innerHTML = rString;
-
-    </script>
 }

@@ -16,11 +16,30 @@
 
 package backend.utils
 
-import java.security.MessageDigest
+import java.security.{MessageDigest, SecureRandom}
 
 import scala.util.Random
 
 object CommonUtils {
+
+  /** `scala.util.Random` is a seeded LCG — predictable, so it must never be used for anything a user
+    * authenticates with. Use `secureRandomString` for tokens. */
+  private final val secureRandom = new SecureRandom()
+
+  /** Crockford-flavoured base32: lowercase letters and digits minus the pairs people mistype
+    * (`0`/`o`, `1`/`l`/`i`). 31 symbols ~= 4.95 bits per character, so 26 characters is ~128 bits.
+    * Staying lowercase-alphanumeric also satisfies `SignupTemporaryForm`'s charset check. */
+  private final val secureAlphabet = "abcdefghjkmnpqrstuvwxyz23456789"
+
+  def secureRandomString(length: Int): String = {
+    val builder = new StringBuilder(length)
+    var i       = 0
+    while (i < length) {
+      builder.append(secureAlphabet.charAt(secureRandom.nextInt(secureAlphabet.length)))
+      i += 1
+    }
+    builder.toString
+  }
 
   def randomAlphaNumericString(length: Int): String = Random.alphanumeric.take(length).mkString
 

@@ -88,12 +88,15 @@ class Authorization @Inject()(cc: ControllerComponents, messagesApi: MessagesApi
     LoginTemporaryForm.loginTemporaryFormMapping.bindFromRequest.fold(
       formWithErrors => Future.successful(BadRequest(frontend.views.html.authorization.temporaryLogin(formWithErrors))),
       form => {
-        up.get(form.token) flatMap  {
-          case Some(user) => stp.createSessionToken(user) map { sessionToken =>
-            val session      = request.session + ((stp.getAuthTokenSessionName, sessionToken))
-            Redirect(backend.controllers.routes.Application.index()).withSession(session)
-          }
-          case None => Future.successful(BadRequest(frontend.views.html.authorization.temporaryLogin(LoginTemporaryForm.tokenNotFound)))
+        // `getTemporary` (not `get`) is load-bearing: `get` matches EMAIL for *any* account, so it used
+        // to hand out a session for a registered user to anyone who knew their e-mail address.
+        up.getTemporary(form.token) flatMap {
+          case Some(user) if user.checkPassword(form.token) && !up.isTemporaryExpired(user) =>
+            stp.createSessionToken(user) map { sessionToken =>
+              val session = request.session + ((stp.getAuthTokenSessionName, sessionToken))
+              Redirect(backend.controllers.routes.Application.index()).withSession(session)
+            }
+          case _ => Future.successful(BadRequest(frontend.views.html.authorization.temporaryLogin(LoginTemporaryForm.tokenNotFound)))
         }
       }
     )
@@ -132,8 +135,12 @@ class Authorization @Inject()(cc: ControllerComponents, messagesApi: MessagesApi
     )
   }
 
-  def temporarySignup: Action[AnyContent] = (userRequestAction andThen SessionAction.unauthorizedOnly) { implicit request =>
-    Ok(frontend.views.html.authorization.temporarySignup(SignupTemporaryForm.signupTemporaryFormMapping))
+  // The token used to be generated in the browser with Math.random(); it is now issued server-side
+  // with a CSPRNG and rendered into the form, so the page needs no script of its own.
+  def temporarySignup: Action[AnyContent] = (userRequestAction andThen SessionAction.unauthorizedOnly).async { implicit request =>
+    up.generateTemporaryToken() map { token =>
+      Ok(frontend.views.html.authorization.temporarySignup(SignupTemporaryForm.signupTemporaryFormMapping.fill(SignupTemporaryForm(token))))
+    }
   }
 
   def onTemporarySignup: Action[AnyContent] = (userRequestAction andThen SessionAction.unauthorizedOnly).async { implicit request =>

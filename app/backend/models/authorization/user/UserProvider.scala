@@ -26,7 +26,7 @@ import backend.models.authorization.tokens.session.SessionTokenProvider
 import backend.models.authorization.tokens.verification.{VerificationToken, VerificationTokenConfiguration, VerificationTokenProvider}
 import backend.models.files.FileMetadataProvider
 import backend.models.files.sample.SampleFileProvider
-import backend.utils.TimeUtils
+import backend.utils.{CommonUtils, TimeUtils}
 import com.antigenomics.vdjtools.misc.Software
 import javax.inject.{Inject, Singleton}
 import org.apache.commons.io.FilenameUtils
@@ -188,6 +188,31 @@ class UserProvider @Inject()(
 
   def get(email: String): Future[Option[User]] = {
     db.run(table.filter(_.email === email).result.headOption)
+  }
+
+  /** Temporary users keep their access token verbatim in EMAIL (unique) and BCrypt(token) in PASSWORD.
+    * NEVER use `get(email)` for token login: it matches ordinary accounts too, which would let anyone
+    * authenticate as a registered user just by submitting that user's e-mail address. */
+  def getTemporary(token: String): Future[Option[User]] = {
+    db.run(table.filter(user => user.email === token && user.isTemporary).result.headOption)
+  }
+
+  /** The reaper only runs every `interval`, so an expired token can still resolve to a row. Check the
+    * keep window at login too, otherwise expiry is best-effort. */
+  def isTemporaryExpired(user: User): Boolean = {
+    user.createdOn.before(TimeUtils.getCreatedAt(temporaryUserConfiguration.keep))
+  }
+
+  /** Tokens are generated server-side with a CSPRNG. 26 characters over a 31-symbol alphabet is
+    * ~128 bits, so a collision is already vanishingly unlikely — we still re-check against the unique
+    * EMAIL column and retry, so a collision can never surface as a 500 or as a shared account. */
+  def generateTemporaryToken(attemptsLeft: Int = 5): Future[String] = {
+    val token = CommonUtils.secureRandomString(SignupTemporaryForm.TOKEN_LENGTH)
+    get(token) flatMap {
+      case None                        => Future.successful(token)
+      case Some(_) if attemptsLeft > 0 => generateTemporaryToken(attemptsLeft - 1)
+      case Some(_)                     => Future.failed(new RuntimeException("Unable to allocate a unique temporary token"))
+    }
   }
 
   def get(ids: Seq[Long]): Future[Seq[User]] = {
