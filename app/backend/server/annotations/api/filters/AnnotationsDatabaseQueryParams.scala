@@ -36,9 +36,14 @@ import play.api.libs.json.{Format, Json}
   *                           why it is off by default.
   *
   * The five filters above are all `Option`, so a client that predates them still parses — `Json.format`
-  * reads a missing `Option` field as `None`. All of them are applied to search *results* rather than to
-  * the database that gets built (see [[backend.server.annotations.IntersectionTable]]), so they are
-  * deliberately excluded from the built-database cache key.
+  * reads a missing `Option` field as `None`.
+  *
+  * Nothing in this class reaches a database build any more. `species`, `gene`, `mhc` and
+  * `confidenceThreshold` used to select the rows a per-request index was built from; they are now
+  * predicates over the results of one shared index, alongside the five above — see
+  * [[backend.server.annotations.IntersectionTable]]. `minEpitopeSize` only thins the summary charts.
+  * The one input the index still depends on is the search scope, which lives in
+  * [[AnnotationsSearchScope]].
   */
 case class AnnotationsDatabaseQueryParams(species: String, gene: String, mhc: String, confidenceThreshold: Int,
                                           minEpitopeSize: Int, hla: Option[String],

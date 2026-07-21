@@ -52,8 +52,8 @@ class MultisampleAnalysisWebSocketActor(out: ActorRef, limit: IpLimit, user: Use
     out.getAction match {
       case MultisampleSummaryAnalysisResponse.Action =>
         // Same daily allowance as the single-sample annotate handler, and for the same reason: this
-        // builds a clonotype database and searches every selected sample against it, so it is at
-        // least as expensive. Without the check here the quota on the other handler is decorative —
+        // searches every selected sample against the whole database, so it is at least as expensive
+        // and usually several times over. Without the check here the quota on the other handler is decorative —
         // the same account annotates without limit through this tab instead. One request costs one
         // unit, not one per selected sample: the ceiling is on jobs a person asks for.
         usage.checkAnnotate(user, details.permissions) match {
@@ -72,18 +72,27 @@ class MultisampleAnalysisWebSocketActor(out: ActorRef, limit: IpLimit, user: Use
                 (sampleName, sample)
               })
 
-              val (instance, summaryIndex) = IntersectionTable.createClonotypeDatabase(database, request.databaseQueryParams, request.searchScope, request.scoring)
+              val (index, summaryIndex) = IntersectionTable.indexesFor(database, request.databaseQueryParams, request.searchScope, request.scoring)
+
+              // The search index spans the whole of VDJdb now, so species, gene, MHC class, confidence
+              // and V/J matching are predicates over its results rather than rows it was built without.
+              // Applying them here is not an addition to what this tab did — it is the same narrowing,
+              // moved. It deliberately stops there: the HLA, motif and evidence filters have never been
+              // applied on this tab, and making them apply is a behaviour change, not this one.
+              val restrictions = IntersectionTable.databaseRestrictions(request.databaseQueryParams, request.searchScope)
 
               val counters = samples.map((futureSample) => async {
                 val sample = await(futureSample)
-                val results = instance.search(sample._2)
+                val results = index.search(sample._2)
                 out.success(MultisampleSummaryAnalysisResponse.AnnotateState(tabID, sample._1))
 
                 // The denominators come from the index built alongside the database. This loop is why
                 // that matters most here: `ClonotypeSearchSummary` recomputed them from scratch for
                 // every sample in the selection, so a ten-sample analysis paid the same ~45 second
                 // database scan ten times over.
-                val found = results.asScala.toList.map { case (c, l) => (c, l.asScala.toList) }
+                val found = results.asScala.toList
+                  .map { case (c, l) => (c, l.asScala.toList.filter(hit => restrictions.forall(allows => allows(c, hit)))) }
+                  .filter { case (_, hits) => hits.nonEmpty }
                 val (fieldCounters, notFound) =
                   SearchSummary.summarize(found, sample._2, IntersectionTable.SummaryFields, summaryIndex)
                 val annotated = IntersectionTable.summarizeAnnotated(found)

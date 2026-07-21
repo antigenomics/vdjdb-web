@@ -43,9 +43,11 @@ export interface ISearchScope {
 
 export type IAnnotateScoringType = number;
 
+// Simple is the only scoring the application offers. VDJMatch scoring had a value here (1) and two
+// components to configure it, but no template ever rendered them; the server now snaps anything other
+// than Simple back to Simple (AnnotationsAnnotateScoring.sanitize), so there is nothing else to name.
 export namespace IAnnotateScoringType {
   export const SIMPLE: number = 0;
-  export const VDJMATCH: number = 1;
 }
 
 export interface IVDJMatchScoringHitFilteringOptions {
@@ -69,9 +71,6 @@ export interface IAnnotateScoring {
 export class AnnotationsFilters {
   public static confidenceThresholdRange = { min: 0, max: 3 };
   public static epitopeSizeRange = { min: 0, max: 1000 };
-  public static exhaustiveAlignmentRange = { min: 0, max: 2 };
-  public static scoringModeRange = { min: 0, max: 1 };
-  public static topHitsCountRange = { min: 1, max: 10 };
 
   // TCREMP motif membership is the only evidence filter on by default: it names ~99.5k of the ~146k
   // distinct VDJdb records, so it still keeps roughly two thirds of the database. The others are far
@@ -102,21 +101,5 @@ export class AnnotationsFilters {
     } else {
       return value;
     }
-  }
-
-  public isScoringTypeSimple(): boolean {
-    return this.scoring.type === IAnnotateScoringType.SIMPLE;
-  }
-
-  public setScoringTypeSimple(): void {
-    this.scoring.type = IAnnotateScoringType.SIMPLE;
-  }
-
-  public isScoringTypeVDJMatch(): boolean {
-    return this.scoring.type === IAnnotateScoringType.VDJMATCH;
-  }
-
-  public setScoringTypeVDJMatch(): void {
-    this.scoring.type = IAnnotateScoringType.VDJMATCH;
   }
 }

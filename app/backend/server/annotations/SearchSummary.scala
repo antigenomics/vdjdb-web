@@ -17,6 +17,7 @@
 package backend.server.annotations
 
 import backend.server.annotations.charts.summary.{SummaryClonotypeCounter, SummaryFieldCounter}
+import com.antigenomics.vdjdb.db.Row
 import com.antigenomics.vdjdb.impl.{ClonotypeDatabase, ClonotypeSearchResult}
 import com.antigenomics.vdjtools.sample.{Clonotype, Sample}
 
@@ -50,7 +51,15 @@ final case class SummaryIndex(perColumn: Map[String, Map[String, Long]], databas
 
 object SummaryIndex {
 
-  def build(database: ClonotypeDatabase, fields: Seq[String]): SummaryIndex = {
+  /** @param database the index to read rows from — now one shared index over the whole of VDJdb, not a
+    *                 database built for this request
+    * @param accept   which of those rows belong to the population being described. This is what keeps
+    *                 the denominators meaning what they meant: they used to be counted from a database
+    *                 already filtered by species, gene, MHC class and confidence, so counting every row
+    *                 of a shared index would silently widen every chart's denominator to span all
+    *                 species and genes at once — with nothing failing anywhere to say so.
+    */
+  def build(database: ClonotypeDatabase, fields: Seq[String], accept: Row => Boolean): SummaryIndex = {
     val cdr3Column = database.getCdr3ColName
     // Sets while accumulating because the quantity is *distinct* CDR3s, then discarded down to counts
     // — keeping them would retain a second reference to every CDR3 string in the database for the
@@ -58,12 +67,16 @@ object SummaryIndex {
     val accumulator = fields.map(field => field -> mutable.HashMap.empty[String, mutable.HashSet[String]]).toMap
     val allCdr3     = mutable.HashSet.empty[String]
 
+    // `if` rather than `.filter`, which on the buffer this yields is strict and would materialize a
+    // second list of a hundred thousand row references for nothing.
     database.getRows.asScala.foreach { row =>
-      val cdr3 = row.getAt(cdr3Column).getValue
-      allCdr3 += cdr3
-      fields.foreach { field =>
-        val value = row.getAt(field).getValue
-        accumulator(field).getOrElseUpdate(value, mutable.HashSet.empty[String]) += cdr3
+      if (accept(row)) {
+        val cdr3 = row.getAt(cdr3Column).getValue
+        allCdr3 += cdr3
+        fields.foreach { field =>
+          val value = row.getAt(field).getValue
+          accumulator(field).getOrElseUpdate(value, mutable.HashSet.empty[String]) += cdr3
+        }
       }
     }
 

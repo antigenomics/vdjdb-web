@@ -20,14 +20,12 @@ import { FormsModule } from '@angular/forms';
 import { AnnotationsFiltersComponent } from 'pages/annotations/filters/annotations-filters.component';
 import { DatabaseQueryParamsComponent } from 'pages/annotations/filters/general/database_query_params/database-query-params.component';
 import { SearchScopeComponent } from 'pages/annotations/filters/general/search_scope/search-scope.component';
-import { ScoringTypeComponent } from 'pages/annotations/filters/scoring/scoring_type/scoring-type.component';
-import { ScoringVDJMatchComponent } from 'pages/annotations/filters/scoring/scoring_vdjmatch/scoring-vdjmatch.component';
 import { FiltersCommonModule } from 'shared/filters/common/filters-common.module';
 import { ModalsModule } from 'shared/modals/modals.module';
 
 @NgModule({
   imports:      [ CommonModule, FormsModule, ModalsModule, FiltersCommonModule ],
-  declarations: [ AnnotationsFiltersComponent, DatabaseQueryParamsComponent, SearchScopeComponent, ScoringTypeComponent, ScoringVDJMatchComponent ],
+  declarations: [ AnnotationsFiltersComponent, DatabaseQueryParamsComponent, SearchScopeComponent ],
   exports:      [ AnnotationsFiltersComponent ]
 })
 export class AnnotationsFiltersModule {}
