@@ -91,34 +91,54 @@ class UserProvider @Inject()(
     )
   }
 
+  /** Adds any demo sample the account is missing, and only those.
+    *
+    * Seeding used to happen once, inside the "user does not exist yet" branch. That was enough while
+    * the database was wiped on every deploy — the demo user was recreated each time and re-seeded
+    * with it. Now that it persists, the account survives with whatever files it had when it was
+    * created: on production that is a row and an empty directory, so the login page's offer to
+    * "browse example samples by selecting Demo" leads to an account with nothing in it.
+    *
+    * Matching on sample name rather than tracking what was added before: the demo directory is the
+    * source of truth, so a file dropped into it later should appear, and one already present must
+    * not be added twice.
+    */
+  private def seedDemoSampleFiles(demoUser: User): Future[Unit] = async {
+    val demoFiles = new File(demoUserConfiguration.filesLocation)
+    if (demoFiles.exists && demoFiles.isDirectory) {
+      val present = await(demoUser.getSampleFiles).map(_.sampleName).toSet
+      val missing = demoFiles.listFiles
+        .filter(_.isFile)
+        .filterNot(file => present.contains(FilenameUtils.getBaseName(file.getName)))
+
+      missing.foreach((file) => {
+        val name      = FilenameUtils.getBaseName(file.getName)
+        val extension = FilenameUtils.getExtension(file.getName)
+        demoUser.addDemoSampleFile(name, extension, Software.VDJtools.toString, "HomoSapiens", "TRB", file).map {
+          case Left(_) =>
+            logger.info(s"Added demo sample file: $name")
+          case Right(error) =>
+            logger.warn(s"$error")
+        }
+      })
+    } else {
+      logger.warn(s"Demo files location ${demoUserConfiguration.filesLocation} is not a directory, no demo samples added")
+    }
+  }
+
   if (demoUserConfiguration.enabled) async {
     logger.info("Demo user is enabled")
-    val check = await(get(demoUserConfiguration.login))
-    if (check.isEmpty) {
-      val demoUser =
-        await(verifyUser(await(createUser("vdjdb-demo", demoUserConfiguration.login, demoUserConfiguration.password, UserPermissionsProvider.DEMO_ID))))
-      if (demoUser.isDefined) {
-        val demoFiles = new File(demoUserConfiguration.filesLocation)
-        if (demoFiles.exists && demoFiles.isDirectory) {
-          demoFiles.listFiles
-            .filter(_.isFile)
-            .foreach((file) => {
-              val name      = FilenameUtils.getBaseName(file.getName)
-              val extension = FilenameUtils.getExtension(file.getName)
-              demoUser.get.addDemoSampleFile(name, extension, Software.VDJtools.toString, "HomoSapiens", "TRB", file).map {
-                case Left(sampleFileID) =>
-                  logger.info(s"Added demo sample file: $name")
-                case Right(error) =>
-                  logger.warn(s"$error")
-              }
-            })
-        }
-        logger.info(s"Demo user has been created")
-      } else {
-        logger.info("Failed to create demo user")
-      }
+    val existing = await(get(demoUserConfiguration.login))
+    val demoUser = if (existing.isEmpty) {
+      await(verifyUser(await(createUser("vdjdb-demo", demoUserConfiguration.login, demoUserConfiguration.password, UserPermissionsProvider.DEMO_ID))))
     } else {
-      logger.info(s"Demo user already created")
+      logger.info("Demo user already created")
+      existing
+    }
+
+    demoUser match {
+      case Some(user) => await(seedDemoSampleFiles(user))
+      case None       => logger.info("Failed to create demo user")
     }
   }
 
