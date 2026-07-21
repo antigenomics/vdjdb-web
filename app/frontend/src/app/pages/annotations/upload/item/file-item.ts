@@ -32,7 +32,7 @@ export class FileItem {
   private static readonly BYTES_IN_MB: number = 1048576;
 
   public static readonly FULL_PROGRESS: number = 100;
-  public static readonly AVAILABLE_EXTENSIONS: string[] = [ 'txt', 'gz', 'zip' ];
+  public static readonly AVAILABLE_EXTENSIONS: string[] = [ 'txt', 'tsv', 'gz' ];
   // Must stay identical to SampleFileForm.Species / .Chains, which reject anything else.
   public static readonly AVAILABLE_SPECIES: string[] = [ 'HomoSapiens', 'MusMusculus', 'MacacaMulatta' ];
   // 'Guess' derives the chain per row from the J segment and splits a mixed file into two samples.
