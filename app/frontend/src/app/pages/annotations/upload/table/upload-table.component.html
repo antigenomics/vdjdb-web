@@ -16,6 +16,9 @@
 
 <div #dragArea>
     <div *ngIf="!uploadService.isItemsEmpty()">
+        <!-- Wrapped so the table scrolls inside itself; `single line` forbids wrapping, which used to
+             push the whole page sideways on narrow screens. -->
+        <div class="table-scroll">
         <table class="ui very compact very basic single line padded table">
             <thead>
             <tr>
@@ -84,6 +87,7 @@
             <tr upload-table-row *ngFor="let item of uploadService.getItems()" [file-item]="item" [ngClass]="{'disabled':item.status.isRemoved()}"></tr>
             </tbody>
         </table>
+        </div>
     </div>
     <div *ngIf="uploadService.isItemsEmpty()" style="margin: 10px">
         <h2 class="ui center aligned icon header">
