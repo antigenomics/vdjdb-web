@@ -19,6 +19,7 @@ export class SummaryClonotypeCounter {
   public readonly unique: number;
   public readonly databaseUnique: number;
   public readonly frequency: number;
+  public readonly reads: number;
 
   constructor(counter: any) {
     /* tslint:disable:no-string-literal */
@@ -26,6 +27,7 @@ export class SummaryClonotypeCounter {
     this.unique = counter[ 'unique' ];
     this.databaseUnique = counter[ 'databaseUnique' ];
     this.frequency = counter[ 'frequency' ];
+    this.reads = counter[ 'reads' ];
     /* tslint:enable:no-string-literal */
   }
 }

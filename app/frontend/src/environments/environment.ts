@@ -25,8 +25,7 @@ export const environment = {
         annotations: {
             filters: {
                 hammingDistance: {
-                    allowIndels: true,
-                    range:       { min: 0, max: 5 }
+                    allowIndels: true
                 }
             }
         }

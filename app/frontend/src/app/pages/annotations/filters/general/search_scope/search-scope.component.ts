@@ -44,7 +44,7 @@ export class SearchScopeComponent {
     const hammingDistance = this.filters.searchScope.hammingDistance as any;
     hammingDistance[ type ] = -1;
     this.changeDetector.detectChanges();
-    hammingDistance[ type ] = this.filters.validateRange(AnnotationsFilters.hammingDistanceRange, distance);
+    hammingDistance[ type ] = this.filters.validateRange(AnnotationsFilters.hammingDistanceRanges[ type ], distance);
     if (!this.isIndelsAllowed()) {
       hammingDistance.total = hammingDistance.substitutions;
     }

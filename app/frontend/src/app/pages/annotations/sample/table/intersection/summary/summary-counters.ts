@@ -20,11 +20,13 @@ import { SummaryFieldCounter } from 'pages/annotations/sample/table/intersection
 export class SummaryCounters {
   public readonly counters: SummaryFieldCounter[];
   public readonly notFoundCounter: SummaryClonotypeCounter;
+  public readonly annotated: SummaryClonotypeCounter;
 
   constructor(c: any) {
     /* tslint:disable:no-string-literal */
     this.counters = c[ 'counters' ].map((v: any) => new SummaryFieldCounter(v));
     this.notFoundCounter = new SummaryClonotypeCounter(c[ 'notFoundCounter' ]);
+    this.annotated = new SummaryClonotypeCounter(c[ 'annotated' ]);
     /* tslint:enable:no-string-literal */
   }
 }
