@@ -79,15 +79,6 @@ object FileUtils {
     }
   }
 
-  def isZipped(file: File): Boolean = {
-    try {
-      val zipFile = new ZipFile(file)
-      true
-    } catch {
-      case e: ZipException => false
-    }
-  }
-
   /** Copy `in` to `out`, aborting as soon as the *decompressed* stream exceeds `limits`.
     *
     * The check has to happen while streaming: by the time a bomb has been fully expanded to a temp
@@ -133,37 +124,13 @@ object FileUtils {
       val _ = validateGzipWithinLimits(file.getAbsoluteFile, limits)
       file
     } else {
-      val gzipped = if (isZipped(file.getAbsoluteFile)) convertZipToGzip(file, limits) else convertPlainToGzip(file, limits)
+      // ponytail: zip is not a supported upload format - plain text and gzip only. A .zip arriving
+      // anyway is gzipped verbatim and then fails header detection with a "missing required columns"
+      // error, which is the right outcome for an unsupported format.
+      val gzipped = convertPlainToGzip(file, limits)
       file.delete()
       gzipped
     }
-  }
-
-  def convertZipToGzip(file: play.api.libs.Files.TemporaryFile, limits: DecompressionLimits): TemporaryFile = {
-    val zipInputStream = new ZipInputStream(new FileInputStream(file.getAbsoluteFile))
-    val zipEntry = zipInputStream.getNextEntry
-
-    //Assume that zip contains only one entry
-    val fileName = zipEntry.getName
-    val creator = play.api.libs.Files.SingletonTemporaryFileCreator
-
-    // GZIP output stream
-    val gzipOutputFile = creator.create(fileName, ".gz")
-    val gzip = new GZIPOutputStream(new FileOutputStream(gzipOutputFile.getAbsoluteFile))
-
-    try {
-      val _ = copyBounded(zipInputStream, gzip, file.getAbsoluteFile.length(), limits)
-    } catch {
-      case e: DecompressionLimitException =>
-        gzip.close(); zipInputStream.close(); gzipOutputFile.delete()
-        throw e
-    }
-    gzip.close()
-
-    zipInputStream.closeEntry()
-    zipInputStream.close()
-
-    gzipOutputFile
   }
 
   def convertPlainToGzip(file: play.api.libs.Files.TemporaryFile, limits: DecompressionLimits): TemporaryFile = {
