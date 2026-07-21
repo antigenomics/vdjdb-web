@@ -21,9 +21,27 @@ import play.api.libs.json.{Format, Json}
 /** @param hla donor HLA typing to restrict matches to, as free text (`HLA-A*02:01, B*07:02`).
   *            Empty or absent means no HLA restriction. Kept as raw text rather than a parsed list so
   *            the parsing rules live in exactly one place, server-side — see [[backend.server.annotations.HlaAllele]].
+  * @param inTcrempMotif keep only matches whose VDJdb record is a member of a TCREMP motif cluster
+  *                      (`cluster_members_tcremp.txt`). On by default in the UI: TCREMP names ~99.5k of
+  *                      the ~146k distinct records, so it drops roughly a third of the database.
+  * @param inTcrnetMotif same, against the TCRNET clusters (`cluster_members.txt`, ~41k records). Off by
+  *                      default. Combined with the TCREMP flag it is an AND, not an OR — the search page
+  *                      ORs its motif modes, this one intentionally narrows.
+  * @param independentValidationOnly keep only matches whose record cites at least two references.
+  * @param minConfidenceScore keep only matches whose `vdjdb.score` is at least this value. Absent or 0
+  *                           means no restriction; the UI offers 1 as a checkbox. `>= 1` retains only
+  *                           ~8% of records (0 → 133,576 rows, 1 → 5,764, 2 → 3,014, 3 → 3,701), which is
+  *                           why it is off by default.
+  *
+  * The five filters above are all `Option`, so a client that predates them still parses — `Json.format`
+  * reads a missing `Option` field as `None`. All of them are applied to search *results* rather than to
+  * the database that gets built (see [[backend.server.annotations.IntersectionTable]]), so they are
+  * deliberately excluded from the built-database cache key.
   */
 case class AnnotationsDatabaseQueryParams(species: String, gene: String, mhc: String, confidenceThreshold: Int,
-                                          minEpitopeSize: Int, hla: Option[String])
+                                          minEpitopeSize: Int, hla: Option[String],
+                                          inTcrempMotif: Option[Boolean], inTcrnetMotif: Option[Boolean],
+                                          independentValidationOnly: Option[Boolean], minConfidenceScore: Option[Int])
 
 object AnnotationsDatabaseQueryParams {
   implicit val annotationsDatabaseQueryParamsFormat: Format[AnnotationsDatabaseQueryParams] = Json.format[AnnotationsDatabaseQueryParams]

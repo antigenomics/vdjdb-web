@@ -40,6 +40,7 @@ import backend.server.annotations.export.IntersectionTableConverter
 import backend.server.database.Database
 import backend.server.database.api.metadata.DatabaseMetadataResponse
 import backend.server.limit.{IpLimit, RequestLimits}
+import backend.server.motifs.Motifs
 import com.antigenomics.vdjtools.io.SampleFileConnection
 import com.antigenomics.vdjtools.misc.Software
 import org.slf4j.LoggerFactory
@@ -50,7 +51,7 @@ import scala.collection.concurrent.TrieMap
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success}
 
-class AnnotationsWebSocketActor(out: ActorRef, limit: IpLimit, user: User, details: UserDetails, database: Database)
+class AnnotationsWebSocketActor(out: ActorRef, limit: IpLimit, user: User, details: UserDetails, database: Database, motifs: Motifs)
                                (implicit ec: ExecutionContext, as: ActorSystem, limits: RequestLimits, up: UserProvider, stp: SampleTagProvider,
                                 upp: UserPermissionsProvider, sfp: SampleFileProvider, fmp: FileMetadataProvider, tfp: TemporaryFileProvider)
   extends WebSocketActor(out, limit) {
@@ -120,7 +121,7 @@ class AnnotationsWebSocketActor(out: ActorRef, limit: IpLimit, user: User, detai
 
                 val table = new IntersectionTable()
                 out.success(SampleAnnotateResponse.AnnotateState)
-                table.update(intersectRequest, sample, database)
+                table.update(intersectRequest, sample, database, motifs)
                 out.success(SampleAnnotateResponse.LoadingState)
                 intersectionTableResults += (file._1.sampleName -> table)
                 out.success(SampleAnnotateResponse.CompletedState(table.getRows, table.summary))
@@ -251,8 +252,8 @@ class AnnotationsWebSocketActor(out: ActorRef, limit: IpLimit, user: User, detai
 }
 
 object AnnotationsWebSocketActor {
-  def props(out: ActorRef, limit: IpLimit, user: User, details: UserDetails, database: Database)
+  def props(out: ActorRef, limit: IpLimit, user: User, details: UserDetails, database: Database, motifs: Motifs)
            (implicit ec: ExecutionContext, as: ActorSystem, limits: RequestLimits, up: UserProvider, stp: SampleTagProvider,
             upp: UserPermissionsProvider, sfp: SampleFileProvider, fmp: FileMetadataProvider, tfp: TemporaryFileProvider): Props =
-    Props(new AnnotationsWebSocketActor(out, limit, user, details, database))
+    Props(new AnnotationsWebSocketActor(out, limit, user, details, database, motifs))
 }
