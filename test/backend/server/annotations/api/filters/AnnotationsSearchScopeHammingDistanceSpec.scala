@@ -26,35 +26,52 @@ class AnnotationsSearchScopeHammingDistanceSpec extends BaseTestSpec {
 
   "AnnotationsSearchScopeHammingDistance" should {
 
-    "offer exactly two searches" taggedAs UtilsTestTag in {
+    "offer exactly four searches" taggedAs UtilsTestTag in {
+      AnnotationsSearchScopeHammingDistance.Exact shouldEqual scope(0, 0, 0, 0)
       AnnotationsSearchScopeHammingDistance.Hamming shouldEqual scope(1, 0, 0, 1)
+      AnnotationsSearchScopeHammingDistance.Hamming2 shouldEqual scope(2, 0, 0, 2)
       // total = 1, not 3: one edit of any kind, not one of each.
       AnnotationsSearchScopeHammingDistance.Levenshtein shouldEqual scope(1, 1, 1, 1)
+      AnnotationsSearchScopeHammingDistance.Offered should have size 4
     }
 
     "keep each preset unchanged" taggedAs UtilsTestTag in {
-      val hamming     = AnnotationsSearchScopeHammingDistance.Hamming
-      val levenshtein = AnnotationsSearchScopeHammingDistance.Levenshtein
-      AnnotationsSearchScopeHammingDistance.sanitize(hamming) shouldEqual hamming
-      AnnotationsSearchScopeHammingDistance.sanitize(levenshtein) shouldEqual levenshtein
+      AnnotationsSearchScopeHammingDistance.Offered.map { preset =>
+        AnnotationsSearchScopeHammingDistance.sanitize(preset) shouldEqual preset
+      }.last
     }
 
     "read any request for an indel as Levenshtein" taggedAs UtilsTestTag in {
       val levenshtein = AnnotationsSearchScopeHammingDistance.Levenshtein
       AnnotationsSearchScopeHammingDistance.sanitize(scope(0, 1, 0, 0)) shouldEqual levenshtein
       AnnotationsSearchScopeHammingDistance.sanitize(scope(0, 0, 1, 0)) shouldEqual levenshtein
-      // Well past what the old per-field caps allowed - it still lands on the same two-edit-budget
-      // search rather than on a scope nobody has reasoned about.
+      // Well past what the old per-field caps allowed - it still lands on a preset rather than on a
+      // scope nobody has reasoned about.
       AnnotationsSearchScopeHammingDistance.sanitize(scope(99, 99, 99, 99)) shouldEqual levenshtein
     }
 
-    "read everything else as Hamming" taggedAs UtilsTestTag in {
-      val hamming = AnnotationsSearchScopeHammingDistance.Hamming
-      AnnotationsSearchScopeHammingDistance.sanitize(scope(0, 0, 0, 0)) shouldEqual hamming
-      AnnotationsSearchScopeHammingDistance.sanitize(scope(3, 0, 0, 4)) shouldEqual hamming
+    "read a substitution-only request as the matching Hamming preset" taggedAs UtilsTestTag in {
+      AnnotationsSearchScopeHammingDistance.sanitize(scope(0, 0, 0, 0)) shouldEqual
+        AnnotationsSearchScopeHammingDistance.Exact
+      AnnotationsSearchScopeHammingDistance.sanitize(scope(1, 0, 0, 1)) shouldEqual
+        AnnotationsSearchScopeHammingDistance.Hamming
+      AnnotationsSearchScopeHammingDistance.sanitize(scope(3, 0, 0, 4)) shouldEqual
+        AnnotationsSearchScopeHammingDistance.Hamming2
       // Negatives arrive from a hand-rolled client as easily as anything else; they must not survive
       // into a SearchScope, where a negative budget is not a stricter search but an undefined one.
-      AnnotationsSearchScopeHammingDistance.sanitize(scope(-5, -5, -5, -5)) shouldEqual hamming
+      AnnotationsSearchScopeHammingDistance.sanitize(scope(-5, -5, -5, -5)) shouldEqual
+        AnnotationsSearchScopeHammingDistance.Exact
+    }
+
+    "build only two indexes for the four offered scopes" taggedAs UtilsTestTag in {
+      // This is what bounds the index cache: it holds one entry per distinct index scope, not one per
+      // scope a client can name. Exact/Hamming/Hamming2 share a two-substitution neighbourhood and are
+      // told apart afterwards by counting mutations; Levenshtein cannot be, because a
+      // substitution-only tree never walks indel neighbours.
+      val indexes = AnnotationsSearchScopeHammingDistance.Offered
+        .map(AnnotationsSearchScopeHammingDistance.indexScope).distinct
+      indexes should contain theSameElementsAs
+        Seq(AnnotationsSearchScopeHammingDistance.Hamming2, AnnotationsSearchScopeHammingDistance.Levenshtein)
     }
 
     "never emit a total below its largest component" taggedAs UtilsTestTag in {

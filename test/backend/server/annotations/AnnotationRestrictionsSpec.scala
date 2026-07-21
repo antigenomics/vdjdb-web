@@ -28,8 +28,8 @@ import backend.server.annotations.api.filters.{AnnotationsDatabaseQueryParams, A
 class AnnotationRestrictionsSpec extends BaseTestSpec {
 
   private def parameters(species: String = "HomoSapiens", gene: String = "TRB",
-                         mhc: String = "MHCI+II", confidenceThreshold: Int = 0) =
-    AnnotationsDatabaseQueryParams(species, gene, mhc, confidenceThreshold, 0, None, None, None, None, None)
+                         mhc: String = "MHCI+II") =
+    AnnotationsDatabaseQueryParams(species, gene, mhc, 0, None, None, None, None, None)
 
   private def record(species: String = "HomoSapiens", gene: String = "TRB",
                      mhcClass: String = "MHCI", score: String = "0"): String => String =
@@ -58,24 +58,14 @@ class AnnotationRestrictionsSpec extends BaseTestSpec {
       IntersectionTable.accepts(parameters(mhc = "MHCII"))(record(mhcClass = "MHCII")) shouldBe true
     }
 
-    "apply the confidence threshold only above zero" taggedAs UtilsTestTag in {
-      // LevelFilter was installed only for a positive threshold, so at zero even an unreadable score
-      // was kept. Above zero it is dropped - which is not what the confidence *checkbox* does.
-      IntersectionTable.accepts(parameters(confidenceThreshold = 0))(record(score = "")) shouldBe true
-      IntersectionTable.accepts(parameters(confidenceThreshold = 0))(record(score = "0")) shouldBe true
-      IntersectionTable.accepts(parameters(confidenceThreshold = 1))(record(score = "0")) shouldBe false
-      IntersectionTable.accepts(parameters(confidenceThreshold = 1))(record(score = "1")) shouldBe true
-      IntersectionTable.accepts(parameters(confidenceThreshold = 1))(record(score = "3")) shouldBe true
-      IntersectionTable.accepts(parameters(confidenceThreshold = 1))(record(score = "")) shouldBe false
-    }
-
-    "read the score as a number, failing anything unreadable" taggedAs UtilsTestTag in {
-      IntersectionTable.atLeastConfidence("2", 2) shouldBe true
-      IntersectionTable.atLeastConfidence(" 2 ", 2) shouldBe true
-      IntersectionTable.atLeastConfidence("1", 2) shouldBe false
-      IntersectionTable.atLeastConfidence("", 1) shouldBe false
-      IntersectionTable.atLeastConfidence(".", 1) shouldBe false
-      IntersectionTable.atLeastConfidence("high", 1) shouldBe false
+    "not narrow the population by confidence at all" taggedAs UtilsTestTag in {
+      // Confidence used to live here, because `asClonotypeDatabase` applied a LevelFilter at build
+      // time. It is a post-search filter now: keeping it in the population made it the only
+      // restriction that also moved the chart denominators, so two requests differing only in
+      // confidence normalised against different totals while HLA or motif filters did not.
+      IntersectionTable.accepts(parameters())(record(score = "")) shouldBe true
+      IntersectionTable.accepts(parameters())(record(score = "0")) shouldBe true
+      IntersectionTable.accepts(parameters())(record(score = "3")) shouldBe true
     }
   }
 

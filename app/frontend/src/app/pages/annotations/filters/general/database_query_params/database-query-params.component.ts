@@ -35,12 +35,6 @@ export class DatabaseQueryParamsComponent {
     return this.disabled ? true : undefined;
   }
 
-  public checkConfidenceThreshold(threshold: number): void {
-    this.filters.databaseQueryParams.confidenceThreshold = -1;
-    this.changeDetector.detectChanges();
-    this.filters.databaseQueryParams.confidenceThreshold = this.filters.validateRange(AnnotationsFilters.confidenceThresholdRange, threshold);
-    this.changeDetector.detectChanges();
-  }
 
   public checkMinEpitopeSize(size: number): void {
     this.filters.databaseQueryParams.minEpitopeSize = -1;

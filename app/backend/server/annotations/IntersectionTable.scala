@@ -164,15 +164,21 @@ object IntersectionTable {
 
   /** The database population a request is asking to be annotated against, as a predicate.
     *
-    * These four used to select the rows the per-request `ClonotypeDatabase` was built from, and are
+    * These used to select the rows the per-request `ClonotypeDatabase` was built from, and are
     * reproduced here exactly:
     *
     *  - `asClonotypeDatabase` added `ExactTextFilter(species)` and `ExactTextFilter(gene)`, each only
     *    when the value is non-empty — Groovy's `if (species)` is false for `null` and for `""`.
     *  - the caller added `ExactTextFilter("mhc.class")` unless the request asked for both classes.
-    *  - `asClonotypeDatabase` added `LevelFilter("vdjdb.score")` only when the threshold is positive.
     *
     * `ExactTextFilter` compares with `equalsIgnoreCase`, so this does too — not `==`.
+    *
+    * Confidence is deliberately NOT here, though `asClonotypeDatabase` did apply a
+    * `LevelFilter("vdjdb.score")` at build time. It is a restriction on which records are worth
+    * trusting, not on which part of the database is being asked about, and keeping it here made it the
+    * only such filter that silently moved the chart denominators: a request at confidence 2 normalized
+    * against "records at confidence >= 2" while an otherwise identical request filtering on HLA or on a
+    * motif normalized against the whole population. It is a post-search filter now, alongside those.
     *
     * Written over a column lookup rather than a `Row` so the rule can be exercised without a database.
     */
@@ -181,23 +187,12 @@ object IntersectionTable {
 
     (parameters.species.isEmpty || exact(SpeciesColumn, parameters.species)) &&
       (parameters.gene.isEmpty || exact(GeneColumn, parameters.gene)) &&
-      (parameters.mhc == BothMhcClasses || exact(MhcClassColumn, parameters.mhc)) &&
-      (parameters.confidenceThreshold <= 0 || atLeastConfidence(valueAt(ConfidenceColumn), parameters.confidenceThreshold))
+      (parameters.mhc == BothMhcClasses || exact(MhcClassColumn, parameters.mhc))
   }
 
   /** Same predicate, over a database row. */
   private def acceptedRow(parameters: AnnotationsDatabaseQueryParams): Row => Boolean =
     (row: Row) => accepts(parameters)(column => row.getAt(column).getValue)
-
-  /** `LevelFilter.passInner`, replicated: the entry is read as a double and passes when it is at least
-    * the threshold, and anything unparseable *fails*.
-    *
-    * Deliberately not [[confidenceScore]], which treats an unreadable score as zero. The two agree on
-    * every value VDJdb actually carries; they are kept apart because they replicate two different
-    * filters, and the confidence checkbox is not the confidence threshold.
-    */
-  private[annotations] def atLeastConfidence(value: String, threshold: Int): Boolean =
-    Try(value.trim.toDouble).toOption.exists(_ >= threshold.toDouble)
 
   /** `SegmentFilter.passInner`, replicated.
     *
@@ -236,9 +231,35 @@ object IntersectionTable {
       (clonotype: Clonotype, hit: ClonotypeSearchResult) =>
         segmentsMatch(queried(clonotype), hit.getRow.getAt(column).getValue)
 
-    Seq(Some(population),
+    Seq(Some(population), Some(withinScope(searchScope.hammingDistance)),
       if (searchScope.matchV) Some(segment(VColumn, (c: Clonotype) => c.getV)) else None,
       if (searchScope.matchJ) Some(segment(JColumn, (c: Clonotype) => c.getJ)) else None).flatten
+  }
+
+  /** The requested edit distance, applied to hits that came out of a wider index.
+    *
+    * Three of the four offered scopes share one two-substitution index — see
+    * `AnnotationsSearchScopeHammingDistance.indexScope` — so the index is a superset of what most
+    * requests asked for and the difference has to be taken off here.
+    *
+    * Nothing is recomputed to do it: the engine already reports the alignment on every hit, and
+    * `Hit.getMutations` is the mutation list it matched with. `size` is the edit distance and
+    * `countOfIndels` separates a Hamming neighbourhood from a Levenshtein one, so both halves of the
+    * question are a field read.
+    *
+    * Driven by the preset rather than by four branches: `total` is the edit budget, and a scope that
+    * allows no insertion and no deletion is by definition Hamming. Exact falls out as `total = 0`.
+    */
+  private[annotations] def withinDistance(distance: AnnotationsSearchScopeHammingDistance,
+                                          hit: ClonotypeSearchResult): Boolean = {
+    val mutations = hit.getHit.getMutations
+    mutations.size <= distance.total &&
+      (distance.insertions > 0 || distance.deletions > 0 || mutations.countOfIndels == 0)
+  }
+
+  private def withinScope(requested: AnnotationsSearchScopeHammingDistance): HitFilter = {
+    val distance = AnnotationsSearchScopeHammingDistance.sanitize(requested)
+    (_: Clonotype, hit: ClonotypeSearchResult) => withinDistance(distance, hit)
   }
 
   /** The curated `evidence.validation.independent` flag — "antigen specificity independently validated
@@ -316,7 +337,9 @@ object IntersectionTable {
     * [[databaseRestrictions]] — so the index no longer varies with species, gene, MHC class, confidence
     * or V/J matching, and with VDJMatch scoring snapped away it does not vary with scoring either. The
     * only remaining input is the scope, which is what the CDR3 tree walk itself consumes, and
-    * `AnnotationsSearchScopeHammingDistance.sanitize` leaves exactly two of those.
+    * `AnnotationsSearchScopeHammingDistance.indexScope` leaves exactly two of those — the four scopes
+    * the UI offers collapse onto two indexes, with the difference taken off afterwards by
+    * [[withinScope]].
     *
     * So this holds at most two entries per database and never evicts. It is deliberately not built at
     * boot: most traffic is the Browse tab, which must not pay for a facility it does not use.
@@ -347,7 +370,7 @@ object IntersectionTable {
     * under exactly the parameters that predicate reads. These are counts rather than sets — small, and
     * few enough distinct combinations that the LRU below is a formality.
     */
-  private type SummaryIndexKey = (VdjdbInstance, String, String, String, Int)
+  private type SummaryIndexKey = (VdjdbInstance, String, String, String)
 
   private final val MaxCachedSummaryIndexes = 16
 
@@ -373,8 +396,7 @@ object IntersectionTable {
     s"${scope.substitutions}/${scope.insertions}/${scope.deletions}/${scope.total}"
 
   private def describePopulation(parameters: AnnotationsDatabaseQueryParams): String =
-    s"species=${parameters.species}, gene=${parameters.gene}, mhc=${parameters.mhc}, " +
-      s"confidence=${parameters.confidenceThreshold}"
+    s"species=${parameters.species}, gene=${parameters.gene}, mhc=${parameters.mhc}"
 
   /** The two shared indexes an annotation runs against: the CDR3 search index for the request's scope,
     * and the summary denominators for the population the request restricts the database to.
@@ -387,7 +409,7 @@ object IntersectionTable {
     if (AnnotationsAnnotateScoring.sanitize(scoring).`type` != scoring.`type`) {
       logger.warn(s"Annotate scoring type ${scoring.`type`} is not supported and was ignored; using SIMPLE")
     }
-    val index = searchIndex(database, AnnotationsSearchScopeHammingDistance.sanitize(searchScope.hammingDistance))
+    val index = searchIndex(database, AnnotationsSearchScopeHammingDistance.indexScope(searchScope.hammingDistance))
     (index, summaryIndex(database.getInstance, index, parameters))
   }
 
@@ -440,7 +462,7 @@ object IntersectionTable {
   private def summaryIndex(instance: VdjdbInstance, index: ClonotypeDatabase,
                            parameters: AnnotationsDatabaseQueryParams): SummaryIndex =
     summaryIndexes.synchronized {
-      val key = (instance, parameters.species, parameters.gene, parameters.mhc, parameters.confidenceThreshold)
+      val key = (instance, parameters.species, parameters.gene, parameters.mhc)
       val cached = summaryIndexes.get(key)
       if (cached != null) {
         cached
