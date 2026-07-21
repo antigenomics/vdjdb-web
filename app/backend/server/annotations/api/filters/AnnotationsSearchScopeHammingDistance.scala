@@ -21,30 +21,28 @@ import play.api.libs.json.{Format, Json}
 case class AnnotationsSearchScopeHammingDistance(substitutions: Int, insertions: Int, deletions: Int, total: Int)
 
 object AnnotationsSearchScopeHammingDistance {
-  // The tree walk grows exponentially with the number of allowed edits, and nothing stops a client
-  // from posting whatever it likes — the whole search scope arrives as plain JSON. These are the
-  // ceilings the server enforces regardless of what was asked for; past them the hits also stop being
-  // biologically meaningful.
-  final val MaxSubstitutions = 3
-  final val MaxInsertions    = 1
-  final val MaxDeletions     = 1
-  final val MaxTotal         = 4
+  /** One substitution, no indels. */
+  final val Hamming: AnnotationsSearchScopeHammingDistance =
+    AnnotationsSearchScopeHammingDistance(substitutions = 1, insertions = 0, deletions = 0, total = 1)
+
+  /** One edit of any kind. `total = 1` is what makes it *one* edit rather than one of each. */
+  final val Levenshtein: AnnotationsSearchScopeHammingDistance =
+    AnnotationsSearchScopeHammingDistance(substitutions = 1, insertions = 1, deletions = 1, total = 1)
 
   implicit val annotationsSearchScopeHammingDistanceFormat: Format[AnnotationsSearchScopeHammingDistance] = Json.format[AnnotationsSearchScopeHammingDistance]
 
-  /** Clamp a client-supplied scope into what we are willing to run.
+  /** Snap a client-supplied scope onto one of the two searches we offer.
     *
-    * Besides the per-category caps this raises `total` to at least the largest single allowance: a
-    * `total` below `substitutions` is not a stricter search, it silently degrades the whole query to
-    * the smaller budget, which looks to the user like the database is missing records.
+    * The UI is a two-way radio, but the scope still arrives as plain JSON over a websocket, so the
+    * server cannot assume the client sent one of the two. This used to clamp each field
+    * independently against its own ceiling, which accepted a large space of in-between scopes — some
+    * of them incoherent, such as a `total` below `substitutions`, which is not a stricter search but
+    * one that silently degrades to the smaller budget and reads to the user as missing records.
+    *
+    * Anything asking for an indel becomes Levenshtein; everything else becomes Hamming. There is no
+    * third outcome, so no combination of numbers can produce a scope nobody has reasoned about, and
+    * the tree walk cost is bounded by construction rather than by a cap that has to be maintained.
     */
-  def sanitize(distance: AnnotationsSearchScopeHammingDistance): AnnotationsSearchScopeHammingDistance = {
-    val substitutions = clamp(distance.substitutions, MaxSubstitutions)
-    val insertions    = clamp(distance.insertions, MaxInsertions)
-    val deletions     = clamp(distance.deletions, MaxDeletions)
-    val total         = math.max(clamp(distance.total, MaxTotal), math.max(substitutions, math.max(insertions, deletions)))
-    AnnotationsSearchScopeHammingDistance(substitutions, insertions, deletions, total)
-  }
-
-  private def clamp(value: Int, max: Int): Int = math.max(0, math.min(value, max))
+  def sanitize(distance: AnnotationsSearchScopeHammingDistance): AnnotationsSearchScopeHammingDistance =
+    if (distance.insertions > 0 || distance.deletions > 0) Levenshtein else Hamming
 }

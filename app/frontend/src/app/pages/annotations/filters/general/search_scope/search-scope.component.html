@@ -33,37 +33,25 @@
         </div>
     </div>
     <div class="ui row middle aligned">
-        <div class="four wide column filters label"><b>Edit distance</b></div>
-        <div class="three wide column">
-            Substitutions
-            <div class="ui input fluid">
-                <input [attr.disabled]="isDisabled()" type="number"
-                       [ngModel]="filters.searchScope.hammingDistance.substitutions"
-                       (ngModelChange)="checkHammingDistance($event, 'substitutions')">
-            </div>
+        <div class="four wide column filters label">
+            <b>Edit distance</b>
+            <i class="filters help icon" popup
+               popup="Hamming allows a single substitution and keeps the CDR3 length fixed. Levenshtein allows one edit of any kind - a substitution, an insertion or a deletion - so it also matches CDR3s one residue longer or shorter."
+               header="Edit distance"
+               footer="Levenshtein is the wider search and takes longer">
+            </i>
         </div>
-        <div class="three wide column" *ngIf="isIndelsAllowed()">
-            Insertions
-            <div class="ui input fluid">
-                <input [attr.disabled]="isDisabled()" type="number"
-                       [ngModel]="filters.searchScope.hammingDistance.insertions"
-                       (ngModelChange)="checkHammingDistance($event, 'insertions')">
+        <div class="five wide column">
+            <div class="ui radio checkbox">
+                <input [attr.disabled]="isDisabled()" type="radio" name="editDistance"
+                       [checked]="!isLevenshtein()" (change)="setLevenshtein(false)">
+                <label>Hamming &mdash; 1 substitution</label>
             </div>
-        </div>
-        <div class="three wide column" *ngIf="isIndelsAllowed()">
-            Deletions
-            <div class="ui input fluid">
-                <input [attr.disabled]="isDisabled()" type="number"
-                       [ngModel]="filters.searchScope.hammingDistance.deletions"
-                       (ngModelChange)="checkHammingDistance($event, 'deletions')">
-            </div>
-        </div>
-        <div class="three wide column" *ngIf="isIndelsAllowed()">
-            Total
-            <div class="ui input fluid">
-                <input [attr.disabled]="isDisabled()" type="number"
-                       [ngModel]="filters.searchScope.hammingDistance.total"
-                       (ngModelChange)="checkHammingDistance($event, 'total')">
+            <br>
+            <div class="ui radio checkbox">
+                <input [attr.disabled]="isDisabled()" type="radio" name="editDistance"
+                       [checked]="isLevenshtein()" (change)="setLevenshtein(true)">
+                <label>Levenshtein &mdash; 1 substitution, insertion or deletion</label>
             </div>
         </div>
     </div>

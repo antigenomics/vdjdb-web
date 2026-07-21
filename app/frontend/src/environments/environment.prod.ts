@@ -15,14 +15,5 @@
  */
 
 export const environment = {
-    production:  true,
-    application: {
-        annotations: {
-            filters: {
-                hammingDistance: {
-                    allowIndels: true
-                }
-            }
-        }
-    }
+    production: true
 };
