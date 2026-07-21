@@ -62,7 +62,7 @@ class AnnotationsWebSocketActor(out: ActorRef, limit: IpLimit, user: User, detai
       case UserDetailsResponse.Action =>
         out.success(UserDetailsResponse(details))
       case AvailableSoftwareResponse.Action =>
-        out.success(AvailableSoftwareResponse(SampleFileForm.Formats.toArray))
+        out.success(AvailableSoftwareResponse(SampleFileForm.Formats))
       case ValidateSampleResponse.Action =>
         validateData(out, data, (validateRequest: ValidateSampleRequest) => {
           user.getSampleFileByName(validateRequest.name) onComplete {
