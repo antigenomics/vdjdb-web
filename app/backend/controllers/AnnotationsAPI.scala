@@ -29,13 +29,13 @@ import backend.models.files.temporary.TemporaryFileProvider
 import backend.server.database.Database
 import backend.server.limit.RequestLimits
 import backend.utils.analytics.Analytics
-import backend.utils.files.FileUtils
+import backend.utils.files.{DecompressionLimitException, DecompressionLimits, FileUtils}
 import com.typesafe.config.ConfigMemorySize
 import javax.inject.Inject
 import org.apache.commons.io.FilenameUtils
 import play.api.i18n.{Lang, Messages, MessagesApi}
 import play.api.libs.Files
-import play.api.libs.json.JsValue
+import play.api.libs.json.{JsArray, JsValue, Json}
 import play.api.libs.streams.ActorFlow
 import play.api.mvc._
 import play.api.{Configuration, Environment}
@@ -51,21 +51,40 @@ class AnnotationsAPI @Inject()(cc: ControllerComponents, userRequestAction: User
                                environment: Environment, analytics: Analytics)
   extends AbstractController(cc) {
   private final val maxUploadFileSize = conf.get[ConfigMemorySize]("application.annotations.upload.maxFileSize")
+  private final val decompressionLimits = DecompressionLimits(
+    maxBytes = conf.get[ConfigMemorySize]("application.annotations.upload.maxDecompressedSize").toBytes,
+    maxRatio = conf.get[Long]("application.annotations.upload.maxCompressionRatio")
+  )
+  private final val demoFilesLocation = conf.get[String]("application.auth.demo.filesLocation")
   implicit val messages: Messages = messagesApi.preferred(Seq(Lang.defaultLang))
+
+  /** Demo samples are public showcase data; serving them unauthenticated is the point — a prospective
+    * user should be able to see the expected input format before creating an account. */
+  def demoSamples: Action[AnyContent] = Action {
+    val files = FileUtils.getDirectoryFiles(demoFilesLocation).sortBy(_.getName)
+    Ok(JsArray(files.map(f => Json.obj("name" -> f.getName, "size" -> f.length()))))
+  }
+
+  def downloadDemoSample(name: String): Action[AnyContent] = Action {
+    // Match against the actual directory listing instead of building a path from `name`; anything
+    // that concatenates user input into a file path is a traversal (../../etc/passwd) waiting to happen.
+    FileUtils.getDirectoryFiles(demoFilesLocation).find(_.getName == name) match {
+      case Some(file) => Ok.sendFile(file, inline = false)
+      case None       => NotFound("Unknown demo sample")
+    }
+  }
 
   def checkUploadAllowed(implicit ec: ExecutionContext): ActionFilter[UserRequest] = new ActionFilter[UserRequest] {
     override protected def executionContext: ExecutionContext = ec
 
     override protected def filter[A](request: UserRequest[A]): Future[Option[Result]] = Future.successful {
       val details = request.details.get
+      // Both branches used to fall through: the "not allowed" Some(...) was a discarded expression,
+      // and the allowed branch never checked the file count at all.
       if (!details.permissions.isUploadAllowed) {
         Some(BadRequest("Upload is not allowed for this account"))
-        val filesCount = details.files.length
-        if (details.permissions.maxFilesCount >= 0 && filesCount >= details.permissions.maxFilesCount) {
-          Some(BadRequest("Max files count limit have been exceeded"))
-        } else {
-          None
-        }
+      } else if (details.permissions.maxFilesCount >= 0 && details.files.length >= details.permissions.maxFilesCount) {
+        Some(BadRequest("Max files count limit have been exceeded"))
       } else {
         None
       }
@@ -90,18 +109,29 @@ class AnnotationsAPI @Inject()(cc: ControllerComponents, userRequestAction: User
               val name = FilenameUtils.getBaseName(form.name)
               val software = form.software
 
-              val gzipped = FileUtils.convertToGzip(file.ref)
               val extension: String = "gz"
 
               if (!SampleFileTable.isSampleNameValid(name)) {
+                file.ref.delete()
                 Future.successful(BadRequest("Invalid file name"))
               } else {
-                request.user.get.addSampleFile(name, extension, software, gzipped).map {
-                  case Left(sampleFileID) =>
-                    Ok(s"$sampleFileID")
-                  case Right(error) =>
+                // Decompression happens here, so the bomb check has to happen here too — the
+                // multipart cap above and the per-account quota below both measure compressed bytes.
+                scala.util.Try(FileUtils.convertToGzip(file.ref, decompressionLimits)) match {
+                  case scala.util.Failure(e: DecompressionLimitException) =>
                     file.ref.delete()
-                    BadRequest(error)
+                    Future.successful(BadRequest(e.getMessage))
+                  case scala.util.Failure(e) =>
+                    file.ref.delete()
+                    Future.successful(BadRequest(s"Unable to read the uploaded file: ${e.getMessage}"))
+                  case scala.util.Success(gzipped) =>
+                    request.user.get.addSampleFile(name, extension, software, gzipped).map {
+                      case Left(sampleFileID) =>
+                        Ok(s"$sampleFileID")
+                      case Right(error) =>
+                        file.ref.delete()
+                        BadRequest(error)
+                    }
                 }
               }
             }
