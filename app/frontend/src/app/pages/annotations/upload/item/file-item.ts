@@ -35,7 +35,9 @@ export class FileItem {
   public static readonly AVAILABLE_EXTENSIONS: string[] = [ 'txt', 'gz', 'zip' ];
   // Must stay identical to SampleFileForm.Species / .Chains, which reject anything else.
   public static readonly AVAILABLE_SPECIES: string[] = [ 'HomoSapiens', 'MusMusculus', 'MacacaMulatta' ];
-  public static readonly AVAILABLE_CHAINS: string[] = [ 'TRA', 'TRB' ];
+  // 'Guess' derives the chain per row from the J segment and splits a mixed file into two samples.
+  // Naming an explicit chain instead discards every row of the other chain and never splits.
+  public static readonly AVAILABLE_CHAINS: string[] = [ 'Guess', 'TRA', 'TRB' ];
 
   public compressed?: Blob;
   public native: File;
@@ -45,7 +47,7 @@ export class FileItem {
   // Declared, not detected. The chain actually found in the data wins for anything the converter can
   // parse; this only decides the stored chain on the legacy-passthrough path, where nothing parses it.
   public species: string = FileItem.AVAILABLE_SPECIES[ 0 ];
-  public chain: string = FileItem.AVAILABLE_CHAINS[ 1 ];
+  public chain: string = FileItem.AVAILABLE_CHAINS[ 0 ];
   public tag?: SampleTag;
   public progress: ReplaySubject<number> = new ReplaySubject(1);
   public status: FileItemStatus = new FileItemStatus();

@@ -124,15 +124,28 @@ class AnnotationsAPI @Inject()(cc: ControllerComponents, userRequestAction: User
         Future.successful(BadRequest(s"Unable to parse the uploaded file: ${e.getMessage}"))
 
       case scala.util.Success(report) =>
-        val split = report.chains.lengthCompare(1) > 0
         if (report.warnings.nonEmpty) {
           logger.info(s"Sample '$name' (${report.format}, ${report.chains.map(_.chain).mkString("+")}): ${report.warnings.mkString("; ")}")
         }
-        val planned = report.chains.map(c => (if (split) s"${name}_${c.chain}" else name, c))
+        // Declaring a chain is an assertion about the file, not a hint: keep only that chain's rows and
+        // never split. Splitting is what "Guess" means, and only Guess.
+        val guessing = chain == SampleFileForm.GuessChain
+        val selected = if (guessing) report.chains else report.chains.filter(_.chain == chain)
+        val split    = guessing && selected.lengthCompare(1) > 0
+        val planned  = selected.map(c => (if (split) s"${name}_${c.chain}" else name, c))
+        // Every converted file is removed, including the chains the declaration discarded.
         val cleanup = () => {
           report.chains.foreach(c => { val _ = c.file.delete() })
           val _ = prefix.delete()
         }
+
+        if (planned.isEmpty) {
+          cleanup()
+          val found = report.chains.map(_.chain).mkString(" and ")
+          Future.successful(BadRequest(
+            s"You selected $chain, but this file contains only $found records. " +
+              "Select the matching chain, or choose Guess to derive it from the data."))
+        } else {
 
         // Everything is checked before anything is written, so a split either produces both samples or
         // none. Storing one and then failing the second would leave the account holding half a sample.
@@ -165,6 +178,7 @@ class AnnotationsAPI @Inject()(cc: ControllerComponents, userRequestAction: User
                 cleanup()
                 rollback(user, samples.map(_.name)).map(_ => BadRequest(error))
             }
+          }
         }
     }
   }

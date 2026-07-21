@@ -33,12 +33,13 @@ object SampleFileForm {
   final val Formats: Seq[String] = Seq("VDJtools", "AIRR", "MiXCR")
 
   final val DefaultSpecies = "HomoSapiens"
-  final val DefaultChain   = "TRB"
+  final val DefaultChain   = "Guess"
 
   // Must stay identical to the client lists in upload-table-row.component.ts and to the annotate
   // filters in database-query-params.component.html.
   final val Species: Seq[String] = Seq("HomoSapiens", "MusMusculus", "MacacaMulatta")
-  final val Chains: Seq[String]  = Seq("TRA", "TRB")
+  final val GuessChain = "Guess"
+  final val Chains: Seq[String]  = Seq(GuessChain, "TRA", "TRB")
 
   implicit val sampleFileFormMapping: Form[SampleFileForm] = Form(mapping(
     "name" -> nonEmptyText(maxLength = 64),

@@ -351,7 +351,11 @@ export namespace Utils {
       const matches = document.cookie.match(new RegExp(
         `(?:^|; )${name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1')}=([^;]*)`
       ));
-      return matches ? decodeURIComponent(matches[ 1 ]) : undefined;
+      // The server writes these with java.net.URLEncoder, i.e. application/x-www-form-urlencoded,
+      // which encodes a space as '+'. decodeURIComponent handles %XX but leaves '+' alone, so every
+      // temporary user saw "Temporary+user" in the navbar. A literal plus arrives as %2B and is
+      // unaffected by this substitution.
+      return matches ? decodeURIComponent(matches[ 1 ].replace(/\+/g, '%20')) : undefined;
     }
 
   }
