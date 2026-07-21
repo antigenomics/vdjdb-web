@@ -32,7 +32,7 @@ import play.api.inject.ApplicationLifecycle
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.language.postfixOps
-import scala.util.{Failure, Success}
+import scala.util.{Failure, Success, Try}
 
 /** What one pass of the sweeper saw. `expired` counts what matched the window; `deleted` stays at
   * zero in dry-run mode, which is how a log line tells the two apart at a glance.
@@ -147,18 +147,25 @@ class SampleRetentionProvider @Inject()(conf: Configuration,
   }
 
   private def deleteFolder(user: User, metadata: FileMetadata): Unit = {
-    val folder = new File(metadata.folder).getAbsoluteFile
-    val root   = new File(user.folderPath).getAbsoluteFile
-    if (folder.getPath.startsWith(root.getPath + File.separator)) {
-      // Plain File.delete() is a silent no-op on a directory that still holds anything, which is one
-      // of the ways orphaned upload folders accumulate. Take the whole tree.
-      FileUtils.deleteRecursively(folder)
-    } else {
-      // Belt and braces against a metadata row whose folder points outside the account (the demo
-      // dataset is stored exactly like that). Exemptions should already have excluded these, and an
-      // unbounded recursive delete driven by a database column is not a mistake worth risking twice.
-      logger.warn(s"[retention] refusing to remove '${folder.getPath}': " +
-        s"it is not inside the account folder '${root.getPath}'")
+    // Canonical, not absolute: getAbsoluteFile leaves ".." in place, so "<root>/a/../../../etc" still
+    // passes a startsWith check against "<root>/" and then deletes somewhere else entirely. Canonical
+    // form also resolves symlinks, so neither side can be redirected out of the account that way.
+    // It does hit the filesystem and can throw, so a row we cannot resolve is refused rather than
+    // allowed to abort the whole sweep.
+    val resolved = Try((new File(metadata.folder).getCanonicalFile, new File(user.folderPath).getCanonicalFile))
+    resolved match {
+      case Success((folder, root)) if folder.getPath.startsWith(root.getPath + File.separator) =>
+        // Plain File.delete() is a silent no-op on a directory that still holds anything, which is one
+        // of the ways orphaned upload folders accumulate. Take the whole tree.
+        FileUtils.deleteRecursively(folder)
+      case Success((folder, root)) =>
+        // Belt and braces against a metadata row whose folder points outside the account (the demo
+        // dataset is stored exactly like that). Exemptions should already have excluded these, and an
+        // unbounded recursive delete driven by a database column is not a mistake worth risking twice.
+        logger.warn(s"[retention] refusing to remove '${folder.getPath}': " +
+          s"it is not inside the account folder '${root.getPath}'")
+      case Failure(ex) =>
+        logger.warn(s"[retention] refusing to remove '${metadata.folder}': cannot resolve it to a real path", ex)
     }
   }
 }
