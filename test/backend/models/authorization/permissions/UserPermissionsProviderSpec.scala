@@ -62,7 +62,8 @@ class UserPermissionsProviderSpec extends DatabaseProviderTestSpec {
                     permission.isDeleteAllowed shouldEqual false
                     permission.isChangePasswordAllowed shouldEqual false
                   case 3 =>
-                    permission.maxFilesCount shouldEqual 3
+                    // Also raised by evolution 7.sql, from 3.
+                    permission.maxFilesCount shouldEqual 10
                     permission.maxFileSize shouldEqual 8
                     permission.isUploadAllowed shouldEqual true
                     permission.isDeleteAllowed shouldEqual true
