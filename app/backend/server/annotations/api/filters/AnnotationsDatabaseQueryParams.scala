@@ -18,7 +18,12 @@ package backend.server.annotations.api.filters
 
 import play.api.libs.json.{Format, Json}
 
-case class AnnotationsDatabaseQueryParams(species: String, gene: String, mhc: String, confidenceThreshold: Int, minEpitopeSize: Int)
+/** @param hla donor HLA typing to restrict matches to, as free text (`HLA-A*02:01, B*07:02`).
+  *            Empty or absent means no HLA restriction. Kept as raw text rather than a parsed list so
+  *            the parsing rules live in exactly one place, server-side — see [[backend.server.annotations.HlaAllele]].
+  */
+case class AnnotationsDatabaseQueryParams(species: String, gene: String, mhc: String, confidenceThreshold: Int,
+                                          minEpitopeSize: Int, hla: Option[String])
 
 object AnnotationsDatabaseQueryParams {
   implicit val annotationsDatabaseQueryParamsFormat: Format[AnnotationsDatabaseQueryParams] = Json.format[AnnotationsDatabaseQueryParams]

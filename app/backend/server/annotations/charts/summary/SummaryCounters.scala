@@ -18,7 +18,12 @@ package backend.server.annotations.charts.summary
 
 import play.api.libs.json.{Json, Writes}
 
-case class SummaryCounters(counters: Seq[SummaryFieldCounter], notFoundCounter: SummaryClonotypeCounter)
+/** @param annotated totals over everything that matched: `unique` is the number of annotated
+  *                  clonotypes, `reads` the summed count, `databaseUnique` the number of distinct
+  *                  VDJdb records they hit.
+  */
+case class SummaryCounters(counters: Seq[SummaryFieldCounter], notFoundCounter: SummaryClonotypeCounter,
+                           annotated: SummaryClonotypeCounter)
 
 object SummaryCounters {
   implicit val summaryCountersWrites: Writes[SummaryCounters] = Json.writes[SummaryCounters]

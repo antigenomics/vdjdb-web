@@ -112,8 +112,8 @@ export class SummaryChartComponent implements OnInit, OnDestroy {
   private createData(options: SummaryChartOptions): IChartDataEntry[] {
 
     const valueConverter: (c: SummaryClonotypeCounter) => number = (c) => {
-      let value = (options.isWeightedByReadCount ? c.frequency : c.unique);
-      if (options.normalizeTypes[ 0 ].checked) { // db
+      let value = (options.isWeightedByReadCount ? c.reads : c.unique);
+      if (options.normalizeTypes[ 0 ].checked && c.databaseUnique > 0) { // db
         value = value / c.databaseUnique;
       }
       if (options.normalizeTypes[ 1 ].checked) { // matches

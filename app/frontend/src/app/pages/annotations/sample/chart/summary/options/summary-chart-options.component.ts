@@ -58,6 +58,7 @@ export class SummaryChartOptions {
     { name: 'mhc.class', title: 'MHC class' },
     { name: 'mhc.a', title: 'MHC A' },
     { name: 'mhc.b', title: 'MHC B' },
+    { name: 'mhc.locus', title: 'HLA locus' },
     { name: 'antigen.species', title: 'Epitope species' },
     { name: 'antigen.gene', title: 'Epitope gene' }
   ];

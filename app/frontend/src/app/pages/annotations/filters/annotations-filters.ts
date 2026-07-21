@@ -14,14 +14,13 @@
  *     limitations under the License.
  */
 
-import { environment } from 'environments/environment';
-
 export interface IDatabaseQueryParams {
   species: string;
   gene: string;
   mhc: string;
   confidenceThreshold: number;
   minEpitopeSize: number;
+  hla: string;
 }
 
 export interface ISearchScopeHammingDistance {
@@ -63,15 +62,25 @@ export interface IAnnotateScoring {
 }
 
 export class AnnotationsFilters {
-  public static hammingDistanceRange = environment.application.annotations.filters.hammingDistance.range;
+  // Per-field, because the caps differ: these mirror AnnotationsSearchScopeHammingDistance, which
+  // clamps the same values server-side. A single shared range would let the box accept a number the
+  // server then silently lowers.
+  public static hammingDistanceRanges: { [ field: string ]: { min: number, max: number } } = {
+    substitutions: { min: 0, max: 3 },
+    insertions:    { min: 0, max: 1 },
+    deletions:     { min: 0, max: 1 },
+    total:         { min: 0, max: 4 }
+  };
   public static confidenceThresholdRange = { min: 0, max: 3 };
   public static epitopeSizeRange = { min: 0, max: 1000 };
   public static exhaustiveAlignmentRange = { min: 0, max: 2 };
   public static scoringModeRange = { min: 0, max: 1 };
   public static topHitsCountRange = { min: 1, max: 10 };
 
-  public databaseQueryParams: IDatabaseQueryParams = { species: 'HomoSapiens', gene: 'TRB', mhc: 'MHCI+II', confidenceThreshold: 0, minEpitopeSize: 10 };
-  public searchScope: ISearchScope = { matchV: false, matchJ: false, hammingDistance: { substitutions: 0, insertions: 0, deletions: 0, total: 0 } };
+  public databaseQueryParams: IDatabaseQueryParams = {
+    species: 'HomoSapiens', gene: 'TRB', mhc: 'MHCI+II', confidenceThreshold: 0, minEpitopeSize: 10, hla: ''
+  };
+  public searchScope: ISearchScope = { matchV: false, matchJ: false, hammingDistance: { substitutions: 1, insertions: 0, deletions: 0, total: 1 } };
   public scoring: IAnnotateScoring = {
     type: IAnnotateScoringType.SIMPLE, vdjmatch: {
       exhaustiveAlignment: 1,

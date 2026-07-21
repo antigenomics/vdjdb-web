@@ -18,7 +18,13 @@ package backend.server.annotations.charts.summary
 
 import play.api.libs.json.{Json, Writes}
 
-case class SummaryClonotypeCounter(field: String, unique: Int, databaseUnique: Long, frequency: Double)
+/** @param unique number of matched sample clonotypes — the row count for this field value
+  * @param reads  summed clonotype `count` (the AIRR `duplicate_count`) over those clonotypes.
+  *               The engine has always tallied this; it was simply dropped on the way to the client,
+  *               which is why the "weight by read count" chart option was in fact weighting by
+  *               frequency.
+  */
+case class SummaryClonotypeCounter(field: String, unique: Int, databaseUnique: Long, frequency: Double, reads: Long)
 
 object SummaryClonotypeCounter {
   implicit val summaryClonotypeCounterWrites: Writes[SummaryClonotypeCounter] = Json.writes[SummaryClonotypeCounter]

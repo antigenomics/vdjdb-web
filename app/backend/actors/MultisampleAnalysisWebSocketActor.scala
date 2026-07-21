@@ -72,12 +72,14 @@ class MultisampleAnalysisWebSocketActor(out: ActorRef, limit: IpLimit, user: Use
             val summary = new ClonotypeSearchSummary(results, sample._2, ClonotypeSearchSummary.FIELDS_STARBURST, instance)
             val counters = summary.fieldCounters.asScala.map { case (name, map) =>
               SummaryFieldCounter(name, map.asScala.filter(v => v._2.getUnique != 0).map { case (field, value) =>
-                SummaryClonotypeCounter(field, value.getUnique, value.getDatabaseUnique, value.getFrequency)
+                SummaryClonotypeCounter(field, value.getUnique, value.getDatabaseUnique, value.getFrequency, value.getReads)
               }.toSeq)
             }.toSeq
 
             val nfc = summary.getNotFoundCounter
-            (sample._1, SummaryCounters(counters, SummaryClonotypeCounter("notFound", nfc.getUnique, nfc.getDatabaseUnique, nfc.getFrequency)))
+            val annotated = IntersectionTable.summarizeAnnotated(results.asScala.toList.map { case (c, l) => (c, l.asScala.toList) })
+            (sample._1, SummaryCounters(counters,
+              SummaryClonotypeCounter("notFound", nfc.getUnique, nfc.getDatabaseUnique, nfc.getFrequency, nfc.getReads), annotated))
           })
 
           val multipleSummary = await(waitAll(counters).map { completedJobs =>
