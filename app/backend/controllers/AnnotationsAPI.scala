@@ -51,11 +51,17 @@ class AnnotationsAPI @Inject()(cc: ControllerComponents, userRequestAction: User
                                environment: Environment, analytics: Analytics)
   extends AbstractController(cc) {
   private final val maxUploadFileSize = conf.get[ConfigMemorySize]("application.annotations.upload.maxFileSize")
+  // Read NEW keys defensively. Production runs with -Dconfig.file=<server-side file>, which REPLACES
+  // the packaged application.conf, so a key added here does not exist there until someone edits that
+  // file too. With conf.get a missing key throws during Guice construction and the whole app
+  // crash-loops on deploy; with a default it degrades to the documented value instead.
   private final val decompressionLimits = DecompressionLimits(
-    maxBytes = conf.get[ConfigMemorySize]("application.annotations.upload.maxDecompressedSize").toBytes,
-    maxRatio = conf.get[Long]("application.annotations.upload.maxCompressionRatio")
+    maxBytes = conf.getOptional[ConfigMemorySize]("application.annotations.upload.maxDecompressedSize")
+      .map(_.toBytes).getOrElse(256L * 1024 * 1024),
+    maxRatio = conf.getOptional[Long]("application.annotations.upload.maxCompressionRatio").getOrElse(100L)
   )
-  private final val demoFilesLocation = conf.get[String]("application.auth.demo.filesLocation")
+  private final val demoFilesLocation =
+    conf.getOptional[String]("application.auth.demo.filesLocation").getOrElse("")
   implicit val messages: Messages = messagesApi.preferred(Seq(Lang.defaultLang))
 
   /** Demo samples are public showcase data; serving them unauthenticated is the point — a prospective
