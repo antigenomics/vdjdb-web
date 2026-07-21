@@ -151,9 +151,11 @@ export class NavigationBarComponent implements OnInit, OnDestroy {
   // "All data" means "the unfiltered database", so it clears the filters the user had set. Navigating
   // is not enough on its own: on /search the route is unchanged, so the page component is not
   // recreated and the ngOnInit that would have reset the filters never runs again.
-  // forceUpdate() has to follow, and has to be in the .then(): setDefault() only emits RESET, which
-  // nothing listens to, whereas the search table re-queries on UPDATE. Firing it before navigation
-  // settles would search with the filters of the page being left.
+  // forceUpdate() has to follow it, because setDefault() only emits RESET and nothing listens to
+  // RESET — the table re-queries on UPDATE. And it has to be inside the .then(), because the
+  // subscriber that turns UPDATE into a search belongs to SearchTable, which the Browse page creates
+  // in its constructor and unsubscribes when it is destroyed. Arriving from another page, there is no
+  // subscriber until navigation completes, so an earlier emit would be dropped and nothing searched.
   public browseAllData(): void {
     this.filters.setDefault();
     this.router.navigate([ '/search' ]).then(() => this.filters.forceUpdate());
