@@ -1,3 +1,5 @@
+[![Build](https://github.com/antigenomics/vdjdb-web/actions/workflows/ci.yml/badge.svg)](https://github.com/antigenomics/vdjdb-web/actions/workflows/ci.yml)
+[![Docker Hub](https://img.shields.io/docker/pulls/bvdmitri/vdjdb-web?logo=docker&label=docker%20pulls)](https://hub.docker.com/r/bvdmitri/vdjdb-web)
 [![Documentation Status](https://readthedocs.org/projects/vdjdb-web/badge/?version=latest)](http://vdjdb-web.readthedocs.io/en/latest/?badge=latest)
 
 VDJdb-server uses [VDJtools API](https://github.com/mikessh/vdjtools) and [VDJdb API](https://github.com/antigenomics/vdjdb-standalone) as a back-end 
