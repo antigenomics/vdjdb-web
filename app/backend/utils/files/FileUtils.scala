@@ -16,13 +16,25 @@
 
 package backend.utils.files
 
-import java.io.{File, FileInputStream, FileOutputStream}
+import java.io.{File, FileInputStream, FileOutputStream, InputStream, OutputStream}
 import java.nio.file.{Files, Paths}
 import java.nio.file.StandardCopyOption.REPLACE_EXISTING
 import java.security.MessageDigest
 import java.util.zip._
 
 import play.api.libs.Files.TemporaryFile
+
+/** Raised when an upload expands past the configured ceiling — i.e. a decompression bomb. */
+class DecompressionLimitException(message: String) extends RuntimeException(message)
+
+/** Bounds on how far an uploaded archive may expand.
+  *
+  * Neither the multipart cap nor the per-account quota can catch a bomb: both measure *compressed*
+  * bytes, and a bomb is tiny compressed by construction. Real repertoire data expands ~5x (measured
+  * on the shipped demo samples), so a ratio limit in the hundreds is generous for honest input while
+  * still rejecting the 1000x+ pathological cases.
+  */
+case class DecompressionLimits(maxBytes: Long, maxRatio: Long)
 
 object FileUtils {
 
@@ -66,17 +78,58 @@ object FileUtils {
     }
   }
 
-  def convertToGzip(file: play.api.libs.Files.TemporaryFile): TemporaryFile = {
+  /** Copy `in` to `out`, aborting as soon as the *decompressed* stream exceeds `limits`.
+    *
+    * The check has to happen while streaming: by the time a bomb has been fully expanded to a temp
+    * file the damage (disk, and later heap when the sample is parsed) is already done. Returns the
+    * number of bytes written.
+    */
+  private def copyBounded(in: InputStream, out: OutputStream, compressedSize: Long, limits: DecompressionLimits): Long = {
+    val buffer   = new Array[Byte](8192)
+    var total    = 0L
+    var len      = in.read(buffer)
+    while (len > 0) {
+      total += len
+      if (total > limits.maxBytes) {
+        throw new DecompressionLimitException(
+          s"Uncompressed file exceeds the ${limits.maxBytes / (1024 * 1024)} MB limit")
+      }
+      if (compressedSize > 0 && total / compressedSize > limits.maxRatio) {
+        throw new DecompressionLimitException(
+          s"File expands more than ${limits.maxRatio}x when decompressed, which looks like a decompression bomb")
+      }
+      out.write(buffer, 0, len)
+      len = in.read(buffer)
+    }
+    total
+  }
+
+  /** An already-gzipped upload is stored as-is, so it never passes through `copyBounded` on the way
+    * in — decompress it once into a sink to prove it stays inside the limits before we accept it.
+    * Bounded by `limits`, so this cannot itself be turned into the attack. */
+  def validateGzipWithinLimits(file: File, limits: DecompressionLimits): Long = {
+    // Discarding sink. The bulk overload matters: the default OutputStream implementation would fan
+    // out to one virtual call per byte.
+    val sink = new OutputStream {
+      override def write(b: Int): Unit                                = ()
+      override def write(b: Array[Byte], off: Int, len: Int): Unit    = ()
+    }
+    val in = new GZIPInputStream(new FileInputStream(file))
+    try copyBounded(in, sink, file.length(), limits) finally in.close()
+  }
+
+  def convertToGzip(file: play.api.libs.Files.TemporaryFile, limits: DecompressionLimits): TemporaryFile = {
     if (isGZipped(file.getAbsoluteFile)) {
+      val _ = validateGzipWithinLimits(file.getAbsoluteFile, limits)
       file
     } else {
-      val gzipped = if (isZipped(file.getAbsoluteFile)) convertZipToGzip(file) else convertPlainToGzip(file)
+      val gzipped = if (isZipped(file.getAbsoluteFile)) convertZipToGzip(file, limits) else convertPlainToGzip(file, limits)
       file.delete()
       gzipped
     }
   }
 
-  def convertZipToGzip(file: play.api.libs.Files.TemporaryFile): TemporaryFile = {
+  def convertZipToGzip(file: play.api.libs.Files.TemporaryFile, limits: DecompressionLimits): TemporaryFile = {
     val zipInputStream = new ZipInputStream(new FileInputStream(file.getAbsoluteFile))
     val zipEntry = zipInputStream.getNextEntry
 
@@ -88,11 +141,12 @@ object FileUtils {
     val gzipOutputFile = creator.create(fileName, ".gz")
     val gzip = new GZIPOutputStream(new FileOutputStream(gzipOutputFile.getAbsoluteFile))
 
-    val buffer = new Array[Byte](1024)
-    var len = zipInputStream.read(buffer)
-    while (len > 0) {
-      gzip.write(buffer, 0, len)
-      len = zipInputStream.read(buffer)
+    try {
+      val _ = copyBounded(zipInputStream, gzip, file.getAbsoluteFile.length(), limits)
+    } catch {
+      case e: DecompressionLimitException =>
+        gzip.close(); zipInputStream.close(); gzipOutputFile.delete()
+        throw e
     }
     gzip.close()
 
@@ -102,18 +156,21 @@ object FileUtils {
     gzipOutputFile
   }
 
-  def convertPlainToGzip(file: play.api.libs.Files.TemporaryFile): TemporaryFile = {
+  def convertPlainToGzip(file: play.api.libs.Files.TemporaryFile, limits: DecompressionLimits): TemporaryFile = {
     val fileInputStream = new FileInputStream(file.getAbsoluteFile)
     val creator = play.api.libs.Files.SingletonTemporaryFileCreator
     // GZIP output stream
     val outputFile = creator.create(file.getAbsoluteFile.getName, ".gz")
     val gzip = new GZIPOutputStream(new FileOutputStream(outputFile.getAbsoluteFile))
 
-    val buffer = new Array[Byte](1024)
-    var len = fileInputStream.read(buffer)
-    while (len > 0) {
-      gzip.write(buffer, 0, len)
-      len = fileInputStream.read(buffer)
+    // Plain input is already bounded by the multipart cap, but keep the same ceiling so the limit is
+    // enforced in exactly one place regardless of how the file arrived.
+    try {
+      val _ = copyBounded(fileInputStream, gzip, 0L, limits)
+    } catch {
+      case e: DecompressionLimitException =>
+        gzip.close(); fileInputStream.close(); outputFile.delete()
+        throw e
     }
     gzip.close()
 
