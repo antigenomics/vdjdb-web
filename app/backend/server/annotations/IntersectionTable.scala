@@ -29,7 +29,6 @@ import com.antigenomics.vdjdb.impl.filter.{DummyResultFilter, MaxScoreResultFilt
 import com.antigenomics.vdjdb.impl.weights.{DegreeWeightFunctionFactory, DummyWeightFunctionFactory}
 import com.antigenomics.vdjdb.impl.{ClonotypeDatabase, ClonotypeSearchResult, ScoringBundle, ScoringProvider}
 import com.antigenomics.vdjdb.sequence.SearchScope
-import com.antigenomics.vdjdb.stat.{ClonotypeCounter, ClonotypeSearchSummary}
 import com.antigenomics.vdjdb.text.{ExactTextFilter, TextFilter}
 import com.antigenomics.vdjdb.VdjdbInstance
 import com.antigenomics.vdjtools.sample.{Clonotype, Sample}
@@ -56,7 +55,8 @@ class IntersectionTable(var summary: Option[SummaryCounters] = None) extends Res
   }
 
   def update(request: SampleAnnotateRequest, sample: Sample, database: Database, motifs: Motifs): IntersectionTable = {
-    val instance    = IntersectionTable.createClonotypeDatabase(database, request.databaseQueryParams, request.searchScope, request.scoring)
+    val (instance, summaryIndex) =
+      IntersectionTable.createClonotypeDatabase(database, request.databaseQueryParams, request.searchScope, request.scoring)
     val postFilters = IntersectionTable.postSearchFilters(request.databaseQueryParams, motifs)
 
     val raw = instance.search(sample)
@@ -67,24 +67,20 @@ class IntersectionTable(var summary: Option[SummaryCounters] = None) extends Res
 
     this.rows = found.map(IntersectionTableRow.createFromSearchResult)
 
-    // Summarize what the user is actually shown: with any post-search filter active, the unmatched
-    // tally has to grow by the clonotypes that filter removed, which only happens if the summary sees
-    // the filtered map.
-    val summarized = if (postFilters.isEmpty) raw else found.map { case (clonotype, hits) => clonotype -> hits.asJava }.toMap.asJava
-    val summary    = new ClonotypeSearchSummary(summarized, sample, ClonotypeSearchSummary.FIELDS_STARBURST, instance)
-    val counters = summary.fieldCounters.asScala.map { case (name, map) =>
-      SummaryFieldCounter(name, map.asScala
-        .filter(v => v._2.getUnique != 0)
-        .filter { case (_, value) => IntersectionTable.chartable(name, value, request.databaseQueryParams.minEpitopeSize) }
-        .map { case (field, value) =>
-          SummaryClonotypeCounter(field, value.getUnique, value.getDatabaseUnique, value.getFrequency, value.getReads)
-        }.toSeq)
-    }.toSeq
+    // `found` rather than `raw`, so the summary describes what the user is actually shown: with any
+    // post-search filter active the unmatched tally has to grow by the clonotypes that filter removed.
+    val (counters, notFound) =
+      SearchSummary.summarize(found, sample, IntersectionTable.SummaryFields, summaryIndex)
 
-    val nfc = summary.getNotFoundCounter
+    val charted = counters.map { counter =>
+      SummaryFieldCounter(counter.name, counter.counters.filter { entry =>
+        IntersectionTable.chartable(counter.name, entry.databaseUnique, request.databaseQueryParams.minEpitopeSize)
+      })
+    }
+
     this.summary = Some(SummaryCounters(
-      counters :+ IntersectionTable.summarizeByHlaLocus(found),
-      SummaryClonotypeCounter("notFound", nfc.getUnique, nfc.getDatabaseUnique, nfc.getFrequency, nfc.getReads),
+      charted :+ IntersectionTable.summarizeByHlaLocus(found),
+      notFound,
       IntersectionTable.summarizeAnnotated(found)))
 
     this.currentPage = 0
@@ -168,6 +164,11 @@ object IntersectionTable {
 
   private final val EpitopeField = "antigen.epitope"
 
+  /** The starburst fields, as `ClonotypeSearchSummary.FIELDS_STARBURST` defined them. Held here now
+    * that the summary is computed in [[SearchSummary]] rather than by the engine. */
+  final val SummaryFields: Seq[String] =
+    Seq("mhc.class", "mhc.a", "mhc.b", "antigen.species", "antigen.gene", "antigen.epitope")
+
   /** Whether a summary entry is worth putting on a chart.
     *
     * `minEpitopeSize` used to be a *database* filter: `EpitopeSizeFilterUtil` counted records per
@@ -180,8 +181,8 @@ object IntersectionTable {
     * than `minSize` records for is left off the chart. `databaseUnique` is the count of database
     * records for that value, which is exactly what "epitope size" meant before.
     */
-  private def chartable(field: String, counter: ClonotypeCounter, minSize: Int): Boolean =
-    field != EpitopeField || minSize <= 0 || counter.getDatabaseUnique >= minSize.toLong
+  private def chartable(field: String, databaseUnique: Long, minSize: Int): Boolean =
+    field != EpitopeField || minSize <= 0 || databaseUnique >= minSize.toLong
 
   /** Matches broken down by HLA locus.
     *
@@ -242,8 +243,13 @@ object IntersectionTable {
   private type ClonotypeDatabaseKey =
     (VdjdbInstance, AnnotationsDatabaseQueryParams, AnnotationsSearchScope, AnnotationsAnnotateScoring)
 
-  private final val cache = new java.util.LinkedHashMap[ClonotypeDatabaseKey, ClonotypeDatabase](4, 0.75f, true) {
-    override def removeEldestEntry(eldest: java.util.Map.Entry[ClonotypeDatabaseKey, ClonotypeDatabase]): Boolean =
+  /** The index travels with the database it describes. Caching one without the other would leave the
+    * summary denominators to be recomputed per request, which is the expensive half — see
+    * [[SummaryIndex]]. */
+  private type CachedDatabase = (ClonotypeDatabase, SummaryIndex)
+
+  private final val cache = new java.util.LinkedHashMap[ClonotypeDatabaseKey, CachedDatabase](4, 0.75f, true) {
+    override def removeEldestEntry(eldest: java.util.Map.Entry[ClonotypeDatabaseKey, CachedDatabase]): Boolean =
       size() > MaxCachedDatabases
   }
 
@@ -293,7 +299,7 @@ object IntersectionTable {
   }
 
   def createClonotypeDatabase(database: Database, parameters: AnnotationsDatabaseQueryParams,
-                              searchScope: AnnotationsSearchScope, scoring: AnnotationsAnnotateScoring): ClonotypeDatabase = {
+                              searchScope: AnnotationsSearchScope, scoring: AnnotationsAnnotateScoring): CachedDatabase = {
     // Everything `postSearchFilters` handles is applied to search results rather than to the database,
     // so requests differing only in those share one build. Blanking them here is not an optimization
     // detail — leaving them in would make the two-entry cache thrash, since the motif checkbox alone
@@ -319,11 +325,18 @@ object IntersectionTable {
         val startedAt  = System.currentTimeMillis
         val usedBefore = settledHeapBytes()
         val built      = buildClonotypeDatabase(database, parameters, searchScope, scoring)
-        val _          = cache.put(key, built)
+        val builtAt    = System.currentTimeMillis
+        // The denominators are built here, with the database, and never per request. Timed separately
+        // because it used to be the whole cost of an annotation and the two numbers should stay
+        // visible next to each other if either regresses.
+        val index      = SummaryIndex.build(built, SummaryFields)
+        val entry      = (built, index)
+        val _          = cache.put(key, entry)
         val cost       = (settledHeapBytes() - usedBefore) / (1024L * 1024L)
         logger.info(s"Built clonotype database [${describe(parameters, searchScope, scoring)}] in " +
-          s"${System.currentTimeMillis - startedAt} ms, retained ~$cost MB, cached ${cache.size}/$MaxCachedDatabases")
-        built
+          s"${builtAt - startedAt} ms + ${System.currentTimeMillis - builtAt} ms summary index, " +
+          s"retained ~$cost MB, cached ${cache.size}/$MaxCachedDatabases")
+        entry
       }
     }
   }
