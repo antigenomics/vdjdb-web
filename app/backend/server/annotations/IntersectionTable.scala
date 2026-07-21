@@ -74,14 +74,12 @@ class IntersectionTable(var summary: Option[SummaryCounters] = None) extends Res
     val (counters, notFound) =
       SearchSummary.summarize(found, sample, IntersectionTable.SummaryFields, summaryIndex)
 
-    val charted = counters.map { counter =>
-      SummaryFieldCounter(counter.name, counter.counters.filter { entry =>
-        IntersectionTable.chartable(counter.name, entry.databaseUnique, request.databaseQueryParams.minEpitopeSize)
-      })
-    }
-
+    // Every counter is sent. The epitope cutoff is a chart display option now, applied in the browser
+    // against the same `databaseUnique` these carry: it described itself as affecting the plots only,
+    // yet applying it here meant changing it required re-running the annotation, and it reached the
+    // single-sample charts while never reaching the multisample ones.
     this.summary = Some(SummaryCounters(
-      charted :+ IntersectionTable.summarizeByHlaLocus(found),
+      counters :+ IntersectionTable.summarizeByHlaLocus(found),
       notFound,
       IntersectionTable.summarizeAnnotated(found)))
 
@@ -280,28 +278,6 @@ object IntersectionTable {
   private def confidenceScore(row: Row): Int =
     Option(row.getAt(ConfidenceColumn)).map(_.getValue.trim).flatMap(value => Try(value.toInt).toOption).getOrElse(0)
 
-  private final val EpitopeField = "antigen.epitope"
-
-  /** The starburst fields, as `ClonotypeSearchSummary.FIELDS_STARBURST` defined them. Held here now
-    * that the summary is computed in [[SearchSummary]] rather than by the engine. */
-  final val SummaryFields: Seq[String] =
-    Seq("mhc.class", "mhc.a", "mhc.b", "antigen.species", "antigen.gene", "antigen.epitope")
-
-  /** Whether a summary entry is worth putting on a chart.
-    *
-    * `minEpitopeSize` used to be a *database* filter: `EpitopeSizeFilterUtil` counted records per
-    * epitope and the whole index was built without the rare ones, so those epitopes could not be
-    * matched at all. That conflated two different things — a rare epitope is still a real annotation,
-    * it just makes for a noisy starburst wedge. It also forced a database rebuild whenever the value
-    * changed, and made the epitope counts depend on which species/gene the index was built for.
-    *
-    * Now it only thins the plots. Every hit stays in the table; an epitope the database knows fewer
-    * than `minSize` records for is left off the chart. `databaseUnique` is the count of database
-    * records for that value, which is exactly what "epitope size" meant before.
-    */
-  private def chartable(field: String, databaseUnique: Long, minSize: Int): Boolean =
-    field != EpitopeField || minSize <= 0 || databaseUnique >= minSize.toLong
-
   /** Matches broken down by HLA locus.
     *
     * Not derivable on the client from the `mhc.a`/`mhc.b` counters the engine already produces: those
@@ -454,7 +430,7 @@ object IntersectionTable {
     // `if (species)` is false for null. Zero for the confidence threshold and for the epitope size
     // switches those two off the same way. That leaves an index over every row of the database, which
     // is the whole point — everything that used to narrow it is a predicate in `databaseRestrictions`
-    // now, and `minEpitopeSize` stopped reaching the build when it became a chart-thinning number.
+    // now, and the epitope cutoff is a chart display option applied in the browser.
     database.getInstance.asClonotypeDatabase(null, null, searchScope, ScoringBundle.getDUMMY,
       DummyWeightFunctionFactory.INSTANCE, DummyResultFilter.INSTANCE, false, false, 0, 0)
   }

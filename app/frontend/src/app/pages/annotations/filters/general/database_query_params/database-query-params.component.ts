@@ -36,10 +36,4 @@ export class DatabaseQueryParamsComponent {
   }
 
 
-  public checkMinEpitopeSize(size: number): void {
-    this.filters.databaseQueryParams.minEpitopeSize = -1;
-    this.changeDetector.detectChanges();
-    this.filters.databaseQueryParams.minEpitopeSize = this.filters.validateRange(AnnotationsFilters.epitopeSizeRange, size);
-    this.changeDetector.detectChanges();
-  }
 }

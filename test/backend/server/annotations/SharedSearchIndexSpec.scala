@@ -44,7 +44,7 @@ class SharedSearchIndexSpec extends BaseTestSpecWithApplication {
 
   private def parameters(species: String = "HomoSapiens", gene: String = "TRB",
                          mhc: String = "MHCI+II") =
-    AnnotationsDatabaseQueryParams(species, gene, mhc, 0, None, None, None, None, None)
+    AnnotationsDatabaseQueryParams(species, gene, mhc, None, None, None, None, None)
 
   private def searchScope(matchV: Boolean = false, matchJ: Boolean = false) =
     AnnotationsSearchScope(matchV, matchJ, AnnotationsSearchScopeHammingDistance.Hamming)

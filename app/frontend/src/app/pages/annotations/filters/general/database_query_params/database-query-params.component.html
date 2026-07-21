@@ -45,18 +45,6 @@
             </div>
         </div>
         <div class="one wide column"></div>
-        <div class="four wide column filters label"><b>Chart epitope cutoff</b></div>
-        <div class="four wide column">
-            <!-- Annotations filters help: chart epitope cutoff -->
-            <i class="fitted filters corner help icon"
-               popup="Leaves epitopes VDJdb has fewer than this many records for off the summary charts, so rare epitopes do not crowd them. Affects the plots only - every match still appears in the results table, and this does not change what is searched."
-               header="Chart epitope cutoff"
-               footer="Default is 10; 0 charts everything">
-            </i>
-            <div class="ui input fluid">
-                <input [attr.disabled]="isDisabled()" type="number" min="0" max="1000" [ngModel]="filters.databaseQueryParams.minEpitopeSize"
-                       (ngModelChange)="checkMinEpitopeSize($event)">
-            </div>
         </div>
     </div>
     <div class="ui row middle aligned">
