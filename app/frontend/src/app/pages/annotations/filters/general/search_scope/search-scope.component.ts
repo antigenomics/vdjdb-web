@@ -14,9 +14,17 @@
  *     limitations under the License.
  */
 
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input } from '@angular/core';
-import { environment } from 'environments/environment';
-import { AnnotationsFilters } from 'pages/annotations/filters/annotations-filters';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { AnnotationsFilters, ISearchScopeHammingDistance } from 'pages/annotations/filters/annotations-filters';
+
+// The only two searches offered. Mirrors AnnotationsSearchScopeHammingDistance.Hamming / .Levenshtein,
+// which the server snaps any incoming scope onto - the numbers have to agree or the UI will show a
+// selection the server did not run.
+//
+// total = 1 in the Levenshtein case is what makes it *one* edit of any kind, rather than one
+// substitution plus one insertion plus one deletion.
+const HAMMING: ISearchScopeHammingDistance = { substitutions: 1, insertions: 0, deletions: 0, total: 1 };
+const LEVENSHTEIN: ISearchScopeHammingDistance = { substitutions: 1, insertions: 1, deletions: 1, total: 1 };
 
 @Component({
   selector:        'search-scope',
@@ -30,24 +38,16 @@ export class SearchScopeComponent {
   @Input('disabled')
   public disabled: boolean;
 
-  constructor(private changeDetector: ChangeDetectorRef) {}
-
   public isDisabled() {
     return this.disabled ? true : undefined;
   }
 
-  public isIndelsAllowed(): boolean {
-    return environment.application.annotations.filters.hammingDistance.allowIndels;
+  public isLevenshtein(): boolean {
+    const d = this.filters.searchScope.hammingDistance;
+    return d.insertions > 0 || d.deletions > 0;
   }
 
-  public checkHammingDistance(distance: number, type: string): void {
-    const hammingDistance = this.filters.searchScope.hammingDistance as any;
-    hammingDistance[ type ] = -1;
-    this.changeDetector.detectChanges();
-    hammingDistance[ type ] = this.filters.validateRange(AnnotationsFilters.hammingDistanceRanges[ type ], distance);
-    if (!this.isIndelsAllowed()) {
-      hammingDistance.total = hammingDistance.substitutions;
-    }
-    this.changeDetector.detectChanges();
+  public setLevenshtein(enabled: boolean): void {
+    this.filters.searchScope.hammingDistance = { ...(enabled ? LEVENSHTEIN : HAMMING) };
   }
 }

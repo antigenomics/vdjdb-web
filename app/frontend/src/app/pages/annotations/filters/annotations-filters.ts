@@ -67,15 +67,6 @@ export interface IAnnotateScoring {
 }
 
 export class AnnotationsFilters {
-  // Per-field, because the caps differ: these mirror AnnotationsSearchScopeHammingDistance, which
-  // clamps the same values server-side. A single shared range would let the box accept a number the
-  // server then silently lowers.
-  public static hammingDistanceRanges: { [ field: string ]: { min: number, max: number } } = {
-    substitutions: { min: 0, max: 3 },
-    insertions:    { min: 0, max: 1 },
-    deletions:     { min: 0, max: 1 },
-    total:         { min: 0, max: 4 }
-  };
   public static confidenceThresholdRange = { min: 0, max: 3 };
   public static epitopeSizeRange = { min: 0, max: 1000 };
   public static exhaustiveAlignmentRange = { min: 0, max: 2 };
