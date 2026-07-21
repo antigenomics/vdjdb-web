@@ -34,25 +34,22 @@ export namespace ChartUtils {
     ];
 
     /**
-     * `n` colours spanning the full palette, rather than the first `n` of it — a three-slice chart
-     * should read red / yellow-green / blue, not three shades of red.
+     * `n` colours evenly spaced along the palette, rather than the first `n` of it — a three-slice
+     * chart should read red / yellow-green / blue, not three shades of red.
      *
-     * Up to eight categories the published colours are used exactly. Past that there is no way to
-     * stay exact, so the anchors are interpolated; this is what d3's own scale-chromatic does with
-     * the same ColorBrewer schemes.
+     * A piecewise RGB ramp rather than a basis spline: piecewise passes exactly *through* every
+     * anchor, so eight categories reproduce the published palette verbatim and the endpoints are
+     * always the true red and blue. A spline (`interpolateRgbBasis`, what d3-scale-chromatic uses)
+     * only honours the endpoints and smooths the interior away from the ColorBrewer values.
+     *
+     * Interpolating at every size, instead of picking discrete entries below eight, is what keeps the
+     * spacing even: rounding onto eight fixed slots gave visibly uneven steps at n = 6 and 7.
      */
     function spread(n: number): string[] {
       if (n <= 1) {
         return [ SPECTRAL[ 0 ] ];
       }
-      if (n <= SPECTRAL.length) {
-        const picked: string[] = [];
-        for (let i = 0; i < n; i = i + 1) {
-          picked.push(SPECTRAL[ Math.round(i * (SPECTRAL.length - 1) / (n - 1)) ]);
-        }
-        return picked;
-      }
-      return d3.quantize(d3.interpolateRgbBasis(SPECTRAL), n);
+      return d3.quantize(d3.piecewise(d3.interpolateRgb, SPECTRAL), n);
     }
 
     export function generate(data: IChartDataEntry[]): ScaleOrdinal<string, string> {
