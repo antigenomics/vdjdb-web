@@ -137,9 +137,16 @@ object SampleConverter {
     if (noAllele.isEmpty) "." else noAllele
   }
 
-  private[sample] def chainOf(v: String, locus: Option[String]): Option[String] = {
+  /** Chain from the first three letters of a segment name, or from an explicit locus column when the
+    * format has one (AIRR `locus`, MiXCR).
+    *
+    * Derived from **J** rather than V: a rearrangement always carries a J, whereas V can be absent or
+    * ambiguous in real data, and the J call is the more reliable locus witness of the two. The locus
+    * column still wins when present, since it is the format stating the answer outright.
+    */
+  private[sample] def chainOf(segment: String, locus: Option[String]): Option[String] = {
     val fromLocus = locus.map(_.trim.toUpperCase).filter(_.nonEmpty)
-    val candidate = fromLocus.getOrElse(v.trim.toUpperCase)
+    val candidate = fromLocus.getOrElse(segment.trim.toUpperCase)
     if (candidate.startsWith("TRA")) Some("TRA")
     else if (candidate.startsWith("TRB")) Some("TRB")
     else None
@@ -332,7 +339,7 @@ object SampleConverter {
       v      = cleanSegment(vRaw)
       j      = cleanSegment(jRaw)
       // Only single-chain TRA/TRB are supported; anything else is skipped and counted.
-      chain <- chainOf(v, at(fields, c.locus))
+      chain <- chainOf(j, at(fields, c.locus))
       count  = at(fields, c.count).flatMap(s => scala.util.Try(s.toDouble.toLong).toOption).getOrElse(1L)
       if count > 0
     } yield {

@@ -78,6 +78,14 @@ export class UploadTableRowComponent implements AfterViewInit, OnInit, OnDestroy
     return this.uploadService.getAvailableSoftwareTypes();
   }
 
+  public getAvailableSpecies(): string[] {
+    return FileItem.AVAILABLE_SPECIES;
+  }
+
+  public getAvailableChains(): string[] {
+    return FileItem.AVAILABLE_CHAINS;
+  }
+
   public isTagsExist(): boolean {
     return this.getAvailableTags().length !== 0;
   }

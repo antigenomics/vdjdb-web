@@ -32,6 +32,7 @@ import { NotificationService } from 'utils/notifications/notification.service';
 import { Utils } from 'utils/utils';
 import { DatabaseMetadata } from '../search/database/database-metadata';
 import { FileItem } from './upload/item/file-item';
+import { IUploadedSample } from 'pages/annotations/upload/upload.service';
 
 export type AnnotationsServiceEvents = number;
 
@@ -330,28 +331,42 @@ export class AnnotationsService {
     return response.isSuccess();
   }
 
-  public async addSample(file: FileItem): Promise<boolean> {
-    const response = await this.connection.sendMessage({
-      action: AnnotationsServiceWebSocketActions.VALIDATE_SAMPLE,
-      data:   new WebSocketRequestData()
-                .add('name', file.baseName)
-                .add('tagID', file.tag ? file.tag.id : -1)
-                .unpack()
-    });
-    const valid = response.isSuccess() && response.get('valid');
-    if (valid) {
-      const user = this.getUser();
-      if (!user.samples.some((sample) => sample.name === file.baseName)) {
-        const sampleItem = new SampleItem(file.baseName, file.software, -1, -1, -1);
-        if (file.tag !== undefined) {
-          sampleItem.tagID = file.tag.id;
-          file.tag.samples.push(new SetEntry(sampleItem.name, sampleItem.name, false));
+  /** Registers what the server actually stored, rather than the name the client uploaded.
+   *
+   * A file holding both chains becomes two samples, so this has to be driven by the server's reply:
+   * validating `file.baseName` would find nothing and report a failure on a perfectly good upload.
+   * Sequential because sendMessage correlates one request to one response.
+   */
+  public async addSample(file: FileItem, uploaded: IUploadedSample[]): Promise<boolean> {
+    if (uploaded === undefined || uploaded.length === 0) {
+      return false;
+    }
+    let allValid = true;
+    for (const stored of uploaded) {
+      const response = await this.connection.sendMessage({
+        action: AnnotationsServiceWebSocketActions.VALIDATE_SAMPLE,
+        data:   new WebSocketRequestData()
+                  .add('name', stored.name)
+                  .add('tagID', file.tag ? file.tag.id : -1)
+                  .unpack()
+      });
+      const valid = response.isSuccess() && response.get('valid');
+      if (valid) {
+        const user = this.getUser();
+        if (!user.samples.some((sample) => sample.name === stored.name)) {
+          const sampleItem = new SampleItem(stored.name, stored.software, -1, -1, -1, stored.species, stored.chain);
+          if (file.tag !== undefined) {
+            sampleItem.tagID = file.tag.id;
+            file.tag.samples.push(new SetEntry(sampleItem.name, sampleItem.name, false));
+          }
+          user.samples.push(sampleItem);
+          this._events.next(AnnotationsServiceEvents.SAMPLE_ADDED);
         }
-        user.samples.push(sampleItem);
-        this._events.next(AnnotationsServiceEvents.SAMPLE_ADDED);
+      } else {
+        allValid = false;
       }
     }
-    return valid;
+    return allValid;
   }
 
   public async deleteSample(sample: SampleItem): Promise<boolean> {

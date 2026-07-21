@@ -23,6 +23,8 @@ export interface IFileItemStats {
   readonly name: string;
   readonly extension: string;
   readonly software: string;
+  readonly species: string;
+  readonly chain: string;
   readonly size: number;
 }
 
@@ -31,12 +33,19 @@ export class FileItem {
 
   public static readonly FULL_PROGRESS: number = 100;
   public static readonly AVAILABLE_EXTENSIONS: string[] = [ 'txt', 'gz', 'zip' ];
+  // Must stay identical to SampleFileForm.Species / .Chains, which reject anything else.
+  public static readonly AVAILABLE_SPECIES: string[] = [ 'HomoSapiens', 'MusMusculus', 'MacacaMulatta' ];
+  public static readonly AVAILABLE_CHAINS: string[] = [ 'TRA', 'TRB' ];
 
   public compressed?: Blob;
   public native: File;
   public baseName: string = '';
   public extension: string = '';
   public software: string = 'VDJtools';
+  // Declared, not detected. The chain actually found in the data wins for anything the converter can
+  // parse; this only decides the stored chain on the legacy-passthrough path, where nothing parses it.
+  public species: string = FileItem.AVAILABLE_SPECIES[ 0 ];
+  public chain: string = FileItem.AVAILABLE_CHAINS[ 1 ];
   public tag?: SampleTag;
   public progress: ReplaySubject<number> = new ReplaySubject(1);
   public status: FileItemStatus = new FileItemStatus();
@@ -58,6 +67,8 @@ export class FileItem {
       name:      this.baseName,
       extension: this.extension,
       software:  this.software,
+      species:   this.species,
+      chain:     this.chain,
       size:      this.compressed ? this.compressed.size : this.native.size
     };
   }
@@ -79,6 +90,14 @@ export class FileItem {
 
   public setSoftware(software: string): void {
     this.software = software;
+  }
+
+  public setSpecies(species: string): void {
+    this.species = species;
+  }
+
+  public setChain(chain: string): void {
+    this.chain = chain;
   }
 
   public hasTag(): boolean {

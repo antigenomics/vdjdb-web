@@ -51,7 +51,32 @@
                         </div>
                     </div>
                 </th>
-                <th class="seven wide center aligned">Status</th>
+                <th class="two wide">
+                    <div class="ui dropdown" dropdown [content]="speciescontent">
+                        <span class="text">Species</span>
+                        <i class="dropdown icon"></i>
+                        <div class="menu fast fade element" #speciescontent>
+                            <div class="item" *ngFor="let species of getAvailableSpecies()"
+                                 (click)="uploadService.setDefaultSpecies(species)">
+                                {{ species }}
+                            </div>
+                        </div>
+                    </div>
+                </th>
+                <th class="two wide">
+                    <div class="ui dropdown" dropdown [content]="chaincontent">
+                        <span class="text">Chain</span>
+                        <i class="dropdown icon"></i>
+                        <div class="menu fast fade element" #chaincontent>
+                            <div class="item" *ngFor="let chain of getAvailableChains()"
+                                 (click)="uploadService.setDefaultChain(chain)">
+                                {{ chain }}
+                            </div>
+                        </div>
+                    </div>
+                </th>
+                <!-- Status drops from seven to three wide to keep the row at 16 columns. -->
+                <th class="three wide center aligned">Status</th>
                 <th class="two wide"></th>
             </tr>
             </thead>

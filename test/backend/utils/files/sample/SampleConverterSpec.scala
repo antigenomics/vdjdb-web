@@ -55,11 +55,14 @@ class SampleConverterSpec extends WordSpec with Matchers {
       SampleConverter.cleanSegment("") shouldBe "."
     }
 
-    "derive the chain from the locus column or the V gene" in {
-      SampleConverter.chainOf("TRBV7-9", None) shouldBe Some("TRB")
-      SampleConverter.chainOf("TRAV1-2", None) shouldBe Some("TRA")
-      SampleConverter.chainOf("IGHV1-2", None) shouldBe None // single-chain TRA/TRB only
+    "derive the chain from the locus column or the J segment" in {
+      SampleConverter.chainOf("TRBJ2-7", None) shouldBe Some("TRB")
+      SampleConverter.chainOf("TRAJ33", None) shouldBe Some("TRA")
+      SampleConverter.chainOf("IGHJ4", None) shouldBe None // single-chain TRA/TRB only
       SampleConverter.chainOf("", Some("TRB")) shouldBe Some("TRB")
+      // An explicit locus column is the format stating the answer outright, so it outranks the
+      // segment name when the two disagree.
+      SampleConverter.chainOf("TRBJ2-6", Some("TRA")) shouldBe Some("TRA")
     }
 
     "recognise the junction convention" in {

@@ -34,13 +34,19 @@ export class SampleItem {
   public readsCount: number;
   public clonotypesCount: number;
   public tagID: number;
+  // Empty for samples stored before these were recorded; treated as "unspecified" everywhere.
+  public species: string;
+  public chain: string;
 
-  constructor(name: string, software: string, readsCount: number, clonotypesCount: number, tagID: number) {
+  constructor(name: string, software: string, readsCount: number, clonotypesCount: number, tagID: number,
+              species: string = '', chain: string = '') {
     this.name = name;
     this.software = software;
     this.readsCount = readsCount;
     this.clonotypesCount = clonotypesCount;
     this.tagID = tagID;
+    this.species = species;
+    this.chain = chain;
   }
 
   public updateProps(newName: string, newSoftware: string, newTagID: number): void {
@@ -98,6 +104,9 @@ export class SampleItem {
   }
 
   public static deserialize(o: any): SampleItem {
-    return new SampleItem(o[ 'name' ], o[ 'software' ], o[ 'readsCount' ], o[ 'clonotypesCount' ], o[ 'tagID' ]); // tslint:disable-line:no-string-literal
+    /* tslint:disable:no-string-literal */
+    return new SampleItem(o[ 'name' ], o[ 'software' ], o[ 'readsCount' ], o[ 'clonotypesCount' ], o[ 'tagID' ],
+      o[ 'species' ], o[ 'chain' ]);
+    /* tslint:enable:no-string-literal */
   }
 }

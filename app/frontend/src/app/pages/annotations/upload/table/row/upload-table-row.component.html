@@ -63,6 +63,34 @@
     </div>
 </td>
 <td>
+    <div class="ui dropdown" dropdown [content]="speciescontent" *ngIf="item.status.isWaiting()">
+        <span class="text">{{ item.species }}</span>
+        <i class="dropdown icon"></i>
+        <div class="menu fast fade element" #speciescontent>
+            <div class="item" *ngFor="let species of getAvailableSpecies()" (click)="item.setSpecies(species)">
+                {{ species }}
+            </div>
+        </div>
+    </div>
+    <div *ngIf="!item.status.isWaiting()">
+        {{ item.species }}
+    </div>
+</td>
+<td>
+    <div class="ui dropdown" dropdown [content]="chaincontent" *ngIf="item.status.isWaiting()">
+        <span class="text">{{ item.chain }}</span>
+        <i class="dropdown icon"></i>
+        <div class="menu fast fade element" #chaincontent>
+            <div class="item" *ngFor="let chain of getAvailableChains()" (click)="item.setChain(chain)">
+                {{ chain }}
+            </div>
+        </div>
+    </div>
+    <div *ngIf="!item.status.isWaiting()">
+        {{ item.chain }}
+    </div>
+</td>
+<td>
     <div class="ui progress {{ item.status.getLabelStatusClass() }}">
         <div class="label">{{ item.status.getStatusString() }}</div>
     </div>

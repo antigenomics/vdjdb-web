@@ -27,6 +27,7 @@ import {
   ViewChild
 } from '@angular/core';
 import { AnnotationsService } from 'pages/annotations/annotations.service';
+import { FileItem } from 'pages/annotations/upload/item/file-item';
 import { Subscription } from 'rxjs';
 import { UploadService } from '../upload.service';
 
@@ -91,6 +92,14 @@ export class UploadTableComponent implements OnInit, OnDestroy {
 
   public isTagsExist(): boolean {
     return this.annotationsService.getTags().length !== 0;
+  }
+
+  public getAvailableSpecies(): string[] {
+    return FileItem.AVAILABLE_SPECIES;
+  }
+
+  public getAvailableChains(): string[] {
+    return FileItem.AVAILABLE_CHAINS;
   }
 
   public ngOnDestroy(): void {

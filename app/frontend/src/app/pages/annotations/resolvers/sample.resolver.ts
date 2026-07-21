@@ -49,7 +49,18 @@ export class SampleItemResolver implements Resolve<SampleItem> {
       return undefined;
     } else {
       if (!sample.hasData()) {
-        sample.setData({ table: new IntersectionTable(), filters: new AnnotationsFilters() });
+        // Seed the annotate filters from the sample itself. Species and gene otherwise come from the
+        // per-request defaults (HomoSapiens / TRB), so a sample stored as MusMusculus / TRA would be
+        // displayed with its real chain and then searched against human TRB anyway - worse than not
+        // recording the chain at all. Samples predating the columns carry '' and keep the defaults.
+        const filters = new AnnotationsFilters();
+        if (sample.species) {
+          filters.databaseQueryParams.species = sample.species;
+        }
+        if (sample.chain) {
+          filters.databaseQueryParams.gene = sample.chain;
+        }
+        sample.setData({ table: new IntersectionTable(), filters });
       }
       this.sampleService.setCurrentSample(sample);
       this.logger.debug('SampleItemResolver: resolved', sample);
