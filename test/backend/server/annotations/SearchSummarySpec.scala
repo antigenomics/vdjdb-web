@@ -81,11 +81,11 @@ class SearchSummarySpec extends BaseTestSpecWithApplication {
   "SummaryIndex" should {
     "count the same distinct CDR3s per value as a per-value full scan" taggedAs UtilsTestTag in {
       val rows = clonotypeDatabase.getRows.asScala
-      IntersectionTable.SummaryFields.foreach { field =>
-        val reference = rows.groupBy(_.getAt(field).getValue)
+      val reference = IntersectionTable.SummaryFields.map { field =>
+        field -> rows.groupBy(_.getAt(field).getValue)
           .map { case (value, group) => value -> group.map(cdr3Of).toSet.size.toLong }
-        index.perColumn(field) shouldEqual reference
-      }
+      }.toMap
+      index.perColumn shouldEqual reference
     }
 
     "count every distinct CDR3 in the database once" taggedAs UtilsTestTag in {
@@ -100,23 +100,23 @@ class SearchSummarySpec extends BaseTestSpecWithApplication {
   "SearchSummary" should {
     "count each clonotype once per field value however many records it matched" taggedAs UtilsTestTag in {
       val (counters, _) = SearchSummary.summarize(found, sample, IntersectionTable.SummaryFields, index)
-      IntersectionTable.SummaryFields.foreach { field =>
-        val reference = found.flatMap { case (clonotype, hits) =>
+      val reference = IntersectionTable.SummaryFields.map { field =>
+        field -> found.flatMap { case (clonotype, hits) =>
           hits.map(hit => (hit.getRow.getAt(field).getValue, clonotype))
         }.distinct.groupBy(_._1).map { case (value, pairs) => value -> pairs.size }
-        val actual = counters.find(_.name == field).get.counters
-          .map(counter => counter.field -> counter.unique).toMap
-        actual shouldEqual reference
-      }
+      }.toMap
+      val actual = counters.map { field =>
+        field.name -> field.counters.map(counter => counter.field -> counter.unique).toMap
+      }.toMap
+      actual shouldEqual reference
     }
 
     "take the denominators from the index" taggedAs UtilsTestTag in {
       val (counters, _) = SearchSummary.summarize(found, sample, IntersectionTable.SummaryFields, index)
-      counters.foreach { field =>
-        field.counters.foreach { counter =>
-          counter.databaseUnique shouldEqual index.perColumn(field.name)(counter.field)
-        }
+      val disagreeing = counters.flatMap { field =>
+        field.counters.filterNot(counter => counter.databaseUnique == index.perColumn(field.name)(counter.field))
       }
+      disagreeing shouldBe empty
     }
 
     "report nothing unmatched when every clonotype matched" taggedAs UtilsTestTag in {
@@ -131,7 +131,7 @@ class SearchSummarySpec extends BaseTestSpecWithApplication {
 
     "report the whole sample as unmatched when nothing matched" taggedAs UtilsTestTag in {
       val (counters, notFound) = SearchSummary.summarize(Seq.empty, sample, IntersectionTable.SummaryFields, index)
-      counters.foreach(_.counters shouldBe empty)
+      counters.flatMap(_.counters) shouldBe empty
       notFound.unique shouldEqual sample.getDiversity
       notFound.reads shouldEqual sample.getCount
       notFound.frequency shouldEqual sample.getFreq +- 1e-9
