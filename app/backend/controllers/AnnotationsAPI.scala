@@ -123,8 +123,8 @@ class AnnotationsAPI @Inject()(cc: ControllerComponents, userRequestAction: User
         // Nothing parsed the file, so the declared chain is all we have — this path is the only
         // reason the form carries one.
         user.addSampleFileFrom(name, "gz", requestedSoftware, species, chain, source).map { result =>
-          val _ = source.delete()
-          val _ = prefix.delete()
+          // One `val _` per block only - a second in the same scope collides.
+          Seq(source, prefix).foreach(f => { val _ = f.delete() })
           result match {
             case Left(id)     => storedOk(Seq(StoredSample(id, name, chain, species, requestedSoftware, -1L)))
             case Right(error) => BadRequest(error)
