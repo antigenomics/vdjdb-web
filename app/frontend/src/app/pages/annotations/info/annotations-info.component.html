@@ -31,10 +31,17 @@
     </div>
 </div>
 <div class="ui segment padded">
-    <p><b>Note</b> that limits on the number of samples, sample file size and number of clonotypes (unique TCR sequences) apply.
-        Please see <a href="http://vdjtools-doc.readthedocs.io/en/master/input.html#formats-supported-for-conversion" rel="noopener" target="_blank">this
-            section</a> of
-        VDJtools documentation for the list of supported input formats.</p>
+    <p><b>Input formats.</b> <b>VDJtools</b>, <b>AIRR</b> and <b>MiXCR</b> tables are accepted, plain or
+        gzipped. There is nothing to select: the format is read from the column header of the file you
+        upload, and a header that cannot be placed as one of the three is rejected rather than guessed
+        at. Every accepted file is converted to a VDJtools table on upload, so the format shown against
+        a stored sample is the one it arrived in.</p>
+    <p>The <b>chain</b> is derived the same way, from the J segment call or an explicit locus column.
+        Leave it on <b>Guess</b> and a file holding both chains is split into two samples,
+        <i>name</i>_TRA and <i>name</i>_TRB; name a chain instead and that is treated as an assertion
+        about the file, keeping only those records.</p>
+    <p><b>Note</b> that limits on the number of samples, sample file size and number of clonotypes
+        (unique TCR sequences) apply.</p>
 </div>
 <div class="ui segment padded" *ngIf="!checkFeaturesAvailability()">
     <p><b>Note</b> This is a demo account. Some features may be unavailable</p>

@@ -24,12 +24,16 @@ import play.api.data.Forms.{default, mapping, nonEmptyText}
   *                stored unparsed and nothing else can tell us the chain; otherwise the chain actually
   *                found in the data wins.
   */
-case class SampleFileForm(name: String, software: String, species: String, chain: String)
+case class SampleFileForm(name: String, species: String, chain: String)
 
 object SampleFileForm {
-  /** The only input dialects accepted. Every one of them is normalised to a positional VDJtools table
-    * on upload, so this list is the converter's capability, not vdjtools' Software enum — that enum
-    * names a dozen formats we no longer read, and offering them produced uploads stored on a guess. */
+  /** The input dialects accepted, for display only.
+    *
+    * The user does not choose one: `SampleConverter.detectFormat` reads the header and decides, and a
+    * header it cannot place is rejected rather than stored on a guess. The selector that used to sit
+    * on the upload table was already decorative by then — every upload is normalised to a positional
+    * VDJtools table regardless of what was picked — so it is gone, and this list is what the upload
+    * page names as accepted. */
   final val Formats: Seq[String] = Seq("VDJtools", "AIRR", "MiXCR")
 
   final val DefaultSpecies = "HomoSapiens"
@@ -43,14 +47,11 @@ object SampleFileForm {
 
   implicit val sampleFileFormMapping: Form[SampleFileForm] = Form(mapping(
     "name" -> nonEmptyText(maxLength = 64),
-    "software" -> nonEmptyText(maxLength = 64),
     // `default`, not bare text: a cached copy of the old SPA does not send these fields, and it should
     // keep uploading rather than fail with "Species field is missing".
     "species" -> default(nonEmptyText(maxLength = 32), SampleFileForm.DefaultSpecies),
     "chain" -> default(nonEmptyText(maxLength = 8), SampleFileForm.DefaultChain)
-  )(SampleFileForm.apply)(SampleFileForm.unapply) verifying("sample.file.form.invalid.software", { sampleFileForm =>
-    SampleFileForm.Formats.contains(sampleFileForm.software)
-  }) verifying("sample.file.form.invalid.name", { sampleFileForm =>
+  )(SampleFileForm.apply)(SampleFileForm.unapply) verifying("sample.file.form.invalid.name", { sampleFileForm =>
     sampleFileForm.name.nonEmpty && SampleFileTable.isSampleNameValid(sampleFileForm.name)
   }) verifying("sample.file.form.invalid.species", { sampleFileForm =>
     Species.contains(sampleFileForm.species)
