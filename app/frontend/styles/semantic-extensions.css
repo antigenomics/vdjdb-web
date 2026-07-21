@@ -175,12 +175,11 @@
    the headings truncate to "No…", "Sa…", "Se…". Keep the proportion on wide screens but never let it
    fall below the width the labels actually need. */
 .ui.vertical.menu {
-  width: 12.5%;
-  min-width: 190px;
+  width: var(--ds-annotations-sidebar-width);
 }
 
 .pusher.annotations {
-  margin-left: 12.5%;
+  margin-left: var(--ds-annotations-sidebar-width);
   -webkit-transition: margin-left 0.2s ease-in-out !important;
   -moz-transition: margin-left 0.2s ease-in-out !important;
   -ms-transition: margin-left 0.2s ease-in-out !important;
@@ -246,7 +245,6 @@
 @media (max-width: 768px) {
   .ui.vertical.menu {
     width: 100%;
-    min-width: 0;
   }
 
   .ui.sidebar.with.navbar {

@@ -12,6 +12,12 @@
      navbar was redesigned. */
   --ds-navbar-height: 69px;
 
+  /* Width of the annotations sidebar AND the matching content offset. One value for both: they were
+     a 12.5% width against a 12.5% margin, but the sidebar is position:fixed so its percentage
+     resolves against the viewport while the content's resolves against its parent - so the two
+     drifted apart and the sidebar overlapped the content by 20px. A fixed length cannot drift. */
+  --ds-annotations-sidebar-width: 190px;
+
   --ds-font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   --ds-ink: #1d1d1f;            /* Apple near-black for headings */
   --ds-text: #2f3134;          /* body text */
