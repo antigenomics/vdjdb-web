@@ -67,15 +67,29 @@ object AnnotationsSearchScopeHammingDistance {
 
   /** The index a scope is *searched against*, which is not the same thing as the scope itself.
     *
-    * Only two indexes are ever built. Exact, Hamming and Hamming2 are all sub-ranges of a
-    * two-substitution neighbourhood, so one index serves all three and the difference between them is
-    * decided afterwards by counting the mutations the engine already reports on every hit. Levenshtein
-    * needs its own: a substitution-only tree never walks indel neighbours, so those records are not
-    * merely unfiltered there, they are unreachable.
+    * Exact rides on the Hamming index rather than having one of its own: it is a sub-range of a
+    * one-substitution neighbourhood, and the difference is decided afterwards by counting the
+    * mutations the engine already reports on every hit. That also avoids constructing a zero-budget
+    * `SearchScope`, which nothing in this codebase has ever done and whose behaviour is unverified.
     *
-    * This is what bounds the index cache. It holds one entry per distinct value of *this* function —
-    * two — rather than one per scope the client can name.
+    * The wider scopes do NOT share, and that is a measurement, not a preference. Serving Hamming from
+    * the Hamming2 index works and was the first design here, but on the production database searching
+    * 187,639 clonotypes costs **994 ms and 331,707 hits** through the Hamming index against **5,270 ms
+    * and 3,739,709 hits** through the Hamming2 one — the same 331,707 survive the post-filter. Sharing
+    * would have made every default annotation five times slower and allocated eleven times the hits, to
+    * save an index that is only built if somebody asks for it.
+    *
+    * Levenshtein needs its own for a different reason: a substitution-only tree never walks indel
+    * neighbours, so those records are not merely unfiltered there, they are unreachable.
+    *
+    * This is what bounds the index cache: one entry per distinct value of *this* function — three —
+    * rather than one per scope a client can name. Each costs 436 MB resident (measured, identical for
+    * every scope: the scope drives the neighbourhood walk at query time, not the stored tree), and
+    * they are built lazily, so a deployment where nobody selects the wider searches holds one.
     */
   def indexScope(distance: AnnotationsSearchScopeHammingDistance): AnnotationsSearchScopeHammingDistance =
-    if (sanitize(distance) == Levenshtein) Levenshtein else Hamming2
+    sanitize(distance) match {
+      case Exact => Hamming
+      case other => other
+    }
 }
