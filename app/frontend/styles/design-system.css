@@ -6,6 +6,12 @@
  */
 
 :root {
+  /* Rendered height of the fixed navbar: the 68px container below plus its 1px bottom border.
+     Anything positioned under the bar must reference this rather than repeat a number - the
+     sidebar's `top` was hardcoded to 51px and silently drifted 18px under the bar when the
+     navbar was redesigned. */
+  --ds-navbar-height: 69px;
+
   --ds-font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   --ds-ink: #1d1d1f;            /* Apple near-black for headings */
   --ds-text: #2f3134;          /* body text */
@@ -129,7 +135,7 @@ a:hover { color: var(--ds-teal); }
   border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
   box-shadow: none !important;
 }
-.ui.top.fixed.menu > .container { min-height: 68px; align-items: stretch; }
+.ui.top.fixed.menu > .container { min-height: calc(var(--ds-navbar-height) - 1px); align-items: stretch; }
 
 /* Fancy auto-hide: slide the bar up out of view; it eases back in on scroll-up
    or when the pointer nears the top edge. */
