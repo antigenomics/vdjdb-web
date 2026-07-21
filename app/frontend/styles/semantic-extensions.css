@@ -153,9 +153,12 @@
   color: rgba(0, 0, 0, 0.87);
 }
 
+/* Flyouts anchored to the right edge of the sidebar. This used to be `left: 13.0%`, a hand-tuned
+   twin of the sidebar's old percentage width - at 1280px that is 166px, which put the flyout 24px
+   *inside* a 190px sidebar. Sharing the token keeps the two in step. */
 .ui.menu.sidebar-settings {
   position: fixed;
-  left: 13.0%;
+  left: var(--ds-annotations-sidebar-width);
   z-index: 15;
   font-size: medium;
   opacity: 0.0;
