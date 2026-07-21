@@ -129,9 +129,10 @@ export class SummaryChartComponent implements OnInit, OnDestroy {
       return [];
     }
 
-    let data: IChartDataEntry[] = counters.counters.map((c) => {
-      return { name: c.field, value: valueConverter(c) };
-    });
+    let data: IChartDataEntry[] = SummaryChartComponent.charted(counters.counters, currentFieldName, options)
+      .map((c) => {
+        return { name: c.field, value: valueConverter(c) };
+      });
 
     data = data.sort((a, b) => b.value - a.value);
     if (data.length > options.currentThresholdType.threshold) {
@@ -145,13 +146,30 @@ export class SummaryChartComponent implements OnInit, OnDestroy {
     return data.reverse();
   }
 
+  /**
+   * The counters worth plotting for a column.
+   *
+   * `databaseUnique` is how many distinct CDR3s VDJdb holds for that value, which is exactly what
+   * "epitope size" meant when this was applied server-side. Only the epitope column is thinned - the
+   * cutoff is meaningless against an MHC class or a species.
+   */
+  private static charted(counters: SummaryClonotypeCounter[], fieldName: string,
+                         options: SummaryChartOptions): SummaryClonotypeCounter[] {
+    if (fieldName !== 'antigen.epitope' || options.minEpitopeSize <= 0) {
+      return counters;
+    }
+    return counters.filter((c) => c.databaseUnique >= options.minEpitopeSize);
+  }
+
   private updateThresholdValues(): void {
     this.thresholdTypesAvailable = 1;
     const currentFieldName: string = this.options.fieldTypes[ this.options.currentFieldIndex ].name;
     const counters = this.data.counters.find((c) => c.name === currentFieldName);
     if (counters) {
+      // Against the thinned list, so "Top 20" offers itself only when twenty wedges survive the cutoff.
+      const charted = SummaryChartComponent.charted(counters.counters, currentFieldName, this.options);
       for (const type of SummaryChartOptions.thresholdTypes) {
-        if (counters.counters.length > type.threshold) {
+        if (charted.length > type.threshold) {
           this.thresholdTypesAvailable += 1;
         }
       }

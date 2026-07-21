@@ -63,6 +63,15 @@ export class SummaryChartOptions {
     { name: 'antigen.gene', title: 'Epitope gene' }
   ];
 
+  /** Epitopes the database holds fewer than this many distinct CDR3s for are left off the plot.
+    *
+    * A display threshold, applied here rather than server-side. It used to be sent with the annotate
+    * request and applied while building the summary, which meant a control described as affecting the
+    * plots only could not be changed without re-running the whole annotation - and it silently applied
+    * to the single-sample charts but never to the multisample ones.
+    */
+  public minEpitopeSize: number = 10;
+
   public currentThresholdType: IThresholdType = SummaryChartOptions.thresholdTypes[ 0 ];
   public currentFieldIndex: number = 0;
   public isNotFoundVisible: boolean = false;
@@ -107,6 +116,21 @@ export class SummaryChartOptionsComponent {
   public set isNotFoundVisible(isVisible: boolean) {
     this.options.isNotFoundVisible = isVisible;
     this.onOptionsChange.emit(this.options);
+  }
+
+  public get minEpitopeSize(): number {
+    return this.options.minEpitopeSize;
+  }
+
+  public set minEpitopeSize(size: number) {
+    // Guard the parse: an emptied number input yields null, which would compare false against every
+    // count and blank the chart.
+    this.options.minEpitopeSize = (size === null || isNaN(size) || size < 0) ? 0 : size;
+    this.onOptionsChange.emit(this.options);
+  }
+
+  public isEpitopeFieldSelected(): boolean {
+    return this.options.fieldTypes[ this.options.currentFieldIndex ].name === 'antigen.epitope';
   }
 
   public get isWeightedByReadCount(): boolean {

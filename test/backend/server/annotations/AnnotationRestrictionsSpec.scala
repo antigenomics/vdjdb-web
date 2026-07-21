@@ -29,7 +29,7 @@ class AnnotationRestrictionsSpec extends BaseTestSpec {
 
   private def parameters(species: String = "HomoSapiens", gene: String = "TRB",
                          mhc: String = "MHCI+II") =
-    AnnotationsDatabaseQueryParams(species, gene, mhc, 0, None, None, None, None, None)
+    AnnotationsDatabaseQueryParams(species, gene, mhc, None, None, None, None, None)
 
   private def record(species: String = "HomoSapiens", gene: String = "TRB",
                      mhcClass: String = "MHCI", score: String = "0"): String => String =

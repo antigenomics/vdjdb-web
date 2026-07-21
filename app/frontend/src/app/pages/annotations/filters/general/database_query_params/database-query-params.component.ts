@@ -14,7 +14,7 @@
  *     limitations under the License.
  */
 
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { AnnotationsFilters } from 'pages/annotations/filters/annotations-filters';
 
 @Component({
@@ -29,17 +29,7 @@ export class DatabaseQueryParamsComponent {
   @Input('disabled')
   public disabled: boolean;
 
-  constructor(private changeDetector: ChangeDetectorRef) {}
-
   public isDisabled() {
     return this.disabled ? true : undefined;
-  }
-
-
-  public checkMinEpitopeSize(size: number): void {
-    this.filters.databaseQueryParams.minEpitopeSize = -1;
-    this.changeDetector.detectChanges();
-    this.filters.databaseQueryParams.minEpitopeSize = this.filters.validateRange(AnnotationsFilters.epitopeSizeRange, size);
-    this.changeDetector.detectChanges();
   }
 }

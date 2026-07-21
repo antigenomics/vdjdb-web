@@ -41,12 +41,11 @@ import play.api.libs.json.{Format, Json}
   * Nothing in this class reaches a database build any more. `species`, `gene` and `mhc` used to
   * select the rows a per-request index was built from; they are now
   * predicates over the results of one shared index, alongside the five above — see
-  * [[backend.server.annotations.IntersectionTable]]. `minEpitopeSize` only thins the summary charts.
+  * [[backend.server.annotations.IntersectionTable]].
   * The one input the index still depends on is the search scope, which lives in
   * [[AnnotationsSearchScope]].
   */
-case class AnnotationsDatabaseQueryParams(species: String, gene: String, mhc: String,
-                                          minEpitopeSize: Int, hla: Option[String],
+case class AnnotationsDatabaseQueryParams(species: String, gene: String, mhc: String, hla: Option[String],
                                           inTcrempMotif: Option[Boolean], inTcrnetMotif: Option[Boolean],
                                           independentValidationOnly: Option[Boolean], minConfidenceScore: Option[Int])
 

@@ -18,7 +18,6 @@ export interface IDatabaseQueryParams {
   species: string;
   gene: string;
   mhc: string;
-  minEpitopeSize: number;
   hla: string;
   inTcrempMotif: boolean;
   inTcrnetMotif: boolean;
@@ -68,14 +67,13 @@ export interface IAnnotateScoring {
 }
 
 export class AnnotationsFilters {
-  public static epitopeSizeRange = { min: 0, max: 1000 };
 
   // TCREMP motif membership is the only evidence filter on by default: it names ~99.5k of the ~146k
   // distinct VDJdb records, so it still keeps roughly two thirds of the database. The others are far
   // more aggressive — TCRNET names ~41k records, and vdjdb.score >= 1 retains only ~8% of rows — so
   // they start off and are opt-in.
   public databaseQueryParams: IDatabaseQueryParams = {
-    species: 'HomoSapiens', gene: 'TRB', mhc: 'MHCI+II', minEpitopeSize: 10, hla: '',
+    species: 'HomoSapiens', gene: 'TRB', mhc: 'MHCI+II', hla: '',
     inTcrempMotif: true, inTcrnetMotif: false, independentValidationOnly: false, minConfidenceScore: 0
   };
   public searchScope: ISearchScope = { matchV: false, matchJ: false, hammingDistance: { substitutions: 1, insertions: 0, deletions: 0, total: 1 } };
