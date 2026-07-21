@@ -23,7 +23,12 @@ import backend.models.files.{FileMetadata, FileMetadataProvider}
 import scala.async.Async.{async, await}
 import scala.concurrent.{ExecutionContext, Future}
 
-case class SampleFile(id: Long, sampleName: String, software: String, readsCount: Long, clonotypesCount: Long, metadataID: Long, userID: Long, tagID: Long) {
+/** @param species sample species, or `""` for rows uploaded before species was recorded
+  * @param chain   `TRA`/`TRB`, or `""` when unknown. A file containing both is split into two samples
+  *                at upload, so a stored sample is always single-chain.
+  */
+case class SampleFile(id: Long, sampleName: String, software: String, readsCount: Long, clonotypesCount: Long,
+                      metadataID: Long, userID: Long, tagID: Long, species: String, chain: String) {
   def getMetadata(implicit fmp: FileMetadataProvider, ec: ExecutionContext): Future[FileMetadata] = {
     fmp.get(metadataID).map(_.get)
   }
@@ -33,7 +38,7 @@ case class SampleFile(id: Long, sampleName: String, software: String, readsCount
   }
 
   def getDetails: SampleFileDetails = {
-    SampleFileDetails(sampleName, software, readsCount, clonotypesCount, tagID)
+    SampleFileDetails(sampleName, software, readsCount, clonotypesCount, tagID, species, chain)
   }
 
   def isSampleFileInfoEmpty: Boolean = readsCount == -1 || clonotypesCount == -1

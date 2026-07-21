@@ -79,3 +79,5 @@ internal.error = Internal server error. Please try later.
 
 sample.file.form.invalid.software = Invalid software type
 sample.file.form.invalid.name = Invalid sample name
+sample.file.form.invalid.species = Unsupported species
+sample.file.form.invalid.chain = Unsupported chain, expected TRA or TRB
