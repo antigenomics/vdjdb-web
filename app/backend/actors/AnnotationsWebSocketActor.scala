@@ -46,7 +46,7 @@ import org.slf4j.LoggerFactory
 import play.api.libs.json._
 
 import scala.async.Async.{async, await}
-import scala.collection.mutable
+import scala.collection.concurrent.TrieMap
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success}
 
@@ -55,7 +55,13 @@ class AnnotationsWebSocketActor(out: ActorRef, limit: IpLimit, user: User, detai
                                 upp: UserPermissionsProvider, sfp: SampleFileProvider, fmp: FileMetadataProvider, tfp: TemporaryFileProvider)
   extends WebSocketActor(out, limit) {
   private final val logger = LoggerFactory.getLogger(this.getClass)
-  private val intersectionTableResults: mutable.HashMap[String, IntersectionTable] = new mutable.HashMap()
+  // Concurrent, not mutable.HashMap: scala.async rewrites each handler into a state machine that
+  // resumes on the ExecutionContext after its first `await`, so the annotate handler writes this map
+  // from a pool thread while delete/matches/export read and write it from the actor thread. An
+  // unsynchronized HashMap under concurrent structural modification can lose entries or, on resize,
+  // spin — and nothing about the actor mailbox protects it, because the mutation no longer happens on
+  // the actor's thread.
+  private val intersectionTableResults: TrieMap[String, IntersectionTable] = TrieMap.empty
 
   def handleMessage(out: WebSocketOutActorRef, data: Option[JsValue]): Unit = {
     out.getAction match {
