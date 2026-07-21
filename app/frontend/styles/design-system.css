@@ -206,6 +206,32 @@ tr.paired-row { background-color: #f5f5f5 !important; }
 tr.paired-row > td { color: #525252; }
 .paired-gene-arrow { margin-right: 5px; color: #525252; }
 
+/* ---- Navbar dropdowns: open on hover, close on leave --------------------- */
+/* CSS rather than the click-toggle DropdownDirective, which is still used for the select-style
+   dropdowns elsewhere. Two reasons it must not drive these: it toggles on click and only closes on a
+   document click, so a menu opened by hover would stay open after the pointer left; and it marks the
+   host `.active` while open, which is the same class the rule below uses for "this is the page you
+   are on" — an opened menu would have grown a green underline that outlives it.
+
+   The menu sits directly against the bottom edge of a full-height item, so there is no dead gap for
+   the pointer to cross on the way down. `:focus-within` keeps it reachable by keyboard and by tap,
+   which a hover-only menu is not. */
+.ui.top.fixed.menu .ui.dropdown.item > .menu {
+  display: none;
+  /* Semantic leaves a 10px margin here. Under click-to-open that is only decorative; under hover it
+     is a 10px band of nothing between the item and its own menu, and crossing it closes the menu the
+     pointer was heading for. */
+  margin-top: 0 !important;
+}
+.ui.top.fixed.menu .ui.dropdown.item:hover > .menu,
+.ui.top.fixed.menu .ui.dropdown.item:focus-within > .menu {
+  display: block;
+}
+/* The host is focusable (tabindex) so it must not draw the browser's default focus ring on click. */
+.ui.top.fixed.menu .ui.dropdown.item:focus {
+  outline: none;
+}
+
 /* Active page highlight: brand-teal underline + brighter text on the dark bar. */
 .ui.top.fixed.menu .item.active,
 .ui.top.fixed.inverted.menu .item.active {
