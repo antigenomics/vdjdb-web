@@ -29,7 +29,9 @@ import com.antigenomics.vdjdb.impl.{ClonotypeDatabase, ClonotypeSearchResult, Sc
 import com.antigenomics.vdjdb.sequence.SearchScope
 import com.antigenomics.vdjdb.stat.ClonotypeSearchSummary
 import com.antigenomics.vdjdb.text.{ExactTextFilter, TextFilter}
+import com.antigenomics.vdjdb.VdjdbInstance
 import com.antigenomics.vdjtools.sample.{Clonotype, Sample}
+import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable
@@ -85,6 +87,8 @@ class IntersectionTable(var summary: Option[SummaryCounters] = None) extends Res
 }
 
 object IntersectionTable {
+  private final val logger = LoggerFactory.getLogger(this.getClass)
+
   // MHC-I records carry the HLA in mhc.a and the invariant B2M in mhc.b; MHC-II records carry a real
   // allele in both. A donor matches on either, which no shipped TextFilter can express: filters are
   // bound one per column and ANDed, so an OR across two columns is only available here.
@@ -122,8 +126,82 @@ object IntersectionTable {
       found.map { case (clonotype, _) => clonotype.getFreq }.sum,
       found.map { case (clonotype, _) => clonotype.getCount.toLong }.sum)
 
+  /** How many built databases to keep. Each holds a materialized copy of the matching VDJdb rows plus
+    * its CDR3 tree, so this stays deliberately small: in practice nearly every request arrives with the
+    * default parameters and hits the same entry, and a second slot only has to cover one user running
+    * a different species or gene alongside them.
+    *
+    * Kept small on purpose rather than sized against the heap — the app runs with no `-Xmx` at all, so
+    * its ceiling is the JVM default of a quarter of host RAM (6.8 GB here) and would move if the host
+    * or its other containers changed. The `Built clonotype database ... heap N MB` line logged below is
+    * what to read before raising this. Note `.jvmopts` is sbt-only and does not reach the packaged app.
+    */
+  private final val MaxCachedDatabases = 2
+
+  /** Keyed on the *entire* set of build inputs, so it cannot go stale by omission: every one of these
+    * is a case class, so equality is structural all the way down.
+    *
+    * `VdjdbInstance` is part of the key by reference identity (it overrides nothing), which keeps two
+    * `Database` instances — as separate test applications produce — from sharing a cached build. Note
+    * that `Database` itself is a case class, so keying on *it* would have compared configurations and
+    * conflated them.
+    */
+  private type ClonotypeDatabaseKey =
+    (VdjdbInstance, AnnotationsDatabaseQueryParams, AnnotationsSearchScope, AnnotationsAnnotateScoring)
+
+  private final val cache = new java.util.LinkedHashMap[ClonotypeDatabaseKey, ClonotypeDatabase](4, 0.75f, true) {
+    override def removeEldestEntry(eldest: java.util.Map.Entry[ClonotypeDatabaseKey, ClonotypeDatabase]): Boolean =
+      size() > MaxCachedDatabases
+  }
+
+  /** Building a `ClonotypeDatabase` re-materializes every VDJdb row and rebuilds the CDR3 tree, and the
+    * engine does it more than once per call: `asClonotypeDatabase`, plus a full `VdjdbInstance.filter`
+    * deep copy inside the epitope-size filter, plus another when `mhc.class` is restricted. None of it
+    * depends on the sample, so identical parameters rebuilt an identical object on every annotation.
+    *
+    * Sharing one instance across concurrent searches is safe, verified against the `legacy-java`
+    * engine source rather than assumed: `weightFunction` is the only non-final field on
+    * `ClonotypeDatabase`, and its only writer, `onAdd()`, is called from `Database.addEntries` at build
+    * time — no search path touches it. `search(Sample)` and `search(v, j, cdr3aa)` allocate their
+    * result containers per call, and `TopNResultFilter`/`MaxScoreResultFilter` hold only final fields.
+    *
+    * That field is neither final nor volatile, though, so a reader on another thread needs a
+    * happens-before edge to be guaranteed to see it — which is why the build happens inside the same
+    * monitor that publishes it, and not through an unsynchronized map.
+    *
+    * Holding the lock across the build also serializes two simultaneous misses. That is the intent:
+    * concurrent builds would double the peak heap of the most memory-hungry operation the app
+    * performs. If a slow build behind the lock ever becomes the bottleneck, the upgrade is a per-key
+    * lock, not a bigger cache.
+    */
   def createClonotypeDatabase(database: Database, parameters: AnnotationsDatabaseQueryParams,
                               searchScope: AnnotationsSearchScope, scoring: AnnotationsAnnotateScoring): ClonotypeDatabase = {
+    // The donor HLA typing is applied to search results rather than to the database, so donors differing
+    // only by HLA share one build.
+    val key: ClonotypeDatabaseKey = (database.getInstance, parameters.copy(hla = None),
+      searchScope.copy(hammingDistance = AnnotationsSearchScopeHammingDistance.sanitize(searchScope.hammingDistance)), scoring)
+
+    cache.synchronized {
+      val cached = cache.get(key)
+      if (cached != null) {
+        cached
+      } else {
+        val runtime   = Runtime.getRuntime
+        val startedAt = System.currentTimeMillis
+        val usedBefore = runtime.totalMemory - runtime.freeMemory
+        val built     = buildClonotypeDatabase(database, parameters, searchScope, scoring)
+        val _         = cache.put(key, built)
+        logger.info(s"Built clonotype database [species=${parameters.species}, gene=${parameters.gene}, mhc=${parameters.mhc}, " +
+          s"confidence=${parameters.confidenceThreshold}, minEpitopeSize=${parameters.minEpitopeSize}] in " +
+          s"${System.currentTimeMillis - startedAt} ms, heap ${(runtime.totalMemory - runtime.freeMemory - usedBefore) / (1024 * 1024)} MB, " +
+          s"cached ${cache.size}/$MaxCachedDatabases")
+        built
+      }
+    }
+  }
+
+  private def buildClonotypeDatabase(database: Database, parameters: AnnotationsDatabaseQueryParams,
+                                     searchScope: AnnotationsSearchScope, scoring: AnnotationsAnnotateScoring): ClonotypeDatabase = {
     val hdistance = AnnotationsSearchScopeHammingDistance.sanitize(searchScope.hammingDistance)
     val scope = new SearchScope(hdistance.substitutions, hdistance.deletions, hdistance.insertions, hdistance.total,
       scoring.`type` == AnnotationsAnnotateScoring.VDJMATCH && scoring.vdjmatch.exhaustiveAlignment > 0,
