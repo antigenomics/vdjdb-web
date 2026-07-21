@@ -47,12 +47,6 @@ class SearchTable extends ResultsTable[SearchTableRow] {
     def columnIsTrue(row: com.antigenomics.vdjdb.db.Row, col: String): Boolean =
       Option(row.getAt(col)).exists(_.getValue.trim.equalsIgnoreCase("true"))
 
-    def motifKey(row: com.antigenomics.vdjdb.db.Row): Option[String] = {
-      val parts = Seq("species", "gene", "antigen.epitope", "cdr3", "v.segm", "j.segm")
-        .map(col => Option(row.getAt(col)).map(_.getValue.trim.toLowerCase).getOrElse(""))
-      if (parts.forall(_.nonEmpty)) Some(parts.mkString("|")) else None
-    }
-
     // Validation evidence: OR within {same.study, independent}
     if (filters.validationModes.nonEmpty) {
       filtered = filtered.filter { result =>
@@ -70,7 +64,7 @@ class SearchTable extends ResultsTable[SearchTableRow] {
       val tcrnetIndex = if (filters.motifModes.contains("tcrnet")) motifs.getCidLookupIndex() else Map.empty[String, String]
       val tcrempIndex = if (filters.motifModes.contains("tcremp")) motifs.getCidLookupIndex(Some("tcremp")) else Map.empty[String, String]
       filtered = filtered.filter { result =>
-        motifKey(result.getRow).exists(key => tcrnetIndex.contains(key) || tcrempIndex.contains(key))
+        Motifs.motifKey(result.getRow).exists(key => tcrnetIndex.contains(key) || tcrempIndex.contains(key))
       }
     }
 

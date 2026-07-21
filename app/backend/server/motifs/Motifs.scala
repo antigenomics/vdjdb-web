@@ -23,6 +23,7 @@ import backend.server.motifs.api.epitope.{MotifCluster, MotifEpitope}
 import backend.server.motifs.api.filter.{MotifsSearchTreeFilter, MotifsSearchTreeFilterResult}
 import backend.server.motifs.export.ClusterMembersConverter
 import backend.utils.CommonUtils
+import com.antigenomics.vdjdb.db.Row
 import javax.inject.{Inject, Singleton}
 import tech.tablesaw.api.{ColumnType, Table}
 import tech.tablesaw.io.csv.CsvReadOptions
@@ -225,6 +226,23 @@ object Motifs {
       }
       builder.toSet
     }
+  }
+
+  /** The VDJdb side of the join key that [[buildCidLookupIndex]] builds from the cluster-members side.
+    *
+    * Kept next to the index it has to agree with, because the two halves are easy to get subtly wrong:
+    * the members file calls the CDR3 column `cdr3aa` while a VDJdb record calls it `cdr3`, and the
+    * normalisation (trim, then lower-case in [[java.util.Locale.ROOT]] rather than the default locale)
+    * has to be identical on both sides or a Turkish-locale server would stop matching anything with an
+    * `I` in it.
+    *
+    * `None` when any component is blank — an incomplete key would collide with every other incomplete
+    * key and match records it has no business matching.
+    */
+  def motifKey(row: Row): Option[String] = {
+    val parts = Seq("species", "gene", "antigen.epitope", "cdr3", "v.segm", "j.segm")
+      .map(column => Option(row.getAt(column)).map(_.getValue.trim.toLowerCase(Locale.ROOT)).getOrElse(""))
+    if (parts.forall(_.nonEmpty)) Some(parts.mkString("|")) else None
   }
 
   def buildCidLookupIndex(members: Table): Map[String, String] = {

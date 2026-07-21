@@ -23,6 +23,8 @@ import backend.server.annotations.api.annotate.SampleAnnotateRequest
 import backend.server.annotations.api.filters.{AnnotationsAnnotateScoring, AnnotationsDatabaseQueryParams, AnnotationsSearchScope, AnnotationsSearchScopeHammingDistance}
 import backend.server.annotations.charts.summary.{SummaryClonotypeCounter, SummaryCounters, SummaryFieldCounter}
 import backend.server.database.Database
+import backend.server.motifs.Motifs
+import com.antigenomics.vdjdb.db.Row
 import com.antigenomics.vdjdb.impl.filter.{DummyResultFilter, MaxScoreResultFilter, TopNResultFilter}
 import com.antigenomics.vdjdb.impl.weights.{DegreeWeightFunctionFactory, DummyWeightFunctionFactory}
 import com.antigenomics.vdjdb.impl.{ClonotypeDatabase, ClonotypeSearchResult, ScoringBundle, ScoringProvider}
@@ -36,6 +38,7 @@ import org.slf4j.LoggerFactory
 import scala.collection.JavaConverters._
 import scala.collection.mutable
 import scala.math.Ordering.String
+import scala.util.Try
 
 class IntersectionTable(var summary: Option[SummaryCounters] = None) extends ResultsTable[IntersectionTableRow] {
 
@@ -52,22 +55,22 @@ class IntersectionTable(var summary: Option[SummaryCounters] = None) extends Res
     }
   }
 
-  def update(request: SampleAnnotateRequest, sample: Sample, database: Database): IntersectionTable = {
-    val instance = IntersectionTable.createClonotypeDatabase(database, request.databaseQueryParams, request.searchScope, request.scoring)
-    val donor    = HlaAllele.parseAll(request.databaseQueryParams.hla.getOrElse(""))
+  def update(request: SampleAnnotateRequest, sample: Sample, database: Database, motifs: Motifs): IntersectionTable = {
+    val instance    = IntersectionTable.createClonotypeDatabase(database, request.databaseQueryParams, request.searchScope, request.scoring)
+    val postFilters = IntersectionTable.postSearchFilters(request.databaseQueryParams, motifs)
 
     val raw = instance.search(sample)
     val found = raw.asScala.toList
-      .map { case (clonotype, hits) => (clonotype, hits.asScala.toList.filter(IntersectionTable.allowedForDonor(_, donor))) }
+      .map { case (clonotype, hits) => (clonotype, hits.asScala.toList.filter(hit => postFilters.forall(allows => allows(hit)))) }
       .filter { case (_, hits) => hits.nonEmpty }
       .sortWith { case ((c1, _), (c2, _)) => c1.getFreq > c2.getFreq }
 
     this.rows = found.map(IntersectionTableRow.createFromSearchResult)
 
-    // Summarize what the user is actually shown: with a donor typing set, the unmatched tally has to
-    // grow by the clonotypes the HLA filter removed, which only happens if the summary sees the
-    // filtered map.
-    val summarized = if (donor.isEmpty) raw else found.map { case (clonotype, hits) => clonotype -> hits.asJava }.toMap.asJava
+    // Summarize what the user is actually shown: with any post-search filter active, the unmatched
+    // tally has to grow by the clonotypes that filter removed, which only happens if the summary sees
+    // the filtered map.
+    val summarized = if (postFilters.isEmpty) raw else found.map { case (clonotype, hits) => clonotype -> hits.asJava }.toMap.asJava
     val summary    = new ClonotypeSearchSummary(summarized, sample, ClonotypeSearchSummary.FIELDS_STARBURST, instance)
     val counters = summary.fieldCounters.asScala.map { case (name, map) =>
       SummaryFieldCounter(name, map.asScala.filter(v => v._2.getUnique != 0).map { case (field, value) =>
@@ -94,8 +97,72 @@ object IntersectionTable {
   // bound one per column and ANDed, so an OR across two columns is only available here.
   private final val MhcColumns: Seq[String] = Seq("mhc.a", "mhc.b")
 
-  private def allowedForDonor(hit: ClonotypeSearchResult, donor: Seq[HlaAllele]): Boolean =
-    donor.isEmpty || MhcColumns.exists(column => HlaAllele.matches(hit.getRow.getAt(column).getValue, donor))
+  private type HitFilter = ClonotypeSearchResult => Boolean
+
+  /** Restrictions applied to search *results* rather than to the database that gets built.
+    *
+    * None of them is expressible as a vdjdb `TextFilter`: `ColumnwiseFilterBatch` binds one filter per
+    * column and ANDs the lot, which covers neither the OR across `mhc.a`/`mhc.b`, nor a lookup against
+    * an externally loaded motif index, nor a count of comma-separated reference ids.
+    *
+    * Filtering here rather than at build time is also what keeps the `ClonotypeDatabase` cache useful:
+    * every parameter below is blanked out of the cache key, so two requests differing only in these
+    * share one (expensive) build. That is why the confidence checkbox exists alongside the numeric
+    * `confidenceThreshold` — the numeric one is passed into the build and rebuilds the database.
+    *
+    * Returned as a list, empty when nothing is restricted, so the caller can tell "no filtering
+    * happened" from "filtering happened and removed nothing" — the summary counters depend on it.
+    */
+  private def postSearchFilters(parameters: AnnotationsDatabaseQueryParams, motifs: Motifs): Seq[HitFilter] = {
+    val donor = HlaAllele.parseAll(parameters.hla.getOrElse(""))
+    val donorFilter: Option[HitFilter] =
+      if (donor.isEmpty) None
+      else Some((hit: ClonotypeSearchResult) =>
+        MhcColumns.exists(column => HlaAllele.matches(hit.getRow.getAt(column).getValue, donor)))
+
+    // The index is a Map already built at startup by the Motifs singleton and shared with the search
+    // page, so this costs one hash lookup per hit and nothing per request. Reusing it also guarantees
+    // "in TCREMP motif" means the same thing on both pages.
+    def motifFilter(enabled: Option[Boolean], method: Option[String]): Option[HitFilter] =
+      if (enabled.contains(true)) {
+        val index = motifs.getCidLookupIndex(method)
+        Some((hit: ClonotypeSearchResult) => Motifs.motifKey(hit.getRow).exists(key => index.contains(key)))
+      } else {
+        None
+      }
+
+    val validationFilter: Option[HitFilter] =
+      if (parameters.independentValidationOnly.contains(true)) {
+        Some((hit: ClonotypeSearchResult) => referenceCount(hit.getRow) >= 2)
+      } else {
+        None
+      }
+
+    val confidenceFilter: Option[HitFilter] = parameters.minConfidenceScore.filter(_ > 0)
+      .map(threshold => (hit: ClonotypeSearchResult) => confidenceScore(hit.getRow) >= threshold)
+
+    Seq(donorFilter, motifFilter(parameters.inTcrempMotif, Some("tcremp")),
+      motifFilter(parameters.inTcrnetMotif, None), validationFilter, confidenceFilter).flatten
+  }
+
+  /** Number of distinct references a record cites. `reference.id` holds a comma-separated list; it is
+    * blank on ~1% of records and lists more than one on ~3.8k of them.
+    *
+    * This is the literal reading of "independent validation": the record itself names two references.
+    * The alternative reading — the same CDR3+epitope pair turning up in two independent VDJdb records —
+    * was considered and NOT chosen, because it is a property of a group of records rather than of a
+    * hit, so it cannot be evaluated one hit at a time as this filter is. Worth revisiting: the database
+    * also ships a curated `evidence.validation.independent` flag, which the search page filters on
+    * (see `SearchTable`), and which may or may not agree with this count.
+    */
+  private def referenceCount(row: Row): Int =
+    Option(row.getAt("reference.id")).map(_.getValue).getOrElse("")
+      .split(",").map(_.trim).filter(_.nonEmpty).distinct.length
+
+  /** `vdjdb.score` as an int, 0 for anything unparseable or absent — a record whose confidence cannot
+    * be read is treated as the lowest confidence rather than silently kept. */
+  private def confidenceScore(row: Row): Int =
+    Option(row.getAt("vdjdb.score")).map(_.getValue.trim).flatMap(value => Try(value.toInt).toOption).getOrElse(0)
 
   /** Matches broken down by HLA locus.
     *
@@ -208,9 +275,13 @@ object IntersectionTable {
 
   def createClonotypeDatabase(database: Database, parameters: AnnotationsDatabaseQueryParams,
                               searchScope: AnnotationsSearchScope, scoring: AnnotationsAnnotateScoring): ClonotypeDatabase = {
-    // The donor HLA typing is applied to search results rather than to the database, so donors differing
-    // only by HLA share one build.
-    val key: ClonotypeDatabaseKey = (database.getInstance, parameters.copy(hla = None),
+    // Everything `postSearchFilters` handles is applied to search results rather than to the database,
+    // so requests differing only in those share one build. Blanking them here is not an optimization
+    // detail — leaving them in would make the two-entry cache thrash, since the motif checkbox alone
+    // doubles the number of distinct keys the default UI can produce.
+    val key: ClonotypeDatabaseKey = (database.getInstance,
+      parameters.copy(hla = None, inTcrempMotif = None, inTcrnetMotif = None,
+        independentValidationOnly = None, minConfidenceScore = None),
       searchScope.copy(hammingDistance = AnnotationsSearchScopeHammingDistance.sanitize(searchScope.hammingDistance)), scoring)
 
     cache.synchronized {

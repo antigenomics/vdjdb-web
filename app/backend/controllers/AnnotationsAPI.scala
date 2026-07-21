@@ -28,6 +28,7 @@ import backend.models.files.sample.{SampleFileForm, SampleFileProvider, SampleFi
 import backend.models.files.temporary.TemporaryFileProvider
 import backend.server.database.Database
 import backend.server.limit.RequestLimits
+import backend.server.motifs.Motifs
 import backend.utils.analytics.Analytics
 import backend.utils.files.sample.SampleConverter
 import backend.utils.files.{DecompressionLimitException, DecompressionLimits, FileUtils}
@@ -46,7 +47,7 @@ import scala.async.Async.{async, await}
 import scala.concurrent.{ExecutionContext, Future}
 
 class AnnotationsAPI @Inject()(cc: ControllerComponents, userRequestAction: UserRequestAction,
-                               conf: Configuration, messagesApi: MessagesApi, database: Database)
+                               conf: Configuration, messagesApi: MessagesApi, database: Database, motifs: Motifs)
                               (implicit upp: UserPermissionsProvider, up: UserProvider, sfp: SampleFileProvider, fmp: FileMetadataProvider,
                                tfp: TemporaryFileProvider, stp: SampleTagProvider,
                                as: ActorSystem, mat: Materializer, ec: ExecutionContext, limits: RequestLimits,
@@ -272,7 +273,7 @@ class AnnotationsAPI @Inject()(cc: ControllerComponents, userRequestAction: User
             if (user.nonEmpty) {
               val details = await(user.get.getDetails)
               Right(ActorFlow.actorRef { out =>
-                AnnotationsWebSocketActor.props(out, limits.getLimit(request), user.get, details, database)
+                AnnotationsWebSocketActor.props(out, limits.getLimit(request), user.get, details, database, motifs)
               })
             } else {
               Left(Forbidden)

@@ -102,4 +102,36 @@
             </div>
         </div>
     </div>
+    <div class="ui row middle aligned">
+        <div class="two wide column filters label"><b>Evidence</b></div>
+        <div class="ten wide column">
+            <!-- Annotations filters help: evidence filters-->
+            <i class="fitted filters corner help icon"
+               popup="Restrict matches to VDJdb records supported by the selected kinds of evidence. Ticking several of these narrows the result: a match has to satisfy every one that is ticked. TCREMP and TCRNET motifs are clusters of similar receptors recognising the same epitope, as shown on the Motif page."
+               header="Supporting evidence"
+               footer="Only TCREMP motif membership is on by default">
+            </i>
+            <div class="ui checkbox">
+                <input [attr.disabled]="isDisabled()" type="checkbox" [(ngModel)]="filters.databaseQueryParams.inTcrempMotif">
+                <label>In TCREMP motif</label>
+            </div>
+            <br>
+            <div class="ui checkbox">
+                <input [attr.disabled]="isDisabled()" type="checkbox" [(ngModel)]="filters.databaseQueryParams.inTcrnetMotif">
+                <label>In TCRNET motif</label>
+            </div>
+            <br>
+            <div class="ui checkbox">
+                <input [attr.disabled]="isDisabled()" type="checkbox" [(ngModel)]="filters.databaseQueryParams.independentValidationOnly">
+                <label>Only independent validation (&ge; 2 references)</label>
+            </div>
+            <br>
+            <div class="ui checkbox">
+                <input [attr.disabled]="isDisabled()" type="checkbox"
+                       [ngModel]="filters.databaseQueryParams.minConfidenceScore > 0"
+                       (ngModelChange)="filters.databaseQueryParams.minConfidenceScore = $event ? 1 : 0">
+                <label>Minimal confidence assay score (&ge; 1)</label>
+            </div>
+        </div>
+    </div>
 </div>
