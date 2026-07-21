@@ -57,13 +57,16 @@ jobs:
         run: |
           sbt frontendInstallDependencies build
 
-      # `build` is packageBin in Universal, which never looks at src/test, so until now nothing in CI
-      # compiled the ~20 spec files in this repo. A spec could reference a signature that no longer
-      # exists and the build stayed green. Compile them so that at least cannot happen silently.
-      # Running them is the next step up and deliberately not taken here - see the PR discussion.
-      - name: Compile tests
+      # `build` is packageBin in Universal, which never looks at src/test, so for a long time nothing
+      # in CI compiled - let alone ran - the spec files in this repo.
+      #
+      # This runs them. It is only possible because test/resources/database/ holds a small VDJdb
+      # fixture: BaseTestSpecWithApplication boots a real Guice application, and without a local
+      # database that constructor downloads the whole of VDJdb over the network before the first
+      # assertion. See SOURCES.md.
+      - name: Run tests
         run: |
-          sbt test:compile
+          sbt test
 
       # Upload build artifact (optional but useful)
       - name: Upload server package
