@@ -28,7 +28,15 @@ import scala.concurrent.{ExecutionContext, Future}
   *                at upload, so a stored sample is always single-chain.
   */
 case class SampleFile(id: Long, sampleName: String, software: String, readsCount: Long, clonotypesCount: Long,
-                      metadataID: Long, userID: Long, tagID: Long, species: String, chain: String) {
+                      metadataID: Long, userID: Long, tagID: Long, species: String, chain: String,
+                      sourceSoftware: String) {
+
+  /** What to show the user as "the format of this sample".
+    *
+    * `software` is the format the file is stored in, which every upload normalises to VDJtools, so on
+    * its own it tells the user nothing about what they gave us. Prefer the recorded source dialect and
+    * fall back to the stored one for samples that predate it. */
+  def displaySoftware: String = if (sourceSoftware.nonEmpty) sourceSoftware else software
   def getMetadata(implicit fmp: FileMetadataProvider, ec: ExecutionContext): Future[FileMetadata] = {
     fmp.get(metadataID).map(_.get)
   }
@@ -38,7 +46,7 @@ case class SampleFile(id: Long, sampleName: String, software: String, readsCount
   }
 
   def getDetails: SampleFileDetails = {
-    SampleFileDetails(sampleName, software, readsCount, clonotypesCount, tagID, species, chain)
+    SampleFileDetails(sampleName, displaySoftware, readsCount, clonotypesCount, tagID, species, chain)
   }
 
   def isSampleFileInfoEmpty: Boolean = readsCount == -1 || clonotypesCount == -1

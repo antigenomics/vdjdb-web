@@ -45,9 +45,12 @@ class SampleFileTable(tag: Tag)(implicit fmp: FileMetadataProvider) extends Tabl
 
   def chain = column[String]("CHAIN", O.Length(8))
 
+  def sourceSoftware = column[String]("SOURCE_SOFTWARE", O.Length(32))
+
   // Order must match the case class exactly — a mismatch compiles cleanly and writes species into the
   // chain column.
-  def * = (id, sampleName, software, readsCount, clonotypesCount, metadataID, userID, tagID, species, chain) <> (SampleFile.tupled, SampleFile.unapply)
+  def * = (id, sampleName, software, readsCount, clonotypesCount, metadataID, userID, tagID, species, chain,
+    sourceSoftware) <> (SampleFile.tupled, SampleFile.unapply)
 
   def metadata = foreignKey("METADATA_FK", metadataID, fmp.getTable)(_.id,
     onUpdate = ForeignKeyAction.Cascade, onDelete = ForeignKeyAction.Cascade)

@@ -194,8 +194,11 @@ class AnnotationsAPI @Inject()(cc: ControllerComponents, userRequestAction: User
                 case done @ (_, Some(_)) => Future.successful(done)
                 case (done, None)        =>
                   // Stored normalised, so the annotate path always reads a VDJtools table.
-                  user.addSampleFileFrom(sampleName, "gz", "VDJtools", species, converted.chain, converted.file).map {
-                    case Left(id)     => (done :+ StoredSample(id, sampleName, converted.chain, species, "VDJtools", converted.clonotypes), None)
+                  // Stored format is always VDJtools; `report.format` is the dialect the upload
+                  // arrived in, which until now was logged and then thrown away — leaving a MiXCR
+                  // export displaying as "Software: VDJtools" with nothing recording otherwise.
+                  user.addSampleFileFrom(sampleName, "gz", "VDJtools", species, converted.chain, report.format, converted.file).map {
+                    case Left(id)     => (done :+ StoredSample(id, sampleName, converted.chain, species, report.format, converted.clonotypes), None)
                     case Right(error) => (done, Some(error))
                   }
               }

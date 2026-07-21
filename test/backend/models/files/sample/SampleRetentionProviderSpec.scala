@@ -63,7 +63,7 @@ class SampleRetentionProviderSpec extends DatabaseProviderTestSpec {
     val createdAt  = new Timestamp(System.currentTimeMillis() - ageDays * Day * 1000L)
     val metadataID = await(fileMetadataProvider.insert(FileMetadata(0, name, "txt", file.getPath, folder.getPath, createdAt)))
     val sampleID   = await(sampleFileProvider.insert(
-      SampleFile(0, name, "VDJtools", -1L, -1L, metadataID, user.id, -1L, "HomoSapiens", "TRB")))
+      SampleFile(0, name, "VDJtools", -1L, -1L, metadataID, user.id, -1L, "HomoSapiens", "TRB", "VDJtools")))
     val metadata = await(fileMetadataProvider.get(metadataID))
     (sampleID, metadata.get)
   }

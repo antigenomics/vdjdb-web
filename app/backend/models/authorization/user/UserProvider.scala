@@ -114,7 +114,8 @@ class UserProvider @Inject()(
       missing.foreach((file) => {
         val name      = FilenameUtils.getBaseName(file.getName)
         val extension = FilenameUtils.getExtension(file.getName)
-        demoUser.addDemoSampleFile(name, extension, Software.VDJtools.toString, "HomoSapiens", "TRB", file).map {
+        demoUser.addDemoSampleFile(name, extension, Software.VDJtools.toString, "HomoSapiens", "TRB",
+          Software.VDJtools.toString, file).map {
           case Left(_) =>
             logger.info(s"Added demo sample file: $name")
           case Right(error) =>
