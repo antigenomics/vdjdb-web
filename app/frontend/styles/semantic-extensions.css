@@ -46,8 +46,12 @@
   margin-top: 10px !important;
 }
 
+/* Sits directly below the fixed navbar. `height` has to shrink by the same amount: the sidebar is
+   position:fixed with height:100%, so offsetting `top` alone pushes its bottom off-screen by exactly
+   the offset. */
 .ui.sidebar.with.navbar {
-  top: 51px !important;
+  top: var(--ds-navbar-height) !important;
+  height: calc(100% - var(--ds-navbar-height)) !important;
 }
 
 .ui.sidebar.menu .item .header .sort.icon {
