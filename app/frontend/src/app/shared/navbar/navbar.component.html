@@ -18,14 +18,24 @@
     <div class="ui container">
         <a route="/" class="header item navbar-brand"><img src="assets/images/favicon.svg" alt="VDJdb" class="navbar-brand__logo"></a>
         <a route="/" class="item" [class.active]="isActive('/')">Home</a>
-        <a (click)="redirectOnUrl('self-antigen')" class="item">
-            <span style="color: #f2711c!important">Self-antigens</span>
-        </a>
-        <a (click)="redirectOnUrl('covid19')" class="item">
-            <span style="color: #f2711c!important">COVID-19</span>
-        </a>
         <a route="/overview" class="item" [class.active]="isActive('/overview')">Overview</a>
-        <a route="/search" class="item" [class.active]="isActive('/search')">Browse</a>
+
+        <!-- The curated subsets are entry points into Browse, not siblings of it: both land on
+             /search with a preset filter. Nesting them says so, and buys back the header width that
+             was pushing the account menu past the right edge of the container. -->
+        <a class="ui dropdown item" dropdown [content]="browseMenu" [class.active]="isActive('/search')">
+            Browse
+            <i class="dropdown icon"></i>
+            <div class="menu fade element slow padded" tabindex="-1" #browseMenu>
+                <a route="/search" class="item">All data</a>
+                <a (click)="redirectOnUrl('self-antigen')" class="item">
+                    <span style="color: #f2711c!important">Self-antigens</span>
+                </a>
+                <a (click)="redirectOnUrl('covid19')" class="item">
+                    <span style="color: #00b5ad!important">COVID-19</span>
+                </a>
+            </div>
+        </a>
 
         <a class="ui dropdown item" dropdown [content]="content" *ngIf="!isLogged()">
             Annotation
@@ -47,9 +57,16 @@
         <a route="/structure" class="item" [class.active]="isActive('/structure')">Structure</a>
         <a route="/refsearch" class="item" [class.active]="isActive('/refsearch')">Refsearch</a>
 
-        <a route="/about" class="item" [class.active]="isActive('/about')">About</a>
-        <a route="/links" class="item" [class.active]="isActive('/links')">Links</a>
-        <a route="/credits" class="item" [class.active]="isActive('/credits')">Credits</a>
+        <a class="ui dropdown item" dropdown [content]="aboutMenu"
+           [class.active]="isActive('/about') || isActive('/links') || isActive('/credits')">
+            About
+            <i class="dropdown icon"></i>
+            <div class="menu fade element slow padded" tabindex="-1" #aboutMenu>
+                <a route="/about" class="item">Help</a>
+                <a route="/links" class="item">Links</a>
+                <a route="/credits" class="item">Credits</a>
+            </div>
+        </a>
 
         <div class="right menu" *ngIf="!isLogged()">
             <a route="/authorization/login" external="true" class="item">Login</a>
