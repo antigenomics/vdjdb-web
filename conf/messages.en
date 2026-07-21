@@ -66,6 +66,7 @@ account.change.password.button = Change
 
 account.change.password.success = Your password has been changed successfully
 account.change.password.error.invalidOldPassword = Please check that you have entered your old password correctly
+account.change.password.notAllowed = Password change is not allowed for this account
 
 notfound.header = Oops! Page not found.
 notfound.message = We could not find the page you were looking for.

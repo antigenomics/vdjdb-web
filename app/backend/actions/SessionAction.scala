@@ -26,6 +26,9 @@ import scala.concurrent.{ExecutionContext, Future}
 object SessionAction {
   final val redirectLoadtion = backend.controllers.routes.Application.index()
 
+  /** Shown instead of a temporary account's login, which is the raw access token. */
+  final val TEMPORARY_USER_DISPLAY_NAME = "Temporary user"
+
   def authorizedOnly(implicit ec: ExecutionContext): ActionFilter[UserRequest] = new ActionFilter[UserRequest] {
     override protected def executionContext: ExecutionContext = ec
 
@@ -59,9 +62,12 @@ object SessionAction {
       // Safely handle user data which might be null even when authorized
       userRequest.user match {
         case Some(user) =>
+          // A temporary account's `login` and `email` are both the raw access token, so neither may go
+          // into a JS-readable cookie (`login` is also rendered in the navbar). The `email` cookie was
+          // only ever read into a logger.debug call, so it is dropped outright.
+          val displayLogin = if (user.isTemporary) SessionAction.TEMPORARY_USER_DISPLAY_NAME else user.login
           updatedResult
-            .withCookies(Cookie("email", URLEncoder.encode(user.email, "UTF-8"), httpOnly = false))
-            .withCookies(Cookie("login", URLEncoder.encode(user.login, "UTF-8"), httpOnly = false))
+            .withCookies(Cookie("login", URLEncoder.encode(displayLogin, "UTF-8"), httpOnly = false))
         case None =>
           updatedResult
       }

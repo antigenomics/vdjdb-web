@@ -24,9 +24,15 @@ case class SignupTemporaryForm(token: String)
 object SignupTemporaryForm {
   final val TOKEN_MAX_LENGTH = 128
 
+  /** Tokens are the *only* credential for a temporary account, so they must not be guessable.
+    * 26 characters of `CommonUtils.secureRandomString` is ~128 bits; this is also the floor accepted
+    * from a client, so a hand-crafted short token ("1" used to be valid) is rejected. */
+  final val TOKEN_LENGTH     = 26
+  final val TOKEN_MIN_LENGTH = 16
+
   implicit val signupTemporaryFormMapping: Form[SignupTemporaryForm] = Form(
     mapping(
-      "token" -> nonEmptyText(maxLength = TOKEN_MAX_LENGTH)
+      "token" -> nonEmptyText(minLength = TOKEN_MIN_LENGTH, maxLength = TOKEN_MAX_LENGTH)
     )(SignupTemporaryForm.apply)(SignupTemporaryForm.unapply) verifying ("authorization.forms.signup.failed.invalidToken", { form =>
       form.token.toLowerCase().forall(c => "abcdefghijklmnopqrstuvwxyz0123456789".contains(c))
     })

@@ -50,7 +50,14 @@ class Account @Inject()(cc: ControllerComponents, messagesApi: MessagesApi, user
       },
       form => async {
         val user = request.user.get
-        if (user.checkPassword(form.oldPassword)) {
+        // The form is hidden in the view for accounts without this permission, but the POST was never
+        // gated — a demo/temporary user could change their password by posting directly.
+        if (!request.details.get.permissions.isChangePasswordAllowed) {
+          Forbidden(frontend.views.html.authorization.details(
+            ChangeForm.changeFormMapping.withGlobalError("account.change.password.notAllowed"),
+            request.details.get
+          ))
+        } else if (user.checkPassword(form.oldPassword)) {
           val _ = await(up.updatePassword(user, form.newPassword))
           Redirect(backend.controllers.routes.Account.detailsPage()).flashing("changed" -> "account.change.password.success")
         } else {
