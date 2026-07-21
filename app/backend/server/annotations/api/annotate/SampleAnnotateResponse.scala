@@ -20,7 +20,8 @@ import backend.server.annotations.IntersectionTableRow
 import backend.server.annotations.charts.summary.SummaryCounters
 import play.api.libs.json.{Json, Writes}
 
-case class SampleAnnotateResponse(state: String, rows: Seq[IntersectionTableRow], summary: Option[SummaryCounters])
+case class SampleAnnotateResponse(state: String, rows: Seq[IntersectionTableRow], summary: Option[SummaryCounters],
+                                  position: Option[Int] = None)
 
 object SampleAnnotateResponse {
   final val Action: String = "intersect"
@@ -28,6 +29,11 @@ object SampleAnnotateResponse {
   final val ParseState = SampleAnnotateResponse("parse", Seq(), None)
   final val AnnotateState = SampleAnnotateResponse("annotate", Seq(), None)
   final val LoadingState = SampleAnnotateResponse("loading", Seq(), None)
+
+  /** Sent while the job waits for a slot, and again whenever its position improves. Distinct from the
+    * other states because it is the one that does not mean "work is happening": without it a queued
+    * annotation is indistinguishable from a hung one. */
+  final def QueuedState(position: Int) = SampleAnnotateResponse("queued", Seq(), None, Some(position))
 
   final def CompletedState(rows: Seq[IntersectionTableRow], summary: Option[SummaryCounters]) = SampleAnnotateResponse("completed", rows, summary)
 

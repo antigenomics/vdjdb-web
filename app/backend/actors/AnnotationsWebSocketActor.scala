@@ -24,7 +24,7 @@ import backend.models.files.sample.{SampleFileForm, SampleFileProvider}
 import backend.models.files.sample.tags.{SampleTag, SampleTagProvider, SampleTagTable}
 import backend.models.files.temporary.TemporaryFileProvider
 import backend.models.usage.UsageProvider
-import backend.server.annotations.IntersectionTable
+import backend.server.annotations.{AnnotationsBusyException, AnnotationsScheduler, IntersectionTable}
 import backend.server.annotations.api.annotate.{SampleAnnotateRequest, SampleAnnotateResponse}
 import backend.server.annotations.api.export.{AnnotationsExportDataRequest, AnnotationsExportDataResponse}
 import backend.server.annotations.api.matches.{IntersectionMatchesRequest, IntersectionMatchesResponse}
@@ -53,11 +53,16 @@ import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success}
 
 class AnnotationsWebSocketActor(out: ActorRef, limit: IpLimit, user: User, details: UserDetails, database: Database,
-                                motifs: Motifs, usage: UsageProvider)
+                                motifs: Motifs, usage: UsageProvider, scheduler: AnnotationsScheduler)
                                (implicit ec: ExecutionContext, as: ActorSystem, limits: RequestLimits, up: UserProvider, stp: SampleTagProvider,
                                 upp: UserPermissionsProvider, sfp: SampleFileProvider, fmp: FileMetadataProvider, tfp: TemporaryFileProvider)
   extends WebSocketActor(out, limit) {
   private final val logger = LoggerFactory.getLogger(this.getClass)
+
+  /** Identifies this websocket connection to the scheduler, which uses it to enforce one annotation at
+    * a time per session. Read once here rather than inside the handler: the handler resumes on a pool
+    * thread after its first `await`, and `self` is only cheap to touch because it never changes. */
+  private final val connection: String = self.path.toString
   // Concurrent, not mutable.HashMap: scala.async rewrites each handler into a state machine that
   // resumes on the ExecutionContext after its first `await`, so the annotate handler writes this map
   // from a pool thread while delete/matches/export read and write it from the actor thread. An
@@ -115,6 +120,12 @@ class AnnotationsWebSocketActor(out: ActorRef, limit: IpLimit, user: User, detai
               val sampleFile = await(user.getSampleFileByNameWithMetadata(intersectRequest.sampleName))
               sampleFile match {
                 case Some(file) =>
+                  // Everything from here on runs on a scheduler worker rather than the default
+                  // context. The engine already splits one search across every core, so letting each
+                  // connection start work the moment it asked meant N users competing for 4N threads
+                  // on 4 cores; now the (N - maxConcurrent) of them wait with a visible position.
+                  scheduler.submit(connection,
+                    position => out.success(SampleAnnotateResponse.QueuedState(position))) {
                   try {
                     out.success(SampleAnnotateResponse.ParseState)
                     val sample = SampleFileConnection.load(file._2.path, Software.valueOf(file._1.software))
@@ -143,6 +154,13 @@ class AnnotationsWebSocketActor(out: ActorRef, limit: IpLimit, user: User, detai
                       logger.error(s"Annotation failed for sample '${file._1.sampleName}'", e)
                       val reason = Option(e.getMessage).filter(_.nonEmpty).getOrElse(e.getClass.getSimpleName)
                       out.errorMessage(s"Unable to annotate this sample: $reason")
+                  }
+                  } onComplete {
+                    // The body above reports its own failures, so the only thing left to surface here
+                    // is a job that never ran at all.
+                    case Failure(AnnotationsBusyException(message)) => out.errorMessage(message)
+                    case Failure(t) => logger.error("Annotation job failed outside its own handler", t)
+                    case Success(_) =>
                   }
                 case None =>
                   out.errorMessage("Invalid file name")
@@ -266,8 +284,8 @@ class AnnotationsWebSocketActor(out: ActorRef, limit: IpLimit, user: User, detai
 
 object AnnotationsWebSocketActor {
   def props(out: ActorRef, limit: IpLimit, user: User, details: UserDetails, database: Database, motifs: Motifs,
-            usage: UsageProvider)
+            usage: UsageProvider, scheduler: AnnotationsScheduler)
            (implicit ec: ExecutionContext, as: ActorSystem, limits: RequestLimits, up: UserProvider, stp: SampleTagProvider,
             upp: UserPermissionsProvider, sfp: SampleFileProvider, fmp: FileMetadataProvider, tfp: TemporaryFileProvider): Props =
-    Props(new AnnotationsWebSocketActor(out, limit, user, details, database, motifs, usage))
+    Props(new AnnotationsWebSocketActor(out, limit, user, details, database, motifs, usage, scheduler))
 }

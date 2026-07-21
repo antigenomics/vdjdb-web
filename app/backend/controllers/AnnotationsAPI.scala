@@ -27,6 +27,7 @@ import backend.models.files.sample.tags.SampleTagProvider
 import backend.models.files.sample.{SampleFileForm, SampleFileProvider, SampleFileTable, SampleRetentionProvider}
 import backend.models.files.temporary.TemporaryFileProvider
 import backend.models.usage.UsageProvider
+import backend.server.annotations.AnnotationsScheduler
 import backend.server.database.Database
 import backend.server.limit.RequestLimits
 import backend.server.motifs.Motifs
@@ -50,7 +51,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class AnnotationsAPI @Inject()(cc: ControllerComponents, userRequestAction: UserRequestAction,
                                conf: Configuration, messagesApi: MessagesApi, database: Database, motifs: Motifs,
-                               usage: UsageProvider, retention: SampleRetentionProvider)
+                               usage: UsageProvider, retention: SampleRetentionProvider, scheduler: AnnotationsScheduler)
                               (implicit upp: UserPermissionsProvider, up: UserProvider, sfp: SampleFileProvider, fmp: FileMetadataProvider,
                                tfp: TemporaryFileProvider, stp: SampleTagProvider,
                                as: ActorSystem, mat: Materializer, ec: ExecutionContext, limits: RequestLimits,
@@ -302,7 +303,7 @@ class AnnotationsAPI @Inject()(cc: ControllerComponents, userRequestAction: User
             if (user.nonEmpty) {
               val details = await(user.get.getDetails)
               Right(ActorFlow.actorRef { out =>
-                AnnotationsWebSocketActor.props(out, limits.getLimit(request), user.get, details, database, motifs, usage)
+                AnnotationsWebSocketActor.props(out, limits.getLimit(request), user.get, details, database, motifs, usage, scheduler)
               })
             } else {
               Left(Forbidden)
@@ -324,7 +325,7 @@ class AnnotationsAPI @Inject()(cc: ControllerComponents, userRequestAction: User
             if (user.nonEmpty) {
               val details = await(user.get.getDetails)
               Right(ActorFlow.actorRef { out =>
-                MultisampleAnalysisWebSocketActor.props(out, limits.getLimit(request), user.get, details, database, usage)
+                MultisampleAnalysisWebSocketActor.props(out, limits.getLimit(request), user.get, details, database, usage, scheduler)
               })
             } else {
               Left(Forbidden)
