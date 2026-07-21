@@ -29,7 +29,7 @@ import com.antigenomics.vdjdb.impl.filter.{DummyResultFilter, MaxScoreResultFilt
 import com.antigenomics.vdjdb.impl.weights.{DegreeWeightFunctionFactory, DummyWeightFunctionFactory}
 import com.antigenomics.vdjdb.impl.{ClonotypeDatabase, ClonotypeSearchResult, ScoringBundle, ScoringProvider}
 import com.antigenomics.vdjdb.sequence.SearchScope
-import com.antigenomics.vdjdb.stat.ClonotypeSearchSummary
+import com.antigenomics.vdjdb.stat.{ClonotypeCounter, ClonotypeSearchSummary}
 import com.antigenomics.vdjdb.text.{ExactTextFilter, TextFilter}
 import com.antigenomics.vdjdb.VdjdbInstance
 import com.antigenomics.vdjtools.sample.{Clonotype, Sample}
@@ -73,9 +73,12 @@ class IntersectionTable(var summary: Option[SummaryCounters] = None) extends Res
     val summarized = if (postFilters.isEmpty) raw else found.map { case (clonotype, hits) => clonotype -> hits.asJava }.toMap.asJava
     val summary    = new ClonotypeSearchSummary(summarized, sample, ClonotypeSearchSummary.FIELDS_STARBURST, instance)
     val counters = summary.fieldCounters.asScala.map { case (name, map) =>
-      SummaryFieldCounter(name, map.asScala.filter(v => v._2.getUnique != 0).map { case (field, value) =>
-        SummaryClonotypeCounter(field, value.getUnique, value.getDatabaseUnique, value.getFrequency, value.getReads)
-      }.toSeq)
+      SummaryFieldCounter(name, map.asScala
+        .filter(v => v._2.getUnique != 0)
+        .filter { case (_, value) => IntersectionTable.chartable(name, value, request.databaseQueryParams.minEpitopeSize) }
+        .map { case (field, value) =>
+          SummaryClonotypeCounter(field, value.getUnique, value.getDatabaseUnique, value.getFrequency, value.getReads)
+        }.toSeq)
     }.toSeq
 
     val nfc = summary.getNotFoundCounter
@@ -162,6 +165,23 @@ object IntersectionTable {
     * be read is treated as the lowest confidence rather than silently kept. */
   private def confidenceScore(row: Row): Int =
     Option(row.getAt("vdjdb.score")).map(_.getValue.trim).flatMap(value => Try(value.toInt).toOption).getOrElse(0)
+
+  private final val EpitopeField = "antigen.epitope"
+
+  /** Whether a summary entry is worth putting on a chart.
+    *
+    * `minEpitopeSize` used to be a *database* filter: `EpitopeSizeFilterUtil` counted records per
+    * epitope and the whole index was built without the rare ones, so those epitopes could not be
+    * matched at all. That conflated two different things — a rare epitope is still a real annotation,
+    * it just makes for a noisy starburst wedge. It also forced a database rebuild whenever the value
+    * changed, and made the epitope counts depend on which species/gene the index was built for.
+    *
+    * Now it only thins the plots. Every hit stays in the table; an epitope the database knows fewer
+    * than `minSize` records for is left off the chart. `databaseUnique` is the count of database
+    * records for that value, which is exactly what "epitope size" meant before.
+    */
+  private def chartable(field: String, counter: ClonotypeCounter, minSize: Int): Boolean =
+    field != EpitopeField || minSize <= 0 || counter.getDatabaseUnique >= minSize.toLong
 
   /** Matches broken down by HLA locus.
     *
@@ -267,7 +287,7 @@ object IntersectionTable {
                        scoring: AnnotationsAnnotateScoring): String = {
     val d = AnnotationsSearchScopeHammingDistance.sanitize(searchScope.hammingDistance)
     s"species=${parameters.species}, gene=${parameters.gene}, mhc=${parameters.mhc}, " +
-      s"confidence=${parameters.confidenceThreshold}, minEpitopeSize=${parameters.minEpitopeSize}, " +
+      s"confidence=${parameters.confidenceThreshold}, " +
       s"scope=${d.substitutions}/${d.insertions}/${d.deletions}/${d.total}, " +
       s"matchV=${searchScope.matchV}, matchJ=${searchScope.matchJ}, scoring=${scoring.`type`}"
   }
@@ -278,9 +298,13 @@ object IntersectionTable {
     // so requests differing only in those share one build. Blanking them here is not an optimization
     // detail — leaving them in would make the two-entry cache thrash, since the motif checkbox alone
     // doubles the number of distinct keys the default UI can produce.
+    //
+    // `minEpitopeSize` is blanked for the same reason: it now only thins the summary charts and no
+    // longer reaches the database build, so two requests differing only in it must not each pay for
+    // a rebuild.
     val key: ClonotypeDatabaseKey = (database.getInstance,
       parameters.copy(hla = None, inTcrempMotif = None, inTcrnetMotif = None,
-        independentValidationOnly = None, minConfidenceScore = None),
+        independentValidationOnly = None, minConfidenceScore = None, minEpitopeSize = 0),
       searchScope.copy(hammingDistance = AnnotationsSearchScopeHammingDistance.sanitize(searchScope.hammingDistance)), scoring)
 
     cache.synchronized {
@@ -337,7 +361,11 @@ object IntersectionTable {
       case _ => DummyResultFilter.INSTANCE
     }
 
+    // minEpitopeSize is passed as 0 — deliberately not wired through any more. It used to build the
+    // index without epitopes the database had few records for, which made those annotations
+    // unreachable rather than merely noisy, and forced a full rebuild whenever the number changed.
+    // It now thins the summary charts only; see `chartable`.
     database.getInstance.filter(filters).asClonotypeDatabase(parameters.species, parameters.gene, scope, scoringBundle,
-      weightFunction, resultFilter, searchScope.matchV, searchScope.matchJ, parameters.confidenceThreshold, parameters.minEpitopeSize)
+      weightFunction, resultFilter, searchScope.matchV, searchScope.matchJ, parameters.confidenceThreshold, 0)
   }
 }
