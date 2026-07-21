@@ -191,9 +191,6 @@ class AnnotationsAPI @Inject()(cc: ControllerComponents, userRequestAction: User
     software != "VDJtools" && software != "VDJtoolsRenorm" &&
       Software.values().map(_.toString).contains(software)
 
-  private final case class StoredSample(id: Long, name: String, chain: String, species: String,
-                                       software: String, clonotypes: Long)
-
   /** Always an array, one element per sample created, so the client never has to guess whether an
     * upload was split. */
   private def storedOk(samples: Seq[StoredSample]): Result =
@@ -318,3 +315,12 @@ class AnnotationsAPI @Inject()(cc: ControllerComponents, userRequestAction: User
     }
   }
 }
+
+/** One stored sample, as reported back to the uploader.
+  *
+  * Deliberately file-scoped rather than nested in the controller: as an inner class its synthetic
+  * `equals` performs a type test that carries an unverifiable outer reference, which `-Xfatal-warnings`
+  * turns into a build failure.
+  */
+private final case class StoredSample(id: Long, name: String, chain: String, species: String,
+                                      software: String, clonotypes: Long)
