@@ -122,7 +122,9 @@ class UserProvider @Inject()(
         }
       })
     } else {
-      logger.warn(s"Demo files location ${demoUserConfiguration.filesLocation} is not a directory, no demo samples added")
+      // Debug, not warn: every test application starts a UserProvider against a location that does not
+      // exist, and one line per application buried the actual test output.
+      logger.debug(s"Demo files location ${demoUserConfiguration.filesLocation} is not a directory, no demo samples added")
     }
   }
 

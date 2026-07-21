@@ -106,14 +106,16 @@ class AnnotationRestrictionsSpec extends BaseTestSpec {
 
   "The restriction list" should {
 
-    "hold the population predicate alone until V or J matching is asked for" taggedAs UtilsTestTag in {
+    "hold the population and scope predicates until V or J matching is asked for" taggedAs UtilsTestTag in {
+      // Two by default, not one: the shared index is built wider than most requested scopes, so the
+      // edit distance is a predicate over its results rather than a property of the index.
       def scope(matchV: Boolean, matchJ: Boolean) =
         AnnotationsSearchScope(matchV, matchJ, AnnotationsSearchScopeHammingDistance.Hamming)
 
-      IntersectionTable.databaseRestrictions(parameters(), scope(matchV = false, matchJ = false)).size shouldEqual 1
-      IntersectionTable.databaseRestrictions(parameters(), scope(matchV = true, matchJ = false)).size shouldEqual 2
-      IntersectionTable.databaseRestrictions(parameters(), scope(matchV = false, matchJ = true)).size shouldEqual 2
-      IntersectionTable.databaseRestrictions(parameters(), scope(matchV = true, matchJ = true)).size shouldEqual 3
+      IntersectionTable.databaseRestrictions(parameters(), scope(matchV = false, matchJ = false)).size shouldEqual 2
+      IntersectionTable.databaseRestrictions(parameters(), scope(matchV = true, matchJ = false)).size shouldEqual 3
+      IntersectionTable.databaseRestrictions(parameters(), scope(matchV = false, matchJ = true)).size shouldEqual 3
+      IntersectionTable.databaseRestrictions(parameters(), scope(matchV = true, matchJ = true)).size shouldEqual 4
     }
   }
 }
