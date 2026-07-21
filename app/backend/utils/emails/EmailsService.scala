@@ -34,12 +34,30 @@ class EmailsService @Inject()(mailerClient: MailerClient, conf: Configuration) {
     send(to, "VDJdb account reset password", frontend.views.html.authorization.emails.reset(link).body)
   }
 
+  /** Logs the outcome either way.
+    *
+    * Only failures used to be logged, which makes a silent log ambiguous: it reads identically whether
+    * the mail went out or the call was never reached. That ambiguity cost real debugging time, and the
+    * caller cannot tell the difference either — every caller wraps this in `Future.successful`, so a
+    * failed send still shows the user a success message.
+    *
+    * `mailerClient.send` returns the provider's message id, which is what to quote to Mailjet support
+    * when a message is accepted but never delivered.
+    */
   private def send(to: String, subject: String, body: String): Unit = {
-    try {
-      val email = Email(subject, conf.get[String]("play.mailer.from"), Seq(to), bodyHtml = Some(body))
-      mailerClient.send(email)
-    } catch {
-      case e: Exception => logger.error(s"Failed to send an email: ", e)
+    val from = conf.getOptional[String]("play.mailer.from").filter(_.nonEmpty)
+    from match {
+      case None =>
+        // conf.get[String] throws on a null `from`, which would surface as a 500 rather than a mail
+        // problem. Say what is actually wrong instead.
+        logger.error(s"Not sending '$subject' to $to: play.mailer.from is not configured")
+      case Some(sender) =>
+        try {
+          val messageID = mailerClient.send(Email(subject, sender, Seq(to), bodyHtml = Some(body)))
+          logger.info(s"Sent '$subject' to $to from $sender (message id: $messageID)")
+        } catch {
+          case e: Exception => logger.error(s"Failed to send '$subject' to $to from $sender: ", e)
+        }
     }
   }
 
