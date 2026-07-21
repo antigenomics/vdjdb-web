@@ -15,7 +15,6 @@
  */
 
 import { ScaleOrdinal } from 'd3-scale';
-import { ColorHash } from 'external/color-hash';
 import * as d3 from 'external/d3';
 import { IChartDataEntry } from 'shared/charts/data/chart-data-entry';
 
@@ -23,9 +22,40 @@ export namespace ChartUtils {
 
   export namespace Color {
 
+    /**
+     * ColorBrewer Spectral, verbatim from gnuplot-palettes (spectral.pal).
+     *
+     * Replaces a per-name hash, which picked a colour from the *text* of a label. That is stable, but
+     * it is not a palette: neighbouring wedges landed on near-identical pastels as often as not, and
+     * nothing about a chart's colours carried meaning or even guaranteed contrast.
+     */
+    const SPECTRAL: string[] = [
+      '#D53E4F', '#F46D43', '#FDAE61', '#FEE08B', '#E6F598', '#ABDDA4', '#66C2A5', '#3288BD'
+    ];
+
+    /**
+     * `n` colours evenly spaced along the palette, rather than the first `n` of it — a three-slice
+     * chart should read red / yellow-green / blue, not three shades of red.
+     *
+     * A piecewise RGB ramp rather than a basis spline: piecewise passes exactly *through* every
+     * anchor, so eight categories reproduce the published palette verbatim and the endpoints are
+     * always the true red and blue. A spline (`interpolateRgbBasis`, what d3-scale-chromatic uses)
+     * only honours the endpoints and smooths the interior away from the ColorBrewer values.
+     *
+     * Interpolating at every size, instead of picking discrete entries below eight, is what keeps the
+     * spacing even: rounding onto eight fixed slots gave visibly uneven steps at n = 6 and 7.
+     */
+    function spread(n: number): string[] {
+      if (n <= 1) {
+        return [ SPECTRAL[ 0 ] ];
+      }
+      return d3.quantize(d3.piecewise(d3.interpolateRgb, SPECTRAL), n);
+    }
+
     export function generate(data: IChartDataEntry[]): ScaleOrdinal<string, string> {
-      const colorHash = new ColorHash({ lightness: [ 0.5, 0.6, 0.7 ], saturation: [ 0.6, 0.5, 0.4 ] }); // tslint:disable-line:no-magic-numbers
-      const categories: string[] = data.map((d) => d.color ? d.color : colorHash.hex(d.name));
+      const palette: string[] = spread(data.length);
+      // An entry that carries its own colour keeps it; the palette only fills the gaps.
+      const categories: string[] = data.map((d, i) => d.color ? d.color : palette[ i ]);
       const names: string[] = data.map((d) => d.name);
 
       return d3.scaleOrdinal(categories).domain(names);

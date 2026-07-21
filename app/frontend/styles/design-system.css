@@ -18,6 +18,10 @@
      drifted apart and the sidebar overlapped the content by 20px. A fixed length cannot drift. */
   --ds-annotations-sidebar-width: 190px;
 
+  /* Breathing room between the sidebar's right edge and the content beside it. Without it the first
+     card butts straight against the sidebar's border and the two read as one surface. */
+  --ds-annotations-content-gap: 18px;
+
   --ds-font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   --ds-ink: #1d1d1f;            /* Apple near-black for headings */
   --ds-text: #2f3134;          /* body text */
@@ -195,6 +199,38 @@ a:hover { color: var(--ds-teal); }
   transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .filters-header .filters-toggle--collapsed .icon {
+  transform: rotate(180deg);
+}
+
+/* ---- Annotations sidebar ------------------------------------------------- */
+/* Its headings and links were the only ones on the site not following the type scale: "General" and
+   "Data" rendered at 19.6px/700 against the 18px/600 that every other section heading on Browse,
+   Motif and Structure uses, and the links under them sat at 50% black, lighter than any body text.
+   Measured on production before changing anything. */
+/* Over-qualified on purpose: Semantic's own `.ui.vertical.menu .item > .header:not(.ui)` claims this
+   element at (0,6,0) and carries the 700 weight, so a shorter selector sets the colour and loses the
+   weight — which is what a first attempt did. The competing 1.4em `!important` that also sat on this
+   element was removed from semantic-extensions.css rather than outbid here. */
+.ui.sidebar.vertical.menu .item > .header:not(.ui) {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--ds-ink);
+  letter-spacing: -0.01em;
+}
+.ui.sidebar.menu .item .menu .item {
+  color: var(--ds-text);
+}
+
+/* Collapse/expand chevron. Points LEFT while the panel is open (click to tuck it away) and rotates
+   to point RIGHT once collapsed, mirroring the Filters toggle on Browse. */
+.ui.sidebar.menu .sidebar-toggle .icon {
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  color: var(--ds-muted);
+}
+.ui.sidebar.menu .sidebar-toggle:hover .icon {
+  color: var(--ds-ink);
+}
+.ui.sidebar.menu .sidebar-toggle--collapsed .icon {
   transform: rotate(180deg);
 }
 

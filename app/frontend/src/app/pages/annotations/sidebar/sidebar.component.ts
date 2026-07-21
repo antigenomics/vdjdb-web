@@ -141,7 +141,11 @@ export class AnnotationsSidebarComponent implements OnInit, OnDestroy {
 
   public show(): void {
     this.visible.emit(true);
-    this.renderer.setStyle(this.sidebar.nativeElement, 'width', '12.5%', RendererStyleFlags2.Important);
+    // The stylesheet's width, not the 12.5% this used to restore. The sidebar is position:fixed, so a
+    // percentage resolves against the viewport while the content offset beside it resolves against
+    // its parent — the pair drifted apart and overlapped, which is why the width became a variable.
+    // Expanding after a collapse quietly reintroduced the old percentage and the old overlap.
+    this.renderer.removeStyle(this.sidebar.nativeElement, 'width');
     this.renderer.setStyle(this.sidebarContent.nativeElement, 'display', 'block');
     window.setTimeout(() => {
       this.renderer.setStyle(this.sidebarContent.nativeElement, 'opacity', '1.0');
@@ -155,6 +159,10 @@ export class AnnotationsSidebarComponent implements OnInit, OnDestroy {
     } else {
       this.hide();
     }
+  }
+
+  public isHidden(): boolean {
+    return this._hidden;
   }
 
   public async sidebarRoute(link: string, ...args: string[]): Promise<void> {
