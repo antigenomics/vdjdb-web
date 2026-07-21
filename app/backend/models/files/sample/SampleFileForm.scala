@@ -16,7 +16,6 @@
 
 package backend.models.files.sample
 
-import com.antigenomics.vdjtools.misc.Software
 import play.api.data.Form
 import play.api.data.Forms.{default, mapping, nonEmptyText}
 
@@ -28,6 +27,11 @@ import play.api.data.Forms.{default, mapping, nonEmptyText}
 case class SampleFileForm(name: String, software: String, species: String, chain: String)
 
 object SampleFileForm {
+  /** The only input dialects accepted. Every one of them is normalised to a positional VDJtools table
+    * on upload, so this list is the converter's capability, not vdjtools' Software enum — that enum
+    * names a dozen formats we no longer read, and offering them produced uploads stored on a guess. */
+  final val Formats: Seq[String] = Seq("VDJtools", "AIRR", "MiXCR")
+
   final val DefaultSpecies = "HomoSapiens"
   final val DefaultChain   = "TRB"
 
@@ -44,7 +48,7 @@ object SampleFileForm {
     "species" -> default(nonEmptyText(maxLength = 32), SampleFileForm.DefaultSpecies),
     "chain" -> default(nonEmptyText(maxLength = 8), SampleFileForm.DefaultChain)
   )(SampleFileForm.apply)(SampleFileForm.unapply) verifying("sample.file.form.invalid.software", { sampleFileForm =>
-    Software.values().map(_.toString).contains(sampleFileForm.software)
+    SampleFileForm.Formats.contains(sampleFileForm.software)
   }) verifying("sample.file.form.invalid.name", { sampleFileForm =>
     sampleFileForm.name.nonEmpty && SampleFileTable.isSampleNameValid(sampleFileForm.name)
   }) verifying("sample.file.form.invalid.species", { sampleFileForm =>

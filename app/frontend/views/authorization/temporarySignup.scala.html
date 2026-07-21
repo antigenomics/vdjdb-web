@@ -38,10 +38,45 @@
                 @inputText(form("token"), args = 'icon -> "", 'id -> "tokenInput",
                     'placeholder ->  messages("authorization.forms.signup.placeholder.token"),
                     'fieldType -> "hidden")
-                <h4>Your access token is:</h4>
-                <div class="ui message" style="display:block">
+                <h4>@messages("authorization.forms.signup.token.heading")</h4>
+                <div class="ui message" style="display:block; cursor:pointer" id="tokenCopy"
+                     title="@messages("authorization.forms.signup.token.copyHint")">
                     <span id="tokenView">@form("token").value.getOrElse("")</span>
+                    <i class="copy outline icon" style="float:right"></i>
+                    <span id="tokenCopied" style="float:right; margin-right:8px; display:none">@messages("authorization.forms.signup.token.copied")</span>
                 </div>
+                @@* Copy-on-click. This page is Twirl, outside the Angular bundle, so the app's
+                    ClipboardService is not reachable — hence a small inline script. execCommand is the
+                    fallback because navigator.clipboard is unavailable on insecure origins, which is
+                    exactly the local-dev case. *@@
+                <script>
+                  (function () {
+                    var box = document.getElementById('tokenCopy');
+                    var token = document.getElementById('tokenView');
+                    var copied = document.getElementById('tokenCopied');
+                    if (!box || !token) { return; }
+                    box.addEventListener('click', function () {
+                      var text = token.textContent.trim();
+                      var done = function () {
+                        copied.style.display = 'inline';
+                        setTimeout(function () { copied.style.display = 'none'; }, 1500);
+                      };
+                      if (navigator.clipboard && window.isSecureContext) {
+                        navigator.clipboard.writeText(text).then(done, function () {});
+                      } else {
+                        var scratch = document.createElement('textarea');
+                        scratch.value = text;
+                        scratch.setAttribute('readonly', '');
+                        scratch.style.position = 'absolute';
+                        scratch.style.left = '-9999px';
+                        document.body.appendChild(scratch);
+                        scratch.select();
+                        try { document.execCommand('copy'); done(); } catch (e) { /* leave it selectable */ }
+                        document.body.removeChild(scratch);
+                      }
+                    });
+                  })();
+                </script>
                 <button class="ui fluid large teal button" type="submit" form="signup">@messages("authorization.forms.signup.temporarySignup")</button>
                 <div class="ui divider"></div>
                 <p>@messages("authorization.forms.signup.login.question")

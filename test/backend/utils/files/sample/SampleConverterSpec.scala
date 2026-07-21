@@ -55,6 +55,36 @@ class SampleConverterSpec extends WordSpec with Matchers {
       SampleConverter.cleanSegment("") shouldBe "."
     }
 
+    "resolve both MiXCR header dialects" in {
+      // Legacy, human-readable — taken verbatim from a file that failed in production on 2026-07-21.
+      // It fell through to legacy passthrough and was stored with the declared chain, mislabelling a
+      // TRA sample as TRB.
+      val legacy = Seq("Clone ID", "Clone count", "Clone fraction", "Clonal sequence(s)",
+        "Clonal sequence quality(s)", "All V hits", "All D hits", "All J hits", "All C hits",
+        "N. Seq. CDR3", "AA. Seq. CDR3")
+      val legacyColumns = SampleConverter.resolve(legacy)
+      legacyColumns.v shouldBe Some(5)
+      legacyColumns.j shouldBe Some(7)
+      legacyColumns.count shouldBe Some(1)
+      legacyColumns.aaColumn shouldBe Some(10)
+      legacyColumns.junctionNt shouldBe Some(9)
+
+      // Current camel-case export.
+      val modern = Seq("cloneCount", "cloneFraction", "allVHitsWithScore", "allDHitsWithScore",
+        "allJHitsWithScore", "nSeqCDR3", "aaSeqCDR3")
+      val modernColumns = SampleConverter.resolve(modern)
+      modernColumns.v shouldBe Some(2)
+      modernColumns.j shouldBe Some(4)
+      modernColumns.count shouldBe Some(0)
+      modernColumns.aaColumn shouldBe Some(6)
+    }
+
+    "prefer a read count over the UMI molecule count" in {
+      // vdjtools' own precedence: molecule counts only when no read count column exists.
+      SampleConverter.resolve(Seq("uniqueTagCountMolecule", "readCount")).count shouldBe Some(1)
+      SampleConverter.resolve(Seq("uniqueTagCountMolecule")).count shouldBe Some(0)
+    }
+
     "derive the chain from the locus column or the J segment" in {
       SampleConverter.chainOf("TRBJ2-7", None) shouldBe Some("TRB")
       SampleConverter.chainOf("TRAJ33", None) shouldBe Some("TRA")

@@ -31,7 +31,6 @@ import backend.server.limit.RequestLimits
 import backend.utils.analytics.Analytics
 import backend.utils.files.sample.SampleConverter
 import backend.utils.files.{DecompressionLimitException, DecompressionLimits, FileUtils}
-import com.antigenomics.vdjtools.misc.Software
 import com.typesafe.config.ConfigMemorySize
 import javax.inject.Inject
 import org.apache.commons.io.FilenameUtils
@@ -112,25 +111,9 @@ class AnnotationsAPI @Inject()(cc: ControllerComponents, userRequestAction: User
     * instead of a bare id: the client can no longer assume it knows the stored name.
     */
   private def convertAndStore(user: backend.models.authorization.user.User, name: String, source: java.io.File,
-                              requestedSoftware: String, species: String, chain: String): Future[Result] = {
+                              species: String, chain: String): Future[Result] = {
     val prefix = java.io.File.createTempFile("vdjdb-convert-", "")
     scala.util.Try(SampleConverter.convert(source, prefix, maxClonotypesCount)) match {
-      // Legacy passthrough: vdjtools already parses 8 formats the converter's alias table does not
-      // cover (MiGec, ImmunoSeq, ImgtHighVQuest, Vidjil, RTCR, …). If the user explicitly selected one
-      // of those, store the file untouched and let vdjtools read it, exactly as before.
-      case scala.util.Failure(e: SampleConverter.ConversionException) if isLegacySoftware(requestedSoftware) =>
-        logger.info(s"Sample '$name': converter declined (${e.getMessage}); storing as $requestedSoftware for vdjtools")
-        // Nothing parsed the file, so the declared chain is all we have — this path is the only
-        // reason the form carries one.
-        user.addSampleFileFrom(name, "gz", requestedSoftware, species, chain, source).map { result =>
-          // One `val _` per block only - a second in the same scope collides.
-          Seq(source, prefix).foreach(f => { val _ = f.delete() })
-          result match {
-            case Left(id)     => storedOk(Seq(StoredSample(id, name, chain, species, requestedSoftware, -1L)))
-            case Right(error) => BadRequest(error)
-          }
-        }
-
       case scala.util.Failure(e: SampleConverter.ConversionException) =>
         val _ = prefix.delete()
         Future.successful(BadRequest(e.getMessage))
@@ -186,11 +169,6 @@ class AnnotationsAPI @Inject()(cc: ControllerComponents, userRequestAction: User
     }
   }
 
-  /** vdjtools' own formats, minus the ones the converter handles natively. */
-  private def isLegacySoftware(software: String): Boolean =
-    software != "VDJtools" && software != "VDJtoolsRenorm" &&
-      Software.values().map(_.toString).contains(software)
-
   /** Always an array, one element per sample created, so the client never has to guess whether an
     * upload was split. */
   private def storedOk(samples: Seq[StoredSample]): Result =
@@ -243,7 +221,6 @@ class AnnotationsAPI @Inject()(cc: ControllerComponents, userRequestAction: User
           form => {
             request.body.file("file").fold(ifEmpty = Future.successful(BadRequest("File is empty"))) { file =>
               val name = FilenameUtils.getBaseName(form.name)
-              val software = form.software
 
               val extension: String = "gz"
 
@@ -263,7 +240,7 @@ class AnnotationsAPI @Inject()(cc: ControllerComponents, userRequestAction: User
                   case scala.util.Success(gzipped) =>
                     // Normalise whatever the user sent (AIRR / MiXCR / VDJtools / plain) into the
                     // positional VDJtools table vdjtools can actually parse, and store THAT.
-                    convertAndStore(request.user.get, name, gzipped.getAbsoluteFile, software, form.species, form.chain)
+                    convertAndStore(request.user.get, name, gzipped.getAbsoluteFile, form.species, form.chain)
                 }
               }
             }

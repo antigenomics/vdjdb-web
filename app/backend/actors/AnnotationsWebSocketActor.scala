@@ -20,7 +20,7 @@ import akka.actor.{ActorRef, ActorSystem, Props}
 import backend.models.authorization.permissions.UserPermissionsProvider
 import backend.models.authorization.user.{User, UserDetails, UserProvider}
 import backend.models.files.FileMetadataProvider
-import backend.models.files.sample.SampleFileProvider
+import backend.models.files.sample.{SampleFileForm, SampleFileProvider}
 import backend.models.files.sample.tags.{SampleTag, SampleTagProvider, SampleTagTable}
 import backend.models.files.temporary.TemporaryFileProvider
 import backend.server.annotations.IntersectionTable
@@ -62,7 +62,7 @@ class AnnotationsWebSocketActor(out: ActorRef, limit: IpLimit, user: User, detai
       case UserDetailsResponse.Action =>
         out.success(UserDetailsResponse(details))
       case AvailableSoftwareResponse.Action =>
-        out.success(AvailableSoftwareResponse(Software.values().map(_.toString)))
+        out.success(AvailableSoftwareResponse(SampleFileForm.Formats.toArray))
       case ValidateSampleResponse.Action =>
         validateData(out, data, (validateRequest: ValidateSampleRequest) => {
           user.getSampleFileByName(validateRequest.name) onComplete {
