@@ -172,10 +172,12 @@ object SampleConverter {
   private[sample] def looksLikeJunction(aa: String): Boolean =
     aa.length >= 3 && aa.startsWith("C") && (aa.endsWith("F") || aa.endsWith("W"))
 
+  /** Detect gzip by magic bytes rather than by file name: uploads arrive as Play temp files whose
+    * names carry no meaningful extension. */
   private def open(input: File): Source = {
     val stream = new FileInputStream(input)
     val decoded: InputStream =
-      if (input.getName.endsWith(".gz")) new GZIPInputStream(stream) else stream
+      if (backend.utils.files.FileUtils.isGZipped(input)) new GZIPInputStream(stream) else stream
     Source.fromInputStream(decoded)(Codec.UTF8)
   }
 
