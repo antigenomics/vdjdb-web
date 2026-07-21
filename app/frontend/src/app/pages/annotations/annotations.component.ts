@@ -37,15 +37,21 @@ export class AnnotationsPageComponent {
     }
   }
 
+  // Toggling a class rather than writing margin-left inline: an inline style beats every stylesheet
+  // rule, so the old '12.5%' here silently overrode the sidebar width token and the narrow-screen
+  // media query alike. Both margins now live next to the sidebar width in semantic-extensions.css.
   public onSidebarHidden(): void {
-    this.renderer.setStyle(this.pusher.nativeElement, 'margin-left', '40px');
-    window.setTimeout(() => {
-      window.dispatchEvent(new Event('resize'));
-    }, AnnotationsPageComponent.resizeEventDispatchTimeout);
+    this.renderer.addClass(this.pusher.nativeElement, 'sidebar-collapsed');
+    this.dispatchDelayedResize();
   }
 
   public onSidebarShown(): void {
-    this.renderer.setStyle(this.pusher.nativeElement, 'margin-left', '12.5%');
+    this.renderer.removeClass(this.pusher.nativeElement, 'sidebar-collapsed');
+    this.dispatchDelayedResize();
+  }
+
+  // Charts size themselves off the container, so they need a resize once the margin transition ends.
+  private dispatchDelayedResize(): void {
     window.setTimeout(() => {
       window.dispatchEvent(new Event('resize'));
     }, AnnotationsPageComponent.resizeEventDispatchTimeout);
