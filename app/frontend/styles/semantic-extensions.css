@@ -181,6 +181,12 @@
   width: var(--ds-annotations-sidebar-width);
 }
 
+/* Collapsed state, set by AnnotationsPageComponent toggling the class. Kept here rather than as an
+   inline style so it cannot outrank the media query below. */
+.pusher.annotations.sidebar-collapsed {
+  margin-left: 40px;
+}
+
 .pusher.annotations {
   margin-left: var(--ds-annotations-sidebar-width);
   -webkit-transition: margin-left 0.2s ease-in-out !important;
@@ -258,7 +264,9 @@
     overflow-y: auto;
   }
 
-  .pusher.annotations {
+  /* Collapsed listed too: it is the more specific selector, so it would otherwise keep its 40px here. */
+  .pusher.annotations,
+  .pusher.annotations.sidebar-collapsed {
     margin-left: 0;
   }
 
