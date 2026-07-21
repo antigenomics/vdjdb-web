@@ -158,7 +158,18 @@ a:hover { color: var(--ds-teal); }
   border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
   box-shadow: none !important;
 }
-.ui.top.fixed.menu > .container { min-height: calc(var(--ds-navbar-height) - 1px); align-items: stretch; }
+/* Semantic's `.ui.container` is a fixed, centred column (1127px in a 1600px viewport), which left the
+   account menu stranded ~236px short of the right edge. The bar spans the window, so its contents
+   should too. This selector is (0,4,0) against `.ui.container`'s (0,2,0) and that width is not
+   `!important`, so widening here is enough; the `margin: auto !important` that survives computes to 0.
+   Only desktop is affected — menu.css already forces 100% below 767px. */
+.ui.top.fixed.menu > .container {
+  min-height: calc(var(--ds-navbar-height) - 1px);
+  align-items: stretch;
+  width: 100%;
+  padding-left: 1.25rem;
+  padding-right: 1.25rem;
+}
 
 /* Fancy auto-hide: slide the bar up out of view; it eases back in on scroll-up
    or when the pointer nears the top edge. */
@@ -275,6 +286,12 @@ tr.paired-row > td { color: #525252; }
 .ui.top.fixed.menu .ui.dropdown.item:hover > .menu,
 .ui.top.fixed.menu .ui.dropdown.item:focus-within > .menu {
   display: block;
+}
+/* Clicking an item navigates but leaves the pointer inside the menu, so hover alone would keep it open
+   over the page it just opened. The component marks the host on click and unmarks it on mouseleave.
+   Same specificity as the rule above, so it has to sit after it to win. */
+.ui.top.fixed.menu .ui.dropdown.item.dropdown-dismissed > .menu {
+  display: none;
 }
 /* The host is focusable (tabindex) so it must not draw the browser's default focus ring on click. */
 .ui.top.fixed.menu .ui.dropdown.item:focus {
