@@ -49,7 +49,11 @@ class SearchSummarySpec extends BaseTestSpecWithApplication {
       new SearchScope(1, 0, 0, 1, false, true), ScoringBundle.getDUMMY,
       DummyWeightFunctionFactory.INSTANCE, DummyResultFilter.INSTANCE, false, false, 0, 0)
 
-  private lazy val index: SummaryIndex = SummaryIndex.build(clonotypeDatabase, IntersectionTable.SummaryFields)
+  // Every row: this database was built through `asClonotypeDatabase` and is already narrowed to human
+  // TRB, so the population to describe is all of it. The `accept` predicate exists for the shared
+  // whole-of-VDJdb index, where it is what stops the denominators spanning every species at once.
+  private lazy val index: SummaryIndex =
+    SummaryIndex.build(clonotypeDatabase, IntersectionTable.SummaryFields, _ => true)
 
   private def cdr3Of(row: com.antigenomics.vdjdb.db.Row): String =
     row.getAt(clonotypeDatabase.getCdr3ColName).getValue

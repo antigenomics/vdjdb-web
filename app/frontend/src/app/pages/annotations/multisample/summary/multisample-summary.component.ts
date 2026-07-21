@@ -53,13 +53,16 @@ export class MultisampleSummaryComponent implements OnInit, OnDestroy {
 
   public getCurrentTabProcessingLabel(): string {
     const state = this.multisampleSummaryService.getCurrentTabState();
-    if (state.includes('parse') || state.includes('annotate')) {
-      const [ stateTitle, sampleName ] = state.split(':');
+    if (state.includes('parse') || state.includes('annotate') || state.includes('queued')) {
+      const [ stateTitle, detail ] = state.split(':');
       switch (stateTitle) {
         case 'parse':
-          return `Parsing sample file ${sampleName}`;
+          return `Parsing sample file ${detail}`;
         case 'annotate':
-          return `Annotating ${sampleName}`;
+          return `Annotating ${detail}`;
+        // The work has not started; the number is this job's place in the queue, not a sample name.
+        case 'queued':
+          return `Queued (position ${detail})`;
         default:
           return 'Updating';
       }

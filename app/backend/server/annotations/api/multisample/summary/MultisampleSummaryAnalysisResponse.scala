@@ -30,6 +30,11 @@ object MultisampleSummaryAnalysisResponse {
 
   final def LoadingState(tabID: Int) = MultisampleSummaryAnalysisResponse(tabID, "loading", Map())
 
+  /** Sent while the job waits for a scheduler slot, and again whenever its position improves. The
+    * position rides in the state string for the same reason the sample name does on `parse:`/
+    * `annotate:` — this response carries no field for it and the client already splits on the colon. */
+  final def QueuedState(tabID: Int, position: Int) = MultisampleSummaryAnalysisResponse(tabID, s"queued:$position", Map())
+
   final def CompletedState(tabID: Int, summary: Map[String, SummaryCounters]) = MultisampleSummaryAnalysisResponse(tabID, "completed", summary)
 
   final val Action: String = "multiple-summary"

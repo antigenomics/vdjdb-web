@@ -25,6 +25,7 @@ import { AnalyticsService } from 'utils/analytics/analytics.service';
 import { NotificationService } from 'utils/notifications/notification.service';
 
 export namespace SampleServiceUpdateState {
+  export const QUEUED: string = 'queued';
   export const PARSE: string = 'parse';
   export const ANNOTATE: string = 'annotate';
   export const LOADING: string = 'loading';
@@ -91,6 +92,13 @@ export class SampleService {
           if (response.isSuccess()) {
             const state = response.get('state');
             switch (state) {
+              case SampleServiceUpdateState.QUEUED: {
+                // Not a stage of the work - the work has not started. Saying so, with a position, is
+                // the difference between a busy server and an apparently hung page.
+                const position = response.get<number>('position');
+                sample.setProcessingLabel(position > 0 ? `Queued (position ${position})` : 'Queued');
+                break;
+              }
               case SampleServiceUpdateState.PARSE:
                 sample.setProcessingLabel('Reading sample file (Stage 1 of 3)');
                 break;
@@ -113,7 +121,10 @@ export class SampleService {
               default:
             }
           } else if (response.isError()) {
-            this.notifications.error('Annotations', 'Unable to annotate sample');
+            // The server explains refusals - busy, already running, over quota - and that explanation
+            // is the only actionable part of the message.
+            const reason = response.get<string>('message');
+            this.notifications.error('Annotations', reason ? reason : 'Unable to annotate sample');
 
             table.setError();
             messagesSubscription.unsubscribe();

@@ -22,31 +22,30 @@ import backend.models.authorization.user.{User, UserDetails}
 import backend.models.files.FileMetadataProvider
 import backend.models.files.sample.SampleFileProvider
 import backend.models.usage.UsageProvider
-import backend.server.annotations.{IntersectionTable, SearchSummary}
+import backend.server.annotations.{AnnotationsBusyException, AnnotationsScheduler, IntersectionTable, SearchSummary}
 import backend.server.annotations.api.multisample.summary.{MultisampleSummaryAnalysisRequest, MultisampleSummaryAnalysisResponse}
 import backend.server.annotations.charts.summary.SummaryCounters
 import backend.server.database.Database
 import backend.server.limit.{IpLimit, RequestLimits}
 import com.antigenomics.vdjtools.io.SampleFileConnection
 import com.antigenomics.vdjtools.misc.Software
+import org.slf4j.LoggerFactory
 import play.api.libs.json.JsValue
 
 import scala.async.Async.{async, await}
 import scala.collection.JavaConverters._
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
+import scala.util.control.NonFatal
 import scala.util.{Failure, Success}
 
 class MultisampleAnalysisWebSocketActor(out: ActorRef, limit: IpLimit, user: User, details: UserDetails,
-                                        database: Database, usage: UsageProvider)
+                                        database: Database, usage: UsageProvider, scheduler: AnnotationsScheduler)
                                        (implicit ec: ExecutionContext, as: ActorSystem, limits: RequestLimits,
                                         upp: UserPermissionsProvider, sfp: SampleFileProvider, fmp: FileMetadataProvider)
   extends WebSocketActor(out, limit) {
+  private final val logger = LoggerFactory.getLogger(this.getClass)
 
-  private def lift[T](futures: Seq[Future[T]]) = futures.map(_.map {
-    Success(_)
-  }.recover { case t => Failure(t) })
-
-  private def waitAll[T](futures: Seq[Future[T]]) = Future.sequence(lift(futures))
+  private final val connection: String = self.path.toString
 
   def handleMessage(out: WebSocketOutActorRef, data: Option[JsValue]): Unit = {
     out.getAction match {
@@ -64,46 +63,64 @@ class MultisampleAnalysisWebSocketActor(out: ActorRef, limit: IpLimit, user: Use
               val tabID = request.tabID
               val userFiles = await(user.getSampleFilesWithMetadata)
               val userFilesNames = userFiles.map(_._1.sampleName)
-              val samples = request.sampleNames.filter(userFilesNames.contains(_)).map((sampleName) => async {
-                val file = userFiles.find(_._1.sampleName == sampleName)
-                val sampleFileConnection = new SampleFileConnection(file.get._2.path, Software.valueOf(file.get._1.software))
-                val sample = sampleFileConnection.getSample
-                out.success(MultisampleSummaryAnalysisResponse.ParseState(tabID, file.get._1.sampleName))
-                (sampleName, sample)
-              })
+              val selected = request.sampleNames.filter(userFilesNames.contains)
 
-              val (index, summaryIndex) = IntersectionTable.indexesFor(database, request.databaseQueryParams, request.searchScope, request.scoring)
+              // One scheduler slot for the whole request, not one per sample. The samples used to be
+              // loaded and searched concurrently, so a single user selecting ten of them asked for ten
+              // times the parallelism of a single-sample annotation — the heaviest thing the app can
+              // be told to do, and the one that most needed a ceiling. They now run one after another
+              // inside that slot.
+              scheduler.submit(connection,
+                position => out.success(MultisampleSummaryAnalysisResponse.QueuedState(tabID, position))) {
+                val (index, summaryIndex) = IntersectionTable.indexesFor(
+                  database, request.databaseQueryParams, request.searchScope, request.scoring)
 
-              // The search index spans the whole of VDJdb now, so species, gene, MHC class, confidence
-              // and V/J matching are predicates over its results rather than rows it was built without.
-              // Applying them here is not an addition to what this tab did — it is the same narrowing,
-              // moved. It deliberately stops there: the HLA, motif and evidence filters have never been
-              // applied on this tab, and making them apply is a behaviour change, not this one.
-              val restrictions = IntersectionTable.databaseRestrictions(request.databaseQueryParams, request.searchScope)
+                // The search index spans the whole of VDJdb now, so species, gene, MHC class,
+                // confidence and V/J matching are predicates over its results rather than rows it was
+                // built without. Applying them here is not an addition to what this tab did — it is
+                // the same narrowing, moved. It deliberately stops there: the HLA, motif and evidence
+                // filters have never been applied on this tab, and making them apply is a behaviour
+                // change, not this one.
+                val restrictions = IntersectionTable.databaseRestrictions(request.databaseQueryParams, request.searchScope)
 
-              val counters = samples.map((futureSample) => async {
-                val sample = await(futureSample)
-                val results = index.search(sample._2)
-                out.success(MultisampleSummaryAnalysisResponse.AnnotateState(tabID, sample._1))
+                val multipleSummary = selected.flatMap { sampleName =>
+                  val file = userFiles.find(_._1.sampleName == sampleName).get
+                  try {
+                    val sample = new SampleFileConnection(file._2.path, Software.valueOf(file._1.software)).getSample
+                    out.success(MultisampleSummaryAnalysisResponse.ParseState(tabID, sampleName))
 
-                // The denominators come from the index built alongside the database. This loop is why
-                // that matters most here: `ClonotypeSearchSummary` recomputed them from scratch for
-                // every sample in the selection, so a ten-sample analysis paid the same ~45 second
-                // database scan ten times over.
-                val found = results.asScala.toList
-                  .map { case (c, l) => (c, l.asScala.toList.filter(hit => restrictions.forall(allows => allows(c, hit)))) }
-                  .filter { case (_, hits) => hits.nonEmpty }
-                val (fieldCounters, notFound) =
-                  SearchSummary.summarize(found, sample._2, IntersectionTable.SummaryFields, summaryIndex)
-                val annotated = IntersectionTable.summarizeAnnotated(found)
-                (sample._1, SummaryCounters(fieldCounters, notFound, annotated))
-              })
+                    val results = index.search(sample)
+                    out.success(MultisampleSummaryAnalysisResponse.AnnotateState(tabID, sampleName))
 
-              val multipleSummary = await(waitAll(counters).map { completedJobs =>
-                completedJobs.filter(_.isSuccess).map((completedFuture) => completedFuture.get._1 -> completedFuture.get._2)
-              }).toMap
+                    // The denominators come from the index built alongside the database. This loop is
+                    // why that matters most here: `ClonotypeSearchSummary` recomputed them from
+                    // scratch for every sample in the selection, so a ten-sample analysis paid the
+                    // same ~45 second database scan ten times over.
+                    val found = results.asScala.toList
+                      .map { case (c, l) => (c, l.asScala.toList.filter(hit => restrictions.forall(allows => allows(c, hit)))) }
+                      .filter { case (_, hits) => hits.nonEmpty }
+                    val (fieldCounters, notFound) =
+                      SearchSummary.summarize(found, sample, IntersectionTable.SummaryFields, summaryIndex)
+                    val annotated = IntersectionTable.summarizeAnnotated(found)
+                    Some(sampleName -> SummaryCounters(fieldCounters, notFound, annotated))
+                  } catch {
+                    // One unreadable sample must not lose the other nine, which is what the previous
+                    // `filter(_.isSuccess)` achieved — silently. Same outcome, now with a reason in
+                    // the log.
+                    case NonFatal(e) =>
+                      logger.error(s"Multisample analysis failed for sample '$sampleName'", e)
+                      None
+                  }
+                }.toMap
 
-              out.success(MultisampleSummaryAnalysisResponse.CompletedState(tabID, multipleSummary))
+                out.success(MultisampleSummaryAnalysisResponse.CompletedState(tabID, multipleSummary))
+              } onComplete {
+                case Failure(AnnotationsBusyException(message)) => out.errorMessage(message)
+                case Failure(t) =>
+                  logger.error("Multisample analysis failed", t)
+                  out.errorMessage("Unable to analyse these samples")
+                case Success(_) =>
+              }
             })
         }
       case _ =>
@@ -113,8 +130,9 @@ class MultisampleAnalysisWebSocketActor(out: ActorRef, limit: IpLimit, user: Use
 }
 
 object MultisampleAnalysisWebSocketActor {
-  def props(out: ActorRef, limit: IpLimit, user: User, details: UserDetails, database: Database, usage: UsageProvider)
+  def props(out: ActorRef, limit: IpLimit, user: User, details: UserDetails, database: Database, usage: UsageProvider,
+            scheduler: AnnotationsScheduler)
            (implicit ec: ExecutionContext, as: ActorSystem, limits: RequestLimits,
             upp: UserPermissionsProvider, sfp: SampleFileProvider, fmp: FileMetadataProvider): Props =
-    Props(new MultisampleAnalysisWebSocketActor(out, limit, user, details, database, usage))
+    Props(new MultisampleAnalysisWebSocketActor(out, limit, user, details, database, usage, scheduler))
 }
