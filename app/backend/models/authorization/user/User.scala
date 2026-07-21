@@ -76,14 +76,14 @@ case class User(id: Long, login: String, email: String, verified: Boolean, folde
                     file: Files.TemporaryFile)
                    (implicit sfp: SampleFileProvider, upp: UserPermissionsProvider, fmp: FileMetadataProvider,
                     ec: ExecutionContext): Future[Either[Long, String]] =
-    addSampleFileFrom(name, extension, softwareType, species, chain, file.getAbsoluteFile)
+    addSampleFileFrom(name, extension, softwareType, species, chain, softwareType, file.getAbsoluteFile)
 
   /** As `addSampleFile`, but for a plain file: the sample converter writes its normalised output to
     * an ordinary temp file rather than a Play `TemporaryFile`. Distinctly named rather than an
     * overload, because overloads that differ only in one parameter while sharing an implicit list
     * resolve badly. */
   def addSampleFileFrom(name: String, extension: String, softwareType: String, species: String, chain: String,
-                        file: File)
+                        sourceSoftware: String, file: File)
                        (implicit sfp: SampleFileProvider, upp: UserPermissionsProvider, fmp: FileMetadataProvider,
                         ec: ExecutionContext): Future[Either[Long, String]] = async {
     val files = await(getSampleFiles)
@@ -107,7 +107,7 @@ case class User(id: Long, login: String, email: String, verified: Boolean, folde
               val metadataID = await(fmp.insert(name, extension, sampleFolderPath))
               FileUtils.copyFile(file.getAbsolutePath, s"$sampleFolderPath/$name.$extension")
               file.deleteOnExit()
-              val sampleFileID = await(sfp.insert(SampleFile(0, name, softwareType, -1, -1, metadataID, id, -1, species, chain)))
+              val sampleFileID = await(sfp.insert(SampleFile(0, name, softwareType, -1, -1, metadataID, id, -1, species, chain, sourceSoftware)))
               Left(sampleFileID)
             } else {
               Right("Unable to create sample file (internal server error)")
@@ -119,7 +119,7 @@ case class User(id: Long, login: String, email: String, verified: Boolean, folde
   }
 
   def addDemoSampleFile(name: String, extension: String, softwareType: String, species: String, chain: String,
-                        file: File)
+                        sourceSoftware: String, file: File)
                        (implicit sfp: SampleFileProvider, upp: UserPermissionsProvider, fmp: FileMetadataProvider,
                         ec: ExecutionContext): Future[Either[Long, String]] = async {
     val permissions = await(getPermissions)
@@ -136,7 +136,7 @@ case class User(id: Long, login: String, email: String, verified: Boolean, folde
           val sampleFolderPath = file.getParentFile.getAbsolutePath
           val sampleFolder = file.getParentFile
           val metadataID = await(fmp.insert(name, extension, sampleFolderPath))
-          val sampleFileID = await(sfp.insert(SampleFile(0, name, softwareType, -1, -1, metadataID, id, -1, species, chain)))
+          val sampleFileID = await(sfp.insert(SampleFile(0, name, softwareType, -1, -1, metadataID, id, -1, species, chain, sourceSoftware)))
           Left(sampleFileID)
         }
       }
