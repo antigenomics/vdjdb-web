@@ -324,7 +324,7 @@ class AnnotationsAPI @Inject()(cc: ControllerComponents, userRequestAction: User
             if (user.nonEmpty) {
               val details = await(user.get.getDetails)
               Right(ActorFlow.actorRef { out =>
-                MultisampleAnalysisWebSocketActor.props(out, limits.getLimit(request), user.get, details, database)
+                MultisampleAnalysisWebSocketActor.props(out, limits.getLimit(request), user.get, details, database, usage)
               })
             } else {
               Left(Forbidden)
