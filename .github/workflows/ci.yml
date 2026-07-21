@@ -57,6 +57,14 @@ jobs:
         run: |
           sbt frontendInstallDependencies build
 
+      # `build` is packageBin in Universal, which never looks at src/test, so until now nothing in CI
+      # compiled the ~20 spec files in this repo. A spec could reference a signature that no longer
+      # exists and the build stayed green. Compile them so that at least cannot happen silently.
+      # Running them is the next step up and deliberately not taken here - see the PR discussion.
+      - name: Compile tests
+        run: |
+          sbt test:compile
+
       # Upload build artifact (optional but useful)
       - name: Upload server package
         if: success()
