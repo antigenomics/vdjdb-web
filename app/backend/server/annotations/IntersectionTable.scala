@@ -278,6 +278,11 @@ object IntersectionTable {
   private def confidenceScore(row: Row): Int =
     Option(row.getAt(ConfidenceColumn)).map(_.getValue.trim).flatMap(value => Try(value.toInt).toOption).getOrElse(0)
 
+  /** The starburst fields, as `ClonotypeSearchSummary.FIELDS_STARBURST` defined them. Held here now
+    * that the summary is computed in [[SearchSummary]] rather than by the engine. */
+  final val SummaryFields: Seq[String] =
+    Seq("mhc.class", "mhc.a", "mhc.b", "antigen.species", "antigen.gene", "antigen.epitope")
+
   /** Matches broken down by HLA locus.
     *
     * Not derivable on the client from the `mhc.a`/`mhc.b` counters the engine already produces: those
