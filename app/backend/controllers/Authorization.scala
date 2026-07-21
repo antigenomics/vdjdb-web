@@ -23,6 +23,7 @@ import backend.models.authorization.tokens.reset.ResetTokenProvider
 import backend.models.authorization.tokens.session.SessionTokenProvider
 import backend.models.authorization.tokens.verification.VerificationTokenProvider
 import backend.models.authorization.user.UserProvider
+import backend.utils.RequestUtils
 import backend.utils.analytics.Analytics
 import backend.utils.emails.EmailsService
 import javax.inject.Inject
@@ -150,7 +151,9 @@ class Authorization @Inject()(cc: ControllerComponents, messagesApi: MessagesApi
           BadRequest(frontend.views.html.authorization.temporarySignup(formWithErrors))
         },
       form => async {
-        val ip    = request.headers.get("X-Real-IP").getOrElse(request.remoteAddress)
+        // Must be the spoof-resistant client IP: reading X-Real-IP directly let a caller pick their
+        // own identity, which made `maxForOneIP` unenforceable and token creation effectively unlimited.
+        val ip    = RequestUtils.clientIp(request)
         val check = await(up.get(form.token))
         if (check.nonEmpty) {
           BadRequest(frontend.views.html.authorization.temporarySignup(SignupTemporaryForm.tokenInUseTemporaryFormMapping))

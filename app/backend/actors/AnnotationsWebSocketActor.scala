@@ -120,8 +120,11 @@ class AnnotationsWebSocketActor(out: ActorRef, limit: IpLimit, user: User, detai
                 out.success(SampleAnnotateResponse.CompletedState(table.getRows, table.summary))
               } catch {
                 case e: Exception =>
-                  e.printStackTrace()
-                  out.errorMessage("Unable to intersect")
+                  // Every failure used to collapse into "Unable to intersect", which told the user
+                  // nothing and left the real cause only in a stack trace on stdout.
+                  logger.error(s"Annotation failed for sample '${file._1.sampleName}'", e)
+                  val reason = Option(e.getMessage).filter(_.nonEmpty).getOrElse(e.getClass.getSimpleName)
+                  out.errorMessage(s"Unable to annotate this sample: $reason")
               }
             case None =>
               out.errorMessage("Invalid file name")

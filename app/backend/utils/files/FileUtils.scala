@@ -51,6 +51,16 @@ object FileUtils {
     Files.copy(Paths.get(source), Paths.get(dest), REPLACE_EXISTING)
   }
 
+  /** Depth-first tree delete. `File.delete()` only removes an *empty* directory, so deleting a user
+    * folder that still holds per-sample subdirectories is a silent no-op — which is one of the ways
+    * orphaned upload directories accumulate on disk. */
+  def deleteRecursively(file: File): Unit = {
+    if (file.isDirectory) {
+      Option(file.listFiles()).foreach(_.foreach(deleteRecursively))
+    }
+    val _ = file.delete()
+  }
+
   // t is the type of checksum, i.e. MD5, or SHA-512 or whatever
   // path is the path to the file you want to get the hash of
   def fileContentHash(t: String, path: String): String = {

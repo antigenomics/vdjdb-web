@@ -238,8 +238,11 @@ class UserProvider @Inject()(
     }
   }
 
+  /** Counts only temporary accounts: this backs the per-IP cap on token creation, and counting
+    * registered users too would let a handful of ordinary signups behind one NAT lock everybody
+    * else on that address out of creating a token. */
   def countForCreateIP(createIP: String): Future[Int] = {
-    db.run(table.filter(fm => fm.createIP === createIP).result).map(_.length)
+    db.run(table.filter(user => user.createIP === createIP && user.isTemporary).length.result)
   }
 
   def touch(id: Long): Future[Int] = {

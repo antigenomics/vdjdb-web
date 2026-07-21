@@ -149,7 +149,9 @@ case class User(id: Long, login: String, email: String, verified: Boolean, folde
     samples.foreach { sample => sfp.delete(sample) }
     val folder = new File(folderPath)
     if (folder.exists()) {
-      folder.delete()
+      // Non-recursive delete() silently fails whenever a per-sample subfolder survives, which is how
+      // orphaned upload directories accumulate. Remove the tree.
+      FileUtils.deleteRecursively(folder)
     }
   }
 }
