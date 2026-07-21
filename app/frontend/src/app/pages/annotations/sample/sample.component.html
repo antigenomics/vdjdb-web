@@ -18,6 +18,9 @@
     <h3 class="ui top attached header">
         Sample {{ sample.name }}
         <div class="sub header">Software: {{ sample.software }}
+            <!-- Samples stored before species/chain were recorded carry '' and show a dash. -->
+            <span style="margin-left: 20px">Species: {{ sample.species || '&mdash;' }}</span>
+            <span style="margin-left: 20px">Chain: {{ sample.chain || '&mdash;' }}</span>
             <ng-container *ngIf="sample.isSampleInfoExist()">
                 <span style="margin-left: 20px">Reads count: {{ sample.readsCount }}</span>
                 <span style="margin-left: 20px">Clonotypes count: {{ sample.clonotypesCount }}</span>

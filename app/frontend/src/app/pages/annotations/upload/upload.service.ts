@@ -26,15 +26,28 @@ import { NotificationService } from 'utils/notifications/notification.service';
 import { AnnotationsService, AnnotationsServiceEvents } from '../annotations.service';
 import { FileItem } from './item/file-item';
 
+/** One stored sample, as reported back by the server. An upload holding both chains produces two of
+ * these, so the client can no longer assume it knows the stored name. */
+export interface IUploadedSample {
+  id: number;
+  name: string;
+  chain: string;
+  species: string;
+  software: string;
+  clonotypes: number;
+}
+
 export class UploadStatus {
   public progress: number;
   public loading: boolean;
   public error: string;
+  public samples: IUploadedSample[];
 
-  constructor(progress: number, loading: boolean = true, error?: string) {
+  constructor(progress: number, loading: boolean = true, error?: string, samples: IUploadedSample[] = []) {
     this.progress = progress;
     this.loading = loading;
     this.error = error;
+    this.samples = samples;
   }
 }
 
@@ -229,7 +242,7 @@ export class UploadService {
         next:  async (status: UploadStatus) => {
           if (status.loading === false) {
             if (status.progress === UploadService.FULL_PROGRESS && status.error === undefined) {
-              const added = await this.annotationsService.addSample(file);
+              const added = await this.annotationsService.addSample(file, status.samples);
               if (added) {
                 file.setUploadedStatus();
               } else {
@@ -285,6 +298,18 @@ export class UploadService {
       .forEach((item) => item.setSoftware(software));
   }
 
+  public setDefaultSpecies(species: string): void {
+    this._files
+      .filter((item) => !(item.status.isError() || item.status.isRemoved() || item.status.isUploaded()))
+      .forEach((item) => item.setSpecies(species));
+  }
+
+  public setDefaultChain(chain: string): void {
+    this._files
+      .filter((item) => !(item.status.isError() || item.status.isRemoved() || item.status.isUploaded()))
+      .forEach((item) => item.setChain(chain));
+  }
+
   public setDefaultTag(tag: SampleTag): void {
     this._files
       .filter((item) => !(item.status.isError() || item.status.isRemoved() || item.status.isUploaded()))
@@ -311,6 +336,8 @@ export class UploadService {
       formData.append('file', file.getUploadBlob());
       formData.append('name', file.getUploadBlobName());
       formData.append('software', file.software);
+      formData.append('species', file.species);
+      formData.append('chain', file.chain);
       const xhr = new XMLHttpRequest();
 
       const progressEventListener = (progress: ProgressEvent) => {
@@ -334,7 +361,17 @@ export class UploadService {
         const status = request.status;
         this.logger.debug('FileUploaderService: load with status', status);
         if (status === UploadService.SUCCESS_HTTP_CODE) {
-          observer.next(new UploadStatus(UploadService.FULL_PROGRESS, false));
+          // The body is now the list of samples actually created - one, or two when a mixed-chain file
+          // was split. Erroring on a body we cannot read is deliberate: silently falling back to the
+          // old assumption would register the wrong name and look like a validation failure later.
+          let samples: IUploadedSample[];
+          try {
+            samples = JSON.parse(request.responseText).samples;
+          } catch (e) {
+            observer.error(new UploadStatus(-1, false, 'Malformed upload response from server'));
+            return;
+          }
+          observer.next(new UploadStatus(UploadService.FULL_PROGRESS, false, undefined, samples));
           observer.complete();
         } else {
           const errorResponse = request.responseText;

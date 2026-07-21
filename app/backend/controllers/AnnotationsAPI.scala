@@ -105,12 +105,14 @@ class AnnotationsAPI @Inject()(cc: ControllerComponents, userRequestAction: User
 
   /** Run the uploaded file through [[SampleConverter]] and store the normalised result.
     *
-    * A file carrying both chains is rejected rather than split: one upload still maps to one sample,
-    * so the response contract (and the client, which re-registers the name it uploaded) is unchanged.
-    * Splitting into `<name>_TRA`/`<name>_TRB` needs that contract widened and is a separate change.
+    * A file carrying both chains becomes two samples, `<name>_TRA` and `<name>_TRB`. A single-chain
+    * file keeps its bare name — suffixing those too would silently rename every ordinary upload.
+    *
+    * Because one upload can now produce two samples, the response carries what was actually created
+    * instead of a bare id: the client can no longer assume it knows the stored name.
     */
-  private def convertAndStore(user: backend.models.authorization.user.User, name: String,
-                              source: java.io.File, requestedSoftware: String): Future[Result] = {
+  private def convertAndStore(user: backend.models.authorization.user.User, name: String, source: java.io.File,
+                              requestedSoftware: String, species: String, chain: String): Future[Result] = {
     val prefix = java.io.File.createTempFile("vdjdb-convert-", "")
     scala.util.Try(SampleConverter.convert(source, prefix, maxClonotypesCount)) match {
       // Legacy passthrough: vdjtools already parses 8 formats the converter's alias table does not
@@ -118,28 +120,69 @@ class AnnotationsAPI @Inject()(cc: ControllerComponents, userRequestAction: User
       // of those, store the file untouched and let vdjtools read it, exactly as before.
       case scala.util.Failure(e: SampleConverter.ConversionException) if isLegacySoftware(requestedSoftware) =>
         logger.info(s"Sample '$name': converter declined (${e.getMessage}); storing as $requestedSoftware for vdjtools")
-        user.addSampleFileFrom(name, "gz", requestedSoftware, source).map(storeResult(source))
+        // Nothing parsed the file, so the declared chain is all we have — this path is the only
+        // reason the form carries one.
+        user.addSampleFileFrom(name, "gz", requestedSoftware, species, chain, source).map { result =>
+          // One `val _` per block only - a second in the same scope collides.
+          Seq(source, prefix).foreach(f => { val _ = f.delete() })
+          result match {
+            case Left(id)     => storedOk(Seq(StoredSample(id, name, chain, species, requestedSoftware, -1L)))
+            case Right(error) => BadRequest(error)
+          }
+        }
 
       case scala.util.Failure(e: SampleConverter.ConversionException) =>
+        val _ = prefix.delete()
         Future.successful(BadRequest(e.getMessage))
 
       case scala.util.Failure(e) =>
         logger.warn(s"Sample conversion failed for '$name'", e)
+        val _ = prefix.delete()
         Future.successful(BadRequest(s"Unable to parse the uploaded file: ${e.getMessage}"))
 
-      case scala.util.Success(report) if report.chains.lengthCompare(1) > 0 =>
-        report.chains.foreach(c => { val _ = c.file.delete() })
-        Future.successful(BadRequest(
-          s"This file contains ${report.chains.map(_.chain).mkString(" and ")} records. A sample must be " +
-            "single-chain — please upload one chain per file."))
-
       case scala.util.Success(report) =>
-        val converted = report.chains.head
+        val split = report.chains.lengthCompare(1) > 0
         if (report.warnings.nonEmpty) {
-          logger.info(s"Sample '$name' (${report.format}, ${converted.chain}): ${report.warnings.mkString("; ")}")
+          logger.info(s"Sample '$name' (${report.format}, ${report.chains.map(_.chain).mkString("+")}): ${report.warnings.mkString("; ")}")
         }
-        // Stored normalised, so the annotate path always reads a VDJtools table regardless of input.
-        user.addSampleFileFrom(name, "gz", "VDJtools", converted.file).map(storeResult(converted.file))
+        val planned = report.chains.map(c => (if (split) s"${name}_${c.chain}" else name, c))
+        val cleanup = () => {
+          report.chains.foreach(c => { val _ = c.file.delete() })
+          val _ = prefix.delete()
+        }
+
+        // Everything is checked before anything is written, so a split either produces both samples or
+        // none. Storing one and then failing the second would leave the account holding half a sample.
+        preflight(user, planned.map(_._1)) flatMap {
+          case Some(error) =>
+            cleanup()
+            Future.successful(BadRequest(error))
+          case None =>
+            // Sequential, not parallel: addSampleFileFrom re-reads the sample list and re-checks the
+            // quota on every call, so concurrent inserts race both checks. Written with flatMap because
+            // scala.async cannot await inside a closure.
+            // The accumulator keeps what was already stored even on failure, so a half-finished split
+            // can be undone rather than left in the account.
+            val stored = planned.foldLeft(Future.successful[(Seq[StoredSample], Option[String])]((Seq.empty, None))) {
+              case (acc, (sampleName, converted)) => acc.flatMap {
+                case done @ (_, Some(_)) => Future.successful(done)
+                case (done, None)        =>
+                  // Stored normalised, so the annotate path always reads a VDJtools table.
+                  user.addSampleFileFrom(sampleName, "gz", "VDJtools", species, converted.chain, converted.file).map {
+                    case Left(id)     => (done :+ StoredSample(id, sampleName, converted.chain, species, "VDJtools", converted.clonotypes), None)
+                    case Right(error) => (done, Some(error))
+                  }
+              }
+            }
+            stored.flatMap {
+              case (samples, None) =>
+                cleanup()
+                Future.successful(storedOk(samples))
+              case (samples, Some(error)) =>
+                cleanup()
+                rollback(user, samples.map(_.name)).map(_ => BadRequest(error))
+            }
+        }
     }
   }
 
@@ -148,13 +191,41 @@ class AnnotationsAPI @Inject()(cc: ControllerComponents, userRequestAction: User
     software != "VDJtools" && software != "VDJtoolsRenorm" &&
       Software.values().map(_.toString).contains(software)
 
-  private def storeResult(scratch: java.io.File)(result: Either[Long, String]): Result = {
-    val _ = scratch.delete()
-    result match {
-      case Left(sampleFileID) => Ok(s"$sampleFileID")
-      case Right(error)       => BadRequest(error)
+  /** Always an array, one element per sample created, so the client never has to guess whether an
+    * upload was split. */
+  private def storedOk(samples: Seq[StoredSample]): Result =
+    Ok(Json.obj("samples" -> JsArray(samples.map(s => Json.obj(
+      "id" -> s.id, "name" -> s.name, "chain" -> s.chain, "species" -> s.species,
+      "software" -> s.software, "clonotypes" -> s.clonotypes)))))
+
+  /** Reject a split before writing anything, for the reasons only visible once names are derived:
+    * `_TRA` costs four characters against a 40-character name limit, and a split consumes two slots of
+    * the account quota rather than one. */
+  private def preflight(user: backend.models.authorization.user.User, names: Seq[String]): Future[Option[String]] = {
+    val invalid = names.find(n => !SampleFileTable.isSampleNameValid(n))
+    invalid match {
+      case Some(bad) =>
+        Future.successful(Some(s"This file holds both chains, so it is stored as two samples, but '$bad' " +
+          "is not a valid sample name — please shorten the name and upload again."))
+      case None =>
+        for {
+          existing    <- user.getSampleFiles
+          permissions <- user.getPermissions
+        } yield {
+          val clash = names.find(n => existing.exists(_.sampleName == n))
+          if (clash.nonEmpty) {
+            Some(s"Sample file ${clash.get} already exist")
+          } else if (permissions.maxFilesCount >= 0 && existing.length + names.length > permissions.maxFilesCount) {
+            Some(s"Storing ${names.length} samples would exceed the ${permissions.maxFilesCount}-sample limit")
+          } else {
+            None
+          }
+        }
     }
   }
+
+  private def rollback(user: backend.models.authorization.user.User, names: Seq[String]): Future[Unit] =
+    Future.sequence(names.map(n => sfp.deleteForUser(user, n))).map(_ => ())
 
   def uploadFile: Action[MultipartFormData[Files.TemporaryFile]] =
     (userRequestAction(parse.multipartFormData(maxUploadFileSize.toBytes)) andThen SessionAction.authorizedOnly andThen checkUploadAllowed).async {
@@ -192,7 +263,7 @@ class AnnotationsAPI @Inject()(cc: ControllerComponents, userRequestAction: User
                   case scala.util.Success(gzipped) =>
                     // Normalise whatever the user sent (AIRR / MiXCR / VDJtools / plain) into the
                     // positional VDJtools table vdjtools can actually parse, and store THAT.
-                    convertAndStore(request.user.get, name, gzipped.getAbsoluteFile, software)
+                    convertAndStore(request.user.get, name, gzipped.getAbsoluteFile, software, form.species, form.chain)
                 }
               }
             }
@@ -244,3 +315,12 @@ class AnnotationsAPI @Inject()(cc: ControllerComponents, userRequestAction: User
     }
   }
 }
+
+/** One stored sample, as reported back to the uploader.
+  *
+  * Deliberately file-scoped rather than nested in the controller: as an inner class its synthetic
+  * `equals` performs a type test that carries an unverifiable outer reference, which `-Xfatal-warnings`
+  * turns into a build failure.
+  */
+private final case class StoredSample(id: Long, name: String, chain: String, species: String,
+                                      software: String, clonotypes: Long)
