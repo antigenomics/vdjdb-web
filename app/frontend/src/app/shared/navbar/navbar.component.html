@@ -23,11 +23,14 @@
         <!-- The curated subsets are entry points into Browse, not siblings of it: both land on
              /search with a preset filter. Nesting them says so, and buys back the header width that
              was pushing the account menu past the right edge of the container. -->
-        <a class="ui dropdown item" tabindex="0" [class.active]="isActive('/search')">
+        <!-- The header goes to Browse keeping the filters that are set; only "All data" clears them. -->
+        <a route="/search" class="ui dropdown item" tabindex="0" [class.active]="isActive('/search')"
+           [class.dropdown-dismissed]="dismissedDropdown === 'browse'"
+           (click)="dismissDropdown('browse')" (mouseleave)="dismissDropdown(null)">
             Browse
             <i class="dropdown icon"></i>
-            <div class="menu fade element slow padded">
-                <a route="/search" class="item">All data</a>
+            <div class="menu fade element slow padded" (click)="dismissDropdownFromMenu($event, 'browse')">
+                <a (click)="browseAllData()" class="item">All data</a>
                 <a (click)="redirectOnUrl('self-antigen')" class="item">
                     <span style="color: #f2711c!important">Self-antigens</span>
                 </a>
@@ -57,11 +60,13 @@
         <a route="/structure" class="item" [class.active]="isActive('/structure')">Structure</a>
         <a route="/refsearch" class="item" [class.active]="isActive('/refsearch')">Refsearch</a>
 
-        <a class="ui dropdown item" tabindex="0"
-           [class.active]="isActive('/about') || isActive('/links') || isActive('/credits')">
+        <a route="/about" class="ui dropdown item" tabindex="0"
+           [class.active]="isActive('/about') || isActive('/links') || isActive('/credits')"
+           [class.dropdown-dismissed]="dismissedDropdown === 'about'"
+           (click)="dismissDropdown('about')" (mouseleave)="dismissDropdown(null)">
             About
             <i class="dropdown icon"></i>
-            <div class="menu fade element slow padded">
+            <div class="menu fade element slow padded" (click)="dismissDropdownFromMenu($event, 'about')">
                 <a route="/about" class="item">Help</a>
                 <a route="/links" class="item">Links</a>
                 <a route="/credits" class="item">Credits</a>

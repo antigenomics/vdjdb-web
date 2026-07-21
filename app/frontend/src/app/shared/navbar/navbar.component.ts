@@ -18,6 +18,7 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, NgZone, OnDestro
 import { NavigationEnd, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
+import { FiltersService } from 'shared/filters/filters.service';
 import { LoggerService } from 'utils/logger/logger.service';
 import { Utils } from 'utils/utils';
 
@@ -38,6 +39,12 @@ export class NavigationBarComponent implements OnInit, OnDestroy {
   // Active-tab highlight: the current router URL (without query string), updated on navigation.
   public currentUrl: string = '/';
   private routerSubscription!: Subscription;
+
+  // The dropdowns open on hover (design-system.css), so after a click the pointer is still inside the
+  // menu and it would stay open over the page it just navigated to. Holds the id of the dropdown to
+  // force closed; cleared on mouseleave so it opens again the next time the pointer arrives. One field
+  // is enough because only one dropdown can be under the pointer at a time.
+  public dismissedDropdown: string = null;
 
   private static readonly topRevealZone: number = 60;
   private static readonly scrollHideThreshold: number = 120;
@@ -115,7 +122,7 @@ export class NavigationBarComponent implements OnInit, OnDestroy {
   }
 
   constructor(logger: LoggerService, private changeDetector: ChangeDetectorRef, private ngZone: NgZone,
-              private router: Router) {
+              private router: Router, private filters: FiltersService) {
     this._isLogged = Utils.Cookies.getCookie('logged') === 'true';
     this._userEmail = Utils.Cookies.getCookie('email');
     this._userLogin = Utils.Cookies.getCookie('login');
@@ -139,5 +146,28 @@ export class NavigationBarComponent implements OnInit, OnDestroy {
 
   public redirectOnUrl(url: string) {
     document.location.href = url;
+  }
+
+  // "All data" means "the unfiltered database", so it clears the filters the user had set. Navigating
+  // is not enough on its own: on /search the route is unchanged, so the page component is not
+  // recreated and the ngOnInit that would have reset the filters never runs again.
+  // forceUpdate() has to follow, and has to be in the .then(): setDefault() only emits RESET, which
+  // nothing listens to, whereas the search table re-queries on UPDATE. Firing it before navigation
+  // settles would search with the filters of the page being left.
+  public browseAllData(): void {
+    this.filters.setDefault();
+    this.router.navigate([ '/search' ]).then(() => this.filters.forceUpdate());
+  }
+
+  public dismissDropdown(id: string): void {
+    this.dismissedDropdown = id;
+  }
+
+  // Clicks inside a menu must not reach the dropdown host: the host carries its own `route`, and a
+  // bubbled click would run that navigation after the item's own — the host's target would win, so
+  // "Links" would land on the About page.
+  public dismissDropdownFromMenu(event: MouseEvent, id: string): void {
+    event.stopPropagation();
+    this.dismissedDropdown = id;
   }
 }
