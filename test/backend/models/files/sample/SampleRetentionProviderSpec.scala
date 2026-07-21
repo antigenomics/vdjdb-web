@@ -38,12 +38,13 @@ class SampleRetentionProviderSpec extends DatabaseProviderTestSpec {
   private final val Day: Long = 24L * 60L * 60L
 
   /** The shipped windows, so the tests exercise the numbers that will actually be deployed. */
-  private def policy(dryRun: Boolean): SampleRetentionConfiguration = SampleRetentionConfiguration(
+  private def policy(dryRun: Boolean, epochMillis: Long = 0L): SampleRetentionConfiguration = SampleRetentionConfiguration(
     enabled = true,
     dryRun = dryRun,
     intervalSeconds = 0L,
     keepRegisteredSeconds = 365L * Day,
-    keepTemporarySeconds = 7L * Day
+    keepTemporarySeconds = 7L * Day,
+    epochMillis = epochMillis
   )
 
   private def mkdirs(dir: File): Unit = { val _ = dir.mkdirs() }
@@ -85,6 +86,33 @@ class SampleRetentionProviderSpec extends DatabaseProviderTestSpec {
       configuration.intervalSeconds shouldEqual 24L * 60L * 60L
       configuration.keepRegisteredSeconds shouldEqual 365L * Day
       configuration.keepTemporarySeconds shouldEqual 7L * Day
+      configuration.epochMillis shouldEqual 0L
+    }
+
+    "read ageFrom as an ISO-8601 instant, and ignore one it cannot parse" taggedAs SQLDatabaseTestTag in {
+      val parsed = SampleRetentionConfiguration.fromConfig(play.api.Configuration(
+        com.typesafe.config.ConfigFactory.parseString(
+          s"""${SampleRetentionConfiguration.Root}.ageFrom = "2026-07-21T00:00:00Z"""")))
+      parsed.epochMillis shouldEqual java.time.Instant.parse("2026-07-21T00:00:00Z").toEpochMilli
+
+      // Unparseable must mean "no floor", not an exception: this is read while Guice builds the
+      // object graph, so throwing here crash-loops the application on boot.
+      val junk = SampleRetentionConfiguration.fromConfig(play.api.Configuration(
+        com.typesafe.config.ConfigFactory.parseString(
+          s"""${SampleRetentionConfiguration.Root}.ageFrom = "last tuesday"""")))
+      junk.epochMillis shouldEqual 0L
+    }
+
+    "age a sample from the floor when the floor is later than its own timestamp" taggedAs SQLDatabaseTestTag in {
+      val floor   = 1000L * 60L * 60L * 24L * 100L
+      val old     = 1000L
+      val withOut = policy(dryRun = true)
+      val withIn  = policy(dryRun = true, epochMillis = floor)
+
+      withOut.effectiveCreatedAt(old) shouldEqual old
+      withIn.effectiveCreatedAt(old) shouldEqual floor
+      // A sample newer than the floor keeps its own timestamp - the floor only ever raises.
+      withIn.effectiveCreatedAt(floor + 5000L) shouldEqual floor + 5000L
     }
 
     "ship with dry-run enabled" taggedAs SQLDatabaseTestTag in {
@@ -126,6 +154,39 @@ class SampleRetentionProviderSpec extends DatabaseProviderTestSpec {
         await(fileMetadataProvider.get(meta.id)) shouldBe empty
         new File(meta.path) shouldNot exist
         new File(meta.folder) shouldNot exist
+      }
+    }
+
+    "spare a sample that is past its window but predates the ageFrom floor" taggedAs SQLDatabaseTestTag in {
+      // The case this whole feature exists for. Measured on production, 1,375 of 1,443 registered
+      // samples are older than 365 days - the oldest by eight years - so switching the sweeper on
+      // without a floor is a near-total wipe on the first pass rather than housekeeping.
+      async {
+        val user             = await(registeredUser("retention-floored@mail.com"))
+        val (sampleID, meta) = await(storeSample(user, "ancient-but-floored", ageDays = 3000L))
+
+        val floor  = System.currentTimeMillis - 10L * 24L * 60L * 60L * 1000L
+        val result = await(retentionProvider.sweep(policy(dryRun = false, epochMillis = floor)))
+
+        result.expired shouldEqual 0
+        await(sampleFileProvider.get(sampleID)) should not be empty
+        new File(meta.path) should exist
+      }
+    }
+
+    "still delete a floored sample once the floor itself is past the window" taggedAs SQLDatabaseTestTag in {
+      // The floor delays ageing, it does not exempt. Otherwise setting it once would disable
+      // retention permanently and quietly.
+      async {
+        val user             = await(registeredUser("retention-floor-elapsed@mail.com"))
+        val (sampleID, meta) = await(storeSample(user, "floor-elapsed", ageDays = 3000L))
+
+        val floor  = System.currentTimeMillis - 400L * 24L * 60L * 60L * 1000L
+        val result = await(retentionProvider.sweep(policy(dryRun = false, epochMillis = floor)))
+
+        result.deleted should be >= 1
+        await(sampleFileProvider.get(sampleID)) shouldBe empty
+        new File(meta.path) shouldNot exist
       }
     }
 
