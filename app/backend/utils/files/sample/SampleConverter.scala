@@ -46,17 +46,31 @@ object SampleConverter {
   // Header aliases. Lower-cased, punctuation-stripped; see `normaliseHeader`.
   // ---------------------------------------------------------------------------------------------
 
-  private final val CountAliases   = Seq("count", "duplicatecount", "consensuscount", "clonecount", "reads", "readcount")
-  private final val FreqAliases    = Seq("freq", "frequency", "clonefraction", "readfraction")
+  // Exactly three input dialects are supported, and nothing else is guessed at:
+  //
+  //   VDJtools  count, freq, cdr3nt, cdr3aa, v, d, j
+  //   AIRR      duplicate_count, v_call, d_call, j_call, junction_aa / cdr3_aa, junction, locus, productive
+  //   MiXCR     cloneCount / readCount / uniqueTagCountMolecule, cloneFraction,
+  //             allVHitsWithScore, allDHitsWithScore, allJHitsWithScore, aaSeqCDR3, nSeqCDR3
+  //
+  // The legacy MiXCR dialect ("All V hits", "AA. Seq. CDR3") is deliberately NOT accepted: a file we
+  // cannot resolve is now rejected outright rather than stored on a guess, because guessing produced a
+  // TRA sample labelled TRB in production.
+  //
+  // Count order is precedence: read-based counts win, and the UMI molecule count is used only when no
+  // read count column exists at all — the same rule as vdjtools' own read_mixcr.
+  private final val CountAliases   = Seq("count", "duplicatecount", "clonecount", "readcount", "uniquetagcountmolecule")
+  private final val FreqAliases    = Seq("freq", "clonefraction")
   /** Junction convention (conserved C…F/W included) — directly usable as VDJtools `cdr3aa`. */
-  private final val JunctionAaAliases = Seq("cdr3aa", "junctionaa", "aaseqcdr3", "cdr3amino", "cdr3aminoacid")
+  private final val JunctionAaAliases = Seq("cdr3aa", "junctionaa", "aaseqcdr3")
   /** IMGT CDR3 convention (anchors STRIPPED) — needs anchors re-added before use. */
   private final val ImgtCdr3AaAliases = Seq("cdr3aaimgt", "imgtcdr3aa")
-  private final val JunctionNtAliases = Seq("cdr3nt", "junction", "nseqcdr3", "cdr3nucleotide")
-  private final val VAliases       = Seq("v", "vcall", "vsegm", "vgene", "allvhitswithscore", "bestvhit", "vhit", "vhits")
-  private final val DAliases       = Seq("d", "dcall", "dsegm", "dgene", "alldhitswithscore", "bestdhit", "dhit", "dhits")
-  private final val JAliases       = Seq("j", "jcall", "jsegm", "jgene", "alljhitswithscore", "bestjhit", "jhit", "jhits")
-  private final val LocusAliases   = Seq("locus", "chain", "receptor")
+  private final val JunctionNtAliases = Seq("cdr3nt", "junction", "nseqcdr3")
+  private final val VAliases       = Seq("v", "vcall", "allvhitswithscore")
+  private final val DAliases       = Seq("d", "dcall", "alldhitswithscore")
+  private final val JAliases       = Seq("j", "jcall", "alljhitswithscore")
+  /** Optional. When absent the chain is taken from the J segment, which every row must carry anyway. */
+  private final val LocusAliases   = Seq("locus", "chain")
   private final val ProductiveAliases = Seq("productive")
 
   /** `cdr3_aa` is ambiguous across the wild: AIRR defines it as IMGT CDR3 (anchors stripped) while
@@ -116,12 +130,14 @@ object SampleConverter {
   }
 
   /** Best-effort format label, for the UI and for error messages. */
+  /** Names the dialect for error messages and logs. `Unknown` is not a fallback that still parses —
+    * resolution has to succeed on its own, and a header we cannot place is rejected. */
   private[sample] def detectFormat(header: Seq[String]): String = {
     val h = header.map(normaliseHeader).toSet
     if (h.contains("vcall") || h.contains("junctionaa")) "AIRR"
     else if (h.exists(_.contains("hitswithscore")) || h.contains("aaseqcdr3")) "MiXCR"
-    else if (h.contains("cdr3nt") && h.contains("freq") && h.contains("count")) "VDJtools"
-    else "plain"
+    else if (h.contains("cdr3aa") && h.contains("v") && h.contains("j")) "VDJtools"
+    else "Unknown"
   }
 
   /** Strip a segment call down to an IMGT gene name.
@@ -213,15 +229,20 @@ object SampleConverter {
     val format  = detectFormat(header)
     val columns = resolve(header)
 
-    if (columns.aaColumn.isEmpty) {
+    // Every required column must be present. There is no salvage path: a file stored on a guess is
+    // worse than a rejected upload, because the guess is invisible once the sample is in the account.
+    // `locus`/`chain` is deliberately NOT required — the chain is derived from the J segment.
+    val missing = Seq(
+      "CDR3 amino acid (cdr3aa / junction_aa / aaSeqCDR3)" -> columns.aaColumn,
+      "V segment (v / v_call / allVHitsWithScore)"         -> columns.v,
+      "J segment (j / j_call / allJHitsWithScore)"         -> columns.j
+    ).collect { case (name, None) => name }
+
+    if (missing.nonEmpty) {
       throw new ConversionException(
-        "Could not find a CDR3 amino-acid column. Expected one of: cdr3aa, junction_aa, aaSeqCDR3 " +
-          s"(detected format: $format, header: ${header.take(12).mkString(", ")})")
-    }
-    if (columns.v.isEmpty || columns.j.isEmpty) {
-      throw new ConversionException(
-        "Could not find V and J segment columns. Expected one of: v/j, v_call/j_call, allVHitsWithScore/allJHitsWithScore " +
-          s"(detected format: $format, header: ${header.take(12).mkString(", ")})")
+        s"Missing required ${if (missing.lengthCompare(1) > 0) "columns" else "column"}: ${missing.mkString("; ")}. " +
+          "Supported formats are VDJtools, AIRR and MiXCR. " +
+          s"Detected format: $format. Header read: ${header.take(12).mkString(", ")}")
     }
     if (columns.usesImgtCdr3) {
       warnings += "The file provides IMGT CDR3 (anchors excluded); conserved C…F/W anchors were added " +

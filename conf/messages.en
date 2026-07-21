@@ -46,7 +46,7 @@ authorization.forms.signup.email.description.3 = With temporary user you will be
 authorization.forms.signup.email.description.4 = You can also deploy a local vdjdb server instance if you need to analyze larger datasets.
 authorization.forms.signup.token.description.1 = You can create a temporary user which will be deleted in 24 hours.
 authorization.forms.signup.token.description.2 = The token below can be used to access your analysis.
-authorization.forms.signup.token.description.3 = With temporary user you will be allowed to upload only 3 samples for analysing.
+authorization.forms.signup.token.description.3 = With temporary user you will be allowed to upload only 10 samples for analysing.
 authorization.forms.signup.token.description.4 = You can also deploy a local vdjdb server instance if you need to analyze larger datasets.
 
 authorization.forms.reset.reset = Reset
@@ -77,6 +77,9 @@ noscript.message = We are sorry, but VDJdb website does not work properly withou
 
 internal.error = Internal server error. Please try later.
 
+authorization.forms.signup.token.heading = Your access token is (click to copy):
+authorization.forms.signup.token.copyHint = Click to copy. Save it now - it is not shown again.
+authorization.forms.signup.token.copied = Copied
 sample.file.form.invalid.software = Invalid software type
 sample.file.form.invalid.name = Invalid sample name
 sample.file.form.invalid.species = Unsupported species

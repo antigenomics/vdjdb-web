@@ -14,29 +14,15 @@
   ~     limitations under the License.
   -->
 
+<!-- Single pane: the General/Scoring tab strip is gone along with VDJMatch scoring, so there is
+     nothing left to switch between. Scoring stays fixed at Simple. -->
 <div class="ui grid stackable">
-    <div class="four wide column">
-        <div class="ui two item menu">
-            <a class="item" [class.active]="isCurrentState('general')" (click)="setCurrentState('general')">General</a>
-            <a class="item" [class.active]="isCurrentState('scoring')" (click)="setCurrentState('scoring')">Scoring</a>
-        </div>
-    </div>
-</div>
-<div class="ui grid stackable" style="min-height: 275px">
-    <div class="row fade element" *ngIf="isCurrentState('general')">
+    <div class="row fade element">
         <div class="nine wide column">
             <database-query-params [filters]="filters" [disabled]="disabled"></database-query-params>
         </div>
         <div class="seven wide column">
             <search-scope [filters]="filters" [disabled]="disabled"></search-scope>
-        </div>
-    </div>
-    <div class="row fade element" *ngIf="isCurrentState('scoring')">
-        <div class="two wide column">
-            <scoring-type [filters]="filters" [disabled]="disabled"></scoring-type>
-        </div>
-        <div class="fourteen wide column fade element" *ngIf="filters.isScoringTypeVDJMatch()">
-            <scoring-vdjmatch [filters]="filters" [disabled]="disabled"></scoring-vdjmatch>
         </div>
     </div>
 </div>

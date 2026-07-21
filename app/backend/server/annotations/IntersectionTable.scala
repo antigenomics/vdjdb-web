@@ -136,7 +136,10 @@ object IntersectionTable {
     * or its other containers changed. The `Built clonotype database ... heap N MB` line logged below is
     * what to read before raising this. Note `.jvmopts` is sbt-only and does not reach the packaged app.
     */
-  private final val MaxCachedDatabases = 2
+  // Measured in production on 2026-07-21: a single built database costs ~1.0-1.5 GB of heap, against a
+  // 6.8 GB ceiling that vdjtools is already sharing (it reported "4 of 8 GB" mid-load). Two entries is
+  // most of the headroom for a second combination almost nobody asks for, so keep one.
+  private final val MaxCachedDatabases = 1
 
   /** Keyed on the *entire* set of build inputs, so it cannot go stale by omission: every one of these
     * is a case class, so equality is structural all the way down.
@@ -174,6 +177,18 @@ object IntersectionTable {
     * performs. If a slow build behind the lock ever becomes the bottleneck, the upgrade is a per-key
     * lock, not a bigger cache.
     */
+  /** Every field that participates in the cache key. The first version logged only the database
+    * parameters, which made two entries differing in scope or scoring look identical in the log and
+    * left "why did this miss?" unanswerable. */
+  private def describe(parameters: AnnotationsDatabaseQueryParams, searchScope: AnnotationsSearchScope,
+                       scoring: AnnotationsAnnotateScoring): String = {
+    val d = AnnotationsSearchScopeHammingDistance.sanitize(searchScope.hammingDistance)
+    s"species=${parameters.species}, gene=${parameters.gene}, mhc=${parameters.mhc}, " +
+      s"confidence=${parameters.confidenceThreshold}, minEpitopeSize=${parameters.minEpitopeSize}, " +
+      s"scope=${d.substitutions}/${d.insertions}/${d.deletions}/${d.total}, " +
+      s"matchV=${searchScope.matchV}, matchJ=${searchScope.matchJ}, scoring=${scoring.`type`}"
+  }
+
   def createClonotypeDatabase(database: Database, parameters: AnnotationsDatabaseQueryParams,
                               searchScope: AnnotationsSearchScope, scoring: AnnotationsAnnotateScoring): ClonotypeDatabase = {
     // The donor HLA typing is applied to search results rather than to the database, so donors differing
@@ -184,6 +199,10 @@ object IntersectionTable {
     cache.synchronized {
       val cached = cache.get(key)
       if (cached != null) {
+        // Log hits too. Logging only misses makes the log unreadable as evidence: two builds in a row
+        // look identical to a cache that is never hit AND to one that is working with two distinct
+        // parameter sets, and the difference is the whole point of having the cache.
+        logger.info(s"Reusing cached clonotype database [${describe(parameters, searchScope, scoring)}]")
         cached
       } else {
         val runtime   = Runtime.getRuntime
@@ -191,8 +210,7 @@ object IntersectionTable {
         val usedBefore = runtime.totalMemory - runtime.freeMemory
         val built     = buildClonotypeDatabase(database, parameters, searchScope, scoring)
         val _         = cache.put(key, built)
-        logger.info(s"Built clonotype database [species=${parameters.species}, gene=${parameters.gene}, mhc=${parameters.mhc}, " +
-          s"confidence=${parameters.confidenceThreshold}, minEpitopeSize=${parameters.minEpitopeSize}] in " +
+        logger.info(s"Built clonotype database [${describe(parameters, searchScope, scoring)}] in " +
           s"${System.currentTimeMillis - startedAt} ms, heap ${(runtime.totalMemory - runtime.freeMemory - usedBefore) / (1024 * 1024)} MB, " +
           s"cached ${cache.size}/$MaxCachedDatabases")
         built
