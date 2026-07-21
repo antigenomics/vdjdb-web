@@ -29,10 +29,13 @@ import backend.models.files.temporary.TemporaryFileProvider
 import backend.server.database.Database
 import backend.server.limit.RequestLimits
 import backend.utils.analytics.Analytics
+import backend.utils.files.sample.SampleConverter
 import backend.utils.files.{DecompressionLimitException, DecompressionLimits, FileUtils}
+import com.antigenomics.vdjtools.misc.Software
 import com.typesafe.config.ConfigMemorySize
 import javax.inject.Inject
 import org.apache.commons.io.FilenameUtils
+import org.slf4j.LoggerFactory
 import play.api.i18n.{Lang, Messages, MessagesApi}
 import play.api.libs.Files
 import play.api.libs.json.{JsArray, JsValue, Json}
@@ -60,8 +63,11 @@ class AnnotationsAPI @Inject()(cc: ControllerComponents, userRequestAction: User
       .map(_.toBytes).getOrElse(256L * 1024 * 1024),
     maxRatio = conf.getOptional[Long]("application.annotations.upload.maxCompressionRatio").getOrElse(100L)
   )
+  private final val maxClonotypesCount =
+    conf.getOptional[Long]("application.annotations.upload.maxClonotypesCount").getOrElse(200000L)
   private final val demoFilesLocation =
     conf.getOptional[String]("application.auth.demo.filesLocation").getOrElse("")
+  private final val logger = LoggerFactory.getLogger(this.getClass)
   implicit val messages: Messages = messagesApi.preferred(Seq(Lang.defaultLang))
 
   /** Demo samples are public showcase data; serving them unauthenticated is the point — a prospective
@@ -94,6 +100,59 @@ class AnnotationsAPI @Inject()(cc: ControllerComponents, userRequestAction: User
       } else {
         None
       }
+    }
+  }
+
+  /** Run the uploaded file through [[SampleConverter]] and store the normalised result.
+    *
+    * A file carrying both chains is rejected rather than split: one upload still maps to one sample,
+    * so the response contract (and the client, which re-registers the name it uploaded) is unchanged.
+    * Splitting into `<name>_TRA`/`<name>_TRB` needs that contract widened and is a separate change.
+    */
+  private def convertAndStore(user: backend.models.authorization.user.User, name: String,
+                              source: java.io.File, requestedSoftware: String): Future[Result] = {
+    val prefix = java.io.File.createTempFile("vdjdb-convert-", "")
+    scala.util.Try(SampleConverter.convert(source, prefix, maxClonotypesCount)) match {
+      // Legacy passthrough: vdjtools already parses 8 formats the converter's alias table does not
+      // cover (MiGec, ImmunoSeq, ImgtHighVQuest, Vidjil, RTCR, …). If the user explicitly selected one
+      // of those, store the file untouched and let vdjtools read it, exactly as before.
+      case scala.util.Failure(e: SampleConverter.ConversionException) if isLegacySoftware(requestedSoftware) =>
+        logger.info(s"Sample '$name': converter declined (${e.getMessage}); storing as $requestedSoftware for vdjtools")
+        user.addSampleFileFrom(name, "gz", requestedSoftware, source).map(storeResult(source))
+
+      case scala.util.Failure(e: SampleConverter.ConversionException) =>
+        Future.successful(BadRequest(e.getMessage))
+
+      case scala.util.Failure(e) =>
+        logger.warn(s"Sample conversion failed for '$name'", e)
+        Future.successful(BadRequest(s"Unable to parse the uploaded file: ${e.getMessage}"))
+
+      case scala.util.Success(report) if report.chains.lengthCompare(1) > 0 =>
+        report.chains.foreach(c => { val _ = c.file.delete() })
+        Future.successful(BadRequest(
+          s"This file contains ${report.chains.map(_.chain).mkString(" and ")} records. A sample must be " +
+            "single-chain — please upload one chain per file."))
+
+      case scala.util.Success(report) =>
+        val converted = report.chains.head
+        if (report.warnings.nonEmpty) {
+          logger.info(s"Sample '$name' (${report.format}, ${converted.chain}): ${report.warnings.mkString("; ")}")
+        }
+        // Stored normalised, so the annotate path always reads a VDJtools table regardless of input.
+        user.addSampleFileFrom(name, "gz", "VDJtools", converted.file).map(storeResult(converted.file))
+    }
+  }
+
+  /** vdjtools' own formats, minus the ones the converter handles natively. */
+  private def isLegacySoftware(software: String): Boolean =
+    software != "VDJtools" && software != "VDJtoolsRenorm" &&
+      Software.values().map(_.toString).contains(software)
+
+  private def storeResult(scratch: java.io.File)(result: Either[Long, String]): Result = {
+    val _ = scratch.delete()
+    result match {
+      case Left(sampleFileID) => Ok(s"$sampleFileID")
+      case Right(error)       => BadRequest(error)
     }
   }
 
@@ -131,13 +190,9 @@ class AnnotationsAPI @Inject()(cc: ControllerComponents, userRequestAction: User
                     file.ref.delete()
                     Future.successful(BadRequest(s"Unable to read the uploaded file: ${e.getMessage}"))
                   case scala.util.Success(gzipped) =>
-                    request.user.get.addSampleFile(name, extension, software, gzipped).map {
-                      case Left(sampleFileID) =>
-                        Ok(s"$sampleFileID")
-                      case Right(error) =>
-                        file.ref.delete()
-                        BadRequest(error)
-                    }
+                    // Normalise whatever the user sent (AIRR / MiXCR / VDJtools / plain) into the
+                    // positional VDJtools table vdjtools can actually parse, and store THAT.
+                    convertAndStore(request.user.get, name, gzipped.getAbsoluteFile, software)
                 }
               }
             }

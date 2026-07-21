@@ -74,7 +74,16 @@ case class User(id: Long, login: String, email: String, verified: Boolean, folde
 
   def addSampleFile(name: String, extension: String, softwareType: String, file: Files.TemporaryFile)
                    (implicit sfp: SampleFileProvider, upp: UserPermissionsProvider, fmp: FileMetadataProvider,
-                    ec: ExecutionContext): Future[Either[Long, String]] = async {
+                    ec: ExecutionContext): Future[Either[Long, String]] =
+    addSampleFileFrom(name, extension, softwareType, file.getAbsoluteFile)
+
+  /** As `addSampleFile`, but for a plain file: the sample converter writes its normalised output to
+    * an ordinary temp file rather than a Play `TemporaryFile`. Distinctly named rather than an
+    * overload, because overloads that differ only in one parameter while sharing an implicit list
+    * resolve badly. */
+  def addSampleFileFrom(name: String, extension: String, softwareType: String, file: File)
+                       (implicit sfp: SampleFileProvider, upp: UserPermissionsProvider, fmp: FileMetadataProvider,
+                        ec: ExecutionContext): Future[Either[Long, String]] = async {
     val files = await(getSampleFiles)
     if (files.exists(_.sampleName == name)) {
       Right(s"Sample file $name already exist")
@@ -94,7 +103,7 @@ case class User(id: Long, login: String, email: String, verified: Boolean, folde
             val success = sampleFolder.mkdirs()
             if (success) {
               val metadataID = await(fmp.insert(name, extension, sampleFolderPath))
-              FileUtils.copyFile(file.path.toString, s"$sampleFolderPath/$name.$extension")
+              FileUtils.copyFile(file.getAbsolutePath, s"$sampleFolderPath/$name.$extension")
               file.deleteOnExit()
               val sampleFileID = await(sfp.insert(SampleFile(0, name, softwareType, -1, -1, metadataID, id, -1)))
               Left(sampleFileID)
