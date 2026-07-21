@@ -47,7 +47,10 @@ class UserPermissionsProviderSpec extends DatabaseProviderTestSpec {
                     permission.isDeleteAllowed shouldEqual true
                     permission.isChangePasswordAllowed shouldEqual true
                   case 1 =>
-                    permission.maxFilesCount shouldEqual 10
+                    // Raised from 10 by evolution 7.sql, alongside the daily upload/annotate quotas:
+                    // MAX_FILES_COUNT caps what is stored at any instant, so it is defeated by
+                    // uploading and deleting in a loop, and the per-day counters are the real ceiling.
+                    permission.maxFilesCount shouldEqual 42
                     permission.maxFileSize shouldEqual 16
                     permission.isUploadAllowed shouldEqual true
                     permission.isDeleteAllowed shouldEqual true

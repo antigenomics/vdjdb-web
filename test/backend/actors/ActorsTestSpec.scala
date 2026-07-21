@@ -32,7 +32,14 @@ import scala.concurrent.{Await, ExecutionContext, Future}
 
 abstract class ActorsTestSpec extends TestKit(ActorSystem("ActorsTestSpec")) with ImplicitSender
     with org.scalatest.AsyncWordSpecLike with org.scalatest.Matchers with org.scalatest.OptionValues with BeforeAndAfterAll  {
-    lazy implicit val app: Application = new GuiceApplicationBuilder().in(Mode.Test).build()
+    // Same fixture override as BaseTestSpecWithApplication - this class builds its own application
+    // rather than extending that one, so without this it falls through to `new VdjdbInstance()` and
+    // dies on `vdjdb.meta.txt (No such file or directory)` inside the ivy cache.
+    lazy implicit val app: Application = new GuiceApplicationBuilder()
+        .configure("application.database.useLocal" -> true,
+                   "application.database.path" -> "test/resources/database/")
+        .in(Mode.Test)
+        .build()
     lazy implicit val ec: ExecutionContext = app.injector.instanceOf[ExecutionContext]
     lazy implicit val limits: RequestLimits = app.injector.instanceOf[RequestLimits]
     lazy implicit val fakeLimit: IpLimit = IpLimit(0, 0)

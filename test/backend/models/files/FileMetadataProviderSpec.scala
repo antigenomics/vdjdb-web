@@ -31,9 +31,14 @@ class FileMetadataProviderSpec extends DatabaseProviderTestSpec {
             fmp.getTable.baseTableRow.tableName shouldEqual FileMetadataTable.TABLE_NAME
         }
 
-        "get empty list" taggedAs SQLDatabaseTestTag in {
-            fmp.getAll.flatMap { files =>
-                files shouldBe empty
+        "not report an entry that was never inserted" taggedAs SQLDatabaseTestTag in {
+            // Was "get empty list", asserting FILE_METADATA is globally empty. Every suite shares one
+            // H2 database - `databaseName` selects the Play datasource, it does not isolate anything -
+            // so that assertion held only for as long as no other spec inserted a row, and it broke
+            // the moment SampleRetentionProviderSpec started storing samples. Asserting about a row
+            // this suite owns is order-independent; asserting a shared table is empty never can be.
+            fmp.get(-1).map { missing =>
+                missing shouldBe empty
             }
         }
 
@@ -50,7 +55,11 @@ class FileMetadataProviderSpec extends DatabaseProviderTestSpec {
                 metadata.get.path shouldEqual "/tmp/name.extension"
                 metadata.get.folder shouldEqual "/tmp"
 
-                await(fmp.getAll) should have size 1
+                // Counted relative to whatever other suites have left in the shared table, rather
+                // than against an absolute size - see the note on the previous test.
+                val before = await(fmp.getAll).size
+                before should be >= 1
+                await(fmp.getAll).map(_.id) should contain(id)
 
                 val nonexistentDeleted = await(fmp.delete(-1))
                 nonexistentDeleted shouldEqual 0
@@ -58,7 +67,9 @@ class FileMetadataProviderSpec extends DatabaseProviderTestSpec {
                 val existentDeleted = await(fmp.delete(id))
                 existentDeleted shouldEqual 1
 
-                await(fmp.getAll) should have size 0
+                val after = await(fmp.getAll)
+                after should have size (before - 1).toLong
+                after.map(_.id) should not contain id
             }
         }
     }
