@@ -3,9 +3,8 @@
 @import helper._
 @import backend.models.authorization.forms.SignupTemporaryForm
 @(form: Form[SignupTemporaryForm])(implicit environment: Environment, analytics: Analytics, request: Request[_], messages: Messages)
-@implicitField = @{
-    FieldConstructor(frontend.views.html.authorization.forms.input.f)
-}
+@* No implicitField here (unlike the sibling auth views): this page renders no form fields through the
+   input helper, the token travels in a plain hidden input. *@
 
 @frontend.views.html.authorization.auth_main("VDJdb: signup") {
     <div class="ui middle aligned center aligned auth grid">
@@ -35,45 +34,68 @@
                     )
                 }
                 @CSRF.formField
-                @inputText(form("token"), args = 'icon -> "", 'id -> "tokenInput",
-                    'placeholder ->  messages("authorization.forms.signup.placeholder.token"),
-                    'fieldType -> "hidden")
+                @* The token is server-issued and never typed, so it only needs to be carried back on
+                   submit. The inputText helper wrapped it in a field constructor that still emitted an
+                   empty `div.ui.left.icon.input` around the hidden control, and that stray empty box is
+                   what made the token area below look like a disabled input. *@
+                <input type="hidden" name="token" value="@form("token").value.getOrElse("")">
                 <h4>@messages("authorization.forms.signup.token.heading")</h4>
                 <div class="ui message" style="display:block; cursor:pointer" id="tokenCopy"
+                     tabindex="0" role="button"
                      title="@messages("authorization.forms.signup.token.copyHint")">
                     <span id="tokenView">@form("token").value.getOrElse("")</span>
                     <i class="copy outline icon" style="float:right"></i>
                     <span id="tokenCopied" style="float:right; margin-right:8px; display:none">@messages("authorization.forms.signup.token.copied")</span>
                 </div>
-                @@* Copy-on-click. This page is Twirl, outside the Angular bundle, so the app's
-                    ClipboardService is not reachable — hence a small inline script. execCommand is the
-                    fallback because navigator.clipboard is unavailable on insecure origins, which is
-                    exactly the local-dev case. *@@
                 <script>
                   (function () {
+                    /* Copy-on-click. This page is Twirl, outside the Angular bundle, so the app's
+                       ClipboardService is not reachable - hence a small inline script. The note lives
+                       here as a JS comment rather than as a template comment: a mistyped template
+                       comment leaks onto the page as text, a JS comment cannot. */
                     var box = document.getElementById('tokenCopy');
                     var token = document.getElementById('tokenView');
                     var copied = document.getElementById('tokenCopied');
-                    if (!box || !token) { return; }
-                    box.addEventListener('click', function () {
+                    if (!box || !token || !copied) { return; }
+
+                    var done = function () {
+                      copied.style.display = 'inline';
+                      setTimeout(function () { copied.style.display = 'none'; }, 1500);
+                    };
+
+                    /* execCommand path: navigator.clipboard is absent on insecure origins (the
+                       local-dev case) and can also reject at runtime. Reports success only when the
+                       copy actually happened, so a failed copy never claims "Copied". */
+                    var fallbackCopy = function (text) {
+                      var scratch = document.createElement('textarea');
+                      scratch.value = text;
+                      scratch.setAttribute('readonly', '');
+                      scratch.style.position = 'absolute';
+                      scratch.style.left = '-9999px';
+                      document.body.appendChild(scratch);
+                      scratch.select();
+                      try {
+                        var ok = document.execCommand('copy');
+                        if (ok) { done(); }
+                      } catch (e) { /* leave it selectable */ }
+                      document.body.removeChild(scratch);
+                    };
+
+                    var copy = function () {
                       var text = token.textContent.trim();
-                      var done = function () {
-                        copied.style.display = 'inline';
-                        setTimeout(function () { copied.style.display = 'none'; }, 1500);
-                      };
                       if (navigator.clipboard && window.isSecureContext) {
-                        navigator.clipboard.writeText(text).then(done, function () {});
+                        /* A denied clipboard permission rejects the promise; fall back instead of
+                           leaving the click with no copy and no feedback. */
+                        navigator.clipboard.writeText(text).then(done, function () { fallbackCopy(text); });
                       } else {
-                        var scratch = document.createElement('textarea');
-                        scratch.value = text;
-                        scratch.setAttribute('readonly', '');
-                        scratch.style.position = 'absolute';
-                        scratch.style.left = '-9999px';
-                        document.body.appendChild(scratch);
-                        scratch.select();
-                        try { document.execCommand('copy'); done(); } catch (e) { /* leave it selectable */ }
-                        document.body.removeChild(scratch);
+                        fallbackCopy(text);
                       }
+                    };
+
+                    box.addEventListener('click', copy);
+                    /* The box advertises role="button", so it has to answer the keyboard too. */
+                    box.addEventListener('keydown', function (e) {
+                      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); copy(); }
                     });
                   })();
                 </script>

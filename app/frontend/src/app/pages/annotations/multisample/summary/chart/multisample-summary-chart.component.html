@@ -29,7 +29,9 @@
         <h4 class="ui header"><i class="options icon"></i>Options</h4>
         <div class="ui divider"></div>
         <div class="ui checkbox" [ngClass]="{'disabled':order}">
-            <input type="checkbox" [(ngModel)]="tagsColors">
+            <!-- Ordering by samples overrides the per-tag colouring, so the checkbox must actually be
+                 inert while `order` is set - the wrapper only looked disabled and still toggled. -->
+            <input type="checkbox" [(ngModel)]="tagsColors" [disabled]="order">
             <label>Color by tags</label>
         </div>
         <br>

@@ -108,6 +108,19 @@ a:hover { color: var(--ds-teal); }
 /* Buttons: a touch more rounded, Inter, calmer */
 .ui.button { border-radius: 8px; font-weight: 500; letter-spacing: -0.01em; }
 
+/* One disease, one colour across the app: the cyan the navbar uses for COVID-19 is reused by the
+   Browse "Common Diseases" quick-picks. Semantic's own `teal` class cannot serve this - site.variables
+   overrides @teal to the brand green (#48af75), so `.ui.teal.button` renders green, not cyan. */
+.ui.button.disease-cyan {
+  background-color: #00b5ad !important;
+  color: #ffffff !important;
+}
+.ui.button.disease-cyan:hover,
+.ui.button.disease-cyan:focus {
+  background-color: #009c95 !important;
+  color: #ffffff !important;
+}
+
 /* The teal "attached segment" header accent kept but softened */
 .ui.top.attached.header.centered { letter-spacing: -0.01em; }
 
