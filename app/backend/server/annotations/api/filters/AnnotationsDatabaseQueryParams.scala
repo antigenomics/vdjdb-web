@@ -27,7 +27,9 @@ import play.api.libs.json.{Format, Json}
   * @param inTcrnetMotif same, against the TCRNET clusters (`cluster_members.txt`, ~41k records). Off by
   *                      default. Combined with the TCREMP flag it is an AND, not an OR — the search page
   *                      ORs its motif modes, this one intentionally narrows.
-  * @param independentValidationOnly keep only matches whose record cites at least two references.
+  * @param independentValidationOnly keep only matches flagged `evidence.validation.independent` — the
+  *                      curated "specificity independently validated in another study" column, the same
+  *                      one the search page filters on.
   * @param minConfidenceScore keep only matches whose `vdjdb.score` is at least this value. Absent or 0
   *                           means no restriction; the UI offers 1 as a checkbox. `>= 1` retains only
   *                           ~8% of records (0 → 133,576 rows, 1 → 5,764, 2 → 3,014, 3 → 3,701), which is

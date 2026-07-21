@@ -103,7 +103,7 @@ object IntersectionTable {
     *
     * None of them is expressible as a vdjdb `TextFilter`: `ColumnwiseFilterBatch` binds one filter per
     * column and ANDs the lot, which covers neither the OR across `mhc.a`/`mhc.b`, nor a lookup against
-    * an externally loaded motif index, nor a count of comma-separated reference ids.
+    * an externally loaded motif index.
     *
     * Filtering here rather than at build time is also what keeps the `ClonotypeDatabase` cache useful:
     * every parameter below is blanked out of the cache key, so two requests differing only in these
@@ -133,7 +133,7 @@ object IntersectionTable {
 
     val validationFilter: Option[HitFilter] =
       if (parameters.independentValidationOnly.contains(true)) {
-        Some((hit: ClonotypeSearchResult) => referenceCount(hit.getRow) >= 2)
+        Some((hit: ClonotypeSearchResult) => independentlyValidated(hit.getRow))
       } else {
         None
       }
@@ -145,19 +145,18 @@ object IntersectionTable {
       motifFilter(parameters.inTcrnetMotif, None), validationFilter, confidenceFilter).flatten
   }
 
-  /** Number of distinct references a record cites. `reference.id` holds a comma-separated list; it is
-    * blank on ~1% of records and lists more than one on ~3.8k of them.
+  /** The curated `evidence.validation.independent` flag — "antigen specificity independently validated
+    * in another study" (`vdjdb.meta.txt`). Same column and same test the search page uses
+    * (`SearchTable`), so the identically-named filter means the same thing on both pages.
     *
-    * This is the literal reading of "independent validation": the record itself names two references.
-    * The alternative reading — the same CDR3+epitope pair turning up in two independent VDJdb records —
-    * was considered and NOT chosen, because it is a property of a group of records rather than of a
-    * hit, so it cannot be evaluated one hit at a time as this filter is. Worth revisiting: the database
-    * also ships a curated `evidence.validation.independent` flag, which the search page filters on
-    * (see `SearchTable`), and which may or may not agree with this count.
+    * This replaced a literal "record cites >= 2 references" count, which was measured to be a no-op:
+    * `reference.id` is comma-joined only in *vdjdb.slim.txt*, which merges duplicate records. The
+    * annotate path loads the full `vdjdb.txt` (`Database.createInstanceFromConfiguration`), one row
+    * per record, where exactly **2 of 228,214 rows** carry more than one reference. The curated flag
+    * is true on 10,990.
     */
-  private def referenceCount(row: Row): Int =
-    Option(row.getAt("reference.id")).map(_.getValue).getOrElse("")
-      .split(",").map(_.trim).filter(_.nonEmpty).distinct.length
+  private def independentlyValidated(row: Row): Boolean =
+    Option(row.getAt("evidence.validation.independent")).exists(_.getValue.trim.equalsIgnoreCase("true"))
 
   /** `vdjdb.score` as an int, 0 for anything unparseable or absent — a record whose confidence cannot
     * be read is treated as the lowest confidence rather than silently kept. */
