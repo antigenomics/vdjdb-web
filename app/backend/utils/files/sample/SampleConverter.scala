@@ -257,28 +257,28 @@ object SampleConverter {
     }
 
     // ---- pass 2: write ------------------------------------------------------------------------
-    val writers = counts.keys.map { chain =>
+    val writers: Map[String, ChainWriter] = counts.keys.map { chain =>
       val file = new File(s"${outputPrefix.getAbsolutePath}.$chain.txt.gz")
-      chain -> (file, new PrintWriter(new OutputStreamWriter(
+      chain -> ChainWriter(file, new PrintWriter(new OutputStreamWriter(
         new GZIPOutputStream(new FileOutputStream(file)), "UTF-8")))
     }.toMap
 
     try {
-      writers.values.foreach { case (_, w) => w.println(OutputHeader) }
+      writers.values.foreach(_.writer.println(OutputHeader))
       forEachRow(input, columns) {
         case Some(r) =>
-          writers.get(r.chain).foreach { case (_, w) =>
+          writers.get(r.chain).foreach { cw =>
             val total = math.max(1L, totals.getOrElse(r.chain, 1L))
             val freq  = r.count.toDouble / total.toDouble
-            w.println(s"${r.count}\t$freq\t${r.cdr3nt}\t${r.cdr3aa}\t${r.v}\t${r.d}\t${r.j}\t$NoSegmentMarkup")
+            cw.writer.println(s"${r.count}\t$freq\t${r.cdr3nt}\t${r.cdr3aa}\t${r.v}\t${r.d}\t${r.j}\t$NoSegmentMarkup")
           }
         case None => ()
       }
-    } finally writers.values.foreach { case (_, w) => w.close() }
+    } finally writers.values.foreach(_.writer.close())
 
     Report(
       format      = format,
-      chains      = writers.map { case (chain, (file, _)) => ChainOutput(chain, file, counts(chain)) }.toSeq.sortBy(_.chain),
+      chains      = writers.map { case (chain, cw) => ChainOutput(chain, cw.file, counts(chain)) }.toSeq.sortBy(_.chain),
       readRows    = read,
       skippedRows = skipped,
       warnings    = warnings.toSeq
@@ -287,6 +287,10 @@ object SampleConverter {
 
   private final case class Row(chain: String, count: Long, cdr3nt: String, cdr3aa: String,
                                v: String, d: String, j: String)
+
+  /** Named rather than a `(File, PrintWriter)` tuple: `chain -> (a, b)` is parsed as `->` taking two
+    * arguments, not as a pair, which fails to compile under -Xfatal-warnings. */
+  private final case class ChainWriter(file: File, writer: PrintWriter)
 
   /** Stream the data rows, yielding `None` for anything unusable so callers can count skips. */
   private def forEachRow(input: File, c: Columns)(f: Option[Row] => Unit): Unit = {
@@ -309,43 +313,35 @@ object SampleConverter {
     index.filter(i => i >= 0 && i < fields.length).map(fields(_).trim).filter(_.nonEmpty)
 
   private[sample] def parseRow(fields: Array[String], c: Columns): Option[Row] = {
+    // An absent `productive` column means "not stated", which we accept; an explicit false is a drop.
     val productiveOk = at(fields, c.productive).forall { p =>
       val v = p.toLowerCase
       v == "t" || v == "true" || v == "1" || v == "yes"
     }
-    if (!productiveOk) return None
 
-    val rawAa = at(fields, c.aaColumn).getOrElse("")
-    if (rawAa.isEmpty || !rawAa.forall(ch => ch.isLetter)) return None
-    // Stop codons / frameshift markers make a clonotype unusable for matching.
-    if (rawAa.exists(ch => ch == '*' || ch == '_')) return None
-
-    val vRaw = at(fields, c.v).getOrElse("")
-    val jRaw = at(fields, c.j).getOrElse("")
-    if (vRaw.isEmpty || jRaw.isEmpty) return None
-
-    val v = cleanSegment(vRaw)
-    val j = cleanSegment(jRaw)
-    val d = at(fields, c.d).map(cleanSegment).getOrElse(".")
-
-    val chain = chainOf(v, at(fields, c.locus)) match {
-      case Some(ch) => ch
-      case None     => return None // only single-chain TRA/TRB are supported
+    for {
+      _     <- if (productiveOk) Some(()) else None
+      rawAa <- at(fields, c.aaColumn)
+      // Stop codons and frameshift markers make a clonotype unusable for matching.
+      if rawAa.forall(_.isLetter)
+      vRaw  <- at(fields, c.v)
+      jRaw  <- at(fields, c.j)
+      v      = cleanSegment(vRaw)
+      j      = cleanSegment(jRaw)
+      // Only single-chain TRA/TRB are supported; anything else is skipped and counted.
+      chain <- chainOf(v, at(fields, c.locus))
+      count  = at(fields, c.count).flatMap(s => scala.util.Try(s.toDouble.toLong).toOption).getOrElse(1L)
+      if count > 0
+    } yield {
+      // Anchors are only added when the column is declared IMGT. A bare `cdr3aa` that already looks
+      // like a junction is left alone — guessing an anchor onto a sequence that has one corrupts it.
+      val cdr3aa = if (c.usesImgtCdr3 && !looksLikeJunction(rawAa)) addAnchors(rawAa, Some(chain)) else rawAa
+      val cdr3nt = at(fields, c.junctionNt)
+        .map(_.toUpperCase.filter(ch => "ACGTN".contains(ch)))
+        .filter(nt => nt.nonEmpty && nt.length == cdr3aa.length * 3)
+        .getOrElse(backTranslate(cdr3aa))
+      val d = at(fields, c.d).map(cleanSegment).getOrElse(".")
+      Row(chain, count, cdr3nt, cdr3aa, v, d, j)
     }
-
-    // Anchors: only add them when the column is declared IMGT. A bare `cdr3aa` that already looks
-    // like a junction is left alone — guessing an anchor onto a sequence that has one corrupts it.
-    val cdr3aa =
-      if (c.usesImgtCdr3 && !looksLikeJunction(rawAa)) addAnchors(rawAa, Some(chain)) else rawAa
-
-    val count = at(fields, c.count).flatMap(s => scala.util.Try(s.toDouble.toLong).toOption).getOrElse(1L)
-    if (count <= 0) return None
-
-    val cdr3nt = at(fields, c.junctionNt)
-      .map(_.toUpperCase.filter(ch => "ACGTN".contains(ch)))
-      .filter(nt => nt.nonEmpty && nt.length == cdr3aa.length * 3)
-      .getOrElse(backTranslate(cdr3aa))
-
-    Some(Row(chain, count, cdr3nt, cdr3aa, v, d, j))
   }
 }
