@@ -24,11 +24,13 @@ import backend.models.authorization.permissions.UserPermissionsProvider
 import backend.models.authorization.user.UserProvider
 import backend.models.files.FileMetadataProvider
 import backend.models.files.sample.tags.SampleTagProvider
-import backend.models.files.sample.{SampleFileForm, SampleFileProvider, SampleFileTable}
+import backend.models.files.sample.{SampleFileForm, SampleFileProvider, SampleFileTable, SampleRetentionProvider}
 import backend.models.files.temporary.TemporaryFileProvider
+import backend.models.usage.UsageProvider
 import backend.server.database.Database
 import backend.server.limit.RequestLimits
 import backend.server.motifs.Motifs
+import backend.utils.RequestUtils
 import backend.utils.analytics.Analytics
 import backend.utils.files.sample.SampleConverter
 import backend.utils.files.{DecompressionLimitException, DecompressionLimits, FileUtils}
@@ -47,7 +49,8 @@ import scala.async.Async.{async, await}
 import scala.concurrent.{ExecutionContext, Future}
 
 class AnnotationsAPI @Inject()(cc: ControllerComponents, userRequestAction: UserRequestAction,
-                               conf: Configuration, messagesApi: MessagesApi, database: Database, motifs: Motifs)
+                               conf: Configuration, messagesApi: MessagesApi, database: Database, motifs: Motifs,
+                               usage: UsageProvider, retention: SampleRetentionProvider)
                               (implicit upp: UserPermissionsProvider, up: UserProvider, sfp: SampleFileProvider, fmp: FileMetadataProvider,
                                tfp: TemporaryFileProvider, stp: SampleTagProvider,
                                as: ActorSystem, mat: Materializer, ec: ExecutionContext, limits: RequestLimits,
@@ -69,6 +72,12 @@ class AnnotationsAPI @Inject()(cc: ControllerComponents, userRequestAction: User
     conf.getOptional[String]("application.auth.demo.filesLocation").getOrElse("")
   private final val logger = LoggerFactory.getLogger(this.getClass)
   implicit val messages: Messages = messagesApi.preferred(Seq(Lang.defaultLang))
+
+  // SampleRetentionProvider starts its sweeper from its own constructor, and Guice only builds a
+  // @Singleton when something actually depends on it — nothing else does, so without this injection
+  // the sweeper would never run. This controller is the annotations entry point and is instantiated
+  // by the router at startup, which makes it the place where that dependency is honest.
+  logger.info(s"Annotations retention policy: ${retention.getConfiguration.describe}")
 
   /** Demo samples are public showcase data; serving them unauthenticated is the point — a prospective
     * user should be able to see the expected input format before creating an account. */
@@ -100,6 +109,25 @@ class AnnotationsAPI @Inject()(cc: ControllerComponents, userRequestAction: User
       } else {
         None
       }
+    }
+  }
+
+  /** Daily upload quota, per account and per client address.
+    *
+    * Orthogonal to `checkUploadAllowed` above: that one caps how many samples may be *stored* at
+    * once, which an uploader defeats simply by deleting between uploads. It is also orthogonal to
+    * the `play.filters.limits` IP filter, which bounds a short request window rather than a day.
+    *
+    * The address comes from [[RequestUtils.clientIp]], never from a raw `X-Forwarded-For`: this app
+    * sits behind a reverse proxy, and a limit keyed on a header the caller controls is not a limit.
+    */
+  def checkUploadQuota(implicit ec: ExecutionContext): ActionFilter[UserRequest] = new ActionFilter[UserRequest] {
+    override protected def executionContext: ExecutionContext = ec
+
+    override protected def filter[A](request: UserRequest[A]): Future[Option[Result]] = Future.successful {
+      usage
+        .checkUpload(request.user.get, request.details.get.permissions, RequestUtils.clientIp(request))
+        .map(message => TooManyRequests(message))
     }
   }
 
@@ -221,7 +249,8 @@ class AnnotationsAPI @Inject()(cc: ControllerComponents, userRequestAction: User
     Future.sequence(names.map(n => sfp.deleteForUser(user, n))).map(_ => ())
 
   def uploadFile: Action[MultipartFormData[Files.TemporaryFile]] =
-    (userRequestAction(parse.multipartFormData(maxUploadFileSize.toBytes)) andThen SessionAction.authorizedOnly andThen checkUploadAllowed).async {
+    (userRequestAction(parse.multipartFormData(maxUploadFileSize.toBytes)) andThen SessionAction.authorizedOnly
+      andThen checkUploadAllowed andThen checkUploadQuota).async {
       implicit request =>
         SampleFileForm.sampleFileFormMapping.bindFromRequest.fold(
           formWithErrors => async {
@@ -273,7 +302,7 @@ class AnnotationsAPI @Inject()(cc: ControllerComponents, userRequestAction: User
             if (user.nonEmpty) {
               val details = await(user.get.getDetails)
               Right(ActorFlow.actorRef { out =>
-                AnnotationsWebSocketActor.props(out, limits.getLimit(request), user.get, details, database, motifs)
+                AnnotationsWebSocketActor.props(out, limits.getLimit(request), user.get, details, database, motifs, usage)
               })
             } else {
               Left(Forbidden)
@@ -295,7 +324,7 @@ class AnnotationsAPI @Inject()(cc: ControllerComponents, userRequestAction: User
             if (user.nonEmpty) {
               val details = await(user.get.getDetails)
               Right(ActorFlow.actorRef { out =>
-                MultisampleAnalysisWebSocketActor.props(out, limits.getLimit(request), user.get, details, database)
+                MultisampleAnalysisWebSocketActor.props(out, limits.getLimit(request), user.get, details, database, usage)
               })
             } else {
               Left(Forbidden)

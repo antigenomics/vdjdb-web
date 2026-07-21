@@ -21,6 +21,7 @@ import backend.models.authorization.permissions.UserPermissionsProvider
 import backend.models.authorization.user.{User, UserDetails}
 import backend.models.files.FileMetadataProvider
 import backend.models.files.sample.SampleFileProvider
+import backend.models.usage.UsageProvider
 import backend.server.annotations.IntersectionTable
 import backend.server.annotations.api.multisample.summary.{MultisampleSummaryAnalysisRequest, MultisampleSummaryAnalysisResponse}
 import backend.server.annotations.charts.summary.{SummaryClonotypeCounter, SummaryCounters, SummaryFieldCounter}
@@ -36,7 +37,8 @@ import scala.collection.JavaConverters._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
-class MultisampleAnalysisWebSocketActor(out: ActorRef, limit: IpLimit, user: User, details: UserDetails, database: Database)
+class MultisampleAnalysisWebSocketActor(out: ActorRef, limit: IpLimit, user: User, details: UserDetails,
+                                        database: Database, usage: UsageProvider)
                                        (implicit ec: ExecutionContext, as: ActorSystem, limits: RequestLimits,
                                         upp: UserPermissionsProvider, sfp: SampleFileProvider, fmp: FileMetadataProvider)
   extends WebSocketActor(out, limit) {
@@ -50,44 +52,54 @@ class MultisampleAnalysisWebSocketActor(out: ActorRef, limit: IpLimit, user: Use
   def handleMessage(out: WebSocketOutActorRef, data: Option[JsValue]): Unit = {
     out.getAction match {
       case MultisampleSummaryAnalysisResponse.Action =>
-        validateData(out, data, (request: MultisampleSummaryAnalysisRequest) => async {
-          val tabID = request.tabID
-          val userFiles = await(user.getSampleFilesWithMetadata)
-          val userFilesNames = userFiles.map(_._1.sampleName)
-          val samples = request.sampleNames.filter(userFilesNames.contains(_)).map((sampleName) => async {
-            val file = userFiles.find(_._1.sampleName == sampleName)
-            val sampleFileConnection = new SampleFileConnection(file.get._2.path, Software.valueOf(file.get._1.software))
-            val sample = sampleFileConnection.getSample
-            out.success(MultisampleSummaryAnalysisResponse.ParseState(tabID, file.get._1.sampleName))
-            (sampleName, sample)
-          })
+        // Same daily allowance as the single-sample annotate handler, and for the same reason: this
+        // builds a clonotype database and searches every selected sample against it, so it is at
+        // least as expensive. Without the check here the quota on the other handler is decorative —
+        // the same account annotates without limit through this tab instead. One request costs one
+        // unit, not one per selected sample: the ceiling is on jobs a person asks for.
+        usage.checkAnnotate(user, details.permissions) match {
+          case Some(message) =>
+            out.errorMessage(message)
+          case None =>
+            validateData(out, data, (request: MultisampleSummaryAnalysisRequest) => async {
+              val tabID = request.tabID
+              val userFiles = await(user.getSampleFilesWithMetadata)
+              val userFilesNames = userFiles.map(_._1.sampleName)
+              val samples = request.sampleNames.filter(userFilesNames.contains(_)).map((sampleName) => async {
+                val file = userFiles.find(_._1.sampleName == sampleName)
+                val sampleFileConnection = new SampleFileConnection(file.get._2.path, Software.valueOf(file.get._1.software))
+                val sample = sampleFileConnection.getSample
+                out.success(MultisampleSummaryAnalysisResponse.ParseState(tabID, file.get._1.sampleName))
+                (sampleName, sample)
+              })
 
-          val instance = IntersectionTable.createClonotypeDatabase(database, request.databaseQueryParams, request.searchScope, request.scoring)
+              val instance = IntersectionTable.createClonotypeDatabase(database, request.databaseQueryParams, request.searchScope, request.scoring)
 
-          val counters = samples.map((futureSample) => async {
-            val sample = await(futureSample)
-            val results = instance.search(sample._2)
-            out.success(MultisampleSummaryAnalysisResponse.AnnotateState(tabID, sample._1))
+              val counters = samples.map((futureSample) => async {
+                val sample = await(futureSample)
+                val results = instance.search(sample._2)
+                out.success(MultisampleSummaryAnalysisResponse.AnnotateState(tabID, sample._1))
 
-            val summary = new ClonotypeSearchSummary(results, sample._2, ClonotypeSearchSummary.FIELDS_STARBURST, instance)
-            val counters = summary.fieldCounters.asScala.map { case (name, map) =>
-              SummaryFieldCounter(name, map.asScala.filter(v => v._2.getUnique != 0).map { case (field, value) =>
-                SummaryClonotypeCounter(field, value.getUnique, value.getDatabaseUnique, value.getFrequency, value.getReads)
-              }.toSeq)
-            }.toSeq
+                val summary = new ClonotypeSearchSummary(results, sample._2, ClonotypeSearchSummary.FIELDS_STARBURST, instance)
+                val counters = summary.fieldCounters.asScala.map { case (name, map) =>
+                  SummaryFieldCounter(name, map.asScala.filter(v => v._2.getUnique != 0).map { case (field, value) =>
+                    SummaryClonotypeCounter(field, value.getUnique, value.getDatabaseUnique, value.getFrequency, value.getReads)
+                  }.toSeq)
+                }.toSeq
 
-            val nfc = summary.getNotFoundCounter
-            val annotated = IntersectionTable.summarizeAnnotated(results.asScala.toList.map { case (c, l) => (c, l.asScala.toList) })
-            (sample._1, SummaryCounters(counters,
-              SummaryClonotypeCounter("notFound", nfc.getUnique, nfc.getDatabaseUnique, nfc.getFrequency, nfc.getReads), annotated))
-          })
+                val nfc = summary.getNotFoundCounter
+                val annotated = IntersectionTable.summarizeAnnotated(results.asScala.toList.map { case (c, l) => (c, l.asScala.toList) })
+                (sample._1, SummaryCounters(counters,
+                  SummaryClonotypeCounter("notFound", nfc.getUnique, nfc.getDatabaseUnique, nfc.getFrequency, nfc.getReads), annotated))
+              })
 
-          val multipleSummary = await(waitAll(counters).map { completedJobs =>
-            completedJobs.filter(_.isSuccess).map((completedFuture) => completedFuture.get._1 -> completedFuture.get._2)
-          }).toMap
+              val multipleSummary = await(waitAll(counters).map { completedJobs =>
+                completedJobs.filter(_.isSuccess).map((completedFuture) => completedFuture.get._1 -> completedFuture.get._2)
+              }).toMap
 
-          out.success(MultisampleSummaryAnalysisResponse.CompletedState(tabID, multipleSummary))
-        })
+              out.success(MultisampleSummaryAnalysisResponse.CompletedState(tabID, multipleSummary))
+            })
+        }
       case _ =>
         out.errorMessage("Invalid action")
     }
@@ -95,8 +107,8 @@ class MultisampleAnalysisWebSocketActor(out: ActorRef, limit: IpLimit, user: Use
 }
 
 object MultisampleAnalysisWebSocketActor {
-  def props(out: ActorRef, limit: IpLimit, user: User, details: UserDetails, database: Database)
+  def props(out: ActorRef, limit: IpLimit, user: User, details: UserDetails, database: Database, usage: UsageProvider)
            (implicit ec: ExecutionContext, as: ActorSystem, limits: RequestLimits,
             upp: UserPermissionsProvider, sfp: SampleFileProvider, fmp: FileMetadataProvider): Props =
-    Props(new MultisampleAnalysisWebSocketActor(out, limit, user, details, database))
+    Props(new MultisampleAnalysisWebSocketActor(out, limit, user, details, database, usage))
 }
