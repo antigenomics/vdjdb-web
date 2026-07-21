@@ -22,12 +22,11 @@ import backend.models.authorization.user.{User, UserDetails}
 import backend.models.files.FileMetadataProvider
 import backend.models.files.sample.SampleFileProvider
 import backend.models.usage.UsageProvider
-import backend.server.annotations.IntersectionTable
+import backend.server.annotations.{IntersectionTable, SearchSummary}
 import backend.server.annotations.api.multisample.summary.{MultisampleSummaryAnalysisRequest, MultisampleSummaryAnalysisResponse}
-import backend.server.annotations.charts.summary.{SummaryClonotypeCounter, SummaryCounters, SummaryFieldCounter}
+import backend.server.annotations.charts.summary.SummaryCounters
 import backend.server.database.Database
 import backend.server.limit.{IpLimit, RequestLimits}
-import com.antigenomics.vdjdb.stat.ClonotypeSearchSummary
 import com.antigenomics.vdjtools.io.SampleFileConnection
 import com.antigenomics.vdjtools.misc.Software
 import play.api.libs.json.JsValue
@@ -73,24 +72,22 @@ class MultisampleAnalysisWebSocketActor(out: ActorRef, limit: IpLimit, user: Use
                 (sampleName, sample)
               })
 
-              val instance = IntersectionTable.createClonotypeDatabase(database, request.databaseQueryParams, request.searchScope, request.scoring)
+              val (instance, summaryIndex) = IntersectionTable.createClonotypeDatabase(database, request.databaseQueryParams, request.searchScope, request.scoring)
 
               val counters = samples.map((futureSample) => async {
                 val sample = await(futureSample)
                 val results = instance.search(sample._2)
                 out.success(MultisampleSummaryAnalysisResponse.AnnotateState(tabID, sample._1))
 
-                val summary = new ClonotypeSearchSummary(results, sample._2, ClonotypeSearchSummary.FIELDS_STARBURST, instance)
-                val counters = summary.fieldCounters.asScala.map { case (name, map) =>
-                  SummaryFieldCounter(name, map.asScala.filter(v => v._2.getUnique != 0).map { case (field, value) =>
-                    SummaryClonotypeCounter(field, value.getUnique, value.getDatabaseUnique, value.getFrequency, value.getReads)
-                  }.toSeq)
-                }.toSeq
-
-                val nfc = summary.getNotFoundCounter
-                val annotated = IntersectionTable.summarizeAnnotated(results.asScala.toList.map { case (c, l) => (c, l.asScala.toList) })
-                (sample._1, SummaryCounters(counters,
-                  SummaryClonotypeCounter("notFound", nfc.getUnique, nfc.getDatabaseUnique, nfc.getFrequency, nfc.getReads), annotated))
+                // The denominators come from the index built alongside the database. This loop is why
+                // that matters most here: `ClonotypeSearchSummary` recomputed them from scratch for
+                // every sample in the selection, so a ten-sample analysis paid the same ~45 second
+                // database scan ten times over.
+                val found = results.asScala.toList.map { case (c, l) => (c, l.asScala.toList) }
+                val (fieldCounters, notFound) =
+                  SearchSummary.summarize(found, sample._2, IntersectionTable.SummaryFields, summaryIndex)
+                val annotated = IntersectionTable.summarizeAnnotated(found)
+                (sample._1, SummaryCounters(fieldCounters, notFound, annotated))
               })
 
               val multipleSummary = await(waitAll(counters).map { completedJobs =>
