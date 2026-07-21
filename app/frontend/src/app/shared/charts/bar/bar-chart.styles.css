@@ -19,16 +19,16 @@
  */
 
 * >>> .bar.chart rect.bar {
-    opacity: 0.9;
-    -webkit-transition: opacity .3s ease;
-    -moz-transition: opacity .3s ease;
-    -ms-transition: opacity .3s ease;
-    transition: opacity .3s ease;
+    opacity: 1;
+    -webkit-transition: filter .3s ease;
+    -moz-transition: filter .3s ease;
+    -ms-transition: filter .3s ease;
+    transition: filter .3s ease;
     cursor: pointer;
 }
 
 * >>> .bar.chart rect.bar:hover {
-    opacity: 1.0;
+    filter: brightness(1.12);
 }
 
 * >>> .bar.chart > .y.axis g.tick > text {

@@ -17,8 +17,13 @@
 <div class="ui fade element sidebar vertical menu with navbar visible" #sidebar>
     <div class="item sidebar-bars">
         <div class="right menu">
-            <a class="item sidebar-bars" (click)="toggle()">
-                <i class="ui icon bars"></i>
+            <!-- A chevron rather than the old hamburger: this collapses one panel, it does not open a
+                 menu, and the direction it points is the only cue for which way it will go. Same
+                 rotating-chevron language as the Filters frame on Browse. -->
+            <a class="item sidebar-bars sidebar-toggle" (click)="toggle()"
+               [class.sidebar-toggle--collapsed]="isHidden()"
+               [attr.title]="isHidden() ? 'Expand panel' : 'Collapse panel'">
+                <i class="ui angle left icon"></i>
             </a>
         </div>
     </div>

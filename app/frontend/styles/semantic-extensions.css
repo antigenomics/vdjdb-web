@@ -111,8 +111,11 @@
   transition: max-height 0.2s linear, border-left .6s ease;
 }
 
+/* Size lives with the rest of the sidebar type in design-system.css. This rule kept `1.4em`, and it
+   is `!important`, so it silently outranked anything the type scale said — the reason "General" and
+   "Data" rendered at 19.6px while every other section heading on the site is 18px. */
 .ui.sidebar.menu .item .header {
-  font-size: 1.4em !important;
+  line-height: 1.3;
 }
 
 .ui.sidebar.menu .item .menu .item .trash.icon {
@@ -184,11 +187,11 @@
 /* Collapsed state, set by AnnotationsPageComponent toggling the class. Kept here rather than as an
    inline style so it cannot outrank the media query below. */
 .pusher.annotations.sidebar-collapsed {
-  margin-left: 40px;
+  margin-left: calc(40px + var(--ds-annotations-content-gap));
 }
 
 .pusher.annotations {
-  margin-left: var(--ds-annotations-sidebar-width);
+  margin-left: calc(var(--ds-annotations-sidebar-width) + var(--ds-annotations-content-gap));
   -webkit-transition: margin-left 0.2s ease-in-out !important;
   -moz-transition: margin-left 0.2s ease-in-out !important;
   -ms-transition: margin-left 0.2s ease-in-out !important;
