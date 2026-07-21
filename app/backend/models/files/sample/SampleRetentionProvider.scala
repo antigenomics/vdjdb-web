@@ -17,7 +17,6 @@
 package backend.models.files.sample
 
 import java.io.File
-import java.sql.Timestamp
 
 import akka.actor.{ActorSystem, Cancellable}
 import backend.models.authorization.permissions.{UserPermissions, UserPermissionsProvider}
@@ -105,9 +104,12 @@ class SampleRetentionProvider @Inject()(conf: Configuration,
       Future.successful(acc)
     } else {
       val keepSeconds = policy.keepSeconds(user.isTemporary)
-      val cutoff      = new Timestamp(now - keepSeconds * 1000L)
+      val cutoff      = now - keepSeconds * 1000L
       sfp.getByUserIDWithMetadata(user.id) flatMap { samples =>
-        val expired = samples.filter { case (_, metadata) => metadata.createdAt.before(cutoff) }
+        // Ages from `effectiveCreatedAt`, not the raw column, so the configured floor applies.
+        val expired = samples.filter {
+          case (_, metadata) => policy.effectiveCreatedAt(metadata.createdAt.getTime) < cutoff
+        }
         expired.foreach { case (sample, metadata) => report(policy, user, sample, metadata, now, keepSeconds) }
         val scanned = acc.scanned + samples.length
         if (policy.dryRun) {
@@ -129,12 +131,17 @@ class SampleRetentionProvider @Inject()(conf: Configuration,
 
   private def report(policy: SampleRetentionConfiguration, user: User, sample: SampleFile, metadata: FileMetadata,
                      now: Long, keepSeconds: Long): Unit = {
-    val ageDays  = (now - metadata.createdAt.getTime) / (24L * 60L * 60L * 1000L)
+    val day      = 24L * 60L * 60L * 1000L
+    val ageDays  = (now - metadata.createdAt.getTime) / day
+    // Both ages are logged when the floor is doing something, so a line always explains itself: a
+    // sample can be eight years old and still be swept only because the floor is set a year back.
+    val agedDays = (now - policy.effectiveCreatedAt(metadata.createdAt.getTime)) / day
+    val age      = if (agedDays == ageDays) s"age ${ageDays}d" else s"age ${ageDays}d, aged ${agedDays}d from floor"
     val keepDays = keepSeconds / (24L * 60L * 60L)
     val account  = if (user.isTemporary) "temporary" else "registered"
     val prefix   = if (policy.dryRun) "[retention][dry-run] would delete" else "[retention] deleting"
     logger.info(s"$prefix sample '${sample.sampleName}' of ${user.email} " +
-      s"(age ${ageDays}d, window ${keepDays}d, $account account)")
+      s"($age, window ${keepDays}d, $account account)")
   }
 
   /** Deleting the FILE_METADATA row cascades to SAMPLE_FILE, so the database side is one statement;
