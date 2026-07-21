@@ -149,8 +149,22 @@ case class User(id: Long, login: String, email: String, verified: Boolean, folde
     samples.foreach { sample => sfp.delete(sample) }
     val folder = new File(folderPath)
     if (folder.exists()) {
-      folder.delete()
+      // Non-recursive delete() silently fails whenever a per-sample subfolder survives, which is how
+      // orphaned upload directories accumulate. Remove the tree.
+      User.deleteRecursively(folder)
     }
+  }
+}
+
+object User {
+
+  /** Depth-first tree delete. `File.delete()` only removes an empty directory, so deleting a user
+    * folder that still holds per-sample subdirectories is a silent no-op. */
+  private[user] def deleteRecursively(file: File): Unit = {
+    if (file.isDirectory) {
+      Option(file.listFiles()).foreach(_.foreach(deleteRecursively))
+    }
+    val _ = file.delete()
   }
 }
 

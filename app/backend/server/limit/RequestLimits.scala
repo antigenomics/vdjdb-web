@@ -18,6 +18,7 @@ package backend.server.limit
 
 import akka.actor.ActorSystem
 import akka.stream.Materializer
+import backend.utils.RequestUtils
 import javax.inject.{Inject, Singleton}
 import org.slf4j.LoggerFactory
 import play.api.Configuration
@@ -83,19 +84,8 @@ class RequestLimits @Inject()(configuration: Configuration, actorSystem: ActorSy
     }
   }
 
-  // Trusted proxy hops (loopback + RFC1918) to skip when reading X-Forwarded-For.
-  private val trustedProxy = "^(127\\.|::1|10\\.|192\\.168\\.|172\\.(1[6-9]|2[0-9]|3[01])\\.)".r
-
-  // Behind the pangolin edge the real client arrives in X-Forwarded-For (e.g. "<client>, 127.0.0.1").
-  // Take the right-most hop that is not a trusted proxy — that is the client the edge observed, and it
-  // is spoof-resistant: a client-injected leading XFF stays to the left of the edge-set hop.
-  // ponytail: trusted hops here are loopback + private; if the edge ever appends a public hop, revisit.
-  def getIp(request: RequestHeader): String = {
-    val xff = request.headers.get("X-Forwarded-For").getOrElse("").split(",").map(_.trim).filter(_.nonEmpty)
-    xff.reverse.find(ip => trustedProxy.findFirstIn(ip).isEmpty)
-      .orElse(request.headers.get("X-Real-IP"))
-      .getOrElse(request.remoteAddress)
-  }
+  // Shared with temporary-account signup, so both per-IP limits agree on who the client is.
+  def getIp(request: RequestHeader): String = RequestUtils.clientIp(request)
 
   def getLimit(request: RequestHeader): IpLimit = {
     bucket(getIp(request))
