@@ -24,7 +24,7 @@
     </div>
     <div class="sidebar-content" #sidebarContent>
         <div class="item">
-            <div class="header">Notebook</div>
+            <div class="header">General</div>
             <div class="menu">
                 <a (click)="sidebarRoute('info')" class="item">Info</a>
                 <a (click)="sidebarRoute('upload')" class="item" *ngIf="isUploadingAllowed()">
@@ -33,11 +33,13 @@
                         <div class="ui active mini inverted inline loader"></div>
                     </div>
                 </a>
+                <a class="item" (click)="deleteAllSamples()"
+                   *ngIf="!isSamplesEmpty() && isDeletingAllowed()">Delete all</a>
             </div>
         </div>
         <div class="item">
             <div class="header">
-                Samples
+                Data
                 <i class="ui small sort icon" *ngIf="!isTagsEmpty()" (click)="toggleSortVisibility()"></i>
             </div>
             <div class="menu" *ngIf="!isSamplesEmpty()">
@@ -69,12 +71,6 @@
             <div class="menu" *ngIf="isSamplesEmpty()">
                 <a class="item">There are no uploaded samples</a>
                 <a class="item">Click 'upload' button to proceed</a>
-            </div>
-        </div>
-        <div class="item" *ngIf="!isSamplesEmpty() && isDeletingAllowed()">
-            <div class="header">Settings</div>
-            <div class="menu">
-                <a class="item" (click)="deleteAllSamples()">Delete all</a>
             </div>
         </div>
     </div>

@@ -171,8 +171,12 @@
   color: rgba(0,0,0,.95);
 }
 
+/* A percentage sidebar collapses to unreadable widths on small screens - at 574px, 12.5% is 72px and
+   the headings truncate to "No…", "Sa…", "Se…". Keep the proportion on wide screens but never let it
+   fall below the width the labels actually need. */
 .ui.vertical.menu {
   width: 12.5%;
+  min-width: 190px;
 }
 
 .pusher.annotations {
@@ -231,4 +235,42 @@
 .ui.card .extra.content.bottom.border {
   border-top: none!important;
   border-bottom: 1px solid rgba(0,0,0,.075)!important
+}
+
+/* ---------------------------------------------------------------------------------------------
+   Narrow screens.
+   These pages had no @media rules at all and `body { min-width: 600px }` simply forced the whole
+   document to scroll sideways instead. Below the breakpoint the sidebar stops being a fixed
+   column: it scrolls with the page and the content sits under it rather than beside it.
+   --------------------------------------------------------------------------------------------- */
+@media (max-width: 768px) {
+  .ui.vertical.menu {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .ui.sidebar.with.navbar {
+    position: static !important;
+    top: auto !important;
+    height: auto !important;
+    max-height: 45vh;
+    overflow-y: auto;
+  }
+
+  .pusher.annotations {
+    margin-left: 0;
+  }
+
+  /* The magic twin of the 12.5% sidebar; meaningless once the sidebar is full width. */
+  .ui.menu.sidebar-settings {
+    left: 0;
+  }
+}
+
+/* Wide tables (the upload queue, the annotation results) scroll inside their own container rather
+   than widening the page. Semantic's `single line` prevents wrapping, which is what pushed the
+   document itself sideways. */
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
