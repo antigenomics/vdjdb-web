@@ -136,10 +136,14 @@ object IntersectionTable {
     * or its other containers changed. The `Built clonotype database ... heap N MB` line logged below is
     * what to read before raising this. Note `.jvmopts` is sbt-only and does not reach the packaged app.
     */
-  // Measured in production on 2026-07-21: a single built database costs ~1.0-1.5 GB of heap, against a
-  // 6.8 GB ceiling that vdjtools is already sharing (it reported "4 of 8 GB" mid-load). Two entries is
-  // most of the headroom for a second combination almost nobody asks for, so keep one.
-  private final val MaxCachedDatabases = 1
+  // Two, because the chain split makes TRA+TRB the normal working set: annotating both halves of a
+  // split sample alternates gene=TRA and gene=TRB, and at size 1 each eviction guarantees the next
+  // annotation misses — the cache would never hit for the workflow the splitter itself creates.
+  //
+  // This was briefly 1, on a heap figure that turned out to be unsound: sampling total-free around the
+  // build attributes any GC that happens mid-build to the build, and produced a NEGATIVE delta in
+  // production. `buildHeapCost` below measures after a collection instead.
+  private final val MaxCachedDatabases = 2
 
   /** Keyed on the *entire* set of build inputs, so it cannot go stale by omission: every one of these
     * is a case class, so equality is structural all the way down.
@@ -177,6 +181,19 @@ object IntersectionTable {
     * performs. If a slow build behind the lock ever becomes the bottleneck, the upgrade is a per-key
     * lock, not a bigger cache.
     */
+  /** Heap in use after asking for a collection, so the reading reflects what is actually *retained*.
+    *
+    * The naive total-free sample taken around a build charges it for any garbage that happened to be
+    * collected meanwhile, which in production produced a negative "cost". System.gc is only a hint and
+    * this is not free, but it runs once per cache miss — rare by construction — and a number that can
+    * come out negative is worse than a slightly expensive one.
+    */
+  private def settledHeapBytes(): Long = {
+    val runtime = Runtime.getRuntime
+    System.gc()
+    runtime.totalMemory - runtime.freeMemory
+  }
+
   /** Every field that participates in the cache key. The first version logged only the database
     * parameters, which made two entries differing in scope or scoring look identical in the log and
     * left "why did this miss?" unanswerable. */
@@ -205,14 +222,13 @@ object IntersectionTable {
         logger.info(s"Reusing cached clonotype database [${describe(parameters, searchScope, scoring)}]")
         cached
       } else {
-        val runtime   = Runtime.getRuntime
-        val startedAt = System.currentTimeMillis
-        val usedBefore = runtime.totalMemory - runtime.freeMemory
-        val built     = buildClonotypeDatabase(database, parameters, searchScope, scoring)
-        val _         = cache.put(key, built)
+        val startedAt  = System.currentTimeMillis
+        val usedBefore = settledHeapBytes()
+        val built      = buildClonotypeDatabase(database, parameters, searchScope, scoring)
+        val _          = cache.put(key, built)
+        val cost       = (settledHeapBytes() - usedBefore) / (1024L * 1024L)
         logger.info(s"Built clonotype database [${describe(parameters, searchScope, scoring)}] in " +
-          s"${System.currentTimeMillis - startedAt} ms, heap ${(runtime.totalMemory - runtime.freeMemory - usedBefore) / (1024 * 1024)} MB, " +
-          s"cached ${cache.size}/$MaxCachedDatabases")
+          s"${System.currentTimeMillis - startedAt} ms, retained ~$cost MB, cached ${cache.size}/$MaxCachedDatabases")
         built
       }
     }
