@@ -27,7 +27,6 @@ import backend.server.database.filters.{DatabaseFilterRequest, DatabaseFilterTyp
 import backend.server.motifs.Motifs
 import backend.server.search.SearchTable
 import backend.server.structures.Structures
-import backend.server.validation.ValidationDB
 import backend.server.search.api.export.{ExportDataRequest, ExportDataResponse}
 import backend.server.search.api.paired.{PairedDataRequest, PairedDataResponse}
 import backend.server.search.api.search.{SearchDataRequest, SearchDataResponse}
@@ -42,9 +41,8 @@ class DatabaseSearchWebSocketActorSpec extends ActorsTestSpec {
     lazy implicit val database: Database = app.injector.instanceOf[Database]
     lazy val structures: Structures = app.injector.instanceOf[Structures]
     lazy val motifs: Motifs = app.injector.instanceOf[Motifs]
-    lazy val validation: ValidationDB = app.injector.instanceOf[ValidationDB]
     lazy implicit val probe = TestProbe()
-    lazy implicit val ws = system.actorOf(DatabaseSearchWebSocketActor.props(probe.ref, fakeLimit, database, structures, motifs, validation))
+    lazy implicit val ws = system.actorOf(DatabaseSearchWebSocketActor.props(probe.ref, fakeLimit, database, structures, motifs))
 
     "DatabaseSearchWebSocketActor" should {
         "be able to handle invalid messages" taggedAs ActorsTestTag in {
@@ -83,7 +81,7 @@ class DatabaseSearchWebSocketActorSpec extends ActorsTestSpec {
             val table: SearchTable = new SearchTable()
             val filters: List[DatabaseFilterRequest] = List(DatabaseFilterRequest("gene", DatabaseFilterType.Exact, negative = false, "TRA"))
 
-            table.update(DatabaseFilters.createFromRequest(filters, database), database, structures, motifs, validation)
+            table.update(DatabaseFilters.createFromRequest(filters, database), database, structures, motifs)
 
             ws ! createClientRequest(SearchDataResponse.Action, Some(SearchDataRequest(Some(filters), None, None, None, None, None)))
             val searchResponse = expectSuccessMessageOfType[SearchDataResponse](SearchDataResponse.Action)
