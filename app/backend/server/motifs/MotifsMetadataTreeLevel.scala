@@ -28,7 +28,20 @@ case class MotifsMetadataTreeLevel(name: String, values: Seq[MotifsMetadataTreeL
 object MotifsMetadataTreeLevel {
   implicit val motifsMetadataTreeLevelFormat: Format[MotifsMetadataTreeLevel] = Json.format[MotifsMetadataTreeLevel]
 
+  /** An absent column yields an empty level rather than throwing.
+    *
+    * `Motifs` builds this from whatever `parseMotifFileIntoDataFrame` returned, and that returns an
+    * empty table when the motif file is missing or unreadable — `Database.getMotifFile` is an
+    * `Option`. Every other consumer of those tables already guards (`buildAvailabilityKeys`,
+    * `buildCidLookupIndex`, `parseCDR3LengthRange`); this one did not, and it runs in the `Motifs`
+    * constructor. So a deployment whose motif files were missing did not lose the motif pages, it
+    * failed to start at all, with `IllegalStateException: Column species does not exist in table`
+    * thrown while Guice was building the object graph.
+    */
   def createTreeLevelFromTable(table: Table, name: String, next: Seq[String], chain: String): MotifsMetadataTreeLevel = {
+    if (!table.columnNames().contains(name)) {
+      return MotifsMetadataTreeLevel(name, Seq.empty)
+    }
     val values = table.stringColumn(name).asSet().asScala.toSeq.filter(_.nonEmpty).map { value =>
       val st = table.where(table.stringColumn(name).isEqualTo(value))
       val nextChain = s"$chain$value"
