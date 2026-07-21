@@ -26,11 +26,15 @@ import scala.concurrent.{ExecutionContext, Future}
 class EmailsService @Inject()(mailerClient: MailerClient, conf: Configuration) {
   private final val logger = LoggerFactory.getLogger(this.getClass)
 
-  def sendVerificationTokenEmail(to: String, link: String)(implicit ec: ExecutionContext): Future[Unit] = Future.successful {
+  // `Future.successful { ... }` evaluated its body on the *calling* thread, so the blocking SMTP
+  // handshake ran inline on the Play request thread. A slow or unresponsive relay would then hold a
+  // request thread for the whole socket timeout, and enough concurrent signups would starve the pool.
+  // `Future { ... }` hands it to the execution context instead.
+  def sendVerificationTokenEmail(to: String, link: String)(implicit ec: ExecutionContext): Future[Unit] = Future {
     send(to, "VDJdb account verification", frontend.views.html.authorization.emails.verify(link).body)
   }
 
-  def sendResetTokenEmail(to: String, link: String)(implicit ec: ExecutionContext): Future[Unit] = Future.successful {
+  def sendResetTokenEmail(to: String, link: String)(implicit ec: ExecutionContext): Future[Unit] = Future {
     send(to, "VDJdb account reset password", frontend.views.html.authorization.emails.reset(link).body)
   }
 
