@@ -65,8 +65,12 @@ class SessionActionSpec extends ActionsTestSpec with Results {
                 val updatedResult = Future.successful(SessionAction.updateCookies(r))
 
                 cookies(updatedResult) should contain(Cookie("login", URLEncoder.encode(fixtures.authorizedUser.credentials.login, "UTF-8"), httpOnly = false))
-                cookies(updatedResult) should contain(Cookie("email", URLEncoder.encode(fixtures.authorizedUser.credentials.email, "UTF-8"), httpOnly = false))
                 cookies(updatedResult) should contain(Cookie("logged", "true", httpOnly = false))
+
+                // The `email` cookie is deliberately no longer written. It was not httpOnly, and for a
+                // temporary account the "email" IS the login token, so it published a credential to
+                // any script on the page. Nothing read it back except a logger.debug.
+                cookies(updatedResult).map(_.name) should not contain "email"
                 session(updatedResult).data should contain key (stp.getAuthTokenSessionName)
                 session(updatedResult).get(stp.getAuthTokenSessionName).get shouldEqual fixtures.authorizedUser.sessionToken
             }

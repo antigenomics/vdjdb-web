@@ -55,20 +55,35 @@ class SampleConverterSpec extends WordSpec with Matchers {
       SampleConverter.cleanSegment("") shouldBe "."
     }
 
-    "resolve both MiXCR header dialects" in {
-      // Legacy, human-readable — taken verbatim from a file that failed in production on 2026-07-21.
-      // It fell through to legacy passthrough and was stored with the declared chain, mislabelling a
-      // TRA sample as TRB.
+    "not resolve the legacy human-readable MiXCR dialect" in {
+      // Supported input is deliberately three dialects: current MiXCR, AIRR, and the VDJtools simple
+      // format. The old space-separated MiXCR export ("All V hits") is NOT among them.
+      //
+      // This assertion used to demand the opposite, from when a legacy-passthrough branch accepted
+      // anything it could not parse and stored it under the chain the user had declared - which
+      // mislabelled a TRA file as TRB in production. That branch is gone: an unresolvable header now
+      // has to fail loudly, so the columns must come back empty rather than half-populated.
       val legacy = Seq("Clone ID", "Clone count", "Clone fraction", "Clonal sequence(s)",
         "Clonal sequence quality(s)", "All V hits", "All D hits", "All J hits", "All C hits",
         "N. Seq. CDR3", "AA. Seq. CDR3")
       val legacyColumns = SampleConverter.resolve(legacy)
-      legacyColumns.v shouldBe Some(5)
-      legacyColumns.j shouldBe Some(7)
+
+      // The segment calls are what actually fail: normaliseHeader strips non-alphanumerics, so
+      // "All V hits" becomes "allvhits", and the alias is "allvhitswithscore" - the current export
+      // spells the score into the column name.
+      legacyColumns.v shouldBe None
+      legacyColumns.j shouldBe None
+
+      // The sequence and count columns DO resolve, because stripping punctuation collapses
+      // "AA. Seq. CDR3" onto "aaseqcdr3" and "N. Seq. CDR3" onto "nseqcdr3". Partial resolution is
+      // exactly why this has to fail loudly rather than convert what it can: a file with usable CDR3
+      // columns and no V/J is still not a sample.
       legacyColumns.count shouldBe Some(1)
       legacyColumns.aaColumn shouldBe Some(10)
       legacyColumns.junctionNt shouldBe Some(9)
+    }
 
+    "resolve the current MiXCR dialect" in {
       // Current camel-case export.
       val modern = Seq("cloneCount", "cloneFraction", "allVHitsWithScore", "allDHitsWithScore",
         "allJHitsWithScore", "nSeqCDR3", "aaSeqCDR3")
