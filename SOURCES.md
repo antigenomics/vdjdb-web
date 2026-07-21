@@ -44,13 +44,26 @@ expect 27.
 SRC=/home/vdjdb/vdjdb_publish/vdjdb-db
 TOTAL=$(($(wc -l < "$SRC/vdjdb.txt") - 1))
 STEP=$((TOTAL / 2000))
+
+# 1. Uniform spread, header included.
 awk -v step="$STEP" 'NR==1 || (NR-1) % step == 0' "$SRC/vdjdb.txt" > vdjdb.txt
+
+# 2. Top up high-confidence rows to 150 - SearchTableSpec pages a "vdjdb.score >= 3" result set at
+#    page size 100 and asserts page 0 is full, and step 1 yields only ~89 such rows.
+HAVE=$(awk -F'\t' 'NR>1 && $14==3' vdjdb.txt | wc -l)
+awk -v step="$STEP" -v need="$((150 - HAVE))" -F'\t' \
+  'NR>1 && (NR-1) % step != 0 && $14==3 && n < need { print; n++ }' "$SRC/vdjdb.txt" >> vdjdb.txt
+
 cp "$SRC/vdjdb.meta.txt" vdjdb.meta.txt
 ```
 
 Every Nth row rather than the head: the source is grouped by reference, so the first 2,000 rows would
 be almost entirely one study. Deterministic on purpose — a fixture that resampled per run would make
 a test failure impossible to reproduce.
+
+⚠️ **The result is deliberately not distributionally faithful** — step 2 over-represents
+`vdjdb.score = 3` roughly fourfold. It is a fixture for exercising code paths, not a sample to measure
+anything on. One row appears twice, which is also true in the source.
 
 See `test/resources/database/README.md` for the coverage the current specs depend on.
 

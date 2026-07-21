@@ -17,10 +17,10 @@ tests at all until this fixture existed.
 
 | | |
 |---|---|
-| Rows | 2,000 (+ header) |
+| Rows | 2,062 (+ header) |
 | Columns | 27 — identical to production |
 | Size | ~1.8 MB |
-| Selection | every 114th row of the production file |
+| Selection | every 114th row, plus a top-up of `vdjdb.score = 3` rows |
 
 Deterministic by construction: the same input file always yields the same fixture. A fixture that
 resampled per run would turn a test failure into a guessing game.
@@ -28,21 +28,30 @@ resampled per run would turn a test failure into a guessing game.
 Every 114th row rather than the first 2,000, because the source file is grouped by reference — taking
 the head would produce a fixture that is almost entirely one study.
 
-Coverage of the properties the existing specs depend on:
+**This is not a uniform sample, and results measured on it do not describe VDJdb.** High-confidence
+records are deliberately over-represented: `SearchTableSpec` pages through a `vdjdb.score >= 3` result
+set at page size 100 and asserts page 0 is full, and those rows are ~1.6% of the database, so a
+uniform 2,000-row sample yields only ~89 of them. The generator tops them up to 150. Use the real
+database for anything distributional.
+
+One row appears twice. That duplicate is present in the source file as well — it is data, not a
+sampling bug.
+
+Coverage of the properties the specs depend on:
 
 | Property | Count |
 |---|---|
-| gene TRB | 1,583 |
-| gene TRA | 418 |
+| gene TRB | 1,638 |
+| gene TRA | 424 |
 | vdjdb.score 0 | 1,786 |
 | vdjdb.score 1 | 83 |
 | vdjdb.score 2 | 43 |
-| vdjdb.score 3 | 89 |
-| mhc.class MHCI | 1,847 |
+| vdjdb.score 3 | 150 (topped up) |
+| mhc.class MHCI | 1,908 |
 | mhc.class MHCII | 154 |
 | cdr3 length 9–10 | 20 |
-| evidence.validation.independent = true | 97 |
-| species HomoSapiens | 1,822 |
+| evidence.validation.independent = true | 132 |
+| species HomoSapiens | 1,883 |
 | species MusMusculus | 164 |
 | species MacacaMulatta | 15 |
 
