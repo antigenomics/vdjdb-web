@@ -285,8 +285,9 @@ object SampleConverter {
     )
   }
 
-  private final case class Row(chain: String, count: Long, cdr3nt: String, cdr3aa: String,
-                               v: String, d: String, j: String)
+  // private[sample] rather than private: it appears in `parseRow`'s result type, which the spec uses.
+  private[sample] final case class Row(chain: String, count: Long, cdr3nt: String, cdr3aa: String,
+                                       v: String, d: String, j: String)
 
   /** Named rather than a `(File, PrintWriter)` tuple: `chain -> (a, b)` is parsed as `->` taking two
     * arguments, not as a pair, which fails to compile under -Xfatal-warnings. */
