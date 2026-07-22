@@ -121,10 +121,14 @@ class SampleRetentionProviderSpec extends DatabaseProviderTestSpec {
       val withOut = policy(dryRun = true)
       val withIn  = policy(dryRun = true, epochMillis = floor)
 
-      withOut.effectiveCreatedAt(old) shouldEqual old
-      withIn.effectiveCreatedAt(old) shouldEqual floor
+      withOut.effectiveCreatedAt(old, isTemporary = false) shouldEqual old
+      withIn.effectiveCreatedAt(old, isTemporary = false) shouldEqual floor
       // A sample newer than the floor keeps its own timestamp - the floor only ever raises.
-      withIn.effectiveCreatedAt(floor + 5000L) shouldEqual floor + 5000L
+      withIn.effectiveCreatedAt(floor + 5000L, isTemporary = false) shouldEqual floor + 5000L
+
+      // Temporary samples are never floored. A floor set in the future would otherwise suspend the
+      // three hour window until it passed, then expire the whole backlog at once.
+      withIn.effectiveCreatedAt(old, isTemporary = true) shouldEqual old
     }
 
     "ship with dry-run enabled" taggedAs SQLDatabaseTestTag in {
@@ -232,6 +236,23 @@ class SampleRetentionProviderSpec extends DatabaseProviderTestSpec {
 
         await(sampleFileProvider.get(freshID)) should not be empty
         new File(freshMeta.path) should exist
+      }
+    }
+
+    "keep expiring token samples at 3 hours even when the floor is set in the future" taggedAs SQLDatabaseTestTag in {
+      // Production carries a floor to protect the registered archive from the first sweep, and it is
+      // set forward in time. Applied to temporary accounts it would silently suspend the three hour
+      // window until that date, which is the one guarantee the token tier makes.
+      async {
+        val user             = await(userProvider.createTemporaryUser("retention-token-floored", "10.0.0.2")).get
+        val (sampleID, meta) = await(storeSample(user, "tokenfloored", ageSeconds = 10L * Day))
+
+        val floor  = System.currentTimeMillis + 40L * Day * 1000L
+        val result = await(retentionProvider.sweep(policy(dryRun = false, epochMillis = floor)))
+
+        result.deleted should be >= 1
+        await(sampleFileProvider.get(sampleID)) shouldBe empty
+        new File(meta.path) shouldNot exist
       }
     }
 

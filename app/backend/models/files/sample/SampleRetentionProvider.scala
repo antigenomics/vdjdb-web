@@ -108,7 +108,7 @@ class SampleRetentionProvider @Inject()(conf: Configuration,
       sfp.getByUserIDWithMetadata(user.id) flatMap { samples =>
         // Ages from `effectiveCreatedAt`, not the raw column, so the configured floor applies.
         val expired = samples.filter {
-          case (_, metadata) => policy.effectiveCreatedAt(metadata.createdAt.getTime) < cutoff
+          case (_, metadata) => policy.effectiveCreatedAt(metadata.createdAt.getTime, user.isTemporary) < cutoff
         }
         expired.foreach { case (sample, metadata) => report(policy, user, sample, metadata, now, keepSeconds) }
         val scanned = acc.scanned + samples.length
@@ -134,7 +134,7 @@ class SampleRetentionProvider @Inject()(conf: Configuration,
     val ageSeconds  = (now - metadata.createdAt.getTime) / 1000L
     // Both ages are logged when the floor is doing something, so a line always explains itself: a
     // sample can be eight years old and still be swept only because the floor is set a year back.
-    val agedSeconds = (now - policy.effectiveCreatedAt(metadata.createdAt.getTime)) / 1000L
+    val agedSeconds = (now - policy.effectiveCreatedAt(metadata.createdAt.getTime, user.isTemporary)) / 1000L
     val age         = if (agedSeconds == ageSeconds) s"age ${SampleRetentionConfiguration.window(ageSeconds)}"
                       else s"age ${SampleRetentionConfiguration.window(ageSeconds)}, " +
                         s"aged ${SampleRetentionConfiguration.window(agedSeconds)} from floor"
