@@ -51,7 +51,10 @@ export class MultisampleSummaryChartComponent implements OnInit, OnDestroy {
   private orderBySamples: boolean = true;
   private showOnlyShared: boolean = false;
   private useLogScale: boolean = false;
-  private colorBySpecies: boolean = false;
+  /** On by default, and the epitope column is the default column, so the first thing drawn already
+    * groups its bars by antigen. Without it a wall of epitope bars carries no structure at all - the
+    * spectral ramp only encodes rank, which the sort already shows. */
+  private colorBySpecies: boolean = true;
 
   private static readonly EpitopeField: string = 'antigen.epitope';
 
