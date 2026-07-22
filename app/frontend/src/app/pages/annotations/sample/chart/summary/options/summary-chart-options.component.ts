@@ -48,9 +48,18 @@ export class SummaryChartOptions {
     { title: 'Top 30', threshold: 30 }
   ];
 
+  /** `matches` and `sample` are two different denominators for the same axis - the matched subset, or
+    * the repertoire it was drawn from - so they are mutually exclusive; see `normalizeTypeChangeFn`.
+    *
+    * `db` and `sample` are on by default because together they are the quantity that actually compares
+    * across samples and across epitopes: w x intersection / |VDJdb records| / |clonotypes in sample|,
+    * where w is the summed frequency when weighting by read count and 1 otherwise. Raw match counts
+    * favour whichever epitope happens to be best represented in the database and whichever sample was
+    * sequenced deepest, which is rarely the question being asked. */
   public normalizeTypes: INormalizeType[] = [
-    { name: 'db', title: 'number of corresponding VDJdb records', checked: false },
-    { name: 'matches', title: 'number of matched clonotypes in sample', checked: false }
+    { name: 'db', title: 'number of corresponding VDJdb records', checked: true },
+    { name: 'matches', title: 'number of matched clonotypes in sample', checked: false },
+    { name: 'sample', title: 'total number of clonotypes in sample', checked: true }
   ];
 
   public fieldTypes: ISummaryFilterFieldType[] = [
@@ -143,8 +152,17 @@ export class SummaryChartOptionsComponent {
   }
 
   // Normalize type methods
+  /** Names of the two denominators that cannot both apply: dividing by the matched subset and by the
+    * whole repertoire at once produces a number that is neither. */
+  private static readonly exclusiveNormalizeTypes: string[] = [ 'matches', 'sample' ];
+
   public normalizeTypeChangeFn(checked: boolean, type: INormalizeType): void {
     type.checked = checked;
+    if (checked && SummaryChartOptionsComponent.exclusiveNormalizeTypes.indexOf(type.name) !== -1) {
+      this.options.normalizeTypes
+        .filter((other) => other !== type && SummaryChartOptionsComponent.exclusiveNormalizeTypes.indexOf(other.name) !== -1)
+        .forEach((other) => other.checked = false);
+    }
     this.onOptionsChange.emit(this.options);
   }
 

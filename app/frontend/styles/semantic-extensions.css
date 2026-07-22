@@ -248,6 +248,15 @@
   top: -7px;
 }
 
+/* The same badge, but sitting after a label instead of in the corner of a panel. It must NOT inherit
+   the absolute positioning above: pinned to `right: 5px` of a narrow right-aligned label cell, it
+   lands on top of the last letters of the label rather than after them. */
+.filters.help.icon.filters-label-help {
+  position: static;
+  margin: 0 0 0 0.4em !important;
+  vertical-align: middle;
+}
+
 .filters.help.icon:hover {
   color: #48af75;
 }

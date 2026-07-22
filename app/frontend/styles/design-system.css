@@ -612,3 +612,11 @@ tr.paired-row > td { color: #525252; }
     flex-wrap: wrap;
   }
 }
+
+/* Headings inside the chart options panel. Semantic gives an h4 no top margin at all, so each control
+   group sat flush against the input above it and the panel read as one undifferentiated column - the
+   "Epitope cutoff" heading in particular looked like a label for the field above rather than below. */
+.summary-options-heading {
+  margin-top: 1.4em !important;
+  margin-bottom: 0.5em !important;
+}

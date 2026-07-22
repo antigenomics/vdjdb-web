@@ -24,7 +24,7 @@
     <label>Weight by read count</label>
 </div>
 
-<h4>Column name</h4>
+<h4 class="summary-options-heading">Column name</h4>
 <div class="ui selection fluid dropdown" dropdown [content]="columnNamesContent">
     <span class="text">{{ getCurrentFieldTitle() }}</span>
     <i class="dropdown icon"></i>
@@ -38,21 +38,26 @@
 <!-- Only under the epitope column: this thins epitope wedges and nothing else, and a control that
      silently does nothing is worse than one that is absent. -->
 <div *ngIf="isEpitopeFieldSelected()">
-    <h4>Epitope cutoff</h4>
+    <h4 class="summary-options-heading">
+        Epitope cutoff
+        <i class="filters help icon filters-label-help"
+           popup="Hide epitopes with fewer than this many VDJdb records. Rare epitopes carry too few records for a match against them to mean much, and they crowd the chart."
+           header="Epitope cutoff"
+           footer="0 keeps every epitope"></i>
+    </h4>
     <div class="ui input fluid">
         <input type="number" min="0" [ngModel]="minEpitopeSize" (ngModelChange)="minEpitopeSize = $event">
     </div>
-    <div class="ui tiny message">Hide epitopes with fewer than this many VDJdb records.</div>
 </div>
 
-<h4>Normalize by</h4>
+<h4 class="summary-options-heading">Normalize by</h4>
 <div class="ui checkbox" *ngFor="let type of options.normalizeTypes">
     <input type="checkbox" [ngModel]="type.checked" (ngModelChange)="normalizeTypeChangeFn($event, type)">
     <label>{{ type.title }}</label>
 </div>
 
 <ng-container *ngIf="isThresholdTypesAvailable()">
-    <h4>Show</h4>
+    <h4 class="summary-options-heading">Show</h4>
     <div class="ui selection fluid upward dropdown" dropdown [content]="thresholdContent">
         <span class="text">{{ getCurrentThresholdTypeTitle() }}</span>
         <i class="dropdown icon"></i>
