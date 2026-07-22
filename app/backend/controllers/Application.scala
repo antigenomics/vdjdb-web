@@ -40,12 +40,30 @@ class Application @Inject()(ws: WSClient, assets: Assets, configuration: Configu
   implicit val messages: Messages = messagesApi.preferred(Seq(Lang.defaultLang))
   private final val cacheControlTimeout: Int = 3600 //seconds
 
+  /** The SPA shell must revalidate on every load.
+    *
+    * It was served with no cache directives at all - no Cache-Control, no ETag, no Last-Modified - so
+    * browsers fell back to heuristic caching and could hold a stale index.html indefinitely. The
+    * bundles it references are content-hashed and the old ones are still on disk, so a stale shell
+    * loads a stale application perfectly happily: the user runs the previous release's JavaScript
+    * against the current server until they think to hard-reload.
+    *
+    * That is how a deploy turns into "the Browse tab is stuck" - the shell predates a navbar change,
+    * so its Browse item is wired the old way and clicking it does nothing.
+    *
+    * Only the shell. The hashed assets under /assets stay cacheable, which is the whole point of
+    * hashing them.
+    */
+  private final val ShellCacheControl: String = "no-cache, no-store, must-revalidate"
+
   def index: Action[AnyContent] = (browserDetectionAction andThen userRequestAction) { implicit request =>
     SessionAction.updateCookies(Ok(frontend.views.html.index()))
+      .withHeaders(CACHE_CONTROL -> ShellCacheControl)
   }
 
   def onNoScript: Action[AnyContent] = (browserDetectionAction andThen userRequestAction) { implicit request =>
     SessionAction.updateCookies(Ok(frontend.views.html.noScript()))
+      .withHeaders(CACHE_CONTROL -> ShellCacheControl)
   }
 
   def robots: Action[AnyContent] = {
@@ -60,6 +78,7 @@ class Application @Inject()(ws: WSClient, assets: Assets, configuration: Configu
 
   def authorizedIndex(route: String): Action[AnyContent] = (browserDetectionAction andThen userRequestAction andThen SessionAction.authorizedOnly) { implicit request =>
     SessionAction.updateCookies(Ok(frontend.views.html.index()))
+      .withHeaders(CACHE_CONTROL -> ShellCacheControl)
   }
 
   def angular(file: String, cache: Boolean): Action[AnyContent] = externalServer(file, cache, ":4200/develop/angular/")
