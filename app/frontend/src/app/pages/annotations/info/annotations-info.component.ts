@@ -40,11 +40,6 @@ export class AnnotationsInfoComponent implements OnInit, OnDestroy {
     });
   }
 
-  public checkFeaturesAvailability(): boolean {
-    const permissions = this.annotationsService.getUserPermissions();
-    return permissions.isUploadAllowed && permissions.isDeleteAllowed && permissions.isChangePasswordAllowed;
-  }
-
   public isInitialized(): boolean {
     return this.annotationsService.isInitialized();
   }
@@ -53,6 +48,18 @@ export class AnnotationsInfoComponent implements OnInit, OnDestroy {
    * there are real numbers to put in it. */
   public getLimits(): AccountLimits {
     return this.annotationsService.getAccountLimits();
+  }
+
+  /** Keyed on the account type the server resolved rather than on which permission flags happen to be
+   * off: the notice names the account, so it should be true because of what the account IS. */
+  public isDemoAccount(): boolean {
+    const limits = this.getLimits();
+    return limits !== undefined && limits.accountType === 'demo';
+  }
+
+  public isTokenAccount(): boolean {
+    const limits = this.getLimits();
+    return limits !== undefined && limits.isTokenAccount();
   }
 
   public ngOnDestroy(): void {

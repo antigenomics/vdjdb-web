@@ -245,17 +245,62 @@ a:hover { color: var(--ds-teal); }
   color: var(--ds-text);
 }
 
+/* The strip holding the collapse chevron. Shaded so the control reads as a control: on a white panel
+   a lone chevron floating above the first heading looks like a stray glyph, and when the panel is
+   collapsed it is the ONLY thing left on screen — with nothing around it there was no affordance at
+   all. The shade is on the strip rather than the link, so it is present in both states. */
+/* `:not(.sidebar-toggle)` because the anchor inside carries `item sidebar-bars` too — without it the
+   shade and the border would be painted twice, once nested inside the other. */
+.ui.sidebar.menu .item.sidebar-bars:not(.sidebar-toggle) {
+  background-color: rgba(0, 0, 0, 0.05);
+  border-bottom: 1px solid var(--ds-hairline);
+  padding-top: 0.5em;
+  padding-bottom: 0.5em;
+}
+.ui.sidebar.menu .item.sidebar-bars:not(.sidebar-toggle):hover {
+  background-color: rgba(0, 0, 0, 0.08);
+}
+
 /* Collapse/expand chevron. Points LEFT while the panel is open (click to tuck it away) and rotates
    to point RIGHT once collapsed, mirroring the Filters toggle on Browse. */
 .ui.sidebar.menu .sidebar-toggle .icon {
   transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-  color: var(--ds-muted);
+  color: var(--ds-text);
+  font-size: 1.4em;
+  /* Semantic's icon font ships a single weight, so `font-weight` does nothing to it. A hairline text
+     stroke is what actually thickens the glyph. */
+  -webkit-text-stroke: 0.6px currentColor;
 }
 .ui.sidebar.menu .sidebar-toggle:hover .icon {
   color: var(--ds-ink);
 }
 .ui.sidebar.menu .sidebar-toggle--collapsed .icon {
   transform: rotate(180deg);
+}
+
+/* Breathing room between the sidebar's sections. "Data" sat directly under the last link of
+   "General", so the sample list read as a continuation of that menu rather than its own group. */
+.ui.sidebar.menu .sidebar-content > .item + .item {
+  margin-top: 1.25em;
+}
+
+/* ---- Account notices ----------------------------------------------------- */
+/* Translucent rather than solid: these sit on the page background, and a flat fill would read as a
+   third card competing with the real ones. Alpha keeps them as a tint over whatever is behind. */
+.account-notice {
+  padding: 0.9em 1.2em;
+  margin-bottom: 1em;
+  border-radius: var(--ds-radius);
+  color: var(--ds-ink);
+  font-size: 0.95em;
+}
+.account-notice--demo {
+  background-color: rgba(250, 204, 21, 0.22);
+  border: 1px solid rgba(202, 138, 4, 0.35);
+}
+.account-notice--token {
+  background-color: rgba(249, 115, 22, 0.20);
+  border: 1px solid rgba(194, 65, 12, 0.35);
 }
 
 /* Format note under the upload table: secondary to the table it explains. */

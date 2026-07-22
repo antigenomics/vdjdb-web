@@ -49,8 +49,7 @@
             <b *ngIf="limits.accountType === 'registered'">a registered account</b>
             <b *ngIf="limits.accountType === 'demo'">the demo account</b>
             <b *ngIf="limits.accountType === 'unlimited'">an administrative account</b>.
-            Registered accounts are given more room than token ones on every row below, and their
-            samples are kept for a year rather than hours.</p>
+            Registered accounts are given more room than token ones on every row below.</p>
         <table class="ui very basic compact table">
             <tbody>
             <tr>
@@ -89,6 +88,9 @@
             longer one. You can also run a local VDJdb server if you need to analyse more than this.</p>
     </div>
 </div>
-<div class="ui segment padded" *ngIf="!checkFeaturesAvailability()">
-    <p><b>Note</b> This is a demo account. Some features may be unavailable</p>
+<div class="account-notice account-notice--demo" *ngIf="isDemoAccount()">
+    This is a demo account. Some features may be unavailable
+</div>
+<div class="account-notice account-notice--token" *ngIf="isTokenAccount()">
+    This is a token-based temporary account. Strict limits apply
 </div>

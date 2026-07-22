@@ -43,7 +43,7 @@ class SampleRetentionProviderSpec extends DatabaseProviderTestSpec {
     enabled = true,
     dryRun = dryRun,
     intervalSeconds = 0L,
-    keepRegisteredSeconds = 365L * Day,
+    keepRegisteredSeconds = 180L * Day,
     keepTemporarySeconds = 3L * Hour,
     epochMillis = epochMillis
   )
@@ -88,14 +88,14 @@ class SampleRetentionProviderSpec extends DatabaseProviderTestSpec {
       configuration.enabled shouldEqual true
       configuration.dryRun shouldEqual true
       configuration.intervalSeconds shouldEqual 30L * 60L
-      configuration.keepRegisteredSeconds shouldEqual 365L * Day
+      configuration.keepRegisteredSeconds shouldEqual 180L * Day
       configuration.keepTemporarySeconds shouldEqual 3L * Hour
       configuration.epochMillis shouldEqual 0L
     }
 
     "print a window at the scale it was configured in" taggedAs SQLDatabaseTestTag in {
       // "0d" for the three-hour token window would read as a misconfigured zero in the sweep log.
-      SampleRetentionConfiguration.window(365L * Day) shouldEqual "365d"
+      SampleRetentionConfiguration.window(180L * Day) shouldEqual "180d"
       SampleRetentionConfiguration.window(3L * Hour) shouldEqual "3h"
       SampleRetentionConfiguration.window(30L * 60L) shouldEqual "30m"
       SampleRetentionConfiguration.window(45L) shouldEqual "45s"
@@ -121,10 +121,14 @@ class SampleRetentionProviderSpec extends DatabaseProviderTestSpec {
       val withOut = policy(dryRun = true)
       val withIn  = policy(dryRun = true, epochMillis = floor)
 
-      withOut.effectiveCreatedAt(old) shouldEqual old
-      withIn.effectiveCreatedAt(old) shouldEqual floor
+      withOut.effectiveCreatedAt(old, isTemporary = false) shouldEqual old
+      withIn.effectiveCreatedAt(old, isTemporary = false) shouldEqual floor
       // A sample newer than the floor keeps its own timestamp - the floor only ever raises.
-      withIn.effectiveCreatedAt(floor + 5000L) shouldEqual floor + 5000L
+      withIn.effectiveCreatedAt(floor + 5000L, isTemporary = false) shouldEqual floor + 5000L
+
+      // Temporary samples are never floored. A floor set in the future would otherwise suspend the
+      // three hour window until it passed, then expire the whole backlog at once.
+      withIn.effectiveCreatedAt(old, isTemporary = true) shouldEqual old
     }
 
     "ship with dry-run enabled" taggedAs SQLDatabaseTestTag in {
@@ -152,7 +156,7 @@ class SampleRetentionProviderSpec extends DatabaseProviderTestSpec {
       }
     }
 
-    "delete a registered account's samples once they are past the 365 day window" taggedAs SQLDatabaseTestTag in {
+    "delete a registered account's samples once they are past the 180 day window" taggedAs SQLDatabaseTestTag in {
       async {
         val user             = await(registeredUser("retention-old@mail.com"))
         val (sampleID, meta) = await(storeSample(user, "ancient", ageSeconds = 400L * Day))
@@ -218,7 +222,7 @@ class SampleRetentionProviderSpec extends DatabaseProviderTestSpec {
       async {
         val user = await(userProvider.createTemporaryUser("retention-token-user", "10.0.0.1")).get
 
-        // 10 days is inside the 365 day registered window and outside the 3 hour temporary one, so
+        // 10 days is inside the 180 day registered window and outside the 3 hour temporary one, so
         // this fails if the sweeper picks the window by anything other than the account type. The
         // fresh sample is an hour old: with a three hour window it is the only side of the boundary
         // a whole number of days can no longer express.
@@ -232,6 +236,23 @@ class SampleRetentionProviderSpec extends DatabaseProviderTestSpec {
 
         await(sampleFileProvider.get(freshID)) should not be empty
         new File(freshMeta.path) should exist
+      }
+    }
+
+    "keep expiring token samples at 3 hours even when the floor is set in the future" taggedAs SQLDatabaseTestTag in {
+      // Production carries a floor to protect the registered archive from the first sweep, and it is
+      // set forward in time. Applied to temporary accounts it would silently suspend the three hour
+      // window until that date, which is the one guarantee the token tier makes.
+      async {
+        val user             = await(userProvider.createTemporaryUser("retention-token-floored", "10.0.0.2")).get
+        val (sampleID, meta) = await(storeSample(user, "tokenfloored", ageSeconds = 10L * Day))
+
+        val floor  = System.currentTimeMillis + 40L * Day * 1000L
+        val result = await(retentionProvider.sweep(policy(dryRun = false, epochMillis = floor)))
+
+        result.deleted should be >= 1
+        await(sampleFileProvider.get(sampleID)) shouldBe empty
+        new File(meta.path) shouldNot exist
       }
     }
 

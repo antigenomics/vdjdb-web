@@ -84,10 +84,12 @@
                 Click "Add" button to select files for upload
                 <div class="sub header">You can also drag and drop your files here</div>
                 <div class="sub header">Supported extensions: txt, tsv, gz</div>
-                <div class="sub header">
-                    Not sure about the format?
-                    <a href="/api/annotations/demo/B35%2B.txt.gz" rel="noopener">Download an example sample</a>
-                    (VDJtools format, TRB)
+                <div class="sub header" *ngIf="demoSamples.length > 0">
+                    Not sure about the format? Download an example sample
+                    (VDJtools format, TRB):
+                    <span *ngFor="let sample of demoSamples; let last = last">
+                        <a [href]="demoSampleUrl(sample)" rel="noopener">{{ sample.name }}</a><span *ngIf="!last">, </span>
+                    </span>
                 </div>
             </div>
         </h2>

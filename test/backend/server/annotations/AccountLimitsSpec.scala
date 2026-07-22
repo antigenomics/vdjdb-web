@@ -32,16 +32,17 @@ class AccountLimitsSpec extends BaseTestSpec {
   private final val Day: Long  = 24L * Hour
 
   private val conf = Configuration(ConfigFactory.parseString(
-    """application.annotations.upload.maxClonotypesCount = 200000
+    """application.annotations.upload.maxClonotypesCountRegistered = 1000000
+      |application.annotations.upload.maxClonotypesCountTemporary = 200000
       |application.auth.temporary.keep = 3 hours""".stripMargin))
 
   private val usage = UsageConfiguration(
-    enabled = true, uploadsPerDayRegistered = 200, uploadsPerDayTemporary = 50,
-    uploadsPerDayPerIP = 200, annotationsPerDayRegistered = 200, annotationsPerDayTemporary = 50)
+    enabled = true, uploadsPerDayRegistered = 100, uploadsPerDayTemporary = 20,
+    uploadsPerDayPerIP = 200, annotationsPerDayRegistered = 100, annotationsPerDayTemporary = 20)
 
   private val retention = SampleRetentionConfiguration(
     enabled = true, dryRun = true, intervalSeconds = 30L * 60L,
-    keepRegisteredSeconds = 365L * Day, keepTemporarySeconds = 3L * Hour, epochMillis = 0L)
+    keepRegisteredSeconds = 180L * Day, keepTemporarySeconds = 3L * Hour, epochMillis = 0L)
 
   private def permissions(id: Long, maxFilesCount: Int = 42): UserPermissions =
     UserPermissions(id, maxFilesCount, 64L, isUploadAllowed = true, isDeleteAllowed = true,
@@ -57,9 +58,10 @@ class AccountLimitsSpec extends BaseTestSpec {
 
       registered.accountType shouldEqual "registered"
       registered.maxSamples shouldEqual 42
-      registered.uploadsPerDay shouldEqual 200
-      registered.annotationsPerDay shouldEqual 200
-      registered.sampleRetention shouldEqual "365d"
+      registered.uploadsPerDay shouldEqual 100
+      registered.annotationsPerDay shouldEqual 100
+      registered.maxClonotypes shouldEqual 1000000
+      registered.sampleRetention shouldEqual "180d"
       // A registered account does not expire, and saying "kept for 0s" would be a lie in the
       // frightening direction.
       registered.accountRetention shouldEqual None
@@ -70,8 +72,9 @@ class AccountLimitsSpec extends BaseTestSpec {
 
       token.accountType shouldEqual "token"
       token.maxSamples shouldEqual 10
-      token.uploadsPerDay shouldEqual 50
-      token.annotationsPerDay shouldEqual 50
+      token.uploadsPerDay shouldEqual 20
+      token.annotationsPerDay shouldEqual 20
+      token.maxClonotypes shouldEqual 200000
       token.sampleRetention shouldEqual "3h"
       token.accountRetention shouldEqual Some("3h")
     }
@@ -94,7 +97,7 @@ class AccountLimitsSpec extends BaseTestSpec {
       val bare = AccountLimits(isTemporary = true, permissions(UserPermissionsProvider.TEMPORARY_ID, 10),
         Configuration(ConfigFactory.empty()), usage, retention)
 
-      bare.maxClonotypes shouldEqual AccountLimits.DefaultMaxClonotypes
+      bare.maxClonotypes shouldEqual AccountLimits.DefaultMaxClonotypesTemporary
       bare.accountRetention shouldEqual Some("3h")
     }
 

@@ -68,8 +68,10 @@ class AnnotationsAPI @Inject()(cc: ControllerComponents, userRequestAction: User
       .map(_.toBytes).getOrElse(256L * 1024 * 1024),
     maxRatio = conf.getOptional[Long]("application.annotations.upload.maxCompressionRatio").getOrElse(100L)
   )
-  private final val maxClonotypesCount =
-    conf.getOptional[Long]("application.annotations.upload.maxClonotypesCount").getOrElse(200000L)
+  // Per account type, and resolved through AccountLimits so the ceiling enforced here is by
+  // construction the one the info page reports.
+  private def maxClonotypesCount(isTemporary: Boolean): Long =
+    AccountLimits.maxClonotypes(conf, isTemporary).toLong
   private final val demoFilesLocation =
     conf.getOptional[String]("application.auth.demo.filesLocation").getOrElse("")
   private final val logger = LoggerFactory.getLogger(this.getClass)
@@ -144,7 +146,7 @@ class AnnotationsAPI @Inject()(cc: ControllerComponents, userRequestAction: User
   private def convertAndStore(user: backend.models.authorization.user.User, name: String, source: java.io.File,
                               species: String, chain: String): Future[Result] = {
     val prefix = java.io.File.createTempFile("vdjdb-convert-", "")
-    scala.util.Try(SampleConverter.convert(source, prefix, maxClonotypesCount)) match {
+    scala.util.Try(SampleConverter.convert(source, prefix, maxClonotypesCount(user.isTemporary))) match {
       case scala.util.Failure(e: SampleConverter.ConversionException) =>
         val _ = prefix.delete()
         Future.successful(BadRequest(e.getMessage))

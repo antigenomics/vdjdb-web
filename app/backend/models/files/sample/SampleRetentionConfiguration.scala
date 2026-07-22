@@ -31,9 +31,10 @@ import scala.util.Try
   *               shipped default on purpose: a retention sweeper that misfires the first time it
   *               meets real data destroys user uploads permanently and there is no undo. Flip it
   *               only after a run has been read in the logs and looks right.
-  * @param epochMillis a floor on how old a sample can be considered. A sample created before this
-  *               instant is aged from the instant instead of from its own `CREATED_AT`, which gives
-  *               everything already on disk a full window starting here.
+  * @param epochMillis a floor on how old a *registered* sample can be considered. One created before
+  *               this instant is aged from the instant instead of from its own `CREATED_AT`, which
+  *               gives everything already on disk a full window starting here. Temporary samples
+  *               ignore it — see `effectiveCreatedAt`.
   *
   *               This exists because retention was switched on over an archive, not a fresh site:
   *               measured on production, 1,375 of 1,443 registered samples predate a 365 day window,
@@ -52,8 +53,16 @@ final case class SampleRetentionConfiguration(enabled: Boolean,
 
   def keepSeconds(isTemporary: Boolean): Long = if (isTemporary) keepTemporarySeconds else keepRegisteredSeconds
 
-  /** When a sample starts ageing: its own creation time, or the configured floor if that is later. */
-  def effectiveCreatedAt(createdAtMillis: Long): Long = math.max(createdAtMillis, epochMillis)
+  /** When a sample starts ageing: its own creation time, or the configured floor if that is later.
+    *
+    * Registered samples only. The floor exists to keep the first sweep from wiping an eight-year
+    * archive, and temporary samples have no archive to protect — the tier's entire promise is that a
+    * token upload is gone in three hours. Flooring them too would suspend that promise for as long as
+    * the floor sits in the future, and then expire the whole backlog in one sweep the moment it
+    * passed, which is the opposite of what a short window is for.
+    */
+  def effectiveCreatedAt(createdAtMillis: Long, isTemporary: Boolean): Long =
+    if (isTemporary) createdAtMillis else math.max(createdAtMillis, epochMillis)
 
   def describe: String =
     s"enabled=$enabled, dryRun=$dryRun, every ${SampleRetentionConfiguration.window(intervalSeconds)}, " +
@@ -66,7 +75,7 @@ object SampleRetentionConfiguration {
   final val Root = "application.annotations.retention"
 
   final val DefaultIntervalSeconds: Long       = 30L * 60L
-  final val DefaultKeepRegisteredSeconds: Long = 365L * 24L * 60L * 60L
+  final val DefaultKeepRegisteredSeconds: Long = 180L * 24L * 60L * 60L
   final val DefaultKeepTemporarySeconds: Long  = 3L * 60L * 60L
 
   /** Every key is read with a default. Production starts with `-Dconfig.file=<server-side file>`,

@@ -47,11 +47,11 @@ final case class UsageConfiguration(enabled: Boolean,
 object UsageConfiguration {
   final val Root = "application.annotations.quota"
 
-  final val DefaultUploadsPerDayRegistered: Int     = 200
-  final val DefaultUploadsPerDayTemporary: Int      = 50
+  final val DefaultUploadsPerDayRegistered: Int     = 100
+  final val DefaultUploadsPerDayTemporary: Int      = 20
   final val DefaultUploadsPerDayPerIP: Int          = 200
-  final val DefaultAnnotationsPerDayRegistered: Int = 200
-  final val DefaultAnnotationsPerDayTemporary: Int  = 50
+  final val DefaultAnnotationsPerDayRegistered: Int = 100
+  final val DefaultAnnotationsPerDayTemporary: Int  = 20
 
   /** Every key is read with a default. Production starts with `-Dconfig.file=<server-side file>`,
     * which REPLACES the packaged `application.conf` rather than merging with it, so none of these
