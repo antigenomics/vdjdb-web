@@ -71,35 +71,43 @@ export class SearchTable extends Table<SearchTableRow> {
       return;
     }
 
-    await this.checkConnection(false);
+    // try/finally around everything after the guard. Whatever goes wrong in here - a frame that is not
+    // a result, a socket that will not open, a filter that throws while being collected - `loading` has
+    // to come back down, because it is what gates every future search on this page. Without it one
+    // failure is permanent and presents as the guard message above, which describes a search that is
+    // not running.
+    try {
+      await this.checkConnection(false);
 
-    const filters: Filter[] = [];
-    const errors: string[] = [];
-    this.filters.collectFilters(filters, errors);
-    this.logger.debug('Collected filters', filters);
+      const filters: Filter[] = [];
+      const errors: string[] = [];
+      this.filters.collectFilters(filters, errors);
+      this.logger.debug('Collected filters', filters);
 
-    if (errors.length === 0) {
-      this.startLoading();
-      const ifilters = FiltersService.unpackFilters(filters);
-      const response = await this.getConnection().sendMessage({
-        action: SearchTableWebSocketActions.SEARCH,
-        data:   new WebSocketRequestData()
-                  .add('filters', ifilters)
-                  .add('pageSize', this.pageSize)
-                  .unpack()
-      });
+      if (errors.length === 0) {
+        this.startLoading();
+        const ifilters = FiltersService.unpackFilters(filters);
+        const response = await this.getConnection().sendMessage({
+          action: SearchTableWebSocketActions.SEARCH,
+          data:   new WebSocketRequestData()
+                    .add('filters', ifilters)
+                    .add('pageSize', this.pageSize)
+                    .unpack()
+        });
 
-      this.logger.debug('Search', response);
-      this.analytics.reachGoal(SearchTable.SEARCH_DATABASE_GOAL, ifilters);
-      this.updateFromResponse(response);
-      this.sortRule.clear();
-    } else {
-      errors.forEach((error: string) => {
-        this.notifications.error('Filters error', error);
-      });
+        this.logger.debug('Search', response);
+        this.analytics.reachGoal(SearchTable.SEARCH_DATABASE_GOAL, ifilters);
+        if (this.updateFromResponse(response)) {
+          this.sortRule.clear();
+        }
+      } else {
+        errors.forEach((error: string) => {
+          this.notifications.error('Filters error', error);
+        });
+      }
+    } finally {
+      this.stopLoading();
     }
-
-    this.stopLoading();
   }
 
   public async sort(column: string): Promise<void> {
@@ -177,14 +185,41 @@ export class SearchTable extends Table<SearchTableRow> {
     return this.searchTableService.getConnection();
   }
 
-  private updateFromResponse(response: WebSocketResponseData): void {
+  /** Applies a search result, or reports that the frame was not one.
+   *
+   * Not every frame that satisfies `sendMessage` carries a page of rows. `sendMessage` filters out
+   * WARNING frames but not ERROR ones, so a server-side `errorMessage` resolves the same promise a
+   * result would; the reconnect path answers with a bare `handshake()`, which has no data at all; and
+   * when the socket will not accept the message `sendMessage` resolves `{ status: 'error' }` itself.
+   *
+   * This used to read `response.get('rows').map(...)` unguarded, which made all three a TypeError
+   * thrown out of `update()` past its `stopLoading()`. `loading` then stayed true for the lifetime of
+   * the page and every later search was refused with "A search is already running" - a permanent stall
+   * from one transient frame, and the message pointed at a search that had never started.
+   *
+   * @returns whether the response actually contained a page
+   */
+  private updateFromResponse(response: WebSocketResponseData): boolean {
+    const rows = response.get('rows');
+    if (rows === undefined || rows === null) {
+      const reason = response.get('message');
+      this.logger.warn('Search', reason || 'Response carried no rows');
+      if (reason) {
+        this.notifications.error('Search', reason);
+      }
+      // Here rather than in each caller: the success path clears `loading` inside `updateRows`, so
+      // `sort`, `changePage` and `changePageSize` never call `stopLoading` themselves and would each
+      // strand the flag on this branch.
+      this.stopLoading();
+      return false;
+    }
     const page = response.get('page');
     const pageSize = response.get('pageSize');
-    const rows = response.get('rows').map((row: any) => new SearchTableRow(row));
     const pageCount = response.get('pageCount');
     const recordsFound = response.get('recordsFound');
-    this.updateTable(page, pageSize, rows, pageCount);
+    this.updateTable(page, pageSize, rows.map((row: any) => new SearchTableRow(row)), pageCount);
     this.updateRecordsFound(recordsFound);
+    return true;
   }
 
   private async checkConnection(reInitOnBadConnection: boolean = true, showLoadingBar: boolean = true): Promise<void> {

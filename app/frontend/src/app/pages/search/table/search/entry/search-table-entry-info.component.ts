@@ -201,12 +201,27 @@ export class SearchTableEntryInfoComponent extends TableEntry {
     };
   }
 
+  /** The entry a named column holds for this row.
+   *
+   * Counts only the columns that consume an entry, exactly as `TableRowComponent` does when it hands
+   * cells out - `noEntry` columns are rendered from the row itself and take nothing from the array.
+   * Indexing `getEntries()` with a plain `findIndex` over `columns` is right only where no column is
+   * `noEntry`, which is true in Browse and false in the annotation matches table: that one prepends
+   * `alignment` and `match-score`, both `noEntry`, so every lookup here was reading two cells to the
+   * right. The badges this component draws come from `evidence.*`, so in that table they were being
+   * built from whatever happened to sit two columns over.
+   */
   private getCellValue(row: SearchTableRow, columns: TableColumn[], columnName: string): string | undefined {
-    const columnIndex = columns.findIndex((c) => c.name === columnName);
-    if (columnIndex === -1) {
-      return undefined;
+    let entryIndex = 0;
+    for (const column of columns) {
+      if (column.name === columnName) {
+        return column.noEntry ? undefined : row.getEntries()[ entryIndex ];
+      }
+      if (!column.noEntry) {
+        entryIndex = entryIndex + 1;
+      }
     }
-    return row.getEntries()[columnIndex];
+    return undefined;
   }
 
   private extractMotifLinkData(row: SearchTableRow, columns: TableColumn[]):

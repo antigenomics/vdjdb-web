@@ -298,9 +298,21 @@
   .ui.sidebar.with.navbar {
     position: static !important;
     top: auto !important;
+    /* `height` and `max-height` both, and both !important, because Semantic sets `height: 100%` and
+       `max-height: 100%` on `.ui.sidebar` for the fixed case. Once this is `static` those resolve
+       against the parent instead of the viewport, which turned the panel into a short box with its own
+       scrollbar - the sample list was cut off mid-entry with the page still scrolling behind it. In
+       flow it should simply be as tall as its contents; a long list makes the page longer, which is
+       what scrolling on a phone is for. A 45vh cap here did the same thing and is why "All samples"
+       was unreachable without a second, nested scroll. */
     height: auto !important;
-    max-height: 45vh;
-    overflow-y: auto;
+    max-height: none !important;
+    overflow-y: visible;
+    /* Below the navbar. Semantic gives every sidebar `z-index: 102` and the fixed bar is 101, which is
+       right while the sidebar is an overlay drawer and wrong here: with the bar collapsed to a
+       hamburger, opening it drops the menu down *behind* this panel, so the entries it lists could be
+       read but not tapped. Static and auto puts it back in normal flow order, under the fixed bar. */
+    z-index: auto !important;
   }
 
   /* Collapsed listed too: it is the more specific selector, so it would otherwise keep its 40px here. */

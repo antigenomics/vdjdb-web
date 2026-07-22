@@ -77,13 +77,13 @@ export class AnnotationsFilters {
     species: 'HomoSapiens', gene: 'TRB', mhc: 'MHCI+II', hla: '',
     inTcrempMotif: false, inTcrnetMotif: false, independentValidationOnly: false, minConfidenceScore: 1
   };
-  // V and J matching on by default, with the one-substitution neighbourhood. Without them a CDR3
-  // neighbourhood is not specific enough for the enrichment test to say anything: measured on the CMV+
-  // demo donor, TPRVTGGGAM sits at 1.03x its control rate under bare hamming-1 and at 1.87x once V and
-  // J have to agree, and influenza M1 goes from unremarkable to the strongest signal in the sample
-  // (q = 5e-19). The cost is fewer raw matches per clonotype, which is the point - the ones that
-  // survive are the ones a segment-level match supports.
-  public searchScope: ISearchScope = { matchV: true, matchJ: true, hammingDistance: { substitutions: 1, insertions: 0, deletions: 0, total: 1 } };
+  // V matching on by default, with the one-substitution neighbourhood. Bare hamming-1 is not specific
+  // enough for the enrichment test to say anything - measured on the CMV+ demo donor, TPRVTGGGAM sits
+  // at 1.03x its control rate without segment matching and at 1.87x with it - and V carries most of
+  // that: it constrains CDR1 and CDR2, which contact the MHC helices, so a V mismatch is a different
+  // receptor rather than a variant of the same one. J is left off because it constrains only the last
+  // few CDR3 residues, which the alignment is already comparing, so requiring it mostly costs matches.
+  public searchScope: ISearchScope = { matchV: true, matchJ: false, hammingDistance: { substitutions: 1, insertions: 0, deletions: 0, total: 1 } };
   public scoring: IAnnotateScoring = {
     type: IAnnotateScoringType.SIMPLE, vdjmatch: {
       exhaustiveAlignment: 1,

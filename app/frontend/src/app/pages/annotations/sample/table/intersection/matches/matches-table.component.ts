@@ -58,8 +58,14 @@ export class MatchesTableComponent {
     // content hash, the curation provenance (method/meta) and the record of how a CDR3 was fixed.
     // None of it says anything about the user's own hit. Weight went for a different reason: the
     // search index is built with a dummy weight function, so it printed the same number on every row.
+    // The five evidence.* flags go for a related one: they record what curation evidence stands behind
+    // the VDJdb entry — a repeat assay, an independent study, an experimental structure or a model —
+    // which is a property of that record, not of the match. The Info column's badges are built by
+    // looking those columns up by name, so they have to stay in the list regardless.
     // Hidden rather than dropped, because the entries a row emits are positional against this list.
-    const skip: string[] = [ 'gene', 'cdr3', 'species', 'method', 'meta', 'cdr3fix', 'TCR_hash' ];
+    const skip: string[] = [ 'gene', 'cdr3', 'species', 'method', 'meta', 'cdr3fix', 'TCR_hash',
+      'evidence.validation.same.study', 'evidence.validation.independent',
+      'evidence.structure.native', 'evidence.structure.contacts', 'evidence.structure.quality' ];
     const columns = [
       new TableColumn('alignment', 'Alignment', false, false, true, true, 'Alignment of query (top) and VDJdb hit (bottom) CDR3 sequences'),
       new TableColumn('match-score', 'Match Score', true, false, true, true, 'Final aggregate score of the TCR alignment between query and VDJdb hit')
