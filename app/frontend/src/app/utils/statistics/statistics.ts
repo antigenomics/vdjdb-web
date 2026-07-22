@@ -16,17 +16,16 @@
 
 /** Enrichment statistics for the annotation summaries.
  *
- * The question each p-value answers: `n` of a repertoire's clonotypes matched a VDJdb subset of `N`
- * distinct CDR3s, of which `K` carry this epitope. If those matches fell across the subset in
- * proportion to how much of it each epitope occupies, a match lands on this one with probability
- * `p = K / N`. Seeing `k` of them on it is then Binomial(n, p), and the p-value is the upper tail
- * P(X >= k) — how surprising this many would be with no particular affinity for this donor.
+ * The question each p-value answers: a clonotype reaches a given epitope by clearing two stages — it
+ * has to be in VDJdb at all, which the repertoire's own matched fraction estimates, and then it has
+ * to be on this epitope rather than another, which is that epitope's share of the database. The
+ * per-clonotype rate is the product, and the p-value is the upper tail of the resulting binomial:
+ * how surprising this many hits would be with no particular affinity for this donor.
  *
- * `n` is the clonotypes that matched, not the size of the repertoire: conditioning on the repertoire
- * would assume every clonotype in it is a draw from the database, which no real sample is.
- *
- * `K` and `N` are both counted over the *same* database restriction the search ran under (species,
- * chain, MHC class, confidence), so the ratio never mixes populations.
+ * The caller supplies the composed rate. Every count entering it is over the *same* database
+ * restriction the search ran under (species, chain, MHC class, confidence), so no ratio mixes
+ * populations, and every count is of distinct rearrangements, so read-count weighting cannot reach
+ * the result.
  *
  * Deliberately independent of how the chart is drawn: the counts are clonotypes, so neither the
  * read-count weighting nor the 10^5 axis scaling enters. Those change the height of a bar, not how
