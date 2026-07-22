@@ -116,8 +116,27 @@ export class NavigationBarComponent implements OnInit, OnDestroy {
     if (this.scrollDismissed !== value) {
       this.ngZone.run(() => {
         this.scrollDismissed = value;
+        if (value) {
+          this.blurOpenDropdown();
+        }
         this.changeDetector.markForCheck();
       });
+    }
+  }
+
+  /** A dropdown host keeps focus after it is clicked - it carries `tabindex`, and clicking it
+    * navigates without moving focus anywhere else. The CSS opens a menu on `:focus-within` as well as
+    * on `:hover`, so from then on that one menu hangs open with the pointer nowhere near it, and
+    * `mouseleave` clearing `dismissedDropdown` is what lets it. Marking it dismissed hides it, but the
+    * next pointer twitch clears that flag and focus brings it straight back - which is why one menu
+    * appeared not to close on scroll while its neighbour did. Dropping focus is what actually closes
+    * it. Scoped to the navbar's own dropdown hosts so scrolling never steals focus from a form. */
+  private blurOpenDropdown(): void {
+    const active = document.activeElement as HTMLElement;
+    if (active && typeof active.blur === 'function' &&
+        active.classList && active.classList.contains('dropdown') &&
+        active.closest('.ui.top.fixed.menu') !== null) {
+      active.blur();
     }
   }
 
