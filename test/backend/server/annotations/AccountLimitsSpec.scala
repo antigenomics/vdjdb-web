@@ -38,7 +38,8 @@ class AccountLimitsSpec extends BaseTestSpec {
 
   private val usage = UsageConfiguration(
     enabled = true, uploadsPerDayRegistered = 100, uploadsPerDayTemporary = 20,
-    uploadsPerDayPerIP = 200, annotationsPerDayRegistered = 100, annotationsPerDayTemporary = 20)
+    uploadsPerDayPerIP = 200, annotationsPerDayRegistered = 100, annotationsPerDayTemporary = 20,
+    tokensPerDayPerIP = 10)
 
   private val retention = SampleRetentionConfiguration(
     enabled = true, dryRun = true, intervalSeconds = 30L * 60L,

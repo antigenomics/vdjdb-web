@@ -42,6 +42,7 @@ private[usage] final class UsageCounters(val date: LocalDate) {
   val uploadsByUser: TrieMap[Long, AtomicInteger]     = TrieMap.empty
   val uploadsByIP: TrieMap[String, AtomicInteger]     = TrieMap.empty
   val annotationsByUser: TrieMap[Long, AtomicInteger] = TrieMap.empty
+  val tokensByIP: TrieMap[String, AtomicInteger]      = TrieMap.empty
 }
 
 /** Per-day upload / annotate quotas, keyed by user and by client IP.
@@ -73,6 +74,18 @@ class UsageProvider @Inject()(conf: Configuration) {
   /** `None` when the annotation run may proceed (and has been counted), `Some(message)` otherwise. */
   def checkAnnotate(user: User, permissions: UserPermissions): Option[String] =
     checkAnnotateOn(LocalDate.now(), user.id, user.isTemporary, permissions)
+
+  /** `None` when a temporary token may be minted from this address (and the attempt has been counted).
+    *
+    * A different axis from `application.auth.temporary.maxForOneIP`, which caps how many temporary
+    * accounts from one address are alive at once. That is a ceiling on concurrent state, and the reaper
+    * keeps lowering it: once an account ages out its slot is freed, so an address can hold 30 forever
+    * and still mint an unbounded number over time. This caps the rate instead.
+    *
+    * Counted before the account exists, so there is no `UserPermissions` to exempt on - DEMO and
+    * UNLIMITED never take this path, since both are existing logins rather than signups.
+    */
+  def checkTokenSignup(ip: String): Option[Int] = checkTokenSignupOn(LocalDate.now(), ip)
 
   /** Takes the day and the account's identity apart from the `User` row so that a caller can pin the
     * date — the roll-over boundary is otherwise only reachable by waiting for midnight. */
@@ -113,6 +126,26 @@ class UsageProvider @Inject()(conf: Configuration) {
       }
     }
   }
+
+  /** @return the limit that was hit, or `None` when the signup may proceed. The number rather than a
+    *         sentence, unlike the upload and annotate checks: those surface over a websocket with no
+    *         `Messages` in scope, while this one lands on a Twirl page that has one - so the wording
+    *         belongs in `messages.en` with the rest of the signup copy, not in here. */
+  private[usage] def checkTokenSignupOn(date: LocalDate, ip: String): Option[Int] = {
+    if (!configuration.enabled) {
+      None
+    } else {
+      val limit = configuration.tokensPerDayPerIP
+      if (limit >= 0 && peek(countersFor(date).tokensByIP, ip) >= limit) {
+        Some(limit)
+      } else {
+        hit(countersFor(date).tokensByIP, ip)
+        None
+      }
+    }
+  }
+
+  private[usage] def tokensForIP(date: LocalDate, ip: String): Int = peek(countersFor(date).tokensByIP, ip)
 
   private[usage] def uploadsForUser(date: LocalDate, userID: Long): Int = peek(countersFor(date).uploadsByUser, userID)
 
