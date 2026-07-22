@@ -81,8 +81,8 @@ export namespace Statistics {
 
     let above = 0;
     let below = 0;
-    const accumulate = (j: number, weight: number) => {
-      if (j >= from) { above = above + weight; } else { below = below + weight; }
+    const accumulate = (j: number, term: number) => {
+      if (j >= from) { above = above + term; } else { below = below + term; }
     };
 
     accumulate(anchor, 1);
