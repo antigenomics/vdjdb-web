@@ -17,13 +17,7 @@
             "showCircularDependencies": false,
             "namedChunks": true,
             "polyfills": "src/polyfills.ts",
-            "assets": [
-              {
-                "input": "src/styles/semantic/src/themes/default/assets/fonts/",
-                "glob": "icons.*",
-                "output": "."
-              }
-            ],
+            "assets": [ ],
             "styles": [ "styles/semantic/dist/semantic.min.css", "styles/semantic-extensions.css", "styles/main.css", "styles/design-system.css" ],
             "scripts": [ ],
             "deployUrl": "/develop/angular/"

@@ -23,8 +23,8 @@
                     <div class="ui fluid transparent left icon input" [ngClass]="{'error':!isNewNameValid()}">
                         <input placeholder="Enter new sample name here" [(ngModel)]="sampleNewProps.newName">
                         <div class="ui left pointing red basic label" style="position: absolute;left: 105%;width: 200px;top: -35px;" *ngIf="!isNewNameValid()">
-                            File name can contain letters ('a-zA-Z'), numbers, . (dot), - (dash), _ (underline) and + (plus) symbols. <br>
-                            Also file name should have less than 40 symbols and should not be empty.
+                            Sample name can contain letters ('a-zA-Z'), numbers, . (dot), - (dash), _ (underline) and + (plus) characters. <br>
+                            It should not be empty and can be at most 40 characters long.
                         </div>
                         <i class="write icon"></i>
                     </div>

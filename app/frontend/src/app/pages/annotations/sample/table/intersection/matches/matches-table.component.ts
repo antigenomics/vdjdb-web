@@ -58,7 +58,10 @@ export class MatchesTableComponent {
     const columns = [
       new TableColumn('alignment', 'Alignment', false, false, true, true, 'Alignment of query (top) and VDJdb hit (bottom) CDR3 sequences'),
       new TableColumn('match-score', 'Match Score', true, false, true, true, 'Final aggregate score of the TCR alignment between query and VDJdb hit'),
-      new TableColumn('weight', 'Weight', true, false, true)
+      // Honest about the ceiling: the search index is built with a dummy weight function, so this
+      // column is constant until a scoring that actually weights hits is wired back in.
+      new TableColumn('weight', 'Weight', true, false, true, true,
+        'Weight of the VDJdb hit. The current scoring does not weight hits, so this value is the same for every match')
     ];
 
     return columns.concat(this.annotationsService.getDatabaseMetadata().columns.map((c) => {

@@ -17,13 +17,17 @@
 export type FileItemStatusErrorType = number;
 
 export namespace FileItemStatusErrorType {
+  // Distinct values: UPLOAD_NOT_ALLOWED and MAX_FILES_COUNT_LIMIT_EXCEEDED used to share 1, which made
+  // them indistinguishable to anything switching on the type. The numbers are only ever compared
+  // against these constants in the browser - they are never sent to the server or stored - so they are
+  // free to change.
   export const NO_ERROR: number = 0;
   export const UPLOAD_NOT_ALLOWED: number = 1;
-  export const MAX_FILES_COUNT_LIMIT_EXCEEDED: number = 1;
-  export const MAX_FILE_SIZE_LIMIT_EXCEEDED: number = 2;
-  export const INVALID_FILE_EXTENSION: number = 3;
-  export const VALIDATION_FAILED: number = 4;
-  export const INTERNAL_ERROR: number = 5;
+  export const MAX_FILES_COUNT_LIMIT_EXCEEDED: number = 2;
+  export const MAX_FILE_SIZE_LIMIT_EXCEEDED: number = 3;
+  export const INVALID_FILE_EXTENSION: number = 4;
+  export const VALIDATION_FAILED: number = 5;
+  export const INTERNAL_ERROR: number = 6;
 }
 
 export type FileItemStatusFlags = number;
@@ -161,13 +165,16 @@ export class FileItemStatus {
     if (this.checkStatusFlag(FileItemStatusFlags.REMOVED)) {
       return 'Removed';
     } else if (this.checkStatusFlag(FileItemStatusFlags.INVALID_FILE_NAME)) {
-      return 'Invalid sample name';
+      return 'Invalid sample name: letters, numbers, . - _ + only, up to 40 characters';
     } else if (this.checkStatusFlag(FileItemStatusFlags.DUPLICATE_FILE_NAME)) {
-      return 'Duplicating sample name';
+      return 'Duplicate sample name';
     } else if (this.checkStatusFlag(FileItemStatusFlags.WAITING)) {
-      return 'In queue';
+      // WAITING is "picked but not sent yet", not "queued on the server" - nothing is sent until the
+      // user presses "Upload all".
+      return 'Not uploaded yet';
     } else if (this.checkStatusFlag(FileItemStatusFlags.LOADING)) {
-      return 'Loading';
+      // "Loading" collided with the annotation table's own Loading state.
+      return 'Uploading';
     } else if (this.checkStatusFlag(FileItemStatusFlags.UPLOADED)) {
       return 'Uploaded successfully';
     } else if (this.checkStatusFlag(FileItemStatusFlags.ERROR)) {

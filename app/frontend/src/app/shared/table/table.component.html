@@ -17,7 +17,7 @@
 <table [attr.class]="tableClass">
     <thead class="cursor pointer">
     <tr *ngIf="!configuration.utils.disable">
-        <th [attr.colspan]="getVisibleColumnsCount()" style="padding: 1em">
+        <th [attr.colspan]="visibleColumnsCount" style="padding: 1em">
             <table-pagination *ngIf="!configuration.utils.pagination.disable"
                               [page]="table.page" [range]="configuration.utils.pagination.pageRange" [pageCount]="table.pageCount"
                               (pageChange)="onPageChange.emit($event)"></table-pagination>
@@ -40,12 +40,12 @@
         </th>
     </tr>
     <tr [style.font-size]="headerFontSize">
-        <th class="{{ isSorted(column) }} {{ configuration.classes.columns }}" *ngFor="let column of columns; trackBy: trackColumnFn"
-            [class.hidden-column]="isColumnHidden(column.name)"
-            [style.display]="isColumnHidden(column.name) ? 'none' : null"
-            (click)="onColumnClick.emit(column)">
-        <span class="header" [popup]="column.popupContent" [footer]="column.popupFooter" [header]="column.title" position="top" width="300" [disabled]="!column.popup">
-            {{ column.title }}
+        <th class="{{ columnState.sortClass }} {{ configuration.classes.columns }}" *ngFor="let columnState of headerColumns; trackBy: trackColumnFn"
+            [class.hidden-column]="columnState.hidden"
+            [style.display]="columnState.hidden ? 'none' : null"
+            (click)="onColumnClick.emit(columnState.column)">
+        <span class="header" [popup]="columnState.column.popupContent" [footer]="columnState.column.popupFooter" [header]="columnState.column.title" position="top" width="300" [disabled]="!columnState.column.popup">
+            {{ columnState.column.title }}
         </span>
         </th>
     </tr>

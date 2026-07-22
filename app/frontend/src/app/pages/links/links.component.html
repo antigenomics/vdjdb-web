@@ -14,7 +14,10 @@
   ~     limitations under the License.
   -->
 
-<div class="ui main content container text fade slow element soft-margin" style="min-width: 850px; !important; padding-bottom: 75px;">
+<!-- No `min-width` here. It was the one thing forcing the whole document to scroll sideways on a phone
+     - the same rule that was taken off `body` for that reason and then reappeared per-page. The
+     container class already caps the reading width; nothing needs a floor. -->
+<div class="ui main content container text fade slow element soft-margin" style="padding-bottom: 75px;">
     <div class="ui raised segments">
         <h3 class="ui top attached header centered">Useful links</h3>
         <div class="ui attached segment teal padded">
@@ -51,7 +54,7 @@
                 <div class="ui row">
                     <div class="four wide column">
                         <a href="https://tcr3d.ibbr.umd.edu/" target="_blank" rel="noopener">
-                            <img class="ui fluid image" src="assets/images/links/tcr3d.png" alt="TCR3d: TCR Structural Repertoire">
+                            <img class="ui fluid image" src="assets/images/links/tcr3d.png" alt="TCR3d: TCR Structural Repertoire" loading="lazy">
                         </a>
                     </div>
                     <div class="twelve wide column">
@@ -91,7 +94,7 @@
                 <div class="ui row">
                     <div class="four wide column">
                         <a href="https://tcrmodel.ibbr.umd.edu/" target="_blank" rel="noopener">
-                            <img class="ui fluid image" src="assets/images/links/tcrmodel.png" alt="TCRModel">
+                            <img class="ui fluid image" src="assets/images/links/tcrmodel.png" alt="TCRModel" loading="lazy">
                         </a>
                     </div>
                     <div class="twelve wide column">
@@ -123,7 +126,7 @@
                 <div class="ui row">
                     <div class="four wide column">
                         <a href="https://tcrvdb.nkiai.nl/" target="_blank" rel="noopener">
-                            <img class="ui fluid image" src="assets/images/links/coming_soon.png" alt="TCRvdb">
+                            <img class="ui fluid image" src="assets/images/links/coming_soon.png" alt="TCRvdb" loading="lazy">
                         </a>
                     </div>
                     <div class="twelve wide column">
@@ -134,7 +137,10 @@
                                     <span class="date">A functionally validated TCR-pMHC database for TCR specificity model development</span>
                                 </div>
                                 <div class="description">
-                                    More info coming soon...
+                                    <p>
+                                        A collection of TCR-pMHC pairs whose specificity has been confirmed in functional assays,
+                                        assembled as training and benchmarking material for TCR specificity models.
+                                    </p>
                                 </div>
                             </div>
                             <div class="extra content bottom border">
@@ -150,7 +156,7 @@
                 <div class="ui row">
                     <div class="four wide column">
                         <a href="https://tcellatlas.org/" target="_blank" rel="noopener">
-                            <img class="ui fluid image" src="assets/images/links/coming_soon.png" alt="T-cell Atlas">
+                            <img class="ui fluid image" src="assets/images/links/coming_soon.png" alt="T-cell Atlas" loading="lazy">
                         </a>
                     </div>
                     <div class="twelve wide column">
@@ -161,7 +167,10 @@
                                     <span class="date">A pan-infection single-cell atlas of human T cells unlocks systematic antigen-specificity inference</span>
                                 </div>
                                 <div class="description">
-                                    More info coming soon...
+                                    <p>
+                                        A single-cell atlas of human T cells drawn from a range of infections, built so that antigen
+                                        specificity can be inferred across the whole atlas rather than one epitope at a time.
+                                    </p>
                                 </div>
                             </div>
                             <div class="extra content bottom border">
@@ -177,7 +186,7 @@
                 <div class="ui row">
                     <div class="four wide column">
                         <a href="http://friedmanlab.weizmann.ac.il/McPAS-TCR/" target="_blank" rel="noopener">
-                            <img class="ui fluid image" src="assets/images/links/mcpas-tcr.png" alt="McPAS-TCR">
+                            <img class="ui fluid image" src="assets/images/links/mcpas-tcr.png" alt="McPAS-TCR" loading="lazy">
                         </a>
                     </div>
                     <div class="twelve wide column">
@@ -214,7 +223,7 @@
                 <div class="ui row">
                     <div class="four wide column">
                         <a href="https://tcr2.cs.biu.ac.il/" target="_blank" rel="noopener">
-                            <img class="ui fluid image" src="assets/images/links/ergo.png" alt="ERGO">
+                            <img class="ui fluid image" src="assets/images/links/ergo.png" alt="ERGO" loading="lazy">
                         </a>
                     </div>
                     <div class="twelve wide column">
@@ -241,7 +250,7 @@
                 <div class="ui row">
                     <div class="four wide column">
                         <a href="https://guolab.wchscu.cn/TCRdb2/#/" target="_blank" rel="noopener">
-                            <img class="ui fluid image" src="assets/images/links/tcrdb_2.jpg" alt="TRCdb2.0">
+                            <img class="ui fluid image" src="assets/images/links/tcrdb_2.jpg" alt="TRCdb2.0" loading="lazy">
                         </a>
                     </div>
                     <div class="twelve wide column">
@@ -268,7 +277,7 @@
                 <div class="ui row">
                     <div class="four wide column">
                         <a href="https://zlab.umassmed.edu/atlas/web/" target="_blank" rel="noopener">
-                            <img class="ui fluid image" src="assets/images/links/atlas.png" alt="ATLAS">
+                            <img class="ui fluid image" src="assets/images/links/atlas.png" alt="ATLAS" loading="lazy">
                         </a>
                     </div>
                     <div class="twelve wide column">
@@ -302,7 +311,7 @@
                 <div class="ui row">
                     <div class="four wide column">
                         <a href="http://www.imgt.org/" target="_blank" rel="noopener">
-                            <img class="ui fluid image" src="assets/images/links/imgt.png" alt="IMGT">
+                            <img class="ui fluid image" src="assets/images/links/imgt.png" alt="IMGT" loading="lazy">
                         </a>
                     </div>
                     <div class="twelve wide column">
@@ -334,7 +343,7 @@
                 <div class="ui row">
                     <div class="four wide column">
                         <a href="http://www.iedb.org" target="_blank" rel="noopener">
-                            <img class="ui fluid image" src="assets/images/links/iedb.png" alt="IEDB">
+                            <img class="ui fluid image" src="assets/images/links/iedb.png" alt="IEDB" loading="lazy">
                         </a>
                     </div>
                     <div class="twelve wide column">

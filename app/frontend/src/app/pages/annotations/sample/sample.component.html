@@ -56,8 +56,10 @@
 <div class="ui fade element padded segment" *ngIf="isErrorBarVisible()">
     <h2 class="ui center aligned icon header">
         <i class="warning sign icon"></i>
-        <div class="content">Unable to parse sample file</div>
-        <div class="sub header">Wrong software type</div>
+        <div class="content">Annotation failed</div>
+        <!-- The reason comes from the server - over quota, server busy, unreadable file - and it is the
+             only part the user can act on, so it is shown instead of a guess at what went wrong. -->
+        <div class="sub header">{{ sample.getProcessingLabel() }}</div>
     </h2>
 </div>
 <div [ngClass]="{'hide element':isRouterOutletHidden()}" style="padding-bottom: 75px">

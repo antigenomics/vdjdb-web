@@ -135,7 +135,7 @@ export class TagsService {
   public async update(tag: SampleTag): Promise<void> {
     if (!tag.isEditing()) {
       this.logger.debug('TagsService', `Failed to update tag ${tag.name}. It should be in updating state (Internal error)`);
-      this.notifications.warn('Tags', `Tag ${tag.name} should be in updating state (Internal error)`);
+      this.notifications.warn('Tags', `Click "Edit" on tag ${tag.name} before saving changes to it`);
       return;
     }
     this.logger.debug('TagsService', `Attempt to update tag`);

@@ -14,12 +14,14 @@
  *     limitations under the License.
  */
 
+/* The sort rule is the brand accent, not Semantic's cyan: design-system.css reserves that cyan for
+   the disease quick-picks, and this is the most-clicked affordance on the site. */
 th.ascending {
-    border-bottom: 2px solid #00B5AD !important;
+    border-bottom: 2px solid var(--ds-teal) !important;
 }
 
 th.descending {
-    border-top: 2px solid #00B5AD !important;
+    border-top: 2px solid var(--ds-teal) !important;
 }
 
 th span.header {

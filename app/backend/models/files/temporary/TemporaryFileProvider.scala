@@ -16,12 +16,14 @@
 
 package backend.models.files.temporary
 
-import java.io.{File, PrintWriter}
+import java.io.{BufferedWriter, File, FileOutputStream, OutputStreamWriter, Writer}
+import java.nio.charset.StandardCharsets
 import java.sql.Timestamp
 import java.time.Duration
 
 import akka.actor.{ActorSystem, Cancellable}
 import backend.models.files.{FileMetadata, FileMetadataProvider}
+import backend.utils.files.FileUtils
 import backend.utils.{CommonUtils, TimeUtils}
 import javax.inject.{Inject, Singleton}
 import org.slf4j.LoggerFactory
@@ -37,6 +39,7 @@ import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.language.postfixOps
 import scala.util.Failure
+import scala.util.control.NonFatal
 
 @Singleton
 class TemporaryFileProvider @Inject()(@NamedDatabase("default") protected val dbConfigProvider: DatabaseConfigProvider, lifecycle: ApplicationLifecycle)
@@ -114,7 +117,17 @@ class TemporaryFileProvider @Inject()(@NamedDatabase("default") protected val db
   }
 
   def createTemporaryFile(name: String, extension: String, content: String,
-                          expiredAt: Timestamp = TimeUtils.getExpiredAt(configuration.keep)): Future[TemporaryFileLink] = async {
+                          expiredAt: Timestamp = TimeUtils.getExpiredAt(configuration.keep)): Future[TemporaryFileLink] = {
+    createTemporaryFileStreamed(name, extension, expiredAt)(_.write(content))
+  }
+
+  // Table exports run into hundreds of megabytes, and handing them over as a finished String means the
+  // caller holds the whole document (a builder plus its toString copy) before we even open the file.
+  // Callers that produce their content row by row take this method instead and write straight into the
+  // file, so nothing bigger than a single row is ever live.
+  def createTemporaryFileStreamed(name: String, extension: String,
+                                  expiredAt: Timestamp = TimeUtils.getExpiredAt(configuration.keep))
+                                 (writeContent: Writer => Unit): Future[TemporaryFileLink] = async {
     val link = CommonUtils.randomAlphaNumericString(32)
     val folderPath = s"${configuration.path}/$link"
 
@@ -123,15 +136,36 @@ class TemporaryFileProvider @Inject()(@NamedDatabase("default") protected val db
       val filePath = s"$folderPath/$name.$extension"
 
       val contentFile = new File(filePath)
-      contentFile.createNewFile()
-      val printWriter = new PrintWriter(contentFile)
-      printWriter.write(content)
-      printWriter.close()
+      writeToFile(contentFile, writeContent)
 
       val _ = await(insert(name, extension, folderPath, link, expiredAt))
       TemporaryFileLink(link)
     } else {
       throw new Exception(s"Cannot create temporary file in ${configuration.path}")
+    }
+  }
+
+  // Kept out of the async block above because the async macro does not accept a try in every position.
+  private def writeToFile(contentFile: File, writeContent: Writer => Unit): Unit = {
+    contentFile.createNewFile()
+    // The charset is pinned instead of taken from the platform default, so that a server started without
+    // a UTF-8 locale still writes the same bytes as everywhere else.
+    val writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(contentFile), StandardCharsets.UTF_8))
+    try {
+      writeContent(writer)
+    } catch {
+      // The row is only inserted once the write returns, and `deleteExpired` reaps from that table - so
+      // a half-written export that throws would otherwise sit in the temporary directory with nothing
+      // that knows it is there. The old PrintWriter never reached this path because it swallowed
+      // IOException and registered the truncated file instead, which is worse but at least collectable.
+      case NonFatal(ex) =>
+        writer.close()
+        val folder = contentFile.getParentFile
+        logger.warn(s"Removing '${folder.getPath}' after a failed write", ex)
+        FileUtils.deleteRecursively(folder)
+        throw ex
+    } finally {
+      writer.close()
     }
   }
 

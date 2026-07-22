@@ -154,32 +154,32 @@ export class TCRcdr3Filter implements FilterInterface {
   public lengthMax: number = 30;
   public length: SliderRangeModel;
 
-  public levenstein: string;
-  public levensteinValid: boolean;
-  public levensteinSubstitutions: number;
-  public levensteinInsertions: number;
-  public levensteinDeletions: number;
+  public levenshtein: string;
+  public levenshteinValid: boolean;
+  public levenshteinSubstitutions: number;
+  public levenshteinInsertions: number;
+  public levenshteinDeletions: number;
 
   public setDefault(): void {
     this.pattern = '';
     this.patternSubstring = false;
     this.patternValid = true;
     this.length = new SliderRangeModel(this.lengthMin, this.lengthMax);
-    this.levenstein = '';
-    this.levensteinValid = true;
-    this.levensteinSubstitutions = 0;
-    this.levensteinInsertions = 0;
-    this.levensteinDeletions = 0;
+    this.levenshtein = '';
+    this.levenshteinValid = true;
+    this.levenshteinSubstitutions = 0;
+    this.levenshteinInsertions = 0;
+    this.levenshteinDeletions = 0;
   }
 
   public isDefault(): boolean {
     return this.pattern === '' &&
       this.patternSubstring === false &&
       (!this.length || (this.length.min === this.lengthMin && this.length.max === this.lengthMax)) &&
-      this.levenstein === '' &&
-      this.levensteinSubstitutions === 0 &&
-      this.levensteinInsertions === 0 &&
-      this.levensteinDeletions === 0;
+      this.levenshtein === '' &&
+      this.levenshteinSubstitutions === 0 &&
+      this.levenshteinInsertions === 0 &&
+      this.levenshteinDeletions === 0;
   }
 
   public setOptions(_: IFiltersOptions): void {
@@ -204,12 +204,12 @@ export class TCRcdr3Filter implements FilterInterface {
       filters.push(new Filter('cdr3', FilterType.RANGE, false, this.length.toString()));
     }
 
-    if (!this.isLevensteinValid()) {
-      errors.push('CDR3 pattern is not valid in levenstein distance filter');
+    if (!this.isLevenshteinValid()) {
+      errors.push('CDR3 pattern is not valid in Levenshtein distance filter');
       return;
-    } else if (this.levenstein.length !== 0) {
+    } else if (this.levenshtein.length !== 0) {
       filters.push(new Filter('cdr3', FilterType.SEQUENCE, false,
-        `${this.levenstein}:${this.levensteinSubstitutions}:${this.levensteinInsertions}:${this.levensteinDeletions}`));
+        `${this.levenshtein}:${this.levenshteinSubstitutions}:${this.levenshteinInsertions}:${this.levenshteinDeletions}`));
     }
   }
 
@@ -226,12 +226,12 @@ export class TCRcdr3Filter implements FilterInterface {
     return this.patternValid;
   }
 
-  public checkLevenstein(newValue: string): void {
-    this.levenstein = newValue.toUpperCase();
-    this.levensteinValid = Utils.SequencePattern.isPatternValidStrict(this.levenstein);
+  public checkLevenshtein(newValue: string): void {
+    this.levenshtein = newValue.toUpperCase();
+    this.levenshteinValid = Utils.SequencePattern.isPatternValidStrict(this.levenshtein);
   }
 
-  public isLevensteinValid(): boolean {
-    return this.levensteinValid;
+  public isLevenshteinValid(): boolean {
+    return this.levenshteinValid;
   }
 }

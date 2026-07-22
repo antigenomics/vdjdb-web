@@ -122,9 +122,19 @@ class Authorization @Inject()(cc: ControllerComponents, messagesApi: MessagesApi
             val verificationToken = await(up.createUser(form))
             if (up.isVerificationRequired) {
               up.getVerificationMethod match {
-                case "console" => logger.info(s"Verification token for ${form.email}: ${up.getVerificationServer}/verify/${verificationToken.token}")
-                case "email"   => emails.sendVerificationTokenEmail(form.email, s"${up.getVerificationServer}/verify/${verificationToken.token}")
-                case method    => logger.error(s"Unknown verification method $method")
+                // A token in the log is a live credential: whoever reads the file can verify or take
+                // over the account it belongs to. What keeps that out of production is the branch
+                // itself - "console" means print it here instead of relaying it, which is only ever a
+                // local-instance affordance, and production runs "email". Printing it is the whole
+                // point of the method, so it stays at INFO: routed to debug it reached nobody, since
+                // every logger in this codebase is class-named and the only DEBUG logger configured is
+                // "application", which nothing logs under. That silently made local signup impossible.
+                case "console" =>
+                  logger.info(s"Verification link for ${form.email} is " +
+                    s"${up.getVerificationServer}/verify/${verificationToken.token} " +
+                    s"(console verification method - do not run this way in production)")
+                case "email" => emails.sendVerificationTokenEmail(form.email, s"${up.getVerificationServer}/verify/${verificationToken.token}")
+                case method  => logger.error(s"Unknown verification method $method")
               }
               Redirect(backend.controllers.routes.Authorization.login()).flashing("created" -> "authorization.forms.signup.success.created")
             } else {
@@ -194,9 +204,14 @@ class Authorization @Inject()(cc: ControllerComponents, messagesApi: MessagesApi
             if (permissions.isChangePasswordAllowed) {
               val resetTokenStr = await(rtp.createResetToken(user.get))
               up.getVerificationMethod match {
-                case "console" => logger.info(s"Reset token for ${form.email}: ${up.getVerificationServer}/reset/$resetTokenStr")
-                case "email"   => emails.sendResetTokenEmail(form.email, s"${up.getVerificationServer}/reset/$resetTokenStr")
-                case method    => logger.error(s"Unknown verification method $method")
+                // At INFO for the same reason as the verification link above: the console method exists
+                // to print it, and DEBUG is not enabled for any class-named logger here.
+                case "console" =>
+                  logger.info(s"Password reset link for ${form.email} is " +
+                    s"${up.getVerificationServer}/reset/$resetTokenStr " +
+                    s"(console verification method - do not run this way in production)")
+                case "email" => emails.sendResetTokenEmail(form.email, s"${up.getVerificationServer}/reset/$resetTokenStr")
+                case method  => logger.error(s"Unknown verification method $method")
               }
             }
           }

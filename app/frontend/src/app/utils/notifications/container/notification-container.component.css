@@ -17,7 +17,9 @@
 .notifier-container {
     z-index: 999;
     position: fixed;
-    top: 40px;
+    /* Clears the fixed navbar instead of being painted over its bottom 29px. The z-index is above the
+       bar's, so the overlap was always the toast covering the navigation, never the other way round. */
+    top: var(--ds-navbar-height);
     right: 4px;
     padding: 4px;
     width: 350px;

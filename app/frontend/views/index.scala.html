@@ -26,8 +26,10 @@
         *      <script type="application/javascript" src="@routes.Assets.versioned("bundles/polyfills-ie.js")" charset="utf-8"></script>
         *  }
         *@
-        <script type="application/javascript" src="@routes.Assets.versioned("bundles/polyfills.js")" charset="utf-8"></script>
-        <script type="application/javascript" src="@routes.Assets.versioned("bundles/runtime.js")" charset="utf-8"></script>
-        <script type="application/javascript" src="@routes.Assets.versioned("bundles/main.js")" charset="utf-8"></script>
+        <!-- defer, not async: the three bundles must still execute in this order (polyfills, then the
+             webpack runtime, then the app), and defer is the only one of the two that guarantees it. -->
+        <script type="application/javascript" src="@routes.Assets.versioned("bundles/polyfills.js")" charset="utf-8" defer></script>
+        <script type="application/javascript" src="@routes.Assets.versioned("bundles/runtime.js")" charset="utf-8" defer></script>
+        <script type="application/javascript" src="@routes.Assets.versioned("bundles/main.js")" charset="utf-8" defer></script>
     }
 }

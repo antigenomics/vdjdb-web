@@ -24,6 +24,7 @@ import play.api.i18n.{Lang, Messages, MessagesApi}
 import play.api.mvc.Results._
 import play.api.mvc._
 import play.api.routing.Router
+import play.twirl.api.Html
 
 import scala.concurrent._
 
@@ -33,9 +34,39 @@ class ErrorsHandler @Inject()(config: Configuration, sourceMapper: OptionalSourc
   extends DefaultHttpErrorHandler(environment, config, sourceMapper, router) {
   implicit val messages: Messages = messagesApi.preferred(Seq(Lang.defaultLang))
 
+  /** The exception never reaches the browser.
+    *
+    * It used to: the body was literally "A server error occurred: " + getMessage, so whatever the failing
+    * layer happened to say - a class name, a filesystem path, a fragment of a failing SQL statement -
+    * was handed to whoever triggered it, as plain text, in production.
+    *
+    * The detail is already on disk. DefaultHttpErrorHandler.onServerError logs the exception with its
+    * full stack trace before delegating here, tagged with the same id we print below, so quoting that id
+    * in a bug report is enough to find the trace. The page itself is rendered through the same shell as
+    * the 404 so that a failure still looks like the site rather than a bare browser error page.
+    */
   override def onProdServerError(request: RequestHeader, exception: UsefulException): Future[Result] = {
     Future.successful {
-      InternalServerError("A server error occurred: " + exception.getMessage)
+      InternalServerError(frontend.views.html.main("VDJdb: server error")(Html(
+        s"""<div class="ui middle aligned center aligned notfound grid">
+           |    <div class="column">
+           |        <div class="ui raised segment very padded">
+           |            <div class="ui grid">
+           |                <div class="six wide column">
+           |                    <h1 class="error-header">500</h1>
+           |                </div>
+           |                <div class="ten wide column left aligned">
+           |                    <h2>Something went wrong on our side.</h2>
+           |                    <p>We could not complete your request. Please try again in a few moments.</p>
+           |                    <p>If it keeps happening, please report it on the
+           |                        <a href="https://github.com/antigenomics/vdjdb-web/issues" target="_blank" rel="noopener">VDJdb-web issue tracker</a>
+           |                        and quote reference <code>${exception.id}</code>.</p>
+           |                    <a href="${backend.controllers.routes.Application.index().url}" class="ui button">Back to home.</a>
+           |                </div>
+           |            </div>
+           |        </div>
+           |    </div>
+           |</div>""".stripMargin)))
     }
   }
 

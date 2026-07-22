@@ -19,8 +19,22 @@
   <property resource="application.conf" />
   <conversionRule conversionWord="coloredLevel" converterClass="play.api.libs.logback.ColoredLevel" />
 
-  <appender name="FILE" class="ch.qos.logback.core.FileAppender">
+  <!--
+    Rolling, not a plain FileAppender: this file is written by long-lived background schedulers (the
+    retention sweeper alone logs a line per sample every 30 minutes, forever), so an unrotated file grows
+    without bound and nothing on the box ever truncates it. The precedent is the 5.8 GB H2 trace file that
+    filled the production disk. The caps below are belt and braces - the daily+size pattern bounds any one
+    file, maxHistory bounds how far back we keep, and totalSizeCap is the hard stop that holds even if the
+    other two are ever loosened.
+  -->
+  <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
     <file>${loggerPath}/application.log</file>
+    <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+      <fileNamePattern>${loggerPath}/application.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+      <maxFileSize>50MB</maxFileSize>
+      <maxHistory>14</maxHistory>
+      <totalSizeCap>1GB</totalSizeCap>
+    </rollingPolicy>
     <encoder>
       <pattern>%date [%level] from %logger in %thread - %message%n%xException</pattern>
     </encoder>

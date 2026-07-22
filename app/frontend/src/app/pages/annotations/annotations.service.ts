@@ -208,7 +208,7 @@ export class AnnotationsService {
 
   public async exportTable(sample: SampleItem, request: { format: IExportFormat, options: IExportOptionFlag[] }): Promise<void> {
     if (sample.table.exporting) {
-      this.notifications.warn('Export', 'Please wait until previous export file will be generated');
+      this.notifications.warn('Export', 'Wait for the previous export to finish');
       return;
     } else {
       const { format, options } = request;
