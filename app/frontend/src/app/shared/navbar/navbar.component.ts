@@ -46,10 +46,23 @@ export class NavigationBarComponent implements OnInit, OnDestroy {
   // is enough because only one dropdown can be under the pointer at a time.
   public dismissedDropdown: string = null;
 
+  // Scrolling has to close an open dropdown, and nothing else does it. The menus open on CSS :hover,
+  // and the bar is position:fixed - so scrolling never moves the pointer off the item it is resting
+  // on, `:hover` stays true, and the menu hangs over the page sliding past underneath it. Not even
+  // the auto-hide rescues it: the pointer sitting on the bar is inside the top reveal zone, so
+  // `mouseMoveHandler` has already pinned the bar visible.
+  //
+  // Cleared on the next pointer move rather than after a delay: moving the pointer is the user
+  // asking for the menu again, and until they do, leaving it shut is what they asked for by scrolling.
+  public scrollDismissed: boolean = false;
+
   private static readonly topRevealZone: number = 60;
   private static readonly scrollHideThreshold: number = 120;
   private static readonly scrollDelta: number = 6;
   private lastScrollY: number = 0;
+  // -1 so the first real mousemove always counts as movement.
+  private lastPointerX: number = -1;
+  private lastPointerY: number = -1;
 
   // Bound handlers registered OUTSIDE Angular (see ngOnInit) so scroll/mousemove don't trigger a
   // change-detection pass on every event; we re-enter the zone only when visibility flips.
@@ -58,6 +71,9 @@ export class NavigationBarComponent implements OnInit, OnDestroy {
   // body-scroll, so the header simply stays put there; it only hides on tall pages (Browse).
   private readonly scrollHandler = (): void => {
     const y = window.pageYOffset || document.documentElement.scrollTop || 0;
+    if (y !== this.lastScrollY) {
+      this.setScrollDismissed(true);
+    }
     let next = this.hidden;
     if (y < NavigationBarComponent.scrollHideThreshold) {
       next = false;
@@ -71,6 +87,15 @@ export class NavigationBarComponent implements OnInit, OnDestroy {
   }
 
   private readonly mouseMoveHandler = (event: MouseEvent): void => {
+    // Only a pointer that actually moved reopens the menus. Browsers dispatch a mousemove after a
+    // scroll to re-evaluate :hover under a stationary pointer, and that event carries the coordinates
+    // it already had - so clearing on any mousemove at all would undo the dismissal in the same frame
+    // the scroll caused it, which is the bug rather than the fix.
+    if (event.clientX !== this.lastPointerX || event.clientY !== this.lastPointerY) {
+      this.lastPointerX = event.clientX;
+      this.lastPointerY = event.clientY;
+      this.setScrollDismissed(false);
+    }
     if (event.clientY <= NavigationBarComponent.topRevealZone) {
       this.setHidden(false);
     }
@@ -80,6 +105,17 @@ export class NavigationBarComponent implements OnInit, OnDestroy {
     if (this.hidden !== value) {
       this.ngZone.run(() => {
         this.hidden = value;
+        this.changeDetector.markForCheck();
+      });
+    }
+  }
+
+  /** Guarded like `setHidden`, and for the same reason: both handlers run outside Angular on events
+    * that fire continuously, so re-entering the zone is worth it only when the value actually flips. */
+  private setScrollDismissed(value: boolean): void {
+    if (this.scrollDismissed !== value) {
+      this.ngZone.run(() => {
+        this.scrollDismissed = value;
         this.changeDetector.markForCheck();
       });
     }
