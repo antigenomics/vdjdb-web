@@ -273,7 +273,7 @@ export class BarChartGrouped extends Chart<IChartGroupedDataEntry, IBarChartConf
 
     elements.on('mouseover', (d: IGroupBarData) => {
       const value = this.configuration.tooltip.value(d.data);
-      const lines = d.data.note ? [ d.data.note, `Value: ${value}` ] : [ `Value: ${value}` ];
+      const lines = (d.data.notes || []).concat([ `Value: ${value}` ]);
       this.tooltip.text(`${d.data.name}   (${d.name})`, ...lines);
       this.tooltip.show();
     }).on('mouseout', () => {

@@ -31,6 +31,7 @@ import { ChartUtils } from 'shared/charts/chart-utils';
 import { ChartEventType } from 'shared/charts/chart-events';
 import { IChartDataEntry } from 'shared/charts/data/chart-data-entry';
 import { IChartGroupedDataEntry } from 'shared/charts/data/chart-grouped-data-entry';
+import { Statistics } from 'utils/statistics/statistics';
 import { Utils } from 'utils/utils';
 
 @Component({
@@ -229,9 +230,26 @@ export class MultisampleSummaryChartComponent implements OnInit, OnDestroy {
     const speciesPalette = (this.colorBySpecies && this.isSpeciesColoringAvailable()) ? this.speciesPalette() : undefined;
     const speciesColor = (c: SummaryClonotypeCounter): string =>
       (speciesPalette !== undefined && c.species) ? speciesPalette[ c.species ] : undefined;
-    // The tooltip carries the species whether or not the bars are coloured by it - the colouring is a
-    // display choice, but which antigen an epitope belongs to is a fact about the bar either way.
-    const speciesNote = (c: SummaryClonotypeCounter): string => c.species ? `Species: ${c.species}` : undefined;
+    // Enrichment per sample, over every value that survived the cutoff - the whole family that was
+    // tested, not just the slice on screen, or the BH correction would be against the wrong m.
+    const enrichment = this.enrichmentBySample(currentCounterFieldName, options);
+
+    // The species line shows whether or not the bars are coloured by it: the colouring is a display
+    // choice, but which antigen an epitope belongs to is a fact about the bar either way. The
+    // enrichment lines are counts of clonotypes, so neither the read-count weighting nor the axis
+    // scaling touches them - those change how tall a bar is drawn, not how unlikely it is.
+    const notesFor = (c: SummaryClonotypeCounter, sample: string): string[] => {
+      const lines: string[] = [];
+      if (c.species) {
+        lines.push(`Species: ${c.species}`);
+      }
+      const test = enrichment[ sample ] !== undefined ? enrichment[ sample ][ c.field ] : undefined;
+      if (test !== undefined) {
+        lines.push(`P-value = ${Statistics.formatPValue(test.p)}`);
+        lines.push(`P-adj (BH) = ${Statistics.formatPValue(test.q)}`);
+      }
+      return lines;
+    };
 
     // Takes the counters it belongs to, because the "total number of clonotypes in sample"
     // denominator is per sample - the whole point of this chart is that the samples differ.
@@ -258,7 +276,7 @@ export class MultisampleSummaryChartComponent implements OnInit, OnDestroy {
           const counters = value.counters.find((c) => c.name === currentCounterFieldName);
           let values = SummaryChartOptions.charted(counters.counters, currentCounterFieldName, options)
             .map((c) => ({
-              name: c.field, value: valueConverter(c, value), color: speciesColor(c), note: speciesNote(c)
+              name: c.field, value: valueConverter(c, value), color: speciesColor(c), notes: notesFor(c, key)
             } as IChartDataEntry))
             .sort((a, b) => b.value - a.value);
           if (values.length > options.currentThresholdType.threshold) {
@@ -301,7 +319,7 @@ export class MultisampleSummaryChartComponent implements OnInit, OnDestroy {
               }
               entries.push({
                 name: sample, value: valueConverter(counters.counters[ index ], summaryCounters), color,
-                note: speciesNote(counters.counters[ index ])
+                notes: notesFor(counters.counters[ index ], sample)
               });
             }
           }
@@ -384,6 +402,53 @@ export class MultisampleSummaryChartComponent implements OnInit, OnDestroy {
     }
 
     this.changeDetector.detectChanges();
+  }
+
+  /**
+   * Binomial enrichment per sample, keyed sample -> field value -> { p, q }.
+   *
+   * For one value: the sample holds `n` clonotypes, VDJdb holds `N` distinct CDR3s under the same
+   * restriction the search ran with, and `K` of those carry this value. A clonotype matching that
+   * database at random lands here with probability `K / N`, so `k` of the sample's clonotypes landing
+   * here is Binomial(n, K/N) and the p-value is the upper tail - how surprising this many matches
+   * would be with no real affinity.
+   *
+   * `N` arrives as the `databaseUnique` of the unannotated counter, which is where the server puts
+   * the whole-database CDR3 total; `K` is each value's own `databaseUnique`. Both are counted over
+   * the same accepted rows, so species, chain, MHC class and confidence are already applied to each
+   * and the ratio never mixes populations.
+   *
+   * BH runs per sample over every value that passed the epitope cutoff - each sample is its own
+   * experiment, and the family is what was tested rather than what the threshold left on screen.
+   */
+  private enrichmentBySample(fieldName: string, options: SummaryChartOptions):
+    { [ sample: string ]: { [ value: string ]: { p: number, q: number } } } {
+
+    const result: { [ sample: string ]: { [ value: string ]: { p: number, q: number } } } = {};
+
+    this.currentTab.counters.forEach((counters: SummaryCounters, sample: string) => {
+      const field = counters.counters.find((c) => c.name === fieldName);
+      if (!field) {
+        return;
+      }
+      const sampleSize = counters.annotated.unique + counters.notFoundCounter.unique;
+      const databaseSize = counters.notFoundCounter.databaseUnique;
+      const tested = SummaryChartOptions.charted(field.counters, fieldName, options);
+
+      const pValues = tested.map((c) => {
+        if (sampleSize <= 0 || databaseSize <= 0 || c.databaseUnique <= 0) {
+          return NaN;
+        }
+        return Statistics.binomialUpperTail(c.unique, sampleSize, Math.min(1, c.databaseUnique / databaseSize));
+      });
+      const adjusted = Statistics.benjaminiHochberg(pValues);
+
+      const perValue: { [ value: string ]: { p: number, q: number } } = {};
+      tested.forEach((c, i) => { perValue[ c.field ] = { p: pValues[ i ], q: adjusted[ i ] }; });
+      result[ sample ] = perValue;
+    });
+
+    return result;
   }
 
   /** epitope -> antigen species, over every epitope counter in the tab. One map serves the palette,
