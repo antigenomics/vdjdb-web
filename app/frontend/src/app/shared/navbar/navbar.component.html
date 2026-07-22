@@ -49,14 +49,18 @@
             </div>
         </a>
 
+        <!-- Two lines and a link, not a four-line info box. This panel is inside a navbar dropdown, and
+             on a phone the mobile rules take it out of position:absolute and list it inline - so every
+             line here is pushed into the open menu, between "Browse" and "Motif". The old copy also
+             told the reader to click the Login menu "to the right", which is only true on a desktop:
+             stacked, it is below. Naming the destination instead of its screen position works in both. -->
         <a class="ui dropdown item" tabindex="0" *ngIf="!isLogged()">
             Annotation
             <div class="menu fade element slow padded">
-                <div class="ui info message">
-                    <div class="header">Log in required</div>
-                    <p>You must be logged in to access this page.</p>
-                    <p>Click "Login" menu to the right.</p>
-                    <p>You can also browse example samples by selecting "Demo" under the "Login" menu.</p>
+                <div class="ui info message navbar-login-hint">
+                    <p>Annotating needs an account &mdash; uploaded samples are stored against it.</p>
+                    <p><a route="/authorization/login" external="true">Log in or get a token</a>, or choose
+                        <b>Demo</b> there to explore example samples.</p>
                 </div>
             </div>
         </a>

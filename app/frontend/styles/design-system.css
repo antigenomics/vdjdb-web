@@ -668,6 +668,28 @@ tr.paired-row > td { color: #525252; }
   flex: none;
 }
 
+/* The logged-out "Annotation" hint. Semantic gives `.ui.message` inside a dropdown no width of its
+   own, so it took the widest line it had and pushed the panel past the right edge of the viewport on a
+   narrow desktop window. Bounded here, and allowed to fill the panel on mobile where the dropdown is
+   listed inline at full width. */
+.navbar-login-hint {
+  max-width: 22rem;
+  margin: 0 !important;
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+.navbar-login-hint p {
+  margin: 0 0 0.4em 0;
+}
+.navbar-login-hint p:last-child {
+  margin-bottom: 0;
+}
+@media (max-width: 991px) {
+  .navbar-login-hint {
+    max-width: none;
+  }
+}
+
 /* The enrichment cutoff sits between a heading and a checkbox, so it needs the same rhythm as the
    number inputs above it rather than Semantic's default inline sizing. */
 .summary-options-cutoff {
