@@ -150,3 +150,15 @@ uploads (`v_call`, `j_call`, `junction_aa`, `cdr3_aa`). HLA at the data's own re
     Belongs with the token migration.
   - Motif and structure queries run CPU-bound scans on the default execution context; they want a
     bounded dedicated pool like `AnnotationsScheduler` has.
+
+- **The annotations websocket has no request timeout, anywhere.** `WebSocketConnection.sendMessage`
+  resolves only on a matching inbound frame; `_messages` is never errored or completed on close. A
+  request written to a socket that then dies never settles, and `subscribeMessages` (the annotate path)
+  discards `send()`'s result entirely, so it cannot fail fast at all. Downstream, every latch is set
+  before an un-timeout-ed await and cleared only on success or an explicit error frame — so a dropped
+  socket leaves a sample permanently "processing" and further attempts are refused with `Sample is
+  already being annotated`. Both route resolvers (`user.resolver.ts`, `sample.resolver.ts`) wrap a
+  `Promise` with no reject path, so if `INITIALIZED` never fires, every route under `/annotations`
+  blocks forever. As of #189 the user at least gets told the connection died; the hang itself is
+  untouched. Reconnect has its own bugs: `send()` resolves as soon as a new `WebSocket` is constructed
+  rather than opened, and it overwrites `_onOpenCallback`, destroying the service's init closure.
