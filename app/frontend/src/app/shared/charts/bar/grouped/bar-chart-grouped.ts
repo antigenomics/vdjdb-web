@@ -54,6 +54,8 @@ export class BarChartGrouped extends Chart<IChartGroupedDataEntry, IBarChartConf
   private static readonly defaultMainXRotateDy: number = -35;
   private static readonly defaultTransitionDuration: number = 750;
   private static readonly defaultPadding: number = 0.1;
+  /** Head radius, before the per-band cap in `setBarAttributes`. */
+  private static readonly defaultHeadRadius: number = 5;
 
   constructor(configuration: IBarChartConfiguration, container: ChartContainer,
               dataStream: ChartInputGroupedStreamType, ngZone: NgZone) {
@@ -77,7 +79,7 @@ export class BarChartGrouped extends Chart<IChartGroupedDataEntry, IBarChartConf
     this.setGroupAttributes(mainX, enterGroups);
 
     const bars = this.appendBarsDataToGroups(enterGroups, groupsAxis);
-    const enterBars = bars.enter().append('rect');
+    const enterBars = this.appendLollipopParts(bars);
     this.setBarAttributes(height, y, enterBars);
 
     this.recreateGroupsAxis(svg, height, mainX, groupsAxis);
@@ -112,7 +114,7 @@ export class BarChartGrouped extends Chart<IChartGroupedDataEntry, IBarChartConf
 
     /* Creating bars for new groups */
     const enterGroupsBars = this.appendBarsDataToGroups(enterGroups, groupsAxis, data.length - enterGroups.size());
-    const enterGroupsEnterBars = enterGroupsBars.enter().append('rect');
+    const enterGroupsEnterBars = this.appendLollipopParts(enterGroupsBars);
     this.bindTooltipEvents(enterGroupsEnterBars);
     this.setBarAttributes(height, y, enterGroupsEnterBars);
 
@@ -123,7 +125,7 @@ export class BarChartGrouped extends Chart<IChartGroupedDataEntry, IBarChartConf
     const bars = this.appendBarsDataToGroups(groups, groupsAxis);
 
     /* Creating new bars for old groups */
-    const enterBars = bars.enter().append('rect');
+    const enterBars = this.appendLollipopParts(bars);
     this.bindTooltipEvents(enterBars);
     this.setBarAttributes(height, y, enterBars);
 
@@ -169,18 +171,53 @@ export class BarChartGrouped extends Chart<IChartGroupedDataEntry, IBarChartConf
   }
 
   private appendBarsDataToGroups(groups: any, groupsAxis: IGroupAxisType[], shift: number = 0): BarsSelectionType {
-    return groups.selectAll('rect')
+    return groups.selectAll('g.bar')
       .data((d: IChartGroupedDataEntry, i: number) => d.values.map((v) => ({
         name: d.name, data: v, colors: ChartUtils.Color.generate(d.values), x: groupsAxis[ i + shift ].x
       } as IGroupBarData)));
   }
 
+  /** One lollipop: a stem, a head, and an invisible full-width hit area.
+    *
+    * The hit area is not decoration. A rectangle is its own hover target over its whole height, but a
+    * 2px stem and a 5px head are not, and on a log axis - which is what this chart is usually read on
+    * now - most of the marks are short, so without it the tooltip would be a game of aim. It spans the
+    * band, so hovering anywhere in a value's column works exactly as it did when the mark was a bar.
+    */
+  private appendLollipopParts(bars: BarsSelectionType): BarsSelectionType {
+    const entered = bars.enter().append('g').attr('class', 'bar') as BarsSelectionType;
+    entered.append('rect').attr('class', 'hit');
+    entered.append('line').attr('class', 'stem');
+    entered.append('circle').attr('class', 'head');
+    return entered;
+  }
+
   private setBarAttributes(height: number, y: ValueScale, bars: BarsSelectionType | BarsTransitionType): void {
-    bars.attr('class', 'bar')
+    // A transition and a selection differ in what `select` returns but not in how it is called, and
+    // the d3 typings offer no union over the two. Everything below only ever reads it back as the
+    // same kind it was given, so the cast costs nothing - and going the other way (duplicating the
+    // body once per kind) is how the attributes drift apart.
+    const parts = bars as BarsSelectionType;
+
+    const centre = (d: IGroupBarData) => d.x(d.data.name) + d.x.bandwidth() / 2;
+    const top = (d: IGroupBarData) => y(d.data.value);
+    // Capped by the band so a chart of forty epitopes does not draw heads that overlap each other.
+    const radius = (d: IGroupBarData) =>
+      Math.min(BarChartGrouped.defaultHeadRadius, d.x.bandwidth() / 2);
+
+    parts.select('rect.hit')
       .attr('x', (d) => d.x(d.data.name))
-      .attr('y', (d) => y(d.data.value))
+      .attr('y', (d) => Math.max(0, top(d) - radius(d)))
       .attr('width', (d) => d.x.bandwidth())
-      .attr('height', (d) => height - y(d.data.value))
+      .attr('height', (d) => Math.max(0, height - Math.max(0, top(d) - radius(d))));
+
+    parts.select('line.stem')
+      .attr('x1', centre).attr('x2', centre)
+      .attr('y1', height).attr('y2', top)
+      .style('stroke', (d) => d.colors(d.data.name));
+
+    parts.select('circle.head')
+      .attr('cx', centre).attr('cy', top).attr('r', radius)
       .style('fill', (d) => d.colors(d.data.name));
   }
 

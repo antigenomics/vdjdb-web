@@ -65,6 +65,21 @@ object AnnotationsSearchScopeHammingDistance {
       Hamming2
     }
 
+  /** The name this scope carries in the control-prior table.
+    *
+    * Reachability is a property of the search radius — a random repertoire reaches 1,203 of the 1,937
+    * human TRB epitopes at one substitution and a small fraction of that at zero — so a prior measured
+    * at one scope is simply wrong at another, and every scope the UI offers gets its own rows. Defined
+    * here rather than in either consumer so the offline generator that writes those rows and the
+    * loader that reads them cannot drift apart.
+    */
+  def priorName(distance: AnnotationsSearchScopeHammingDistance): String = sanitize(distance) match {
+    case Exact    => "exact"
+    case Hamming  => "hamming1"
+    case Hamming2 => "hamming2"
+    case _        => "levenshtein1"
+  }
+
   /** The index a scope is *searched against*, which is not the same thing as the scope itself.
     *
     * Exact rides on the Hamming index rather than having one of its own: it is a sub-range of a

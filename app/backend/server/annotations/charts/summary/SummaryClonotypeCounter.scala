@@ -28,9 +28,16 @@ import play.api.libs.json.{Json, Writes}
   *                derive on its own: the species counters are a sibling breakdown of the same matches,
   *                so they say how many clonotypes hit each species but not which epitope belongs to
   *                which. Omitted from the JSON when `None`.
+  * @param alpha   first coefficient of the Beta prior on this epitope's per-clonotype match rate,
+  *                measured against a healthy control repertoire — see
+  *                [[backend.server.annotations.ControlPrior]]. Set on `antigen.epitope` counters only,
+  *                and only while the request is filtered the way the control run was; the client reads
+  *                its absence as "no p-value for this bar" rather than substituting a default.
+  * @param beta    second coefficient of the same Beta.
   */
 case class SummaryClonotypeCounter(field: String, unique: Int, databaseUnique: Long, frequency: Double, reads: Long,
-                                   species: Option[String] = None)
+                                   species: Option[String] = None,
+                                   alpha: Option[Double] = None, beta: Option[Double] = None)
 
 object SummaryClonotypeCounter {
   implicit val summaryClonotypeCounterWrites: Writes[SummaryClonotypeCounter] = Json.writes[SummaryClonotypeCounter]

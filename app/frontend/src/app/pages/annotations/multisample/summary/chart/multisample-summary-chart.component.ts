@@ -405,26 +405,36 @@ export class MultisampleSummaryChartComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Binomial enrichment per sample, keyed sample -> field value -> { p, q }.
+   * Beta-Binomial enrichment per sample, keyed sample -> field value -> { p, q }.
    *
-   * a ~ Binomial(b, c / d) - the conservative scale.
+   *   `a ~ BetaBinomial(b, alpha, beta)`
    *
-   *   a  matched this value in the sample          c  VDJdb records carrying this value
-   *   b  clonotypes in the sample                  d  VDJdb records in total
+   *   a  clonotypes matching this epitope in the sample
+   *   b  clonotypes in the sample
+   *   alpha, beta  the epitope's per-clonotype match rate in a healthy control repertoire
    *
-   * `c` and `d` are counted over the same accepted rows the search ran on, so species, chain, MHC
-   * class and confidence apply to both and the ratio never mixes populations.
+   * The coefficients come from the server, measured by annotating a 100k-clonotype control repertoire
+   * of the same species and chain — see `ControlPrior` — so the question each p-value answers is "more
+   * of this epitope than a repertoire with no history of it", which is the question being asked.
    *
-   * There is no publicity term. Multiplying by the matched fraction `e / b` is better calibrated on
-   * paper and gives p-values so extreme they cannot be read - 1e-196 for an epitope that matches a
-   * synthetic control repertoire as hard as it matches a real donor. Leaving it out makes the test
-   * over-predict the total match count by 1/publicity, ~12x on the demo repertoires, and that
-   * conservatism is exactly what drops the worst artifacts below significance.
+   * What it replaces was the epitope's share of VDJdb records, and that was measuring the database
+   * rather than the donor. Record count is close to unrelated to how reachable an epitope is: on
+   * production `YLEPGPVTA` has 11 human TRB records and a control repertoire finds it 217 times, while
+   * `EPLPQGQLTAY` has 39 records and is found 42 times. Scoring a real B35+ donor against record share
+   * ranked `YLEPGPVTA` first at 1e-37 and the donor's true EBV response fifteenth; against the control
+   * the true response ranks first and `YLEPGPVTA` comes out at p = 1.00 — the donor matched it 67
+   * times where chance alone gives 139, so it was never enriched, only reachable.
+   *
+   * Beta-Binomial rather than Binomial because the rate is itself estimated from one finite control, so
+   * it carries uncertainty that a fixed `p` would throw away. The half-count in `alpha` and `beta` is
+   * Jeffreys, and it is what keeps the rare tail honest: an epitope reached zero times out of 100,000
+   * has a maximum-likelihood rate of exactly zero, under which one single match is infinitely
+   * surprising and every never-reached epitope would top the chart.
    *
    * Every input is a count of distinct rearrangements. Neither the read-count weighting nor the axis
-   * scaling can reach this - both change how tall a bar is drawn, not how unlikely it is.
+   * scaling can reach this — both change how tall a bar is drawn, not how unlikely it is.
    *
-   * BH runs per sample over every value that passed the epitope cutoff - each sample is its own
+   * BH runs per sample over every value that passed the epitope cutoff — each sample is its own
    * experiment, and the family is what was tested rather than what the threshold left on screen.
    */
   private enrichmentBySample(fieldName: string, options: SummaryChartOptions):
@@ -438,25 +448,17 @@ export class MultisampleSummaryChartComponent implements OnInit, OnDestroy {
         return;
       }
       const sampleClonotypes = counters.annotated.unique + counters.notFoundCounter.unique;   // b
-      const databaseRecords = counters.notFoundCounter.databaseUnique;                        // d
       const tested = SummaryChartOptions.charted(field.counters, fieldName, options);
 
       const pValues = tested.map((counter) => {
-        if (sampleClonotypes <= 0 || databaseRecords <= 0 || counter.databaseUnique <= 0) {
+        // No coefficients means the server did not measure this bar — a non-epitope column, a species
+        // or chain the control set does not cover, or an annotation run with filters the control run
+        // did not use. All three are "unknown", and a bar with no null behind it gets no p-value
+        // rather than one computed against a substitute.
+        if (sampleClonotypes <= 0 || counter.alpha === undefined || counter.beta === undefined) {
           return NaN;
         }
-        // No publicity factor. Including it is the better-calibrated model on paper and produces
-        // p-values so extreme they are unreadable - 1e-196 for an epitope that matches the synthetic
-        // control sample just as hard as it matches a real donor. Dropping it leaves the test
-        // over-predicting the total match count by 1/publicity (~12x on the demo repertoires), which
-        // makes it conservative, and that conservatism is what removes the worst artifacts: both DENV
-        // epitopes, MLNIPSINV and DATYQRTRALVR fall out of significance entirely.
-        //
-        // This is a holding position, not the answer. The ranking is still driven by 1/c, because a
-        // record count is a poor proxy for how reachable an epitope is - see the control-derived
-        // Beta prior that replaces it.
-        const rate = counter.databaseUnique / databaseRecords;                                // c / d
-        return Statistics.binomialUpperTail(counter.unique, sampleClonotypes, Math.min(1, rate));
+        return Statistics.betaBinomialUpperTail(counter.unique, sampleClonotypes, counter.alpha, counter.beta);
       });
       const adjusted = Statistics.benjaminiHochberg(pValues);
 

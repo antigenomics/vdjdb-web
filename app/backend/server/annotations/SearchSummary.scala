@@ -116,11 +116,17 @@ object SearchSummary {
   private final val EpitopeField = "antigen.epitope"
   private final val SpeciesField = "antigen.species"
 
-  /** @return the per-field counters, and the `notFound` counter */
+  /** @param prior the control-derived Beta coefficients for an epitope, or `None` where they were not
+    *              measured — see [[ControlPrior]]. Consulted for the epitope field only; nothing else
+    *              in the summary has a null to be read against.
+    * @return the per-field counters, and the `notFound` counter
+    */
   def summarize(found: Seq[(Clonotype, Seq[ClonotypeSearchResult])],
                 sample: Sample,
                 fields: Seq[String],
-                index: SummaryIndex): (Seq[SummaryFieldCounter], SummaryClonotypeCounter) = {
+                index: SummaryIndex,
+                prior: String => Option[(Double, Double)] = _ => None):
+  (Seq[SummaryFieldCounter], SummaryClonotypeCounter) = {
     val counters = fields.map(field => field -> mutable.LinkedHashMap.empty[String, MutableCounter]).toMap
 
     // Which antigen species each epitope belongs to, recorded while the rows are already in hand. The
@@ -158,8 +164,10 @@ object SearchSummary {
       val isEpitope    = field == SearchSummary.EpitopeField
       SummaryFieldCounter(field, counters(field).toSeq.collect {
         case (value, counter) if counter.unique != 0 =>
+          val beta = if (isEpitope) prior(value) else None
           SummaryClonotypeCounter(value, counter.unique, denominators.getOrElse(value, 0L),
-            counter.frequency, counter.reads, if (isEpitope) epitopeSpecies.get(value) else None)
+            counter.frequency, counter.reads, if (isEpitope) epitopeSpecies.get(value) else None,
+            beta.map(_._1), beta.map(_._2))
       })
     }
 

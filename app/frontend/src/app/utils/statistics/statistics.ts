@@ -16,121 +16,101 @@
 
 /** Enrichment statistics for the annotation summaries.
  *
- * The question each p-value answers: a clonotype reaches a given epitope by clearing two stages — it
- * has to be in VDJdb at all, which the repertoire's own matched fraction estimates, and then it has
- * to be on this epitope rather than another, which is that epitope's share of the database. The
- * per-clonotype rate is the product, and the p-value is the upper tail of the resulting binomial:
- * how surprising this many hits would be with no particular affinity for this donor.
+ * The question each p-value answers: does this sample carry more clonotypes against this epitope than
+ * a repertoire with no history of it would. The null is measured, not derived — the server annotates a
+ * healthy 100k-clonotype control repertoire of the same species and chain and reports the resulting
+ * per-clonotype match rate as a Beta, which makes the test Beta-Binomial. A Beta rather than a fixed
+ * rate because the rate is an estimate from one finite control, and a half-count on each side because
+ * an epitope the control never reached would otherwise have a null of exactly zero, under which one
+ * match is infinitely surprising.
  *
- * The caller supplies the composed rate. Every count entering it is over the *same* database
- * restriction the search ran under (species, chain, MHC class, confidence), so no ratio mixes
- * populations, and every count is of distinct rearrangements, so read-count weighting cannot reach
- * the result.
- *
- * Deliberately independent of how the chart is drawn: the counts are clonotypes, so neither the
- * read-count weighting nor the 10^5 axis scaling enters. Those change the height of a bar, not how
- * unlikely it is.
+ * Every count entering it is of distinct rearrangements, so the read-count weighting cannot reach the
+ * result, and the counts are of clonotypes, so neither can the 10^5 axis scaling. Those change the
+ * height of a bar, not how unlikely it is.
  */
 export namespace Statistics {
 
-  /** Lanczos approximation, g = 7, n = 9. Accurate to ~15 significant digits over the range used here,
-    * which is what lets the incomplete beta below stay stable for repertoires of 10^5 clonotypes. */
-  const LANCZOS: number[] = [
-    0.99999999999980993, 676.5203681218851, -1259.1392167224028, 771.32342877765313,
-    -176.61502916214059, 12.507343278686905, -0.13857109526572012, 9.9843695780195716e-6,
-    1.5056327351493116e-7
-  ];
-
-  export function logGamma(x: number): number {
-    if (x < 0.5) {
-      // Reflection, so the series is only ever evaluated where it converges.
-      return Math.log(Math.PI / Math.sin(Math.PI * x)) - logGamma(1 - x);
-    }
-    const z = x - 1;
-    let a = LANCZOS[ 0 ];
-    const t = z + 7.5;
-    for (let i = 1; i < LANCZOS.length; i = i + 1) {
-      a = a + LANCZOS[ i ] / (z + i);
-    }
-    return 0.5 * Math.log(2 * Math.PI) + (z + 0.5) * Math.log(t) - t + Math.log(a);
-  }
-
-  /** Continued fraction for the incomplete beta, evaluated by the modified Lentz method. */
-  function betaContinuedFraction(a: number, b: number, x: number): number {
-    const tiny = 1e-30;
-    const epsilon = 3e-16;
-    const maxIterations = 500;
-
-    const qab = a + b;
-    const qap = a + 1;
-    const qam = a - 1;
-
-    let c = 1;
-    let d = 1 - qab * x / qap;
-    if (Math.abs(d) < tiny) { d = tiny; }
-    d = 1 / d;
-    let h = d;
-
-    for (let m = 1; m <= maxIterations; m = m + 1) {
-      const m2 = 2 * m;
-
-      // Even step.
-      let numerator = m * (b - m) * x / ((qam + m2) * (a + m2));
-      d = 1 + numerator * d;
-      if (Math.abs(d) < tiny) { d = tiny; }
-      c = 1 + numerator / c;
-      if (Math.abs(c) < tiny) { c = tiny; }
-      d = 1 / d;
-      h = h * d * c;
-
-      // Odd step.
-      numerator = -(a + m) * (qab + m) * x / ((a + m2) * (qap + m2));
-      d = 1 + numerator * d;
-      if (Math.abs(d) < tiny) { d = tiny; }
-      c = 1 + numerator / c;
-      if (Math.abs(c) < tiny) { c = tiny; }
-      d = 1 / d;
-      const delta = d * c;
-      h = h * delta;
-
-      if (Math.abs(delta - 1) < epsilon) {
-        return h;
-      }
-    }
-    return h;
-  }
-
-  /** Regularized incomplete beta, I_x(a, b). */
-  export function incompleteBeta(a: number, b: number, x: number): number {
-    if (x <= 0) { return 0; }
-    if (x >= 1) { return 1; }
-    const front = Math.exp(logGamma(a + b) - logGamma(a) - logGamma(b) + a * Math.log(x) + b * Math.log(1 - x));
-    // Swapping the arguments where the continued fraction converges slowly is what keeps this exact in
-    // the far tail, which is the half of the range that matters for an enrichment test.
-    return (x < (a + 1) / (a + b + 2))
-      ? front * betaContinuedFraction(a, b, x) / a
-      : 1 - front * betaContinuedFraction(b, a, 1 - x) / b;
-  }
-
   /**
-   * P(X >= k) for X ~ Binomial(n, p).
+   * P(X >= k) for X ~ BetaBinomial(n, alpha, beta).
    *
-   * Via the identity P(X >= k) = I_p(k, n - k + 1) rather than by summing the pmf: a repertoire runs
-   * to 10^5 clonotypes, so the sum would be up to 10^5 terms per bar and would lose the far tail to
-   * rounding, which is exactly the region a p-value is read in.
+   * The overdispersed counterpart of a binomial tail, for a rate that is itself uncertain: instead of
+   * one fixed p the per-clonotype rate is a Beta(alpha, beta) draw, which is what a rate estimated from
+   * a finite control repertoire actually looks like. A binomial has a closed form through the
+   * regularized incomplete beta; this has no such identity, so the tail is summed term by term.
+   *
+   * Every term is held *relative to the term at the mean* rather than as a probability, and the answer
+   * is the ratio of what lies at or above k to everything. That is what makes it usable at these
+   * sizes. Anchoring the walk at k instead is the obvious implementation and is wrong in the worst
+   * possible direction: the first term is `exp(logPmf(k))`, and for a repertoire of 63,739 clonotypes
+   * against an epitope a control reaches 26,000 times per 100,000, `logPmf(1300) = -10141`, which is a
+   * double's zero. The running sum then starts at zero and stays there, and the routine returns 0 -
+   * maximal significance - for an epitope the sample matched *thirteen times less* than chance would
+   * give. The most reachable epitopes in the database would have led every chart.
+   *
+   * Anchored at the mean the largest term is ~1, so nothing overflows on the way out and terms
+   * underflow only where they stop mattering. It also removes the need for a log-gamma at all: each
+   * step is the previous term times (n - j)(j + alpha) / ((j + 1)(n - j + beta - 1)), a plain rational
+   * factor, so the walk costs one multiply per step. That matters here - a repertoire runs to 2 * 10^5
+   * clonotypes and one summary tests ~2 * 10^3 epitopes.
+   *
+   * Both walks stop once a term is negligible against what has accumulated, but neither may stop
+   * before it has crossed k: on the way there the terms are shrinking for a reason that says nothing
+   * about the sum being approached.
+   *
+   * Assumes a single-peaked pmf, which holds whenever alpha >= 1 or beta >= 1 - true of every prior
+   * this is used with, since beta counts a control repertoire. A U-shaped pmf (both below 1) puts the
+   * anchor in the trough and returns NaN rather than a wrong number.
    *
    * @returns a probability in [0, 1], or NaN if the inputs cannot describe a trial
    */
-  export function binomialUpperTail(k: number, n: number, p: number): number {
-    if (!isFinite(k) || !isFinite(n) || !isFinite(p) || n <= 0 || p < 0 || p > 1) {
+  export function betaBinomialUpperTail(k: number, n: number, alpha: number, beta: number): number {
+    if (!isFinite(k) || !isFinite(n) || !isFinite(alpha) || !isFinite(beta) || n <= 0 || alpha <= 0 || beta <= 0) {
       return NaN;
     }
     if (k <= 0) { return 1; }      // P(X >= 0) is certain
     if (k > n) { return 0; }       // more successes than trials
-    if (p === 0) { return 0; }
-    if (p === 1) { return 1; }
-    const tail = incompleteBeta(k, n - k + 1, p);
-    return Math.min(1, Math.max(0, tail));
+
+    // X is a count, so P(X >= k) for a fractional k is P(X >= ceil(k)); the recurrence below steps only
+    // between whole j and would otherwise walk a lattice the variable never lands on.
+    const from = Math.ceil(k);
+    // pmf(j + 1) / pmf(j).
+    const step = (j: number) => ((n - j) * (j + alpha)) / ((j + 1) * (n - j + beta - 1));
+
+    const anchor = Math.min(n, Math.max(0, Math.round(n * alpha / (alpha + beta))));
+    const negligible = 1e-18;
+
+    let above = 0;
+    let below = 0;
+    const accumulate = (j: number, weight: number) => {
+      if (j >= from) { above = above + weight; } else { below = below + weight; }
+    };
+
+    accumulate(anchor, 1);
+
+    // Each walk stops against the accumulator it is still feeding, not against the total. Against the
+    // total it would truncate the deep tail by an arbitrary factor - `above` can sit 10^28 below
+    // `below`, so terms that are negligible next to the whole distribution are the entire answer. The
+    // bound is the remaining geometric series, `weight * r / (1 - r)`, not the next term alone.
+    let weight = 1;
+    for (let j = anchor; j < n; j = j + 1) {
+      const shrink = step(j);
+      weight = weight * shrink;
+      accumulate(j + 1, weight);
+      // Multiplied out rather than divided, so a shrink approaching 1 cannot divide by zero.
+      if (j + 1 >= from && shrink < 1 && weight * shrink < negligible * above * (1 - shrink)) { break; }
+    }
+
+    weight = 1;
+    for (let j = anchor - 1; j >= 0; j = j - 1) {
+      const shrink = 1 / step(j);
+      weight = weight * shrink;
+      accumulate(j, weight);
+      if (j < from && shrink < 1 && weight * shrink < negligible * below * (1 - shrink)) { break; }
+    }
+
+    const total = above + below;
+    // Not finite only if the pmf was not single-peaked and the walk ran away - see the note above.
+    return isFinite(total) && total > 0 ? Math.min(1, Math.max(0, above / total)) : NaN;
   }
 
   /**

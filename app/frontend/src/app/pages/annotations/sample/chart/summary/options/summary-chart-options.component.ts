@@ -146,6 +146,12 @@ export class SummaryChartOptionsComponent {
   @Input('disableCheckboxes')
   public disableCheckboxes: ISummaryChartOptionsDisableCheckboxes = { disableIsNotFoundVisible: false, disableIsWeightedByReadCount: false };
 
+  /** Whether to explain the enrichment test below the column picker. Off by default because this panel
+    * is shared, and only the multisample chart puts a p-value in its tooltips - describing a number the
+    * single-sample chart never shows would be worse than saying nothing. */
+  @Input('showEnrichmentNote')
+  public showEnrichmentNote: boolean = false;
+
   @Output('onOptionsChange')
   public onOptionsChange = new EventEmitter();
 

@@ -100,3 +100,82 @@ the directory per request, so dropping a file in is enough to publish it: no res
 mixed-chain split that turns one uploaded file into a TRA sample and a TRB sample. Its rows are
 generated, not measured — do not cite it as data. 1,869,266 B gzipped, 9,453,038 B raw (5.06x, well
 inside the 100x decompression-ratio guard), md5 `49946bc42d33b4a35bf1a214b071e576`.
+
+---
+
+## `conf/control-prior.txt` — enrichment null
+
+**What it is:** for every epitope, how many clonotypes of a healthy repertoire match it **by chance**.
+It is the null the annotation summary's enrichment p-values are read against, consumed by
+`backend.server.annotations.ControlPrior` and turned into the Beta coefficients the chart tests with.
+
+**Provenance:** *derived/computed* — an annotation run, not a measurement. Both inputs are
+experimental (see below); the counts in this file are not.
+
+**Format:** tab-separated with a header, 9,901 rows.
+
+| Column | Meaning |
+|---|---|
+| `species` | `HomoSapiens` or `MusMusculus` |
+| `gene` | `TRA` or `TRB` |
+| `scope` | `exact`, `hamming1`, `hamming2` or `levenshtein1` — the four searches the UI offers |
+| `epitope` | `antigen.epitope` |
+| `matched` | distinct control clonotypes matching that epitope under that scope |
+| `control` | control repertoire size, `100000` throughout |
+
+One row per (species, gene, scope, epitope) that the control reached at all; an epitope it never
+reached is simply absent and picks up the ½-count floor at read time. Coverage is a strong function of
+scope — a random human TRB repertoire reaches **602** epitopes exactly and **1,203** at one
+substitution, out of 1,937.
+
+### Why it is not the record count
+
+The obvious null is an epitope's share of VDJdb records, and it measures the database rather than the
+donor. Record count barely relates to reachability: `YLEPGPVTA` has **11** human TRB records and a
+control repertoire finds it **217** times, while `EPLPQGQLTAY` has **39** records and is found **42**
+times. Scored against record share, a *synthetic* repertoire with no immunological history came out
+with the same epitope profile as two real donors to within a couple of percent.
+
+### Control repertoires
+
+**Provenance:** *experimental*.
+**Upstream:** `https://huggingface.co/datasets/isalgo/airr_control` (locally `~/hf/airr_control/`),
+the `aa` files. Four samples, one per (species, chain), each cut to exactly **100,000 productive
+clonotypes**.
+
+Filtering to productive is not cosmetic: mouse TRA runs **21.3%** stop-codon and frameshift reads at
+the top of its count distribution. Those can never match a database of productive CDR3s, so leaving
+them in dilutes the denominator and yields a rate that is too low — a prior too permissive exactly
+where the data is thinnest.
+
+```bash
+# One population; repeat for HomoSapiens/MusMusculus x TRA/TRB.
+zcat ~/hf/airr_control/<sample>.aa.tsv.gz \
+  | awk -F'\t' 'NR>1 && $4 !~ /[*_]/' \
+  | head -100000 > control/HomoSapiens.TRB.txt   # VDJtools positional columns
+```
+
+### Regenerate
+
+⚠️ **Required whenever the production VDJdb is updated.** The counts describe the database that was
+searched; against a newer one they are stale in a direction nothing reports. Nothing at runtime checks
+this — the file is read at first use and trusted.
+
+```zsh
+export JAVA_HOME=$(/usr/libexec/java_home -v 1.8)
+export PATH="$JAVA_HOME/bin:$PATH"
+
+env VDJDB_PRIOR_DB=/path/to/vdjdb-db \
+    VDJDB_PRIOR_CONTROL=/path/to/control \
+    VDJDB_PRIOR_OUT=conf/control-prior.txt \
+    sbt -J-Xmx12g "testOnly backend.tools.ControlPriorGeneratorSpec"
+```
+
+`VDJDB_PRIOR_DB` must hold the **27-column production** `vdjdb.txt` + `vdjdb.meta.txt`, not a release
+ZIP — same constraint as the test fixture above. About 70 s and ~8 GB of heap for all 16 combinations.
+The spec cancels itself when the three variables are unset, so CI never runs it.
+
+**Deployment:** `conf/` is on the application classpath, so this ships inside the image. `ControlPrior`
+prefers a copy sitting **beside the database** (`<database.path>/control-prior.txt`) and falls back to
+the packaged one — so a database refresh on the server can drop a matching prior next to it without a
+rebuild. Neither present means no p-values, logged at WARN, and nothing else degrades.
