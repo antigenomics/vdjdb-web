@@ -102,7 +102,7 @@ object SampleRetentionConfiguration {
     * version only knew days, which printed the three-hour token window as "0d" in the per-sample log
     * line — indistinguishable from a misconfigured zero, on the one line an operator reads to confirm
     * the sweeper is deleting the right things. */
-  private[sample] def window(seconds: Long): String = {
+  def window(seconds: Long): String = {
     if (seconds >= 24L * 60L * 60L) s"${seconds / (24L * 60L * 60L)}d"
     else if (seconds >= 60L * 60L) s"${seconds / (60L * 60L)}h"
     else if (seconds >= 60L) s"${seconds / 60L}m"

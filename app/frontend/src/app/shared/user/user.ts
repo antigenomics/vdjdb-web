@@ -86,3 +86,49 @@ export class UserPermissions {
     /* tslint:enable:no-string-literal */
   }
 }
+
+/**
+ * The limits in force for this account, resolved by the server.
+ *
+ * They live in three unrelated places server-side - the permissions table, the annotations config and
+ * the auth config - and differ between registered and token accounts, so working out which set applies
+ * is done once on the server rather than reimplemented here.
+ */
+export class AccountLimits {
+  /** What the server uses to mean "no ceiling on this row". */
+  public static readonly UNLIMITED: number = -1;
+
+  public accountType: string;
+  public maxSamples: number;
+  public maxFileSizeMb: number;
+  public maxClonotypes: number;
+  public uploadsPerDay: number;
+  public annotationsPerDay: number;
+  public sampleRetention: string;
+  public accountRetention?: string;
+
+  constructor(accountType: string, maxSamples: number, maxFileSizeMb: number, maxClonotypes: number,
+              uploadsPerDay: number, annotationsPerDay: number, sampleRetention: string, accountRetention?: string) {
+    this.accountType = accountType;
+    this.maxSamples = maxSamples;
+    this.maxFileSizeMb = maxFileSizeMb;
+    this.maxClonotypes = maxClonotypes;
+    this.uploadsPerDay = uploadsPerDay;
+    this.annotationsPerDay = annotationsPerDay;
+    this.sampleRetention = sampleRetention;
+    this.accountRetention = accountRetention;
+  }
+
+  public isTokenAccount(): boolean {
+    return this.accountType === 'token';
+  }
+
+  public static deserialize(input: any): AccountLimits {
+    /* Disable tslint to prevent ClosureCompiler mangling */
+    /* tslint:disable:no-string-literal */
+    return new AccountLimits(input[ 'accountType' ], input[ 'maxSamples' ], input[ 'maxFileSizeMb' ],
+      input[ 'maxClonotypes' ], input[ 'uploadsPerDay' ], input[ 'annotationsPerDay' ],
+      input[ 'sampleRetention' ], input[ 'accountRetention' ]);
+    /* tslint:enable:no-string-literal */
+  }
+}

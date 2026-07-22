@@ -36,7 +36,7 @@ import backend.server.annotations.api.sample.validate.{ValidateSampleRequest, Va
 import backend.server.annotations.api.tag.create.{CreateTagRequest, CreateTagResponse}
 import backend.server.annotations.api.tag.delete.{DeleteTagRequest, DeleteTagResponse}
 import backend.server.annotations.api.tag.update.{UpdateTagRequest, UpdateTagResponse}
-import backend.server.annotations.api.user.UserDetailsResponse
+import backend.server.annotations.api.user.{AccountLimits, UserDetailsResponse}
 import backend.server.annotations.export.IntersectionTableConverter
 import backend.server.database.Database
 import backend.server.database.api.metadata.DatabaseMetadataResponse
@@ -52,7 +52,8 @@ import scala.collection.concurrent.TrieMap
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success}
 
-class AnnotationsWebSocketActor(out: ActorRef, limit: IpLimit, user: User, details: UserDetails, database: Database,
+class AnnotationsWebSocketActor(out: ActorRef, limit: IpLimit, user: User, details: UserDetails,
+                                accountLimits: AccountLimits, database: Database,
                                 motifs: Motifs, usage: UsageProvider, scheduler: AnnotationsScheduler)
                                (implicit ec: ExecutionContext, as: ActorSystem, limits: RequestLimits, up: UserProvider, stp: SampleTagProvider,
                                 upp: UserPermissionsProvider, sfp: SampleFileProvider, fmp: FileMetadataProvider, tfp: TemporaryFileProvider)
@@ -74,7 +75,7 @@ class AnnotationsWebSocketActor(out: ActorRef, limit: IpLimit, user: User, detai
   def handleMessage(out: WebSocketOutActorRef, data: Option[JsValue]): Unit = {
     out.getAction match {
       case UserDetailsResponse.Action =>
-        out.success(UserDetailsResponse(details))
+        out.success(UserDetailsResponse(details, accountLimits))
       case AvailableSoftwareResponse.Action =>
         out.success(AvailableSoftwareResponse(SampleFileForm.Formats))
       case ValidateSampleResponse.Action =>
@@ -283,9 +284,10 @@ class AnnotationsWebSocketActor(out: ActorRef, limit: IpLimit, user: User, detai
 }
 
 object AnnotationsWebSocketActor {
-  def props(out: ActorRef, limit: IpLimit, user: User, details: UserDetails, database: Database, motifs: Motifs,
+  def props(out: ActorRef, limit: IpLimit, user: User, details: UserDetails, accountLimits: AccountLimits,
+            database: Database, motifs: Motifs,
             usage: UsageProvider, scheduler: AnnotationsScheduler)
            (implicit ec: ExecutionContext, as: ActorSystem, limits: RequestLimits, up: UserProvider, stp: SampleTagProvider,
             upp: UserPermissionsProvider, sfp: SampleFileProvider, fmp: FileMetadataProvider, tfp: TemporaryFileProvider): Props =
-    Props(new AnnotationsWebSocketActor(out, limit, user, details, database, motifs, usage, scheduler))
+    Props(new AnnotationsWebSocketActor(out, limit, user, details, accountLimits, database, motifs, usage, scheduler))
 }
