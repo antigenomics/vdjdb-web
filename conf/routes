@@ -27,6 +27,9 @@ GET         /temporary/:link                            backend.controllers.Appl
 
 # Database API
 GET         /api/database/summary                       backend.controllers.DatabaseAPI.summary
+# The Overview document ships its figures as separate resources rather than inlined base64; see
+# DatabaseSummaryProvider for why. Must stay below the route above - Play matches in file order.
+GET         /api/database/summary/image/:index          backend.controllers.DatabaseAPI.summaryImage(index: Int)
 GET         /api/database/meta                          backend.controllers.DatabaseAPI.meta
 GET         /api/database/meta/columns/:column          backend.controllers.DatabaseAPI.columnInfo(column: String)
 POST        /api/database/search                        backend.controllers.DatabaseAPI.search

@@ -22,7 +22,7 @@ import backend.actors.DatabaseSearchWebSocketActor
 import backend.models.files.temporary.TemporaryFileProvider
 import backend.server.database.api.metadata.{DatabaseColumnInfoResponse, DatabaseMetadataResponse}
 import backend.server.database.filters.DatabaseFilters
-import backend.server.database.{Database, DatabaseColumnInfo}
+import backend.server.database.{Database, DatabaseColumnInfo, DatabaseSummaryProvider}
 import backend.server.limit.RequestLimits
 import backend.server.motifs.Motifs
 import backend.server.search.api.search.{SearchDataRequest, SearchDataResponse}
@@ -37,7 +37,8 @@ import play.api.mvc._
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class DatabaseAPI @Inject()(cc: ControllerComponents, database: Database, structures: Structures, motifs: Motifs, configuration: Configuration)
+class DatabaseAPI @Inject()(cc: ControllerComponents, database: Database, summaries: DatabaseSummaryProvider,
+                            structures: Structures, motifs: Motifs, configuration: Configuration)
                            (implicit as: ActorSystem, mat: Materializer, ec: ExecutionContext, limits: RequestLimits, tfp: TemporaryFileProvider)
   extends AbstractController(cc) {
 
@@ -46,23 +47,52 @@ class DatabaseAPI @Inject()(cc: ControllerComponents, database: Database, struct
     * turns the repeat visits into a conditional request that answers 304 almost every time. */
   private final val SummaryCacheControl: String = "public, max-age=3600"
 
+  /** The images are addressed by an index into a document that only changes when the database is
+    * rebuilt, and a rebuild changes the URL's meaning rather than the URL - so this is `immutable`
+    * only for as long as the entity tag agrees, which is what the conditional request below checks. */
+  private final val SummaryImageCacheControl: String = "public, max-age=86400"
+
   def summary: Action[AnyContent] = Action.async { request =>
     Future.successful {
-      database.getSummaryFile match {
-        case Some(file) =>
-          val etag = "\"" + java.lang.Long.toHexString(file.lastModified()) + "-" +
-            java.lang.Long.toHexString(file.length()) + "\""
-          if (request.headers.get(IF_NONE_MATCH).exists(_.split(',').exists(_.trim == etag))) {
-            NotModified.withHeaders(CACHE_CONTROL -> SummaryCacheControl, ETAG -> etag)
+      summaries.get match {
+        case Some(document) =>
+          if (matchesEtag(request, document.etag)) {
+            NotModified.withHeaders(CACHE_CONTROL -> SummaryCacheControl, ETAG -> document.etag)
           } else {
-            Ok.sendFile(content = file, fileName = _.getName, inline = true)
-              .withHeaders(CACHE_CONTROL -> SummaryCacheControl, ETAG -> etag)
+            // Served as bytes rather than from the file: what goes out is the rewritten document,
+            // with the eight inlined images replaced by references to `summaryImage` below.
+            Ok(document.html).as(HTML)
+              .withHeaders(CACHE_CONTROL -> SummaryCacheControl, ETAG -> document.etag)
           }
         case None =>
           BadRequest("The database summary is not available for this release of VDJdb.")
       }
     }
   }
+
+  def summaryImage(index: Int): Action[AnyContent] = Action.async { request =>
+    Future.successful {
+      summaries.get match {
+        case Some(document) =>
+          // Suffixed with the index so two images of one document cannot share a validator.
+          val etag = document.etag.dropRight(1) + "-" + index + "\""
+          summaries.image(index) match {
+            case Some(_) if matchesEtag(request, etag) =>
+              NotModified.withHeaders(CACHE_CONTROL -> SummaryImageCacheControl, ETAG -> etag)
+            case Some(image) =>
+              Ok(image.bytes).as(image.contentType)
+                .withHeaders(CACHE_CONTROL -> SummaryImageCacheControl, ETAG -> etag)
+            case None =>
+              NotFound("No such image in the database summary.")
+          }
+        case None =>
+          BadRequest("The database summary is not available for this release of VDJdb.")
+      }
+    }
+  }
+
+  private def matchesEtag(request: Request[_], etag: String): Boolean =
+    request.headers.get(IF_NONE_MATCH).exists(_.split(',').exists(_.trim == etag))
 
   def meta: Action[AnyContent] = Action.async {
     Future.successful {
