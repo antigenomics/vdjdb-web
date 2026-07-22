@@ -40,8 +40,54 @@
         Leave it on <b>Guess</b> and a file holding both chains is split into two samples,
         <i>name</i>_TRA and <i>name</i>_TRB; name a chain instead and that is treated as an assertion
         about the file, keeping only those records.</p>
-    <p><b>Note</b> that limits on the number of samples, sample file size and number of clonotypes
-        (unique TCR sequences) apply.</p>
+</div>
+<div class="ui segments" *ngIf="getLimits() as limits">
+    <h4 class="ui top attached header">Limits on this account</h4>
+    <div class="ui attached segment padded">
+        <p>You are signed in with
+            <b *ngIf="limits.accountType === 'token'">a temporary token account</b>
+            <b *ngIf="limits.accountType === 'registered'">a registered account</b>
+            <b *ngIf="limits.accountType === 'demo'">the demo account</b>
+            <b *ngIf="limits.accountType === 'unlimited'">an administrative account</b>.
+            Registered accounts are given more room than token ones on every row below, and their
+            samples are kept for a year rather than hours.</p>
+        <table class="ui very basic compact table">
+            <tbody>
+            <tr>
+                <td>Stored samples</td>
+                <td><b>{{ limits.maxSamples }}</b> at a time</td>
+            </tr>
+            <tr>
+                <td>Uploaded file size</td>
+                <td><b>{{ limits.maxFileSizeMb }} MiB</b> each, measured compressed</td>
+            </tr>
+            <tr>
+                <td>Clonotypes per sample</td>
+                <td><b>{{ limits.maxClonotypes | number }}</b> unique TCR sequences</td>
+            </tr>
+            <tr *ngIf="limits.uploadsPerDay !== -1">
+                <td>Uploads per day</td>
+                <td><b>{{ limits.uploadsPerDay }}</b></td>
+            </tr>
+            <tr *ngIf="limits.annotationsPerDay !== -1">
+                <td>Annotation runs per day</td>
+                <td><b>{{ limits.annotationsPerDay }}</b></td>
+            </tr>
+            <tr>
+                <td>Uploaded samples kept for</td>
+                <td><b>{{ limits.sampleRetention }}</b> after upload</td>
+            </tr>
+            <tr *ngIf="limits.accountRetention">
+                <td>Account kept for</td>
+                <td><b>{{ limits.accountRetention }}</b> after last use</td>
+            </tr>
+            </tbody>
+        </table>
+        <p *ngIf="limits.isTokenAccount()">Token accounts are short-lived by design. Download anything you
+            want to keep before the window closes, or
+            <a href="/authorization/signup" rel="noopener">register with an e-mail address</a> for the
+            longer one. You can also run a local VDJdb server if you need to analyse more than this.</p>
+    </div>
 </div>
 <div class="ui segment padded" *ngIf="!checkFeaturesAvailability()">
     <p><b>Note</b> This is a demo account. Some features may be unavailable</p>

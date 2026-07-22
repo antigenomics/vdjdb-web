@@ -23,7 +23,7 @@ import { SetEntry } from 'shared/filters/common/set/set-entry';
 import { SampleItem } from 'shared/sample/sample-item';
 import { SampleTag } from 'shared/sample/sample-tag';
 import { IExportFormat, IExportOptionFlag } from 'shared/table/export/table-export.component';
-import { User, UserPermissions } from 'shared/user/user';
+import { AccountLimits, User, UserPermissions } from 'shared/user/user';
 import { WebSocketConnection, WebSocketResponseStatus } from 'shared/websocket/websocket-connection';
 import { WebSocketRequestData } from 'shared/websocket/websocket-request';
 import { WebSocketResponseData } from 'shared/websocket/websocket-response';
@@ -70,6 +70,7 @@ export class AnnotationsService {
   private _events: Subject<AnnotationsServiceEvents> = new Subject();
   private _initialized: boolean = false;
   private _user: User;
+  private _accountLimits: AccountLimits;
   private _availableSoftwareTypes: string[] = [];
   private _databaseMetadata: DatabaseMetadata;
 
@@ -93,6 +94,7 @@ export class AnnotationsService {
 
       const userDetailsResponse = await userDetailsRequest;
       this._user = User.deserialize(userDetailsResponse.get('details'));
+      this._accountLimits = AccountLimits.deserialize(userDetailsResponse.get('limits'));
       this.logger.debug('AnnotationsService: user', this._user);
 
       const availableSoftwareTypesResponse = await availableSoftwareTypesRequest;
@@ -164,6 +166,10 @@ export class AnnotationsService {
 
   public getUserPermissions(): UserPermissions {
     return this._user ? this._user.permissions : undefined;
+  }
+
+  public getAccountLimits(): AccountLimits {
+    return this._accountLimits;
   }
 
   public getUser(): User {

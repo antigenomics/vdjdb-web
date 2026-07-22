@@ -22,7 +22,7 @@ import backend.models.files.sample.SampleFileDetails
 import backend.models.files.sample.tags.SampleTagDetails
 import play.api.libs.json.{Json, Writes}
 
-case class UserDetailsResponse(details: UserDetails)
+case class UserDetailsResponse(details: UserDetails, limits: AccountLimits)
 
 object UserDetailsResponse {
   final val Action: String = "details"

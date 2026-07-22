@@ -28,6 +28,7 @@ import backend.models.files.sample.{SampleFileForm, SampleFileProvider, SampleFi
 import backend.models.files.temporary.TemporaryFileProvider
 import backend.models.usage.UsageProvider
 import backend.server.annotations.AnnotationsScheduler
+import backend.server.annotations.api.user.AccountLimits
 import backend.server.database.Database
 import backend.server.limit.RequestLimits
 import backend.server.motifs.Motifs
@@ -306,7 +307,9 @@ class AnnotationsAPI @Inject()(cc: ControllerComponents, userRequestAction: User
             if (user.nonEmpty) {
               val details = await(user.get.getDetails)
               Right(ActorFlow.actorRef { out =>
-                AnnotationsWebSocketActor.props(out, limits.getLimit(request), user.get, details, database, motifs, usage, scheduler)
+                AnnotationsWebSocketActor.props(out, limits.getLimit(request), user.get, details,
+                  AccountLimits(user.get.isTemporary, details.permissions, conf, usage.getConfiguration, retention.getConfiguration),
+                  database, motifs, usage, scheduler)
               })
             } else {
               Left(Forbidden)

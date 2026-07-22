@@ -16,6 +16,7 @@
 
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
+import { AccountLimits } from 'shared/user/user';
 import { AnnotationsService, AnnotationsServiceEvents } from '../annotations.service';
 
 @Component({
@@ -46,6 +47,12 @@ export class AnnotationsInfoComponent implements OnInit, OnDestroy {
 
   public isInitialized(): boolean {
     return this.annotationsService.isInitialized();
+  }
+
+  /** Undefined until the details message lands, which is what keeps the table out of the DOM until
+   * there are real numbers to put in it. */
+  public getLimits(): AccountLimits {
+    return this.annotationsService.getAccountLimits();
   }
 
   public ngOnDestroy(): void {
