@@ -21,8 +21,11 @@
     <div class="four wide column">
         <h4 class="ui header"><i class="low vision icon"></i>Hide samples</h4>
         <div class="ui divider"></div>
+        <!-- A sample with nothing to plot has no panel to hide, so its chip is inert rather than a
+             control that silently does nothing. -->
         <button class="ui tiny compact teal button" style="margin: 2px" *ngFor="let sample of getCurrentTabProcessedSamples()"
-                [ngClass]="{'basic':isSampleHidden(sample)}"
+                [ngClass]="{'basic':isSampleHidden(sample) || isSampleEmpty(sample), 'disabled':isSampleEmpty(sample)}"
+                [attr.title]="isSampleEmpty(sample) ? 'No matches under the current column and cutoff - nothing to plot for this sample' : null"
                 (click)="toggleSampleHidden(sample)">
             {{ sample }}
         </button>

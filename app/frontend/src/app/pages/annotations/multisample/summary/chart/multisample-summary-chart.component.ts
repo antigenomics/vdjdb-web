@@ -144,6 +144,21 @@ export class MultisampleSummaryChartComponent implements OnInit, OnDestroy {
     return this.currentTab.hiddenSamples.indexOf(sample) !== -1;
   }
 
+  /** True when the sample contributes no bar under the current column and cutoff, so `createData`
+    * gives it no panel. Its chip in "Hide samples" would otherwise be a control that does nothing:
+    * the sample is already off the chart and toggling it cannot bring it back. Only meaningful while
+    * ordering by samples - the other layout plots columns, not samples. */
+  public isSampleEmpty(sample: string): boolean {
+    if (!this.orderBySamples) {
+      return false;
+    }
+    const options = this.currentTab.options;
+    const fieldName = options.getCurrentSummaryFilterFieldType().name;
+    const counters = this.currentTab.counters.get(sample);
+    const field = counters ? counters.counters.find((c) => c.name === fieldName) : undefined;
+    return field === undefined || SummaryChartOptions.charted(field.counters, fieldName, options).length === 0;
+  }
+
   public getNonHiddenSamplesCount(samples: string[]): number {
     return samples.filter((s) => !this.isSampleHidden(s)).length;
   }
