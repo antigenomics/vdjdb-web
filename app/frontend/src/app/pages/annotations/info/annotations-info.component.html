@@ -38,6 +38,13 @@
         upload, and a header that cannot be placed as one of the three is rejected rather than guessed
         at. Every accepted file is converted to a VDJtools table on upload, so the format shown against
         a stored sample is the one it arrived in.</p>
+    <div class="account-notice account-notice--tip">
+        <i class="exclamation circle icon"></i>
+        <span>Filter your samples before uploading: remove sequencing noise and the naive repertoire so
+            that only expanded clonotypes and enriched meta-clonotypes remain.
+            <a href="https://github.com/antigenomics/vdjtools" target="_blank" rel="noopener">VDJtools</a>
+            does this.</span>
+    </div>
     <p>The <b>chain</b> is derived the same way, from the J segment call or an explicit locus column.
         Leave it on <b>Guess</b> and a file holding both chains is split into two samples,
         <i>name</i>_TRA and <i>name</i>_TRB; name a chain instead and that is treated as an assertion
