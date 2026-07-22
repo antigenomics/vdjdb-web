@@ -54,10 +54,12 @@ case class AccountLimits(accountType: String,
 object AccountLimits {
   implicit val accountLimitsWrites: Writes[AccountLimits] = Json.writes[AccountLimits]
 
-  final val MaxClonotypesPath: String = "application.annotations.upload.maxClonotypesCount"
+  final val MaxClonotypesRegisteredPath: String = "application.annotations.upload.maxClonotypesCountRegistered"
+  final val MaxClonotypesTemporaryPath: String  = "application.annotations.upload.maxClonotypesCountTemporary"
   final val TemporaryKeepPath: String = "application.auth.temporary.keep"
 
-  final val DefaultMaxClonotypes: Int          = 100000
+  final val DefaultMaxClonotypesRegistered: Int = 1000000
+  final val DefaultMaxClonotypesTemporary: Int  = 200000
   final val DefaultTemporaryKeepSeconds: Long  = 3L * 60L * 60L
 
   /** Negative means "no ceiling", matching how `UsageConfiguration` already encodes an unlimited quota.
@@ -81,7 +83,7 @@ object AccountLimits {
                     else "registered",
       maxSamples = permissions.maxFilesCount,
       maxFileSizeMb = permissions.maxFileSize,
-      maxClonotypes = conf.getOptional[Int](MaxClonotypesPath).getOrElse(DefaultMaxClonotypes),
+      maxClonotypes = maxClonotypes(conf, isTemporary),
       uploadsPerDay = if (isExempt || !usage.enabled) Unlimited else usage.uploadsPerDay(isTemporary),
       annotationsPerDay = if (isExempt || !usage.enabled) Unlimited else usage.annotationsPerDay(isTemporary),
       sampleRetention = if (isExempt || !retention.enabled) "kept indefinitely"
@@ -90,6 +92,12 @@ object AccountLimits {
                          else None
     )
   }
+
+  /** Kept beside the enforcement in `AnnotationsAPI`, which reads the same two keys with the same
+    * defaults — the page would be lying if the two drifted. */
+  def maxClonotypes(conf: Configuration, isTemporary: Boolean): Int =
+    if (isTemporary) conf.getOptional[Int](MaxClonotypesTemporaryPath).getOrElse(DefaultMaxClonotypesTemporary)
+    else conf.getOptional[Int](MaxClonotypesRegisteredPath).getOrElse(DefaultMaxClonotypesRegistered)
 
   /** Read defensively for the same reason every other key here is: production starts with
     * `-Dconfig.file=<server-side file>`, which replaces the packaged `application.conf` instead of

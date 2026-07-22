@@ -40,6 +40,11 @@ import { UploadService } from '../upload.service';
 export class UploadTableComponent implements OnInit, OnDestroy {
   private _stateSubscription: Subscription;
 
+  /** Listed by the server rather than named here. The one link this replaced was a hardcoded
+   * `B35+.txt.gz`, so the second shipped sample was undiscoverable and a renamed file would have left
+   * a dead link with nothing to notice it. */
+  public demoSamples: Array<{ name: string, size: number }> = [];
+
   @ViewChild('dragArea')
   public dragArea: ElementRef;
 
@@ -52,6 +57,26 @@ export class UploadTableComponent implements OnInit, OnDestroy {
       this.changeDetector.detectChanges();
     });
     this.uploadService.checkTagsAvailability();
+    this.loadDemoSamples();
+  }
+
+  /** Plain `fetch`: this app has never wired up HttpClient, and one unauthenticated GET does not
+   * justify pulling in HttpClientModule. Failure is swallowed on purpose — the sample links are a
+   * hint on an empty upload table, so the page is still usable without them, and an error banner for
+   * a missing hint would be louder than the hint itself. */
+  private loadDemoSamples(): void {
+    fetch('/api/annotations/demo')
+      .then((response) => response.ok ? response.json() : [])
+      .then((samples: Array<{ name: string, size: number }>) => {
+        this.demoSamples = samples;
+        this.changeDetector.detectChanges();
+      })
+      .catch(() => undefined);
+  }
+
+  /** The shipped names contain `+`, which is a space in a URL path if it is not escaped. */
+  public demoSampleUrl(sample: { name: string }): string {
+    return `/api/annotations/demo/${encodeURIComponent(sample.name)}`;
   }
 
   public showValidNameTooltip(): boolean {

@@ -60,11 +60,11 @@ class UsageProviderSpec extends BaseTestSpec {
       val configuration = provider("").getConfiguration
 
       configuration.enabled shouldEqual true
-      configuration.uploadsPerDayRegistered shouldEqual 200
-      configuration.uploadsPerDayTemporary shouldEqual 50
+      configuration.uploadsPerDayRegistered shouldEqual 100
+      configuration.uploadsPerDayTemporary shouldEqual 20
       configuration.uploadsPerDayPerIP shouldEqual 200
-      configuration.annotationsPerDayRegistered shouldEqual 200
-      configuration.annotationsPerDayTemporary shouldEqual 50
+      configuration.annotationsPerDayRegistered shouldEqual 100
+      configuration.annotationsPerDayTemporary shouldEqual 20
     }
 
     "read the values that are present" taggedAs UtilsTestTag in {
