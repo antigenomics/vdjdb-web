@@ -22,31 +22,41 @@ import backend.models.authorization.permissions.UserPermissionsProvider
 import backend.models.authorization.user.UserProvider
 import backend.models.files.sample.SampleFileProvider
 import backend.models.files.sample.tags.SampleTagProvider
+import backend.models.files.sample.SampleRetentionProvider
+import backend.models.usage.UsageProvider
+import backend.server.annotations.api.user.AccountLimits
 import backend.utils.analytics.Analytics
 import javax.inject.Inject
 import org.slf4j.LoggerFactory
-import play.api.Environment
+import play.api.{Configuration, Environment}
 import play.api.i18n.{Lang, Messages, MessagesApi}
 import play.api.mvc.{AbstractController, Action, AnyContent, ControllerComponents}
 
 import scala.async.Async.{async, await}
 import scala.concurrent.ExecutionContext
 
-class Account @Inject()(cc: ControllerComponents, messagesApi: MessagesApi, userRequestAction: UserRequestAction)
+class Account @Inject()(cc: ControllerComponents, messagesApi: MessagesApi, userRequestAction: UserRequestAction,
+                        conf: Configuration, usage: UsageProvider, retention: SampleRetentionProvider)
                        (implicit upp: UserPermissionsProvider, up: UserProvider, sfp: SampleFileProvider, stp: SampleTagProvider,
                         ec: ExecutionContext, environment: Environment, analytics: Analytics)
   extends AbstractController(cc) {
   private final val logger = LoggerFactory.getLogger(this.getClass)
   implicit val messages: Messages = messagesApi.preferred(Seq(Lang.defaultLang))
 
+  /** The same numbers the annotate page reports, from the same [[AccountLimits]] - two pages quoting a
+    * user's own limits from two sources is how they end up disagreeing. */
+  private def limitsFor(request: backend.actions.UserRequest[_]): AccountLimits =
+    AccountLimits(request.user.get.isTemporary, request.details.get.permissions, conf,
+      usage.getConfiguration, retention.getConfiguration)
+
   def detailsPage: Action[AnyContent] = (userRequestAction andThen SessionAction.authorizedOnly) { implicit request =>
-    Ok(frontend.views.html.authorization.details(ChangeForm.changeFormMapping, request.details.get))
+    Ok(frontend.views.html.authorization.details(ChangeForm.changeFormMapping, request.details.get, limitsFor(request)))
   }
 
   def changePassword: Action[AnyContent] = (userRequestAction andThen SessionAction.authorizedOnly).async { implicit request =>
     ChangeForm.changeFormMapping.bindFromRequest.fold(
       formWithErrors => async {
-        BadRequest(frontend.views.html.authorization.details(formWithErrors, request.details.get))
+        BadRequest(frontend.views.html.authorization.details(formWithErrors, request.details.get, limitsFor(request)))
       },
       form => async {
         val user = request.user.get
@@ -55,7 +65,7 @@ class Account @Inject()(cc: ControllerComponents, messagesApi: MessagesApi, user
         if (!request.details.get.permissions.isChangePasswordAllowed) {
           Forbidden(frontend.views.html.authorization.details(
             ChangeForm.changeFormMapping.withGlobalError("account.change.password.notAllowed"),
-            request.details.get
+            request.details.get, limitsFor(request)
           ))
         } else if (user.checkPassword(form.oldPassword)) {
           val _ = await(up.updatePassword(user, form.newPassword))
@@ -63,7 +73,7 @@ class Account @Inject()(cc: ControllerComponents, messagesApi: MessagesApi, user
         } else {
           BadRequest(frontend.views.html.authorization.details(
             ChangeForm.invalidOldPasswordChangeFormMapping,
-            await(request.user.get.getDetails)
+            await(request.user.get.getDetails), limitsFor(request)
           ))
         }
       }
