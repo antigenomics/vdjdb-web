@@ -84,4 +84,19 @@ default; the application downloads a release into `~/.vdjdb` when it is missing.
 ## `app/backend/.../demo` — demo dataset
 
 **Production:** `~/vdjdb_publish/demo/`, bind-mounted to `/home/vdjdb/demo-dataset/`, served by
-`AnnotationsAPI` for the "Download an example sample" link. VDJtools-format TRB repertoires.
+`AnnotationsAPI` for the "Download an example sample" link.
+
+These files live **only on the server** — there is no `demo/` in this repo and the bind mount reads
+the host directory, not the image, so a redeploy neither adds nor removes them. `demoSamples` lists
+the directory per request, so dropping a file in is enough to publish it: no restart, no code change.
+
+| File | Format | Contents | Origin |
+|---|---|---|---|
+| `B35+.txt.gz` | VDJtools | TRB repertoire, HLA-B\*35 donor | predates this record; on the server since 2026-04-02 |
+| `CMV+.txt.gz` | VDJtools | TRB repertoire, CMV-seropositive donor | predates this record; on the server since 2026-04-02 |
+| `mixed.airr.tsv.gz` | AIRR | 100,000 rows, 50,000 TRA + 50,000 TRB; **synthetic** | `~/hf/airr_benchmark/test/airr/mixed.airr.tsv.gz`, copied 2026-07-22 |
+
+`mixed.airr.tsv.gz` is there to demonstrate two things the other two cannot: the AIRR reader, and the
+mixed-chain split that turns one uploaded file into a TRA sample and a TRB sample. Its rows are
+generated, not measured — do not cite it as data. 1,869,266 B gzipped, 9,453,038 B raw (5.06x, well
+inside the 100x decompression-ratio guard), md5 `49946bc42d33b4a35bf1a214b071e576`.

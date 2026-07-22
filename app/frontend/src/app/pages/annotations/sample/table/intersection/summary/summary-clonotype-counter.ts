@@ -20,6 +20,10 @@ export class SummaryClonotypeCounter {
   public readonly databaseUnique: number;
   public readonly frequency: number;
   public readonly reads: number;
+  /** Set on `antigen.epitope` counters only, and absent from the JSON for every other field. The
+    * species counters are a sibling breakdown of the same matches, so they cannot say which epitope
+    * belongs to which species - only this can. */
+  public readonly species: string;
 
   constructor(counter: any) {
     /* tslint:disable:no-string-literal */
@@ -28,6 +32,7 @@ export class SummaryClonotypeCounter {
     this.databaseUnique = counter[ 'databaseUnique' ];
     this.frequency = counter[ 'frequency' ];
     this.reads = counter[ 'reads' ];
+    this.species = counter[ 'species' ];
     /* tslint:enable:no-string-literal */
   }
 }

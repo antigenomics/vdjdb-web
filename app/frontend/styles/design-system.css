@@ -641,6 +641,30 @@ tr.paired-row > td { color: #525252; }
   margin-bottom: 0.5em !important;
 }
 
+/* Key under a plot whose bars are coloured by a category rather than by position. Wraps, because the
+   number of categories is data, not a layout constant. */
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35em 1.2em;
+  padding-top: 0.5em;
+  font-size: 0.9em;
+  color: var(--ds-text);
+}
+.chart-legend__entry {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+}
+.chart-legend__swatch {
+  display: inline-block;
+  width: 0.85em;
+  height: 0.85em;
+  margin-right: 0.45em;
+  border-radius: 2px;
+  flex: none;
+}
+
 /* Names the unit the value axis is in once the size denominators are applied. Quiet - it is a caption
    for the checkboxes above it, not another control. */
 .summary-options-units {

@@ -45,7 +45,7 @@ export namespace ChartUtils {
      * Interpolating at every size, instead of picking discrete entries below eight, is what keeps the
      * spacing even: rounding onto eight fixed slots gave visibly uneven steps at n = 6 and 7.
      */
-    function spread(n: number): string[] {
+    export function spread(n: number): string[] {
       if (n <= 1) {
         return [ SPECTRAL[ 0 ] ];
       }

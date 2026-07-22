@@ -27,6 +27,7 @@ import { SummaryCounters } from 'pages/annotations/sample/table/intersection/sum
 import { ReplaySubject, Subscription } from 'rxjs';
 import { IBarChartConfiguration } from 'shared/charts/bar/bar-chart-configuration';
 import { ChartGroupedStreamType } from 'shared/charts/chart';
+import { ChartUtils } from 'shared/charts/chart-utils';
 import { ChartEventType } from 'shared/charts/chart-events';
 import { IChartDataEntry } from 'shared/charts/data/chart-data-entry';
 import { IChartGroupedDataEntry } from 'shared/charts/data/chart-grouped-data-entry';
@@ -50,6 +51,12 @@ export class MultisampleSummaryChartComponent implements OnInit, OnDestroy {
   private orderBySamples: boolean = true;
   private showOnlyShared: boolean = false;
   private useLogScale: boolean = false;
+  /** On by default, and the epitope column is the default column, so the first thing drawn already
+    * groups its bars by antigen. Without it a wall of epitope bars carries no structure at all - the
+    * spectral ramp only encodes rank, which the sort already shows. */
+  private colorBySpecies: boolean = true;
+
+  private static readonly EpitopeField: string = 'antigen.epitope';
 
   public barChartConfiguration: IBarChartConfiguration = MultisampleSummaryChartComponent.configurationFor(false);
 
@@ -81,6 +88,44 @@ export class MultisampleSummaryChartComponent implements OnInit, OnDestroy {
   public set order(order: boolean) {
     this.orderBySamples = order;
     this.updateStream(ChartEventType.UPDATE_DATA, this.currentTab.options);
+  }
+
+  public get speciesColors(): boolean {
+    return this.colorBySpecies;
+  }
+
+  public set speciesColors(bySpecies: boolean) {
+    this.colorBySpecies = bySpecies;
+    this.updateStream(ChartEventType.UPDATE_DATA, this.currentTab.options);
+  }
+
+  /** Only the epitope breakdown carries a species per bar; every other column's values span species. */
+  public isSpeciesColoringAvailable(): boolean {
+    return this.currentTab.options.getCurrentSummaryFilterFieldType().name === MultisampleSummaryChartComponent.EpitopeField;
+  }
+
+  /** Species actually on the plot, with the colour each one is drawn in. Derived rather than stored so
+    * it cannot fall out of step with the bars: both read the same palette, and the palette is keyed on
+    * the sorted species of the whole tab, so a colour does not move when the threshold or the cutoff
+    * changes what is on screen. */
+  public getSpeciesLegend(): Array<{ name: string, color: string }> {
+    if (!this.colorBySpecies || !this.isSpeciesColoringAvailable()) {
+      return [];
+    }
+    const palette = this.speciesPalette();
+    const shown = new Set<string>();
+    const options = this.currentTab.options;
+    const fieldName = options.getCurrentSummaryFilterFieldType().name;
+    this.currentTab.counters.forEach((counters: SummaryCounters, sample: string) => {
+      if (!this.isSampleHidden(sample)) {
+        const field = counters.counters.find((c) => c.name === fieldName);
+        if (field) {
+          SummaryChartOptions.charted(field.counters, fieldName, options)
+            .forEach((c) => { if (c.species) { shown.add(c.species); } });
+        }
+      }
+    });
+    return Array.from(shown).sort().map((name) => ({ name, color: palette[ name ] }));
   }
 
   public get logarithmic(): boolean {
@@ -181,6 +226,12 @@ export class MultisampleSummaryChartComponent implements OnInit, OnDestroy {
     const currentCounterFieldName = options.getCurrentSummaryFilterFieldType().name;
     let data: IChartGroupedDataEntry[] = [];
 
+    // Built once per update, not per bar: the palette spans the whole tab, so recomputing it inside
+    // the loops would redo the same scan for every epitope of every sample.
+    const speciesPalette = (this.colorBySpecies && this.isSpeciesColoringAvailable()) ? this.speciesPalette() : undefined;
+    const speciesColor = (c: SummaryClonotypeCounter): string =>
+      (speciesPalette !== undefined && c.species) ? speciesPalette[ c.species ] : undefined;
+
     // Takes the counters it belongs to, because the "total number of clonotypes in sample"
     // denominator is per sample - the whole point of this chart is that the samples differ.
     const valueConverter: (c: SummaryClonotypeCounter, owner: SummaryCounters) => number = (c, owner) => {
@@ -205,7 +256,7 @@ export class MultisampleSummaryChartComponent implements OnInit, OnDestroy {
         if (!this.isSampleHidden(key)) {
           const counters = value.counters.find((c) => c.name === currentCounterFieldName);
           let values = SummaryChartOptions.charted(counters.counters, currentCounterFieldName, options)
-            .map((c) => ({ name: c.field, value: valueConverter(c, value) } as IChartDataEntry))
+            .map((c) => ({ name: c.field, value: valueConverter(c, value), color: speciesColor(c) } as IChartDataEntry))
             .sort((a, b) => b.value - a.value);
           if (values.length > options.currentThresholdType.threshold) {
             values = values.slice(0, options.currentThresholdType.threshold);
@@ -240,8 +291,9 @@ export class MultisampleSummaryChartComponent implements OnInit, OnDestroy {
             const counters = summaryCounters.counters.find((c) => c.name === currentCounterFieldName);
             const index = counters.counters.map((c) => c.field).indexOf(value);
             if (index !== -1) {
-              let color: string;
-              if (this.colorByTags) {
+              // Species wins over tags: it is the more specific statement, and a bar cannot carry both.
+              let color: string = speciesColor(counters.counters[ index ]);
+              if (color === undefined && this.colorByTags) {
                 color = this.multisampleSummaryService.getSampleTagColor(sample);
               }
               entries.push({ name: sample, value: valueConverter(counters.counters[ index ], summaryCounters), color });
@@ -300,6 +352,24 @@ export class MultisampleSummaryChartComponent implements OnInit, OnDestroy {
     }
 
     this.changeDetector.detectChanges();
+  }
+
+  /** species -> colour, over every species in the tab, sorted so the assignment is stable across
+    * updates. Built from the same palette the charts use, so a legend swatch and its bars match. */
+  private speciesPalette(): { [ species: string ]: string } {
+    const fieldName = MultisampleSummaryChartComponent.EpitopeField;
+    const species = new Set<string>();
+    this.currentTab.counters.forEach((counters: SummaryCounters) => {
+      const field = counters.counters.find((c) => c.name === fieldName);
+      if (field) {
+        field.counters.forEach((c) => { if (c.species) { species.add(c.species); } });
+      }
+    });
+    const names = Array.from(species).sort();
+    const colors = ChartUtils.Color.spread(names.length);
+    const palette: { [ species: string ]: string } = {};
+    names.forEach((name, i) => { palette[ name ] = colors[ i ]; });
+    return palette;
   }
 
   private static configurationFor(log: boolean): IBarChartConfiguration {

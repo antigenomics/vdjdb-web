@@ -329,3 +329,16 @@
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
 }
+
+/* A scroll container clips on BOTH axes - CSS computes an `overflow: visible` axis to `auto` as soon
+   as the other one is not visible - so the Species and Chain dropdown menus in the upload queue were
+   being cut off at the table's bottom edge. That table is five columns wide and fits a desktop
+   viewport without help, so it can drop the container entirely above the breakpoint. Below it the
+   table does need to scroll and a clipped menu is the better trade against a sideways page.
+   NOT applied to `.table-scroll` at large: the matches table is genuinely wider than a viewport, and
+   it has no menus to clip. */
+@media (min-width: 769px) {
+  .table-scroll.table-scroll--menus {
+    overflow: visible;
+  }
+}

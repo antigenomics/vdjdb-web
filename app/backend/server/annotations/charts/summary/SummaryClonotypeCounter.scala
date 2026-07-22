@@ -18,13 +18,19 @@ package backend.server.annotations.charts.summary
 
 import play.api.libs.json.{Json, Writes}
 
-/** @param unique number of matched sample clonotypes — the row count for this field value
-  * @param reads  summed clonotype `count` (the AIRR `duplicate_count`) over those clonotypes.
-  *               The engine has always tallied this; it was simply dropped on the way to the client,
-  *               which is why the "weight by read count" chart option was in fact weighting by
-  *               frequency.
+/** @param unique  number of matched sample clonotypes — the row count for this field value
+  * @param reads   summed clonotype `count` (the AIRR `duplicate_count`) over those clonotypes.
+  *                The engine has always tallied this; it was simply dropped on the way to the client,
+  *                which is why the "weight by read count" chart option was in fact weighting by
+  *                frequency.
+  * @param species the antigen species this value belongs to, set for `antigen.epitope` counters only
+  *                and `None` everywhere else. The client colours epitope bars by it, which it cannot
+  *                derive on its own: the species counters are a sibling breakdown of the same matches,
+  *                so they say how many clonotypes hit each species but not which epitope belongs to
+  *                which. Omitted from the JSON when `None`.
   */
-case class SummaryClonotypeCounter(field: String, unique: Int, databaseUnique: Long, frequency: Double, reads: Long)
+case class SummaryClonotypeCounter(field: String, unique: Int, databaseUnique: Long, frequency: Double, reads: Long,
+                                   species: Option[String] = None)
 
 object SummaryClonotypeCounter {
   implicit val summaryClonotypeCounterWrites: Writes[SummaryClonotypeCounter] = Json.writes[SummaryClonotypeCounter]
