@@ -26,14 +26,14 @@ export class TCRcdr3FilterComponent {
 
   public checkRangeInput(key: string, input: number, min: number, max: number): void {
     switch (key) {
-      case 'levensteinSubstitutions':
-        this.tcr.cdr3.levensteinSubstitutions = -1;
+      case 'levenshteinSubstitutions':
+        this.tcr.cdr3.levenshteinSubstitutions = -1;
         break;
-      case 'levensteinInsertions':
-        this.tcr.cdr3.levensteinInsertions = -1;
+      case 'levenshteinInsertions':
+        this.tcr.cdr3.levenshteinInsertions = -1;
         break;
-      case 'levensteinDeletions':
-        this.tcr.cdr3.levensteinDeletions = -1;
+      case 'levenshteinDeletions':
+        this.tcr.cdr3.levenshteinDeletions = -1;
         break;
       default:
         break;
@@ -50,14 +50,14 @@ export class TCRcdr3FilterComponent {
       value = input;
     }
     switch (key) {
-      case 'levensteinSubstitutions':
-        this.tcr.cdr3.levensteinSubstitutions = value;
+      case 'levenshteinSubstitutions':
+        this.tcr.cdr3.levenshteinSubstitutions = value;
         break;
-      case 'levensteinInsertions':
-        this.tcr.cdr3.levensteinInsertions = value;
+      case 'levenshteinInsertions':
+        this.tcr.cdr3.levenshteinInsertions = value;
         break;
-      case 'levensteinDeletions':
-        this.tcr.cdr3.levensteinDeletions = value;
+      case 'levenshteinDeletions':
+        this.tcr.cdr3.levenshteinDeletions = value;
         break;
       default:
         break;

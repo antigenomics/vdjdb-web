@@ -26,27 +26,29 @@ import scala.concurrent.Future
 case class SearchTableTSVConverter()(implicit tfp: TemporaryFileProvider) extends SearchTableConverter {
 
   override def convert(table: SearchTable, database: Database, options: Seq[ExportOptionFlag]): Future[TemporaryFileLink] = {
-    val rows = table.getRows
+    // Rows go straight into the file rather than into a StringBuilder that is then copied into a String:
+    // a full database export is a six figure number of rows, and holding the whole document (twice) was
+    // the largest single allocation in the application. This also moves the work off the caller's thread,
+    // because the writing now happens inside the provider's Future.
+    tfp.createTemporaryFileStreamed("SearchTable", getExtension) { content =>
+      val rows = table.getRows
 
-    val content = new StringBuilder()
+      val header = database.getMetadata.columns.map(column => column.title).mkString("complex.id\t", "\t", "\r\n")
+      content.write(header)
 
-    val header = database.getMetadata.columns.map(column => column.title).mkString("complex.id\t", "\t", "\r\n")
-    content.append(header)
+      rows.foreach(row => content.write(row.entries.mkString(s"${row.metadata.pairedID}\t", "\t", "\r\n")))
 
-    rows.foreach(row => content.append(row.entries.mkString(s"${row.metadata.pairedID}\t", "\t", "\r\n")))
-
-    options.foreach(option => {
-      option.name match {
-        case "paired_export" =>
-          if (option.value) {
-            val pairedRows = SearchTable.getPairedRows(rows, database)
-            pairedRows.foreach(row => content.append(row.entries.mkString(s"${row.metadata.pairedID}\t", "\t", "\r\n")))
-          }
-        case _ =>
-      }
-    })
-
-    tfp.createTemporaryFile("SearchTable", getExtension, content.toString())
+      options.foreach(option => {
+        option.name match {
+          case "paired_export" =>
+            if (option.value) {
+              val pairedRows = SearchTable.getPairedRows(rows, database)
+              pairedRows.foreach(row => content.write(row.entries.mkString(s"${row.metadata.pairedID}\t", "\t", "\r\n")))
+            }
+          case _ =>
+        }
+      })
+    }
   }
 
   override def getExtension: String = "tsv"

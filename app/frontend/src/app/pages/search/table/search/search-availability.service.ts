@@ -24,7 +24,6 @@ interface ISearchAvailabilityResponse {
   visualizations?: { [structureId: string]: IStructureVisualizationDescriptor };
   motifCidIndex?: { [key: string]: string };
   motifCidIndexTcremp?: { [key: string]: string };
-  validationIndex?: { [key: string]: string };
   structureMetrics?: { [structureId: string]: IStructureMetrics };
 }
 
@@ -39,7 +38,6 @@ export class SearchAvailabilityService {
   private readonly structureVisualizations: Map<string, IStructureVisualizationDescriptor> = new Map<string, IStructureVisualizationDescriptor>();
   private readonly motifCidIndex: Map<string, string> = new Map<string, string>();
   private readonly motifCidIndexTcremp: Map<string, string> = new Map<string, string>();
-  private readonly validationIndex: Map<string, string> = new Map<string, string>();
   private readonly structureMetrics: Map<string, IStructureMetrics> = new Map<string, IStructureMetrics>();
 
   private ensureLoaded(): Promise<void> {
@@ -104,14 +102,6 @@ export class SearchAvailabilityService {
             }
           });
         }
-        if (payload && payload.validationIndex) {
-          Object.keys(payload.validationIndex).forEach((key) => {
-            const status = payload.validationIndex ? payload.validationIndex[ key ] : undefined;
-            if (key && status) {
-              this.validationIndex.set(key.trim().toLowerCase(), status.trim());
-            }
-          });
-        }
         if (payload && payload.structureMetrics) {
           Object.keys(payload.structureMetrics).forEach((key) => {
             const metrics = payload.structureMetrics ? payload.structureMetrics[ key ] : undefined;
@@ -127,7 +117,6 @@ export class SearchAvailabilityService {
         this.motifKeysTcremp.clear();
         this.motifCidIndex.clear();
         this.motifCidIndexTcremp.clear();
-        this.validationIndex.clear();
         this.structureMetrics.clear();
         this.loadPromise = null;
         throw error;
@@ -201,10 +190,15 @@ export class SearchAvailabilityService {
     return method === 'tcremp' ? this.motifCidIndexTcremp.get(parts.join('|')) : this.motifCidIndex.get(parts.join('|'));
   }
 
-  public async getValidationStatus(cdr3: string, epitope: string): Promise<string | undefined> {
-    await this.ensureLoaded();
-    const key = `${cdr3.trim().toLowerCase()}|${epitope.trim().toLowerCase()}`;
-    return this.validationIndex.get(key);
+  /**
+   * Always resolves to undefined. The availability endpoint (backend/controllers/SearchAvailabilityAPI.scala)
+   * has no validation index in its response contract, so the lookup this used to perform ran against a map
+   * that could never be filled and the TCRvdb validation badge never rendered. Kept as an explicit no-op so
+   * the badge degrades to "not available" instead of pretending to consult a server field that does not
+   * exist; restore the lookup once the server actually emits a per (CDR3, epitope) validation status.
+   */
+  public async getValidationStatus(_cdr3: string, _epitope: string): Promise<string | undefined> {
+    return undefined;
   }
 
   public async getStructureMetrics(structureId: string): Promise<IStructureMetrics | undefined> {

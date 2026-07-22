@@ -82,7 +82,7 @@ export class UpdateSampleModalComponent implements OnInit, OnDestroy {
     }
 
     if (this.saving) {
-      this.notifications.warn('Sample update', 'Wait until previous updating will be completed');
+      this.notifications.warn('Sample update', 'Wait for the previous update to finish');
       return;
     }
 
@@ -109,7 +109,7 @@ export class UpdateSampleModalComponent implements OnInit, OnDestroy {
 
   public update(sample: SampleItem, top: number): void {
     if (this.saving) {
-      this.notifications.warn('Sample update', 'Wait until previous updating will be completed');
+      this.notifications.warn('Sample update', 'Wait for the previous update to finish');
     } else {
       this.updating = true;
       this.sampleNewProps = { newName: sample.name, newSoftware: sample.software, newTagID: sample.tagID, sample };

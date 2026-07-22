@@ -17,7 +17,7 @@
 <filters-header headerTitle="CDR3" headerHelp="<p>Narrow search to a specific CDR3 motif or sequence different by no more than the specified number of mismatches from the query.</p>
 <p>Sequence and pattern filter supports 20 amino acids, X for an unknown amino acid and amino acid groups specified with '[.]'. For example 'CASSL[ASR]PGATNEKLFF' will search
 for 'CASSLaPGATNEKLFF', 'CASSLsPGATNEKLFF' and 'CASSLrPGATNEKLFF'. By default the search expects full match, which can be disabled by checking the substring checkbox.</p>
-<p>Levenstein distance filter expects complete sequence with no wildcards, and user can specify the number of substitutions, insertions and deletions allowed during the
+<p>Levenshtein distance filter expects complete sequence with no wildcards, and lets you specify the number of substitutions, insertions and deletions allowed during the
 search.</p>">
 </filters-header>
 <div class="ui grid middle aligned">
@@ -38,29 +38,29 @@ search.</p>">
     <div class="eleven wide column">
         <slider [min]="tcr.cdr3.lengthMin" [max]="tcr.cdr3.lengthMax" [(model)]="tcr.cdr3.length"></slider>
     </div>
-    <div class="three wide column filters label"> <b>By Levenstein distance</b></div>
+    <div class="three wide column filters label"> <b>By Levenshtein distance</b></div>
     <div class="twelve wide column">
-        <div class="ui fluid input" [ngClass]="{'error':!tcr.cdr3.isLevensteinValid()}">
-            <input placeholder="Complete amino acid sequence, e.g. CASSLAPGATNEKLFF." [ngModel]="tcr.cdr3.levenstein" (ngModelChange)="tcr.cdr3.checkLevenstein($event)">
+        <div class="ui fluid input" [ngClass]="{'error':!tcr.cdr3.isLevenshteinValid()}">
+            <input placeholder="Complete amino acid sequence, e.g. CASSLAPGATNEKLFF." [ngModel]="tcr.cdr3.levenshtein" (ngModelChange)="tcr.cdr3.checkLevenshtein($event)">
         </div>
     </div>
     <div class="three wide column"></div>
     <div class="four wide column">
         Substitutions
         <div class="ui fluid input">
-            <input min="0" max="5" type="number" [ngModel]="tcr.cdr3.levensteinSubstitutions" (ngModelChange)="checkRangeInput('levensteinSubstitutions', $event, 0, 5)">
+            <input min="0" max="5" type="number" [ngModel]="tcr.cdr3.levenshteinSubstitutions" (ngModelChange)="checkRangeInput('levenshteinSubstitutions', $event, 0, 5)">
         </div>
     </div>
     <div class="four wide column">
         Insertions
         <div class="ui fluid input">
-            <input min="0" max="3" type="number" [ngModel]="tcr.cdr3.levensteinInsertions" (ngModelChange)="checkRangeInput('levensteinInsertions', $event, 0, 3)">
+            <input min="0" max="3" type="number" [ngModel]="tcr.cdr3.levenshteinInsertions" (ngModelChange)="checkRangeInput('levenshteinInsertions', $event, 0, 3)">
         </div>
     </div>
     <div class="four wide column">
         Deletions
         <div class="ui fluid input">
-            <input min="0" max="3" type="number" [ngModel]="tcr.cdr3.levensteinDeletions" (ngModelChange)="checkRangeInput('levensteinDeletions', $event, 0, 3)">
+            <input min="0" max="3" type="number" [ngModel]="tcr.cdr3.levenshteinDeletions" (ngModelChange)="checkRangeInput('levenshteinDeletions', $event, 0, 3)">
         </div>
     </div>
 </div>

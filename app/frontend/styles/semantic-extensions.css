@@ -23,22 +23,22 @@
 
 .ui.secondary.menu a.item.tab.active {
   background: rgba(72, 175, 117, 0.8);
-  color: rgba(256, 256, 256, 1);
+  color: rgba(255, 255, 255, 1);
 }
 
 .ui.secondary.menu a.item.tab.active.waiting {
   background: rgba(72, 175, 117, 0.4);
-  color: rgba(256, 256, 256, 0.8);
+  color: rgba(255, 255, 255, 0.8);
 }
 
 .ui.secondary.menu a.item.tab.active:hover {
   background: rgba(72, 175, 117, 1.0);
-  color: rgba(256, 256, 256, 1);
+  color: rgba(255, 255, 255, 1);
 }
 
 .ui.secondary.menu a.item.tab.active.waiting:hover {
   background: rgba(72, 175, 117, 0.4);
-  color: rgba(256, 256, 256, 0.8);
+  color: rgba(255, 255, 255, 0.8);
   cursor: progress;
 }
 
@@ -46,12 +46,13 @@
   margin-top: 10px !important;
 }
 
-/* Sits directly below the fixed navbar. `height` has to shrink by the same amount: the sidebar is
-   position:fixed with height:100%, so offsetting `top` alone pushes its bottom off-screen by exactly
-   the offset. */
+/* Starts where the page content starts, not where the navbar ends: the sidebar is position:fixed, so
+   it escapes the `margin-top` that pushes the first content card down, and anchoring it to the bar
+   alone left it 35px above that card. `height` has to shrink by the same amount, since a fixed
+   height:100% element offset by `top` alone runs off the bottom by exactly the offset. */
 .ui.sidebar.with.navbar {
-  top: var(--ds-navbar-height) !important;
-  height: calc(100% - var(--ds-navbar-height)) !important;
+  top: var(--ds-content-offset) !important;
+  height: calc(100% - var(--ds-content-offset)) !important;
 }
 
 .ui.sidebar.menu .item .header .sort.icon {
@@ -177,6 +178,14 @@
   color: rgba(0,0,0,.95);
 }
 
+/* The sort flyout is two words wide, so it does not need the sidebar's full width. Kept here rather
+   than as an inline style on the element: an inline declaration outranks every selector, including
+   the media query below that has to widen the flyout once the sidebar stops being a fixed column. */
+.ui.menu.sidebar-settings.sidebar-settings--sort {
+  top: 150px;
+  width: 100px;
+}
+
 /* A percentage sidebar collapses to unreadable widths on small screens - at 574px, 12.5% is 72px and
    the headings truncate to "No…", "Sa…", "Se…". Keep the proportion on wide screens but never let it
    fall below the width the labels actually need. */
@@ -276,6 +285,13 @@
   /* The magic twin of the 12.5% sidebar; meaningless once the sidebar is full width. */
   .ui.menu.sidebar-settings {
     left: 0;
+  }
+
+  /* A 100px column hanging at a hand-picked 150px is a desktop shape. Here the flyout spans the
+     screen just under the bar, like the sidebar it belongs to. */
+  .ui.menu.sidebar-settings.sidebar-settings--sort {
+    top: var(--ds-navbar-height);
+    width: 100%;
   }
 }
 

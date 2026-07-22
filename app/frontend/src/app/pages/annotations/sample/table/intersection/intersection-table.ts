@@ -22,17 +22,25 @@ import { IntersectionTableRow } from './row/intersection-table-row';
 export class IntersectionTable extends Table<IntersectionTableRow> {
   private _summary?: SummaryCounters;
 
+  // The template drives *ngFor straight off getRows(), so it is called on every change detection
+  // cycle. Slicing there handed Angular a fresh array identity every time; the slice is cached
+  // here and dropped by the three mutations that can change which rows belong to the page.
+  private _pageSlice?: IntersectionTableRow[];
+
   constructor() {
     super();
   }
 
   public getRows(): IntersectionTableRow[] {
     if (this.page >= 0) {
-      let fromIndex = this.pageSize * this.page;
-      fromIndex = (fromIndex > this.getRowsCount()) ? this.getRowsCount() : fromIndex;
-      let toIndex = this.pageSize * (this.page + 1);
-      toIndex = (toIndex > this.getRowsCount()) ? this.getRowsCount() : toIndex;
-      return this.rows.slice(fromIndex, toIndex);
+      if (this._pageSlice === undefined) {
+        let fromIndex = this.pageSize * this.page;
+        fromIndex = (fromIndex > this.getRowsCount()) ? this.getRowsCount() : fromIndex;
+        let toIndex = this.pageSize * (this.page + 1);
+        toIndex = (toIndex > this.getRowsCount()) ? this.getRowsCount() : toIndex;
+        this._pageSlice = this.rows.slice(fromIndex, toIndex);
+      }
+      return this._pageSlice;
     } else {
       this.updatePage(0);
       return this.getRows();
@@ -41,6 +49,21 @@ export class IntersectionTable extends Table<IntersectionTableRow> {
 
   public getRowsCount(): number {
     return this.rows.length;
+  }
+
+  public updateRows(rows: IntersectionTableRow[], pageCount?: number): void {
+    this._pageSlice = undefined;
+    super.updateRows(rows, pageCount);
+  }
+
+  public updatePage(page: number): void {
+    this._pageSlice = undefined;
+    super.updatePage(page);
+  }
+
+  public updatePageSize(pageSize: number, pageCount?: number): void {
+    this._pageSlice = undefined;
+    super.updatePageSize(pageSize, pageCount);
   }
 
   public update(response: WebSocketResponseData): void {

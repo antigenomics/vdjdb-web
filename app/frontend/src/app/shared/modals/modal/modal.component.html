@@ -14,8 +14,17 @@
   ~     limitations under the License.
   -->
 
-<div class="ui fade element dimmer modals page visible active" style="display: block !important; " #dimmer>
-    <div class="ui fade element {{ size }} test modal visible active" style="margin-top: -93.5px; display: block !important;" #modal>
+<!-- The dimmer is forced visible because nothing marks its parent `dimmable`, but it is forced to
+     `flex`, not `block`: the modal used to be centred with `margin-top: -93.5px`, i.e. half the height
+     of one particular 187px modal, so every other size or message rendered visibly off-centre. Flex
+     centring on the dimmer holds whatever the content turns out to be. The modal needs `position:
+     relative; top: auto; left: auto` to take part in that layout at all: Semantic takes the modal out
+     of flow at `top: 50%; left: 50%` and expects its JavaScript to pull it back by half its own size,
+     and that JavaScript is not running here. -->
+<div class="ui fade element dimmer modals page visible active"
+     style="display: flex !important; align-items: center; justify-content: center;" #dimmer>
+    <div class="ui fade element {{ size }} test modal visible active"
+         style="position: relative; top: auto; left: auto; margin: 0; display: block !important;" #modal>
         <div class="header">
             {{ header }}
         </div>

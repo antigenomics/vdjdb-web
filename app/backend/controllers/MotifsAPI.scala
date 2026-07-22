@@ -24,6 +24,7 @@ import backend.server.motifs.api.cdr3.MotifCDR3SearchRequest
 import backend.server.motifs.api.export.{ClusterMembersExportRequest, ClusterMembersExportResponse}
 import backend.server.motifs.api.filter.MotifsSearchTreeFilter
 import javax.inject._
+import org.slf4j.LoggerFactory
 import play.api.Configuration
 import play.api.libs.json.JsError
 import play.api.libs.json.Json.toJson
@@ -34,6 +35,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class MotifsAPI @Inject()(cc: ControllerComponents, motifs: Motifs, configuration: Configuration)
                          (implicit as: ActorSystem, mat: Materializer, ec: ExecutionContext, limits: RequestLimits)
   extends AbstractController(cc) {
+  private final val logger = LoggerFactory.getLogger(this.getClass)
 
   def getMetadata(method: Option[String]): Action[AnyContent] = Action.async {
     Future.successful {
@@ -45,7 +47,10 @@ class MotifsAPI @Inject()(cc: ControllerComponents, motifs: Motifs, configuratio
     request.body.asJson.map { json =>
       json.validate[MotifsSearchTreeFilter].fold(
         errors => {
-          Future.successful(BadRequest("Invalid JSON: " + JsError.toJson(errors)))
+          // The JSON paths that failed validation say nothing to the person who clicked the tree; they
+          // belong in the log, where they are actually diagnostic.
+          logger.warn("Malformed motif filter request: " + JsError.toJson(errors))
+          Future.successful(BadRequest("The motif selection could not be read. Please reload the page and pick the epitope again."))
         },
         filter => {
           motifs.filter(filter).map {
@@ -53,8 +58,10 @@ class MotifsAPI @Inject()(cc: ControllerComponents, motifs: Motifs, configuratio
             case None         => NotFound("No results found for this filter")
           } recover {
             case t: Throwable =>
-              t.printStackTrace()
-              InternalServerError("An error occurred: " + t.getClass.getName + ": " + t.getMessage)
+              // printStackTrace wrote straight to stderr, so this never reached application.log at all -
+              // no timestamp, no logger name, and nothing left on the box once the console scrolled away.
+              logger.error("Failed to compute motifs for filter", t)
+              InternalServerError("Motifs could not be loaded for this selection. Please try again; if it keeps failing, report it on the VDJdb-web issue tracker.")
           }
         }
       )
@@ -68,7 +75,9 @@ class MotifsAPI @Inject()(cc: ControllerComponents, motifs: Motifs, configuratio
       json.validate[MotifCDR3SearchRequest].map {
         search => motifs.cdr3(search.cdr3, search.substring, search.gene, search.top, search.method).map { r => Ok(toJson(r)) }.recover { case _ => BadRequest("Bad request") }
       }.recoverTotal {
-        e => Future.successful(BadRequest("Detected error:" + JsError.toFlatForm(e)))
+        e =>
+          logger.warn("Malformed motif CDR3 search request: " + JsError.toFlatForm(e))
+          Future.successful(BadRequest("The CDR3 search could not be read. Please check the sequence and the selected gene, then search again."))
       }
     }.getOrElse {
       Future.successful(BadRequest("Expecting Json data"))
@@ -83,7 +92,9 @@ class MotifsAPI @Inject()(cc: ControllerComponents, motifs: Motifs, configuratio
             Ok(toJson(ClusterMembersExportResponse(link.getDownloadLink))))
           ).getOrElse(Future.successful(BadRequest("Invalid format provided")))
       }.recoverTotal {
-        e => Future.successful(BadRequest("Detected error:" + JsError.toFlatForm(e)))
+        e =>
+          logger.warn("Malformed cluster members export request: " + JsError.toFlatForm(e))
+          Future.successful(BadRequest("The export request could not be read. Please reopen the cluster and start the export again."))
       }
     }.getOrElse {
       Future.successful(BadRequest("Expecting Json data"))

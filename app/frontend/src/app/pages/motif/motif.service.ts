@@ -292,7 +292,7 @@ export class MotifService {
       return;
     }
     if (substring === true && cdr3.length < MotifService.minSubstringCDR3Length) {
-      this.notifications.warn('Motifs CDR3', `Length of CDR3 substring should be greater of equal than ${MotifService.minSubstringCDR3Length}`);
+      this.notifications.warn('Motifs CDR3', `Enter at least ${MotifService.minSubstringCDR3Length} amino acids to search by CDR3 substring`);
       return;
     }
     // CDR3 search has no single selected epitope to carry across pages.

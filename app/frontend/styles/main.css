@@ -104,13 +104,17 @@ body {
   width: 100%;
 }
 
+/* A fixed cap, like the auth and account grids above, rather than a percentage: 45% of a phone is
+   169px, which is narrower than the card's own padding and left the message unreadable. */
 .notfound.grid > .column {
-  max-width: 45%;
+  max-width: 560px;
 }
 
+/* Brand green, not Semantic's default blue, and a size that shrinks with the viewport - 86px is
+   wider than the "404" column on a phone. */
 .notfound.grid > .column .error-header {
-  font-size: 86px;
-  color: #2185d0;
+  font-size: clamp(48px, 16vw, 86px);
+  color: var(--ds-teal);
 }
 
 .text.alignment {

@@ -330,13 +330,13 @@ export class StructureService {
             result = this.normalizeStructureFilterResult(treeFilter, raw, metadata);
           } catch (normalizationError) {
             this.loadingState.next(false);
-            this.notifications.error('Structure', 'Unexpected response from /api/structures/filter');
+            this.notifications.error('Structure', 'Could not read the structures for this selection. Please try again or select another epitope.');
             return;
           }
 
           if (!Array.isArray(result.epitopes)) {
             this.loadingState.next(false);
-            this.notifications.error('Structure', 'Unexpected response from /api/structures/filter');
+            this.notifications.error('Structure', 'Could not read the structures for this selection. Please try again or select another epitope.');
             return;
           }
 
@@ -368,7 +368,7 @@ export class StructureService {
         });
       } catch (err) {
         this.loadingState.next(false);
-        this.notifications.error('Structure', 'Unexpected response from /api/structures/filter');
+        this.notifications.error('Structure', 'Could not read the structures for this selection. Please try again or select another epitope.');
       }
     }).catch(() => {
       this.loadingState.next(false);

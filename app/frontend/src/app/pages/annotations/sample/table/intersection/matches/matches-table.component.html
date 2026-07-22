@@ -15,7 +15,11 @@
   -->
 
 <td colspan="9" class="slow fade element" style="background: #F9FAFB">
-    <div table-component table-class="ui single line compact table" [configuration]="configuration"
-         [columns]="getColumns()" [table]="table">
+    <!-- Wrapped so the table scrolls inside itself; `single line` forbids wrapping, which used to
+         push the whole page sideways on narrow screens. Same treatment as the upload table. -->
+    <div class="table-scroll">
+        <div table-component table-class="ui single line compact table" [configuration]="configuration"
+             [columns]="getColumns()" [table]="table">
+        </div>
     </div>
 </td>

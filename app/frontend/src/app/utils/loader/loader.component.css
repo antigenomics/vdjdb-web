@@ -17,8 +17,9 @@
 .top-loader {
     position: fixed;
     left: 0;
-    /* Sit flush just below the fixed top navbar (68px) instead of overlapping it. */
-    top: 68px;
+    /* Sit flush just below the fixed top navbar instead of overlapping it. The hardcoded 68px was the
+       container height and missed the bar's 1px bottom border, so the loader sat 1px under it. */
+    top: var(--ds-navbar-height);
     z-index: 9999;
     width: 100%;
     -webkit-transition: opacity 0.1s ease-in-out;

@@ -41,13 +41,25 @@ class DatabaseAPI @Inject()(cc: ControllerComponents, database: Database, struct
                            (implicit as: ActorSystem, mat: Materializer, ec: ExecutionContext, limits: RequestLimits, tfp: TemporaryFileProvider)
   extends AbstractController(cc) {
 
-  def summary: Action[AnyContent] = Action.async {
+  /** The summary is a static fragment regenerated only when the database itself is rebuilt, yet the
+    * Overview page asked for it in full on every visit. An hour of freshness plus the entity tag below
+    * turns the repeat visits into a conditional request that answers 304 almost every time. */
+  private final val SummaryCacheControl: String = "public, max-age=3600"
+
+  def summary: Action[AnyContent] = Action.async { request =>
     Future.successful {
       database.getSummaryFile match {
         case Some(file) =>
-          Ok.sendFile(content = file, fileName = _.getName, inline = true)
+          val etag = "\"" + java.lang.Long.toHexString(file.lastModified()) + "-" +
+            java.lang.Long.toHexString(file.length()) + "\""
+          if (request.headers.get(IF_NONE_MATCH).exists(_.split(',').exists(_.trim == etag))) {
+            NotModified.withHeaders(CACHE_CONTROL -> SummaryCacheControl, ETAG -> etag)
+          } else {
+            Ok.sendFile(content = file, fileName = _.getName, inline = true)
+              .withHeaders(CACHE_CONTROL -> SummaryCacheControl, ETAG -> etag)
+          }
         case None =>
-          BadRequest("No summary")
+          BadRequest("The database summary is not available for this release of VDJdb.")
       }
     }
   }
@@ -64,7 +76,7 @@ class DatabaseAPI @Inject()(cc: ControllerComponents, database: Database, struct
       if (column.nonEmpty) {
         Ok(toJson(DatabaseColumnInfoResponse(column.get)))
       } else {
-        BadRequest("Invalid request")
+        BadRequest("There is no such column in the database. Please check the spelling of the column name and try again.")
       }
     }
   }
@@ -108,10 +120,10 @@ class DatabaseAPI @Inject()(cc: ControllerComponents, database: Database, struct
 
             Ok(toJson(SearchDataResponse(page, pageSize, pageCount, table.getRecordsFound, rows)))
           } else {
-            BadRequest("Invalid request")
+            BadRequest("No search filters were given. Please add at least one filter (an epitope, a gene or a species) and search again.")
           }
         case _: JsError =>
-          BadRequest("Invalid request")
+          BadRequest("The search query could not be read. Please reset the filters and run the search again.")
       }
     }
   }

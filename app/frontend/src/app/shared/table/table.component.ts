@@ -37,6 +37,17 @@ import { IExportFormat } from './export/table-export.component';
 import { TableRow } from './row/table-row';
 import { Table } from './table';
 
+/**
+ * Header state that the template used to recompute per column on every change detection cycle.
+ * It is derived from the columns, the hidden set and the table sort rule, all of which change
+ * rarely, so it is precomputed once per actual change instead.
+ */
+export interface ITableHeaderColumn {
+  readonly column: TableColumn;
+  readonly sortClass: string;
+  readonly hidden: boolean;
+}
+
 @Component({
   selector:    'div[table-component]',
   templateUrl: './table.component.html',
@@ -54,6 +65,8 @@ export class TableComponent implements OnInit, AfterViewInit, OnDestroy, OnChang
   public headerFontSize: string = 'inherit';
   public contentFontSize: string = 'inherit';
   public hiddenColumns: string[] = [];
+  public headerColumns: ITableHeaderColumn[] = [];
+  public visibleColumnsCount: number = 1;
 
   private _hiddenColumnsSet: Set<string> = new Set();
 
@@ -101,6 +114,9 @@ export class TableComponent implements OnInit, AfterViewInit, OnDestroy, OnChang
 
   public ngOnInit(): void {
     this._tableEventsSubscription = this.table.events.subscribe(() => {
+      // Every sort path emits a table event, and the sort rule is what decides the header arrow,
+      // so the derived header state is rebuilt here rather than probed from the template.
+      this.updateHeaderColumns();
       this.changeDetector.detectChanges();
     });
   }
@@ -113,6 +129,7 @@ export class TableComponent implements OnInit, AfterViewInit, OnDestroy, OnChang
       const merged = Array.from(new Set([ ...skippedNames, ...userHidden ]));
       this.hiddenColumns = merged;
       this.updateHiddenColumnsSet();
+      this.updateHeaderColumns();
     }
   }
 
@@ -125,17 +142,14 @@ export class TableComponent implements OnInit, AfterViewInit, OnDestroy, OnChang
     }
   }
 
-  public isSorted(column: TableColumn): string {
-    return this.table.isSorted(column.name);
-  }
-
-  public trackColumnFn(_index: number, column: TableColumn) {
-    return column.name;
+  public trackColumnFn(_index: number, header: ITableHeaderColumn) {
+    return header.column.name;
   }
 
   public onHiddenColumnsChange(hidden: string[]): void {
     this.hiddenColumns = hidden || [];
     this.updateHiddenColumnsSet();
+    this.updateHeaderColumns();
     this.changeDetector.markForCheck();
   }
 
@@ -200,5 +214,17 @@ export class TableComponent implements OnInit, AfterViewInit, OnDestroy, OnChang
 
   private updateHiddenColumnsSet(): void {
     this._hiddenColumnsSet = new Set(this.hiddenColumns || []);
+  }
+
+  private updateHeaderColumns(): void {
+    const columns = this.columns || [];
+    this.headerColumns = columns.map((column) => ({
+      column,
+      // The table input is bound together with the columns, but ngOnChanges can in principle run
+      // before it is assigned, so the sort class falls back to "not sorted" instead of throwing.
+      sortClass: this.table ? this.table.isSorted(column.name) : '',
+      hidden:    this.isColumnHidden(column.name)
+    }));
+    this.visibleColumnsCount = this.getVisibleColumnsCount();
   }
 }

@@ -5,15 +5,17 @@
 @frontend.views.html.main("VDJdb: not found") {
     <div class="ui middle aligned center aligned notfound grid">
         <div class="column">
-            <div class="ui raised segment very padded">
-                <div class="ui grid">
+            @* `padded` rather than `very padded`, and `stackable` on the grid: 3em of padding either
+               side of a non-stacking 6/10 split leaves the message a few words wide on a phone. *@
+            <div class="ui raised segment padded">
+                <div class="ui stackable grid">
                     <div class="six wide column">
                         <h1 class="error-header">404</h1>
                     </div>
                     <div class="ten wide column left aligned">
                         <h2>@messages("notfound.header")</h2>
                         <p>@messages("notfound.message")</p>
-                        <a href="@backend.controllers.routes.Application.index()" class="ui button">@messages("notfound.back")</a>
+                        <a href="@backend.controllers.routes.Application.index()" class="ui teal button">@messages("notfound.back")</a>
                     </div>
                 </div>
             </div>

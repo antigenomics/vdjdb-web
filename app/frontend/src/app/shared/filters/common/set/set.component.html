@@ -28,8 +28,10 @@
 
     <div class="default text" style="width: 90%; white-space: nowrap; overflow: hidden" [innerHTML]="placeholder" *ngIf="isPlaceholderVisible()"></div>
 
+    <!-- Inert Semantic UI markup: the options carry no value and selection happens through the menu
+         below, so the list is capped to keep opening the dropdown from building a thousand nodes. -->
     <select multiple="" *ngIf="isSearchVisible()">
-        <option value="" *ngFor="let value of values">
+        <option value="" *ngFor="let value of values | slice:0:50">
             {{ value }}
         </option>
     </select>

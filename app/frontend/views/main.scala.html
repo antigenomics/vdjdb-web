@@ -42,6 +42,12 @@
         <title>@title</title>
         <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <!-- No <link rel="preload"> for the woff2 itself, deliberately. It does save one serialised
+             round trip, but it can only be written as a hardcoded href, and Google rotates those hashed
+             filenames and varies them by user agent. The day it drifts from what the stylesheet below
+             actually requests, every page load downloads a font nobody uses and logs a "preloaded but
+             not used" warning - and nothing here would ever catch that. preconnect above wins most of
+             the latency without anything to rot; display=swap keeps text visible meanwhile. -->
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@@400;500;600;700&display=swap" rel="stylesheet">
         @if(environment.mode == Mode.Prod) {
             <link type="text/css" href="@routes.Assets.versioned("bundles/styles.css")" rel="stylesheet">

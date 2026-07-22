@@ -124,7 +124,12 @@ export class SampleService {
             // The server explains refusals - busy, already running, over quota - and that explanation
             // is the only actionable part of the message.
             const reason = response.get<string>('message');
-            this.notifications.error('Annotations', reason ? reason : 'Unable to annotate sample');
+            const failure = reason ? reason : 'Unable to annotate sample, please try again in a few minutes';
+            this.notifications.error('Annotations', failure);
+            // The status line doubles as the failure line: it is the only per-sample text the
+            // annotation page can show, and a run that failed is the sample's current status. It is
+            // overwritten at the start of the next run, so it never goes stale.
+            sample.setProcessingLabel(failure);
 
             table.setError();
             messagesSubscription.unsubscribe();
@@ -134,7 +139,7 @@ export class SampleService {
         });
       });
     } else {
-      this.notifications.info('Annotations', 'Sample is in proccesing state');
+      this.notifications.info('Annotations', 'Sample is already being annotated');
     }
   }
 

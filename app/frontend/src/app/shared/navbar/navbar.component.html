@@ -17,6 +17,15 @@
 <div class="ui top fixed borderless inverted menu large" [class.navbar--hidden]="hidden">
     <div class="ui container">
         <a route="/" class="header item navbar-brand"><img src="assets/images/favicon.svg" alt="VDJdb" class="navbar-brand__logo"></a>
+
+        <!-- Narrow-screen disclosure. A checkbox and a label rather than a component field, because the
+             toggle has to work without a change to navbar.component.ts; every item below is a sibling
+             of the input, so design-system.css can show and hide them from `:checked` alone. The input
+             is only visually hidden, so the menu stays in the tab order and its focus ring is drawn on
+             the label. Both are display:none above the breakpoint. -->
+        <input type="checkbox" id="navbar-menu-toggle" class="navbar-menu-toggle" aria-label="Menu">
+        <label for="navbar-menu-toggle" class="navbar-menu-button" title="Menu"><i class="bars icon"></i></label>
+
         <a route="/" class="item" [class.active]="isActive('/')">Home</a>
         <a route="/overview" class="item" [class.active]="isActive('/overview')">Overview</a>
 

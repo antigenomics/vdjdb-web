@@ -12,6 +12,12 @@
      navbar was redesigned. */
   --ds-navbar-height: 69px;
 
+  /* Where page content begins: the bar plus a gap. Both the page cards' `margin-top` and the fixed
+     annotations sidebar's `top` resolve to this, and that is the whole point - the sidebar escapes
+     the margin (it is position:fixed), so while it was anchored to the bar alone it started 35px
+     above the first content card on every /annotations/* page. */
+  --ds-content-offset: calc(var(--ds-navbar-height) + 35px);
+
   /* Width of the annotations sidebar AND the matching content offset. One value for both: they were
      a 12.5% width against a 12.5% margin, but the sidebar is position:fixed so its percentage
      resolves against the viewport while the content's resolves against its parent - so the two
@@ -193,6 +199,109 @@ a:hover { color: var(--ds-teal); }
 .ui.inverted.menu .item:hover,
 .ui.inverted.menu a.item:hover { color: #ffffff !important; }
 
+/* ---- Navbar: narrow screens --------------------------------------------- */
+/* Nine top-level items plus the account menu do not fit below ~1000px; they used to spill past the
+   right edge with nothing to reach them by. Below the breakpoint the bar keeps only the logo and a
+   toggle, and everything else wraps onto full-width rows that the toggle shows and hides.
+   The toggle is a checkbox rather than a component field because navbar.component.ts is not ours to
+   change; the sibling combinator does the rest. Known ceiling of that choice: tapping a link inside
+   the open panel navigates but cannot uncheck the box, so the panel stays open until the toggle is
+   pressed again. Closing it on navigation needs a field on the component. */
+.navbar-menu-toggle,
+.ui.top.fixed.menu .navbar-menu-button {
+  display: none;
+}
+
+@media (max-width: 991px) {
+  /* The checkbox is only visually gone - it keeps its place in the tab order, which is what makes the
+     menu reachable without a pointer. */
+  .ui.top.fixed.menu .navbar-menu-toggle {
+    display: block;
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: 0;
+    opacity: 0;
+  }
+
+  .ui.top.fixed.menu .navbar-menu-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    align-self: stretch;
+    margin-left: auto;
+    padding: 0 1rem;
+    font-size: 1.35rem;
+    color: rgba(255, 255, 255, 0.9);
+    cursor: pointer;
+  }
+  .ui.top.fixed.menu .navbar-menu-button:hover,
+  .ui.top.fixed.menu .navbar-menu-toggle:checked ~ .navbar-menu-button {
+    color: #ffffff;
+  }
+  /* Keyboard users get a ring on the label, since the control they are actually focused on is the
+     invisible checkbox. */
+  .ui.top.fixed.menu .navbar-menu-toggle:focus-visible ~ .navbar-menu-button {
+    outline: 2px solid #ffffff;
+    outline-offset: -4px;
+    border-radius: 6px;
+  }
+
+  /* The bar becomes two zones: a 68px strip (logo + toggle) that never changes height, and the rows
+     below it. `min-height` on the container still holds the closed bar at --ds-navbar-height, which is
+     what the fixed layout elsewhere is anchored to. */
+  .ui.top.fixed.menu > .container {
+    flex-wrap: wrap;
+    max-height: 100vh;
+    overflow-y: auto;
+  }
+
+  .ui.top.fixed.menu > .container > .item:not(.navbar-brand),
+  .ui.top.fixed.menu > .container > .menu {
+    display: none;
+  }
+
+  /* Same specificity as the rule above, so it has to sit after it to win. */
+  .ui.top.fixed.menu .navbar-menu-toggle:checked ~ .item,
+  .ui.top.fixed.menu .navbar-menu-toggle:checked ~ .menu {
+    display: flex;
+    flex: 1 0 100%;
+    font-size: 1.05rem;
+  }
+  .ui.top.fixed.menu .navbar-menu-toggle:checked ~ .menu,
+  /* The dropdown anchors need this too, not just the top-level `.right menu` wrappers. Semantic sets
+     `display: flex` on every `.ui.menu .item`, and the rule above forces it again - so once the
+     sub-menu below is taken out of position:absolute and put back in flow, it becomes a sibling flex
+     item of its own label and lands to the RIGHT of it. That is how "Browse", "About" and the logged-in
+     menu ended up rendering as a row, with the logged-out "Annotation" item squeezing a whole info
+     message into a narrow column beside the word. */
+  .ui.top.fixed.menu .navbar-menu-toggle:checked ~ .ui.dropdown.item {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  /* The dropdowns open on hover, which a touch screen has no way to express - and a tap on the host
+     runs its own `route`, so "Settings", "Logout" and the Browse shortcuts were unreachable. In the
+     panel they are simply listed inline under their parent, indented. */
+  .ui.top.fixed.menu .ui.dropdown.item > .menu,
+  .ui.top.fixed.menu .ui.dropdown.item.dropdown-dismissed > .menu {
+    display: block !important;
+    position: static !important;
+    width: 100% !important;
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    padding-left: 1.25rem;
+  }
+  .ui.top.fixed.menu .ui.dropdown.item > .menu > .item {
+    color: rgba(255, 255, 255, 0.8) !important;
+  }
+  /* The chevron promised a menu that would open; here the menu is already open. */
+  .ui.top.fixed.menu .ui.dropdown.item > .dropdown.icon {
+    display: none;
+  }
+}
+
 /* ---- Collapsible "Filters" frame toggle (Browse) ------------------------- */
 /* A single chevron in a soft circular hit-area. Points UP when the frame is
    expanded; rotates 180deg to point DOWN when collapsed. */
@@ -362,8 +471,9 @@ tr.paired-row > td { color: #525252; }
 
 /* Consistent gap below the fixed navbar on every page. Must be a fixed length,
    not em: Semantic's base font-size differs between container (16px) and
-   non-container (14px) pages, so "5em" rendered as 80px vs 70px. */
-.ui.main.content { margin-top: 104px !important; }
+   non-container (14px) pages, so "5em" rendered as 80px vs 70px. Same 104px as
+   before, now expressed as the shared offset the annotations sidebar also uses. */
+.ui.main.content { margin-top: var(--ds-content-offset) !important; }
 
 /* ---- Navbar brand logo (replaces the old "VDJdb" wordmark) ---------------- */
 .navbar-brand { padding-top: 0 !important; padding-bottom: 0 !important; }

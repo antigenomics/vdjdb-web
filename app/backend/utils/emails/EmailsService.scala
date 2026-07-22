@@ -56,7 +56,11 @@ class EmailsService @Inject()(mailerClient: MailerClient, conf: Configuration) {
       case Some(sender) =>
         try {
           val messageID = mailerClient.send(Email(subject, sender, Seq(to), bodyHtml = Some(body)))
-          logger.info(s"Sent '$subject' to $to from $sender (message id: $messageID)")
+          // The recipient is kept out of the INFO line: an address in a log nothing rotates is
+          // personal data, and the message id is what a support request needs anyway. Which address
+          // a given message went to is one DEBUG level away when a delivery has to be traced.
+          logger.info(s"Sent '$subject' from $sender (message id: $messageID)")
+          logger.debug(s"Sent '$subject' to $to from $sender (message id: $messageID)")
         } catch {
           case e: Exception => logger.error(s"Failed to send '$subject' to $to from $sender: ", e)
         }

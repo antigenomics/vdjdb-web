@@ -67,7 +67,7 @@ export class SearchTable extends Table<SearchTableRow> {
 
   public async update(): Promise<void> {
     if (this.loading) {
-      this.notifications.warn('Search', 'Loading');
+      this.notifications.warn('Search', 'A search is already running, please wait for it to finish');
       return;
     }
 
