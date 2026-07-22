@@ -407,23 +407,27 @@ export class MultisampleSummaryChartComponent implements OnInit, OnDestroy {
   /**
    * Binomial enrichment per sample, keyed sample -> field value -> { p, q }.
    *
-   * For one value: `n` of the sample's clonotypes matched VDJdb at all, VDJdb holds `N` distinct
-   * CDR3s under the same restriction the search ran with, and `K` of those carry this value. A
-   * matching clonotype lands here with probability `K / N`, so `k` of them landing here is
-   * Binomial(n, K/N) and the p-value is the upper tail - how surprising this many would be if the
-   * matches were spread across the database in proportion to how much of it each value occupies.
+   * A clonotype reaches this value by clearing two stages, so its probability is the product:
    *
-   * `n` is the clonotypes that matched something, NOT the size of the repertoire. Conditioning on the
-   * whole repertoire would make the null "every clonotype is a draw from the VDJdb CDR3 pool", and
-   * since a real repertoire matches a tiny fraction of it the expected count comes out around `K`
-   * itself - so the observed count sits far below expectation and the upper tail saturates at 1 for
-   * everything. Conditioning on the matched set asks the question that has an answer: of the
-   * clonotypes that did match, are more of them on this value than its share of the database.
+   *   a ~ Binomial(b, (e / b) x (c / d))
    *
-   * `N` arrives as the `databaseUnique` of the unannotated counter, which is where the server puts
-   * the whole-database CDR3 total; `K` is each value's own `databaseUnique`. Both are counted over
-   * the same accepted rows, so species, chain, MHC class and confidence are already applied to each
-   * and the ratio never mixes populations.
+   *   a  matched this value in the sample          c  VDJdb records carrying this value
+   *   b  clonotypes in the sample                  d  VDJdb records in total
+   *   e  clonotypes that matched VDJdb at all
+   *
+   * `e / b` is the sample's publicity - how much of this repertoire VDJdb knows about at all - and
+   * `c / d` is this value's share of the database once a clonotype is in it. Every one of c, d and e
+   * is counted over the same accepted rows the search ran on, so species, chain, MHC class and
+   * confidence apply to each and no ratio mixes populations.
+   *
+   * `b` and not `e` is the trial count, but note the two are near-indistinguishable in practice:
+   * b x (e/b)(c/d) = e x (c/d), so both carry the same mean and differ only in a variance factor of
+   * (1 - (e/b)(c/d)), which is ~1e-5 away from 1 for any real repertoire. Writing it this way is for
+   * the reader, not the arithmetic: publicity and database share are separately meaningful, and a
+   * single fused rate is not.
+   *
+   * Every input is a count of distinct rearrangements. Neither the read-count weighting nor the axis
+   * scaling can reach this - both change how tall a bar is drawn, not how unlikely it is.
    *
    * BH runs per sample over every value that passed the epitope cutoff - each sample is its own
    * experiment, and the family is what was tested rather than what the threshold left on screen.
@@ -438,15 +442,18 @@ export class MultisampleSummaryChartComponent implements OnInit, OnDestroy {
       if (!field) {
         return;
       }
-      const matchedClonotypes = counters.annotated.unique;
-      const databaseSize = counters.notFoundCounter.databaseUnique;
+      const sampleClonotypes = counters.annotated.unique + counters.notFoundCounter.unique;   // b
+      const matchedClonotypes = counters.annotated.unique;                                    // e
+      const databaseRecords = counters.notFoundCounter.databaseUnique;                        // d
+      const publicity = sampleClonotypes > 0 ? matchedClonotypes / sampleClonotypes : 0;      // e / b
       const tested = SummaryChartOptions.charted(field.counters, fieldName, options);
 
-      const pValues = tested.map((c) => {
-        if (matchedClonotypes <= 0 || databaseSize <= 0 || c.databaseUnique <= 0) {
+      const pValues = tested.map((counter) => {
+        if (sampleClonotypes <= 0 || matchedClonotypes <= 0 || databaseRecords <= 0 || counter.databaseUnique <= 0) {
           return NaN;
         }
-        return Statistics.binomialUpperTail(c.unique, matchedClonotypes, Math.min(1, c.databaseUnique / databaseSize));
+        const rate = publicity * (counter.databaseUnique / databaseRecords);                  // (e/b) x (c/d)
+        return Statistics.binomialUpperTail(counter.unique, sampleClonotypes, Math.min(1, rate));
       });
       const adjusted = Statistics.benjaminiHochberg(pValues);
 
