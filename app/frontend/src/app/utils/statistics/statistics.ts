@@ -16,11 +16,14 @@
 
 /** Enrichment statistics for the annotation summaries.
  *
- * The question each p-value answers: a repertoire of `n` clonotypes was searched against a VDJdb
- * subset of `N` distinct CDR3s, of which `K` carry this epitope. If a clonotype matched the subset at
- * random, the chance of it landing on this epitope is `p = K / N`. Seeing `k` of the sample's
- * clonotypes on it is then Binomial(n, p), and the p-value is the upper tail P(X >= k) — how
- * surprising this many matches would be if the epitope had no particular affinity for this donor.
+ * The question each p-value answers: `n` of a repertoire's clonotypes matched a VDJdb subset of `N`
+ * distinct CDR3s, of which `K` carry this epitope. If those matches fell across the subset in
+ * proportion to how much of it each epitope occupies, a match lands on this one with probability
+ * `p = K / N`. Seeing `k` of them on it is then Binomial(n, p), and the p-value is the upper tail
+ * P(X >= k) — how surprising this many would be with no particular affinity for this donor.
+ *
+ * `n` is the clonotypes that matched, not the size of the repertoire: conditioning on the repertoire
+ * would assume every clonotype in it is a draw from the database, which no real sample is.
  *
  * `K` and `N` are both counted over the *same* database restriction the search ran under (species,
  * chain, MHC class, confidence), so the ratio never mixes populations.

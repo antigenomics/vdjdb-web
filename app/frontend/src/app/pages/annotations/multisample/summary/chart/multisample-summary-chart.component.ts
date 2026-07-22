@@ -407,11 +407,18 @@ export class MultisampleSummaryChartComponent implements OnInit, OnDestroy {
   /**
    * Binomial enrichment per sample, keyed sample -> field value -> { p, q }.
    *
-   * For one value: the sample holds `n` clonotypes, VDJdb holds `N` distinct CDR3s under the same
-   * restriction the search ran with, and `K` of those carry this value. A clonotype matching that
-   * database at random lands here with probability `K / N`, so `k` of the sample's clonotypes landing
-   * here is Binomial(n, K/N) and the p-value is the upper tail - how surprising this many matches
-   * would be with no real affinity.
+   * For one value: `n` of the sample's clonotypes matched VDJdb at all, VDJdb holds `N` distinct
+   * CDR3s under the same restriction the search ran with, and `K` of those carry this value. A
+   * matching clonotype lands here with probability `K / N`, so `k` of them landing here is
+   * Binomial(n, K/N) and the p-value is the upper tail - how surprising this many would be if the
+   * matches were spread across the database in proportion to how much of it each value occupies.
+   *
+   * `n` is the clonotypes that matched something, NOT the size of the repertoire. Conditioning on the
+   * whole repertoire would make the null "every clonotype is a draw from the VDJdb CDR3 pool", and
+   * since a real repertoire matches a tiny fraction of it the expected count comes out around `K`
+   * itself - so the observed count sits far below expectation and the upper tail saturates at 1 for
+   * everything. Conditioning on the matched set asks the question that has an answer: of the
+   * clonotypes that did match, are more of them on this value than its share of the database.
    *
    * `N` arrives as the `databaseUnique` of the unannotated counter, which is where the server puts
    * the whole-database CDR3 total; `K` is each value's own `databaseUnique`. Both are counted over
@@ -431,15 +438,15 @@ export class MultisampleSummaryChartComponent implements OnInit, OnDestroy {
       if (!field) {
         return;
       }
-      const sampleSize = counters.annotated.unique + counters.notFoundCounter.unique;
+      const matchedClonotypes = counters.annotated.unique;
       const databaseSize = counters.notFoundCounter.databaseUnique;
       const tested = SummaryChartOptions.charted(field.counters, fieldName, options);
 
       const pValues = tested.map((c) => {
-        if (sampleSize <= 0 || databaseSize <= 0 || c.databaseUnique <= 0) {
+        if (matchedClonotypes <= 0 || databaseSize <= 0 || c.databaseUnique <= 0) {
           return NaN;
         }
-        return Statistics.binomialUpperTail(c.unique, sampleSize, Math.min(1, c.databaseUnique / databaseSize));
+        return Statistics.binomialUpperTail(c.unique, matchedClonotypes, Math.min(1, c.databaseUnique / databaseSize));
       });
       const adjusted = Statistics.benjaminiHochberg(pValues);
 
