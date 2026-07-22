@@ -56,18 +56,18 @@ final case class SampleRetentionConfiguration(enabled: Boolean,
   def effectiveCreatedAt(createdAtMillis: Long): Long = math.max(createdAtMillis, epochMillis)
 
   def describe: String =
-    s"enabled=$enabled, dryRun=$dryRun, every ${SampleRetentionConfiguration.days(intervalSeconds)}, " +
-      s"keep ${SampleRetentionConfiguration.days(keepRegisteredSeconds)} (registered) / " +
-      s"${SampleRetentionConfiguration.days(keepTemporarySeconds)} (temporary)" +
+    s"enabled=$enabled, dryRun=$dryRun, every ${SampleRetentionConfiguration.window(intervalSeconds)}, " +
+      s"keep ${SampleRetentionConfiguration.window(keepRegisteredSeconds)} (registered) / " +
+      s"${SampleRetentionConfiguration.window(keepTemporarySeconds)} (temporary)" +
       (if (epochMillis > 0L) s", ageing nothing from before ${new java.sql.Timestamp(epochMillis)}" else "")
 }
 
 object SampleRetentionConfiguration {
   final val Root = "application.annotations.retention"
 
-  final val DefaultIntervalSeconds: Long       = 24L * 60L * 60L
+  final val DefaultIntervalSeconds: Long       = 30L * 60L
   final val DefaultKeepRegisteredSeconds: Long = 365L * 24L * 60L * 60L
-  final val DefaultKeepTemporarySeconds: Long  = 7L * 24L * 60L * 60L
+  final val DefaultKeepTemporarySeconds: Long  = 3L * 60L * 60L
 
   /** Every key is read with a default. Production starts with `-Dconfig.file=<server-side file>`,
     * which REPLACES the packaged `application.conf` rather than merging with it, so none of these
@@ -98,8 +98,14 @@ object SampleRetentionConfiguration {
     if (conf.underlying.hasPath(path)) conf.underlying.getDuration(path, TimeUnit.SECONDS) else default
   }
 
-  private def days(seconds: Long): String = {
-    val d = seconds / (24L * 60L * 60L)
-    if (d > 0) s"${d}d" else s"${seconds}s"
+  /** Largest whole unit that fits, so a window reads at the scale it was configured in. The previous
+    * version only knew days, which printed the three-hour token window as "0d" in the per-sample log
+    * line — indistinguishable from a misconfigured zero, on the one line an operator reads to confirm
+    * the sweeper is deleting the right things. */
+  private[sample] def window(seconds: Long): String = {
+    if (seconds >= 24L * 60L * 60L) s"${seconds / (24L * 60L * 60L)}d"
+    else if (seconds >= 60L * 60L) s"${seconds / (60L * 60L)}h"
+    else if (seconds >= 60L) s"${seconds / 60L}m"
+    else s"${seconds}s"
   }
 }
