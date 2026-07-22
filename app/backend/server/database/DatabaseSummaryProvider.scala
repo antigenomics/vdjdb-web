@@ -85,13 +85,21 @@ class DatabaseSummaryProvider @Inject()(database: Database) {
       })
 
       val built = images.result()
-      val etag = "\"" + java.lang.Long.toHexString(file.lastModified()) + "-" +
-        java.lang.Long.toHexString(file.length()) + "\""
+      val bytes = rewritten.getBytes(StandardCharsets.UTF_8)
+
+      // Hashed from what is actually served, NOT from the source file's timestamp and length. Those
+      // identify the document on disk, and this endpoint no longer serves that document - it serves a
+      // rewrite of it. Deploying the rewrite therefore changed every byte of the representation while
+      // leaving a file-derived validator untouched, so a client holding the old inlined version
+      // revalidated, was told 304, and kept it. Observed doing exactly that on production. A validator
+      // has to identify the representation, which means it has to come from the bytes.
+      val digest = java.security.MessageDigest.getInstance("SHA-256").digest(bytes)
+      val etag = "\"" + digest.take(16).map(b => f"${b & 0xff}%02x").mkString + "\""
 
       logger.info(s"Database summary: ${built.length} image(s) split out, " +
-        s"document ${file.length()} -> ${rewritten.length} bytes")
+        s"document ${file.length()} -> ${bytes.length} bytes")
 
-      Some(DatabaseSummary(rewritten.getBytes(StandardCharsets.UTF_8), etag, built))
+      Some(DatabaseSummary(bytes, etag, built))
     } catch {
       // A malformed document must not take the endpoint down with it - the caller falls back to
       // reporting the summary as unavailable, which is the same thing it does when the file is absent.
