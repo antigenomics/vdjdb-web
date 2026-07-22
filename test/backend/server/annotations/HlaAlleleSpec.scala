@@ -74,6 +74,27 @@ class HlaAlleleSpec extends BaseTestSpec {
       HlaAllele.matches("HLA-DRB5*01:01", HlaAllele.parseAll("DRB1*01:01")) shouldBe false
     }
 
+    "match every resolution the database actually stores for a two-digit donor entry" taggedAs UtilsTestTag in {
+      // The exact seven mhc.a values production holds for B*35, including the three- and four-field
+      // ones. A donor typed at two digits has to reach all of them, which is what the extra fields
+      // being dropped at parse time buys.
+      val donor = HlaAllele.parseAll("HLA-B*35")
+      Seq("HLA-B*35", "HLA-B*35:01", "HLA-B*35:01:45", "HLA-B*35:08",
+          "HLA-B*35:08:01", "HLA-B*35:42:01", "HLA-B*35:42:02")
+        .foreach(cell => withClue(s"$cell: ")(HlaAllele.matches(cell, donor) shouldBe true))
+
+      // ...and stops at the locus. B*15 is a different allele group, not a longer form of B*35.
+      HlaAllele.matches("HLA-B*15:01", donor) shouldBe false
+      HlaAllele.matches("HLA-A*35:01", donor) shouldBe false
+    }
+
+    "not treat a partial field as a prefix" taggedAs UtilsTestTag in {
+      // Substring matching would let "B*3" pull in B*35 and B*37. Fields are compared whole, so it
+      // does not - "3" is not an allele group, and quietly widening it would be a wrong answer rather
+      // than a generous one.
+      HlaAllele.matches("HLA-B*35:01", HlaAllele.parseAll("B*3")) shouldBe false
+    }
+
     "report loci only for HLA cells" taggedAs UtilsTestTag in {
       HlaAllele.loci("HLA-DRB1*04:01") shouldEqual Seq("DRB1")
       HlaAllele.loci("HLA-A*02,HLA-A*02:01") shouldEqual Seq("A", "A")
