@@ -34,7 +34,7 @@
              was pushing the account menu past the right edge of the container. -->
         <!-- The header goes to Browse keeping the filters that are set; only "All data" clears them. -->
         <a route="/search" class="ui dropdown item" tabindex="0" [class.active]="isActive('/search')"
-           [class.dropdown-dismissed]="dismissedDropdown === 'browse'"
+           [class.dropdown-dismissed]="dismissedDropdown === 'browse' || scrollDismissed"
            (click)="dismissDropdown('browse')" (mouseleave)="dismissDropdown(null)">
             Browse
             <i class="dropdown icon"></i>
@@ -71,7 +71,7 @@
 
         <a route="/about" class="ui dropdown item" tabindex="0"
            [class.active]="isActive('/about') || isActive('/links') || isActive('/credits')"
-           [class.dropdown-dismissed]="dismissedDropdown === 'about'"
+           [class.dropdown-dismissed]="dismissedDropdown === 'about' || scrollDismissed"
            (click)="dismissDropdown('about')" (mouseleave)="dismissDropdown(null)">
             About
             <i class="dropdown icon"></i>
@@ -86,7 +86,7 @@
             <a route="/authorization/login" external="true" class="item">Login</a>
         </div>
         <div class="right menu" *ngIf="isLogged()">
-            <div class="ui dropdown item" tabindex="0">
+            <div class="ui dropdown item" tabindex="0" [class.dropdown-dismissed]="scrollDismissed">
                 Logged as: {{ getUserLogin() }}
                 <i class="dropdown icon"></i>
                 <div class="menu fade element slow padded">
