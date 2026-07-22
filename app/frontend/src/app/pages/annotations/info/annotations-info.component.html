@@ -31,7 +31,9 @@
     </div>
 </div>
 <div class="ui segment padded">
-    <p><b>Input formats.</b> <b>VDJtools</b>, <b>AIRR</b> and <b>MiXCR</b> tables are accepted, plain or
+    <!-- &nbsp; rather than a plain space: the production build collapses whitespace between adjacent
+         inline tags, which ran these two together as "Input formats.VDJtools". -->
+    <p><b>Input formats.</b>&nbsp;<b>VDJtools</b>, <b>AIRR</b> and <b>MiXCR</b> tables are accepted, plain or
         gzipped. There is nothing to select: the format is read from the column header of the file you
         upload, and a header that cannot be placed as one of the three is rejected rather than guessed
         at. Every accepted file is converted to a VDJtools table on upload, so the format shown against
