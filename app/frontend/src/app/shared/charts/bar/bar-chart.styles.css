@@ -31,6 +31,37 @@
     filter: brightness(1.12);
 }
 
+/* Grouped charts draw lollipops rather than bars: the value axis is usually logarithmic here, and a
+   bar carries a filled area whose size the reader takes as proportional when on a log scale it is not.
+   A stem and a head put the ink at the value and nowhere else. */
+* >>> .bar.chart g.bar {
+    -webkit-transition: filter .3s ease;
+    -moz-transition: filter .3s ease;
+    -ms-transition: filter .3s ease;
+    transition: filter .3s ease;
+    cursor: pointer;
+}
+
+* >>> .bar.chart g.bar:hover {
+    filter: brightness(1.12);
+}
+
+* >>> .bar.chart g.bar > line.stem {
+    stroke-width: 2px;
+    opacity: 0.55;
+}
+
+* >>> .bar.chart g.bar > circle.head {
+    stroke: #fff;
+    stroke-width: 1px;
+}
+
+/* Transparent rather than `none`: `fill: none` takes the element out of hit testing entirely, which
+   is the opposite of what this rect is for. */
+* >>> .bar.chart g.bar > rect.hit {
+    fill: transparent;
+}
+
 * >>> .bar.chart > .y.axis g.tick > text {
     fill: #000;
     font-weight: bold;

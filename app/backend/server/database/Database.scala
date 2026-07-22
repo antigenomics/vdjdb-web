@@ -267,6 +267,14 @@ object Database {
   private def sanitizeDataStream(stream: InputStream): InputStream =
     new BufferedInputStream(new SanitizedDataStream(stream))
 
+  /** The same padding pass, reachable from the offline prior generator.
+    *
+    * That tool builds a `VdjdbInstance` from the database files directly rather than through Guice, and
+    * it has to build the one production parses: the raw table has short lines that only become valid
+    * rows once padded to the header's column count. A generator that skipped this would tabulate a
+    * different database from the one it is used to score. */
+  private[backend] def sanitized(stream: InputStream): InputStream = sanitizeDataStream(stream)
+
   private def createInstanceFromConfiguration(configuration: Configuration): VdjdbInstance = {
     val databaseConfiguration = configuration.get[DatabaseConfiguration]("application.database")
     if (databaseConfiguration.useLocal) {

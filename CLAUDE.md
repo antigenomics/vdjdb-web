@@ -74,6 +74,19 @@ must be mirrored.
 **`.jvmopts` never reaches the packaged app** — it is sbt-only. Production heap is `JAVA_OPTS=-Xmx6g`
 in `docker-compose.yml`.
 
+**`conf/control-prior.txt` goes stale silently when VDJdb is updated.** It holds how often a healthy
+control repertoire reaches each epitope by chance, measured by annotating four 100k control samples
+against a specific database, and it is the null behind the summary chart's enrichment p-values.
+Nothing at runtime compares it against the database actually loaded — it is read once and trusted. So a
+database refresh that does not regenerate it leaves the p-values describing a database the server no
+longer serves, with nothing failing. Regeneration is one offline sbt command; `SOURCES.md` has it, plus
+where the control repertoires come from and why they are filtered to productive rearrangements.
+
+The prior is measured under the shipped filter defaults, so `ControlPrior.measuredUnder` withholds
+every p-value when the request narrows the search further (motif, HLA, confidence, MHC class, V/J).
+Changing a default in `AnnotationsFilters` without regenerating therefore turns the p-values off for
+everyone rather than making them wrong — safe, but silent.
+
 **The Angular production build collapses whitespace between adjacent inline tags.** `<b>A.</b> <b>B</b>`
 renders as `A.B`. Use `&nbsp;` where the space matters.
 

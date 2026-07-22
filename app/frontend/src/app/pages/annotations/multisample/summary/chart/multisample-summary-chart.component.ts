@@ -243,8 +243,11 @@ export class MultisampleSummaryChartComponent implements OnInit, OnDestroy {
       if (c.species) {
         lines.push(`Species: ${c.species}`);
       }
+      // Silent rather than "n/a" when there is no null to test against: every value of every column
+      // reaches here, but only epitopes carry control-derived coefficients, so the alternative is two
+      // lines of nothing in the tooltip of every MHC and antigen bar on the chart.
       const test = enrichment[ sample ] !== undefined ? enrichment[ sample ][ c.field ] : undefined;
-      if (test !== undefined) {
+      if (test !== undefined && !isNaN(test.p)) {
         lines.push(`P-value = ${Statistics.formatPValue(test.p)}`);
         lines.push(`P-adj (BH) = ${Statistics.formatPValue(test.q)}`);
       }
@@ -405,27 +408,36 @@ export class MultisampleSummaryChartComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Binomial enrichment per sample, keyed sample -> field value -> { p, q }.
+   * Beta-Binomial enrichment per sample, keyed sample -> field value -> { p, q }.
    *
-   * For one value: `n` of the sample's clonotypes matched VDJdb at all, VDJdb holds `N` distinct
-   * CDR3s under the same restriction the search ran with, and `K` of those carry this value. A
-   * matching clonotype lands here with probability `K / N`, so `k` of them landing here is
-   * Binomial(n, K/N) and the p-value is the upper tail - how surprising this many would be if the
-   * matches were spread across the database in proportion to how much of it each value occupies.
+   *   `a ~ BetaBinomial(b, alpha, beta)`
    *
-   * `n` is the clonotypes that matched something, NOT the size of the repertoire. Conditioning on the
-   * whole repertoire would make the null "every clonotype is a draw from the VDJdb CDR3 pool", and
-   * since a real repertoire matches a tiny fraction of it the expected count comes out around `K`
-   * itself - so the observed count sits far below expectation and the upper tail saturates at 1 for
-   * everything. Conditioning on the matched set asks the question that has an answer: of the
-   * clonotypes that did match, are more of them on this value than its share of the database.
+   *   a  clonotypes matching this epitope in the sample
+   *   b  clonotypes in the sample
+   *   alpha, beta  the epitope's per-clonotype match rate in a healthy control repertoire
    *
-   * `N` arrives as the `databaseUnique` of the unannotated counter, which is where the server puts
-   * the whole-database CDR3 total; `K` is each value's own `databaseUnique`. Both are counted over
-   * the same accepted rows, so species, chain, MHC class and confidence are already applied to each
-   * and the ratio never mixes populations.
+   * The coefficients come from the server, measured by annotating a 100k-clonotype control repertoire
+   * of the same species and chain — see `ControlPrior` — so the question each p-value answers is "more
+   * of this epitope than a repertoire with no history of it", which is the question being asked.
    *
-   * BH runs per sample over every value that passed the epitope cutoff - each sample is its own
+   * What it replaces was the epitope's share of VDJdb records, and that was measuring the database
+   * rather than the donor. Record count is close to unrelated to how reachable an epitope is: on
+   * production `YLEPGPVTA` has 11 human TRB records and a control repertoire finds it 217 times, while
+   * `EPLPQGQLTAY` has 39 records and is found 42 times. Scoring a real B35+ donor against record share
+   * ranked `YLEPGPVTA` first at 1e-37 and the donor's true EBV response fifteenth; against the control
+   * the true response ranks first and `YLEPGPVTA` comes out at p = 1.00 — the donor matched it 67
+   * times where chance alone gives 139, so it was never enriched, only reachable.
+   *
+   * Beta-Binomial rather than Binomial because the rate is itself estimated from one finite control, so
+   * it carries uncertainty that a fixed `p` would throw away. The half-count in `alpha` and `beta` is
+   * Jeffreys, and it is what keeps the rare tail honest: an epitope reached zero times out of 100,000
+   * has a maximum-likelihood rate of exactly zero, under which one single match is infinitely
+   * surprising and every never-reached epitope would top the chart.
+   *
+   * Every input is a count of distinct rearrangements. Neither the read-count weighting nor the axis
+   * scaling can reach this — both change how tall a bar is drawn, not how unlikely it is.
+   *
+   * BH runs per sample over every value that passed the epitope cutoff — each sample is its own
    * experiment, and the family is what was tested rather than what the threshold left on screen.
    */
   private enrichmentBySample(fieldName: string, options: SummaryChartOptions):
@@ -438,15 +450,18 @@ export class MultisampleSummaryChartComponent implements OnInit, OnDestroy {
       if (!field) {
         return;
       }
-      const matchedClonotypes = counters.annotated.unique;
-      const databaseSize = counters.notFoundCounter.databaseUnique;
+      const sampleClonotypes = counters.annotated.unique + counters.notFoundCounter.unique;   // b
       const tested = SummaryChartOptions.charted(field.counters, fieldName, options);
 
-      const pValues = tested.map((c) => {
-        if (matchedClonotypes <= 0 || databaseSize <= 0 || c.databaseUnique <= 0) {
+      const pValues = tested.map((counter) => {
+        // No coefficients means the server did not measure this bar — a non-epitope column, a species
+        // or chain the control set does not cover, or an annotation run with filters the control run
+        // did not use. All three are "unknown", and a bar with no null behind it gets no p-value
+        // rather than one computed against a substitute.
+        if (sampleClonotypes <= 0 || counter.alpha === undefined || counter.beta === undefined) {
           return NaN;
         }
-        return Statistics.binomialUpperTail(c.unique, matchedClonotypes, Math.min(1, c.databaseUnique / databaseSize));
+        return Statistics.betaBinomialUpperTail(counter.unique, sampleClonotypes, counter.alpha, counter.beta);
       });
       const adjusted = Statistics.benjaminiHochberg(pValues);
 

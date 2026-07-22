@@ -22,7 +22,7 @@ import backend.models.authorization.user.{User, UserDetails}
 import backend.models.files.FileMetadataProvider
 import backend.models.files.sample.SampleFileProvider
 import backend.models.usage.UsageProvider
-import backend.server.annotations.{AnnotationsBusyException, AnnotationsScheduler, IntersectionTable, SearchSummary}
+import backend.server.annotations.{AnnotationsBusyException, AnnotationsScheduler, ControlPrior, IntersectionTable, SearchSummary}
 import backend.server.annotations.api.multisample.summary.{MultisampleSummaryAnalysisRequest, MultisampleSummaryAnalysisResponse}
 import backend.server.annotations.charts.summary.SummaryCounters
 import backend.server.database.Database
@@ -86,6 +86,11 @@ class MultisampleAnalysisWebSocketActor(out: ActorRef, limit: IpLimit, user: Use
                 val restrictions = IntersectionTable.databaseRestrictions(request.databaseQueryParams, request.searchScope) ++
                   IntersectionTable.postSearchFilters(request.databaseQueryParams, motifs)
 
+                // Hoisted out of the per-sample loop for the same reason the index is: the prior is a
+                // property of the database and of this request's filters, and every sample in the
+                // selection is scored against the same one.
+                val prior = ControlPrior.betaFor(database, request.databaseQueryParams, request.searchScope)
+
                 val multipleSummary = selected.flatMap { sampleName =>
                   val file = userFiles.find(_._1.sampleName == sampleName).get
                   try {
@@ -103,7 +108,7 @@ class MultisampleAnalysisWebSocketActor(out: ActorRef, limit: IpLimit, user: Use
                       .map { case (c, l) => (c, l.asScala.toList.filter(hit => restrictions.forall(allows => allows(c, hit)))) }
                       .filter { case (_, hits) => hits.nonEmpty }
                     val (fieldCounters, notFound) =
-                      SearchSummary.summarize(found, sample, IntersectionTable.SummaryFields, summaryIndex)
+                      SearchSummary.summarize(found, sample, IntersectionTable.SummaryFields, summaryIndex, prior)
                     val annotated = IntersectionTable.summarizeAnnotated(found)
                     Some(sampleName -> SummaryCounters(fieldCounters, notFound, annotated))
                   } catch {

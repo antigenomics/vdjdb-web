@@ -72,7 +72,8 @@ class IntersectionTable(var summary: Option[SummaryCounters] = None) extends Res
     // `found` rather than `raw`, so the summary describes what the user is actually shown: with any
     // post-search filter active the unmatched tally has to grow by the clonotypes that filter removed.
     val (counters, notFound) =
-      SearchSummary.summarize(found, sample, IntersectionTable.SummaryFields, summaryIndex)
+      SearchSummary.summarize(found, sample, IntersectionTable.SummaryFields, summaryIndex,
+        ControlPrior.betaFor(database, request.databaseQueryParams, request.searchScope))
 
     // Every counter is sent. The epitope cutoff is a chart display option now, applied in the browser
     // against the same `databaseUnique` these carry: it described itself as affecting the plots only,
@@ -106,7 +107,7 @@ object IntersectionTable {
   private final val JColumn          = "j.segm"
 
   /** The value of `mhc` that means "do not restrict by MHC class at all". */
-  private final val BothMhcClasses = "MHCI+II"
+  private[annotations] final val BothMhcClasses = "MHCI+II"
 
   /** A restriction on a single hit, given the sample clonotype it was found for.
     *

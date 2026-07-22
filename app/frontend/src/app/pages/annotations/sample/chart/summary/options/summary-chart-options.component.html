@@ -59,6 +59,19 @@
      0.000000010; without naming the unit the number on the axis means nothing. -->
 <div class="summary-options-units" *ngIf="getNormalizeUnits()">Axis reads {{ getNormalizeUnits() }}</div>
 
+<!-- Same quiet caption style as the units line above: what the tooltip's p-value actually tested,
+     placed where the reader is choosing the breakdown it applies to. Epitopes only - only they have a
+     measured null behind them. -->
+<div class="summary-options-units" *ngIf="showEnrichmentNote && isEpitopeFieldSelected()">
+    P-value is a Beta-Binomial upper tail: of the clonotypes in this sample, how many matched this
+    epitope, against how often a healthy control repertoire of 100&nbsp;000 clonotypes of the same
+    species and chain matches it by chance. The control rate carries a &frac12;-count prior, so an
+    epitope the control never reached is treated as rare rather than impossible. It counts clonotypes
+    only, so neither the read-count weighting nor the axis scaling changes it. P-adj is
+    Benjamini-Hochberg across every epitope tested in the sample. No p-value is shown when the search
+    filters differ from those the control was measured under.
+</div>
+
 <ng-container *ngIf="isThresholdTypesAvailable()">
     <h4 class="summary-options-heading">Show</h4>
     <div class="ui selection fluid upward dropdown" dropdown [content]="thresholdContent">
