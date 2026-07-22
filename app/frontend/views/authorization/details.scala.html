@@ -3,7 +3,8 @@
 @import helper._
 @import backend.models.authorization.forms.ChangeForm
 @import backend.models.authorization.user.UserDetails
-@(form: Form[ChangeForm], userDetails: UserDetails)(implicit environment: Environment, analytics: Analytics, request: Request[_], messages: Messages, flash: Flash)
+@import backend.server.annotations.api.user.AccountLimits
+@(form: Form[ChangeForm], userDetails: UserDetails, limits: AccountLimits)(implicit environment: Environment, analytics: Analytics, request: Request[_], messages: Messages, flash: Flash)
 @implicitField = @{
     FieldConstructor(frontend.views.html.authorization.forms.input.f)
 }
@@ -22,22 +23,65 @@
                                 <div class="sub header">@userDetails.email</div>
                             </div>
                         </h2>
+                        @* Same sentence and the same rows as the annotate page's "Limits on this
+                           account" panel, from the same AccountLimits. Two pages quoting a user's own
+                           limits from two sources is how they end up disagreeing. *@
+                        <p>You are signed in with
+                            @limits.accountType match {
+                                case "token" => { <b>a temporary token account</b> }
+                                case "registered" => { <b>a registered account</b> }
+                                case "demo" => { <b>the demo account</b> }
+                                case _ => { <b>an administrative account</b> }
+                            }.
+                            Registered accounts are given more room than token ones on every row below.</p>
                         <table class="ui definition table">
                             <tbody>
                                 <tr>
-                                    <td class="ten wide column">Uploaded files</td>
-                                    <td>@userDetails.files.length</td>
+                                    <td class="ten wide column">Uploaded samples</td>
+                                    <td>@userDetails.files.length of @limits.maxSamples</td>
                                 </tr>
                                 <tr>
-                                    <td class="ten wide column">Max files count allowed</td>
-                                    <td>@userDetails.permissions.maxFilesCount</td>
+                                    <td class="ten wide column">Uploaded file size</td>
+                                    <td><b>@limits.maxFileSizeMb MiB</b> each, measured compressed</td>
                                 </tr>
                                 <tr>
-                                    <td class="ten wide column">Max file size allowed</td>
-                                    <td>@userDetails.permissions.maxFileSize MiB</td>
+                                    <td class="ten wide column">Clonotypes per sample</td>
+                                    <td><b>@limits.maxClonotypes</b> unique TCR sequences</td>
                                 </tr>
+                                @if(limits.uploadsPerDay != AccountLimits.Unlimited) {
+                                    <tr>
+                                        <td class="ten wide column">Uploads per day</td>
+                                        <td><b>@limits.uploadsPerDay</b></td>
+                                    </tr>
+                                }
+                                @if(limits.annotationsPerDay != AccountLimits.Unlimited) {
+                                    <tr>
+                                        <td class="ten wide column">Annotation runs per day</td>
+                                        <td><b>@limits.annotationsPerDay</b></td>
+                                    </tr>
+                                }
+                                <tr>
+                                    <td class="ten wide column">Uploaded samples kept for</td>
+                                    <td><b>@limits.sampleRetention</b> after upload</td>
+                                </tr>
+                                @limits.accountRetention.map { window =>
+                                    <tr>
+                                        <td class="ten wide column">Account kept for</td>
+                                        <td><b>@window</b> after last use</td>
+                                    </tr>
+                                }
                             </tbody>
                         </table>
+                        @if(limits.accountType == "demo") {
+                            <div class="account-notice account-notice--demo">
+                                This is a demo account. Some features may be unavailable
+                            </div>
+                        }
+                        @if(limits.accountType == "token") {
+                            <div class="account-notice account-notice--token">
+                                This is a token-based temporary account. Strict limits apply
+                            </div>
+                        }
                     </div>
                     @if(userDetails.permissions.isChangePasswordAllowed) {
                         <div class="six wide column">
