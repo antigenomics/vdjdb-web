@@ -98,6 +98,22 @@ export class SummaryChartOptions {
   public isNotFoundVisible: boolean = false;
   public isWeightedByReadCount: boolean = true;
 
+  /** Epitopes whose enrichment is weaker than this are left off the plot. 0 disables the cutoff.
+    *
+    * Defaults to 1, which keeps everything: the control is there to be read, not to decide what the
+    * user is allowed to see, and a chart that silently drops most of its bars on first load is a worse
+    * default than one the reader narrows deliberately.
+    *
+    * Applied where the bars are built, never inside the test: Benjamini-Hochberg has to see the whole
+    * family that was tested, and filtering before it would shrink `m` and quietly change every q-value
+    * that survived. */
+  public pValueCutoff: number = 1;
+
+  /** Whether [[pValueCutoff]] is read against the BH-adjusted value or the raw one. Adjusted by default
+    * — a summary tests every epitope in the sample at once, so the raw value is the wrong one to
+    * threshold. */
+  public isPValueCutoffAdjusted: boolean = true;
+
   /**
    * The counters worth plotting for a column.
    *
@@ -178,6 +194,27 @@ export class SummaryChartOptionsComponent {
     // Guard the parse: an emptied number input yields null, which would compare false against every
     // count and blank the chart.
     this.options.minEpitopeSize = (size === null || isNaN(size) || size < 0) ? 0 : size;
+    this.onOptionsChange.emit(this.options);
+  }
+
+  public get pValueCutoff(): number {
+    return this.options.pValueCutoff;
+  }
+
+  public set pValueCutoff(cutoff: number) {
+    // Same guard as minEpitopeSize: an emptied number input yields null, and a null cutoff would
+    // compare false against every p-value and blank the chart. Clamped to [0, 1] because anything
+    // outside it is not a probability - 0 turns the cutoff off, 1 keeps everything.
+    this.options.pValueCutoff = (cutoff === null || isNaN(cutoff)) ? 0 : Math.min(1, Math.max(0, cutoff));
+    this.onOptionsChange.emit(this.options);
+  }
+
+  public get isPValueCutoffAdjusted(): boolean {
+    return this.options.isPValueCutoffAdjusted;
+  }
+
+  public set isPValueCutoffAdjusted(adjusted: boolean) {
+    this.options.isPValueCutoffAdjusted = adjusted;
     this.onOptionsChange.emit(this.options);
   }
 

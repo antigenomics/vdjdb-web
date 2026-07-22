@@ -74,18 +74,25 @@ must be mirrored.
 **`.jvmopts` never reaches the packaged app** — it is sbt-only. Production heap is `JAVA_OPTS=-Xmx6g`
 in `docker-compose.yml`.
 
-**`conf/control-prior.txt` goes stale silently when VDJdb is updated.** It holds how often a healthy
-control repertoire reaches each epitope by chance, measured by annotating four 100k control samples
-against a specific database, and it is the null behind the summary chart's enrichment p-values.
-Nothing at runtime compares it against the database actually loaded — it is read once and trusted. So a
-database refresh that does not regenerate it leaves the p-values describing a database the server no
-longer serves, with nothing failing. Regeneration is one offline sbt command; `SOURCES.md` has it, plus
-where the control repertoires come from and why they are filtered to productive rearrangements.
+**The enrichment null is a control repertoire searched live, and `conf/control/` must stay `ntvj`.**
+`ControlRepertoires` searches a healthy control of the same species and chain through the index the
+request is already using and the filter list the request has already built, then caches the counts per
+filter set. Two things that look like details and are not:
 
-The prior is measured under the shipped filter defaults, so `ControlPrior.measuredUnder` withholds
-every p-value when the request narrows the search further (motif, HLA, confidence, MHC class, V/J).
-Changing a default in `AnnotationsFilters` without regenerating therefore turns the p-values off for
-everyone rather than making them wrong — safe, but silent.
+- **Both halves of the filtering, or the null is wrong.** Confidence is deliberately not in
+  `databaseRestrictions` — it lives in `evidenceFilters` — so anything narrowing the database by
+  `databaseRestrictions` alone measures the null against the *whole* database while a default request
+  searches the 7.9% at `vdjdb.score >= 1`. A precomputed table did exactly that and was complete,
+  plausible and silently wrong. Passing the caller's own `filters` list is what makes the sample and
+  the control uncomparable-by-mistake impossible.
+- **`aa` builds of the control are not interchangeable with `ntvj`.** Uploads are nucleotide-level; the
+  `aa` files collapse to one row per `cdr3aa`, and convergent recombination concentrates on precisely
+  the public sequences VDJdb holds (1.63x among matching clonotypes against 1.04x overall). With an
+  `aa` control every sample looked ~7-19x enriched across the board. `SOURCES.md` has the numbers.
+
+A cache miss costs one control search — 7-17 s on this hardware for 1M clonotypes, paid once per
+distinct filter set by whoever asks first. Nothing goes stale on a database refresh, because the counts
+are derived at request time from whatever database is loaded.
 
 **The Angular production build collapses whitespace between adjacent inline tags.** `<b>A.</b> <b>B</b>`
 renders as `A.B`. Use `&nbsp;` where the space matters.

@@ -23,7 +23,6 @@ import { IntersectionTableEntryFrequencyComponent } from 'pages/annotations/samp
 import { IntersectionTableEntryTagsComponent } from 'pages/annotations/sample/table/intersection/entry/intersection-table-entry-tags.component';
 import { MatchesTableEntryAlignmentComponent } from 'pages/annotations/sample/table/intersection/matches/entry/matches-table-entry-alignment.component';
 import { MatchesTableEntryMatchScoreComponent } from 'pages/annotations/sample/table/intersection/matches/entry/matches-table-entry-match-score.component';
-import { MatchesTableEntryWeightComponent } from 'pages/annotations/sample/table/intersection/matches/entry/matches-table-entry-weight.component';
 import { MatchesTableComponent } from 'pages/annotations/sample/table/intersection/matches/matches-table.component';
 import { SampleTableComponent } from 'pages/annotations/sample/table/sample-table.component';
 import { ModalsModule } from 'shared/modals/modals.module';
@@ -39,8 +38,7 @@ import { TableModule } from 'shared/table/table.module';
     IntersectionTableEntryTagsComponent,
     MatchesTableComponent,
     MatchesTableEntryAlignmentComponent,
-    MatchesTableEntryMatchScoreComponent,
-    MatchesTableEntryWeightComponent ],
+    MatchesTableEntryMatchScoreComponent  ],
   exports:         [ SampleTableComponent ],
   entryComponents: [
     IntersectionTableEntryFrequencyComponent,
@@ -49,7 +47,6 @@ import { TableModule } from 'shared/table/table.module';
     IntersectionTableEntryTagsComponent,
     MatchesTableComponent,
     MatchesTableEntryAlignmentComponent,
-    MatchesTableEntryMatchScoreComponent,
-    MatchesTableEntryWeightComponent ]
+    MatchesTableEntryMatchScoreComponent  ]
 })
 export class SampleTableModule {}

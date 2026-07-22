@@ -70,9 +70,15 @@
             </i>
         </div>
         <div class="ten wide column">
+            <!-- No substring entries. On Browse "Search substring: X" is a query in its own right, but a
+                 donor typing is a list of alleles, and the chip commits the raw text - so blurring the
+                 field after typing "HLA-" sent "HLA-" to HlaAllele.parseAll as if it were an allele.
+                 A partial like "HLA-A*0" is worse than a no-op: it parses, matches no record, and
+                 silently drops every hit. -->
             <set [selected]="hlaSelected" (selectedChange)="onHlaSelectedChange($event)"
                  [values]="hlaValues"
                  [disabled]="disabled"
+                 [substringDisabled]="true"
                  placeholder="Leave blank to allow all HLAs, or start typing to see suggestions..."></set>
         </div>
     </div>

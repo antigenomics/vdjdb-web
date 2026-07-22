@@ -49,8 +49,10 @@ export class DatabaseQueryParamsComponent implements OnInit {
 
   public onHlaSelectedChange(selected: SetEntry[]): void {
     this.hlaSelected = selected || [];
-    // SetEntry.toString drops the disabled entries - the "Search substring: X" row and the truncation
-    // notice - and comma-joins the rest, which is exactly what HlaAllele.parseAll on the server reads.
+    // SetEntry.toString drops only the entries flagged disabled - "No matches" and the truncation
+    // notice - and comma-joins the rest, which is what HlaAllele.parseAll on the server reads. The
+    // "Search substring: X" row is NOT flagged disabled, so it would survive into that string; the
+    // picker suppresses it instead, via substringDisabled in the template.
     this.filters.databaseQueryParams.hla = SetEntry.toString(this.hlaSelected);
   }
 

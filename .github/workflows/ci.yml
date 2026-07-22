@@ -53,6 +53,12 @@ jobs:
           sbt --version
 
       # Build frontend + backend
+      # The enrichment null. Not committed - ~65 MB of gzipped repertoires in a repo whose largest
+      # tracked file is 40 KB - so it is fetched into conf/, which is on the application classpath.
+      # Fails the build if unavailable: an image without it starts fine and silently shows no p-values.
+      - name: Fetch control repertoires
+        run: ./tools/fetch_control.sh
+
       - name: Build application
         run: |
           sbt frontendInstallDependencies build

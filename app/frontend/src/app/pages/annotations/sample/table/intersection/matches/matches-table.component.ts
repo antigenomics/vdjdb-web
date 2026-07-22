@@ -54,14 +54,15 @@ export class MatchesTableComponent {
   }
 
   public getColumns(): TableColumn[] {
-    const skip: string[] = [ 'gene', 'cdr3', 'species' ];
+    // Past the first three, these are internal bookkeeping the database carries for curators — a
+    // content hash, the curation provenance (method/meta) and the record of how a CDR3 was fixed.
+    // None of it says anything about the user's own hit. Weight went for a different reason: the
+    // search index is built with a dummy weight function, so it printed the same number on every row.
+    // Hidden rather than dropped, because the entries a row emits are positional against this list.
+    const skip: string[] = [ 'gene', 'cdr3', 'species', 'method', 'meta', 'cdr3fix', 'TCR_hash' ];
     const columns = [
       new TableColumn('alignment', 'Alignment', false, false, true, true, 'Alignment of query (top) and VDJdb hit (bottom) CDR3 sequences'),
-      new TableColumn('match-score', 'Match Score', true, false, true, true, 'Final aggregate score of the TCR alignment between query and VDJdb hit'),
-      // Honest about the ceiling: the search index is built with a dummy weight function, so this
-      // column is constant until a scoring that actually weights hits is wired back in.
-      new TableColumn('weight', 'Weight', true, false, true, true,
-        'Weight of the VDJdb hit. The current scoring does not weight hits, so this value is the same for every match')
+      new TableColumn('match-score', 'Match Score', true, false, true, true, 'Final aggregate score of the TCR alignment between query and VDJdb hit')
     ];
 
     return columns.concat(this.annotationsService.getDatabaseMetadata().columns.map((c) => {

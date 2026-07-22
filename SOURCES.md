@@ -103,79 +103,77 @@ inside the 100x decompression-ratio guard), md5 `49946bc42d33b4a35bf1a214b071e57
 
 ---
 
-## `conf/control-prior.txt` — enrichment null
+## `conf/control/` — enrichment null (control repertoires)
 
-**What it is:** for every epitope, how many clonotypes of a healthy repertoire match it **by chance**.
-It is the null the annotation summary's enrichment p-values are read against, consumed by
-`backend.server.annotations.ControlPrior` and turned into the Beta coefficients the chart tests with.
+**What it is:** four healthy-repertoire samples, one per (species, chain). The annotation summary
+searches the matching one through the *same* index and the *same* filters as the user's sample, and the
+per-epitope match counts become the Beta prior the enrichment p-values are tested against.
 
-**Provenance:** *derived/computed* — an annotation run, not a measurement. Both inputs are
-experimental (see below); the counts in this file are not.
+**Provenance:** *experimental*, subsampled. The counts derived from them at runtime are *computed*.
 
-**Format:** tab-separated with a header, 9,901 rows.
+| File | Clonotypes | Available upstream |
+|---|---|---|
+| `HomoSapiens.TRA.txt.gz` | 1,000,000 | 4,092,278 |
+| `HomoSapiens.TRB.txt.gz` | 1,000,000 | 28,257,621 |
+| `MusMusculus.TRA.txt.gz` | 627,648 | 627,648 (all) |
+| `MusMusculus.TRB.txt.gz` | 1,000,000 | 1,177,591 |
 
-| Column | Meaning |
-|---|---|
-| `species` | `HomoSapiens` or `MusMusculus` |
-| `gene` | `TRA` or `TRB` |
-| `scope` | `exact`, `hamming1`, `hamming2` or `levenshtein1` — the four searches the UI offers |
-| `epitope` | `antigen.epitope` |
-| `matched` | distinct control clonotypes matching that epitope under that scope |
-| `control` | control repertoire size, `100000` throughout |
+**Upstream:** `https://huggingface.co/datasets/isalgo/airr_control` (locally `~/hf/airr_control/`), the
+**`*.ntvj.vdjtools.tsv.gz`** files. VDJtools format, cut to the 11 positional columns.
 
-One row per (species, gene, scope, epitope) that the control reached at all; an epitope it never
-reached is simply absent and picks up the ½-count floor at read time. Coverage is a strong function of
-scope — a random human TRB repertoire reaches **602** epitopes exactly and **1,203** at one
-substitution, out of 1,937.
+### Two things about the sampling that are load-bearing
 
-### Why it is not the record count
+**`ntvj`, not `aa` — a clonotype must mean the same thing on both sides.** Uploaded samples are
+nucleotide-level. The `aa` builds are collapsed to one row per `cdr3aa`, and convergent recombination
+concentrates on exactly the germline-proximal public sequences VDJdb holds: measured on a real donor,
+**1.63x** nt variants per aa sequence among VDJdb-matching clonotypes against **1.04x** overall. Against
+an aa-collapsed control every uploaded sample looks uniformly enriched for that reason alone. Measured
+as the ratio of overall VDJdb match rate, sample against control, on the CMV+ demo donor:
 
-The obvious null is an epitope's share of VDJdb records, and it measures the database rather than the
-donor. Record count barely relates to reachability: `YLEPGPVTA` has **11** human TRB records and a
-control repertoire finds it **217** times, while `EPLPQGQLTAY` has **39** records and is found **42**
-times. Scored against record share, a *synthetic* repertoire with no immunological history came out
-with the same epitope profile as two real donors to within a couple of percent.
+| control | exact | hamming-1 |
+|---|---|---|
+| `aa` (collapsed) | 18.7x | 7.0x |
+| **`ntvj`** | **1.3x** | **1.07x** |
 
-### Control repertoires
+An offset near 1 is the point: it means the two repertoires are being counted the same way, and the
+publicness correction in the test has almost nothing left to do.
 
-**Provenance:** *experimental*.
-**Upstream:** `https://huggingface.co/datasets/isalgo/airr_control` (locally `~/hf/airr_control/`),
-the `aa` files. Four samples, one per (species, chain), each cut to exactly **100,000 productive
-clonotypes**.
+**Uniform random, never `head -N`.** The files are pooled across many donors and sorted by abundance, so
+the top rows are the most expanded and most shared sequences in the cohort.
 
-Filtering to productive is not cosmetic: mouse TRA runs **21.3%** stop-codon and frameshift reads at
-the top of its count distribution. Those can never match a database of productive CDR3s, so leaving
-them in dilutes the denominator and yields a rate that is too low — a prior too permissive exactly
-where the data is thinnest.
+**Productive only.** Rows whose `cdr3aa` contains `*` or `_` are dropped. Mouse TRA runs 21.3%
+stop-codon and frameshift reads at the top of its count distribution; those can never match a database
+of productive CDR3s, so leaving them in dilutes the denominator and returns a rate that is too low.
 
-```bash
-# One population; repeat for HomoSapiens/MusMusculus x TRA/TRB.
-zcat ~/hf/airr_control/<sample>.aa.tsv.gz \
-  | awk -F'\t' 'NR>1 && $4 !~ /[*_]/' \
-  | head -100000 > control/HomoSapiens.TRB.txt   # VDJtools positional columns
+### Where they come from at build time
+
+**Not committed.** Four gzipped repertoires are ~65 MB and this repository has never held a tracked
+file above 40 KB. They live in the dataset they were derived from:
+
+`https://huggingface.co/datasets/isalgo/airr_control/tree/main/vdjdb-web-control`
+
+`tools/fetch_control.sh` pulls them into `conf/` (which is on the application classpath) and both CI
+workflows run it before the build. It fails loudly on a bad download rather than leaving a partial
+file, because an application missing its control starts normally and simply shows no p-values — there
+is no symptom until somebody reads a chart.
+
+```zsh
+./tools/fetch_control.sh          # into conf/control
 ```
+
+`ControlRepertoires` looks beside the database first (`<database.path>/control/`) and falls back to the
+packaged copy, so a deployment can override them without a rebuild.
 
 ### Regenerate
 
-⚠️ **Required whenever the production VDJdb is updated.** The counts describe the database that was
-searched; against a newer one they are stale in a direction nothing reports. Nothing at runtime checks
-this — the file is read at first use and trusted.
+Seeded, so it reproduces exactly. `tools/build_control.py`, seed `20260722`, size
+`min(1_000_000, available)`:
 
 ```zsh
-export JAVA_HOME=$(/usr/libexec/java_home -v 1.8)
-export PATH="$JAVA_HOME/bin:$PATH"
-
-env VDJDB_PRIOR_DB=/path/to/vdjdb-db \
-    VDJDB_PRIOR_CONTROL=/path/to/control \
-    VDJDB_PRIOR_OUT=conf/control-prior.txt \
-    sbt -J-Xmx12g "testOnly backend.tools.ControlPriorGeneratorSpec"
+python3 tools/build_control.py conf/control
 ```
 
-`VDJDB_PRIOR_DB` must hold the **27-column production** `vdjdb.txt` + `vdjdb.meta.txt`, not a release
-ZIP — same constraint as the test fixture above. About 70 s and ~8 GB of heap for all 16 combinations.
-The spec cancels itself when the three variables are unset, so CI never runs it.
+Unlike the table it replaces, this does **not** need regenerating when VDJdb is updated: the counts are
+computed at request time against whatever database is loaded, so they cannot go stale. Regenerate only
+to change the sampling or pick up a new release of `airr_control`.
 
-**Deployment:** `conf/` is on the application classpath, so this ships inside the image. `ControlPrior`
-prefers a copy sitting **beside the database** (`<database.path>/control-prior.txt`) and falls back to
-the packaged one — so a database refresh on the server can drop a matching prior next to it without a
-rebuild. Neither present means no p-values, logged at WARN, and nothing else degrades.

@@ -668,6 +668,15 @@ tr.paired-row > td { color: #525252; }
   flex: none;
 }
 
+/* The enrichment cutoff sits between a heading and a checkbox, so it needs the same rhythm as the
+   number inputs above it rather than Semantic's default inline sizing. */
+.summary-options-cutoff {
+  margin-bottom: 0.6em;
+}
+.summary-options-cutoff input {
+  width: 5.5em;
+}
+
 /* Names the unit the value axis is in once the size denominators are applied. Quiet - it is a caption
    for the checkboxes above it, not another control. */
 .summary-options-units {

@@ -71,9 +71,11 @@ class IntersectionTable(var summary: Option[SummaryCounters] = None) extends Res
 
     // `found` rather than `raw`, so the summary describes what the user is actually shown: with any
     // post-search filter active the unmatched tally has to grow by the clonotypes that filter removed.
+    // The same index and the same `filters` the sample was just searched and narrowed by, so the null
+    // and the observation cannot be measured under different conditions.
     val (counters, notFound) =
       SearchSummary.summarize(found, sample, IntersectionTable.SummaryFields, summaryIndex,
-        ControlPrior.betaFor(database, request.databaseQueryParams, request.searchScope))
+        ControlRepertoires.betaFor(database, index, request.databaseQueryParams, request.searchScope, filters))
 
     // Every counter is sent. The epitope cutoff is a chart display option now, applied in the browser
     // against the same `databaseUnique` these carry: it described itself as affecting the plots only,
@@ -133,12 +135,6 @@ object IntersectionTable {
     * panel and has to honour the same half of it.
     */
   def postSearchFilters(parameters: AnnotationsDatabaseQueryParams, motifs: Motifs): Seq[HitFilter] = {
-    val donor = HlaAllele.parseAll(parameters.hla.getOrElse(""))
-    val donorFilter: Option[HitFilter] =
-      if (donor.isEmpty) None
-      else Some((_: Clonotype, hit: ClonotypeSearchResult) =>
-        MhcColumns.exists(column => HlaAllele.matches(hit.getRow.getAt(column).getValue, donor)))
-
     // The index is a Map already built at startup by the Motifs singleton and shared with the search
     // page, so this costs one hash lookup per hit and nothing per request. Reusing it also guarantees
     // "in TCREMP motif" means the same thing on both pages.
@@ -150,6 +146,34 @@ object IntersectionTable {
         None
       }
 
+    evidenceFilters(parameters) ++
+      Seq(motifFilter(parameters.inTcrempMotif, Some("tcremp")), motifFilter(parameters.inTcrnetMotif, None)).flatten
+  }
+
+  /** The half of [[postSearchFilters]] that needs no motif index: donor HLA, independent validation and
+    * confidence.
+    *
+    * Split out for the offline control-prior generator, which has to narrow the database *exactly* the
+    * way a request does but builds a bare `VdjdbInstance` rather than going through Guice, so it has no
+    * `Motifs` to hand. Passing a null or a throwaway instance would work today only because the motif
+    * predicates are lazy in it, which is the kind of thing that stops being true silently.
+    *
+    * That generator originally applied [[databaseRestrictions]] alone, and the omission was not visible
+    * anywhere: it produced a full, plausible table of counts measured against the **whole** database
+    * while every default request searches `vdjdb.score >= 1`, which is 7.9% of distinct human TRB CDR3s.
+    * The resulting null was inflated, so every p-value came out too conservative — and unevenly, because
+    * the confidence filter is wildly non-uniform across epitopes. `KLGGALQAK` drops from 12,667 CDR3s to
+    * 1, `NLVPMVATV` from 13,072 to 836, while `YLEPGPVTA` keeps all 11. Epitopes whose evidence is mostly
+    * low-confidence were penalised hardest, which is exactly the population of public viral responses the
+    * test exists to find: a real CMV donor could not clear the bar for `TPRVTGGGAM`.
+    */
+  private[backend] def evidenceFilters(parameters: AnnotationsDatabaseQueryParams): Seq[HitFilter] = {
+    val donor = HlaAllele.parseAll(parameters.hla.getOrElse(""))
+    val donorFilter: Option[HitFilter] =
+      if (donor.isEmpty) None
+      else Some((_: Clonotype, hit: ClonotypeSearchResult) =>
+        MhcColumns.exists(column => HlaAllele.matches(hit.getRow.getAt(column).getValue, donor)))
+
     val validationFilter: Option[HitFilter] =
       if (parameters.independentValidationOnly.contains(true)) {
         Some((_: Clonotype, hit: ClonotypeSearchResult) => independentlyValidated(hit.getRow))
@@ -160,8 +184,7 @@ object IntersectionTable {
     val confidenceFilter: Option[HitFilter] = parameters.minConfidenceScore.filter(_ > 0)
       .map(threshold => (_: Clonotype, hit: ClonotypeSearchResult) => confidenceScore(hit.getRow) >= threshold)
 
-    Seq(donorFilter, motifFilter(parameters.inTcrempMotif, Some("tcremp")),
-      motifFilter(parameters.inTcrnetMotif, None), validationFilter, confidenceFilter).flatten
+    Seq(donorFilter, validationFilter, confidenceFilter).flatten
   }
 
   /** The database population a request is asking to be annotated against, as a predicate.
