@@ -407,24 +407,19 @@ export class MultisampleSummaryChartComponent implements OnInit, OnDestroy {
   /**
    * Binomial enrichment per sample, keyed sample -> field value -> { p, q }.
    *
-   * A clonotype reaches this value by clearing two stages, so its probability is the product:
-   *
-   *   a ~ Binomial(b, (e / b) x (c / d))
+   * a ~ Binomial(b, c / d) - the conservative scale.
    *
    *   a  matched this value in the sample          c  VDJdb records carrying this value
    *   b  clonotypes in the sample                  d  VDJdb records in total
-   *   e  clonotypes that matched VDJdb at all
    *
-   * `e / b` is the sample's publicity - how much of this repertoire VDJdb knows about at all - and
-   * `c / d` is this value's share of the database once a clonotype is in it. Every one of c, d and e
-   * is counted over the same accepted rows the search ran on, so species, chain, MHC class and
-   * confidence apply to each and no ratio mixes populations.
+   * `c` and `d` are counted over the same accepted rows the search ran on, so species, chain, MHC
+   * class and confidence apply to both and the ratio never mixes populations.
    *
-   * `b` and not `e` is the trial count, but note the two are near-indistinguishable in practice:
-   * b x (e/b)(c/d) = e x (c/d), so both carry the same mean and differ only in a variance factor of
-   * (1 - (e/b)(c/d)), which is ~1e-5 away from 1 for any real repertoire. Writing it this way is for
-   * the reader, not the arithmetic: publicity and database share are separately meaningful, and a
-   * single fused rate is not.
+   * There is no publicity term. Multiplying by the matched fraction `e / b` is better calibrated on
+   * paper and gives p-values so extreme they cannot be read - 1e-196 for an epitope that matches a
+   * synthetic control repertoire as hard as it matches a real donor. Leaving it out makes the test
+   * over-predict the total match count by 1/publicity, ~12x on the demo repertoires, and that
+   * conservatism is exactly what drops the worst artifacts below significance.
    *
    * Every input is a count of distinct rearrangements. Neither the read-count weighting nor the axis
    * scaling can reach this - both change how tall a bar is drawn, not how unlikely it is.
@@ -443,16 +438,24 @@ export class MultisampleSummaryChartComponent implements OnInit, OnDestroy {
         return;
       }
       const sampleClonotypes = counters.annotated.unique + counters.notFoundCounter.unique;   // b
-      const matchedClonotypes = counters.annotated.unique;                                    // e
       const databaseRecords = counters.notFoundCounter.databaseUnique;                        // d
-      const publicity = sampleClonotypes > 0 ? matchedClonotypes / sampleClonotypes : 0;      // e / b
       const tested = SummaryChartOptions.charted(field.counters, fieldName, options);
 
       const pValues = tested.map((counter) => {
-        if (sampleClonotypes <= 0 || matchedClonotypes <= 0 || databaseRecords <= 0 || counter.databaseUnique <= 0) {
+        if (sampleClonotypes <= 0 || databaseRecords <= 0 || counter.databaseUnique <= 0) {
           return NaN;
         }
-        const rate = publicity * (counter.databaseUnique / databaseRecords);                  // (e/b) x (c/d)
+        // No publicity factor. Including it is the better-calibrated model on paper and produces
+        // p-values so extreme they are unreadable - 1e-196 for an epitope that matches the synthetic
+        // control sample just as hard as it matches a real donor. Dropping it leaves the test
+        // over-predicting the total match count by 1/publicity (~12x on the demo repertoires), which
+        // makes it conservative, and that conservatism is what removes the worst artifacts: both DENV
+        // epitopes, MLNIPSINV and DATYQRTRALVR fall out of significance entirely.
+        //
+        // This is a holding position, not the answer. The ranking is still driven by 1/c, because a
+        // record count is a poor proxy for how reachable an epitope is - see the control-derived
+        // Beta prior that replaces it.
+        const rate = counter.databaseUnique / databaseRecords;                                // c / d
         return Statistics.binomialUpperTail(counter.unique, sampleClonotypes, Math.min(1, rate));
       });
       const adjusted = Statistics.benjaminiHochberg(pValues);
