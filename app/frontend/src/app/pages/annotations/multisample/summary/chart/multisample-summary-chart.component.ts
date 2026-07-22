@@ -31,6 +31,7 @@ import { ChartUtils } from 'shared/charts/chart-utils';
 import { ChartEventType } from 'shared/charts/chart-events';
 import { IChartDataEntry } from 'shared/charts/data/chart-data-entry';
 import { IChartGroupedDataEntry } from 'shared/charts/data/chart-grouped-data-entry';
+import { Statistics } from 'utils/statistics/statistics';
 import { Utils } from 'utils/utils';
 
 @Component({
@@ -55,6 +56,8 @@ export class MultisampleSummaryChartComponent implements OnInit, OnDestroy {
     * groups its bars by antigen. Without it a wall of epitope bars carries no structure at all - the
     * spectral ramp only encodes rank, which the sort already shows. */
   private colorBySpecies: boolean = true;
+
+  private plottedSpecies: Set<string> = new Set();
 
   private static readonly EpitopeField: string = 'antigen.epitope';
 
@@ -104,28 +107,20 @@ export class MultisampleSummaryChartComponent implements OnInit, OnDestroy {
     return this.currentTab.options.getCurrentSummaryFilterFieldType().name === MultisampleSummaryChartComponent.EpitopeField;
   }
 
-  /** Species actually on the plot, with the colour each one is drawn in. Derived rather than stored so
-    * it cannot fall out of step with the bars: both read the same palette, and the palette is keyed on
-    * the sorted species of the whole tab, so a colour does not move when the threshold or the cutoff
-    * changes what is on screen. */
+  /** The species drawn on the plot as it currently stands, with the colour each is drawn in.
+    *
+    * Collected by `createData` from the bars it actually emitted rather than recomputed here, so
+    * everything that narrows the plot narrows the key with it. Recomputing was listing every species
+    * in the tab: it re-applied the epitope cutoff but knew nothing of the "Top N" slice, so a Top 5
+    * chart showing five epitopes came with a legend of seventeen viruses, most of them for bars that
+    * were not on screen. Colours still come from the tab-wide palette, so a species keeps its colour
+    * as the threshold moves. */
   public getSpeciesLegend(): Array<{ name: string, color: string }> {
     if (!this.colorBySpecies || !this.isSpeciesColoringAvailable()) {
       return [];
     }
     const palette = this.speciesPalette();
-    const shown = new Set<string>();
-    const options = this.currentTab.options;
-    const fieldName = options.getCurrentSummaryFilterFieldType().name;
-    this.currentTab.counters.forEach((counters: SummaryCounters, sample: string) => {
-      if (!this.isSampleHidden(sample)) {
-        const field = counters.counters.find((c) => c.name === fieldName);
-        if (field) {
-          SummaryChartOptions.charted(field.counters, fieldName, options)
-            .forEach((c) => { if (c.species) { shown.add(c.species); } });
-        }
-      }
-    });
-    return Array.from(shown).sort().map((name) => ({ name, color: palette[ name ] }));
+    return Array.from(this.plottedSpecies).sort().map((name) => ({ name, color: palette[ name ] }));
   }
 
   public get logarithmic(): boolean {
@@ -218,8 +213,12 @@ export class MultisampleSummaryChartComponent implements OnInit, OnDestroy {
   }
 
   private updateStream(type: ChartEventType, options: SummaryChartOptions): void {
+    // Order matters. `updateThresholdValues` has to run first because it settles which "Top N" is in
+    // force, and `createData` slices against that. It also detects changes, which is too early for the
+    // legend - that is only known once `createData` has emitted the bars - hence the second pass below.
     this.updateThresholdValues();
     this.stream.next({ type, data: this.createData(options) });
+    this.changeDetector.detectChanges();
   }
 
   private createData(options: SummaryChartOptions): IChartGroupedDataEntry[] {
@@ -231,6 +230,26 @@ export class MultisampleSummaryChartComponent implements OnInit, OnDestroy {
     const speciesPalette = (this.colorBySpecies && this.isSpeciesColoringAvailable()) ? this.speciesPalette() : undefined;
     const speciesColor = (c: SummaryClonotypeCounter): string =>
       (speciesPalette !== undefined && c.species) ? speciesPalette[ c.species ] : undefined;
+    // Enrichment per sample, over every value that survived the cutoff - the whole family that was
+    // tested, not just the slice on screen, or the BH correction would be against the wrong m.
+    const enrichment = this.enrichmentBySample(currentCounterFieldName, options);
+
+    // The species line shows whether or not the bars are coloured by it: the colouring is a display
+    // choice, but which antigen an epitope belongs to is a fact about the bar either way. The
+    // enrichment lines are counts of clonotypes, so neither the read-count weighting nor the axis
+    // scaling touches them - those change how tall a bar is drawn, not how unlikely it is.
+    const notesFor = (c: SummaryClonotypeCounter, sample: string): string[] => {
+      const lines: string[] = [];
+      if (c.species) {
+        lines.push(`Species: ${c.species}`);
+      }
+      const test = enrichment[ sample ] !== undefined ? enrichment[ sample ][ c.field ] : undefined;
+      if (test !== undefined) {
+        lines.push(`P-value = ${Statistics.formatPValue(test.p)}`);
+        lines.push(`P-adj (BH) = ${Statistics.formatPValue(test.q)}`);
+      }
+      return lines;
+    };
 
     // Takes the counters it belongs to, because the "total number of clonotypes in sample"
     // denominator is per sample - the whole point of this chart is that the samples differ.
@@ -256,7 +275,9 @@ export class MultisampleSummaryChartComponent implements OnInit, OnDestroy {
         if (!this.isSampleHidden(key)) {
           const counters = value.counters.find((c) => c.name === currentCounterFieldName);
           let values = SummaryChartOptions.charted(counters.counters, currentCounterFieldName, options)
-            .map((c) => ({ name: c.field, value: valueConverter(c, value), color: speciesColor(c) } as IChartDataEntry))
+            .map((c) => ({
+              name: c.field, value: valueConverter(c, value), color: speciesColor(c), notes: notesFor(c, key)
+            } as IChartDataEntry))
             .sort((a, b) => b.value - a.value);
           if (values.length > options.currentThresholdType.threshold) {
             values = values.slice(0, options.currentThresholdType.threshold);
@@ -296,7 +317,10 @@ export class MultisampleSummaryChartComponent implements OnInit, OnDestroy {
               if (color === undefined && this.colorByTags) {
                 color = this.multisampleSummaryService.getSampleTagColor(sample);
               }
-              entries.push({ name: sample, value: valueConverter(counters.counters[ index ], summaryCounters), color });
+              entries.push({
+                name: sample, value: valueConverter(counters.counters[ index ], summaryCounters), color,
+                notes: notesFor(counters.counters[ index ], sample)
+              });
             }
           }
         });
@@ -325,7 +349,33 @@ export class MultisampleSummaryChartComponent implements OnInit, OnDestroy {
       }
     }
 
+    this.recordPlottedSpecies(data);
     return data;
+  }
+
+  /** Which species survived every narrowing - the cutoff, the "Top N" slice, hidden samples, "shared
+    * only" - read off the finished data rather than recomputed from the counters, which is the only
+    * way the key can be guaranteed to describe the picture beside it.
+    *
+    * Both layouts in one pass: ordering by samples puts epitopes on the inner axis and samples on the
+    * group, the other way round puts epitopes on the group and samples inside. A name that is not an
+    * epitope simply misses the map. */
+  private recordPlottedSpecies(data: IChartGroupedDataEntry[]): void {
+    const map = this.epitopeSpecies();
+    const seen = new Set<string>();
+    data.forEach((group) => {
+      const groupSpecies = map[ group.name ];
+      if (groupSpecies) {
+        seen.add(groupSpecies);
+      }
+      group.values.forEach((entry) => {
+        const entrySpecies = map[ entry.name ];
+        if (entrySpecies) {
+          seen.add(entrySpecies);
+        }
+      });
+    });
+    this.plottedSpecies = seen;
   }
 
   private updateThresholdValues(): void {
@@ -354,18 +404,81 @@ export class MultisampleSummaryChartComponent implements OnInit, OnDestroy {
     this.changeDetector.detectChanges();
   }
 
-  /** species -> colour, over every species in the tab, sorted so the assignment is stable across
-    * updates. Built from the same palette the charts use, so a legend swatch and its bars match. */
-  private speciesPalette(): { [ species: string ]: string } {
+  /**
+   * Binomial enrichment per sample, keyed sample -> field value -> { p, q }.
+   *
+   * For one value: `n` of the sample's clonotypes matched VDJdb at all, VDJdb holds `N` distinct
+   * CDR3s under the same restriction the search ran with, and `K` of those carry this value. A
+   * matching clonotype lands here with probability `K / N`, so `k` of them landing here is
+   * Binomial(n, K/N) and the p-value is the upper tail - how surprising this many would be if the
+   * matches were spread across the database in proportion to how much of it each value occupies.
+   *
+   * `n` is the clonotypes that matched something, NOT the size of the repertoire. Conditioning on the
+   * whole repertoire would make the null "every clonotype is a draw from the VDJdb CDR3 pool", and
+   * since a real repertoire matches a tiny fraction of it the expected count comes out around `K`
+   * itself - so the observed count sits far below expectation and the upper tail saturates at 1 for
+   * everything. Conditioning on the matched set asks the question that has an answer: of the
+   * clonotypes that did match, are more of them on this value than its share of the database.
+   *
+   * `N` arrives as the `databaseUnique` of the unannotated counter, which is where the server puts
+   * the whole-database CDR3 total; `K` is each value's own `databaseUnique`. Both are counted over
+   * the same accepted rows, so species, chain, MHC class and confidence are already applied to each
+   * and the ratio never mixes populations.
+   *
+   * BH runs per sample over every value that passed the epitope cutoff - each sample is its own
+   * experiment, and the family is what was tested rather than what the threshold left on screen.
+   */
+  private enrichmentBySample(fieldName: string, options: SummaryChartOptions):
+    { [ sample: string ]: { [ value: string ]: { p: number, q: number } } } {
+
+    const result: { [ sample: string ]: { [ value: string ]: { p: number, q: number } } } = {};
+
+    this.currentTab.counters.forEach((counters: SummaryCounters, sample: string) => {
+      const field = counters.counters.find((c) => c.name === fieldName);
+      if (!field) {
+        return;
+      }
+      const matchedClonotypes = counters.annotated.unique;
+      const databaseSize = counters.notFoundCounter.databaseUnique;
+      const tested = SummaryChartOptions.charted(field.counters, fieldName, options);
+
+      const pValues = tested.map((c) => {
+        if (matchedClonotypes <= 0 || databaseSize <= 0 || c.databaseUnique <= 0) {
+          return NaN;
+        }
+        return Statistics.binomialUpperTail(c.unique, matchedClonotypes, Math.min(1, c.databaseUnique / databaseSize));
+      });
+      const adjusted = Statistics.benjaminiHochberg(pValues);
+
+      const perValue: { [ value: string ]: { p: number, q: number } } = {};
+      tested.forEach((c, i) => { perValue[ c.field ] = { p: pValues[ i ], q: adjusted[ i ] }; });
+      result[ sample ] = perValue;
+    });
+
+    return result;
+  }
+
+  /** epitope -> antigen species, over every epitope counter in the tab. One map serves the palette,
+    * the bar colours, the tooltip line and the legend, so none of them can disagree about which
+    * antigen an epitope belongs to. */
+  private epitopeSpecies(): { [ epitope: string ]: string } {
     const fieldName = MultisampleSummaryChartComponent.EpitopeField;
-    const species = new Set<string>();
+    const map: { [ epitope: string ]: string } = {};
     this.currentTab.counters.forEach((counters: SummaryCounters) => {
       const field = counters.counters.find((c) => c.name === fieldName);
       if (field) {
-        field.counters.forEach((c) => { if (c.species) { species.add(c.species); } });
+        field.counters.forEach((c) => { if (c.species) { map[ c.field ] = c.species; } });
       }
     });
-    const names = Array.from(species).sort();
+    return map;
+  }
+
+  /** species -> colour, over every species in the tab, sorted so the assignment is stable across
+    * updates. Keyed on the whole tab rather than what is plotted so a colour does not move when the
+    * threshold or the cutoff changes what is on screen. */
+  private speciesPalette(): { [ species: string ]: string } {
+    const map = this.epitopeSpecies();
+    const names = Array.from(new Set(Object.keys(map).map((epitope) => map[ epitope ]))).sort();
     const colors = ChartUtils.Color.spread(names.length);
     const palette: { [ species: string ]: string } = {};
     names.forEach((name, i) => { palette[ name ] = colors[ i ]; });

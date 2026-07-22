@@ -646,15 +646,18 @@ tr.paired-row > td { color: #525252; }
 .chart-legend {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.35em 1.2em;
-  padding-top: 0.5em;
+  padding-top: 0.75em;
   font-size: 0.9em;
   color: var(--ds-text);
 }
+/* Margins rather than `gap`. Flexbox `gap` is not in every browser this app still targets, and where
+   it is missing it fails silently to zero - which is exactly what a wrapped row of seventeen entries
+   looked like: each swatch pressed against the end of the previous name. */
 .chart-legend__entry {
   display: inline-flex;
   align-items: center;
   white-space: nowrap;
+  margin: 0 1.75em 0.4em 0;
 }
 .chart-legend__swatch {
   display: inline-block;

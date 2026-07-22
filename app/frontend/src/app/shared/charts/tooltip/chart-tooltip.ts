@@ -36,11 +36,10 @@ export class ChartTooltip {
   }
 
   public text(header: string, ...content: string[]): void {
-    let html = `${header}<br>`;
-    for (const line of content) {
-      html = `${html}<span style="font-weight: 500;color: #081F2C;">${line}</span>`;
-    }
-    this.tooltip.html(this.replaceScriptFromHTML(html));
+    // Joined with a break: the spans are inline, so two lines used to run together on one row. Every
+    // caller passed exactly one line until now, which is why it never showed.
+    const lines = content.map((line) => `<span style="font-weight: 500;color: #081F2C;">${line}</span>`);
+    this.tooltip.html(this.replaceScriptFromHTML(`${header}<br>${lines.join('<br>')}`));
   }
 
   public hide(): void {

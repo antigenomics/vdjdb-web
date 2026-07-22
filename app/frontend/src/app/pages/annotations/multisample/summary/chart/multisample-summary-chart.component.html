@@ -15,14 +15,18 @@
   -->
 
 <div class="ui grid fade slow element">
-    <div class="twelve wide column" style="height: 700px">
-        <bar-chart-grouped [configuration]="barChartConfiguration" [stream]="stream"></bar-chart-grouped>
-    </div>
-    <!-- Only the species actually plotted, so the key does not list viruses that are not on screen. -->
-    <div class="twelve wide column chart-legend" *ngIf="getSpeciesLegend().length !== 0">
-        <span class="chart-legend__entry" *ngFor="let entry of getSpeciesLegend()">
-            <i class="chart-legend__swatch" [style.background-color]="entry.color"></i>{{ entry.name }}
-        </span>
+    <!-- Legend inside the chart's own column, not a column of its own: as a sibling it started at the
+         grid's left edge while the plot starts after the axis margin, so the two never lined up. -->
+    <div class="twelve wide column">
+        <div style="height: 700px">
+            <bar-chart-grouped [configuration]="barChartConfiguration" [stream]="stream"></bar-chart-grouped>
+        </div>
+        <!-- Only the species actually plotted, so the key does not list antigens that are not on screen. -->
+        <div class="chart-legend" *ngIf="getSpeciesLegend().length !== 0">
+            <span class="chart-legend__entry" *ngFor="let entry of getSpeciesLegend()">
+                <i class="chart-legend__swatch" [style.background-color]="entry.color"></i>{{ entry.name }}
+            </span>
+        </div>
     </div>
     <div class="four wide column">
         <h4 class="ui header"><i class="low vision icon"></i>Hide samples</h4>
