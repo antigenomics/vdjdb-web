@@ -82,10 +82,6 @@ export class UploadService {
     /*tslint:enable:prefer-for-of */
   }
 
-  public getAvailableSoftwareTypes(): string[] {
-    return this.annotationsService.getAvailableSoftwareTypes();
-  }
-
   public getEvents(): Observable<AnnotationsServiceEvents> {
     return this.annotationsService.getEvents();
   }
@@ -292,12 +288,6 @@ export class UploadService {
     this.annotationsService.fireEvent(AnnotationsServiceEvents.UPLOAD_SERVICE_STATE_REFRESHED);
   }
 
-  public setDefaultSoftware(software: string): void {
-    this._files
-      .filter((item) => !(item.status.isError() || item.status.isRemoved() || item.status.isUploaded()))
-      .forEach((item) => item.setSoftware(software));
-  }
-
   public setDefaultSpecies(species: string): void {
     this._files
       .filter((item) => !(item.status.isError() || item.status.isRemoved() || item.status.isUploaded()))
@@ -335,7 +325,6 @@ export class UploadService {
       const formData: FormData = new FormData();
       formData.append('file', file.getUploadBlob());
       formData.append('name', file.getUploadBlobName());
-      formData.append('software', file.software);
       formData.append('species', file.species);
       formData.append('chain', file.chain);
       const xhr = new XMLHttpRequest();

@@ -20,11 +20,19 @@
     </h3>
     <div class="ui attached segment teal padded">
         <upload-table></upload-table>
+        <!-- Stated here rather than only on the Info tab: this is where the question is actually
+             asked, and the format selector that used to imply an answer is gone. -->
+        <p class="upload-formats-note">
+            <b>VDJtools</b>, <b>AIRR</b> and <b>MiXCR</b> tables, plain or gzipped. The format is read
+            from the file's column header, so there is nothing to choose; a header that matches none of
+            the three is rejected rather than guessed at. Leave <b>Chain</b> on <b>Guess</b> to derive
+            it from the data, which also splits a file holding both chains into two samples.
+        </p>
     </div>
     <div class="ui attached secondary clearing segment">
         <form #fileHandlerForm>
             <input type="file" id="fileHandler" name="files[]" multiple (change)="handleNewFiles($event)"
-                   accept="text/plain, application/x-compressed, application/x-gzip, multipart/x-gzip, application/x-zip-compressed, application/zip, multipart/x-zip"
+                   accept=".txt,.tsv,.gz,text/plain,application/gzip,application/x-gzip"
                    style="display: none"/>
         </form>
         <label for="fileHandler" class="ui teal button left floated">Add</label>

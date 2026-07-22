@@ -43,18 +43,6 @@
                     </div>
                 </th>
                 <th class="two wide">
-                    <div class="ui dropdown" dropdown [content]="content">
-                        <span class="text">Software</span>
-                        <i class="dropdown icon"></i>
-                        <div class="menu fast fade element" #content>
-                            <div class="item" *ngFor="let software of uploadService.getAvailableSoftwareTypes()"
-                                 (click)="uploadService.setDefaultSoftware(software)">
-                                {{ software }}
-                            </div>
-                        </div>
-                    </div>
-                </th>
-                <th class="two wide">
                     <div class="ui dropdown" dropdown [content]="speciescontent">
                         <span class="text">Species</span>
                         <i class="dropdown icon"></i>

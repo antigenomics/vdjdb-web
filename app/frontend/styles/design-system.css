@@ -258,6 +258,14 @@ a:hover { color: var(--ds-teal); }
   transform: rotate(180deg);
 }
 
+/* Format note under the upload table: secondary to the table it explains. */
+.upload-formats-note {
+  margin-top: 1em;
+  margin-bottom: 0;
+  color: var(--ds-muted);
+  font-size: 0.95em;
+}
+
 /* ---- Records table: paired (second-chain) sub-row ------------------------ */
 /* White background + muted (#525252) text, with a ↳ marker in the Gene column. The CDR3
    cell colours its own V/J regions (green/blue) with explicit colours, so those are

@@ -143,10 +143,6 @@ export class UpdateSampleModalComponent implements OnInit, OnDestroy {
     return this.annotationsService.getTags();
   }
 
-  public getAvailableSoftwareTypes(): string[] {
-    return this.annotationsService.getAvailableSoftwareTypes();
-  }
-
   public isNewNameValid(): boolean {
     if (!SampleItem.isNameValid(this.sampleNewProps.newName)) {
       return false;
@@ -155,10 +151,6 @@ export class UpdateSampleModalComponent implements OnInit, OnDestroy {
       .filter((s) => s !== this.sampleNewProps.sample)
       .findIndex((s) => s.name === this.sampleNewProps.newName);
     return duplicate === -1;
-  }
-
-  public setNewSoftware(software: string): void {
-    this.sampleNewProps.newSoftware = software;
   }
 
   public setNewTagID(id: number): void {

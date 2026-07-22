@@ -22,7 +22,6 @@ import { FileItemStatus, FileItemStatusErrorType } from './file-item-status';
 export interface IFileItemStats {
   readonly name: string;
   readonly extension: string;
-  readonly software: string;
   readonly species: string;
   readonly chain: string;
   readonly size: number;
@@ -43,7 +42,6 @@ export class FileItem {
   public native: File;
   public baseName: string = '';
   public extension: string = '';
-  public software: string = 'VDJtools';
   // Declared, not detected. The chain actually found in the data wins for anything the converter can
   // parse; this only decides the stored chain on the legacy-passthrough path, where nothing parses it.
   public species: string = FileItem.AVAILABLE_SPECIES[ 0 ];
@@ -68,7 +66,6 @@ export class FileItem {
     return {
       name:      this.baseName,
       extension: this.extension,
-      software:  this.software,
       species:   this.species,
       chain:     this.chain,
       size:      this.compressed ? this.compressed.size : this.native.size
@@ -88,10 +85,6 @@ export class FileItem {
   public clearErrors(): void {
     this.status.clearErrors();
     this.progress.next(0);
-  }
-
-  public setSoftware(software: string): void {
-    this.software = software;
   }
 
   public setSpecies(species: string): void {
