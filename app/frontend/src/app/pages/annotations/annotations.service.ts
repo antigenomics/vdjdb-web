@@ -30,7 +30,7 @@ import { WebSocketResponseData } from 'shared/websocket/websocket-response';
 import { LoggerService } from 'utils/logger/logger.service';
 import { NotificationService } from 'utils/notifications/notification.service';
 import { Utils } from 'utils/utils';
-import { DatabaseMetadata } from '../search/database/database-metadata';
+import { DatabaseColumnInfo, DatabaseMetadata } from '../search/database/database-metadata';
 import { FileItem } from './upload/item/file-item';
 import { IUploadedSample } from 'pages/annotations/upload/upload.service';
 
@@ -67,6 +67,7 @@ export namespace AnnotationsServiceWebSocketActions {
 
 @Injectable()
 export class AnnotationsService {
+
   private _events: Subject<AnnotationsServiceEvents> = new Subject();
   private _initialized: boolean = false;
   private _connectionLostReported: boolean = false;
@@ -103,7 +104,8 @@ export class AnnotationsService {
       this.logger.debug('AnnotationsService: available software', this._availableSoftwareTypes);
 
       const databaseMetadataResponse = await databaseMetadataRequest;
-      this._databaseMetadata = DatabaseMetadata.deserialize(databaseMetadataResponse.get('metadata'));
+      this._databaseMetadata = AnnotationsService.retitleEvidenceColumn(
+        DatabaseMetadata.deserialize(databaseMetadataResponse.get('metadata')));
       this.logger.debug('AnnotationsService: database metadata', this._databaseMetadata);
 
       this._initialized = true;
@@ -441,5 +443,22 @@ export class AnnotationsService {
         }
       }
     }
+  }
+
+  /** The `vdjdb.score` column is titled `Info` in the database metadata, and its cell is a row of
+    * badges saying what evidence stands behind the record - a repeat assay, an independent study, a
+    * structure. `Info` says none of that.
+    *
+    * Browse already renames it, inside `SearchTableService.normalizeMetadata`, which also reorders and
+    * hides columns for that page. The annotation tables want none of the rest, so only the retitle is
+    * mirrored here rather than the whole pass - the alternative was two pages disagreeing about the
+    * name of one column, which is how it has been until now.
+    */
+  private static retitleEvidenceColumn(metadata: DatabaseMetadata): DatabaseMetadata {
+    const columns = metadata.columns.map((column) => column.name === 'vdjdb.score'
+      ? new DatabaseColumnInfo(column.name, column.columnType, column.visible, column.dataType,
+          'Evidence', column.comment, column.values)
+      : column);
+    return new DatabaseMetadata(metadata.numberOfRecords, metadata.numberOfColumns, columns);
   }
 }

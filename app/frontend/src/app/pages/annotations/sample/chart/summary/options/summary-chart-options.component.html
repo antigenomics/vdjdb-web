@@ -76,15 +76,9 @@
 </ng-container>
 
 <div class="summary-options-units" *ngIf="showEnrichmentNote && isEpitopeFieldSelected()">
-    P-value is a Beta-Binomial upper tail. A healthy control repertoire of the same species and chain is
-    searched against VDJdb through the same filters as this sample, and the question asked is: of the
-    clonotypes here that matched VDJdb at all, did more of them land on this epitope than the control's
-    matches did. Conditioning on having matched is what makes the two comparable — repertoires differ
-    several-fold in how much of them VDJdb contains at all, for reasons of sequencing depth rather than
-    of antigen. The control rate carries a ½-count prior, so an epitope the control never reached is
-    treated as rare rather than impossible. It counts clonotypes only, so neither the read-count
-    weighting nor the axis scaling changes it. P-adj is Benjamini-Hochberg across every epitope tested
-    in the sample.
+    Of the clonotypes here that matched VDJdb at all, did more land on this epitope than in a healthy
+    control repertoire searched the same way? Beta-Binomial upper tail, ½-count prior, clonotypes only —
+    weighting and axis scaling do not affect it. P-adj is Benjamini-Hochberg over every epitope tested.
 </div>
 
 <ng-container *ngIf="isThresholdTypesAvailable()">
