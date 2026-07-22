@@ -14,7 +14,10 @@
   ~     limitations under the License.
   -->
 
-<div class="ui grid">
+<!-- `stackable`, because two `eight wide` columns stay side by side at every width otherwise, and each
+     holds a `ui text menu` - a flex row that does not wrap. On a phone that put "University name City
+     Country" in a 157px column and pushed the whole document 116px sideways. -->
+<div class="ui stackable grid">
     <div class="ui eight wide column">
         <div class="ui text menu">
             <div class="header item">Group By</div>

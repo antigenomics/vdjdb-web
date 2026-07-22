@@ -275,7 +275,12 @@ a:hover { color: var(--ds-teal); }
      item of its own label and lands to the RIGHT of it. That is how "Browse", "About" and the logged-in
      menu ended up rendering as a row, with the logged-out "Annotation" item squeezing a whole info
      message into a narrow column beside the word. */
-  .ui.top.fixed.menu .navbar-menu-toggle:checked ~ .ui.dropdown.item {
+  .ui.top.fixed.menu .navbar-menu-toggle:checked ~ .ui.dropdown.item,
+  /* ...and the account dropdown too, which is not a sibling of the toggle but a child of the
+     `.right menu` wrapper, so `~ .ui.dropdown.item` alone never reaches it. Verified on the deployed
+     site: Browse and About stacked correctly while "Logged as: ..." still laid itself out as a row,
+     wrapping the name into a narrow three-line column with Settings and Logout alongside it. */
+  .ui.top.fixed.menu .navbar-menu-toggle:checked ~ .menu .ui.dropdown.item {
     flex-direction: column;
     align-items: stretch;
   }
@@ -579,4 +584,14 @@ tr.paired-row > td { color: #525252; }
    painted after the edges, so boxes + labels always sit on top, non-transparent. */
 .structure-overlay__layer--secondary .structure-html svg g[id^="line2d_"]:not(:has(use)) {
   opacity: 0.28;
+}
+
+/* Semantic's `.ui.text.menu` is a flex row with no wrap, so on a narrow screen its items run off the
+   side of whatever column holds them rather than folding onto a second line. Measured on the deployed
+   credits page at 375px, that alone pushed the document 116px sideways. Marking the grid `stackable`
+   gives each menu the full width; letting it wrap is what keeps it inside that width. */
+@media (max-width: 767px) {
+  .ui.text.menu {
+    flex-wrap: wrap;
+  }
 }
