@@ -66,7 +66,7 @@ object SampleRetentionConfiguration {
   final val Root = "application.annotations.retention"
 
   final val DefaultIntervalSeconds: Long       = 30L * 60L
-  final val DefaultKeepRegisteredSeconds: Long = 365L * 24L * 60L * 60L
+  final val DefaultKeepRegisteredSeconds: Long = 180L * 24L * 60L * 60L
   final val DefaultKeepTemporarySeconds: Long  = 3L * 60L * 60L
 
   /** Every key is read with a default. Production starts with `-Dconfig.file=<server-side file>`,

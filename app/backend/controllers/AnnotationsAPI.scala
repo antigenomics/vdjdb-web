@@ -69,7 +69,7 @@ class AnnotationsAPI @Inject()(cc: ControllerComponents, userRequestAction: User
     maxRatio = conf.getOptional[Long]("application.annotations.upload.maxCompressionRatio").getOrElse(100L)
   )
   private final val maxClonotypesCount =
-    conf.getOptional[Long]("application.annotations.upload.maxClonotypesCount").getOrElse(200000L)
+    conf.getOptional[Long]("application.annotations.upload.maxClonotypesCount").getOrElse(100000L)
   private final val demoFilesLocation =
     conf.getOptional[String]("application.auth.demo.filesLocation").getOrElse("")
   private final val logger = LoggerFactory.getLogger(this.getClass)

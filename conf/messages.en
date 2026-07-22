@@ -42,11 +42,11 @@ authorization.forms.signup.failed.tokenInUse = Token already in use.
 authorization.forms.signup.failed.invalidToken = Token can only contain letters and numbers
 authorization.forms.signup.email.description.1 = You can create a user with your email as login. You will have to verify it via confirmation link which will be sent to your email address.
 authorization.forms.signup.email.description.2 = Use your email and password to access your analysis.
-authorization.forms.signup.email.description.3 = A registered account stores 42 samples, allows 200 uploads and 200 annotation runs a day, and keeps uploaded samples for a year. A token account stores 10 samples, allows 50 of each a day, and keeps them for 3 hours.
+authorization.forms.signup.email.description.3 = A registered account stores 42 samples, allows 100 uploads and 100 annotation runs a day, and keeps uploaded samples for 6 months. A token account stores 10 samples, allows 20 of each a day, and keeps them for 3 hours.
 authorization.forms.signup.email.description.4 = You can also deploy a local vdjdb server instance if you need to analyze larger datasets.
 authorization.forms.signup.token.description.1 = You can create a temporary user. The account is deleted after 3 hours of inactivity and its uploaded samples are removed 3 hours after upload, so download anything you want to keep.
 authorization.forms.signup.token.description.2 = The token below can be used to access your analysis.
-authorization.forms.signup.token.description.3 = A token account stores 10 samples and allows 50 uploads and 50 annotation runs a day; registering with an e-mail address raises that to 42 samples, 200 of each a day, and keeps your samples for a year.
+authorization.forms.signup.token.description.3 = A token account stores 10 samples and allows 20 uploads and 20 annotation runs a day; registering with an e-mail address raises that to 42 samples, 100 of each a day, and keeps your samples for 6 months.
 authorization.forms.signup.token.description.4 = You can also deploy a local vdjdb server instance if you need to analyze larger datasets.
 
 authorization.forms.reset.reset = Reset

@@ -57,7 +57,7 @@ object AccountLimits {
   final val MaxClonotypesPath: String = "application.annotations.upload.maxClonotypesCount"
   final val TemporaryKeepPath: String = "application.auth.temporary.keep"
 
-  final val DefaultMaxClonotypes: Int          = 200000
+  final val DefaultMaxClonotypes: Int          = 100000
   final val DefaultTemporaryKeepSeconds: Long  = 3L * 60L * 60L
 
   /** Negative means "no ceiling", matching how `UsageConfiguration` already encodes an unlimited quota.

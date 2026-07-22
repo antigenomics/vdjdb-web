@@ -43,7 +43,7 @@ class SampleRetentionProviderSpec extends DatabaseProviderTestSpec {
     enabled = true,
     dryRun = dryRun,
     intervalSeconds = 0L,
-    keepRegisteredSeconds = 365L * Day,
+    keepRegisteredSeconds = 180L * Day,
     keepTemporarySeconds = 3L * Hour,
     epochMillis = epochMillis
   )
@@ -88,14 +88,14 @@ class SampleRetentionProviderSpec extends DatabaseProviderTestSpec {
       configuration.enabled shouldEqual true
       configuration.dryRun shouldEqual true
       configuration.intervalSeconds shouldEqual 30L * 60L
-      configuration.keepRegisteredSeconds shouldEqual 365L * Day
+      configuration.keepRegisteredSeconds shouldEqual 180L * Day
       configuration.keepTemporarySeconds shouldEqual 3L * Hour
       configuration.epochMillis shouldEqual 0L
     }
 
     "print a window at the scale it was configured in" taggedAs SQLDatabaseTestTag in {
       // "0d" for the three-hour token window would read as a misconfigured zero in the sweep log.
-      SampleRetentionConfiguration.window(365L * Day) shouldEqual "365d"
+      SampleRetentionConfiguration.window(180L * Day) shouldEqual "180d"
       SampleRetentionConfiguration.window(3L * Hour) shouldEqual "3h"
       SampleRetentionConfiguration.window(30L * 60L) shouldEqual "30m"
       SampleRetentionConfiguration.window(45L) shouldEqual "45s"
@@ -152,7 +152,7 @@ class SampleRetentionProviderSpec extends DatabaseProviderTestSpec {
       }
     }
 
-    "delete a registered account's samples once they are past the 365 day window" taggedAs SQLDatabaseTestTag in {
+    "delete a registered account's samples once they are past the 180 day window" taggedAs SQLDatabaseTestTag in {
       async {
         val user             = await(registeredUser("retention-old@mail.com"))
         val (sampleID, meta) = await(storeSample(user, "ancient", ageSeconds = 400L * Day))
@@ -218,7 +218,7 @@ class SampleRetentionProviderSpec extends DatabaseProviderTestSpec {
       async {
         val user = await(userProvider.createTemporaryUser("retention-token-user", "10.0.0.1")).get
 
-        // 10 days is inside the 365 day registered window and outside the 3 hour temporary one, so
+        // 10 days is inside the 180 day registered window and outside the 3 hour temporary one, so
         // this fails if the sweeper picks the window by anything other than the account type. The
         // fresh sample is an hour old: with a three hour window it is the only side of the boundary
         // a whole number of days can no longer express.
