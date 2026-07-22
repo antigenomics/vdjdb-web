@@ -159,13 +159,21 @@ export class MultisampleSummaryChartComponent implements OnInit, OnDestroy {
     const currentCounterFieldName = options.getCurrentSummaryFilterFieldType().name;
     let data: IChartGroupedDataEntry[] = [];
 
-    const valueConverter: (c: SummaryClonotypeCounter) => number = (c) => {
+    // Takes the counters it belongs to, because the "total number of clonotypes in sample"
+    // denominator is per sample - the whole point of this chart is that the samples differ.
+    const valueConverter: (c: SummaryClonotypeCounter, owner: SummaryCounters) => number = (c, owner) => {
       let value = (options.isWeightedByReadCount ? c.frequency : c.unique);
-      if (options.normalizeTypes[ 0 ].checked) { // db
+      if (options.normalizeTypes[ 0 ].checked && c.databaseUnique > 0) { // db
         value = value / c.databaseUnique;
       }
-      if (options.normalizeTypes[ 1 ].checked) { // matches
+      if (options.normalizeTypes[ 1 ].checked && c.unique > 0) { // matches
         value = value / c.unique;
+      }
+      if (options.normalizeTypes[ 2 ].checked) { // whole sample
+        const sampleSize = owner.annotated.unique + owner.notFoundCounter.unique;
+        if (sampleSize > 0) {
+          value = value / sampleSize;
+        }
       }
       return value;
     };
@@ -174,14 +182,14 @@ export class MultisampleSummaryChartComponent implements OnInit, OnDestroy {
       this.currentTab.counters.forEach((value: SummaryCounters, key: string) => {
         if (!this.isSampleHidden(key)) {
           const counters = value.counters.find((c) => c.name === currentCounterFieldName);
-          let values = counters.counters.map((c) => ({ name: c.field, value: valueConverter(c) } as IChartDataEntry)).sort((a, b) => {
+          let values = counters.counters.map((c) => ({ name: c.field, value: valueConverter(c, value) } as IChartDataEntry)).sort((a, b) => {
             return b.value - a.value;
           });
           if (values.length > options.currentThresholdType.threshold) {
             values = values.slice(0, options.currentThresholdType.threshold);
           }
           if (options.isNotFoundVisible) {
-            values.push({ name: 'Unannotated', value: valueConverter(value.notFoundCounter), color: 'rgba(40, 40, 40, 0.5)' });
+            values.push({ name: 'Unannotated', value: valueConverter(value.notFoundCounter, value), color: 'rgba(40, 40, 40, 0.5)' });
           }
           if (counters) {
             data.push({ name: key, values });
@@ -210,7 +218,7 @@ export class MultisampleSummaryChartComponent implements OnInit, OnDestroy {
               if (this.colorByTags) {
                 color = this.multisampleSummaryService.getSampleTagColor(sample);
               }
-              entries.push({ name: sample, value: valueConverter(counters.counters[ index ]), color });
+              entries.push({ name: sample, value: valueConverter(counters.counters[ index ], summaryCounters), color });
             }
           }
         });

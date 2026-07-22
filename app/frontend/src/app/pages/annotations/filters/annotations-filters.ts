@@ -68,13 +68,14 @@ export interface IAnnotateScoring {
 
 export class AnnotationsFilters {
 
-  // TCREMP motif membership is the only evidence filter on by default: it names ~99.5k of the ~146k
-  // distinct VDJdb records, so it still keeps roughly two thirds of the database. The others are far
-  // more aggressive — TCRNET names ~41k records, and vdjdb.score >= 1 retains only ~8% of rows — so
-  // they start off and are opt-in.
+  // Assay confidence is the one evidence filter on by default. It is the most aggressive of the four
+  // - vdjdb.score >= 1 retains roughly 8% of records - and that is the point: what survives it is the
+  // set with direct experimental support, which is the honest starting point for an annotation. The
+  // motif filters describe how a record relates to other records rather than how well it is evidenced,
+  // so they are opt-in.
   public databaseQueryParams: IDatabaseQueryParams = {
     species: 'HomoSapiens', gene: 'TRB', mhc: 'MHCI+II', hla: '',
-    inTcrempMotif: true, inTcrnetMotif: false, independentValidationOnly: false, minConfidenceScore: 0
+    inTcrempMotif: false, inTcrnetMotif: false, independentValidationOnly: false, minConfidenceScore: 1
   };
   public searchScope: ISearchScope = { matchV: false, matchJ: false, hammingDistance: { substitutions: 1, insertions: 0, deletions: 0, total: 1 } };
   public scoring: IAnnotateScoring = {

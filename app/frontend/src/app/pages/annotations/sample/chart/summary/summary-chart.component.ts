@@ -111,13 +111,24 @@ export class SummaryChartComponent implements OnInit, OnDestroy {
 
   private createData(options: SummaryChartOptions): IChartDataEntry[] {
 
+    // Everything the sample holds, matched or not - the denominator for the "total number of
+    // clonotypes in sample" normalization. Derived here rather than sent by the server: the two
+    // counters that make it up are already in the payload, and a third field could disagree with them.
+    const sampleSize = this.data.annotated.unique + this.data.notFoundCounter.unique;
+
     const valueConverter: (c: SummaryClonotypeCounter) => number = (c) => {
-      let value = (options.isWeightedByReadCount ? c.reads : c.unique);
+      // `frequency` (summed read count over total read count), not raw `reads`. That is the w in
+      // w x intersection, it is what the multisample chart beside this one has always used, and being
+      // a fraction it stays comparable when the denominators below are applied.
+      let value = (options.isWeightedByReadCount ? c.frequency : c.unique);
       if (options.normalizeTypes[ 0 ].checked && c.databaseUnique > 0) { // db
         value = value / c.databaseUnique;
       }
-      if (options.normalizeTypes[ 1 ].checked) { // matches
+      if (options.normalizeTypes[ 1 ].checked && c.unique > 0) { // matches
         value = value / c.unique;
+      }
+      if (options.normalizeTypes[ 2 ].checked && sampleSize > 0) { // whole sample
+        value = value / sampleSize;
       }
       return value;
     };
