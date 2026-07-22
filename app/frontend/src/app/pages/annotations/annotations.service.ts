@@ -69,6 +69,7 @@ export namespace AnnotationsServiceWebSocketActions {
 export class AnnotationsService {
   private _events: Subject<AnnotationsServiceEvents> = new Subject();
   private _initialized: boolean = false;
+  private _connectionLostReported: boolean = false;
   private _user: User;
   private _accountLimits: AccountLimits;
   private _availableSoftwareTypes: string[] = [];
@@ -108,6 +109,13 @@ export class AnnotationsService {
       this._initialized = true;
       this._events.next(AnnotationsServiceEvents.INITIALIZED);
     });
+    // Until now nothing at all was registered here, so every way this socket can die - the server
+    // refusing the upgrade with 403 once a session token has gone, a restart dropping it, a deploy
+    // taking the page's own bundles with it - looked identical from the page: no error, no redirect,
+    // just a click on a sample that never resolved. The socket carries no HTTP status, so the browser
+    // cannot tell those apart and neither can this; say what is observable and name the way out.
+    this.connection.onClose(() => this.reportConnectionLost());
+    this.connection.onError(() => this.reportConnectionLost());
     this.connection.connect('/api/annotations/connect');
 
     this.connection.getMessages()
@@ -119,6 +127,18 @@ export class AnnotationsService {
         this._user.updateSampleInfo(sampleName, sampleInfoReadsCount, sampleInfoClonotypesCount);
         this._events.next(AnnotationsServiceEvents.SAMPLE_UPDATED);
       });
+  }
+
+  /** Once per socket. `onclose` follows `onerror`, and the reconnect loop closes again on each of its
+    * attempts, so without the latch a single lost connection stacks up a column of identical toasts. */
+  private reportConnectionLost(): void {
+    if (this._connectionLostReported) {
+      return;
+    }
+    this._connectionLostReported = true;
+    this.notifications.error('Annotations',
+      'Connection to the server was lost. Reload the page to continue - if that returns you to the ' +
+      'login screen, your session has expired.');
   }
 
   public isInitialized(): boolean {

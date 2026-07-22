@@ -108,7 +108,10 @@ export class WebSocketConnection {
   }
 
   public onError(callback: (event: Event) => void): void {
-    this._onCloseCallback = callback;
+    // Assigned `_onCloseCallback` until now, which made `_onErrorCallback` unreachable - so the error
+    // branch below was dead code, and any caller registering both had its close handler overwritten by
+    // whichever it called second.
+    this._onErrorCallback = callback;
   }
 
   public onClose(callback: (event: CloseEvent) => void): void {
