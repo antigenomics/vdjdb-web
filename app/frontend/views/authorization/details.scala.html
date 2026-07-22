@@ -27,11 +27,13 @@
                            account" panel, from the same AccountLimits. Two pages quoting a user's own
                            limits from two sources is how they end up disagreeing. *@
                         <p>You are signed in with
+                            @* No spaces inside the case braces: Twirl emits them verbatim, and with
+                               them the sentence renders as "a temporary token account ." *@
                             @limits.accountType match {
-                                case "token" => { <b>a temporary token account</b> }
-                                case "registered" => { <b>a registered account</b> }
-                                case "demo" => { <b>the demo account</b> }
-                                case _ => { <b>an administrative account</b> }
+                                case "token" => {<b>a temporary token account</b>}
+                                case "registered" => {<b>a registered account</b>}
+                                case "demo" => {<b>the demo account</b>}
+                                case _ => {<b>an administrative account</b>}
                             }.
                             Registered accounts are given more room than token ones on every row below.</p>
                         <table class="ui definition table">
