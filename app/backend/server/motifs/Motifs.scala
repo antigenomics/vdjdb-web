@@ -236,34 +236,46 @@ object Motifs {
     * has to be identical on both sides or a Turkish-locale server would stop matching anything with an
     * `I` in it.
     *
+    * The MHC columns are part of the key and have to be. The same rearrangement is curated against more
+    * than one restriction, and a cluster is built per restriction: `CASSMIPDMNTEAFF` / TRBV19 / TRBJ1-1
+    * against RPIIRPATL is a TCREMP cluster member under HLA-B*07:02 and a TCRNET one under HLA-B*08:01.
+    * Without MHC both rows collapse to one key, so each record inherits the other's membership — the
+    * B*08:01 record came back from a "TCREMP only" search it is not a member of. Measured against the
+    * production database, dropping MHC from the key mis-attributed 3,190 records to TCRNET and 9,711 to
+    * TCREMP, about 5.7% of it, in both directions. Nothing legitimate is lost by including them: within
+    * either members file the MHC columns are functionally determined by the six fields above, so the
+    * distinct-key count is identical with and without.
+    *
     * `None` when any component is blank — an incomplete key would collide with every other incomplete
     * key and match records it has no business matching.
     */
   def motifKey(row: Row): Option[String] = {
-    val parts = Seq("species", "gene", "antigen.epitope", "cdr3", "v.segm", "j.segm")
+    val parts = Motifs.MotifKeyColumns
       .map(column => Option(row.getAt(column)).map(_.getValue.trim.toLowerCase(Locale.ROOT)).getOrElse(""))
     if (parts.forall(_.nonEmpty)) Some(parts.mkString("|")) else None
   }
 
+  /** The VDJdb column names of the join key, in order. The members file spells the CDR3 `cdr3aa`;
+    * [[buildCidLookupIndex]] substitutes that one name and otherwise reads these in this order, so the
+    * two halves cannot drift apart in either membership or ordering. */
+  private[motifs] final val MotifKeyColumns: Seq[String] =
+    Seq("species", "gene", "antigen.epitope", "cdr3", "v.segm", "j.segm", "mhc.a", "mhc.b", "mhc.class")
+
   def buildCidLookupIndex(members: Table): Map[String, String] = {
-    val required = Seq("species", "gene", "antigen.epitope", "cdr3aa", "v.segm", "j.segm", "cid")
+    val memberColumns = MotifKeyColumns.map(c => if (c == "cdr3") "cdr3aa" else c)
+    val required = memberColumns :+ "cid"
     if (!required.forall(members.columnNames().contains)) {
       return Map.empty
     }
-    val speciesCol = members.stringColumn("species")
-    val geneCol = members.stringColumn("gene")
-    val epitopeCol = members.stringColumn("antigen.epitope")
-    val cdr3Col = members.stringColumn("cdr3aa")
-    val vsegmCol = members.stringColumn("v.segm")
-    val jsegmCol = members.stringColumn("j.segm")
+    // Resolved from the shared list rather than named one by one, so a column added to the key cannot
+    // be added on only one side of the join.
+    val keyCols = memberColumns.map(members.stringColumn)
     val cidCol = members.stringColumn("cid")
     val builder = mutable.HashMap.empty[String, String]
     var idx = 0
     val total = members.rowCount()
     while (idx < total) {
-      val parts = Seq(speciesCol.get(idx), geneCol.get(idx), epitopeCol.get(idx),
-        cdr3Col.get(idx), vsegmCol.get(idx), jsegmCol.get(idx))
-        .map(v => Option(v).map(_.trim).getOrElse("").toLowerCase(Locale.ROOT))
+      val parts = keyCols.map(col => Option(col.get(idx)).map(_.trim).getOrElse("").toLowerCase(Locale.ROOT))
       val cid = Option(cidCol.get(idx)).map(_.trim).getOrElse("")
       if (parts.forall(_.nonEmpty) && cid.nonEmpty) {
         val key = parts.mkString("|")
