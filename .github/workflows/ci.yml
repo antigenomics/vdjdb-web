@@ -68,6 +68,15 @@ jobs:
         run: |
           sbt test
 
+      # The only frontend logic in this repo that is checkable without a browser, and the one place a
+      # silent numerical regression has actually happened: summing the Beta-Binomial tail forward from
+      # k underflows to zero far below the mode, which returns *maximal* significance for the epitopes
+      # a sample matched least. Plain node against exact rational reference values - there is no
+      # frontend test runner here and this needs none.
+      - name: Verify enrichment statistics
+        run: |
+          node app/frontend/scripts/verify-statistics.js
+
       # Upload build artifact (optional but useful)
       - name: Upload server package
         if: success()
