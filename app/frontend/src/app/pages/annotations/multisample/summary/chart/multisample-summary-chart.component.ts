@@ -254,6 +254,25 @@ export class MultisampleSummaryChartComponent implements OnInit, OnDestroy {
       return lines;
     };
 
+    // Applied here, where bars are built, and deliberately not inside `enrichmentBySample`: the BH
+    // correction has to see every value that was tested, and filtering before it would shrink `m` and
+    // silently change every q-value that survived.
+    //
+    // A bar with no p-value is kept. Those are the columns and populations the control cannot speak to
+    // at all, so hiding them would empty the chart entirely rather than filter it - a threshold that
+    // blanks the plot reads as a broken page, not as a narrow result.
+    const passesCutoff = (c: SummaryClonotypeCounter, sample: string): boolean => {
+      if (options.pValueCutoff <= 0) {
+        return true;
+      }
+      const test = enrichment[ sample ] !== undefined ? enrichment[ sample ][ c.field ] : undefined;
+      if (test === undefined) {
+        return true;
+      }
+      const value = options.isPValueCutoffAdjusted ? test.q : test.p;
+      return isNaN(value) || value <= options.pValueCutoff;
+    };
+
     // Takes the counters it belongs to, because the "total number of clonotypes in sample"
     // denominator is per sample - the whole point of this chart is that the samples differ.
     const valueConverter: (c: SummaryClonotypeCounter, owner: SummaryCounters) => number = (c, owner) => {
@@ -278,6 +297,7 @@ export class MultisampleSummaryChartComponent implements OnInit, OnDestroy {
         if (!this.isSampleHidden(key)) {
           const counters = value.counters.find((c) => c.name === currentCounterFieldName);
           let values = SummaryChartOptions.charted(counters.counters, currentCounterFieldName, options)
+            .filter((c) => passesCutoff(c, key))
             .map((c) => ({
               name: c.field, value: valueConverter(c, value), color: speciesColor(c), notes: notesFor(c, key)
             } as IChartDataEntry))
@@ -330,6 +350,17 @@ export class MultisampleSummaryChartComponent implements OnInit, OnDestroy {
 
         data.push({ name: value, values: entries });
       });
+
+      // A group survives if the cutoff keeps it in at least one sample. Dropping per bar instead would
+      // leave a group holding a subset of samples, which reads as "this sample had none" rather than
+      // "this sample was not significant" - the two are opposite claims.
+      if (options.pValueCutoff > 0) {
+        data = data.filter((group) => Array.from(this.currentTab.counters.entries()).some(([ sample, summary ]) => {
+          const field = summary.counters.find((c) => c.name === currentCounterFieldName);
+          const counter = field ? field.counters.find((c) => c.field === group.name) : undefined;
+          return counter !== undefined && !this.isSampleHidden(sample) && passesCutoff(counter, sample);
+        }));
+      }
 
       if (this.showOnlyShared) {
         const nonHiddenSamplesCount = this.getNonHiddenSamplesCount(Array.from(this.currentTab.counters.keys()));
@@ -417,7 +448,7 @@ export class MultisampleSummaryChartComponent implements OnInit, OnDestroy {
    *   alpha, beta  the epitope's per-clonotype match rate in a healthy control repertoire
    *
    * The coefficients come from the server, measured by annotating a 100k-clonotype control repertoire
-   * of the same species and chain — see `ControlPrior` — so the question each p-value answers is "more
+   * of the same species and chain — see `ControlRepertoires` — so the question each p-value answers is "more
    * of this epitope than a repertoire with no history of it", which is the question being asked.
    *
    * What it replaces was the epitope's share of VDJdb records, and that was measuring the database
@@ -450,18 +481,26 @@ export class MultisampleSummaryChartComponent implements OnInit, OnDestroy {
       if (!field) {
         return;
       }
-      const sampleClonotypes = counters.annotated.unique + counters.notFoundCounter.unique;   // b
+      // Clonotypes that matched VDJdb at all, NOT clonotypes in the sample. The coefficients from the
+      // server are the control's composition over its own matched clonotypes, so both sides condition
+      // on having matched and the question becomes "of what matched, is this epitope over-represented".
+      //
+      // Testing against the whole sample instead would make the answer a statement about how public the
+      // repertoire is. Measured: the CMV+ demo sample matches VDJdb at 9.21% and the control at 1.00%,
+      // for reasons that are not biology — the control is amino-acid collapsed where an upload is
+      // nucleotide-level, and it is 62% singletons where an upload is none. Against the unconditioned
+      // null every epitope came out enriched by that same ~9x, and 244 of 310 cleared q < 0.05.
+      const matchedClonotypes = counters.annotated.unique;
       const tested = SummaryChartOptions.charted(field.counters, fieldName, options);
 
       const pValues = tested.map((counter) => {
-        // No coefficients means the server did not measure this bar — a non-epitope column, a species
-        // or chain the control set does not cover, or an annotation run with filters the control run
-        // did not use. All three are "unknown", and a bar with no null behind it gets no p-value
-        // rather than one computed against a substitute.
-        if (sampleClonotypes <= 0 || counter.alpha === undefined || counter.beta === undefined) {
+        // No coefficients means the server did not measure this bar — a non-epitope column, or a
+        // species or chain the control set does not cover. A bar with no null behind it gets no
+        // p-value rather than one computed against a substitute.
+        if (matchedClonotypes <= 0 || counter.alpha === undefined || counter.beta === undefined) {
           return NaN;
         }
-        return Statistics.betaBinomialUpperTail(counter.unique, sampleClonotypes, counter.alpha, counter.beta);
+        return Statistics.betaBinomialUpperTail(counter.unique, matchedClonotypes, counter.alpha, counter.beta);
       });
       const adjusted = Statistics.benjaminiHochberg(pValues);
 

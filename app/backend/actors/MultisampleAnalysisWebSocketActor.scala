@@ -22,7 +22,7 @@ import backend.models.authorization.user.{User, UserDetails}
 import backend.models.files.FileMetadataProvider
 import backend.models.files.sample.SampleFileProvider
 import backend.models.usage.UsageProvider
-import backend.server.annotations.{AnnotationsBusyException, AnnotationsScheduler, ControlPrior, IntersectionTable, SearchSummary}
+import backend.server.annotations.{AnnotationsBusyException, AnnotationsScheduler, ControlRepertoires, IntersectionTable, SearchSummary}
 import backend.server.annotations.api.multisample.summary.{MultisampleSummaryAnalysisRequest, MultisampleSummaryAnalysisResponse}
 import backend.server.annotations.charts.summary.SummaryCounters
 import backend.server.database.Database
@@ -86,10 +86,12 @@ class MultisampleAnalysisWebSocketActor(out: ActorRef, limit: IpLimit, user: Use
                 val restrictions = IntersectionTable.databaseRestrictions(request.databaseQueryParams, request.searchScope) ++
                   IntersectionTable.postSearchFilters(request.databaseQueryParams, motifs)
 
-                // Hoisted out of the per-sample loop for the same reason the index is: the prior is a
+                // Hoisted out of the per-sample loop for the same reason the index is: the null is a
                 // property of the database and of this request's filters, and every sample in the
-                // selection is scored against the same one.
-                val prior = ControlPrior.betaFor(database, request.databaseQueryParams, request.searchScope)
+                // selection is scored against the same one. `restrictions` is the same list the samples
+                // are narrowed by, so the control is filtered identically by construction.
+                val prior = ControlRepertoires.betaFor(database, index, request.databaseQueryParams,
+                  request.searchScope, restrictions)
 
                 val multipleSummary = selected.flatMap { sampleName =>
                   val file = userFiles.find(_._1.sampleName == sampleName).get

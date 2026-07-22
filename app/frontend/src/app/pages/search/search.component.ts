@@ -63,15 +63,21 @@ export class SearchPageComponent implements OnInit, OnDestroy {
       this.filters.setDefault();
     }
 
+    const structParam = this.route.snapshot.queryParamMap.get('struct');
+
     // Apply epitope filter if provided via query parameter
     if (epitopeSeq) {
       this.ag.epitope.epitopeSelected = [ new SetEntry(epitopeSeq, epitopeSeq, false) ];
       this.tcr.general.tra = true;
       this.tcr.general.trb = true;
-      this.tcr.general.pairedOnly = true;
+      // Paired-only follows `struct`, not the epitope. This link is arrived at from two places that
+      // want opposite things: the structure page, where a record IS a paired TRA/TRB complex and
+      // anything unpaired is noise, and the annotate results, where samples are single-chain by
+      // construction - the uploader splits a mixed file into a TRA sample and a TRB sample - so
+      // forcing paired would hide almost everything the user just matched against.
+      this.tcr.general.pairedOnly = structParam !== null;
     }
 
-    const structParam = this.route.snapshot.queryParamMap.get('struct');
     if (structParam) {
       const modes = structParam.split(',').map((s) => s.trim());
       if (modes.indexOf('native') !== -1) { this.meta.reliability.structNative = true; }

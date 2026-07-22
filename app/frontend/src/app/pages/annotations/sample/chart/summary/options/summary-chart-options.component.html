@@ -62,14 +62,29 @@
 <!-- Same quiet caption style as the units line above: what the tooltip's p-value actually tested,
      placed where the reader is choosing the breakdown it applies to. Epitopes only - only they have a
      measured null behind them. -->
+<!-- Only where a p-value exists to threshold: the epitope column, on the chart that renders one. -->
+<ng-container *ngIf="showEnrichmentNote && isEpitopeFieldSelected()">
+    <h4 class="summary-options-heading">Enrichment</h4>
+    <div class="ui mini right labeled input summary-options-cutoff">
+        <input type="number" min="0" max="1" step="0.01" [ngModel]="pValueCutoff" (ngModelChange)="pValueCutoff = $event">
+        <div class="ui basic label">cutoff</div>
+    </div>
+    <div class="ui checkbox">
+        <input type="checkbox" [ngModel]="isPValueCutoffAdjusted" (ngModelChange)="isPValueCutoffAdjusted = $event">
+        <label>Apply to P-adj (BH) rather than raw P</label>
+    </div>
+</ng-container>
+
 <div class="summary-options-units" *ngIf="showEnrichmentNote && isEpitopeFieldSelected()">
-    P-value is a Beta-Binomial upper tail: of the clonotypes in this sample, how many matched this
-    epitope, against how often a healthy control repertoire of 100&nbsp;000 clonotypes of the same
-    species and chain matches it by chance. The control rate carries a &frac12;-count prior, so an
-    epitope the control never reached is treated as rare rather than impossible. It counts clonotypes
-    only, so neither the read-count weighting nor the axis scaling changes it. P-adj is
-    Benjamini-Hochberg across every epitope tested in the sample. No p-value is shown when the search
-    filters differ from those the control was measured under.
+    P-value is a Beta-Binomial upper tail. A healthy control repertoire of the same species and chain is
+    searched against VDJdb through the same filters as this sample, and the question asked is: of the
+    clonotypes here that matched VDJdb at all, did more of them land on this epitope than the control's
+    matches did. Conditioning on having matched is what makes the two comparable — repertoires differ
+    several-fold in how much of them VDJdb contains at all, for reasons of sequencing depth rather than
+    of antigen. The control rate carries a ½-count prior, so an epitope the control never reached is
+    treated as rare rather than impossible. It counts clonotypes only, so neither the read-count
+    weighting nor the axis scaling changes it. P-adj is Benjamini-Hochberg across every epitope tested
+    in the sample.
 </div>
 
 <ng-container *ngIf="isThresholdTypesAvailable()">

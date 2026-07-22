@@ -30,7 +30,7 @@ import play.api.libs.json.{Json, Writes}
   *                which. Omitted from the JSON when `None`.
   * @param alpha   first coefficient of the Beta prior on this epitope's per-clonotype match rate,
   *                measured against a healthy control repertoire — see
-  *                [[backend.server.annotations.ControlPrior]]. Set on `antigen.epitope` counters only,
+  *                [[backend.server.annotations.ControlRepertoires]]. Set on `antigen.epitope` counters only,
   *                and only while the request is filtered the way the control run was; the client reads
   *                its absence as "no p-value for this bar" rather than substituting a default.
   * @param beta    second coefficient of the same Beta.

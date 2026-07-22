@@ -117,7 +117,7 @@ object SearchSummary {
   private final val SpeciesField = "antigen.species"
 
   /** @param prior the control-derived Beta coefficients for an epitope, or `None` where they were not
-    *              measured — see [[ControlPrior]]. Consulted for the epitope field only; nothing else
+    *              measured — see [[ControlRepertoires]]. Consulted for the epitope field only; nothing else
     *              in the summary has a null to be read against.
     * @return the per-field counters, and the `notFound` counter
     */
