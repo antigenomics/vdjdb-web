@@ -63,14 +63,16 @@ export class SummaryChartOptions {
     { name: 'sample', title: 'total number of clonotypes in sample', checked: true }
   ];
 
+  /** The columns worth breaking a repertoire down by. `mhc.locus` and `antigen.gene` were dropped as
+    * too coarse to tell two samples apart, and `antigen.species` because it is now a colouring of the
+    * epitope breakdown rather than a breakdown of its own - which is the more useful of the two, since
+    * it keeps the epitopes visible instead of collapsing them into one bar per virus. The server still
+    * sends every counter; this only chooses what the picker offers. */
   public fieldTypes: ISummaryFilterFieldType[] = [
     { name: 'antigen.epitope', title: 'Epitope' },
-    { name: 'mhc.class', title: 'MHC class' },
     { name: 'mhc.a', title: 'MHC A' },
     { name: 'mhc.b', title: 'MHC B' },
-    { name: 'mhc.locus', title: 'HLA locus' },
-    { name: 'antigen.species', title: 'Epitope species' },
-    { name: 'antigen.gene', title: 'Epitope gene' }
+    { name: 'mhc.class', title: 'MHC class' }
   ];
 
   /** Epitopes the database holds fewer than this many distinct CDR3s for are left off the plot.

@@ -113,12 +113,22 @@ private final class MutableCounter {
   */
 object SearchSummary {
 
+  private final val EpitopeField = "antigen.epitope"
+  private final val SpeciesField = "antigen.species"
+
   /** @return the per-field counters, and the `notFound` counter */
   def summarize(found: Seq[(Clonotype, Seq[ClonotypeSearchResult])],
                 sample: Sample,
                 fields: Seq[String],
                 index: SummaryIndex): (Seq[SummaryFieldCounter], SummaryClonotypeCounter) = {
     val counters = fields.map(field => field -> mutable.LinkedHashMap.empty[String, MutableCounter]).toMap
+
+    // Which antigen species each epitope belongs to, recorded while the rows are already in hand. The
+    // per-field counters are flat, so nothing else in the payload relates one field's values to
+    // another's, and the client has no way to reconstruct it. First hit wins: an epitope sequence is a
+    // property of its antigen, so every row carrying it agrees.
+    val trackSpecies   = fields.contains(SearchSummary.EpitopeField) && fields.contains(SearchSummary.SpeciesField)
+    val epitopeSpecies = mutable.HashMap.empty[String, String]
 
     var matchedUnique: Int       = 0
     var matchedReads: Long       = 0L
@@ -132,6 +142,10 @@ object SearchSummary {
       }
       hits.foreach { hit =>
         val row = hit.getRow
+        if (trackSpecies) {
+          epitopeSpecies.getOrElseUpdate(row.getAt(SearchSummary.EpitopeField).getValue,
+            row.getAt(SearchSummary.SpeciesField).getValue)
+        }
         fields.foreach { field =>
           val value = row.getAt(field).getValue
           counters(field).getOrElseUpdate(value, new MutableCounter).update(clonotype)
@@ -141,10 +155,11 @@ object SearchSummary {
 
     val fieldCounters = fields.map { field =>
       val denominators = index.perColumn.getOrElse(field, Map.empty[String, Long])
+      val isEpitope    = field == SearchSummary.EpitopeField
       SummaryFieldCounter(field, counters(field).toSeq.collect {
         case (value, counter) if counter.unique != 0 =>
           SummaryClonotypeCounter(value, counter.unique, denominators.getOrElse(value, 0L),
-            counter.frequency, counter.reads)
+            counter.frequency, counter.reads, if (isEpitope) epitopeSpecies.get(value) else None)
       })
     }
 
