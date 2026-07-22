@@ -30,7 +30,8 @@ final case class UsageConfiguration(enabled: Boolean,
                                     uploadsPerDayTemporary: Int,
                                     uploadsPerDayPerIP: Int,
                                     annotationsPerDayRegistered: Int,
-                                    annotationsPerDayTemporary: Int) {
+                                    annotationsPerDayTemporary: Int,
+                                    tokensPerDayPerIP: Int) {
 
   def uploadsPerDay(isTemporary: Boolean): Int =
     if (isTemporary) uploadsPerDayTemporary else uploadsPerDayRegistered
@@ -41,7 +42,8 @@ final case class UsageConfiguration(enabled: Boolean,
   def describe: String =
     s"enabled=$enabled, uploads/day=$uploadsPerDayRegistered (registered) / $uploadsPerDayTemporary (token), " +
       s"uploads/day/IP=$uploadsPerDayPerIP, " +
-      s"annotations/day=$annotationsPerDayRegistered (registered) / $annotationsPerDayTemporary (token)"
+      s"annotations/day=$annotationsPerDayRegistered (registered) / $annotationsPerDayTemporary (token), " +
+      s"tokens/day/IP=$tokensPerDayPerIP"
 }
 
 object UsageConfiguration {
@@ -52,6 +54,7 @@ object UsageConfiguration {
   final val DefaultUploadsPerDayPerIP: Int          = 200
   final val DefaultAnnotationsPerDayRegistered: Int = 100
   final val DefaultAnnotationsPerDayTemporary: Int  = 20
+  final val DefaultTokensPerDayPerIP: Int          = 10
 
   /** Every key is read with a default. Production starts with `-Dconfig.file=<server-side file>`,
     * which REPLACES the packaged `application.conf` rather than merging with it, so none of these
@@ -66,6 +69,7 @@ object UsageConfiguration {
     annotationsPerDayRegistered =
       conf.getOptional[Int](s"$Root.annotationsPerDayRegistered").getOrElse(DefaultAnnotationsPerDayRegistered),
     annotationsPerDayTemporary =
-      conf.getOptional[Int](s"$Root.annotationsPerDayTemporary").getOrElse(DefaultAnnotationsPerDayTemporary)
+      conf.getOptional[Int](s"$Root.annotationsPerDayTemporary").getOrElse(DefaultAnnotationsPerDayTemporary),
+    tokensPerDayPerIP = conf.getOptional[Int](s"$Root.tokensPerDayPerIP").getOrElse(DefaultTokensPerDayPerIP)
   )
 }

@@ -46,6 +46,15 @@ import scala.language.postfixOps
 import scala.util.{Failure, Success}
 
 @Singleton
+/** Raised when an address already holds as many live temporary accounts as it is allowed.
+  *
+  * Carries the limit rather than a formatted sentence: the only thing that catches this renders it to a
+  * person on the signup page, where `Messages` is in scope, so the wording lives with the rest of the
+  * signup copy in `messages.en`.
+  */
+final case class TooManyTemporaryUsersException(limit: Int)
+  extends RuntimeException(s"An address may hold $limit live temporary accounts at once")
+
 class UserProvider @Inject()(
   @NamedDatabase("default") protected val dbConfigProvider: DatabaseConfigProvider,
   vtp: VerificationTokenProvider,
@@ -388,7 +397,9 @@ class UserProvider @Inject()(
     }
     val count = await(countForCreateIP(createIP))
     if (count >= temporaryUserConfiguration.maxForOneIP) {
-      throw new RuntimeException("Too much users for one IP")
+      // Typed, and carrying the limit, because the only consumer renders it to a person: the message
+      // used to be the string "Too much users for one IP", which reached the signup page verbatim.
+      throw TooManyTemporaryUsersException(temporaryUserConfiguration.maxForOneIP)
     }
     val hash       = BCrypt.hashpw(token, BCrypt.gensalt())
     val folderPath = s"${usersConfiguration.uploadLocation}/$token"

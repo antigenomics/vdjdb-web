@@ -19,6 +19,8 @@ package backend.controllers
 import backend.actions.{SessionAction, UserRequestAction}
 import backend.models.authorization.forms._
 import backend.models.authorization.permissions.UserPermissionsProvider
+import backend.models.authorization.user.TooManyTemporaryUsersException
+import backend.models.usage.UsageProvider
 import backend.models.authorization.tokens.reset.ResetTokenProvider
 import backend.models.authorization.tokens.session.SessionTokenProvider
 import backend.models.authorization.tokens.verification.VerificationTokenProvider
@@ -43,7 +45,8 @@ class Authorization @Inject()(cc: ControllerComponents, messagesApi: MessagesApi
   rtp: ResetTokenProvider,
   environment: Environment,
   analytics: Analytics,
-  upp: UserPermissionsProvider
+  upp: UserPermissionsProvider,
+  usage: UsageProvider
 ) extends AbstractController(cc) {
   final private val logger        = LoggerFactory.getLogger(this.getClass)
   implicit val messages: Messages = messagesApi.preferred(Seq(Lang.defaultLang))
@@ -165,7 +168,13 @@ class Authorization @Inject()(cc: ControllerComponents, messagesApi: MessagesApi
         // own identity, which made `maxForOneIP` unenforceable and token creation effectively unlimited.
         val ip    = RequestUtils.clientIp(request)
         val check = await(up.get(form.token))
-        if (check.nonEmpty) {
+        // Checked before the token-in-use branch, so a caller cannot probe for taken tokens for free.
+        val quota = usage.checkTokenSignup(ip)
+        if (quota.nonEmpty) {
+          BadRequest(frontend.views.html.authorization.temporarySignup(
+            SignupTemporaryForm.signupTemporaryFormMapping.withGlobalError(
+              messages("authorization.forms.signup.limit.perDay", quota.get))))
+        } else if (check.nonEmpty) {
           BadRequest(frontend.views.html.authorization.temporarySignup(SignupTemporaryForm.tokenInUseTemporaryFormMapping))
         } else {
           val user = up.createTemporaryUser(form.token, ip)
@@ -177,6 +186,13 @@ class Authorization @Inject()(cc: ControllerComponents, messagesApi: MessagesApi
             case None =>
               BadRequest(frontend.views.html.authorization.temporarySignup(SignupTemporaryForm.signupTemporaryFormMapping.withGlobalError("Internal Error")))
           } recover {
+            // Named, so the person reading it is told what the ceiling is and how it clears. Anything
+            // else still surfaces its own message - an internal failure should not be dressed up as a
+            // quota.
+            case TooManyTemporaryUsersException(limit) =>
+              BadRequest(frontend.views.html.authorization.temporarySignup(
+                SignupTemporaryForm.signupTemporaryFormMapping.withGlobalError(
+                  messages("authorization.forms.signup.limit.concurrent", limit))))
             case e =>
               BadRequest(frontend.views.html.authorization.temporarySignup(SignupTemporaryForm.signupTemporaryFormMapping.withGlobalError(e.getMessage)))
           }

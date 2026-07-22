@@ -50,6 +50,7 @@ class UsageProviderSpec extends BaseTestSpec {
       |  uploadsPerDayPerIP = 3
       |  annotationsPerDayRegistered = 2
       |  annotationsPerDayTemporary = 1
+      |  tokensPerDayPerIP = 2
       |}""".stripMargin
 
   "UsageConfiguration" should {
@@ -176,6 +177,57 @@ class UsageProviderSpec extends BaseTestSpec {
 
       usage.checkUploadOn(today, 51L, isTemporary = false, registered, "10.0.0.5") shouldBe empty
       usage.checkUploadOn(today, 51L, isTemporary = false, registered, "10.0.0.5") shouldBe empty
+    }
+  }
+
+  "UsageProvider.checkTokenSignup" should {
+
+    "allow the day's allowance from one address and refuse the next" taggedAs UtilsTestTag in {
+      val usage = provider(tightLimits)
+      usage.checkTokenSignupOn(today, "10.0.0.9") shouldBe empty
+      usage.checkTokenSignupOn(today, "10.0.0.9") shouldBe empty
+      usage.checkTokenSignupOn(today, "10.0.0.9") shouldBe Some(2)
+    }
+
+    "count each address separately" taggedAs UtilsTestTag in {
+      val usage = provider(tightLimits)
+      usage.checkTokenSignupOn(today, "10.0.0.1") shouldBe empty
+      usage.checkTokenSignupOn(today, "10.0.0.1") shouldBe empty
+      usage.checkTokenSignupOn(today, "10.0.0.1") shouldBe Some(2)
+      // A second address still has its own full allowance.
+      usage.checkTokenSignupOn(today, "10.0.0.2") shouldBe empty
+    }
+
+    "start again after the day rolls over" taggedAs UtilsTestTag in {
+      val usage = provider(tightLimits)
+      usage.checkTokenSignupOn(today, "10.0.0.3") shouldBe empty
+      usage.checkTokenSignupOn(today, "10.0.0.3") shouldBe empty
+      usage.checkTokenSignupOn(today, "10.0.0.3") shouldBe Some(2)
+      usage.checkTokenSignupOn(tomorrow, "10.0.0.3") shouldBe empty
+      usage.tokensForIP(tomorrow, "10.0.0.3") shouldBe 1
+    }
+
+    // A refusal must not spend an attempt, or a caller who hits the wall once is pushed further from
+    // the limit by asking again - and the counter would drift away from what the message claims.
+    "count attempts, and stop counting once refused" taggedAs UtilsTestTag in {
+      val usage = provider(tightLimits)
+      usage.checkTokenSignupOn(today, "10.0.0.4") shouldBe empty
+      usage.checkTokenSignupOn(today, "10.0.0.4") shouldBe empty
+      usage.tokensForIP(today, "10.0.0.4") shouldBe 2
+      usage.checkTokenSignupOn(today, "10.0.0.4") shouldBe Some(2)
+      usage.tokensForIP(today, "10.0.0.4") shouldBe 2
+    }
+
+    "not be reachable when quotas are disabled" taggedAs UtilsTestTag in {
+      val usage = provider("application.annotations.quota { enabled = false, tokensPerDayPerIP = 0 }")
+      usage.checkTokenSignupOn(today, "10.0.0.5") shouldBe empty
+      usage.checkTokenSignupOn(today, "10.0.0.5") shouldBe empty
+    }
+
+    "treat a negative limit as no limit" taggedAs UtilsTestTag in {
+      val usage = provider("application.annotations.quota { tokensPerDayPerIP = -1 }")
+      (1 to 50).foreach(_ => usage.checkTokenSignupOn(today, "10.0.0.6") shouldBe empty)
+      usage.tokensForIP(today, "10.0.0.6") shouldBe 50
     }
   }
 }
