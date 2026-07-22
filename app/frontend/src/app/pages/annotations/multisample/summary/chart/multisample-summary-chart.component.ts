@@ -243,8 +243,11 @@ export class MultisampleSummaryChartComponent implements OnInit, OnDestroy {
       if (c.species) {
         lines.push(`Species: ${c.species}`);
       }
+      // Silent rather than "n/a" when there is no null to test against: every value of every column
+      // reaches here, but only epitopes carry control-derived coefficients, so the alternative is two
+      // lines of nothing in the tooltip of every MHC and antigen bar on the chart.
       const test = enrichment[ sample ] !== undefined ? enrichment[ sample ][ c.field ] : undefined;
-      if (test !== undefined) {
+      if (test !== undefined && !isNaN(test.p)) {
         lines.push(`P-value = ${Statistics.formatPValue(test.p)}`);
         lines.push(`P-adj (BH) = ${Statistics.formatPValue(test.q)}`);
       }
