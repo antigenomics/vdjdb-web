@@ -127,8 +127,11 @@ object IntersectionTable {
     *
     * These are the annotate page's own filters. [[databaseRestrictions]] holds the ones that used to
     * be baked into the built database, which every caller of the shared index has to apply.
+    *
+    * Public for the same reason as [[databaseRestrictions]]: the multisample tab reads the same filter
+    * panel and has to honour the same half of it.
     */
-  private def postSearchFilters(parameters: AnnotationsDatabaseQueryParams, motifs: Motifs): Seq[HitFilter] = {
+  def postSearchFilters(parameters: AnnotationsDatabaseQueryParams, motifs: Motifs): Seq[HitFilter] = {
     val donor = HlaAllele.parseAll(parameters.hla.getOrElse(""))
     val donorFilter: Option[HitFilter] =
       if (donor.isEmpty) None
@@ -218,7 +221,7 @@ object IntersectionTable {
     * results of searching the one shared index.
     *
     * Public because the multisample analysis searches the same shared index and has to narrow it the
-    * same way. It applies only these, not [[postSearchFilters]] — which it has never applied.
+    * same way. That tab applies these and [[postSearchFilters]] both; it used to apply only these.
     */
   def databaseRestrictions(parameters: AnnotationsDatabaseQueryParams,
                            searchScope: AnnotationsSearchScope): Seq[HitFilter] = {

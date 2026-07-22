@@ -60,18 +60,20 @@
         </div>
     </div>
     <div class="ui row middle aligned">
-        <div class="two wide column filters label"><b>Donor HLA</b></div>
-        <div class="ten wide column">
+        <div class="two wide column filters label">
+            <b>Donor HLA</b>
             <!-- Annotations filters help: donor HLA-->
             <i class="fitted filters corner help icon"
-               popup="Restrict matches to epitopes presented by this donor's HLA. Accepts a list, e.g. HLA-A*02:01, B*07:02, DRB1*15:01. A record typed at lower resolution than the donor still matches (HLA-A*02:01 matches an HLA-A*02 record), but HLA-A*02:01 and HLA-A*02:05 do not match each other."
+               popup="Restrict matches to epitopes presented by this donor's HLA. Click the field to see every allele the database carries, and start typing to narrow it. A record typed at lower resolution than the donor still matches (HLA-B*35 matches HLA-B*35:01 and HLA-B*35:08), but HLA-A*02:01 and HLA-A*02:05 do not match each other."
                header="Donor HLA typing"
                footer="Leave blank to allow all HLAs">
             </i>
-            <div class="ui input fluid">
-                <input [attr.disabled]="isDisabled()" type="text" placeholder="Leave blank to allow all HLAs"
-                       [(ngModel)]="filters.databaseQueryParams.hla">
-            </div>
+        </div>
+        <div class="ten wide column">
+            <set [selected]="hlaSelected" (selectedChange)="onHlaSelectedChange($event)"
+                 [values]="hlaValues"
+                 [disabled]="disabled"
+                 placeholder="Leave blank to allow all HLAs, or start typing to see suggestions..."></set>
         </div>
     </div>
 </div>
@@ -81,14 +83,16 @@
 </div>
 <div class="ui grid">
     <div class="ui row middle aligned">
-        <div class="two wide column filters label"><b>Supported by</b></div>
-        <div class="ten wide column">
+        <div class="two wide column filters label">
+            <b>Supported by</b>
             <!-- Annotations filters help: evidence filters-->
             <i class="fitted filters corner help icon"
                popup="Restrict matches to VDJdb records supported by the selected kinds of evidence. Ticking several of these narrows the result: a match has to satisfy every one that is ticked. TCREMP and TCRNET motifs are clusters of similar receptors recognising the same epitope, as shown on the Motif page."
                header="Supporting evidence"
                footer="Only TCREMP motif membership is on by default">
             </i>
+        </div>
+        <div class="ten wide column">
             <div class="ui checkbox">
                 <input [attr.disabled]="isDisabled()" type="checkbox" [(ngModel)]="filters.databaseQueryParams.inTcrempMotif">
                 <label>In TCREMP motif</label>

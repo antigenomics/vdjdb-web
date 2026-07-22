@@ -26,6 +26,7 @@ import backend.server.annotations.{AnnotationsBusyException, AnnotationsSchedule
 import backend.server.annotations.api.multisample.summary.{MultisampleSummaryAnalysisRequest, MultisampleSummaryAnalysisResponse}
 import backend.server.annotations.charts.summary.SummaryCounters
 import backend.server.database.Database
+import backend.server.motifs.Motifs
 import backend.server.limit.{IpLimit, RequestLimits}
 import com.antigenomics.vdjtools.io.SampleFileConnection
 import com.antigenomics.vdjtools.misc.Software
@@ -39,7 +40,8 @@ import scala.util.control.NonFatal
 import scala.util.{Failure, Success}
 
 class MultisampleAnalysisWebSocketActor(out: ActorRef, limit: IpLimit, user: User, details: UserDetails,
-                                        database: Database, usage: UsageProvider, scheduler: AnnotationsScheduler)
+                                        database: Database, motifs: Motifs, usage: UsageProvider,
+                                        scheduler: AnnotationsScheduler)
                                        (implicit ec: ExecutionContext, as: ActorSystem, limits: RequestLimits,
                                         upp: UserPermissionsProvider, sfp: SampleFileProvider, fmp: FileMetadataProvider)
   extends WebSocketActor(out, limit) {
@@ -75,13 +77,14 @@ class MultisampleAnalysisWebSocketActor(out: ActorRef, limit: IpLimit, user: Use
                 val (index, summaryIndex) = IntersectionTable.indexesFor(
                   database, request.databaseQueryParams, request.searchScope, request.scoring)
 
-                // The search index spans the whole of VDJdb now, so species, gene, MHC class,
-                // confidence and V/J matching are predicates over its results rather than rows it was
-                // built without. Applying them here is not an addition to what this tab did — it is
-                // the same narrowing, moved. It deliberately stops there: the HLA, motif and evidence
-                // filters have never been applied on this tab, and making them apply is a behaviour
-                // change, not this one.
-                val restrictions = IntersectionTable.databaseRestrictions(request.databaseQueryParams, request.searchScope)
+                // Every filter the panel offers, the same set the single-sample tab applies. This tab
+                // used to stop at `databaseRestrictions` - species, gene, MHC class, confidence, V/J -
+                // and silently drop the rest, so a donor HLA typed into the panel narrowed a single
+                // sample's matches and did nothing at all to "All samples". Two tabs reading one panel
+                // and honouring different halves of it is not a defensible default, whichever half is
+                // missing.
+                val restrictions = IntersectionTable.databaseRestrictions(request.databaseQueryParams, request.searchScope) ++
+                  IntersectionTable.postSearchFilters(request.databaseQueryParams, motifs)
 
                 val multipleSummary = selected.flatMap { sampleName =>
                   val file = userFiles.find(_._1.sampleName == sampleName).get
@@ -130,9 +133,9 @@ class MultisampleAnalysisWebSocketActor(out: ActorRef, limit: IpLimit, user: Use
 }
 
 object MultisampleAnalysisWebSocketActor {
-  def props(out: ActorRef, limit: IpLimit, user: User, details: UserDetails, database: Database, usage: UsageProvider,
-            scheduler: AnnotationsScheduler)
+  def props(out: ActorRef, limit: IpLimit, user: User, details: UserDetails, database: Database, motifs: Motifs,
+            usage: UsageProvider, scheduler: AnnotationsScheduler)
            (implicit ec: ExecutionContext, as: ActorSystem, limits: RequestLimits,
             upp: UserPermissionsProvider, sfp: SampleFileProvider, fmp: FileMetadataProvider): Props =
-    Props(new MultisampleAnalysisWebSocketActor(out, limit, user, details, database, usage, scheduler))
+    Props(new MultisampleAnalysisWebSocketActor(out, limit, user, details, database, motifs, usage, scheduler))
 }
