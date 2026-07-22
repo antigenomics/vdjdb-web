@@ -28,6 +28,16 @@
             the three is rejected rather than guessed at. Leave <b>Chain</b> on <b>Guess</b> to derive
             it from the data, which also splits a file holding both chains into two samples.
         </p>
+        <!-- Repeated from the Info tab on purpose: this is the moment the advice can still be acted
+             on, and an unfiltered repertoire is the most common reason an annotation returns a wall of
+             low-value matches. -->
+        <div class="account-notice account-notice--tip">
+            <i class="exclamation circle icon"></i>
+            <span>Filter your samples before uploading: remove sequencing noise and the naive repertoire
+                so that only expanded clonotypes and enriched meta-clonotypes remain.
+                <a href="https://github.com/antigenomics/vdjtools" target="_blank" rel="noopener">VDJtools</a>
+                does this.</span>
+        </div>
     </div>
     <div class="ui attached secondary clearing segment">
         <form #fileHandlerForm>
