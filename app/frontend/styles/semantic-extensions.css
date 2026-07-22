@@ -62,10 +62,15 @@
 }
 
 /* The bar auto-hides on scroll-down; `NavigationBarComponent.setHidden` mirrors that onto `body` so
-   the sidebar can take the space it vacates instead of leaving a strip of background where it was. */
-body.navbar-hidden .ui.sidebar.with.navbar {
-  top: 0 !important;
-  height: 100% !important;
+   the sidebar can take the space it vacates instead of leaving a strip of background where it was.
+   Desktop only, and the media query is what scopes it: below the breakpoint the sidebar is `static`
+   and capped at `45vh`, and this rule is one class more specific than the one that does that, so
+   unscoped it would win inside the narrow block too and stretch the panel to the full page height. */
+@media (min-width: 769px) {
+  body.navbar-hidden .ui.sidebar.with.navbar {
+    top: 0 !important;
+    height: 100% !important;
+  }
 }
 
 .ui.sidebar.menu .item .header .sort.icon {
