@@ -29,10 +29,11 @@ interface ITag {
 @Component({
   selector: 'td[intersection-table-entry-tags]',
   template: `
-                <a *ngIf="tag.href" class="ui small basic {{ tag.color }} label" [href]="tag.href"
+                <ng-container *ngFor="let tag of values"><a *ngIf="tag.href"
+                   class="ui small basic {{ tag.color }} label" [href]="tag.href"
                    target="_blank" rel="noopener noreferrer"
-                   title="Open this epitope in Browse">{{ tag.text }}</a><!--
-             --><div *ngIf="!tag.href" class="ui small basic {{ tag.color }} label">{{ tag.text }}</div>`,
+                   title="Open this epitope in Browse">{{ tag.text }}</a><div *ngIf="!tag.href"
+                   class="ui small basic {{ tag.color }} label">{{ tag.text }}</div></ng-container>`,
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class IntersectionTableEntryTagsComponent extends TableEntry {
