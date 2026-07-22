@@ -18,4 +18,7 @@ export interface IChartDataEntry {
   readonly name: string;
   readonly value: number;
   readonly color?: string;
+  /** One extra line for the tooltip, above the value - whatever the chart's owner knows about this
+    * entry that its name does not say. Rendered verbatim when set. */
+  readonly note?: string;
 }
