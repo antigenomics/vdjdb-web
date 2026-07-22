@@ -131,17 +131,17 @@ class SampleRetentionProvider @Inject()(conf: Configuration,
 
   private def report(policy: SampleRetentionConfiguration, user: User, sample: SampleFile, metadata: FileMetadata,
                      now: Long, keepSeconds: Long): Unit = {
-    val day      = 24L * 60L * 60L * 1000L
-    val ageDays  = (now - metadata.createdAt.getTime) / day
+    val ageSeconds  = (now - metadata.createdAt.getTime) / 1000L
     // Both ages are logged when the floor is doing something, so a line always explains itself: a
     // sample can be eight years old and still be swept only because the floor is set a year back.
-    val agedDays = (now - policy.effectiveCreatedAt(metadata.createdAt.getTime)) / day
-    val age      = if (agedDays == ageDays) s"age ${ageDays}d" else s"age ${ageDays}d, aged ${agedDays}d from floor"
-    val keepDays = keepSeconds / (24L * 60L * 60L)
-    val account  = if (user.isTemporary) "temporary" else "registered"
-    val prefix   = if (policy.dryRun) "[retention][dry-run] would delete" else "[retention] deleting"
+    val agedSeconds = (now - policy.effectiveCreatedAt(metadata.createdAt.getTime)) / 1000L
+    val age         = if (agedSeconds == ageSeconds) s"age ${SampleRetentionConfiguration.window(ageSeconds)}"
+                      else s"age ${SampleRetentionConfiguration.window(ageSeconds)}, " +
+                        s"aged ${SampleRetentionConfiguration.window(agedSeconds)} from floor"
+    val account     = if (user.isTemporary) "temporary" else "registered"
+    val prefix      = if (policy.dryRun) "[retention][dry-run] would delete" else "[retention] deleting"
     logger.info(s"$prefix sample '${sample.sampleName}' of ${user.email} " +
-      s"($age, window ${keepDays}d, $account account)")
+      s"($age, window ${SampleRetentionConfiguration.window(keepSeconds)}, $account account)")
   }
 
   /** Deleting the FILE_METADATA row cascades to SAMPLE_FILE, so the database side is one statement;

@@ -35,7 +35,8 @@ class SampleRetentionProviderSpec extends DatabaseProviderTestSpec {
   implicit lazy val userProvider: UserProvider                       = app.injector.instanceOf[UserProvider]
   lazy val retentionProvider: SampleRetentionProvider                = app.injector.instanceOf[SampleRetentionProvider]
 
-  private final val Day: Long = 24L * 60L * 60L
+  private final val Day: Long  = 24L * 60L * 60L
+  private final val Hour: Long = 60L * 60L
 
   /** The shipped windows, so the tests exercise the numbers that will actually be deployed. */
   private def policy(dryRun: Boolean, epochMillis: Long = 0L): SampleRetentionConfiguration = SampleRetentionConfiguration(
@@ -43,7 +44,7 @@ class SampleRetentionProviderSpec extends DatabaseProviderTestSpec {
     dryRun = dryRun,
     intervalSeconds = 0L,
     keepRegisteredSeconds = 365L * Day,
-    keepTemporarySeconds = 7L * Day,
+    keepTemporarySeconds = 3L * Hour,
     epochMillis = epochMillis
   )
 
@@ -51,16 +52,19 @@ class SampleRetentionProviderSpec extends DatabaseProviderTestSpec {
 
   private def create(file: File): Unit = { val _ = file.createNewFile() }
 
-  /** Stores a sample for `user` whose FILE_METADATA.CREATED_AT is `ageDays` in the past. Written
+  /** Stores a sample for `user` whose FILE_METADATA.CREATED_AT is `ageSeconds` in the past. Written
     * straight through the providers rather than through `User.addSampleFile`, which always stamps
-    * CREATED_AT with "now" and so cannot express an aged row. */
-  private def storeSample(user: User, name: String, ageDays: Long): Future[(Long, FileMetadata)] = async {
+    * CREATED_AT with "now" and so cannot express an aged row.
+    *
+    * In seconds rather than days because the token window is now three hours, and a helper that can
+    * only express whole days cannot place a sample inside it. */
+  private def storeSample(user: User, name: String, ageSeconds: Long): Future[(Long, FileMetadata)] = async {
     val folder = new File(s"${user.folderPath}/$name")
     val file   = new File(s"${folder.getPath}/$name.txt")
     mkdirs(folder)
     create(file)
 
-    val createdAt  = new Timestamp(System.currentTimeMillis() - ageDays * Day * 1000L)
+    val createdAt  = new Timestamp(System.currentTimeMillis() - ageSeconds * 1000L)
     val metadataID = await(fileMetadataProvider.insert(FileMetadata(0, name, "txt", file.getPath, folder.getPath, createdAt)))
     val sampleID   = await(sampleFileProvider.insert(
       SampleFile(0, name, "VDJtools", -1L, -1L, metadataID, user.id, -1L, "HomoSapiens", "TRB", "VDJtools")))
@@ -83,10 +87,18 @@ class SampleRetentionProviderSpec extends DatabaseProviderTestSpec {
 
       configuration.enabled shouldEqual true
       configuration.dryRun shouldEqual true
-      configuration.intervalSeconds shouldEqual 24L * 60L * 60L
+      configuration.intervalSeconds shouldEqual 30L * 60L
       configuration.keepRegisteredSeconds shouldEqual 365L * Day
-      configuration.keepTemporarySeconds shouldEqual 7L * Day
+      configuration.keepTemporarySeconds shouldEqual 3L * Hour
       configuration.epochMillis shouldEqual 0L
+    }
+
+    "print a window at the scale it was configured in" taggedAs SQLDatabaseTestTag in {
+      // "0d" for the three-hour token window would read as a misconfigured zero in the sweep log.
+      SampleRetentionConfiguration.window(365L * Day) shouldEqual "365d"
+      SampleRetentionConfiguration.window(3L * Hour) shouldEqual "3h"
+      SampleRetentionConfiguration.window(30L * 60L) shouldEqual "30m"
+      SampleRetentionConfiguration.window(45L) shouldEqual "45s"
     }
 
     "read ageFrom as an ISO-8601 instant, and ignore one it cannot parse" taggedAs SQLDatabaseTestTag in {
@@ -127,7 +139,7 @@ class SampleRetentionProviderSpec extends DatabaseProviderTestSpec {
     "delete nothing in dry-run mode" taggedAs SQLDatabaseTestTag in {
       async {
         val user             = await(registeredUser("retention-dryrun@mail.com"))
-        val (sampleID, meta) = await(storeSample(user, "dryrun", ageDays = 400L))
+        val (sampleID, meta) = await(storeSample(user, "dryrun", ageSeconds = 400L * Day))
 
         val result = await(retentionProvider.sweep(policy(dryRun = true)))
 
@@ -143,7 +155,7 @@ class SampleRetentionProviderSpec extends DatabaseProviderTestSpec {
     "delete a registered account's samples once they are past the 365 day window" taggedAs SQLDatabaseTestTag in {
       async {
         val user             = await(registeredUser("retention-old@mail.com"))
-        val (sampleID, meta) = await(storeSample(user, "ancient", ageDays = 400L))
+        val (sampleID, meta) = await(storeSample(user, "ancient", ageSeconds = 400L * Day))
 
         val result = await(retentionProvider.sweep(policy(dryRun = false)))
         result.deleted should be >= 1
@@ -163,7 +175,7 @@ class SampleRetentionProviderSpec extends DatabaseProviderTestSpec {
       // without a floor is a near-total wipe on the first pass rather than housekeeping.
       async {
         val user             = await(registeredUser("retention-floored@mail.com"))
-        val (sampleID, meta) = await(storeSample(user, "ancient-but-floored", ageDays = 3000L))
+        val (sampleID, meta) = await(storeSample(user, "ancient-but-floored", ageSeconds = 3000L * Day))
 
         val floor  = System.currentTimeMillis - 10L * 24L * 60L * 60L * 1000L
         val result = await(retentionProvider.sweep(policy(dryRun = false, epochMillis = floor)))
@@ -179,7 +191,7 @@ class SampleRetentionProviderSpec extends DatabaseProviderTestSpec {
       // retention permanently and quietly.
       async {
         val user             = await(registeredUser("retention-floor-elapsed@mail.com"))
-        val (sampleID, meta) = await(storeSample(user, "floor-elapsed", ageDays = 3000L))
+        val (sampleID, meta) = await(storeSample(user, "floor-elapsed", ageSeconds = 3000L * Day))
 
         val floor  = System.currentTimeMillis - 400L * 24L * 60L * 60L * 1000L
         val result = await(retentionProvider.sweep(policy(dryRun = false, epochMillis = floor)))
@@ -193,7 +205,7 @@ class SampleRetentionProviderSpec extends DatabaseProviderTestSpec {
     "keep a registered account's samples that are inside the window" taggedAs SQLDatabaseTestTag in {
       async {
         val user             = await(registeredUser("retention-recent@mail.com"))
-        val (sampleID, meta) = await(storeSample(user, "recent", ageDays = 100L))
+        val (sampleID, meta) = await(storeSample(user, "recent", ageSeconds = 100L * Day))
 
         val _ = await(retentionProvider.sweep(policy(dryRun = false)))
 
@@ -202,14 +214,16 @@ class SampleRetentionProviderSpec extends DatabaseProviderTestSpec {
       }
     }
 
-    "use the 7 day window for temporary accounts" taggedAs SQLDatabaseTestTag in {
+    "use the 3 hour window for temporary accounts" taggedAs SQLDatabaseTestTag in {
       async {
         val user = await(userProvider.createTemporaryUser("retention-token-user", "10.0.0.1")).get
 
-        // 10 days is inside the 365 day registered window and outside the 7 day temporary one, so
-        // this fails if the sweeper picks the window by anything other than the account type.
-        val (expiredID, expiredMeta) = await(storeSample(user, "tokenold", ageDays = 10L))
-        val (freshID, freshMeta)     = await(storeSample(user, "tokennew", ageDays = 3L))
+        // 10 days is inside the 365 day registered window and outside the 3 hour temporary one, so
+        // this fails if the sweeper picks the window by anything other than the account type. The
+        // fresh sample is an hour old: with a three hour window it is the only side of the boundary
+        // a whole number of days can no longer express.
+        val (expiredID, expiredMeta) = await(storeSample(user, "tokenold", ageSeconds = 10L * Day))
+        val (freshID, freshMeta)     = await(storeSample(user, "tokennew", ageSeconds = 1L * Hour))
 
         val _ = await(retentionProvider.sweep(policy(dryRun = false)))
 
@@ -226,8 +240,8 @@ class SampleRetentionProviderSpec extends DatabaseProviderTestSpec {
         val demoUser      = await(registeredUser("retention-demo@mail.com", UserPermissionsProvider.DEMO_ID))
         val unlimitedUser = await(registeredUser("retention-admin@mail.com", UserPermissionsProvider.UNLIMITED_ID))
 
-        val (demoSampleID, demoMeta)           = await(storeSample(demoUser, "demoancient", ageDays = 4000L))
-        val (unlimitedSampleID, unlimitedMeta) = await(storeSample(unlimitedUser, "adminancient", ageDays = 4000L))
+        val (demoSampleID, demoMeta)           = await(storeSample(demoUser, "demoancient", ageSeconds = 4000L * Day))
+        val (unlimitedSampleID, unlimitedMeta) = await(storeSample(unlimitedUser, "adminancient", ageSeconds = 4000L * Day))
 
         val _ = await(retentionProvider.sweep(policy(dryRun = false)))
 
