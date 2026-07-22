@@ -44,6 +44,11 @@
             <input type="checkbox" [(ngModel)]="shared" [disabled]="order">
             <label>Show shared only</label>
         </div>
+        <br>
+        <div class="ui checkbox">
+            <input type="checkbox" [(ngModel)]="logarithmic">
+            <label>Logarithmic axis</label>
+        </div>
         <div class="ui divider"></div>
         <summary-chart-options [options]="getCurrentTabSummaryChartOptions()"
                                [disableCheckboxes]="getCurrentTabSummaryChartDisableCheckboxesOptions()"

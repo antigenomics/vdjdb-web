@@ -49,14 +49,9 @@ export class MultisampleSummaryChartComponent implements OnInit, OnDestroy {
   private colorByTags: boolean = false;
   private orderBySamples: boolean = true;
   private showOnlyShared: boolean = false;
+  private useLogScale: boolean = false;
 
-  public barChartConfiguration: IBarChartConfiguration = {
-    grid:      true,
-    container: { margin: { left: 60, right: 25, top: 100, bottom: 100 } },
-    tooltip:   {
-      value: MultisampleSummaryChartComponent.tooltipValueFn
-    }
-  };
+  public barChartConfiguration: IBarChartConfiguration = MultisampleSummaryChartComponent.configurationFor(false);
 
   @Input('tab')
   public set updateTab(tab: IMultisampleSummaryAnalysisTab) {
@@ -85,6 +80,18 @@ export class MultisampleSummaryChartComponent implements OnInit, OnDestroy {
 
   public set order(order: boolean) {
     this.orderBySamples = order;
+    this.updateStream(ChartEventType.UPDATE_DATA, this.currentTab.options);
+  }
+
+  public get logarithmic(): boolean {
+    return this.useLogScale;
+  }
+
+  public set logarithmic(log: boolean) {
+    this.useLogScale = log;
+    // A NEW object, not an edit to the existing one: the chart holds its own copy of the configuration
+    // it was built with, and only a changed input reference makes it take another.
+    this.barChartConfiguration = MultisampleSummaryChartComponent.configurationFor(log);
     this.updateStream(ChartEventType.UPDATE_DATA, this.currentTab.options);
   }
 
@@ -164,7 +171,7 @@ export class MultisampleSummaryChartComponent implements OnInit, OnDestroy {
     const valueConverter: (c: SummaryClonotypeCounter, owner: SummaryCounters) => number = (c, owner) => {
       let value = (options.isWeightedByReadCount ? c.frequency : c.unique);
       if (options.normalizeTypes[ 0 ].checked && c.databaseUnique > 0) { // db
-        value = value / c.databaseUnique;
+        value = value / c.databaseUnique * SummaryChartOptions.normalizeScale;
       }
       if (options.normalizeTypes[ 1 ].checked && c.unique > 0) { // matches
         value = value / c.unique;
@@ -172,7 +179,7 @@ export class MultisampleSummaryChartComponent implements OnInit, OnDestroy {
       if (options.normalizeTypes[ 2 ].checked) { // whole sample
         const sampleSize = owner.annotated.unique + owner.notFoundCounter.unique;
         if (sampleSize > 0) {
-          value = value / sampleSize;
+          value = value / sampleSize * SummaryChartOptions.normalizeScale;
         }
       }
       return value;
@@ -182,16 +189,19 @@ export class MultisampleSummaryChartComponent implements OnInit, OnDestroy {
       this.currentTab.counters.forEach((value: SummaryCounters, key: string) => {
         if (!this.isSampleHidden(key)) {
           const counters = value.counters.find((c) => c.name === currentCounterFieldName);
-          let values = counters.counters.map((c) => ({ name: c.field, value: valueConverter(c, value) } as IChartDataEntry)).sort((a, b) => {
-            return b.value - a.value;
-          });
+          let values = SummaryChartOptions.charted(counters.counters, currentCounterFieldName, options)
+            .map((c) => ({ name: c.field, value: valueConverter(c, value) } as IChartDataEntry))
+            .sort((a, b) => b.value - a.value);
           if (values.length > options.currentThresholdType.threshold) {
             values = values.slice(0, options.currentThresholdType.threshold);
           }
-          if (options.isNotFoundVisible) {
-            values.push({ name: 'Unannotated', value: valueConverter(value.notFoundCounter, value), color: 'rgba(40, 40, 40, 0.5)' });
-          }
-          if (counters) {
+          // A sample with nothing to plot gets no panel. A repertoire of the other chain matches no
+          // VDJdb record at all, and it stayed on the axis as an empty column for as long as it was in
+          // the tab - squeezing every sample that did match into the remaining width.
+          if (values.length !== 0) {
+            if (options.isNotFoundVisible) {
+              values.push({ name: 'Unannotated', value: valueConverter(value.notFoundCounter, value), color: 'rgba(40, 40, 40, 0.5)' });
+            }
             data.push({ name: key, values });
           }
         }
@@ -200,9 +210,10 @@ export class MultisampleSummaryChartComponent implements OnInit, OnDestroy {
       const fieldValues: Set<string> = new Set();
       this.currentTab.counters.forEach((summaryCounter: SummaryCounters) => {
         const fieldCounters = summaryCounter.counters.find((c) => c.name === currentCounterFieldName);
-        fieldCounters.counters.forEach((counter: SummaryClonotypeCounter) => {
-          fieldValues.add(counter.field);
-        });
+        SummaryChartOptions.charted(fieldCounters.counters, currentCounterFieldName, options)
+          .forEach((counter: SummaryClonotypeCounter) => {
+            fieldValues.add(counter.field);
+          });
       });
 
       Array.from(fieldValues.values()).forEach((value) => {
@@ -259,8 +270,10 @@ export class MultisampleSummaryChartComponent implements OnInit, OnDestroy {
         let localThresholdTypesAvailable = 1;
         const counters = value.counters.find((c) => c.name === currentFieldName);
         if (counters) {
+          // Against the thinned list, so "Top 20" offers itself only when twenty bars survive the cutoff.
+          const charted = SummaryChartOptions.charted(counters.counters, currentFieldName, this.currentTab.options);
           for (const type of SummaryChartOptions.thresholdTypes) {
-            if (counters.counters.length > type.threshold) {
+            if (charted.length > type.threshold) {
               localThresholdTypesAvailable += 1;
             }
           }
@@ -272,6 +285,15 @@ export class MultisampleSummaryChartComponent implements OnInit, OnDestroy {
     }
 
     this.changeDetector.detectChanges();
+  }
+
+  private static configurationFor(log: boolean): IBarChartConfiguration {
+    return {
+      grid:      true,
+      container: { margin: { left: 60, right: 25, top: 100, bottom: 100 } },
+      tooltip:   { value: MultisampleSummaryChartComponent.tooltipValueFn },
+      axis:      { y: { log } }
+    };
   }
 
   private static tooltipValueFn(d: IChartDataEntry): string {

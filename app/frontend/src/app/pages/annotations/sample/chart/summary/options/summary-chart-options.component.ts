@@ -15,6 +15,7 @@
  */
 
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
+import { SummaryClonotypeCounter } from 'pages/annotations/sample/table/intersection/summary/summary-clonotype-counter';
 
 export interface IThresholdType {
   title: string;
@@ -81,13 +82,47 @@ export class SummaryChartOptions {
     */
   public minEpitopeSize: number = 10;
 
+  /** Both size denominators are per 10^5, not per 1.
+    *
+    * A repertoire holds ~10^5 clonotypes and VDJdb holds ~10^5 records per well-studied epitope, so
+    * dividing by either drives the plotted value to ~10^-5 and by both to ~10^-10 - an axis of
+    * `0.000000010` that no reader can compare at a glance. Scaling each denominator back by 10^5 puts
+    * the axis in single digits without changing a single ratio between bars. The label under the
+    * checkboxes names the resulting unit; the number on the axis is meaningless without it. */
+  public static readonly normalizeScale: number = 1e5;
+
   public currentThresholdType: IThresholdType = SummaryChartOptions.thresholdTypes[ 0 ];
   public currentFieldIndex: number = 0;
   public isNotFoundVisible: boolean = false;
   public isWeightedByReadCount: boolean = true;
 
+  /**
+   * The counters worth plotting for a column.
+   *
+   * `databaseUnique` is how many distinct CDR3s VDJdb holds for that value, which is exactly what
+   * "epitope size" meant when this was applied server-side. Only the epitope column is thinned - the
+   * cutoff is meaningless against an MHC class or a species.
+   */
+  public static charted(counters: SummaryClonotypeCounter[], fieldName: string,
+                        options: SummaryChartOptions): SummaryClonotypeCounter[] {
+    if (fieldName !== 'antigen.epitope' || options.minEpitopeSize <= 0) {
+      return counters;
+    }
+    return counters.filter((c) => c.databaseUnique >= options.minEpitopeSize);
+  }
+
   public getCurrentSummaryFilterFieldType(): ISummaryFilterFieldType {
     return this.fieldTypes[ this.currentFieldIndex ];
+  }
+
+  /** What one unit on the value axis means under the current denominators, or '' when none apply.
+    * Only the two size denominators are scaled - dividing by the matched subset yields a fraction of
+    * order 1 that needs no help. */
+  public getNormalizeUnits(): string {
+    const parts = this.normalizeTypes
+      .filter((t) => t.checked)
+      .map((t) => t.name === 'matches' ? 'matched clonotype' : `10⁵ ${t.name === 'db' ? 'VDJdb records' : 'sample clonotypes'}`);
+    return parts.length === 0 ? '' : `per ${parts.join(' per ')}`;
   }
 
   public updateCurrentThresholdType(availableThresholdTypes: number): void {
@@ -136,6 +171,10 @@ export class SummaryChartOptionsComponent {
     // count and blank the chart.
     this.options.minEpitopeSize = (size === null || isNaN(size) || size < 0) ? 0 : size;
     this.onOptionsChange.emit(this.options);
+  }
+
+  public getNormalizeUnits(): string {
+    return this.options.getNormalizeUnits();
   }
 
   public isEpitopeFieldSelected(): boolean {

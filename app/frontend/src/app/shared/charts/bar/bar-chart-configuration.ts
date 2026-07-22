@@ -23,6 +23,9 @@ export interface IBarChartAxisConfiguration {
   dy?: string;
   tickFormat?: string;
   ticksCount?: number;
+  /** Log-scale the value axis. Only honoured by the grouped bar chart, and only when the data holds at
+    * least one positive value - a log domain cannot contain zero. */
+  log?: boolean;
 }
 
 function createDefaultAxisConfiguration(): IBarChartAxisConfiguration {
