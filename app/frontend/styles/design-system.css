@@ -365,11 +365,31 @@ a:hover { color: var(--ds-teal); }
    all. The shade is on the strip rather than the link, so it is present in both states. */
 /* `:not(.sidebar-toggle)` because the anchor inside carries `item sidebar-bars` too — without it the
    shade and the border would be painted twice, once nested inside the other. */
+/* Flex, because the chevron lives in a `.right.menu` and Semantic only gives that its `margin-left:
+   auto` inside a HORIZONTAL menu. In a vertical one it fell to the strip's bottom-left and the padding
+   below it drew the strip taller than it needed to be, so the glyph sat on the bottom border rather
+   than in the middle of the band. Laying the strip out here puts it where it belongs and lets the
+   height follow the control instead of the other way round. */
 .ui.sidebar.menu .item.sidebar-bars:not(.sidebar-toggle) {
   background-color: rgba(0, 0, 0, 0.05);
   border-bottom: 1px solid var(--ds-hairline);
-  padding-top: 0.5em;
-  padding-bottom: 0.5em;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 !important;
+  min-height: 2.6em;
+}
+.ui.sidebar.menu .item.sidebar-bars:not(.sidebar-toggle) > .right.menu {
+  display: flex;
+  align-items: center;
+  margin: 0 !important;
+}
+/* The toggle is the whole height of the strip, so the hit target is the band and not just the glyph. */
+.ui.sidebar.menu .sidebar-toggle {
+  display: flex !important;
+  align-items: center;
+  align-self: stretch;
+  padding: 0 0.75em !important;
 }
 .ui.sidebar.menu .item.sidebar-bars:not(.sidebar-toggle):hover {
   background-color: rgba(0, 0, 0, 0.08);
@@ -619,4 +639,13 @@ tr.paired-row > td { color: #525252; }
 .summary-options-heading {
   margin-top: 1.4em !important;
   margin-bottom: 0.5em !important;
+}
+
+/* Names the unit the value axis is in once the size denominators are applied. Quiet - it is a caption
+   for the checkboxes above it, not another control. */
+.summary-options-units {
+  margin-top: 0.6em;
+  font-size: 0.85em;
+  line-height: 1.35;
+  color: var(--ds-muted);
 }

@@ -56,6 +56,9 @@ export class NavigationBarComponent implements OnInit, OnDestroy {
   // asking for the menu again, and until they do, leaving it shut is what they asked for by scrolling.
   public scrollDismissed: boolean = false;
 
+  /** Mirrors `hidden` onto `body` for anything anchored to the top of the window that is not inside
+    * this component - today the annotations sidebar (`semantic-extensions.css`). */
+  private static readonly hiddenBodyClass: string = 'navbar-hidden';
   private static readonly topRevealZone: number = 60;
   private static readonly scrollHideThreshold: number = 120;
   private static readonly scrollDelta: number = 6;
@@ -103,6 +106,10 @@ export class NavigationBarComponent implements OnInit, OnDestroy {
 
   private setHidden(value: boolean): void {
     if (this.hidden !== value) {
+      // Published on `body` as well, because the bar is not the only thing anchored to the top of the
+      // window: the annotations sidebar sits directly under it and has to travel with it, and there is
+      // no component relationship between the two to bind through.
+      document.body.classList.toggle(NavigationBarComponent.hiddenBodyClass, value);
       this.ngZone.run(() => {
         this.hidden = value;
         this.changeDetector.markForCheck();
@@ -156,6 +163,7 @@ export class NavigationBarComponent implements OnInit, OnDestroy {
   }
 
   public ngOnDestroy(): void {
+    document.body.classList.remove(NavigationBarComponent.hiddenBodyClass);
     window.removeEventListener('scroll', this.scrollHandler);
     window.removeEventListener('mousemove', this.mouseMoveHandler);
     if (this.routerSubscription) {
