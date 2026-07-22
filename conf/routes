@@ -12,7 +12,10 @@ GET         /self-antigen                               backend.controllers.Appl
 GET         /overview                                   backend.controllers.Application.index
 GET         /motif                                      backend.controllers.Application.index
 GET         /structure                                  backend.controllers.Application.index
-GET         /refsearch                                  backend.controllers.Application.index
+# Refsearch is withdrawn: without this the app shell is not served for /refsearch, so a direct visit
+# or a stale bookmark gets a 404 rather than an empty page. NOTE the separate refsearch backend the
+# page talked to lives at /refsearch/ (trailing slash) in another container and is NOT affected by
+# this - taking that down is a compose/proxy change, not an application one.
 GET         /links                                      backend.controllers.Application.index
 GET         /credits                                    backend.controllers.Application.index
 GET         /about                                      backend.controllers.Application.index

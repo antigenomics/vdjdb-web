@@ -33,7 +33,8 @@ const routes: Routes = [
     { path: 'self-antigen', component: SelfAntigenActionComponent },
     { path: 'annotations', loadChildren: 'pages/annotations/annotations.module#AnnotationsPageModule' },
     { path: 'motif', loadChildren: 'pages/motif/motif.module#MotifPageModule' },
-    { path: 'refsearch', loadChildren: 'pages/refsearch/refsearch.module#RefSearchPageModule' },
+    // Refsearch is withdrawn. The route is gone rather than guarded so webpack stops emitting the
+    // lazy chunk for it at all; the page's sources stay in the tree, unreferenced.
     { path: 'structure', loadChildren: 'pages/structure/structure.module#StructurePageModule' },
     { path: 'about', loadChildren: 'pages/about/about.module#AboutPageModule' },
     { path: 'links', loadChildren: 'pages/links/links.module#LinksPageModule' },
