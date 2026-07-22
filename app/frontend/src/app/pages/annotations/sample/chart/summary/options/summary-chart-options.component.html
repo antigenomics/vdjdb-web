@@ -55,6 +55,9 @@
     <input type="checkbox" [ngModel]="type.checked" (ngModelChange)="normalizeTypeChangeFn($event, type)">
     <label>{{ type.title }}</label>
 </div>
+<!-- The size denominators are scaled by 10^5 each so the axis reads in single digits instead of
+     0.000000010; without naming the unit the number on the axis means nothing. -->
+<div class="summary-options-units" *ngIf="getNormalizeUnits()">Axis reads {{ getNormalizeUnits() }}</div>
 
 <ng-container *ngIf="isThresholdTypesAvailable()">
     <h4 class="summary-options-heading">Show</h4>

@@ -46,13 +46,31 @@
   margin-top: 10px !important;
 }
 
-/* Starts where the page content starts, not where the navbar ends: the sidebar is position:fixed, so
-   it escapes the `margin-top` that pushes the first content card down, and anchoring it to the bar
-   alone left it 35px above that card. `height` has to shrink by the same amount, since a fixed
-   height:100% element offset by `top` alone runs off the bottom by exactly the offset. */
+/* Flush against the navbar, and it travels with it.
+   This used to sit at `--ds-content-offset` so its top edge lined up with the first content card. That
+   holds only at scroll 0: the card scrolls away and the fixed panel does not, so the alignment it was
+   bought for lasts one moment and the 35px strip of background above the panel - which made it read as
+   a detached floating box - lasts the whole session. Anchoring it to the bar instead means there is
+   never a gap. `--ds-navbar-height` rather than a literal so the two cannot drift apart.
+   `height` shrinks by the same amount, since a fixed height:100% element offset by `top` alone runs
+   off the bottom by exactly the offset.
+   The transition matches the bar's own (`.ui.top.fixed.menu`) so the two move as one surface. */
 .ui.sidebar.with.navbar {
-  top: var(--ds-content-offset) !important;
-  height: calc(100% - var(--ds-content-offset)) !important;
+  top: var(--ds-navbar-height) !important;
+  height: calc(100% - var(--ds-navbar-height)) !important;
+  transition: top 0.4s cubic-bezier(0.16, 1, 0.3, 1), height 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* The bar auto-hides on scroll-down; `NavigationBarComponent.setHidden` mirrors that onto `body` so
+   the sidebar can take the space it vacates instead of leaving a strip of background where it was.
+   Desktop only, and the media query is what scopes it: below the breakpoint the sidebar is `static`
+   and capped at `45vh`, and this rule is one class more specific than the one that does that, so
+   unscoped it would win inside the narrow block too and stretch the panel to the full page height. */
+@media (min-width: 769px) {
+  body.navbar-hidden .ui.sidebar.with.navbar {
+    top: 0 !important;
+    height: 100% !important;
+  }
 }
 
 .ui.sidebar.menu .item .header .sort.icon {

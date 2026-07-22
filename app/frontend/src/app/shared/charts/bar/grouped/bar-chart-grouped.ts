@@ -15,7 +15,7 @@
  */
 
 import { NgZone } from '@angular/core';
-import { ScaleBand, ScaleLinear, ScaleOrdinal } from 'd3-scale';
+import { ScaleBand, ScaleContinuousNumeric, ScaleOrdinal } from 'd3-scale';
 import { BaseType, event as D3CurrentEvent } from 'd3-selection';
 import * as d3 from 'external/d3';
 import { createDefaultBarChartConfiguration, IBarChartConfiguration } from 'shared/charts/bar/bar-chart-configuration';
@@ -38,6 +38,9 @@ interface IGroupAxisType {
   x: ScaleBand<string>;
   xAxis: any;
 }
+
+/** Linear or log - both are continuous numeric scales, and the bars only ever call the scale. */
+type ValueScale = ScaleContinuousNumeric<number, number>;
 
 type GroupsSelectionType = d3.Selection<BaseType, IChartGroupedDataEntry, BaseType, any>;
 type GroupsTransitionType = d3.Transition<BaseType, IChartGroupedDataEntry, BaseType, any>;
@@ -172,7 +175,7 @@ export class BarChartGrouped extends Chart<IChartGroupedDataEntry, IBarChartConf
       } as IGroupBarData)));
   }
 
-  private setBarAttributes(height: number, y: ScaleLinear<number, number>, bars: BarsSelectionType | BarsTransitionType): void {
+  private setBarAttributes(height: number, y: ValueScale, bars: BarsSelectionType | BarsTransitionType): void {
     bars.attr('class', 'bar')
       .attr('x', (d) => d.x(d.data.name))
       .attr('y', (d) => y(d.data.value))
@@ -186,10 +189,21 @@ export class BarChartGrouped extends Chart<IChartGroupedDataEntry, IBarChartConf
       .attr('transform', (d) => `translate(${mainX(d.name)},0)`);
   }
 
-  private createYAxis(width: number, height: number, data: IChartGroupedDataEntry[]): { y: ScaleLinear<number, number>, yAxis: any } {
-    const y = d3.scaleLinear()
-      .domain([ 0, d3.max(data, (d) => d3.max(d.values.map((v) => v.value))) ])
-      .range([ height, 0 ]);
+  private createYAxis(width: number, height: number, data: IChartGroupedDataEntry[]): { y: ValueScale, yAxis: any } {
+    const values: number[] = [];
+    data.forEach((d) => d.values.forEach((v) => values.push(v.value)));
+    // `|| 1` because every sample can be hidden or drop out under the epitope cutoff, and `d3.max` of
+    // nothing is undefined - which makes the whole domain NaN and the axis vanish.
+    const max = d3.max(values) || 1;
+    const positive = values.filter((v) => v > 0);
+
+    // A log domain cannot contain zero, so the floor is a decade below the smallest bar rather than 0.
+    // Without that gap the shortest bar would be exactly at the baseline and so have no height at all.
+    // `clamp` keeps zero-valued bars (and unannotated, when shown) pinned to the baseline instead of
+    // running off to -Infinity.
+    const y: ValueScale = (this.configuration.axis.y.log && positive.length !== 0)
+      ? d3.scaleLog().domain([ d3.min(positive) / 10, max ]).range([ height, 0 ]).clamp(true)
+      : d3.scaleLinear().domain([ 0, max ]).range([ height, 0 ]);
 
     const yAxis = d3.axisLeft(y);
     if (this.configuration.grid) {

@@ -17,8 +17,9 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import {
   ActivationEnd, ActivationStart, ChildActivationEnd, ChildActivationStart,
-  GuardsCheckEnd, GuardsCheckStart, NavigationEnd, NavigationStart, ResolveEnd,
-  ResolveStart, RouteConfigLoadEnd, RouteConfigLoadStart, Router, RoutesRecognized
+  GuardsCheckEnd, GuardsCheckStart, NavigationCancel, NavigationEnd, NavigationError,
+  NavigationStart, ResolveEnd, ResolveStart, RouteConfigLoadEnd, RouteConfigLoadStart,
+  Router, RoutesRecognized
 } from '@angular/router';
 import { Subscription } from 'rxjs';
 
@@ -74,16 +75,26 @@ export class LoaderComponent implements OnInit, OnDestroy {
         this._progress = 90; // tslint:disable-line:no-magic-numbers
       } else if (event instanceof NavigationEnd) {
         this._progress = 100; // tslint:disable-line:no-magic-numbers
-        this._duration = 0;
-        this._visibility = 0.0;
-        this._previousTimeout = window.setTimeout(() => {
-          this._isLoading = false;
-          this._progress = 0;
-          this.changeDetector.detectChanges();
-        }, LoaderComponent.animationDuration);
+        this.finish();
+      } else if (event instanceof NavigationCancel || event instanceof NavigationError) {
+        // A navigation that never reaches NavigationEnd used to leave the bar pinned at 70-85% for the
+        // rest of the session, with nothing on screen to say the click had failed. Both outcomes are
+        // reachable in normal use: a guard redirecting, or - the one that bit here - an already-open
+        // tab asking for a lazy chunk that a deploy has since removed from `public/bundles`.
+        this.finish();
       }
       this.changeDetector.detectChanges();
     });
+  }
+
+  private finish(): void {
+    this._duration = 0;
+    this._visibility = 0.0;
+    this._previousTimeout = window.setTimeout(() => {
+      this._isLoading = false;
+      this._progress = 0;
+      this.changeDetector.detectChanges();
+    }, LoaderComponent.animationDuration);
   }
 
   public get visibility(): string {

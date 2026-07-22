@@ -29,8 +29,18 @@ import { BarChartGrouped } from './bar-chart-grouped';
 export class BarChartGroupedComponent implements AfterViewInit, OnDestroy {
   private chart: BarChartGrouped;
 
+  private currentConfiguration: IBarChartConfiguration = createDefaultBarChartConfiguration();
+
+  /** A setter rather than a plain field because the chart keeps its own deep copy of whatever it was
+    * built with (`Chart.configure`), so a later edit to the bound object would never reach it. Pass a
+    * NEW object to change anything after creation - mutating the existing one does not fire this. */
   @Input('configuration')
-  public configuration: IBarChartConfiguration = createDefaultBarChartConfiguration();
+  public set configuration(configuration: IBarChartConfiguration) {
+    this.currentConfiguration = configuration;
+    if (this.chart !== undefined) {
+      this.chart.configure(configuration);
+    }
+  }
 
   @Input('stream')
   public stream: ChartInputGroupedStreamType;
@@ -42,7 +52,7 @@ export class BarChartGroupedComponent implements AfterViewInit, OnDestroy {
 
   public ngAfterViewInit(): void {
     const configuration = createDefaultBarChartConfiguration();
-    Configuration.extend(configuration, this.configuration);
+    Configuration.extend(configuration, this.currentConfiguration);
 
     const container = new ChartContainer(this.containerElementRef, configuration.container);
     this.chart = new BarChartGrouped(configuration, container, this.stream, this.ngZone);
