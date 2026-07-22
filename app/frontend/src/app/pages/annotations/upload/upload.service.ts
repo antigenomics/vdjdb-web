@@ -245,7 +245,7 @@ export class UploadService {
                 file.setErrorStatus('Validating failed', FileItemStatusErrorType.VALIDATION_FAILED);
               }
             } else if (status.error !== undefined) {
-              file.setErrorStatus(status.error, FileItemStatusErrorType.INTERNAL_ERROR);
+              this.reportUploadError(file, status.error);
             }
             this.fireUploadingEndedEvent();
           } else {
@@ -253,12 +253,25 @@ export class UploadService {
           }
         },
         error: (err: UploadStatus) => {
-          file.setErrorStatus(err.error, FileItemStatusErrorType.INTERNAL_ERROR);
+          this.reportUploadError(file, err.error);
           this.fireUploadingEndedEvent();
         }
       });
 
     }
+  }
+
+  /** The row's status cell was the only place a rejection appeared, and that table is `single line`,
+   * so anything longer than a couple of words is pushed off the side of a scroll container instead of
+   * wrapping. The server's refusals are whole sentences with numbers in them — "Daily upload limit
+   * reached (100 uploads per day for this account)", "Max files count limit have been exceeded" — and
+   * a limit the user cannot read is a limit they will hit again. Annotation refusals already raise a
+   * toast; this makes upload behave the same way. The label stays, so the failing row is still marked.
+   */
+  private reportUploadError(file: FileItem, error: string): void {
+    const message = error && error.length > 0 ? error : 'Upload failed';
+    file.setErrorStatus(message, FileItemStatusErrorType.INTERNAL_ERROR);
+    this.notifications.error('Upload', message);
   }
 
   public isUploadedExist(): boolean {
