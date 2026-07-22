@@ -49,11 +49,9 @@ class EmailsService @Inject()(mailerClient: MailerClient, conf: Configuration) {
     * when a message is accepted but never delivered.
     */
   private def send(to: String, subject: String, body: String): Unit = {
-    val from = conf.getOptional[String]("play.mailer.from").filter(_.nonEmpty)
+    val from = senderAddress
     from match {
       case None =>
-        // conf.get[String] throws on a null `from`, which would surface as a 500 rather than a mail
-        // problem. Say what is actually wrong instead.
         logger.error(s"Not sending '$subject' to $to: play.mailer.from is not configured")
       case Some(sender) =>
         try {
@@ -65,4 +63,17 @@ class EmailsService @Inject()(mailerClient: MailerClient, conf: Configuration) {
     }
   }
 
+  /** `play.mailer.from` ships as `null` and was null in production for years, so "not configured" is
+    * the case this has to handle well.
+    *
+    * `Configuration.getOptional` does not handle it: it gates on `hasPathOrNull`, so a null value is
+    * reported as present and then read with `getString`, which throws `ConfigException.Null`. The
+    * throw lands inside `send`, so the caller sees a failed future rather than the explicit "from is
+    * not configured" line below — the exact diagnosis this method exists to produce. `hasPath` is
+    * false for a null, which is the behaviour the name `getOptional` implies but does not have. */
+  private def senderAddress: Option[String] = {
+    val path = "play.mailer.from"
+    if (conf.underlying.hasPath(path)) Option(conf.underlying.getString(path)).map(_.trim).filter(_.nonEmpty)
+    else None
+  }
 }

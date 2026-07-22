@@ -79,6 +79,11 @@ GET         /authorization/logout                       backend.controllers.Auth
 GET         /account/details                            backend.controllers.Account.detailsPage
 POST        /account/details/changePassword             backend.controllers.Account.changePassword
 
+# Mailjet Event API callbacks. Posted by Mailjet, not by a browser, so CSRF does not apply and the
+# secret in the path is the only thing gating it. 404s unless application.mailer.eventsToken is set.
++ nocsrf
+POST        /api/mailjet/events/:token                  backend.controllers.MailjetEventsAPI.events(token)
+
 #Annotations API
 + nocsrf
 POST        /api/annotations/upload                     backend.controllers.AnnotationsAPI.uploadFile
