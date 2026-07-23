@@ -158,10 +158,29 @@ uploads (`v_call`, `j_call`, `junction_aa`, `cdr3_aa`). HLA at the data's own re
   run prints up to 20 per-sample lines per sweep; read one before flipping `dryRun`. On production 1,375
   of 1,443 registered samples are already outside the window, so switching it on without the floor is a
   near-total wipe, not housekeeping.
-- **Mailjet.** The account was blocked upstream; a support ticket was filed. Once unblocked: rotate the
-  API key, then set `VDJDB_MAILJET_EVENTS_TOKEN` in `.env` and register the Event API callback so the app
-  can tell a delivered message from an accepted-then-dropped one (`MailjetEventsAPI`, currently disabled
-  and returning 404 by design when the token is unset).
+- **E-mail is Brevo now, and it works.** Mailjet is gone — the account was blocked upstream and never
+  came back. Verified sending on 23 July 2026: `Sent 'VDJdb account reset password' from
+  noreply@vdjdb.com (message id: …)` in the app log means the SMTP transaction completed, so AUTH
+  succeeded. The pieces:
+  - `smtp-relay.brevo.com:587`, `tls = yes`, `ssl = no`, `from = "noreply@vdjdb.com"`, set in
+    `~/vdjdb_publish/conf/prod/application.conf`. **Credentials are not in that file** — it reads
+    `${?VDJDB_MAILER_USER}` / `${?VDJDB_MAILER_PASSWORD}`, which `docker-compose.yml` injects from
+    `~/vdjdb_publish/.env` (mode 600). The login is `<id>@smtp-brevo.com`, not an e-mail address; the
+    password is the Brevo SMTP key. Both halves must change together when rotating — a stale login
+    next to a fresh key fails with 535 and looks like a bad key.
+  - **DNS lives on the apex, not on a subdomain.** `brevo-code` TXT plus `brevo1`/`brevo2`
+    `._domainkey` CNAMEs are all on `vdjdb.com`, so the authenticated sending domain is `vdjdb.com`
+    and `from` must stay `@vdjdb.com`. `mail.vdjdb.com` is only the branded-links host (CNAME to
+    `mail-vdjdb-com.brand.brevosend.com`) — it is *not* a sending identity, and pointing `from` at it
+    would send from a name with no DKIM. SPF is `v=spf1 include:spf.brevo.com ~all`; DMARC is `p=none`
+    with Brevo's rua. DMARC passes on DKIM alignment.
+  - `MailjetEventsAPI` and `VDJDB_MAILJET_EVENTS_TOKEN` are **dead**, not pending. The token is unset,
+    so the route 404s by design and the startup log says `Mailjet event callbacks: disabled`. Brevo's
+    webhook format is different; building the equivalent is a new piece of work, not a resumption.
+  - `EmailsService` logs `Sent '…'` on a completed transaction regardless of what the recipient sees,
+    so "sent" in the log is not "delivered" and definitely not "the link works". If click tracking is
+    ever enabled, check the actual `href` in a received message — the verification mail is one button
+    and nothing downstream would notice it pointing somewhere dead.
 - **Deferred from the July 2026 audit**, each deliberately not bundled into a fix:
   - Unpaged Browse search materialises the whole result set on the request thread
     (`DatabaseAPI.scala`). Capping it is a behaviour change that could break existing API clients.
