@@ -60,6 +60,21 @@ class SessionActionSpec extends ActionsTestSpec with Results {
             redirectLocation(result) shouldEqual Some(SessionAction.loginLocation.url)
         }
 
+        "honour a per-route redirect target in authorizedOnlyOr" taggedAs ActionsTestTag in {
+            // What sends /annotations to its own explanation page rather than to a bare login form.
+            val result = createResult(
+                SessionAction.authorizedOnlyOr(SessionAction.annotationSignInLocation), "SessionAction#unauthorized")._1
+            status(result) shouldEqual SEE_OTHER
+            redirectLocation(result) shouldEqual Some(SessionAction.annotationSignInLocation.url)
+        }
+
+        "still let authorized users through authorizedOnlyOr" taggedAs ActionsTestTag in {
+            val result = createResult(
+                SessionAction.authorizedOnlyOr(SessionAction.annotationSignInLocation),
+                fixtures.authorizedUser.sessionToken)._1
+            status(result) shouldEqual OK
+        }
+
         "update cookies for authorized users" taggedAs ActionsTestTag in {
             val result = createResult(SessionAction.unauthorizedOnly, fixtures.authorizedUser.sessionToken)
             result._1.map { r =>

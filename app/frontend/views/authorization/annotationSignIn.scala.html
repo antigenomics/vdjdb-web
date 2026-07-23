@@ -1,0 +1,34 @@
+@import play.api.Environment
+@import backend.utils.analytics.Analytics
+@()(implicit environment: Environment, analytics: Analytics, request: Request[_], messages: Messages)
+
+@*
+ * Shown instead of dropping an unauthenticated visitor straight onto the login form.
+ *
+ * Annotation is the one gated area of the site, and the reason is not obvious from outside it: a
+ * sample is a file the server keeps, so it has to belong to something. A bare login form does not say
+ * that - it asks for credentials to a thing the visitor has not been told they need. This page says
+ * why, then offers the two moves that actually apply: leave, or go and get an account.
+ *@
+
+@frontend.views.html.authorization.auth_main(messages("annotations.signin.title")) {
+    <div class="ui middle aligned center aligned auth grid">
+        <div class="column left aligned">
+            @frontend.views.html.authorization.forms.brand()
+            <h3 class="ui attached center aligned header">@messages("annotations.signin.header")</h3>
+            <div class="ui attached segment teal padded">
+                <p>@messages("annotations.signin.why")</p>
+                <p>@messages("annotations.signin.options")</p>
+                <div class="ui divider"></div>
+                <div class="ui two fluid buttons">
+                    <a class="ui basic button" href="@backend.controllers.routes.Application.index()" rel="noopener">
+                        @messages("annotations.signin.back")
+                    </a>
+                    <a class="ui teal button" href="@backend.controllers.routes.Authorization.temporaryLogin()" rel="noopener">
+                        @messages("annotations.signin.continue")
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+}

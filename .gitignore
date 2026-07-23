@@ -72,3 +72,4 @@ MAINTENANCE.md
 
 # Fetched by tools/fetch_control.sh, not committed - see SOURCES.md
 /conf/control/
+tmp/

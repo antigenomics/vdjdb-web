@@ -11,7 +11,8 @@
     <div class="ui middle aligned center aligned auth grid">
         <div class="column left aligned">
         @helper.form(action = backend.controllers.routes.Authorization.onReset(token), args = 'class -> "ui form", 'id -> "reset") {
-            <h3 class="ui top attached header">@messages("authorization.forms.reset.reset")</h3>
+            @frontend.views.html.authorization.forms.brand()
+            <h3 class="ui attached header">@messages("authorization.forms.reset.reset")</h3>
             <div class="ui attached segment teal padded">
                 @if(form.hasGlobalErrors) {
                     @frontend.views.html.authorization.forms.formErrors(form.globalErrors)

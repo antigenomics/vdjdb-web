@@ -1,4 +1,11 @@
 authorization.forms.login.login = Login
+authorization.forms.login.title = Log in to the database annotate tool
+annotations.signin.title = VDJdb: annotation needs an account
+annotations.signin.header = Annotation needs an account
+annotations.signin.why = Annotating matches a repertoire sample you upload against VDJdb. The sample is a file the server keeps between sessions, along with its results, so it has to belong to an account.
+annotations.signin.options = A token takes a few seconds and needs no e-mail address. Or choose Demo on the login page to explore example samples without signing up at all.
+annotations.signin.back = Back to VDJdb
+annotations.signin.continue = Continue to login
 authorization.forms.login.withEmail = With email
 authorization.forms.login.withToken = With token
 authorization.forms.login.demo = Demo

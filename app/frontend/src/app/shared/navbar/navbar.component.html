@@ -49,20 +49,14 @@
             </div>
         </a>
 
-        <!-- Two lines and a link, not a four-line info box. This panel is inside a navbar dropdown, and
-             on a phone the mobile rules take it out of position:absolute and list it inline - so every
-             line here is pushed into the open menu, between "Browse" and "Motif". The old copy also
-             told the reader to click the Login menu "to the right", which is only true on a desktop:
-             stacked, it is below. Naming the destination instead of its screen position works in both. -->
-        <a class="ui dropdown item" tabindex="0" *ngIf="!isLogged()">
+        <!-- A plain link to a page, not a hover panel. The explanation of why annotation is gated was
+             living in a navbar dropdown, which is the worst place for it: it is unreachable by touch
+             without a tap that also navigates, and on a phone the mobile rules take the panel out of
+             position:absolute and splice all of its copy inline between "Browse" and "Motif". The same
+             two sentences now live on /annotations/signin, which the guard on /annotations also
+             redirects to, so the explanation is in one place whichever way the visitor arrives. -->
+        <a route="/annotations/signin" external="true" class="item" *ngIf="!isLogged()">
             Annotation
-            <div class="menu fade element slow padded">
-                <div class="ui info message navbar-login-hint">
-                    <p>Annotating needs an account &mdash; uploaded samples are stored against it.</p>
-                    <p><a route="/authorization/login" external="true">Log in or get a token</a>, or choose
-                        <b>Demo</b> there to explore example samples.</p>
-                </div>
-            </div>
         </a>
 
         <a route="/annotations/info" class="item" *ngIf="isLogged()" [class.active]="isActive('/annotations')">

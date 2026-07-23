@@ -76,7 +76,8 @@ class Application @Inject()(ws: WSClient, assets: Assets, configuration: Configu
     }
   }
 
-  def authorizedIndex(route: String): Action[AnyContent] = (browserDetectionAction andThen userRequestAction andThen SessionAction.authorizedOnly) { implicit request =>
+  def authorizedIndex(route: String): Action[AnyContent] =
+    (browserDetectionAction andThen userRequestAction andThen SessionAction.authorizedOnlyOr(SessionAction.annotationSignInLocation)) { implicit request =>
     SessionAction.updateCookies(Ok(frontend.views.html.index()))
       .withHeaders(CACHE_CONTROL -> ShellCacheControl)
   }

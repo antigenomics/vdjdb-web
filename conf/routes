@@ -23,6 +23,9 @@ GET         /no-script                                  backend.controllers.Appl
 GET         /robots.txt                                 backend.controllers.Application.robots
 GET         /buildInfo                                  backend.controllers.Application.buildInfo
 
+# Ahead of the wildcard below, which would otherwise swallow it and bounce a logged-out visitor
+# straight back here. Play matches routes in file order.
+GET         /annotations/signin                         backend.controllers.Authorization.annotationSignIn
 GET         /annotations                                controllers.Default.redirect(to = "/annotations/info")
 GET         /annotations/*route                         backend.controllers.Application.authorizedIndex(route: String)
 

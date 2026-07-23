@@ -11,7 +11,8 @@
     <div class="ui middle aligned center aligned auth grid">
         <div class="column left aligned">
         @helper.form(action = backend.controllers.routes.Authorization.onSignup(), args = 'class -> "ui form", 'id -> "signup") {
-            <h3 class="ui top attached header">@messages("authorization.forms.signup.signup")</h3>
+            @frontend.views.html.authorization.forms.brand()
+            <h3 class="ui attached header">@messages("authorization.forms.signup.signup")</h3>
             <div class="ui attached segment teal padded">
                 <div class="ui fluid buttons">
                     <a class="ui basic button" href="@backend.controllers.routes.Authorization.temporarySignup()" rel="noopener">

@@ -1,0 +1,15 @@
+@*
+ * The VDJdb mark, as the first card in the attached stack every auth page builds.
+ *
+ * A `top attached segment` rather than a free-floating image above the grid: `.auth.grid` is
+ * `height: 100%` and `middle aligned`, so anything placed as its sibling pins to the top of the
+ * viewport while the card stays centred, leaving a stranded logo and a lake of whitespace between
+ * the two. Inside the stack it travels with the card at every height. Pages that include this must
+ * demote their own `<h3>` from `ui top attached header` to `ui attached header`, or Semantic rounds
+ * two corners in the middle of the stack.
+ *@
+<div class="ui top attached segment auth-brand">
+    <a href="@backend.controllers.routes.Application.index()" rel="noopener">
+        <img class="auth-brand__logo" src="@routes.Assets.versioned("images/vdjdb_logo.svg")" alt="VDJdb">
+    </a>
+</div>
