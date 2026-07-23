@@ -236,15 +236,21 @@ object Motifs {
     * has to be identical on both sides or a Turkish-locale server would stop matching anything with an
     * `I` in it.
     *
-    * The MHC columns are part of the key and have to be. The same rearrangement is curated against more
-    * than one restriction, and a cluster is built per restriction: `CASSMIPDMNTEAFF` / TRBV19 / TRBJ1-1
-    * against RPIIRPATL is a TCREMP cluster member under HLA-B*07:02 and a TCRNET one under HLA-B*08:01.
-    * Without MHC both rows collapse to one key, so each record inherits the other's membership — the
-    * B*08:01 record came back from a "TCREMP only" search it is not a member of. Measured against the
-    * production database, dropping MHC from the key mis-attributed 3,190 records to TCRNET and 9,711 to
-    * TCREMP, about 5.7% of it, in both directions. Nothing legitimate is lost by including them: within
-    * either members file the MHC columns are functionally determined by the six fields above, so the
-    * distinct-key count is identical with and without.
+    * The MHC columns are part of the key and have to be, because a peptide is not one antigen: the same
+    * sequence presented by two alleles is two pMHC complexes, clustered separately. `RPIIRPATL` is
+    * curated in VDJdb under both HLA-B*07:02 (97 records) and HLA-B*08:01 (162), and the two tools
+    * clustered different halves of it — every TCREMP cluster for that epitope is B*07:02, the one TCRNET
+    * cluster is B*08:01. The cluster ids are even reused across the files: `H.B.RPIIRPATL.1` names a
+    * B*08:01 cluster in one and a B*07:02 cluster in the other. Drop MHC from the key and those two
+    * collapse, so `CASSMIPDMNTEAFF` / TRBV19 / TRBJ1-1 — recorded in VDJdb only under B*08:01 — comes
+    * back from a "TCREMP only" search as a member of a B*07:02 cluster it has nothing to do with.
+    *
+    * This was once removed again on the grounds that `mhc.a` is constant within every cluster and so
+    * must be a label on the cluster rather than a fact about the member. It is constant for the reason
+    * above — clustering runs per restriction — and the member's own MHC agrees with its VDJdb record in
+    * 94.7% of TCRNET rows and 90.0% of TCREMP rows. Where it disagrees the members file is describing a
+    * record under a restriction VDJdb does not give it, and no badge is the honest answer; matching it
+    * to a differently-restricted record is not.
     *
     * `None` when any component is blank — an incomplete key would collide with every other incomplete
     * key and match records it has no business matching.
