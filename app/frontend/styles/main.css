@@ -90,6 +90,21 @@ body {
   max-width: 450px;
 }
 
+/* The mark at the head of every auth card (authorization/forms/brand.scala.html). Sized against the
+   450px cap on .auth.grid > .column rather than the viewport, because the logo lives inside the card
+   now, not above it. */
+.auth-brand {
+  text-align: center;
+  padding: 1.5rem 1rem 1rem;
+}
+
+.auth-brand__logo {
+  width: 180px;
+  max-width: 70%;
+  height: auto;
+  display: inline-block;
+}
+
 .account.grid {
   height: 100%;
   width: 100%;

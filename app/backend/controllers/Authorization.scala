@@ -51,6 +51,15 @@ class Authorization @Inject()(cc: ControllerComponents, messagesApi: MessagesApi
   final private val logger        = LoggerFactory.getLogger(this.getClass)
   implicit val messages: Messages = messagesApi.preferred(Seq(Lang.defaultLang))
 
+  /** The "you need an account for this" page that stands in front of /annotations.
+    *
+    * `unauthorizedOnly` so that someone who is already signed in and lands here from a stale link or
+    * an old bookmark is not shown a sign-in prompt for an account they have.
+    */
+  def annotationSignIn: Action[AnyContent] = (userRequestAction andThen SessionAction.unauthorizedOnly) { implicit request =>
+    Ok(frontend.views.html.authorization.annotationSignIn())
+  }
+
   def login: Action[AnyContent] = (userRequestAction andThen SessionAction.unauthorizedOnly) { implicit request =>
     Ok(frontend.views.html.authorization.login(LoginForm.loginFormMapping))
   }

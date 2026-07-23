@@ -39,14 +39,26 @@ object SessionAction {
   /** Shown instead of a temporary account's login, which is the raw access token. */
   final val TEMPORARY_USER_DISPLAY_NAME = "Temporary user"
 
-  def authorizedOnly(implicit ec: ExecutionContext): ActionFilter[UserRequest] = new ActionFilter[UserRequest] {
+  /** Where an unauthenticated request for the annotation area is sent.
+    *
+    * A rung below `loginLocation`, not a replacement for it. The account pages and logout are only
+    * ever reached by someone who already knows they have an account, so a login form is the whole
+    * answer there. /annotations is the opposite: it is linked from the navbar of a public database,
+    * and a bare credential prompt does not explain why the one page that asks for a file also asks
+    * who you are. That page does, and offers the login as its second button.
+    */
+  final val annotationSignInLocation = backend.controllers.routes.Authorization.annotationSignIn()
+
+  def authorizedOnly(implicit ec: ExecutionContext): ActionFilter[UserRequest] = authorizedOnlyOr(loginLocation)
+
+  def authorizedOnlyOr(target: Call)(implicit ec: ExecutionContext): ActionFilter[UserRequest] = new ActionFilter[UserRequest] {
     override protected def executionContext: ExecutionContext = ec
 
     override protected def filter[A](request: UserRequest[A]): Future[Option[Result]] = Future.successful {
       if (request.authorized) {
         None
       } else {
-        Some(Results.Redirect(loginLocation))
+        Some(Results.Redirect(target))
       }
     }
   }

@@ -11,7 +11,8 @@
 @frontend.views.html.authorization.auth_main("VDJdb: login") {
     <div class="ui middle aligned center aligned auth grid">
         <div class="column left aligned">
-            <h3 class="ui top attached header">@messages("authorization.forms.login.login")</h3>
+            @frontend.views.html.authorization.forms.brand()
+            <h3 class="ui attached center aligned header">@messages("authorization.forms.login.title")</h3>
             <div class="ui attached segment teal padded">
                 <div class="ui fluid buttons">
                     <a class="ui button" href="@backend.controllers.routes.Authorization.temporaryLogin()" rel="noopener">

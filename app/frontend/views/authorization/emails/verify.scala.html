@@ -80,7 +80,7 @@
 <table border="0" cellpadding="0" cellspacing="0" width="100%">
     <!-- LOGO -->
     <tr>
-        <td bgcolor="#48af75" align="center">
+        <td bgcolor="#16a085" align="center">
             <!--[if (gte mso 9)|(IE)]>
             <table align="center" border="0" cellspacing="0" cellpadding="0" width="600">
             <tr>
@@ -88,7 +88,7 @@
             <![endif]-->
             <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px;" >
                 <tr>
-                    <td align="center" valign="top" style="padding: 40px 10px 40px 10px;">
+                    <td align="center" valign="top" style="padding: 14px 10px 14px 10px;">
                     </td>
                 </tr>
             </table>
@@ -101,7 +101,7 @@
     </tr>
     <!-- HERO -->
     <tr>
-        <td bgcolor="#48af75" align="center" style="padding: 0px 10px 0px 10px;">
+        <td bgcolor="#16a085" align="center" style="padding: 0px 10px 0px 10px;">
             <!--[if (gte mso 9)|(IE)]>
             <table align="center" border="0" cellspacing="0" cellpadding="0" width="600">
             <tr>
@@ -109,8 +109,18 @@
             <![endif]-->
             <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px;" >
                 <tr>
-                    <td bgcolor="#ffffff" align="center" valign="top" style="padding: 40px 20px 20px 20px; border-radius: 4px 4px 0px 0px; color: #111111; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 48px; font-weight: 400; letter-spacing: 4px; line-height: 48px;">
-                      <h1 style="font-size: 48px; font-weight: 400; margin: 0; color: #666666;">Welcome!</h1>
+                    <td bgcolor="#ffffff" align="center" valign="top" style="padding: 32px 20px 20px 20px; border-radius: 4px 4px 0px 0px; color: #111111; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 48px; font-weight: 400; letter-spacing: 4px; line-height: 48px;">
+                      @* PNG, not the SVG the logo ships as: Gmail strips <img> pointing at an SVG
+                       * outright and Outlook's Word renderer cannot draw one either, so the SVG would
+                       * be an empty box for most of the people who receive this. Same artwork,
+                       * rasterised at 520px and served at 240.
+                       *
+                       * Absolute vdjdb.com URL because an email has no document base to resolve
+                       * against. Hardcoding the host is safe here specifically: the repo config ships
+                       * `verification.method = "console"`, so a message is only ever sent from
+                       * production, where the host is always vdjdb.com. *@
+                      <a href="https://vdjdb.com" target="_blank" style="text-decoration: none;"><img src="https://vdjdb.com/assets/images/vdjdb_logo_email.png" width="240" height="170" alt="VDJdb" style="display: block; border: 0; width: 240px; max-width: 240px; height: auto; margin: 0 auto 8px auto;"></a>
+                      <h1 style="font-size: 44px; font-weight: 400; margin: 0; color: #34495e;">Welcome!</h1>
                     </td>
                 </tr>
             </table>
@@ -149,7 +159,7 @@
                       <td bgcolor="#ffffff" align="center" style="padding: 20px 30px 20px 30px;">
                         <table border="0" cellspacing="0" cellpadding="0">
                           <tr>
-                              <td align="center" style="border-radius: 3px;" bgcolor="#48af75"><a href="@link" target="_blank" style="font-size: 16px; font-family: Helvetica, Arial, sans-serif; color: #ffffff; text-decoration: none; color: #ffffff; text-decoration: none; padding: 10px 20px; border-radius: 2px; border: 1px solid #48af75; display: inline-block;">Confirm Account</a></td>
+                              <td align="center" style="border-radius: 3px;" bgcolor="#16a085"><a href="@link" target="_blank" style="font-size: 16px; font-family: Helvetica, Arial, sans-serif; color: #ffffff; text-decoration: none; color: #ffffff; text-decoration: none; padding: 10px 20px; border-radius: 2px; border: 1px solid #16a085; display: inline-block;">Confirm Account</a></td>
                           </tr>
                         </table>
                       </td>
@@ -174,7 +184,8 @@
                         <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px;">
                             <tr>
                                 <td bgcolor="#f4f4f4" align="left" style="padding: 15px 30px 0px 0px; color: #aaaaaa; font-family: &apos;Lato&apos;, Helvetica, Arial, sans-serif; font-size: 12px; font-weight: 400; line-height: 18px;">
-                                    <p style="margin: 0;">If you have any questions, contact us on <a href="https://github.com/antigenomics/vdjdb-web/issues" target="_blank" style="color: #48af75;">GitHub</a>.</p>
+                                    <p style="margin: 0;">Something wrong, or a question? Open an issue on <a href="https://github.com/antigenomics/vdjdb-web/issues" target="_blank" style="color: #16a085;">GitHub</a>.</p>
+                                    <p style="margin: 6px 0 0 0;">VDJdb is built by <a href="https://isalgo.dev" target="_blank" style="color: #16a085;">isalgo laboratory</a>.</p>
                                 </td>
                             </tr>
                         </table>
