@@ -54,7 +54,7 @@
              directly above its own column at every width. -->
         <div class="ui three column stackable top aligned grid">
             <div class="column">
-                <div class="filters label" style="margin-bottom: 6px;"><b>Validation</b></div>
+                <div class="filters label" style="margin-bottom: 6px; text-align: left;"><b>Validation</b></div>
                 <div class="ui checkbox">
                     <input type="checkbox" [checked]="meta.reliability.valSameStudy" (change)="meta.reliability.valSameStudy = $event.target.checked">
                     <label>Same study</label>
@@ -71,7 +71,7 @@
                 </div>
             </div>
             <div class="column">
-                <div class="filters label" style="margin-bottom: 6px;"><b>Structure</b></div>
+                <div class="filters label" style="margin-bottom: 6px; text-align: left;"><b>Structure</b></div>
                 <div class="ui checkbox">
                     <input type="checkbox" [checked]="meta.reliability.structNative" (change)="meta.reliability.structNative = $event.target.checked">
                     <label>Native</label>
@@ -88,7 +88,7 @@
                 </div>
             </div>
             <div class="column">
-                <div class="filters label" style="margin-bottom: 6px;"><b>Motif</b></div>
+                <div class="filters label" style="margin-bottom: 6px; text-align: left;"><b>Motif</b></div>
                 <div class="ui checkbox">
                     <input type="checkbox" [checked]="meta.reliability.motifTcrnet" (change)="meta.reliability.motifTcrnet = $event.target.checked">
                     <label>TCRNET</label>
