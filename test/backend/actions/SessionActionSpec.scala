@@ -52,10 +52,12 @@ class SessionActionSpec extends ActionsTestSpec with Results {
             status(result) shouldEqual OK
         }
 
-        "not allow to connect for unauthorized user in authorizedOnly method" taggedAs ActionsTestTag in {
+        "send unauthorized users to the login page in authorizedOnly method" taggedAs ActionsTestTag in {
             val result = createResult(SessionAction.authorizedOnly, "SessionAction#unauthorized")._1
             status(result) shouldEqual SEE_OTHER
-            redirectLocation(result) shouldEqual Some(SessionAction.redirectLoadtion.url)
+            // The login page, not the index. Pinned because "redirect somewhere" passed for years while
+            // the somewhere was the home page, which tells a user who just opened /annotations nothing.
+            redirectLocation(result) shouldEqual Some(SessionAction.loginLocation.url)
         }
 
         "update cookies for authorized users" taggedAs ActionsTestTag in {

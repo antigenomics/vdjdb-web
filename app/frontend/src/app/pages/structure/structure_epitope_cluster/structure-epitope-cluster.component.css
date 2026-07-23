@@ -17,7 +17,7 @@
 .download-members-icon {
     margin-top: 10px;
     float: right;
-    opacity: 0.4 !important;
+    opacity: 0.75 !important;
     cursor: pointer;
     -webkit-transition: opacity 0.2s ease-in-out !important;
     -moz-transition: opacity 0.2s ease-in-out !important;
@@ -26,11 +26,11 @@
 }
 
 .ui.header > .content.with-options > .download-members-icon {
-    opacity: 0.4 !important;
+    opacity: 0.75 !important;
 }
 
 .ui.header > .content.with-options:hover > .download-members-icon {
-    opacity: 0.9 !important;
+    opacity: 1 !important;
 }
 
 .structure-epitope-cluster__header {

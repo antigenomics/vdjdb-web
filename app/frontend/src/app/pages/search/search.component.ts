@@ -107,6 +107,11 @@ export class SearchPageComponent implements OnInit, OnDestroy {
 
   public reset(): void {
     this.filters.setDefault();
+    // Re-run the search, don't just clear the form. Without this the panel says "no filters" and the
+    // "Defaults changed" marker disappears while the table below still holds the previous filtered
+    // page and its "Found:" count - so the two halves of the screen state different things and the
+    // number people actually quote is the stale one. Costs the same one search as "Refresh table".
+    this.table.update();
   }
 
   public isLoading(): boolean {

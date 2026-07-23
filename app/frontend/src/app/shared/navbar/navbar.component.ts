@@ -158,8 +158,25 @@ export class NavigationBarComponent implements OnInit, OnDestroy {
       .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd))
       .subscribe((event) => {
         this.currentUrl = this.stripQuery(event.urlAfterRedirects || event.url);
+        this.closeMobileMenu();
         this.changeDetector.markForCheck();
       });
+  }
+
+  /** Close the narrow-screen menu after an in-app navigation.
+    *
+    * The toggle is a CSS `:checked` disclosure with no component state behind it, which is what makes
+    * it work without any script - but it also means nothing unchecks it. Tapping "Motif" routes to the
+    * motif page and leaves the full-height menu sitting on top of it, so the page the user asked for
+    * is hidden behind the menu they used to ask for it, and they have to find the burger again to see
+    * it. The `external="true"` links reload the document and reset the checkbox on their own; these
+    * are the ones that don't.
+    */
+  private closeMobileMenu(): void {
+    const toggle = document.getElementById('navbar-menu-toggle') as HTMLInputElement;
+    if (toggle !== null) {
+      toggle.checked = false;
+    }
   }
 
   public ngOnDestroy(): void {

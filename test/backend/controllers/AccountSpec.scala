@@ -36,7 +36,7 @@ class AccountSpec extends ControllersTestSpec {
             val result = controller.detailsPage.apply(request.withCSRFToken)
 
             status(result) shouldEqual SEE_OTHER
-            redirectLocation(result) shouldEqual Some(SessionAction.redirectLoadtion.url)
+            redirectLocation(result) shouldEqual Some(SessionAction.loginLocation.url)
         }
 
         "render details page for logged user" taggedAs ControllersTestTag in {
@@ -90,7 +90,7 @@ class AccountSpec extends ControllersTestSpec {
             val result = controller.changePassword.apply(request)
 
             status(result) shouldEqual SEE_OTHER
-            redirectLocation(result) shouldEqual Some(SessionAction.redirectLoadtion.url)
+            redirectLocation(result) shouldEqual Some(SessionAction.loginLocation.url)
         }
 
         "forbid to reset with non-equal passwords" taggedAs ControllersTestTag in {

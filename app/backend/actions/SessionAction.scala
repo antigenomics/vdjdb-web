@@ -26,6 +26,16 @@ import scala.concurrent.{ExecutionContext, Future}
 object SessionAction {
   final val redirectLoadtion = backend.controllers.routes.Application.index()
 
+  /** Where an unauthenticated request to a gated page is sent.
+    *
+    * Not the home page. Everything behind `authorizedOnly` is reached by a user who has already
+    * decided to do something that needs an account - open /annotations, view their account, upload a
+    * sample - so answering with the front page is a dead end that explains nothing: the address bar
+    * changes, no message appears, and the obvious reading is that the link is broken. This is the same
+    * page the navbar's "Login" points at, so the user lands where they can actually continue.
+    */
+  final val loginLocation = backend.controllers.routes.Authorization.temporaryLogin()
+
   /** Shown instead of a temporary account's login, which is the raw access token. */
   final val TEMPORARY_USER_DISPLAY_NAME = "Temporary user"
 
@@ -36,7 +46,7 @@ object SessionAction {
       if (request.authorized) {
         None
       } else {
-        Some(Results.Redirect(redirectLoadtion))
+        Some(Results.Redirect(loginLocation))
       }
     }
   }
