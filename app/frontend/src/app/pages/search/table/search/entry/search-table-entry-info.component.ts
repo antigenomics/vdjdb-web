@@ -293,6 +293,12 @@ export class SearchTableEntryInfoComponent extends TableEntry {
           params.set('mhc_a', motifGene);
           params.set('epitope_seq', epitopeSeq);
           params.set('cid', methodCid);
+          // The clonotype travels with the link so the motif page can re-resolve the cluster when the
+          // reader switches algorithm. `cid` alone is method-specific and means nothing to the other
+          // one, which is why switching used to widen the selection to the whole epitope.
+          params.set('cdr3', cdr3);
+          params.set('v_segm', vSegm);
+          params.set('j_segm', jSegm);
           if (method === 'tcremp') { params.set('method', 'tcremp'); }
           link = `/motif?${params.toString()}`;
         }

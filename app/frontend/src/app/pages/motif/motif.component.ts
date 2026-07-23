@@ -28,6 +28,7 @@ import { MotifMethod, MotifSearchState, MotifService } from 'pages/motif/motif.s
 import { fromEvent, Observable, Subscription, timer } from 'rxjs';
 import { debounce, take } from 'rxjs/operators';
 import { ContentWrapperService } from '../../content-wrapper.service';
+import { SearchAvailabilityService } from 'pages/search/table/search/search-availability.service';
 import { EpitopeBridgeService } from '../../epitope-bridge.service';
 
 @Component({
@@ -55,7 +56,7 @@ export class MotifPageComponent implements OnInit, OnDestroy {
 
   constructor(private motifService: MotifService, private contentWrapper: ContentWrapperService,
               private route: ActivatedRoute, private router: Router, private cdr: ChangeDetectorRef,
-              private epitopeBridge: EpitopeBridgeService) {
+              private epitopeBridge: EpitopeBridgeService, private availability: SearchAvailabilityService) {
     this.metadata = motifService.getMetadata();
     this.selected = motifService.getSelected();
     this.epitopes = motifService.getEpitopes();
@@ -196,8 +197,12 @@ export class MotifPageComponent implements OnInit, OnDestroy {
         if (resolved.length === 0) {
           this.router.navigate([], { queryParams: { method }, replaceUrl: true });
         } else if (resolved.length === 1) {
-          this.router.navigate([], { queryParams: resolved[0], replaceUrl: true });
-          this.motifService.filterByUrl(this.toEpitopeFilter(resolved[0]));
+          // Arrived from a record's motif badge? Then the reader is looking at one cluster, not the
+          // whole epitope, and switching algorithm should land on that record's cluster under the new
+          // one. `cid` is method-specific and cannot be carried across, so it is re-resolved from the
+          // clonotype the badge put in the URL. Without this the switch silently widened the selection
+          // to every motif for the epitope.
+          this.selectResolvedEpitope(resolved[0], method);
         } else {
           // Multiple epitopes can't live in the URL — turn the mode on and append
           // each one, mirroring how the tree builds a multi-selection.
@@ -267,4 +272,30 @@ export class MotifPageComponent implements OnInit, OnDestroy {
     return this.motifService.getSearchState() === MotifSearchState.SEARCH_CDR3;
   }
 
+  /** Navigate to one resolved epitope under `method`, keeping the record's own cluster when the page
+    * was opened from a search-result badge (which carries the clonotype in the URL). */
+  private selectResolvedEpitope(resolved: { [key: string]: string }, method: MotifMethod): void {
+    const params = this.route.snapshot.queryParamMap;
+    const cdr3 = params.get('cdr3') || '';
+    const vSegm = params.get('v_segm') || '';
+    const jSegm = params.get('j_segm') || '';
+    const filter = this.toEpitopeFilter(resolved);
+
+    if (!cdr3 || !vSegm || !jSegm) {
+      this.router.navigate([], { queryParams: resolved, replaceUrl: true });
+      this.motifService.filterByUrl(filter);
+      return;
+    }
+
+    this.availability.getMotifCid(filter.species, filter.tcrChain, filter.epitopeSeq, cdr3, vSegm, jSegm, method)
+      .catch(() => undefined)
+      .then((cid) => {
+        // No cluster for this clonotype under the new method is a real answer - the record is a member
+        // of one algorithm's clustering and not the other's - so fall back to the epitope rather than
+        // leaving the page on the previous method's selection.
+        this.router.navigate([], { queryParams: { ...resolved, cdr3, v_segm: vSegm, j_segm: jSegm, cid: cid || null }, replaceUrl: true });
+        this.motifService.filterByUrl(cid ? { ...filter, cid } : filter);
+        this.cdr.markForCheck();
+      });
+  }
 }

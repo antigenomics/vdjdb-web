@@ -236,48 +236,52 @@ object Motifs {
     * has to be identical on both sides or a Turkish-locale server would stop matching anything with an
     * `I` in it.
     *
-    * The MHC columns are deliberately NOT in the key, and this has been tried: joining on them looks
-    * obviously right and is wrong. In both members files `mhc.a` is constant across every row of a
-    * cluster — 0 of 1,123 TCRNET clusters and 0 of 1,929 TCREMP clusters carry more than one — so it is
-    * a label on the cluster, not a fact about the member's own VDJdb record, and the two can disagree.
-    * `CASSMIPDMNTEAFF` / TRBV19 / TRBJ1-1 against RPIIRPATL is a member of TCRNET cluster
-    * `H.B.RPIIRPATL.1`, labelled HLA-B*08:01, and of the TCREMP cluster of the same name labelled
-    * HLA-B*07:02, while VDJdb records that rearrangement only under B*08:01. Adding MHC to the key
-    * dropped it from TCREMP entirely, and with it about 10% of TCREMP and 6% of TCRNET memberships
-    * across the database — real memberships whose record simply carries a different restriction from
-    * the cluster's label.
+    * The MHC columns are part of the key and have to be, because a peptide is not one antigen: the same
+    * sequence presented by two alleles is two pMHC complexes, clustered separately. `RPIIRPATL` is
+    * curated in VDJdb under both HLA-B*07:02 (97 records) and HLA-B*08:01 (162), and the two tools
+    * clustered different halves of it — every TCREMP cluster for that epitope is B*07:02, the one TCRNET
+    * cluster is B*08:01. The cluster ids are even reused across the files: `H.B.RPIIRPATL.1` names a
+    * B*08:01 cluster in one and a B*07:02 cluster in the other. Drop MHC from the key and those two
+    * collapse, so `CASSMIPDMNTEAFF` / TRBV19 / TRBJ1-1 — recorded in VDJdb only under B*08:01 — comes
+    * back from a "TCREMP only" search as a member of a B*07:02 cluster it has nothing to do with.
     *
-    * So a rearrangement appearing under both motif methods with different HLA labels is the upstream
-    * data saying two clusters contain it, not this key conflating them.
+    * This was once removed again on the grounds that `mhc.a` is constant within every cluster and so
+    * must be a label on the cluster rather than a fact about the member. It is constant for the reason
+    * above — clustering runs per restriction — and the member's own MHC agrees with its VDJdb record in
+    * 94.7% of TCRNET rows and 90.0% of TCREMP rows. Where it disagrees the members file is describing a
+    * record under a restriction VDJdb does not give it, and no badge is the honest answer; matching it
+    * to a differently-restricted record is not.
     *
     * `None` when any component is blank — an incomplete key would collide with every other incomplete
     * key and match records it has no business matching.
     */
   def motifKey(row: Row): Option[String] = {
-    val parts = Seq("species", "gene", "antigen.epitope", "cdr3", "v.segm", "j.segm")
+    val parts = Motifs.MotifKeyColumns
       .map(column => Option(row.getAt(column)).map(_.getValue.trim.toLowerCase(Locale.ROOT)).getOrElse(""))
     if (parts.forall(_.nonEmpty)) Some(parts.mkString("|")) else None
   }
 
+  /** The VDJdb column names of the join key, in order. The members file spells the CDR3 `cdr3aa`;
+    * [[buildCidLookupIndex]] substitutes that one name and otherwise reads these in this order, so the
+    * two halves cannot drift apart in either membership or ordering. */
+  private[motifs] final val MotifKeyColumns: Seq[String] =
+    Seq("species", "gene", "antigen.epitope", "cdr3", "v.segm", "j.segm", "mhc.a", "mhc.b", "mhc.class")
+
   def buildCidLookupIndex(members: Table): Map[String, String] = {
-    val required = Seq("species", "gene", "antigen.epitope", "cdr3aa", "v.segm", "j.segm", "cid")
+    val memberColumns = MotifKeyColumns.map(c => if (c == "cdr3") "cdr3aa" else c)
+    val required = memberColumns :+ "cid"
     if (!required.forall(members.columnNames().contains)) {
       return Map.empty
     }
-    val speciesCol = members.stringColumn("species")
-    val geneCol = members.stringColumn("gene")
-    val epitopeCol = members.stringColumn("antigen.epitope")
-    val cdr3Col = members.stringColumn("cdr3aa")
-    val vsegmCol = members.stringColumn("v.segm")
-    val jsegmCol = members.stringColumn("j.segm")
+    // Resolved from the shared list rather than named one by one, so a column added to the key cannot
+    // be added on only one side of the join.
+    val keyCols = memberColumns.map(members.stringColumn)
     val cidCol = members.stringColumn("cid")
     val builder = mutable.HashMap.empty[String, String]
     var idx = 0
     val total = members.rowCount()
     while (idx < total) {
-      val parts = Seq(speciesCol.get(idx), geneCol.get(idx), epitopeCol.get(idx),
-        cdr3Col.get(idx), vsegmCol.get(idx), jsegmCol.get(idx))
-        .map(v => Option(v).map(_.trim).getOrElse("").toLowerCase(Locale.ROOT))
+      val parts = keyCols.map(col => Option(col.get(idx)).map(_.trim).getOrElse("").toLowerCase(Locale.ROOT))
       val cid = Option(cidCol.get(idx)).map(_.trim).getOrElse("")
       if (parts.forall(_.nonEmpty) && cid.nonEmpty) {
         val key = parts.mkString("|")
