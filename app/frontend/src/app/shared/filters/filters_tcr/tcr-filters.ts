@@ -146,6 +146,14 @@ export class TCRGeneralFilter implements FilterInterface {
 }
 
 export class TCRcdr3Filter implements FilterInterface {
+  // The neighbourhood the server walks grows combinatorially in the *total* number of edits, so the
+  // total is what has to be capped - per-field maxima alone still allow 5+3+3. These mirror
+  // DatabaseFilters on the backend, which is the authoritative check; these only save a round trip.
+  public static readonly maxSubstitutions: number = 5;
+  public static readonly maxInsertions: number = 3;
+  public static readonly maxDeletions: number = 3;
+  public static readonly maxTotalEdits: number = 5;
+
   public pattern: string;
   public patternSubstring: boolean;
   public patternValid: boolean;
@@ -207,6 +215,9 @@ export class TCRcdr3Filter implements FilterInterface {
     if (!this.isLevenshteinValid()) {
       errors.push('CDR3 pattern is not valid in Levenshtein distance filter');
       return;
+    } else if (this.getTotalEdits() > TCRcdr3Filter.maxTotalEdits) {
+      errors.push(`Levenshtein distance filter allows no more than ${TCRcdr3Filter.maxTotalEdits} edits in total`);
+      return;
     } else if (this.levenshtein.length !== 0) {
       filters.push(new Filter('cdr3', FilterType.SEQUENCE, false,
         `${this.levenshtein}:${this.levenshteinSubstitutions}:${this.levenshteinInsertions}:${this.levenshteinDeletions}`));
@@ -233,5 +244,19 @@ export class TCRcdr3Filter implements FilterInterface {
 
   public isLevenshteinValid(): boolean {
     return this.levenshteinValid;
+  }
+
+  public getTotalEdits(): number {
+    return this.levenshteinSubstitutions + this.levenshteinInsertions + this.levenshteinDeletions;
+  }
+
+  public isEditBudgetExhausted(): boolean {
+    return this.getTotalEdits() >= TCRcdr3Filter.maxTotalEdits;
+  }
+
+  /** How much a single field may still be raised: whichever runs out first, its own ceiling or the
+   * shared budget. */
+  public getRemainingBudgetFor(current: number, fieldMax: number): number {
+    return Math.min(fieldMax, current + TCRcdr3Filter.maxTotalEdits - this.getTotalEdits());
   }
 }

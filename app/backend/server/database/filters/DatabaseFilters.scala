@@ -24,11 +24,60 @@ import com.antigenomics.vdjdb.text._
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable.ListBuffer
+import scala.util.Try
 
 case class DatabaseFilters(text: util.ArrayList[TextFilter], sequence: util.ArrayList[SequenceFilter], options: Seq[(String, Boolean)],
                           validationModes: Set[String], motifModes: Set[String], structureModes: Set[String], warnings: Seq[String])
 
 object DatabaseFilters {
+  // Ceilings on a fuzzy cdr3/epitope search. They live here because both entry points -- the HTTP
+  // action and the websocket actor -- build their filters through createFromRequest, so this is the
+  // only place that sees every search before it reaches the database.
+  //
+  // The total is the number that matters. milib walks an edit-distance neighbourhood whose size
+  // grows combinatorially in the total number of edits, and nothing downstream can stop it once it
+  // starts: vdjmatch exposes no cancellation and BranchingEnumerator never checks the interrupt
+  // flag, so an over-wide scope pins a core until the process restarts. Capping `total` alone is
+  // enough to bound the walk, and unlike clamping each field on its own it cannot produce an
+  // incoherent scope -- AnnotationsSearchScopeHammingDistance.sanitize documents why that mattered.
+  final val MaxSubstitutions: Int = 5
+  final val MaxInsertions: Int = 3
+  final val MaxDeletions: Int = 3
+  final val MaxTotalEdits: Int = 5
+
+  final val MalformedSequenceFilterMessage: String =
+    "A sequence filter could not be read and was ignored. Expected '<query>:<substitutions>:<insertions>:<deletions>'."
+  final val BudgetExceededMessage: String =
+    s"A sequence filter asked for more than $MaxTotalEdits edits and was narrowed to $MaxTotalEdits. " +
+      s"At most $MaxSubstitutions substitutions, $MaxInsertions insertions and $MaxDeletions deletions are allowed, " +
+      s"and no more than $MaxTotalEdits edits in total."
+
+  private def clamp(value: Int, max: Int): Int = math.max(0, math.min(value, max))
+
+  /** Parses the colon-packed `"<query>:<subs>:<ins>:<del>"` value and bounds it. Returns None and
+    * records a warning on anything it cannot read -- a malformed value used to throw out of here
+    * and surface as a 500. */
+  private def parseSequenceFilter(value: String, warnings: ListBuffer[String]): Option[(String, SearchScope)] = {
+    val values = value.split(":")
+    Try((values(0), values(1).trim.toInt, values(2).trim.toInt, values(3).trim.toInt)).toOption match {
+      case None =>
+        warnings += MalformedSequenceFilterMessage
+        None
+      case Some((query, substitutions, insertions, deletions)) =>
+        val boundedSubstitutions = clamp(substitutions, MaxSubstitutions)
+        val boundedInsertions = clamp(insertions, MaxInsertions)
+        val boundedDeletions = clamp(deletions, MaxDeletions)
+        val requested = boundedSubstitutions + boundedInsertions + boundedDeletions
+        val total = math.min(requested, MaxTotalEdits)
+        if (boundedSubstitutions != substitutions || boundedInsertions != insertions ||
+            boundedDeletions != deletions || total != requested) {
+          warnings += BudgetExceededMessage
+        }
+        // SearchScope takes deletions before insertions; DatabaseFiltersSpec pins that mapping.
+        Some((query, new SearchScope(boundedSubstitutions, boundedDeletions, boundedInsertions, total)))
+    }
+  }
+
   private def parseModes(request: List[DatabaseFilterRequest], column: String): Set[String] =
     request.filter(f => f.column == column && !f.negative)
       .flatMap(_.value.split(",").map(_.trim).filter(_.nonEmpty))
@@ -54,14 +103,9 @@ object DatabaseFilters {
           case DatabaseFilterType.Range => text.add(new MinMaxFilter(filter.column, filter.value.split(":")(0).toInt, filter.value.split(":")(1).toInt))
           case DatabaseFilterType.Sequence =>
             if (filter.column.startsWith("cdr3") || filter.column.startsWith("antigen.epitope")) {
-              val values = filter.value.split(":")
-              val query = values(0)
-              val substitutions = values(1).toInt
-              val insertions = values(2).toInt
-              val deletions = values(3).toInt
-              val total = substitutions + insertions + deletions
-              val scope: SearchScope = new SearchScope(substitutions, deletions, insertions, total)
-              sequence.add(new SequenceFilter(filter.column, query, scope, DummyAlignmentScoring.INSTANCE))
+              parseSequenceFilter(filter.value, warnings).foreach { case (query, scope) =>
+                sequence.add(new SequenceFilter(filter.column, query, scope, DummyAlignmentScoring.INSTANCE))
+              }
             } else {
               warnings += "Sequence filters can only be applied to 'cdr3' or 'antigen.epitope'"
             }

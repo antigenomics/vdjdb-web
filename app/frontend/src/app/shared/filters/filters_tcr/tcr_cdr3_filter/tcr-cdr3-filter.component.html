@@ -18,7 +18,7 @@
 <p>Sequence and pattern filter supports 20 amino acids, X for an unknown amino acid and amino acid groups specified with '[.]'. For example 'CASSL[ASR]PGATNEKLFF' will search
 for 'CASSLaPGATNEKLFF', 'CASSLsPGATNEKLFF' and 'CASSLrPGATNEKLFF'. By default the search expects full match, which can be disabled by checking the substring checkbox.</p>
 <p>Levenshtein distance filter expects complete sequence with no wildcards, and lets you specify the number of substitutions, insertions and deletions allowed during the
-search.</p>">
+search. No more than 5 edits in total, since the search cost grows combinatorially with that number.</p>">
 </filters-header>
 <div class="ui grid middle aligned">
     <div class="three wide column filters label"><b>Sequence or pattern</b></div>
@@ -45,22 +45,35 @@ search.</p>">
         </div>
     </div>
     <div class="three wide column"></div>
-    <div class="four wide column">
+    <!-- The `max` attributes are bound to the remaining shared budget, not to the per-field ceiling,
+         so the browser's own spinner arrows stop where the budget does. -->
+    <div class="three wide column">
         Substitutions
         <div class="ui fluid input">
-            <input min="0" max="5" type="number" [ngModel]="tcr.cdr3.levenshteinSubstitutions" (ngModelChange)="checkRangeInput('levenshteinSubstitutions', $event, 0, 5)">
+            <input min="0" [attr.max]="tcr.cdr3.getRemainingBudgetFor(tcr.cdr3.levenshteinSubstitutions, 5)" type="number"
+                   [ngModel]="tcr.cdr3.levenshteinSubstitutions" (ngModelChange)="checkRangeInput('levenshteinSubstitutions', $event, 0, 5)">
         </div>
     </div>
-    <div class="four wide column">
+    <div class="three wide column">
         Insertions
         <div class="ui fluid input">
-            <input min="0" max="3" type="number" [ngModel]="tcr.cdr3.levenshteinInsertions" (ngModelChange)="checkRangeInput('levenshteinInsertions', $event, 0, 3)">
+            <input min="0" [attr.max]="tcr.cdr3.getRemainingBudgetFor(tcr.cdr3.levenshteinInsertions, 3)" type="number"
+                   [ngModel]="tcr.cdr3.levenshteinInsertions" (ngModelChange)="checkRangeInput('levenshteinInsertions', $event, 0, 3)">
         </div>
     </div>
-    <div class="four wide column">
+    <div class="three wide column">
         Deletions
         <div class="ui fluid input">
-            <input min="0" max="3" type="number" [ngModel]="tcr.cdr3.levenshteinDeletions" (ngModelChange)="checkRangeInput('levenshteinDeletions', $event, 0, 3)">
+            <input min="0" [attr.max]="tcr.cdr3.getRemainingBudgetFor(tcr.cdr3.levenshteinDeletions, 3)" type="number"
+                   [ngModel]="tcr.cdr3.levenshteinDeletions" (ngModelChange)="checkRangeInput('levenshteinDeletions', $event, 0, 3)">
+        </div>
+    </div>
+    <div class="three wide column" header="Total edits"
+         popup="No more than 5 edits maximum, counting substitutions, insertions and deletions together. A wider search grows
+combinatorially and can take minutes to answer.">
+        <b>Total</b>
+        <div class="ui fluid input" [ngClass]="{'error':tcr.cdr3.isEditBudgetExhausted()}">
+            <input type="text" readonly [value]="tcr.cdr3.getTotalEdits()">
         </div>
     </div>
 </div>

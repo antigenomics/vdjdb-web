@@ -25,43 +25,46 @@ export class TCRcdr3FilterComponent {
   constructor(public tcr: TCRFiltersService, private changeDetector: ChangeDetectorRef) {}
 
   public checkRangeInput(key: string, input: number, min: number, max: number): void {
-    switch (key) {
-      case 'levenshteinSubstitutions':
-        this.tcr.cdr3.levenshteinSubstitutions = -1;
-        break;
-      case 'levenshteinInsertions':
-        this.tcr.cdr3.levenshteinInsertions = -1;
-        break;
-      case 'levenshteinDeletions':
-        this.tcr.cdr3.levenshteinDeletions = -1;
-        break;
-      default:
-        break;
-    }
+    // Read the field before the repaint dance below overwrites it: the budget this field may still
+    // claim depends on what the other two already hold.
+    const effectiveMax = Math.max(min, this.tcr.cdr3.getRemainingBudgetFor(this.readField(key), max));
+
+    // Bounce through -1 so Angular always sees a change. [ngModel] here is one-way, so when the
+    // clamped value equals the one already in the model there is no diff and the text the user
+    // typed (a 9, say) stays in the DOM.
+    this.writeField(key, -1);
     this.changeDetector.detectChanges();
+
     let value = 0;
     if (isNaN(Number(input)) || input === null || input === undefined) {
       value = min;
     } else if (input < min) {
       value = min;
-    } else if (input > max) {
-      value = max;
+    } else if (input > effectiveMax) {
+      value = effectiveMax;
     } else {
       value = input;
     }
-    switch (key) {
-      case 'levenshteinSubstitutions':
-        this.tcr.cdr3.levenshteinSubstitutions = value;
-        break;
-      case 'levenshteinInsertions':
-        this.tcr.cdr3.levenshteinInsertions = value;
-        break;
-      case 'levenshteinDeletions':
-        this.tcr.cdr3.levenshteinDeletions = value;
-        break;
-      default:
-        break;
-    }
+
+    this.writeField(key, value);
     this.changeDetector.detectChanges();
+  }
+
+  private readField(key: string): number {
+    switch (key) {
+      case 'levenshteinSubstitutions': return this.tcr.cdr3.levenshteinSubstitutions;
+      case 'levenshteinInsertions':    return this.tcr.cdr3.levenshteinInsertions;
+      case 'levenshteinDeletions':     return this.tcr.cdr3.levenshteinDeletions;
+      default:                         return 0;
+    }
+  }
+
+  private writeField(key: string, value: number): void {
+    switch (key) {
+      case 'levenshteinSubstitutions': this.tcr.cdr3.levenshteinSubstitutions = value; break;
+      case 'levenshteinInsertions':    this.tcr.cdr3.levenshteinInsertions = value; break;
+      case 'levenshteinDeletions':     this.tcr.cdr3.levenshteinDeletions = value; break;
+      default: break;
+    }
   }
 }

@@ -34,8 +34,9 @@ class DatabaseFiltersSpec extends BaseTestSpecWithApplication {
                 DatabaseFilterRequest("cdr3", DatabaseFilterType.Pattern, negative = true, "CASLAPGATNEKLF"),
                 DatabaseFilterRequest("vdjdb.score", DatabaseFilterType.Level, negative = true, "2"),
                 DatabaseFilterRequest("cdr3", DatabaseFilterType.Range, negative = false, "12:13"),
-                DatabaseFilterRequest("cdr3", DatabaseFilterType.Sequence, negative = false, "CASLAPGATNEKLF:1:2:3"),
-                DatabaseFilterRequest("antigen.epitope", DatabaseFilterType.Sequence, negative = true, "LLFGYAVYV:2:2:2")
+                // Both sit exactly on the 5-edit budget; anything wider is a separate test below.
+                DatabaseFilterRequest("cdr3", DatabaseFilterType.Sequence, negative = false, "CASLAPGATNEKLF:1:2:2"),
+                DatabaseFilterRequest("antigen.epitope", DatabaseFilterType.Sequence, negative = true, "LLFGYAVYV:2:2:1")
             )
 
             val filters = DatabaseFilters.createFromRequest(request, database)
@@ -78,14 +79,62 @@ class DatabaseFiltersSpec extends BaseTestSpecWithApplication {
             filters.sequence.get(0).getQuery.toString shouldEqual "CASLAPGATNEKLF"
             filters.sequence.get(0).getSearchScope.getTreeSearchParameters.getMaxSubstitutions shouldEqual 1
             filters.sequence.get(0).getSearchScope.getTreeSearchParameters.getMaxInsertions shouldEqual 2
-            filters.sequence.get(0).getSearchScope.getTreeSearchParameters.getMaxDeletions shouldEqual 3
+            filters.sequence.get(0).getSearchScope.getTreeSearchParameters.getMaxDeletions shouldEqual 2
+            filters.sequence.get(0).getSearchScope.getMaxTotal shouldEqual 5
 
             filters.sequence.get(1) shouldBe a [SequenceFilter]
             filters.sequence.get(1).getColumnId shouldEqual "antigen.epitope"
             filters.sequence.get(1).getQuery.toString shouldEqual "LLFGYAVYV"
             filters.sequence.get(1).getSearchScope.getTreeSearchParameters.getMaxSubstitutions shouldEqual 2
             filters.sequence.get(1).getSearchScope.getTreeSearchParameters.getMaxInsertions shouldEqual 2
-            filters.sequence.get(1).getSearchScope.getTreeSearchParameters.getMaxDeletions shouldEqual 2
+            filters.sequence.get(1).getSearchScope.getTreeSearchParameters.getMaxDeletions shouldEqual 1
+            filters.sequence.get(1).getSearchScope.getMaxTotal shouldEqual 5
+        }
+
+        // A search of 5+3+3 edits was reachable straight from the UI and anything at all was
+        // reachable over the REST API. On 2026-08-19 one such search sat in milib's neighbourhood
+        // walk at 100% of a core for hours, and nothing downstream can cancel it once it starts.
+        "cap a sequence filter that asks for more edits than the budget allows" taggedAs DatabaseTestTag in {
+            val request: List[DatabaseFilterRequest] = List(
+                DatabaseFilterRequest("cdr3", DatabaseFilterType.Sequence, negative = false, "CASLAPGATNEKLF:5:3:3")
+            )
+
+            val filters = DatabaseFilters.createFromRequest(request, database)
+
+            filters.sequence should have size 1
+            filters.sequence.get(0).getSearchScope.getMaxTotal shouldEqual DatabaseFilters.MaxTotalEdits
+            filters.warnings should have size 1
+            filters.warnings.head should include ("narrowed")
+        }
+
+        "clamp per-field values past their own ceilings, and say so" taggedAs DatabaseTestTag in {
+            val request: List[DatabaseFilterRequest] = List(
+                DatabaseFilterRequest("cdr3", DatabaseFilterType.Sequence, negative = false, "CASLAPGATNEKLF:50:40:30")
+            )
+
+            val filters = DatabaseFilters.createFromRequest(request, database)
+
+            filters.sequence should have size 1
+            val scope = filters.sequence.get(0).getSearchScope
+            scope.getMaxSubstitutions shouldEqual DatabaseFilters.MaxSubstitutions
+            scope.getMaxInsertions shouldEqual DatabaseFilters.MaxInsertions
+            scope.getMaxDeletions shouldEqual DatabaseFilters.MaxDeletions
+            scope.getMaxTotal shouldEqual DatabaseFilters.MaxTotalEdits
+            filters.warnings should have size 1
+        }
+
+        // These used to throw out of createFromRequest and surface as a 500.
+        "warn rather than throw on a malformed sequence filter" taggedAs DatabaseTestTag in {
+            val request: List[DatabaseFilterRequest] = List(
+                DatabaseFilterRequest("cdr3", DatabaseFilterType.Sequence, negative = false, "CASLAPGATNEKLF"),
+                DatabaseFilterRequest("cdr3", DatabaseFilterType.Sequence, negative = false, "CASLAPGATNEKLF:a:b:c")
+            )
+
+            val filters = DatabaseFilters.createFromRequest(request, database)
+
+            filters.sequence should have size 0
+            filters.warnings should have size 2
+            filters.warnings.count(_.toLowerCase.contains("could not be read")) shouldEqual 2
         }
 
         "create warnings for invalid request" taggedAs DatabaseTestTag in {

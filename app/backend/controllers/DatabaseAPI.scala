@@ -26,9 +26,10 @@ import backend.server.database.{Database, DatabaseColumnInfo, DatabaseSummaryPro
 import backend.server.limit.RequestLimits
 import backend.server.motifs.Motifs
 import backend.server.search.api.search.{SearchDataRequest, SearchDataResponse}
-import backend.server.search.{SearchTable, SearchTableRow}
+import backend.server.search.{SearchExecutor, SearchTable, SearchTableRow, SearchTimeoutException}
 import backend.server.structures.Structures
 import javax.inject._
+import org.slf4j.LoggerFactory
 import play.api.Configuration
 import play.api.libs.json.Json.toJson
 import play.api.libs.json._
@@ -38,9 +39,12 @@ import play.api.mvc._
 import scala.concurrent.{ExecutionContext, Future}
 
 class DatabaseAPI @Inject()(cc: ControllerComponents, database: Database, summaries: DatabaseSummaryProvider,
-                            structures: Structures, motifs: Motifs, configuration: Configuration)
+                            structures: Structures, motifs: Motifs, configuration: Configuration,
+                            searchExecutor: SearchExecutor)
                            (implicit as: ActorSystem, mat: Materializer, ec: ExecutionContext, limits: RequestLimits, tfp: TemporaryFileProvider)
   extends AbstractController(cc) {
+
+  private final val logger = LoggerFactory.getLogger(this.getClass)
 
   /** The summary is a static fragment regenerated only when the database itself is rebuilt, yet the
     * Overview page asked for it in full on every visit. An hour of freshness plus the entity tag below
@@ -112,12 +116,20 @@ class DatabaseAPI @Inject()(cc: ControllerComponents, database: Database, summar
   }
 
   def search: Action[JsValue] = Action(parse.json).async { implicit request =>
-    Future.successful {
-      request.body.validate[SearchDataRequest] match {
-        case data: JsSuccess[SearchDataRequest] =>
-          if (data.get.filters.nonEmpty) {
+    request.body.validate[SearchDataRequest] match {
+      case data: JsSuccess[SearchDataRequest] =>
+        if (data.get.filters.nonEmpty) {
+          // Off the request thread and onto the bounded pool. This used to sit inside
+          // `Future.successful`, which evaluates eagerly on the caller — so the search ran on a
+          // Play default-dispatcher thread and a runaway one took that thread out of service
+          // permanently. See SearchExecutor for what the deadline does and does not achieve.
+          searchExecutor.run {
             val table = new SearchTable()
             val filters = DatabaseFilters.createFromRequest(data.get.filters.get, database)
+
+            // The websocket path reports these to the user; here there is nowhere to put them in
+            // the response, so they go to the log rather than nowhere at all.
+            filters.warnings.foreach((message: String) => logger.warn(s"Search filter warning: $message"))
 
             table.update(filters, database, structures, motifs)
             if (data.get.sort.nonEmpty) {
@@ -149,12 +161,16 @@ class DatabaseAPI @Inject()(cc: ControllerComponents, database: Database, summar
             }
 
             Ok(toJson(SearchDataResponse(page, pageSize, pageCount, table.getRecordsFound, rows)))
-          } else {
-            BadRequest("No search filters were given. Please add at least one filter (an epitope, a gene or a species) and search again.")
+          } recover {
+            case SearchTimeoutException(message) => ServiceUnavailable(message)
           }
-        case _: JsError =>
-          BadRequest("The search query could not be read. Please reset the filters and run the search again.")
-      }
+        } else {
+          Future.successful(
+            BadRequest("No search filters were given. Please add at least one filter (an epitope, a gene or a species) and search again."))
+        }
+      case _: JsError =>
+        Future.successful(
+          BadRequest("The search query could not be read. Please reset the filters and run the search again."))
     }
   }
 
