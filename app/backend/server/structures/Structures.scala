@@ -388,21 +388,6 @@ case class Structures @Inject()(database: Database)(implicit ec: ExecutionContex
     }
   }
 
-  private def extractStructureIdFromJsValue(jsValue: JsValue): Option[String] =
-    jsValue match {
-      case JsString(value) => sanitizeStructureIdCandidate(value)
-      case JsArray(values) =>
-        values.iterator
-          .map(extractStructureIdFromJsValue)
-          .collectFirst { case Some(id) => id }
-      case JsObject(fields) =>
-        structureIdJsonKeys.iterator
-          .flatMap(fields.get)
-          .map(extractStructureIdFromJsValue)
-          .collectFirst { case Some(id) => id }
-      case _ => None
-    }
-
   private def extractStructureId(metaStr: String, hashStr: Option[String]): Option[String] = {
     val fromHash = hashStr.flatMap(sanitizeStructureIdCandidate).map(_.trim).filter(_.nonEmpty)
     val fromMeta = Option(metaStr)
@@ -503,38 +488,6 @@ case class Structures @Inject()(database: Database)(implicit ec: ExecutionContex
   private val metadata: MotifsMetadata =
     MotifsMetadata.generateMetadataFromLevels(structures, metadataLevels)
 
-  // cluster index within each (mhc.class, mhc.pair, antigen.epitope) group, sorted by cluster size descending
-  val clusterIndexByStructureId: Map[String, Int] = buildClusterIndexMap()
-
-  private def buildClusterIndexMap(): Map[String, Int] = {
-    val requiredCols = Seq("mhc.class", "mhc.pair", "antigen.epitope", "structure.id")
-    if (!requiredCols.forall(structures.columnNames().contains)) {
-      return Map.empty
-    }
-    val result = mutable.HashMap.empty[String, Int]
-    val epitopeGroups = structures.splitOn(structures.stringColumn("antigen.epitope")).asTableList().asScala
-    epitopeGroups.foreach { epitopeTable =>
-      // further split by mhc.class + mhc.pair to handle same epitope under different MHC
-      val mhcGroups = epitopeTable.splitOn(
-        epitopeTable.stringColumn("mhc.class"),
-        epitopeTable.stringColumn("mhc.pair")
-      ).asTableList().asScala
-      mhcGroups.foreach { groupTable =>
-        val clusterTables = groupTable.splitOn(groupTable.stringColumn("structure.id")).asTableList().asScala
-        val sorted = clusterTables
-          .flatMap(t => firstValue(t, "structure.id").map(id => (id, t.rowCount())))
-          .sortBy { case (id, size) => (-size, id) }
-        sorted.zipWithIndex.foreach { case ((structureId, _), idx) =>
-          val normalized = structureId.toLowerCase(Locale.ROOT)
-          if (!result.contains(normalized)) {
-            result.update(normalized, idx)
-          }
-        }
-      }
-    }
-    result.toMap
-  }
-
   private val structureIdIndex: Map[String, String] = {
     val idCol = structures.stringColumn("structure.id")
     val acc = mutable.LinkedHashMap.empty[String, String]
@@ -579,7 +532,7 @@ case class Structures @Inject()(database: Database)(implicit ec: ExecutionContex
     val epitopeGroups = filtered.splitOn(filtered.stringColumn("antigen.epitope")).asTableList().asScala
 
     val epitopes: Seq[StructureEpitope] = epitopeGroups.flatMap { epitopeTable =>
-      val epitopeValue = firstNonEmpty(epitopeTable, "antigen.epitope")
+      val epitopeValue = firstValue(epitopeTable, "antigen.epitope")
       epitopeValue.map { epitopeName =>
         val hashSeed = metadataLevels.flatMap(level => firstValue(epitopeTable, level)).mkString
         val hash = if (hashSeed.nonEmpty) CommonUtils.md5(hashSeed) else s"structures:$epitopeName"
@@ -685,8 +638,6 @@ case class Structures @Inject()(database: Database)(implicit ec: ExecutionContex
       }.headOption
     }
   }
-
-  private def firstNonEmpty(table: Table, column: String): Option[String] = firstValue(table, column)
 
   private def extractBoundsFromCdr3Fix(raw: String): (Int, Int) = {
     val parsed = Option(raw).map(_.trim).filter(_.nonEmpty).flatMap((value) => Try(Json.parse(value)).toOption)
