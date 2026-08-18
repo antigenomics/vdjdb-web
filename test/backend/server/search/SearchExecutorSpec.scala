@@ -16,7 +16,7 @@
 
 package backend.server.search
 
-import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.{AtomicInteger, AtomicReference}
 import java.util.concurrent.{CountDownLatch, TimeUnit}
 
 import akka.actor.ActorSystem
@@ -35,10 +35,11 @@ class SearchExecutorSpec extends BaseTestSpec {
 
   private implicit val system: ActorSystem = ActorSystem("search-executor-spec")
 
-  private def executor(threads: Int, timeoutSeconds: Int): SearchExecutor =
+  private def executor(threads: Int, timeoutSeconds: Int, hardDeadlineSeconds: Int = 1800): SearchExecutor =
     new SearchExecutor(Configuration.from(Map(
       "application.database.search.threads" -> threads,
-      "application.database.search.timeoutSeconds" -> timeoutSeconds)),
+      "application.database.search.timeoutSeconds" -> timeoutSeconds,
+      "application.database.search.hardDeadlineSeconds" -> hardDeadlineSeconds)),
       new DefaultApplicationLifecycle)
 
   "SearchExecutor" should {
@@ -61,6 +62,33 @@ class SearchExecutorSpec extends BaseTestSpec {
     "return the result of a search that beats its deadline" taggedAs UtilsTestTag in {
       executor(threads = 1, timeoutSeconds = 30).run("finished").map { result =>
         result shouldEqual "finished"
+      }
+    }
+
+    // The case the reaper exists for. This loop models BranchingEnumerator: pure CPU, never checks
+    // the interrupt flag, so nothing cooperative can end it. If the kill does not work the thread
+    // runs until the JVM exits and this test times out rather than passing quietly.
+    "kill a worker that ignores interruption and outlives the hard deadline" taggedAs UtilsTestTag in {
+      val subject = executor(threads = 1, timeoutSeconds = 1, hardDeadlineSeconds = 3)
+      val running = new CountDownLatch(1)
+      val spinning = new AtomicReference[Thread]()
+
+      subject.run {
+        spinning.set(Thread.currentThread())
+        running.countDown()
+        while (true) { Thread.currentThread().isAlive }
+        "never reached"
+      }
+
+      running.await(10, TimeUnit.SECONDS)
+      val victim = spinning.get()
+      victim.isAlive shouldEqual true
+
+      // Hard deadline is 3s; give the reaper room without making the suite slow.
+      Future {
+        val until = System.currentTimeMillis() + 20000
+        while (victim.isAlive && System.currentTimeMillis() < until) Thread.sleep(100)
+        victim.isAlive shouldEqual false
       }
     }
 

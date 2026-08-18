@@ -16,7 +16,7 @@
 
 package backend.server.search
 
-import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.{AtomicInteger, AtomicReference}
 import java.util.concurrent.{Executors, ThreadFactory}
 
 import akka.actor.ActorSystem
@@ -28,8 +28,9 @@ import play.api.inject.ApplicationLifecycle
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
 
-final case class SearchExecutorConfiguration(threads: Int, timeout: FiniteDuration) {
-  def describe: String = s"threads=$threads, timeout=${timeout.toSeconds}s"
+final case class SearchExecutorConfiguration(threads: Int, timeout: FiniteDuration, hardDeadline: FiniteDuration) {
+  def describe: String =
+    s"threads=$threads, timeout=${timeout.toSeconds}s, hardDeadline=${hardDeadline.toSeconds}s"
 }
 
 object SearchExecutorConfiguration {
@@ -44,6 +45,11 @@ object SearchExecutorConfiguration {
     * whole database in a few. Anything past this is not slow, it is stuck. */
   final val DefaultTimeoutSeconds: Int = 30
 
+  /** When the worker is killed outright — 30 minutes. Far beyond the soft timeout on purpose: by
+    * this point the caller has long since been answered, so anything still running is a leaked
+    * thread burning a core with nothing waiting on its result. */
+  final val DefaultHardDeadlineSeconds: Int = 1800
+
   /** Every key is read with a default. Production starts with `-Dconfig.file=<server-side file>`,
     * which REPLACES the packaged `application.conf` rather than merging with it, so none of these
     * keys exist on the server until someone edits that file by hand, and a `conf.get` on a missing
@@ -51,7 +57,9 @@ object SearchExecutorConfiguration {
   def fromConfiguration(conf: Configuration): SearchExecutorConfiguration =
     SearchExecutorConfiguration(
       threads = conf.getOptional[Int](s"$Root.threads").filter(_ > 0).getOrElse(DefaultThreads),
-      timeout = conf.getOptional[Int](s"$Root.timeoutSeconds").filter(_ > 0).getOrElse(DefaultTimeoutSeconds).seconds)
+      timeout = conf.getOptional[Int](s"$Root.timeoutSeconds").filter(_ > 0).getOrElse(DefaultTimeoutSeconds).seconds,
+      hardDeadline = conf.getOptional[Int](s"$Root.hardDeadlineSeconds").filter(_ > 0)
+        .getOrElse(DefaultHardDeadlineSeconds).seconds)
 }
 
 /** Raised when a search outlived its timeout. Carries the message shown to the user. */
@@ -69,14 +77,17 @@ final case class SearchTimeoutException(message: String) extends RuntimeExceptio
   *    inline on a Play `default-dispatcher` thread (`Action.async { Future.successful { ... } }`
   *    evaluates its body eagerly, on the caller), so a runaway consumed a thread that serves every
   *    other request. Confined here, the worst case is `threads` wasted cores instead of a dead site.
-  *  - the '''timeout''' frees the request and the caller. It does '''not''' free the thread:
+  *  - the '''soft timeout''' frees the request and the caller. It does '''not''' free the thread:
   *    vdjmatch exposes no cancellation hook, and `BranchingEnumerator` is a tight CPU loop that
-  *    never checks `Thread.interrupt()`, so a timed-out search keeps burning its worker until the
-  *    process restarts. Treat a timeout in the log as a leaked thread, not a tidy recovery.
+  *    never checks `Thread.interrupt()`, so the worker keeps burning after the caller has gone.
+  *  - the '''hard deadline''' is what ends it. Nothing cooperative can, so the reaper stops the
+  *    thread outright -- see `kill` for why that is defensible on this particular code path and
+  *    would not be on most others. This is the difference between a leaked core until the next
+  *    deploy and a leaked core for half an hour.
   *
   * ponytail: the thing that actually prevents the condition is the edit-budget cap in
-  * `DatabaseFilters` -- this is containment for whatever that cap does not foresee. If milib ever
-  * grows a cancellation hook, wire it in here and the leak goes away.
+  * `DatabaseFilters` -- the pool and the reaper are containment for whatever that cap does not
+  * foresee. If milib ever grows a cancellation hook, use it in `kill` and drop the reflection.
   */
 @Singleton
 class SearchExecutor @Inject()(conf: Configuration, lifecycle: ApplicationLifecycle)(implicit as: ActorSystem) {
@@ -106,17 +117,61 @@ class SearchExecutor @Inject()(conf: Configuration, lifecycle: ApplicationLifecy
   lifecycle.addStopHook(() => Future.successful(workers.shutdownNow()))
 
   /** Runs `work` on a worker thread and fails the returned future with a [[SearchTimeoutException]]
-    * if it outlives the configured deadline. Blocking inside `work` is expected. */
+    * if it outlives the soft timeout. A worker still running at the hard deadline is killed.
+    * Blocking inside `work` is expected. */
   def run[T](work: => T): Future[T] = {
     implicit val scheduling: ExecutionContext = as.dispatcher
 
-    val result = Future(work)(searchContext)
+    // Published by the worker as it starts so the reaper below has something to aim at, and cleared
+    // on the way out so a thread that finished normally is never a target.
+    val worker = new AtomicReference[Thread]()
+
+    val result = Future {
+      worker.set(Thread.currentThread())
+      try work finally worker.set(null)
+    }(searchContext)
+
+    val reaper = as.scheduler.scheduleOnce(configuration.hardDeadline) {
+      Option(worker.get()).foreach(kill)
+    }
+    result.onComplete(_ => reaper.cancel())
+
     val deadline = akka.pattern.after(configuration.timeout, as.scheduler) {
-      logger.warn(s"Search exceeded ${configuration.timeout.toSeconds}s and was abandoned; " +
-        "its worker thread cannot be interrupted and will run until it finishes on its own")
+      logger.warn(s"Search exceeded ${configuration.timeout.toSeconds}s and was abandoned by its caller; " +
+        s"the worker keeps running and will be killed after ${configuration.hardDeadline.toSeconds}s if it has not finished")
       Future.failed(SearchTimeoutException(TimedOutMessage))
     }
 
     Future.firstCompletedOf(Seq(result, deadline))
+  }
+
+  /** Last resort for a worker that has ignored its deadline.
+    *
+    * `interrupt` first, which is free and settles anything parked in an interruptible wait. It will
+    * not touch the case this exists for: `BranchingEnumerator` is a tight CPU loop that never checks
+    * the flag, so only `Thread.stop` ends it. That is deprecated and genuinely unsafe in general --
+    * it raises `ThreadDeath` at an arbitrary bytecode, so any half-updated shared state stays
+    * half-updated. It is defensible *here* and nowhere else: a search reads an index that is
+    * immutable once loaded and builds a result list nobody is waiting for any more, so the only
+    * thing thrown away is garbage. Weighed against a core burning until the next deploy, that trade
+    * is worth making.
+    *
+    * Called reflectively because `-deprecation -Xfatal-warnings` would otherwise fail the build, and
+    * because `stop` throws `UnsupportedOperationException` from JDK 20 on -- when this application
+    * eventually leaves Java 8 the reaper degrades to "interrupt and log" instead of failing to
+    * compile. Nothing else about the class changes.
+    */
+  private def kill(thread: Thread): Unit = {
+    logger.error(s"Search on ${thread.getName} outlived the ${configuration.hardDeadline.toSeconds}s hard deadline " +
+      "and is being killed; it was consuming a core with nothing waiting on the result")
+    thread.interrupt()
+    try {
+      classOf[Thread].getMethod("stop").invoke(thread)
+      logger.warn(s"Killed runaway search thread ${thread.getName}")
+    } catch {
+      case error: Throwable =>
+        logger.error(s"Could not kill runaway search thread ${thread.getName}; it will hold a core " +
+          s"until the process restarts (${error.getClass.getSimpleName})")
+    }
   }
 }
