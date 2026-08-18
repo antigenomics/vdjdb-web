@@ -147,7 +147,7 @@ case class Structures @Inject()(database: Database)(implicit ec: ExecutionContex
               iter.foreach { line =>
                 val cols = line.split("\t", -1)
                 if (cols.length > index("cid")) {
-                  val key = buildMotifClusterKey(
+                  val key = StructureIdentifiers.motifClusterKey(
                     cols(index("species")),
                     cols(index("gene")),
                     cols(index("antigen.epitope")),
@@ -172,11 +172,6 @@ case class Structures @Inject()(database: Database)(implicit ec: ExecutionContex
     }
   }
 
-  private def buildMotifClusterKey(species: String, gene: String, epitope: String, cdr3: String, vsegm: String, jsegm: String): String = {
-    val parts = Seq(species, gene, epitope, cdr3, vsegm, jsegm)
-      .map(v => Option(v).map(_.trim).getOrElse("").toLowerCase(Locale.ROOT))
-    if (parts.exists(_.isEmpty)) "" else parts.mkString("|")
-  }
 
   private def buildStructureKeySet(): Set[String] = {
     val required = Seq("species", "gene", "antigen.epitope", "cdr3", "v.segm", "j.segm")
@@ -192,7 +187,7 @@ case class Structures @Inject()(database: Database)(implicit ec: ExecutionContex
       val builder = mutable.HashSet.empty[String]
       var idx = 0
       while (idx < structures.rowCount()) {
-        val key = buildMotifClusterKey(
+        val key = StructureIdentifiers.motifClusterKey(
           speciesCol.get(idx),
           geneCol.get(idx),
           epitopeCol.get(idx),
@@ -210,7 +205,7 @@ case class Structures @Inject()(database: Database)(implicit ec: ExecutionContex
   }
 
   private def lookupMotifClusterId(species: String, gene: String, epitope: String, cdr3: String, vsegm: String, jsegm: String): Option[String] = {
-    val key = buildMotifClusterKey(species, gene, epitope, cdr3, vsegm, jsegm)
+    val key = StructureIdentifiers.motifClusterKey(species, gene, epitope, cdr3, vsegm, jsegm)
     if (key.isEmpty) None else motifClusterIdIndex.get(key)
   }
 
@@ -359,37 +354,10 @@ case class Structures @Inject()(database: Database)(implicit ec: ExecutionContex
     "TCR_hash"
   )
 
-  private val structureIdTokenPattern = "^[A-Za-z0-9_-]{4,}$".r
 
-  private def sanitizeStructureIdCandidate(candidate: String): Option[String] = {
-    if (candidate == null) {
-      None
-    } else {
-      val trimmed = candidate.trim
-      if (trimmed.isEmpty) {
-        None
-      } else {
-        val withoutExt = if (trimmed.toLowerCase(Locale.ROOT).endsWith(".html")) {
-          trimmed.dropRight(5)
-        } else {
-          trimmed
-        }
-        val normalizedSeparators = withoutExt.replace('\\', '/')
-        val roughTokens = normalizedSeparators
-          .split("[\\s,;|]+")
-          .flatMap(_.split(":"))
-          .flatMap(_.split("/"))
-          .map(_.trim)
-          .filter(_.nonEmpty)
-        roughTokens.reverseIterator.collectFirst {
-          case token if structureIdTokenPattern.pattern.matcher(token).matches() => token
-        }
-      }
-    }
-  }
 
   private def extractStructureId(metaStr: String, hashStr: Option[String]): Option[String] = {
-    val fromHash = hashStr.flatMap(sanitizeStructureIdCandidate).map(_.trim).filter(_.nonEmpty)
+    val fromHash = hashStr.flatMap(StructureIdentifiers.sanitize).map(_.trim).filter(_.nonEmpty)
     val fromMeta = Option(metaStr)
       .map(meta => pickFromJson(meta, structureIdJsonKeys))
       .map(_.trim)
@@ -586,7 +554,7 @@ case class Structures @Inject()(database: Database)(implicit ec: ExecutionContex
             val cValUpper = cVal.toUpperCase(Locale.ROOT)
             val matchesCdr3 = if (substring) cValUpper.contains(queryUpper) else cValUpper.equals(queryUpper)
             if (matchesCdr3) {
-              val pattern = buildSubstringPattern(cValUpper, queryUpper, substring)
+              val pattern = StructureIdentifiers.substringPattern(cValUpper, queryUpper, substring)
               val current = matchesByStructure.getOrElse(rawStructureId,
                 Cdr3MatchStats(0, mutable.HashMap.empty[String, Int], mutable.HashSet.empty[String]))
               current.patternCounts.update(
@@ -610,8 +578,8 @@ case class Structures @Inject()(database: Database)(implicit ec: ExecutionContex
           buildCluster(table).foreach { cluster =>
             val count = stats.matches.toDouble
             val normalizedScore = if (cluster.size <= 0) count else count / cluster.size
-            val chain = if (normalizedGene == "BOTH") formatChainLabels(stats.chainLabels.toSeq) else None
-            candidateEntries += Cdr3Candidate(cluster, count, normalizedScore, pickPreferredPattern(stats.patternCounts, queryUpper), chain)
+            val chain = if (normalizedGene == "BOTH") StructureIdentifiers.chainLabels(stats.chainLabels) else None
+            candidateEntries += Cdr3Candidate(cluster, count, normalizedScore, StructureIdentifiers.preferredPattern(stats.patternCounts, queryUpper), chain)
           }
         }
 
@@ -816,42 +784,8 @@ case class Structures @Inject()(database: Database)(implicit ec: ExecutionContex
     }
   }
 
-  private def formatChainLabels(values: Seq[String]): Option[String] = {
-    val normalized = values.map(_.trim).filter(_.nonEmpty).distinct
-    if (normalized.isEmpty) {
-      None
-    } else if (normalized.contains("CDR3a") && normalized.contains("CDR3b")) {
-      Some("CDR3a, CDR3b")
-    } else {
-      Some(normalized.head)
-    }
-  }
 
-  private def buildSubstringPattern(candidateUpper: String, queryUpper: String, substring: Boolean): String = {
-    if (!substring) {
-      queryUpper
-    } else if (queryUpper.isEmpty) {
-      ""
-    } else {
-      val index = candidateUpper.indexOf(queryUpper)
-      if (index < 0) {
-        queryUpper
-      } else {
-        val left = "X" * index
-        val rightLength = candidateUpper.length - queryUpper.length - index
-        val right = if (rightLength > 0) "X" * rightLength else ""
-        left + queryUpper + right
-      }
-    }
-  }
 
-  private def pickPreferredPattern(patternCounts: mutable.HashMap[String, Int], fallback: String): String = {
-    if (patternCounts.isEmpty) {
-      fallback
-    } else {
-      patternCounts.toSeq.sortBy { case (pattern, count) => (-count, -pattern.length) }.head._1
-    }
-  }
 
   private def takeDistinct(entries: Vector[Cdr3Candidate], limit: Int): Seq[Cdr3Candidate] = {
     if (limit <= 0) {
