@@ -25,7 +25,6 @@ case class Structures @Inject()(database: Database)(implicit ec: ExecutionContex
 
   private val visualizations = new StructureVisualizationIndex(StructureVisualizationIndex.resolveRoot(database))
   private lazy val motifClusterIdIndex: Map[String, String] = loadMotifClusterIdIndex(buildStructureKeySet())
-  private val maxTopValueInCDR3Search: Int = 15
   // Per-model confidence metrics, keyed by lower-cased structure hash (see
   // tools/build_structures_metadata.py). Empty map if the companion file is absent.
   private val structureMetricsIndex: Map[String, StructureModelMetrics] =
@@ -34,14 +33,6 @@ case class Structures @Inject()(database: Database)(implicit ec: ExecutionContex
 
 
   private case class ChainInfo(cdr3: String, vsegm: String, jsegm: String, motifClusterId: Option[String])
-  private case class Cdr3MatchStats(matches: Int,
-                                    patternCounts: mutable.HashMap[String, Int],
-                                    chainLabels: mutable.HashSet[String])
-  private case class Cdr3Candidate(cluster: StructureCluster,
-                                   score: Double,
-                                   normalizedScore: Double,
-                                   pattern: String,
-                                   chain: Option[String])
 
   private def firstValueForGene(table: Table, gene: String, column: String): Option[String] = {
     if (!table.columnNames().contains("gene") || !table.columnNames().contains(column)) {
@@ -330,82 +321,31 @@ case class Structures @Inject()(database: Database)(implicit ec: ExecutionContex
 
     StructuresSearchTreeFilterResult(epitopes)
   }
-
   def cdr3(cdr3: String, substring: Boolean, gene: String, top: Int): Future[StructureCDR3SearchResult] = Future {
     val query = Option(cdr3).map(_.trim).getOrElse("")
-    val normalizedGene = Option(gene).map(_.trim.toUpperCase(Locale.ROOT)).getOrElse("BOTH")
-    val safeTop = Math.max(1, Math.min(maxTopValueInCDR3Search, if (top <= 0) maxTopValueInCDR3Search else top))
+    val chain = StructureCdr3Search.normalizeGene(gene)
+    val limit = StructureCdr3Search.resultLimit(top)
+    val options = StructureCDR3SearchResultOptions(query, limit, chain, substring)
 
-    if (query.isEmpty) {
-      StructureCDR3SearchResult(
-        StructureCDR3SearchResultOptions(query, safeTop, normalizedGene, substring),
-        Seq.empty,
-        Seq.empty
-      )
-    } else {
-      val base = filterByGene(structures, normalizedGene)
-      if (!base.columnNames().contains("cdr3")) {
-        StructureCDR3SearchResult(
-          StructureCDR3SearchResultOptions(query, safeTop, normalizedGene, substring),
-          Seq.empty,
-          Seq.empty
-        )
-      } else {
-        val matchesByStructure = mutable.HashMap.empty[String, Cdr3MatchStats]
-        val cdr3Col = base.stringColumn("cdr3")
-        val structureCol = base.stringColumn("structure.id")
-        val geneCol = if (base.columnNames().contains("gene")) Some(base.stringColumn("gene")) else None
-        val queryUpper = query.toUpperCase(Locale.ROOT)
+    val tallies = StructureCdr3Search.tally(StructureCdr3Search.filterByGene(structures, chain), query, substring)
 
-        var idx = 0
-        while (idx < base.rowCount()) {
-          val rawStructureId = Option(structureCol.get(idx)).map(_.trim).getOrElse("")
-          if (rawStructureId.nonEmpty) {
-            val cVal = Option(cdr3Col.get(idx)).map(_.trim).getOrElse("")
-            val cValUpper = cVal.toUpperCase(Locale.ROOT)
-            val matchesCdr3 = if (substring) cValUpper.contains(queryUpper) else cValUpper.equals(queryUpper)
-            if (matchesCdr3) {
-              val pattern = StructureIdentifiers.substringPattern(cValUpper, queryUpper, substring)
-              val current = matchesByStructure.getOrElse(rawStructureId,
-                Cdr3MatchStats(0, mutable.HashMap.empty[String, Int], mutable.HashSet.empty[String]))
-              current.patternCounts.update(
-                pattern,
-                current.patternCounts.getOrElse(pattern, 0) + 1
-              )
-              geneCol
-                .flatMap(col => Option(col.get(idx)))
-                .flatMap(resolveChainLabel)
-                .foreach(label => current.chainLabels += label)
-              matchesByStructure.update(rawStructureId, current.copy(matches = current.matches + 1))
-            }
-          }
-          idx += 1
-        }
-
-        val candidateEntries = mutable.ArrayBuffer.empty[Cdr3Candidate]
-
-        matchesByStructure.foreach { case (structureId, stats) =>
-          val table = structures.where(structures.stringColumn("structure.id").isEqualTo(structureId))
-          buildCluster(table).foreach { cluster =>
-            val count = stats.matches.toDouble
-            val normalizedScore = if (cluster.size <= 0) count else count / cluster.size
-            val chain = if (normalizedGene == "BOTH") StructureIdentifiers.chainLabels(stats.chainLabels) else None
-            candidateEntries += Cdr3Candidate(cluster, count, normalizedScore, StructureIdentifiers.preferredPattern(stats.patternCounts, queryUpper), chain)
-          }
-        }
-
-        val clusters = takeDistinct(candidateEntries.sortBy((candidate) => -candidate.score).toVector, safeTop)
-          .map((candidate) => StructureCDR3SearchEntry(candidate.score, candidate.pattern, candidate.chain, candidate.cluster))
-        val clustersNorm = takeDistinct(candidateEntries.sortBy((candidate) => -candidate.normalizedScore).toVector, safeTop)
-          .map((candidate) => StructureCDR3SearchEntry(candidate.normalizedScore, candidate.pattern, candidate.chain, candidate.cluster))
-
-        StructureCDR3SearchResult(
-          StructureCDR3SearchResultOptions(query, safeTop, normalizedGene, substring),
-          clusters,
-          clustersNorm
-        )
+    val candidates = tallies.toSeq.flatMap { case (structureId, stats) =>
+      buildCluster(structures.where(structures.stringColumn("structure.id").isEqualTo(structureId))).map { cluster =>
+        val matches = stats.matches.toDouble
+        StructureCdr3Search.Candidate(
+          cluster = cluster,
+          score = matches,
+          // The cluster is built from the whole table while the matches were counted on the
+          // gene-filtered one, so a single-chain query scores roughly half what BOTH would.
+          normalizedScore = if (cluster.size <= 0) matches else matches / cluster.size,
+          pattern = StructureIdentifiers.preferredPattern(stats.patternCounts, query.toUpperCase(Locale.ROOT)),
+          // Naming a chain is only meaningful when more than one was searched.
+          chain = if (chain == StructureCdr3Search.BothChains) StructureIdentifiers.chainLabels(stats.chainLabels) else None)
       }
     }
+
+    val (byCount, byShare) = StructureCdr3Search.rank(candidates, limit)
+    StructureCDR3SearchResult(options, byCount, byShare)
   }
 
   private def firstValue(table: Table, column: String): Option[String] = {
@@ -526,47 +466,10 @@ case class Structures @Inject()(database: Database)(implicit ec: ExecutionContex
 
 
 
-  private def filterByGene(table: Table, gene: String): Table = {
-    gene match {
-      case "TRA" | "TRB" =>
-        if (table.columnNames().contains("gene")) {
-          table.where(table.stringColumn("gene").isEqualTo(gene))
-        } else {
-          table
-        }
-      case _ => table
-    }
-  }
-
-  private def resolveChainLabel(gene: String): Option[String] = {
-    Option(gene).map(_.trim.toUpperCase(Locale.ROOT)).collect {
-      case "TRA" => "CDR3a"
-      case "TRB" => "CDR3b"
-    }
-  }
 
 
 
 
-  private def takeDistinct(entries: Vector[Cdr3Candidate], limit: Int): Seq[Cdr3Candidate] = {
-    if (limit <= 0) {
-      Seq.empty
-    } else {
-      val seen = mutable.HashSet.empty[String]
-      val buffer = mutable.ArrayBuffer.empty[Cdr3Candidate]
-      var idx = 0
-      val upper = if (limit > entries.length) entries.length else limit
-      while (idx < entries.length && buffer.length < upper) {
-        val entry = entries(idx)
-        val id = entry.cluster.clusterId
-        if (!seen.contains(id)) {
-          seen += id
-          buffer += entry
-        }
-        idx += 1
-      }
-      buffer
-    }
-  }
+
 }
 
