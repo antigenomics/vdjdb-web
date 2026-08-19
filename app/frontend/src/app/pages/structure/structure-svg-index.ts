@@ -314,7 +314,9 @@ export class StructureSvgIndex {
                 return referenced;
             }
         }
-        return use.ownerSVGElement === null ? null : (use.parentElement ? use.parentElement.querySelector('defs path') : null);
+        // Fallback for the first box of a chain, which defines its marker inline.
+        const group = use.closest('g[id^="line2d_"]');
+        return group ? group.querySelector('defs path') : null;
     }
 
     private static strokeOf(element: Element | null): string {
