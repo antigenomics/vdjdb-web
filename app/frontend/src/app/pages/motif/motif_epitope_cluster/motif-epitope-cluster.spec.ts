@@ -61,11 +61,15 @@ describe('findScrollableAncestor', () => {
   it('never returns body, even when body itself overflows', () => {
     const filler = box(root, 'height: 4000px;');
     document.body.style.overflowY = 'auto';
+    document.body.style.height = '50px';
     try {
+      // Body now looks exactly like a scroll container to the predicate. It still must not be one.
       expect(document.body.scrollHeight).toBeGreaterThan(document.body.clientHeight);
+      expect(getComputedStyle(document.body).overflowY).toBe('auto');
       expect(findScrollableAncestor(filler)).toBeNull();
     } finally {
       document.body.style.overflowY = '';
+      document.body.style.height = '';
     }
   });
 

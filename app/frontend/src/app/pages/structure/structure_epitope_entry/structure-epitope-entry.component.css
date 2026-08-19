@@ -164,6 +164,13 @@
     padding: 0.7rem 0.75rem;
     background: #ffffff;
     cursor: pointer;
+    /* The three best-studied epitopes carry 2000-3706 cards, and selecting one reorders the list,
+       which relaid out every card: 330-360ms of blocked main thread per click, measured on
+       NLVPMVATV. Skipping layout for the off-screen ones takes that to ~78ms. The stated size is
+       the measured card height and only covers cards that have never been on screen - once one
+       renders, `auto` remembers its real size. */
+    content-visibility: auto;
+    contain-intrinsic-size: auto 294px;
 }
 
 .overlay-card + .overlay-card {
@@ -721,6 +728,13 @@
     font-size: 12px;
     font-weight: 600;
     letter-spacing: 0.3px;
+    /* Always in the DOM so the controller has something to write to; shown only while the pointer
+       is on something. `display` rather than opacity: an empty tip must not take part in layout. */
+    display: none;
+}
+
+.structure-hover-tip--visible {
+    display: block;
 }
 
 /* ---------- bring a structure to the front ---------- */

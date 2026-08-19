@@ -117,7 +117,7 @@ export class StructureEpitopeEntryComponent implements OnInit, OnDestroy {
     constructor(private structureService: StructureService, private availability: SearchAvailabilityService,
                 private changeDetector: ChangeDetectorRef, private sanitizer: DomSanitizer) {
         this.zoomState = new StructureZoomController(this.changeDetector);
-        this.hoverState = new StructureHoverController(this.changeDetector);
+        this.hoverState = new StructureHoverController();
     }
 
     public ngOnInit(): void {

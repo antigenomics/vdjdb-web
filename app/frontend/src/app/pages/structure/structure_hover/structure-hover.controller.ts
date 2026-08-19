@@ -14,7 +14,6 @@
  *     limitations under the License.
  */
 
-import { ChangeDetectorRef } from '@angular/core';
 import { IStructureAnnotation, IStructureSvgIndex, StructureSvgIndex } from 'pages/structure/structure-svg-index';
 
 /** Class marking the residue box under the pointer. */
@@ -22,6 +21,12 @@ export const RESIDUE_HOVER_CLASS = 'structure-hover--residue';
 
 /** Class marking the contact line under the pointer. */
 export const CONTACT_HOVER_CLASS = 'structure-hover--contact';
+
+/** The label element, and the classes that show and place it. */
+export const TIP_CLASS = 'structure-hover-tip';
+export const TIP_VISIBLE_CLASS = 'structure-hover-tip--visible';
+export const TIP_FLIP_X_CLASS = 'structure-hover-tip--flip-x';
+export const TIP_FLIP_Y_CLASS = 'structure-hover-tip--flip-y';
 
 /**
  * Highlights the residue or contact under the pointer, and names it.
@@ -36,23 +41,20 @@ export const CONTACT_HOVER_CLASS = 'structure-hover--contact';
  * structure and there is no reliable hook that fires after the new SVG lands; noticing at the next
  * pointer event costs one comparison and cannot go stale.
  *
- * Driven straight from template bindings. An earlier attempt attached raw listeners to an element
- * resolved by `@ViewChild`, to keep pointer moves out of change detection - the query never
- * delivered the element and the feature silently did nothing. Correctness first: a binding cannot
- * fail to fire.
+ * The pointer events come from template bindings. An earlier attempt attached raw listeners to an
+ * element resolved by `@ViewChild` - the query never delivered the element and the feature silently
+ * did nothing. A binding cannot fail to fire, so that is what drives this.
+ *
+ * What the binding must not do is mark the component dirty. The three best-studied epitopes list
+ * 2000-3706 cards in this same component, and one change-detection pass over them costs 66-104ms
+ * against 14ms for a pointer move that changes nothing - so the tooltip is written, exactly as the
+ * highlight class already was. Both it and the `<svg>` are found through the event's own
+ * `currentTarget`, which is the lookup that works here.
  */
 export class StructureHoverController {
 
     /** What is under the pointer, e.g. `ASN 91` or `ASN 91 : ARG 5`. Null when nothing is. */
     public label: string | null = null;
-
-    /** Where to put the tooltip, relative to the host. */
-    public x: number = 0;
-    public y: number = 0;
-
-    /** Whether the tooltip should sit left of / below the pointer, to stay inside the map. */
-    public flipX: boolean = false;
-    public flipY: boolean = false;
 
     /**
      * Nominal tooltip size, used only to choose a side.
@@ -76,13 +78,7 @@ export class StructureHoverController {
     private svg: SVGSVGElement | null = null;
     private index: IStructureSvgIndex = { residues: [], contacts: [] };
     private highlighted?: SVGGElement;
-
-    constructor(private changeDetector: ChangeDetectorRef) {}
-
-    /** Exposed for the tooltip's `*ngIf`; the template should not reach into the index. */
-    public get isActive(): boolean {
-        return this.label !== null;
-    }
+    private tip: HTMLElement | null = null;
 
     public track(event: MouseEvent): void {
         const host = event.currentTarget instanceof HTMLElement ? event.currentTarget : null;
@@ -100,24 +96,28 @@ export class StructureHoverController {
             }
         }
 
-        const label = StructureHoverController.describe(annotation);
-        const changed = label !== this.label;
-        this.label = label;
-
-        if (label !== null && host) {
-            const bounds = host.getBoundingClientRect();
-            this.x = event.clientX - bounds.left;
-            this.y = event.clientY - bounds.top;
-            // Flip rather than clamp: a tooltip pinned to the edge covers what the reader is
-            // pointing at, which is the one thing it must not do.
-            this.flipX = this.x + StructureHoverController.NominalWidth > bounds.width;
-            this.flipY = this.y < StructureHoverController.NominalHeight;
+        this.label = StructureHoverController.describe(annotation);
+        if (!this.tip || !host) {
+            return;
         }
 
-        // The tooltip follows the pointer, so a move within one residue still has to repaint.
-        if (changed || label !== null) {
-            this.changeDetector.markForCheck();
+        if (this.label === null) {
+            this.tip.classList.remove(TIP_VISIBLE_CLASS);
+            return;
         }
+
+        const bounds = host.getBoundingClientRect();
+        const x = event.clientX - bounds.left;
+        const y = event.clientY - bounds.top;
+
+        this.tip.textContent = this.label;
+        this.tip.style.left = `${x}px`;
+        this.tip.style.top = `${y}px`;
+        // Flip rather than clamp: a tooltip pinned to the edge covers what the reader is
+        // pointing at, which is the one thing it must not do.
+        this.tip.classList.toggle(TIP_FLIP_X_CLASS, x + StructureHoverController.NominalWidth > bounds.width);
+        this.tip.classList.toggle(TIP_FLIP_Y_CLASS, y < StructureHoverController.NominalHeight);
+        this.tip.classList.add(TIP_VISIBLE_CLASS);
     }
 
     /**
@@ -150,9 +150,9 @@ export class StructureHoverController {
 
     public clear(): void {
         this.unhighlight();
-        if (this.label !== null) {
-            this.label = null;
-            this.changeDetector.markForCheck();
+        this.label = null;
+        if (this.tip) {
+            this.tip.classList.remove(TIP_VISIBLE_CLASS);
         }
     }
 
@@ -169,6 +169,9 @@ export class StructureHoverController {
         if (svg !== this.svg) {
             this.svg = svg as SVGSVGElement | null;
             this.index = StructureSvgIndex.build(this.svg);
+        }
+        if (host && (!this.tip || !host.contains(this.tip))) {
+            this.tip = host.querySelector(`.${TIP_CLASS}`) as HTMLElement | null;
         }
     }
 

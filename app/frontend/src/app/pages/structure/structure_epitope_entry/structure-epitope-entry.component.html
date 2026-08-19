@@ -159,11 +159,10 @@
                                          (mousemove)="hoverState.track($event)"
                                          (mouseleave)="hoverState.clear()">
                                         <div class="structure-html" [innerHTML]="overlayLayerList[0].markup"></div>
-                                        <div class="structure-hover-tip" *ngIf="hoverState.isActive"
-                                             [class.structure-hover-tip--flip-x]="hoverState.flipX"
-                                             [class.structure-hover-tip--flip-y]="hoverState.flipY"
-                                             [style.left.px]="hoverState.x" [style.top.px]="hoverState.y"
-                                             aria-hidden="true">{{ hoverState.label }}</div>
+                                        <!-- Written by StructureHoverController, not bound: a pointer move over a
+                                             card list this long costs 66-104ms in change detection and 14ms
+                                             without it. Always present so there is nothing to resolve. -->
+                                        <div class="structure-hover-tip" aria-hidden="true"></div>
                                     </div>
                                     <ng-container *ngFor="let layer of overlayLayerList; let i = index">
                                         <ng-container *ngIf="i > 0">
