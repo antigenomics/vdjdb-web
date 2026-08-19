@@ -16,12 +16,13 @@
 
 package backend.server.structures
 
+import backend.server.structures.api._
+
 import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Path, Paths}
 import java.util.Locale
 
 import backend.server.database.Database
-import backend.server.structures.api.epitope.StructureVisualization
 import play.api.libs.json.{JsValue, Json}
 
 import scala.collection.JavaConverters._

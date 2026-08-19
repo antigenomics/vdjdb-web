@@ -20,7 +20,6 @@ import {
   IStructureCDR3SearchResult,
   IStructureCDR3SearchResultOptions,
   IStructureCluster,
-  IStructureClusterEntry,
   IStructureClusterMeta,
   IStructureClusterMembersExportResponse,
   IStructureModelMetrics,
@@ -634,7 +633,6 @@ export class StructureService {
     };
 
     const clusterId = item && item.id ? String(item.id) : this.pickMetaValue(meta, [ 'structure.id', 'structureId' ]) || this.buildClusterIdFallback(meta);
-    const entries: IStructureClusterEntry[] = [];
 
     const visualization = this.normalizeVisualizationFromRaw(item && item.visualization);
 
@@ -657,7 +655,6 @@ export class StructureService {
       cdr3aJStart,
       cdr3bVEnd,
       cdr3bJStart,
-      entries,
       meta: clusterMeta,
       visualization,
       metrics: this.asStructureMetrics(item && item.metrics)

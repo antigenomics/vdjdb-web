@@ -16,9 +16,9 @@
 
 package backend.server.structures
 
+import backend.server.structures.api._
 import backend.BaseTestSpec
 import backend.utils.UtilsTestTag
-import backend.server.structures.api.epitope.{StructureCluster, StructureClusterMeta}
 import tech.tablesaw.api.{StringColumn, Table}
 
 import scala.collection.JavaConverters._
@@ -33,7 +33,7 @@ class StructureCdr3SearchSpec extends BaseTestSpec {
 
   private def cluster(id: String, size: Int): StructureCluster =
     StructureCluster(clusterId = id, displayId = id, tcrPairLabel = "", size = size, length = 0,
-      vsegm = "", jsegm = "", entries = Seq.empty,
+      vsegm = "", jsegm = "",
       meta = StructureClusterMeta("", "", "", "", "", "", "", ""), visualization = None)
 
   private def candidate(id: String, score: Double, normalized: Double = 0.0): StructureCdr3Search.Candidate =

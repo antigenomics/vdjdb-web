@@ -50,22 +50,6 @@ export interface IStructureEpitopeViewOptions {
 
 // StructuresEpitopes
 
-export interface IStructureClusterEntryAA {
-  readonly letter: string;
-  readonly length: number;
-  readonly count: number;
-  readonly freq: number;
-  readonly I: number;
-  readonly INorm: number;
-  readonly H: number;
-  readonly HNorm: number;
-}
-
-export interface IStructureClusterEntry {
-  readonly position: number;
-  readonly aa: IStructureClusterEntryAA[];
-}
-
 export interface IStructureClusterMeta {
   readonly species: string;
   readonly gene: string;
@@ -108,7 +92,6 @@ export interface IStructureCluster {
   readonly cdr3aJStart?: number;
   readonly cdr3bVEnd?: number;
   readonly cdr3bJStart?: number;
-  readonly entries: IStructureClusterEntry[];
   readonly meta: IStructureClusterMeta;
   readonly visualization?: IStructureVisualization;
   readonly metrics?: IStructureModelMetrics;

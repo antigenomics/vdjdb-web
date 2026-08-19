@@ -1,12 +1,11 @@
 package backend.server.structures
 
+import backend.server.structures.api._
+
 import javax.inject.{Inject, Singleton}
 import backend.server.database.Database
 import backend.server.motifs.MotifsMetadata
 import backend.server.motifs.api.filter.MotifsSearchTreeFilter
-import backend.server.structures.api.cdr3.{StructureCDR3SearchEntry, StructureCDR3SearchResult, StructureCDR3SearchResultOptions}
-import backend.server.structures.api.epitope.{StructureCluster, StructureClusterMeta, StructureEpitope, StructureModelMetrics, StructureVisualization}
-import backend.server.structures.api.filter.StructuresSearchTreeFilterResult
 import backend.utils.CommonUtils
 import play.api.libs.json._
 import tech.tablesaw.api.{StringColumn, Table}
@@ -238,11 +237,11 @@ case class Structures @Inject()(database: Database)(implicit ec: ExecutionContex
 
     StructuresSearchTreeFilterResult(epitopes)
   }
-  def cdr3(cdr3: String, substring: Boolean, gene: String, top: Int): Future[StructureCDR3SearchResult] = Future {
+  def cdr3(cdr3: String, substring: Boolean, gene: String, top: Int): Future[StructureCdr3SearchResult] = Future {
     val query = Option(cdr3).map(_.trim).getOrElse("")
     val chain = StructureCdr3Search.normalizeGene(gene)
     val limit = StructureCdr3Search.resultLimit(top)
-    val options = StructureCDR3SearchResultOptions(query, limit, chain, substring)
+    val options = StructureCdr3SearchResultOptions(query, limit, chain, substring)
 
     val tallies = StructureCdr3Search.tally(StructureCdr3Search.filterByGene(structures, chain), query, substring)
 
@@ -262,7 +261,7 @@ case class Structures @Inject()(database: Database)(implicit ec: ExecutionContex
     }
 
     val (byCount, byShare) = StructureCdr3Search.rank(candidates, limit)
-    StructureCDR3SearchResult(options, byCount, byShare)
+    StructureCdr3SearchResult(options, byCount, byShare)
   }
 
   private def firstValue(table: Table, column: String): Option[String] = {
@@ -372,7 +371,7 @@ case class Structures @Inject()(database: Database)(implicit ec: ExecutionContex
 
       val metricsOpt = structureMetricsIndex.get(trimmedId.toLowerCase(Locale.ROOT))
 
-      Some(StructureCluster(trimmedId, displayId, tcrPairLabel, size, length, vsegm, jsegm, Seq.empty, meta, visualizationOpt,
+      Some(StructureCluster(trimmedId, displayId, tcrPairLabel, size, length, vsegm, jsegm, meta, visualizationOpt,
         cdr3aVEnd, cdr3aJStart, cdr3bVEnd, cdr3bJStart, metricsOpt))
     }
   }

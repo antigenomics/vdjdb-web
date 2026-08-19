@@ -16,10 +16,10 @@
 
 package backend.server.structures
 
+import backend.server.structures.api._
+
 import java.util.Locale
 
-import backend.server.structures.api.cdr3.StructureCDR3SearchEntry
-import backend.server.structures.api.epitope.StructureCluster
 import tech.tablesaw.api.Table
 
 import scala.collection.mutable
@@ -115,10 +115,10 @@ object StructureCdr3Search {
     * clusters where the query accounts for most of the members. Neither is right on its own, which
     * is why the response carries both.
     */
-  def rank(candidates: Seq[Candidate], limit: Int): (Seq[StructureCDR3SearchEntry], Seq[StructureCDR3SearchEntry]) = {
-    def entries(ordering: Candidate => Double, score: Candidate => Double): Seq[StructureCDR3SearchEntry] =
+  def rank(candidates: Seq[Candidate], limit: Int): (Seq[StructureCdr3SearchEntry], Seq[StructureCdr3SearchEntry]) = {
+    def entries(ordering: Candidate => Double, score: Candidate => Double): Seq[StructureCdr3SearchEntry] =
       distinctClusters(candidates.sortBy(candidate => -ordering(candidate)), limit)
-        .map(candidate => StructureCDR3SearchEntry(score(candidate), candidate.pattern, candidate.chain, candidate.cluster))
+        .map(candidate => StructureCdr3SearchEntry(score(candidate), candidate.pattern, candidate.chain, candidate.cluster))
 
     (entries(_.score, _.score), entries(_.normalizedScore, _.normalizedScore))
   }

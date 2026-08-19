@@ -16,11 +16,12 @@
 
 package backend.server.structures
 
+import backend.server.structures.api._
+
 import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Path}
 import java.util.Locale
 
-import backend.server.structures.api.epitope.StructureModelMetrics
 
 import scala.collection.mutable
 import scala.io.Source
