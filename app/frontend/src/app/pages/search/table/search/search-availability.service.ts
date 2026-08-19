@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Utils } from 'utils/utils';
+import { repairMhcGene } from '../../../../epitope-bridge.service';
 
 interface IStructureVisualizationDescriptor {
   url: string;
@@ -16,17 +17,6 @@ export interface IStructureMetrics {
   confidencePct?: number;
   bindingModeOutlier?: boolean;
 }
-
-/**
- * Gene symbols the motif join has to repair, in the order the server applies them.
- *
- * Each left-hand side is a mis-spelling, not an alias: `H2-Db` is the MGI symbol, `HLA-DPA1` and
- * `HLA-DPB1` are the IMGT ones, and no `HLA-DPA`/`HLA-DPB` gene exists. `HLA-DRA` is correct without
- * a digit, which is why this is a list and not a rule about digits. See `Motifs.MalformedMhcGenes`.
- */
-const MALFORMED_MHC_GENES: Array<[ string, string ]> = [
-  [ 'h-2', 'h2-' ], [ 'hla-dpa*', 'hla-dpa1*' ], [ 'hla-dpb*', 'hla-dpb1*' ]
-];
 
 interface ISearchAvailabilityResponse {
   structures: string[];
@@ -219,9 +209,7 @@ export class SearchAvailabilityService {
     const twoField = this.normalizeMotifPart(value).replace(/:.+/, '');
     const alleles = twoField.split(',').map((a) => a.trim()).filter((a) => a.length > 0);
     const single = alleles.length > 1 && alleles.every((a) => a === alleles[ 0 ]) ? alleles[ 0 ] : twoField;
-    return MALFORMED_MHC_GENES.reduce(
-      (allele, [ wrong, right ]) => allele.startsWith(wrong) ? right + allele.substring(wrong.length) : allele,
-      single);
+    return repairMhcGene(single);
   }
 
   /**
