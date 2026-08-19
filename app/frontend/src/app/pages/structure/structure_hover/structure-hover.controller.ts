@@ -55,7 +55,16 @@ export class StructureHoverController {
 
     constructor(private changeDetector: ChangeDetectorRef) {}
 
-    public attach(host: HTMLElement | undefined): void {
+    /**
+     * Binds to the element the pointer just entered.
+     *
+     * Driven from the template's `(mouseenter)` rather than a `@ViewChild`: the query did not
+     * resolve for this element, and an event binding cannot fail to hand over the right one. The
+     * listeners themselves stay raw rather than becoming template bindings, so a mousemove does not
+     * put the whole overlay through change detection on every pixel.
+     */
+    public attach(target: EventTarget | null): void {
+        const host = target instanceof HTMLElement ? target : undefined;
         if (this.host === host) {
             return;
         }

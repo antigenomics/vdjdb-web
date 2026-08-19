@@ -155,7 +155,7 @@
                                      [class.is-dragging]="zoomState.isDragging"
                                      [style.transform]="zoomState.transform"
                                      #zoomCanvas>
-                                    <div class="structure-overlay__base" #overlayBase>
+                                    <div class="structure-overlay__base" (mouseenter)="hoverState.attach($event.currentTarget)">
                                         <div class="structure-html" [innerHTML]="overlayLayerList[0].markup"></div>
                                         <div class="structure-hover-tip" *ngIf="hoverState.isActive"
                                              [style.left.px]="hoverState.x" [style.top.px]="hoverState.y"

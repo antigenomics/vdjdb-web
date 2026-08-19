@@ -107,11 +107,6 @@ export class StructureEpitopeEntryComponent implements OnInit, OnDestroy {
     @ViewChild('structureOverlay') public set structureOverlayRef(ref: ElementRef<HTMLElement> | undefined) {
         this.attachOverlayObserver(ref);
     }
-    /** The front structure only. The layers behind it are pointer-events: none, so a reader can
-     * only ever interrogate the map they are actually looking at. */
-    @ViewChild('overlayBase') public set overlayBaseRef(ref: ElementRef<HTMLElement> | undefined) {
-        this.hoverState.attach(ref ? ref.nativeElement : undefined);
-    }
     @ViewChild('zoomCanvas') public set zoomCanvasRef(ref: ElementRef<HTMLElement> | undefined) {
         this.zoomState.attachCanvas(ref ? ref.nativeElement : undefined);
     }
