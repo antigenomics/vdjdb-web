@@ -15,7 +15,7 @@
  *       limitations under the License.
  */
 
-package backend.actions
+package backend.utils
 
 import org.scalatest.Tag
 

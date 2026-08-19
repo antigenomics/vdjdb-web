@@ -20,7 +20,7 @@ package backend.models.usage
 import java.time.LocalDate
 
 import backend.BaseTestSpec
-import backend.actions.UtilsTestTag
+import backend.utils.UtilsTestTag
 import backend.models.authorization.permissions.{UserPermissions, UserPermissionsProvider}
 import com.typesafe.config.ConfigFactory
 import play.api.Configuration

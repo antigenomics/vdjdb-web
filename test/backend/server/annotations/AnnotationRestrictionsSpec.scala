@@ -17,7 +17,7 @@
 package backend.server.annotations
 
 import backend.BaseTestSpec
-import backend.actions.UtilsTestTag
+import backend.utils.UtilsTestTag
 import backend.server.annotations.api.filters.{AnnotationsDatabaseQueryParams, AnnotationsSearchScope, AnnotationsSearchScopeHammingDistance}
 
 /** The restrictions that used to be build inputs to a per-request `ClonotypeDatabase` and are now

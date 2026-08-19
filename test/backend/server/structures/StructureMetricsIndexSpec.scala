@@ -20,7 +20,7 @@ import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Path}
 
 import backend.BaseTestSpec
-import backend.actions.UtilsTestTag
+import backend.utils.UtilsTestTag
 import org.scalatest.Assertion
 
 class StructureMetricsIndexSpec extends BaseTestSpec {

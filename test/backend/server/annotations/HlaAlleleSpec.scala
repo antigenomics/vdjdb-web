@@ -17,7 +17,7 @@
 package backend.server.annotations
 
 import backend.BaseTestSpec
-import backend.actions.UtilsTestTag
+import backend.utils.UtilsTestTag
 
 /** Every cell literal below is taken from the shipped `vdjdb.slim.txt`, including the awkward ones:
   * the comma-packed `HLA-A*02,HLA-A*02:01`, the invariant `B2M` that fills `mhc.b` on every MHC-I

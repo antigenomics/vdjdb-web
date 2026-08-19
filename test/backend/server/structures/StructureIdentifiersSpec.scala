@@ -17,8 +17,7 @@
 package backend.server.structures
 
 import backend.BaseTestSpec
-// Declared in package backend.actions despite living under test/backend/utils/.
-import backend.actions.UtilsTestTag
+import backend.utils.UtilsTestTag
 
 /** No Guice application, no `Database`, no fixture directory — which is the point of having moved
   * these out of `Structures`. Runs in milliseconds.

@@ -17,7 +17,7 @@
 package backend.server.structures
 
 import backend.BaseTestSpec
-import backend.actions.UtilsTestTag
+import backend.utils.UtilsTestTag
 import backend.server.structures.api.epitope.{StructureCluster, StructureClusterMeta}
 import tech.tablesaw.api.{StringColumn, Table}
 
