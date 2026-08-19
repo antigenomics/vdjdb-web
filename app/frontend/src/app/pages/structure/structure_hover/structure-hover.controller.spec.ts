@@ -65,8 +65,18 @@ describe('StructureHoverController', () => {
         </g>`;
     }
 
-    /** Rebuilds the host from a body, for the tests that need contacts rather than the default pair. */
-    function withMap(body: string): void {
+    /**
+     * Rebuilds the host from a body, for the tests that need contacts rather than the default pair.
+     *
+     * The caller has to build its body AFTER this resets the marker table, because `residue` only
+     * emits a `<defs>` for the first box of each colour and every later one references it by id.
+     * Reusing the table across two SVGs leaves the second referencing a marker that is not in it,
+     * the boxes lose their colour, and the whole index comes back empty.
+     */
+    function withMap(bodyOf: () => string): void {
+        nextId = 1;
+        definedMarkers = {};
+        const body = bodyOf();
         host.innerHTML =
             `<div><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 684 568.8">${body}</svg></div>` +
             `<div class="structure-hover-tip"></div>`;
@@ -185,7 +195,7 @@ describe('StructureHoverController', () => {
         // cross the thick one owns the pixel. Resolving by hit-test made the thin one unreachable
         // along its whole length; going by distance is what makes it selectable at all.
         it('picks the contact nearest the pointer, not the one under it', () => {
-            withMap(
+            withMap(() =>
                 residue('N', 91, 100, 100, GREEN) +
                 residue('R', 5, 500, 100, BLUE) +      // peptide, so this contact is tcr-peptide
                 residue('G', 96, 100, 300, GREEN) +
@@ -204,7 +214,7 @@ describe('StructureHoverController', () => {
         });
 
         it('marks a TCR-internal contact so it can be highlighted more softly', () => {
-            withMap(
+            withMap(() =>
                 residue('G', 96, 100, 300, GREEN) +
                 residue('S', 94, 500, 300, RED) +
                 line(100, 300, 500, 300, 0.2));
@@ -217,7 +227,7 @@ describe('StructureHoverController', () => {
         });
 
         it('leaves a TCR-peptide contact on the full-strength highlight', () => {
-            withMap(
+            withMap(() =>
                 residue('N', 91, 100, 100, GREEN) +
                 residue('R', 5, 500, 100, BLUE) +
                 line(100, 100, 500, 100, 1.5));
@@ -231,7 +241,7 @@ describe('StructureHoverController', () => {
         });
 
         it('drops the internal marker when the pointer moves to a peptide contact', () => {
-            withMap(
+            withMap(() =>
                 residue('N', 91, 100, 100, GREEN) +
                 residue('R', 5, 500, 100, BLUE) +
                 residue('G', 96, 100, 300, GREEN) +
