@@ -38,8 +38,15 @@
 /** Chain a residue belongs to, taken from the colour matplotlib drew it in. */
 export type StructureChain = 'CDR3a' | 'CDR3b' | 'peptide';
 
-/** Contacts with the peptide are drawn thick, contacts within the TCR thin. */
-export type ContactKind = 'inter-chain' | 'intra-chain';
+/**
+ * Which two things a contact joins.
+ *
+ * Named after the parties rather than after "inter"/"intra", which read backwards here: a CDR3a-CDR3b
+ * contact spans two chains yet is the *internal* one from the reader's point of view, because both
+ * ends sit on the receptor. plotting.py draws the peptide ones at 1.5 and the internal ones at 0.2,
+ * and the highlight follows the same split.
+ */
+export type ContactKind = 'tcr-peptide' | 'tcr-internal';
 
 export interface IStructureResidue {
     /** One-letter code as drawn, e.g. `N`. */
@@ -211,7 +218,7 @@ export class StructureSvgIndex {
             const involvesPeptide = from.chain === 'peptide' || to.chain === 'peptide';
             return {
                 from, to,
-                kind:    involvesPeptide ? 'inter-chain' : 'intra-chain',
+                kind:    involvesPeptide ? 'tcr-peptide' : 'tcr-internal',
                 element: group as SVGGElement
             } as IStructureContact;
         }).filter((contact): contact is IStructureContact => contact !== undefined);
@@ -288,19 +295,9 @@ export class StructureSvgIndex {
      * Events land on the `<path>` or `<use>` inside a group, so this walks up to the group the index
      * holds. Backbone segments and the axes belong to no annotation and correctly return nothing.
      */
-    public static locate(index: IStructureSvgIndex, target: EventTarget | null): IStructureAnnotation | null {
+    public static locateResidue(index: IStructureSvgIndex, target: EventTarget | null): IStructureResidue | undefined {
         const element = target instanceof Element ? target.closest('g[id^="line2d_"]') : null;
-        if (!element) {
-            return null;
-        }
-
-        const residue = index.residues.find((candidate) => candidate.element === element);
-        if (residue) {
-            return { kind: 'residue', residue, contact: undefined };
-        }
-
-        const contact = index.contacts.find((candidate) => candidate.element === element);
-        return contact ? { kind: 'contact', residue: undefined, contact } : null;
+        return element ? index.residues.find((candidate) => candidate.element === element) : undefined;
     }
 
     /**

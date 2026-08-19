@@ -120,25 +120,25 @@ describe('StructureSvgIndex', () => {
             expect(index.residues.map((r) => r.position)).toEqual([ 88, 89, 90 ]);
         });
 
-        it('reads a contact with the peptide as inter-chain', () => {
+        it('reads a contact with the peptide as tcr-peptide', () => {
             const index = StructureSvgIndex.build(parse(
                 residue('N', 91, 400, 200, GREEN) +
                 residue('R', 5, 300, 400, BLUE) +
                 line(400, 200, 300, 400, '#000000', 1.5)));
 
             expect(index.contacts.length).toBe(1);
-            expect(index.contacts[ 0 ].kind).toBe('inter-chain');
+            expect(index.contacts[ 0 ].kind).toBe('tcr-peptide');
             expect(StructureSvgIndex.describeContact(index.contacts[ 0 ])).toBe('ASN 91 : ARG 5');
         });
 
-        it('reads a contact between the two CDR3 loops as intra-chain', () => {
+        it('reads a contact between the two CDR3 loops as tcr-internal', () => {
             const index = StructureSvgIndex.build(parse(
                 residue('M', 96, 400, 200, GREEN) +
                 residue('G', 100, 500, 300, RED) +
                 line(400, 200, 500, 300, '#000000', 0.2)));
 
             expect(index.contacts.length).toBe(1);
-            expect(index.contacts[ 0 ].kind).toBe('intra-chain');
+            expect(index.contacts[ 0 ].kind).toBe('tcr-internal');
             expect(StructureSvgIndex.describeContact(index.contacts[ 0 ])).toBe('MET 96 : GLY 100');
         });
 
@@ -238,23 +238,31 @@ describe('StructureSvgIndex', () => {
         });
     });
 
-    describe('locate', () => {
+    describe('locateResidue', () => {
 
-        it('finds the residue or contact an event landed in', () => {
+        it('finds the residue an event landed in', () => {
             const svg = parse(
                 residue('N', 91, 400, 200, GREEN) +
                 residue('R', 5, 300, 400, BLUE) +
                 line(400, 200, 300, 400, '#000000', 1.5));
             const index = StructureSvgIndex.build(svg);
 
-            // Events land on the inner <use> or <path>, not the group the index holds.
+            // Events land on the inner <use>, not the group the index holds.
             const insideBox = index.residues[ 0 ].element.querySelector('use');
-            const located = StructureSvgIndex.locate(index, insideBox);
-            expect(located.kind).toBe('residue');
-            expect(located.residue.position).toBe(91);
+            expect(StructureSvgIndex.locateResidue(index, insideBox).position).toBe(91);
+        });
+
+        // Resolving a contact by hit-test is what made a thin CDR3a-CDR3b contact unselectable
+        // wherever a thick peptide contact owned the pixel. Contacts go through nearestContact.
+        it('never resolves a contact, even with the pointer on one', () => {
+            const svg = parse(
+                residue('N', 91, 400, 200, GREEN) +
+                residue('R', 5, 300, 400, BLUE) +
+                line(400, 200, 300, 400, '#000000', 1.5));
+            const index = StructureSvgIndex.build(svg);
 
             const insideLine = index.contacts[ 0 ].element.querySelector('path');
-            expect(StructureSvgIndex.locate(index, insideLine).kind).toBe('contact');
+            expect(StructureSvgIndex.locateResidue(index, insideLine)).toBeUndefined();
         });
 
         it('finds nothing for the backbone, or for anything outside the map', () => {
@@ -265,9 +273,9 @@ describe('StructureSvgIndex', () => {
             const index = StructureSvgIndex.build(svg);
 
             const backbone = svg.querySelector('g[id="line2d_5"] path');
-            expect(StructureSvgIndex.locate(index, backbone)).toBeNull();
-            expect(StructureSvgIndex.locate(index, null)).toBeNull();
-            expect(StructureSvgIndex.locate(index, svg)).toBeNull();
+            expect(StructureSvgIndex.locateResidue(index, backbone)).toBeUndefined();
+            expect(StructureSvgIndex.locateResidue(index, null)).toBeUndefined();
+            expect(StructureSvgIndex.locateResidue(index, svg)).toBeUndefined();
         });
     });
 });

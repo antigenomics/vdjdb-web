@@ -22,6 +22,11 @@ export const RESIDUE_HOVER_CLASS = 'structure-hover--residue';
 /** Class marking the contact line under the pointer. */
 export const CONTACT_HOVER_CLASS = 'structure-hover--contact';
 
+/** Added alongside it for a CDR3a-CDR3b contact, which is drawn thinner and is highlighted softer:
+ * plotting.py draws it at 0.2 against 1.5 for a peptide contact, and shouting at both equally lost
+ * that distinction exactly where it matters. */
+export const CONTACT_INTERNAL_HOVER_CLASS = 'structure-hover--contact-internal';
+
 /** The label element, and the classes that show and place it. */
 export const TIP_CLASS = 'structure-hover-tip';
 export const TIP_VISIBLE_CLASS = 'structure-hover-tip--visible';
@@ -84,14 +89,13 @@ export class StructureHoverController {
         const host = event.currentTarget instanceof HTMLElement ? event.currentTarget : null;
         this.refreshIndex(host);
 
-        const annotation = StructureSvgIndex.locate(this.index, event.target)
-            || this.locateContactNear(event);
+        const annotation = this.locate(event);
         const element = StructureHoverController.elementOf(annotation);
 
         if (element !== this.highlighted) {
             this.unhighlight();
             if (annotation && element) {
-                element.classList.add(annotation.kind === 'residue' ? RESIDUE_HOVER_CLASS : CONTACT_HOVER_CLASS);
+                element.classList.add(...StructureHoverController.classesFor(annotation));
                 this.highlighted = element;
             }
         }
@@ -121,11 +125,29 @@ export class StructureHoverController {
     }
 
     /**
-     * Falls back to the nearest contact when the pointer is not inside anything.
+     * What is under the pointer: a residue by hit-test, otherwise the nearest contact by distance.
      *
-     * Residue boxes are twenty units across and can simply be pointed at; contact lines cannot, so
-     * they are found by distance. Converting through the SVG's own matrix rather than assuming the
-     * viewBox maps linearly to the element keeps this correct under the zoom transform.
+     * Contacts are deliberately *never* resolved by hit-test, even though the browser will happily
+     * name one. A peptide contact is drawn at 1.5 units and a CDR3a-CDR3b contact at 0.2, so where
+     * the two cross or run close the thick one owns the pixel and the thin one can never be picked -
+     * measured on a real map, one CDR3a-CDR3b contact was unreachable along 100% of its length and
+     * the class averaged 80%. Going by distance instead put every contact of both classes at 100%.
+     *
+     * Residue boxes keep the hit-test: they are twenty units across, opaque, and unambiguous.
+     */
+    private locate(event: MouseEvent): IStructureAnnotation | null {
+        const residue = StructureSvgIndex.locateResidue(this.index, event.target);
+        if (residue) {
+            return { kind: 'residue', residue, contact: undefined };
+        }
+        return this.locateContactNear(event);
+    }
+
+    /**
+     * The nearest contact to the pointer, within tolerance.
+     *
+     * Converting through the SVG's own matrix rather than assuming the viewBox maps linearly to the
+     * element keeps this correct under the zoom transform.
      */
     private locateContactNear(event: MouseEvent): IStructureAnnotation | null {
         if (!this.svg || this.index.contacts.length === 0) {
@@ -158,9 +180,18 @@ export class StructureHoverController {
 
     private unhighlight(): void {
         if (this.highlighted) {
-            this.highlighted.classList.remove(RESIDUE_HOVER_CLASS, CONTACT_HOVER_CLASS);
+            this.highlighted.classList.remove(RESIDUE_HOVER_CLASS, CONTACT_HOVER_CLASS, CONTACT_INTERNAL_HOVER_CLASS);
             this.highlighted = undefined;
         }
+    }
+
+    private static classesFor(annotation: IStructureAnnotation): string[] {
+        if (annotation.kind === 'residue') {
+            return [ RESIDUE_HOVER_CLASS ];
+        }
+        return annotation.contact!.kind === 'tcr-internal'
+            ? [ CONTACT_HOVER_CLASS, CONTACT_INTERNAL_HOVER_CLASS ]
+            : [ CONTACT_HOVER_CLASS ];
     }
 
     /** Rebuilds when the host is showing a different SVG than the one the index was built from. */

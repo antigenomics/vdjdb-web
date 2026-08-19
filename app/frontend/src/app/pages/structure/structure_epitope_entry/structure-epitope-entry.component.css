@@ -706,11 +706,24 @@
  * !important throughout: matplotlib writes stroke and width inline on every path, and an inline
  * style beats a stylesheet rule whatever its specificity.
  */
+/* TCR-peptide contact: drawn at 1.5, so it can take the full-strength treatment. */
 .structure-overlay__base ::ng-deep .structure-hover--contact path {
     stroke: #111111 !important;
     stroke-width: 3 !important;
     stroke-dasharray: none !important;
     filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.35));
+}
+
+/*
+ * CDR3a-CDR3b contact: drawn at 0.2, seven times thinner than a peptide one, and that difference is
+ * the plot's way of saying which contacts hold the receptor together and which hold the antigen.
+ * Highlighting both at 3px black threw it away, so this one stays thin and grey - still ~7x its
+ * resting weight, so it is unmistakably picked out, without reading as a peptide contact.
+ */
+.structure-overlay__base ::ng-deep .structure-hover--contact-internal path {
+    stroke: #666666 !important;
+    stroke-width: 1.4 !important;
+    filter: none;
 }
 
 .structure-hover-tip {

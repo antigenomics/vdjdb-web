@@ -155,7 +155,14 @@
                                      [class.is-dragging]="zoomState.isDragging"
                                      [style.transform]="zoomState.transform"
                                      #zoomCanvas>
+                                    <!-- z-index is bound, not left to document order: the secondary layers
+                                         below are absolutely positioned and take 1..length-1, and a positioned
+                                         element with a z-index paints above one with `auto` however early it
+                                         appears. Without this the front structure rendered at the BACK of the
+                                         stack, so four maps' contact lines were drawn across its boxes and
+                                         labels. Keep this one step above the highest secondary. -->
                                     <div class="structure-overlay__base"
+                                         [style.z-index]="overlayLayerList.length"
                                          (mousemove)="hoverState.track($event)"
                                          (mouseleave)="hoverState.clear()">
                                         <div class="structure-html" [innerHTML]="overlayLayerList[0].markup"></div>
@@ -166,6 +173,8 @@
                                     </div>
                                     <ng-container *ngFor="let layer of overlayLayerList; let i = index">
                                         <ng-container *ngIf="i > 0">
+                                            <!-- 1..length-1, descending with depth. Must stay below the base's
+                                                 z-index above; changing either formula alone re-buries the front. -->
                                             <div class="structure-overlay__layer structure-overlay__layer--secondary"
                                                  [style.z-index]="overlayLayerList.length - i">
                                                 <div class="structure-html" [innerHTML]="layer.markup"></div>

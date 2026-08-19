@@ -15,7 +15,7 @@
  */
 
 import {
-    CONTACT_HOVER_CLASS, RESIDUE_HOVER_CLASS, StructureHoverController,
+    CONTACT_HOVER_CLASS, CONTACT_INTERNAL_HOVER_CLASS, RESIDUE_HOVER_CLASS, StructureHoverController,
     TIP_FLIP_X_CLASS, TIP_FLIP_Y_CLASS, TIP_VISIBLE_CLASS
 } from './structure-hover.controller';
 
@@ -54,6 +54,33 @@ describe('StructureHoverController', () => {
         return `${text}<g id="line2d_${nextId++}">${defs}
             <g clip-path="url(#clip)"><use xlink:href="#${marker}" x="${x}" y="${y}"></use></g>
         </g>`;
+    }
+
+    const RED = '#ff0000';      // CDR3b
+
+    function line(x1: number, y1: number, x2: number, y2: number, width: number): string {
+        return `<g id="line2d_${nextId++}">
+            <path d="M ${x1} ${y1} L ${x2} ${y2}"
+                  style="fill: none; stroke-dasharray: 1.5,2.475; stroke: #000000; stroke-width: ${width}"></path>
+        </g>`;
+    }
+
+    /** Rebuilds the host from a body, for the tests that need contacts rather than the default pair. */
+    function withMap(body: string): void {
+        host.innerHTML =
+            `<div><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 684 568.8">${body}</svg></div>` +
+            `<div class="structure-hover-tip"></div>`;
+        tip = host.querySelector('.structure-hover-tip') as HTMLElement;
+    }
+
+    /** Map coordinates to client coordinates, so a test can point at a place on the plot. */
+    function at(mapX: number, mapY: number): { x: number, y: number } {
+        const svg = host.querySelector('svg') as SVGSVGElement;
+        const point = svg.createSVGPoint();
+        point.x = mapX;
+        point.y = mapY;
+        const screen = point.matrixTransform(svg.getScreenCTM()!);
+        return { x: screen.x, y: screen.y };
     }
 
     /** Dispatches through a listener on the host, so currentTarget is the host as it is in the app. */
@@ -150,6 +177,77 @@ describe('StructureHoverController', () => {
 
         expect(tip.classList.contains(TIP_VISIBLE_CLASS)).toBe(false);
         expect(host.querySelectorAll(`.${RESIDUE_HOVER_CLASS}`).length).toBe(0);
+    });
+
+    describe('contacts', () => {
+
+        // A CDR3a-CDR3b contact is drawn at 0.2 against 1.5 for a peptide one, so wherever the two
+        // cross the thick one owns the pixel. Resolving by hit-test made the thin one unreachable
+        // along its whole length; going by distance is what makes it selectable at all.
+        it('picks the contact nearest the pointer, not the one under it', () => {
+            withMap(
+                residue('N', 91, 100, 100, GREEN) +
+                residue('R', 5, 500, 100, BLUE) +      // peptide, so this contact is tcr-peptide
+                residue('G', 96, 100, 300, GREEN) +
+                residue('S', 94, 500, 300, RED) +      // both TCR, so this one is tcr-internal
+                line(100, 100, 500, 100, 1.5) +
+                line(100, 300, 500, 300, 0.2));
+
+            // The contact paths, not the marker <defs> that a residue box group also holds.
+            const thick = host.querySelector('path[style*="stroke-width: 1.5"]')!;
+            const point = at(300, 300);
+            // Point at the thin contact while the event target is the thick one: the browser reports
+            // whatever painted the pixel, and the controller must ignore it.
+            move(thick, point.x, point.y);
+
+            expect(tip.textContent).toBe('GLY 96 : SER 94');
+        });
+
+        it('marks a TCR-internal contact so it can be highlighted more softly', () => {
+            withMap(
+                residue('G', 96, 100, 300, GREEN) +
+                residue('S', 94, 500, 300, RED) +
+                line(100, 300, 500, 300, 0.2));
+
+            const point = at(300, 300);
+            move(host.querySelector('svg')!, point.x, point.y);
+
+            const highlighted = host.querySelector(`.${CONTACT_HOVER_CLASS}`)!;
+            expect(highlighted.classList.contains(CONTACT_INTERNAL_HOVER_CLASS)).toBe(true);
+        });
+
+        it('leaves a TCR-peptide contact on the full-strength highlight', () => {
+            withMap(
+                residue('N', 91, 100, 100, GREEN) +
+                residue('R', 5, 500, 100, BLUE) +
+                line(100, 100, 500, 100, 1.5));
+
+            const point = at(300, 100);
+            move(host.querySelector('svg')!, point.x, point.y);
+
+            const highlighted = host.querySelector(`.${CONTACT_HOVER_CLASS}`)!;
+            expect(highlighted.classList.contains(CONTACT_INTERNAL_HOVER_CLASS)).toBe(false);
+            expect(tip.textContent).toBe('ASN 91 : ARG 5');
+        });
+
+        it('drops the internal marker when the pointer moves to a peptide contact', () => {
+            withMap(
+                residue('N', 91, 100, 100, GREEN) +
+                residue('R', 5, 500, 100, BLUE) +
+                residue('G', 96, 100, 300, GREEN) +
+                residue('S', 94, 500, 300, RED) +
+                line(100, 100, 500, 100, 1.5) +
+                line(100, 300, 500, 300, 0.2));
+
+            const internal = at(300, 300);
+            move(host.querySelector('svg')!, internal.x, internal.y);
+            const peptide = at(300, 100);
+            move(host.querySelector('svg')!, peptide.x, peptide.y);
+
+            expect(host.querySelectorAll(`.${CONTACT_INTERNAL_HOVER_CLASS}`).length).toBe(0);
+            expect(host.querySelectorAll(`.${CONTACT_HOVER_CLASS}`).length).toBe(1);
+            expect(tip.textContent).toBe('ASN 91 : ARG 5');
+        });
     });
 
     // The overlay is destroyed and rebuilt when the selection empties, so the element the tooltip
