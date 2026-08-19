@@ -321,7 +321,7 @@ case class Structures @Inject()(database: Database)(implicit ec: ExecutionContex
 
   private def buildCluster(table: Table): Option[StructureCluster] = {
     val structureId = firstValue(table, "structure.id").getOrElse("")
-    if (structureId.isEmpty) {
+    if (structureId.isEmpty || !hasPeptideContacts(table)) {
       None
     } else {
       val size = table.rowCount()

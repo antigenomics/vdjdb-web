@@ -43,7 +43,9 @@ class StructuresSpec extends BaseTestSpec {
 
   // From the fixture: three epitopes, each with both chains. One TRA row of ANYKFTLV has no
   // <hash>.html on disk on purpose.
-  private final val Epitopes = Set("ALAGIGILTV", "ANYKFTLV", "ATDALMTGF")
+  /** In the fixture. ANYKFTLV's rows carry no CDR3-peptide contact, so the browser does not list it —
+    * see "not list a structure with no modelled CDR3-peptide contact". */
+  private final val ListedEpitopes = Set("ALAGIGILTV", "ATDALMTGF")
   private final val OrphanHash = "30aaf0184cc245c20c0d989b03d9fbc1e0e8f66cb41334b711d6fc082a784a71"
 
   private def leafFilter(mhcClass: String, mhcPair: String, epitope: String): MotifsSearchTreeFilter =
@@ -80,6 +82,30 @@ class StructuresSpec extends BaseTestSpec {
       succeed
     }
 
+    /*
+     * A structure whose contact data holds only CDR3a-CDR3b pairs draws as a map with the two loops
+     * and no epitope. On the deployed database that is 795 of 11,046 structures and all six of the
+     * MHCII ones, which is what made the class look broken.
+     *
+     * Asserted through `filter`, the path the browser actually uses, rather than on the predicate:
+     * the first attempt at this shipped the predicate with no call site, compiled clean (the build
+     * has no -Ywarn-unused) and changed nothing on production. A test on the helper would have
+     * passed too.
+     */
+    "not list a structure with no modelled CDR3-peptide contact" taggedAs DatabaseTestTag in {
+      // The fixture: ALAGIGILTV and ATDALMTGF carry contacts, the five ANYKFTLV rows do not.
+      val byEpitope = (epitope: String) =>
+        MotifsSearchTreeFilter(Seq(MotifsSearchTreeFilterEntry("antigen.epitope", epitope)))
+
+      for {
+        withContacts <- structures.filter(byEpitope("ALAGIGILTV"))
+        withoutContacts <- structures.filter(byEpitope("ANYKFTLV"))
+      } yield {
+        withContacts.epitopes.flatMap(_.clusters) should not be empty
+        withoutContacts.epitopes shouldBe empty
+      }
+    }
+
     "hash a metadata leaf as md5 of the concatenated level values, with no separator" taggedAs DatabaseTestTag in {
       // The tree hashes only leaves; interior nodes carry None. `filter` recomputes this
       // independently, so the two must agree - see the round-trip test below.
@@ -113,7 +139,7 @@ class StructuresSpec extends BaseTestSpec {
 
     "treat an empty filter as no filter at all" taggedAs DatabaseTestTag in {
       structures.filter(MotifsSearchTreeFilter(Seq.empty)).map { result =>
-        result.epitopes.map(_.epitope).toSet shouldEqual Epitopes
+        result.epitopes.map(_.epitope).toSet shouldEqual ListedEpitopes
       }
     }
 

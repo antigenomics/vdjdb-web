@@ -53,3 +53,17 @@ PY
 The metrics values are hand-written, not measured — they exist to exercise parsing, not to mean
 anything. `hash` is the join column and must stay lower-case: `Structures` looks up
 `structureMetricsIndex.get(id.toLowerCase)`.
+
+## evidence.structure.contacts
+
+Set deliberately, because the browser drops a structure with no modelled CDR3-peptide interface —
+such a structure draws as a map with the two CDR3 loops and no epitope at all.
+
+| Epitope | `evidence.structure.contacts` | Listed by the browser |
+|---|---|---|
+| ALAGIGILTV | `true` | yes |
+| ATDALMTGF | `true` | yes |
+| ANYKFTLV | `false` | **no** |
+
+On the deployed database this drops 795 of 11,046 structures, including all six MHCII ones. The
+cause is upstream, in whatever writes the `*_contacts*` files beside each map.
