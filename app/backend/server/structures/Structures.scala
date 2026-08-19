@@ -9,8 +9,7 @@ import backend.server.structures.api.epitope.{StructureCluster, StructureCluster
 import backend.server.structures.api.filter.StructuresSearchTreeFilterResult
 import backend.utils.CommonUtils
 import play.api.libs.json._
-import tech.tablesaw.api.{ColumnType, StringColumn, Table}
-import tech.tablesaw.io.csv.CsvReadOptions
+import tech.tablesaw.api.{StringColumn, Table}
 import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Path, Paths}
 import java.util.Locale
@@ -143,124 +142,8 @@ case class Structures @Inject()(database: Database)(implicit ec: ExecutionContex
   }
 
   // ---------- load vdjdb.txt ----------
-  private def loadVdjdb(): Table = {
-    val path = database.getLocation + "/vdjdb.txt"
-    val headerColumns: Array[String] = {
-      val source = Source.fromFile(path, StandardCharsets.UTF_8.name())
-      try {
-        source.getLines().take(1).flatMap { line =>
-          if (line == null || line.trim.isEmpty) {
-            None
-          } else {
-            Some(line.split("\t", -1))
-          }
-        }.toSeq.headOption.getOrElse(Array.empty[String])
-      } finally {
-        source.close()
-      }
-    }
 
-    val defaultColumnTypes: Array[ColumnType] = Array(
-      ColumnType.SKIP,   // complex.id
-      ColumnType.STRING, // gene
-      ColumnType.STRING, // cdr3
-      ColumnType.STRING, // v.segm
-      ColumnType.STRING, // j.segm
-      ColumnType.STRING, // species
-      ColumnType.STRING, // mhc.a
-      ColumnType.STRING, // mhc.b
-      ColumnType.STRING, // mhc.class
-      ColumnType.STRING, // antigen.epitope
-      ColumnType.STRING, // antigen.gene
-      ColumnType.STRING, // antigen.species
-      ColumnType.SKIP,   // reference.id
-      ColumnType.SKIP,   // method
-      ColumnType.STRING, // meta
-      ColumnType.STRING, // cdr3fix
-      ColumnType.SKIP,   // vdjdb.score
-      ColumnType.SKIP,   // web.method
-      ColumnType.SKIP,   // web.method.seq
-      ColumnType.SKIP,   // web.cdr3fix.nc
-      ColumnType.SKIP    // web.cdr3fix.unmp
-    )
-
-    val columnTypes: Array[ColumnType] =
-      if (headerColumns.nonEmpty) {
-        headerColumns.map {
-          case "complex.id"        => ColumnType.SKIP
-          case "gene"              => ColumnType.STRING
-          case "cdr3"              => ColumnType.STRING
-          case "v.segm"            => ColumnType.STRING
-          case "j.segm"            => ColumnType.STRING
-          case "species"           => ColumnType.STRING
-          case "mhc.a"             => ColumnType.STRING
-          case "mhc.b"             => ColumnType.STRING
-          case "mhc.class"         => ColumnType.STRING
-          case "antigen.epitope"   => ColumnType.STRING
-          case "antigen.gene"      => ColumnType.STRING
-          case "antigen.species"   => ColumnType.STRING
-          case "reference.id"      => ColumnType.SKIP
-          case "method"            => ColumnType.SKIP
-          case "meta"              => ColumnType.STRING
-          case "contacts"          => ColumnType.STRING
-          case "cdr3fix"           => ColumnType.STRING
-          case "vdjdb.score"       => ColumnType.SKIP
-          case "web.method"        => ColumnType.SKIP
-          case "web.method.seq"    => ColumnType.SKIP
-          case "web.cdr3fix.nc"    => ColumnType.SKIP
-          case "web.cdr3fix.unmp"  => ColumnType.SKIP
-          case other               => ColumnType.STRING
-        }
-      } else {
-        defaultColumnTypes
-      }
-
-    val optsBuilder = CsvReadOptions
-      .builder(path)
-      .separator('\t')
-      .header(true)
-      .sample(false)
-
-    val opts = optsBuilder.columnTypes(columnTypes).build() // TSV with header
-    val table = Table.read().csv(opts)
-
-    if (table.columnNames().contains("mhc.a")) {
-      val trimmed = table.stringColumn("mhc.a").replaceAll(":.+", "").setName("mhc.a")
-      table.replaceColumn("mhc.a", trimmed)
-    }
-    if (table.columnNames().contains("mhc.b")) {
-      val trimmed = table.stringColumn("mhc.b").replaceAll(":.+", "").setName("mhc.b")
-      table.replaceColumn("mhc.b", trimmed)
-    }
-
-    val values = new java.util.ArrayList[String](table.rowCount())
-    if (table.columnNames().contains("mhc.a") && table.columnNames().contains("mhc.b")) {
-      val mhcACol = table.stringColumn("mhc.a")
-      val mhcBCol = table.stringColumn("mhc.b")
-      var idx = 0
-      while (idx < table.rowCount()) {
-        val mhcA = Option(mhcACol.get(idx)).map(_.trim).getOrElse("")
-        val mhcB = Option(mhcBCol.get(idx)).map(_.trim).getOrElse("")
-        if (mhcA.nonEmpty && mhcB.nonEmpty) {
-          values.add(s"$mhcA/$mhcB")
-        } else {
-          values.add("")
-        }
-        idx += 1
-      }
-    } else {
-      var idx = 0
-      while (idx < table.rowCount()) {
-        values.add("")
-        idx += 1
-      }
-    }
-    table.addColumns(StringColumn.create("mhc.pair", values))
-
-    table  // tech.tablesaw read using options
-  }
-
-  private val raw: Table = loadVdjdb()
+  private val raw: Table = StructureTableLoader.load(database.getLocation + "/vdjdb.txt")
 
   // ---------- derive columns from JSON in "meta" ----------
   private def getMetaCol(t: Table): StringColumn =
