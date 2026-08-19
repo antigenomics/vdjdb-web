@@ -38,48 +38,30 @@ import scala.util.Success
 case class Motifs @Inject()(database: Database)(implicit tfp: TemporaryFileProvider, ec: ExecutionContext) {
   private final val metadataLevels = Seq("species", "gene", "mhc.class", "mhc.a", "antigen.epitope")
 
-  // TCRNet dataset (default)
-  private final val membersTcrnet = Motifs.parseClusterMembersFileIntoDataFrame(database.getClusterMembersFile.map(_.getPath))
-  private final val tableTcrnet   = Motifs.parseMotifFileIntoDataFrame(database.getMotifFile.map(_.getPath))
-  private final val cdr3RangeTcrnet      = Motifs.parseCDR3LengthRange(tableTcrnet)
-  private final val availabilityKeysTcrnet: Set[String] = Motifs.buildAvailabilityKeys(tableTcrnet)
-  private final val cidLookupIndexTcrnet: Map[String, String] = Motifs.buildCidLookupIndex(membersTcrnet)
-  private final val metadataTcrnet = MotifsMetadata.generateMetadataFromLevels(tableTcrnet, metadataLevels)
+  // One per clustering method, built the same way from a different pair of files. Everything either
+  // dataset offers is derived from those two, which is why this is a value rather than twelve
+  // parallel fields and nine accessors picking between them by name.
+  private final val tcrnet = MotifDataset.load(
+    database.getMotifFile.map(_.getPath), database.getClusterMembersFile.map(_.getPath), metadataLevels)
+  private final val tcremp = MotifDataset.load(
+    database.getMotifFileTCREMP.map(_.getPath), database.getClusterMembersFileTCREMP.map(_.getPath), metadataLevels)
 
-  // TCREMP dataset
-  private final val membersTcremp = Motifs.parseClusterMembersFileIntoDataFrame(database.getClusterMembersFileTCREMP.map(_.getPath))
-  private final val tableTcremp   = Motifs.parseMotifFileIntoDataFrame(database.getMotifFileTCREMP.map(_.getPath))
-  private final val cdr3RangeTcremp      = Motifs.parseCDR3LengthRange(tableTcremp)
-  private final val availabilityKeysTcremp: Set[String] = Motifs.buildAvailabilityKeys(tableTcremp)
-  private final val cidLookupIndexTcremp: Map[String, String] = Motifs.buildCidLookupIndex(membersTcremp)
-  private final val metadataTcremp = MotifsMetadata.generateMetadataFromLevels(tableTcremp, metadataLevels)
+  /** TCRNet is the default: the parameter is absent on every request that predates the TCREMP tab. */
+  private def datasetFor(method: Option[String]): MotifDataset =
+    if (Motifs.isTcremp(method)) tcremp else tcrnet
 
-  private def isTcremp(method: Option[String]): Boolean = method.exists(_.toLowerCase == "tcremp")
+  def getMembers(method: Option[String] = None): Table = datasetFor(method).members
 
-  private def resolveTable(method: Option[String]): Table =
-    if (isTcremp(method)) tableTcremp else tableTcrnet
+  def getTable(method: Option[String] = None): Table = datasetFor(method).table
 
-  private def resolveMembers(method: Option[String]): Table =
-    if (isTcremp(method)) membersTcremp else membersTcrnet
+  def getMetadata(method: Option[String] = None): MotifsMetadata = datasetFor(method).metadata
 
-  private def resolveCdr3Range(method: Option[String]): (Int, Int) =
-    if (isTcremp(method)) cdr3RangeTcremp else cdr3RangeTcrnet
+  def getAvailabilityKeys(method: Option[String] = None): Set[String] = datasetFor(method).availabilityKeys
 
-  def getMembers(method: Option[String] = None): Table = resolveMembers(method)
-
-  def getTable(method: Option[String] = None): Table = resolveTable(method)
-
-  def getMetadata(method: Option[String] = None): MotifsMetadata =
-    if (isTcremp(method)) metadataTcremp else metadataTcrnet
-
-  def getAvailabilityKeys(method: Option[String] = None): Set[String] =
-    if (isTcremp(method)) availabilityKeysTcremp else availabilityKeysTcrnet
-
-  def getCidLookupIndex(method: Option[String] = None): Map[String, String] =
-    if (isTcremp(method)) cidLookupIndexTcremp else cidLookupIndexTcrnet
+  def getCidLookupIndex(method: Option[String] = None): Map[String, String] = datasetFor(method).cidLookupIndex
 
   def filter(filter: MotifsSearchTreeFilter)(implicit ec: ExecutionContext): Future[Option[MotifsSearchTreeFilterResult]] = {
-    val table = resolveTable(filter.method)
+    val table = datasetFor(filter.method).table
     Future {
       filter.entries.map(h => table.stringColumn(h.name).isEqualTo(h.value)).reduceRightOption((left, right) => left.and(right)).map { selection =>
         val filtered = table.where(selection)
@@ -101,7 +83,7 @@ case class Motifs @Inject()(database: Database)(implicit tfp: TemporaryFileProvi
             hash,
             epitopeTable.splitOn(epitopeTable.stringColumn("cid")).asTableList().asScala.flatMap { cidTable =>
               cidTable.splitOn(cidTable.intColumn("len")).asTableList().asScala.map { cidLenTable =>
-                MotifCluster.fromTable(cidLenTable, strict = !isTcremp(filter.method))
+                MotifCluster.fromTable(cidLenTable, strict = !Motifs.isTcremp(filter.method))
               }
             }
           )
@@ -125,8 +107,8 @@ case class Motifs @Inject()(database: Database)(implicit tfp: TemporaryFileProvi
   }
 
   private def whole_cdr3(cdr3: String, gene: String, top: Int, method: Option[String]): Future[MotifCDR3SearchResult] = Future.successful {
-    val table = resolveTable(method)
-    val tcremp = isTcremp(method)
+    val table = datasetFor(method).table
+    val isTcrempMethod = Motifs.isTcremp(method)
     val filterRules = table.intColumn("len").isEqualTo(cdr3.length.toDouble)
       .and(
         if (gene != "TRA" && gene != "TRB")
@@ -143,7 +125,7 @@ case class Motifs @Inject()(database: Database)(implicit tfp: TemporaryFileProvi
         val pos = posSet.head
         val target = String.valueOf(cdr3(pos))
 
-        val i: (Double, Double) = if (tcremp) {
+        val i: (Double, Double) = if (isTcrempMethod) {
           // tcremp: reuse the cluster-PWM aggregation (letter-frequency based) so the CDR3-search
           // ranking matches the displayed logo. Pick the target AA's raw and background-subtracted heights.
           val entry = backend.server.motifs.api.epitope.MotifClusterEntry.fromTable(p, aggregate = true)
@@ -161,7 +143,7 @@ case class Motifs @Inject()(database: Database)(implicit tfp: TemporaryFileProvi
         i
       }
       val reduced = info.reduce((l, r) => (l._1 + r._1, l._2 + r._2))
-      (reduced._1, reduced._2, MotifCluster.fromTable(t, strict = !tcremp))
+      (reduced._1, reduced._2, MotifCluster.fromTable(t, strict = !isTcrempMethod))
     }
 
     val safeTop = Math.max(1, Math.min(Motifs.maxTopValueInCDR3Search, top))
@@ -172,7 +154,7 @@ case class Motifs @Inject()(database: Database)(implicit tfp: TemporaryFileProvi
   }
 
   private def substring_cdr3(cdr3: String, gene: String, top: Int, method: Option[String]): Future[MotifCDR3SearchResult] = {
-    val cdr3Range = resolveCdr3Range(method)
+    val cdr3Range = datasetFor(method).cdr3Range
     if (cdr3.length < Motifs.minSubstringCDR3Length) {
       Future.failed(new IllegalArgumentException("Illegal CDR3 length"))
     } else if (cdr3.length > cdr3Range._2) {
@@ -194,16 +176,20 @@ case class Motifs @Inject()(database: Database)(implicit tfp: TemporaryFileProvi
   }
 
   def members(cid: String, format: String, method: Option[String] = None): Option[Future[TemporaryFileLink]] = {
-    val members = resolveMembers(method)
+    val members = datasetFor(method).members
     ClusterMembersConverter.getConverter(format).map(_.convert(members.where(members.stringColumn("cid").isEqualTo(cid)), cid))
   }
 }
 
 object Motifs {
+
+  /** Which clustering method a request asked for. Absent means TCRNet, the default. */
+  def isTcremp(method: Option[String]): Boolean = method.exists(_.equalsIgnoreCase("tcremp"))
+
   private final val maxTopValueInCDR3Search: Int = 15
   private final val minSubstringCDR3Length: Int = 3
 
-  private def buildAvailabilityKeys(table: Table): Set[String] = {
+  private[motifs] def buildAvailabilityKeys(table: Table): Set[String] = {
     val requiredColumns = Seq("species", "gene", "mhc.class", "mhc.a", "antigen.epitope")
     if (!requiredColumns.forall(table.columnNames().contains)) {
       Set.empty
