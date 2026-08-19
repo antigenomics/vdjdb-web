@@ -50,6 +50,15 @@ export class StructureHoverController {
     public x: number = 0;
     public y: number = 0;
 
+    /**
+     * How near the pointer must come to a contact line, in the map's own units.
+     *
+     * The map is ~684 units wide drawn at ~520px, so a unit is a little under a pixel: eight units
+     * is roughly a six-pixel target. Generous enough to catch a hair-thin line, tight enough that
+     * two contacts crossing near a residue do not fight over the pointer.
+     */
+    private static readonly ContactTolerance: number = 8;
+
     private svg: SVGSVGElement | null = null;
     private index: IStructureSvgIndex = { residues: [], contacts: [] };
     private highlighted?: SVGGElement;
@@ -65,7 +74,8 @@ export class StructureHoverController {
         const host = event.currentTarget instanceof HTMLElement ? event.currentTarget : null;
         this.refreshIndex(host);
 
-        const annotation = StructureSvgIndex.locate(this.index, event.target);
+        const annotation = StructureSvgIndex.locate(this.index, event.target)
+            || this.locateContactNear(event);
         const element = StructureHoverController.elementOf(annotation);
 
         if (element !== this.highlighted) {
@@ -90,6 +100,34 @@ export class StructureHoverController {
         if (changed || label !== null) {
             this.changeDetector.markForCheck();
         }
+    }
+
+    /**
+     * Falls back to the nearest contact when the pointer is not inside anything.
+     *
+     * Residue boxes are twenty units across and can simply be pointed at; contact lines cannot, so
+     * they are found by distance. Converting through the SVG's own matrix rather than assuming the
+     * viewBox maps linearly to the element keeps this correct under the zoom transform.
+     */
+    private locateContactNear(event: MouseEvent): IStructureAnnotation | null {
+        if (!this.svg || this.index.contacts.length === 0) {
+            return null;
+        }
+
+        const matrix = this.svg.getScreenCTM();
+        if (!matrix) {
+            return null;
+        }
+
+        const point = this.svg.createSVGPoint();
+        point.x = event.clientX;
+        point.y = event.clientY;
+        const inMap = point.matrixTransform(matrix.inverse());
+
+        const contact = StructureSvgIndex.nearestContact(
+            this.index, inMap.x, inMap.y, StructureHoverController.ContactTolerance);
+
+        return contact ? { kind: 'contact', residue: undefined, contact } : null;
     }
 
     public clear(): void {

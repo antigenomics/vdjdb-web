@@ -194,6 +194,50 @@ describe('StructureSvgIndex', () => {
         });
     });
 
+    describe('nearestContact', () => {
+
+        function twoResiduesAndAContact() {
+            return StructureSvgIndex.build(parse(
+                residue('N', 91, 100, 100, GREEN) +
+                residue('R', 5, 300, 100, BLUE) +
+                line(100, 100, 300, 100, '#000000', 1.5)));
+        }
+
+        it('finds a contact the pointer is merely near', () => {
+            // A 0.2-unit line is a fifth of a pixel on screen; the browser will never report it as
+            // hit, so distance is the only way to reach one.
+            const index = twoResiduesAndAContact();
+
+            expect(StructureSvgIndex.nearestContact(index, 200, 104, 8)).toBe(index.contacts[ 0 ]);
+            expect(StructureSvgIndex.nearestContact(index, 200, 100, 8)).toBe(index.contacts[ 0 ]);
+        });
+
+        it('ignores a contact beyond the tolerance', () => {
+            const index = twoResiduesAndAContact();
+
+            expect(StructureSvgIndex.nearestContact(index, 200, 140, 8)).toBeNull();
+        });
+
+        it('measures to the segment, not to its infinite line', () => {
+            // Level with the contact but well past its end: near the line, far from the segment.
+            const index = twoResiduesAndAContact();
+
+            expect(StructureSvgIndex.nearestContact(index, 500, 100, 8)).toBeNull();
+        });
+
+        it('prefers the closer of two contacts', () => {
+            const index = StructureSvgIndex.build(parse(
+                residue('N', 91, 100, 100, GREEN) +
+                residue('R', 5, 300, 100, BLUE) +
+                residue('D', 7, 300, 200, BLUE) +
+                line(100, 100, 300, 100, '#000000', 1.5) +
+                line(100, 100, 300, 200, '#000000', 1.5)));
+
+            const near = StructureSvgIndex.nearestContact(index, 200, 101, 8);
+            expect(StructureSvgIndex.describeContact(near)).toBe('ASN 91 : ARG 5');
+        });
+    });
+
     describe('locate', () => {
 
         it('finds the residue or contact an event landed in', () => {

@@ -244,6 +244,45 @@ export class StructureSvgIndex {
     }
 
     /**
+     * Nearest contact to a point in the map's own coordinates, within `tolerance`.
+     *
+     * Contact lines are drawn 1.5 units wide where the peptide is involved and 0.2 between the CDR3
+     * loops, which is around a pixel and a fifth of a pixel on screen. The browser only counts a
+     * stroked path as hit within its own width, so these cannot be pointed at: `elementFromPoint`
+     * over the middle of one returns the `<svg>`. Measuring the distance instead makes them
+     * reachable, and forgiving, without widening anything the reader can see.
+     */
+    public static nearestContact(index: IStructureSvgIndex, x: number, y: number,
+                                 tolerance: number): IStructureContact | null {
+        let best: IStructureContact | null = null;
+        let bestDistance = tolerance;
+
+        for (const contact of index.contacts) {
+            const distance = StructureSvgIndex.distanceToSegment(x, y, contact.from, contact.to);
+            if (distance <= bestDistance) {
+                best = contact;
+                bestDistance = distance;
+            }
+        }
+        return best;
+    }
+
+    /** Perpendicular distance from a point to a line segment, clamped to the segment's ends. */
+    private static distanceToSegment(x: number, y: number,
+                                     from: { x: number, y: number }, to: { x: number, y: number }): number {
+        const dx = to.x - from.x;
+        const dy = to.y - from.y;
+        const lengthSquared = dx * dx + dy * dy;
+
+        // A zero-length segment cannot happen (a contact joins two distinct residues) but dividing
+        // by it would yield NaN, which compares false and would silently drop the contact.
+        const along = lengthSquared === 0 ? 0
+            : Math.max(0, Math.min(1, ((x - from.x) * dx + (y - from.y) * dy) / lengthSquared));
+
+        return Math.hypot(x - (from.x + along * dx), y - (from.y + along * dy));
+    }
+
+    /**
      * What the element under the pointer belongs to, or nothing.
      *
      * Events land on the `<path>` or `<use>` inside a group, so this walks up to the group the index
