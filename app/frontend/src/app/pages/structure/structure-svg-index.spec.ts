@@ -149,11 +149,57 @@ describe('StructureSvgIndex', () => {
             expect(index.contacts).toEqual([]);
         });
 
+        it('names a residue with its chain where a bare number would be ambiguous', () => {
+            // Numbering runs within each chain, so position 5 exists in the peptide and in a TCR
+            // chain alike. Unqualified, a contact between them reads as one sequence.
+            const index = StructureSvgIndex.build(parse(
+                residue('N', 91, 400, 200, GREEN) +
+                residue('R', 5, 300, 400, BLUE) +
+                line(400, 200, 300, 400, '#000000', 1.5)));
+
+            expect(StructureSvgIndex.describeResidueWithChain(index.residues[ 0 ])).toBe('ASN 91 (CDR3a)');
+            expect(StructureSvgIndex.describeContactWithChains(index.contacts[ 0 ]))
+                .toBe('ASN 91 (CDR3a) : ARG 5 (peptide)');
+        });
+
         it('keeps an unknown one-letter code rather than dropping the residue', () => {
             const index = StructureSvgIndex.build(parse(residue('X', 42, 100, 100, GREEN)));
 
             expect(index.residues.length).toBe(1);
             expect(StructureSvgIndex.describeResidue(index.residues[ 0 ])).toBe('X 42');
+        });
+    });
+
+    describe('locate', () => {
+
+        it('finds the residue or contact an event landed in', () => {
+            const svg = parse(
+                residue('N', 91, 400, 200, GREEN) +
+                residue('R', 5, 300, 400, BLUE) +
+                line(400, 200, 300, 400, '#000000', 1.5));
+            const index = StructureSvgIndex.build(svg);
+
+            // Events land on the inner <use> or <path>, not the group the index holds.
+            const insideBox = index.residues[ 0 ].element.querySelector('use');
+            const located = StructureSvgIndex.locate(index, insideBox);
+            expect(located.kind).toBe('residue');
+            expect(located.residue.position).toBe(91);
+
+            const insideLine = index.contacts[ 0 ].element.querySelector('path');
+            expect(StructureSvgIndex.locate(index, insideLine).kind).toBe('contact');
+        });
+
+        it('finds nothing for the backbone, or for anything outside the map', () => {
+            const svg = parse(
+                residue('C', 88, 100, 100, GREEN) +
+                residue('A', 89, 200, 100, GREEN) +
+                line(100, 100, 200, 100, GREEN, 1.5));
+            const index = StructureSvgIndex.build(svg);
+
+            const backbone = svg.querySelector('g[id="line2d_5"] path');
+            expect(StructureSvgIndex.locate(index, backbone)).toBeNull();
+            expect(StructureSvgIndex.locate(index, null)).toBeNull();
+            expect(StructureSvgIndex.locate(index, svg)).toBeNull();
         });
     });
 });

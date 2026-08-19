@@ -51,7 +51,19 @@
                         <div class="overlay-card" *ngFor="let row of overlayTableRows; trackBy: trackRowBy"
                              [class.is-selected]="isClusterSelected(row.cluster)"
                              [class.is-disabled]="isRowDisabled(row)"
+                             [class.is-at-front]="isClusterAtFront(row.cluster)"
                              (click)="isRowDisabled(row) ? null : onRowToggle(row, $event)">
+                            <!-- Only a selected structure has anything in the overlay to promote. -->
+                            <button class="overlay-card__front" type="button"
+                                    *ngIf="isClusterSelected(row.cluster)"
+                                    [class.is-active]="isClusterAtFront(row.cluster)"
+                                    [disabled]="isClusterAtFront(row.cluster)"
+                                    [attr.title]="isClusterAtFront(row.cluster) ? 'At the front of the overlay' : 'Bring to front'"
+                                    [attr.aria-label]="isClusterAtFront(row.cluster) ? 'At the front of the overlay' : 'Bring this structure to the front'"
+                                    (click)="onBringToFront(row, $event)"
+                                    (mousedown)="$event.stopPropagation()">
+                                <i class="icon level up alternate"></i>
+                            </button>
                             <div class="overlay-card__line overlay-card__line--cdr">
                                 <span class="overlay-card__label">CDR3a:</span>
                                 <span class="overlay-card__value">
@@ -143,8 +155,11 @@
                                      [class.is-dragging]="zoomState.isDragging"
                                      [style.transform]="zoomState.transform"
                                      #zoomCanvas>
-                                    <div class="structure-overlay__base">
+                                    <div class="structure-overlay__base" #overlayBase>
                                         <div class="structure-html" [innerHTML]="overlayLayerList[0].markup"></div>
+                                        <div class="structure-hover-tip" *ngIf="hoverState.isActive"
+                                             [style.left.px]="hoverState.x" [style.top.px]="hoverState.y"
+                                             aria-hidden="true">{{ hoverState.label }}</div>
                                     </div>
                                     <ng-container *ngFor="let layer of overlayLayerList; let i = index">
                                         <ng-container *ngIf="i > 0">

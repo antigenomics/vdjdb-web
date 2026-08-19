@@ -669,3 +669,103 @@
         display: none;
     }
 }
+/* ---------- hovering the front structure ---------- */
+
+/*
+ * Only the base layer carries pointer events (see .structure-overlay__layer above), so these can
+ * only ever apply to the structure at the front of the stack. Highlighting one behind it would name
+ * a residue from a map the reader is not looking at.
+ */
+
+/*
+ * transform-box: fill-box makes the origin the element's own bounding box, so the residue box grows
+ * about its centre. Without it the origin is the SVG user-space origin and the box flies off across
+ * the figure instead of growing in place.
+ */
+.structure-overlay__base .structure-hover--residue {
+    transform-box: fill-box;
+    transform-origin: center;
+    transform: scale(1.5);
+    filter: drop-shadow(0 0 3px rgba(0, 0, 0, 0.45));
+    transition: transform 90ms ease-out;
+}
+
+/*
+ * !important throughout: matplotlib writes stroke and width inline on every path, and an inline
+ * style beats a stylesheet rule whatever its specificity.
+ */
+.structure-overlay__base .structure-hover--contact path {
+    stroke: #111111 !important;
+    stroke-width: 3 !important;
+    stroke-dasharray: none !important;
+    filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.35));
+}
+
+.structure-hover-tip {
+    position: absolute;
+    z-index: 40;
+    /* Above and to the right of the pointer, so it never sits under the cursor itself. */
+    transform: translate(12px, -140%);
+    pointer-events: none;
+    white-space: nowrap;
+    padding: 3px 7px;
+    border-radius: 3px;
+    background: rgba(33, 33, 33, 0.92);
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+}
+
+/* ---------- bring a structure to the front ---------- */
+
+.overlay-card {
+    /* The promote button is positioned against the card. */
+    position: relative;
+}
+
+.overlay-card__front {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    z-index: 2;
+    width: 26px;
+    height: 26px;
+    padding: 0;
+    border: 1px solid #d4d4d5;
+    border-radius: 50%;
+    background: #ffffff;
+    /* Grey until this structure is the one at the front. */
+    color: #9a9a9a;
+    cursor: pointer;
+    transition: color 120ms ease, border-color 120ms ease, background-color 120ms ease;
+}
+
+.overlay-card__front .icon {
+    margin: 0;
+    line-height: 24px;
+    font-size: 13px;
+}
+
+.overlay-card__front:hover {
+    color: #48af75;
+    border-color: #48af75;
+}
+
+/* Coloured once this structure is at the front. Also the disabled state - there is nowhere further
+   forward to go - so the usual dimming is overridden. */
+.overlay-card__front.is-active,
+.overlay-card__front.is-active:hover {
+    color: #ffffff;
+    background: #48af75;
+    border-color: #48af75;
+    opacity: 1;
+    cursor: default;
+}
+
+/* The card glows while its structure is the one being drawn at the front, so the reader can see at
+   a glance which of the overlaid maps the hover labels refer to. */
+.overlay-card.is-at-front {
+    border-color: #48af75;
+    box-shadow: 0 0 0 1px #48af75, 0 0 10px rgba(72, 175, 117, 0.45);
+}

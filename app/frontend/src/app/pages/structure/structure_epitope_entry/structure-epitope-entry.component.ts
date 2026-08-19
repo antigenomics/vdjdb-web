@@ -19,6 +19,7 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { SearchAvailabilityService } from 'pages/search/table/search/search-availability.service';
 import { IStructureCluster, IStructureClusterMeta, IStructureEpitope } from 'pages/structure/structure';
 import { StructureService, StructuresServiceEvents } from 'pages/structure/structure.service';
+import { StructureHoverController } from 'pages/structure/structure_hover/structure-hover.controller';
 import { StructureZoomController } from 'pages/structure/structure_zoom/structure-zoom.controller';
 import { Subscription } from 'rxjs';
 import { filter, take, takeUntil } from 'rxjs/operators';
@@ -99,11 +100,17 @@ export class StructureEpitopeEntryComponent implements OnInit, OnDestroy {
     public overlayWidth: number = StructureEpitopeEntryComponent.overlayMinWidthPx;
     public overlayHeight: number = StructureEpitopeEntryComponent.overlayMinHeightPx;
     public zoomState: StructureZoomController;
+    public hoverState: StructureHoverController;
     @Input('epitope') public epitope: IStructureEpitope;
     @Input('isNormalized') public isNormalized: boolean;
     @Output('onDiscard') public onDiscard = new EventEmitter<IStructureEpitope>();
     @ViewChild('structureOverlay') public set structureOverlayRef(ref: ElementRef<HTMLElement> | undefined) {
         this.attachOverlayObserver(ref);
+    }
+    /** The front structure only. The layers behind it are pointer-events: none, so a reader can
+     * only ever interrogate the map they are actually looking at. */
+    @ViewChild('overlayBase') public set overlayBaseRef(ref: ElementRef<HTMLElement> | undefined) {
+        this.hoverState.attach(ref ? ref.nativeElement : undefined);
     }
     @ViewChild('zoomCanvas') public set zoomCanvasRef(ref: ElementRef<HTMLElement> | undefined) {
         this.zoomState.attachCanvas(ref ? ref.nativeElement : undefined);
@@ -115,6 +122,7 @@ export class StructureEpitopeEntryComponent implements OnInit, OnDestroy {
     constructor(private structureService: StructureService, private availability: SearchAvailabilityService,
                 private changeDetector: ChangeDetectorRef, private sanitizer: DomSanitizer) {
         this.zoomState = new StructureZoomController(this.changeDetector);
+        this.hoverState = new StructureHoverController(this.changeDetector);
     }
 
     public ngOnInit(): void {
@@ -145,6 +153,7 @@ export class StructureEpitopeEntryComponent implements OnInit, OnDestroy {
             this.overlayLayerMap.clear();
             this.ensureOverlayLayer(targetCluster);
             this.updateOverlayLayerList();
+            this.reorderOverlayRows();
             this.changeDetector.markForCheck();
           } else {
             this.initializeOverlaySelection();
@@ -163,6 +172,7 @@ export class StructureEpitopeEntryComponent implements OnInit, OnDestroy {
               this.overlayLayerMap.clear();
               this.ensureOverlayLayer(targetCluster);
               this.updateOverlayLayerList();
+              this.reorderOverlayRows();
               this.structureService.setSelectedClusterIds(this.overlaySelection.slice());
               this.changeDetector.markForCheck();
             }
@@ -200,6 +210,65 @@ export class StructureEpitopeEntryComponent implements OnInit, OnDestroy {
 
     public get filteredStructuresCount(): number {
         return this.overlayTableRows.length;
+    }
+
+    /**
+     * Sorts the card list so it reads in the same order as the overlay stacks: selected structures
+     * first, front-most at the top, then everything unselected in its original order.
+     *
+     * A stable sort on a key rather than a comparator over `indexOf`, so cards that share a key -
+     * every unselected one - keep the order the epitope gave them and do not shuffle on each
+     * selection.
+     */
+    private reorderOverlayRows(): void {
+        const rank = (row: IOverlayTableRow): number => {
+            const position = this.overlaySelection.indexOf(row.cluster.clusterId);
+            return position === -1 ? this.overlaySelection.length : position;
+        };
+
+        this.overlayTableRows = this.overlayTableRows
+            .map((row, index) => ({ row, rank: rank(row), index }))
+            .sort((left, right) => left.rank - right.rank || left.index - right.index)
+            .map((entry) => entry.row);
+    }
+
+    /** Whether this cluster is the one drawn at the front of the stack. */
+    public isClusterAtFront(cluster: IStructureCluster): boolean {
+        return this.overlaySelection.length > 0 && this.overlaySelection[ 0 ] === cluster.clusterId;
+    }
+
+    /**
+     * Brings a selected structure to the front of the overlay and the top of the list.
+     *
+     * Front-ness is position zero of `overlaySelection`, and index zero is rendered from the
+     * `standard` markup while everything behind it uses `simple` - so this is not a permutation of
+     * z-index, it changes which variant two structures are drawn from. `updateOverlayLayerList`
+     * already derives both from position, so moving the id is enough and the swap follows.
+     *
+     * Only selected structures can be promoted: an unselected card has nothing in the overlay to
+     * bring forward, and its button is not rendered.
+     */
+    public onBringToFront(row: IOverlayTableRow, event?: MouseEvent): void {
+        if (event) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+        if (!row || !row.cluster) {
+            return;
+        }
+
+        const position = this.overlaySelection.indexOf(row.cluster.clusterId);
+        if (position <= 0) {
+            return; // not selected, or already at the front
+        }
+
+        this.overlaySelection.splice(position, 1);
+        this.overlaySelection.unshift(row.cluster.clusterId);
+
+        this.updateOverlayLayerList();
+        this.reorderOverlayRows();
+        this.structureService.setSelectedClusterIds(this.overlaySelection.slice());
+        this.changeDetector.markForCheck();
     }
 
     public onRowToggle(row: IOverlayTableRow, event?: MouseEvent): void {
@@ -241,6 +310,7 @@ export class StructureEpitopeEntryComponent implements OnInit, OnDestroy {
                 this.overlayLayerMap.delete(cluster.clusterId);
                 this.structureService.releaseHtmlVisualizationMarkup(cluster);
                 this.updateOverlayLayerList();
+                this.reorderOverlayRows();
                 this.overlayError = undefined;
                 this.structureService.setSelectedClusterIds(this.overlaySelection.slice());
                 this.changeDetector.markForCheck();
@@ -258,21 +328,6 @@ export class StructureEpitopeEntryComponent implements OnInit, OnDestroy {
         return !this.isClusterSelected(row.cluster) && this.overlaySelection.length >= this.overlayLimit;
     }
 
-    public computeOverlayOpacity(index: number): number {
-        if (index === 0) {
-            return 1;
-        }
-        const total = this.overlayLayerList.length;
-        if (total <= 1) {
-            return 1;
-        }
-        const minOpacity = 0.25;
-        const steps = total - 1;
-        const range = 1 - minOpacity;
-        const step = steps > 0 ? range / steps : range;
-        const value = 1 - step * index;
-        return value < minOpacity ? minOpacity : value;
-    }
 
     public onDownloadClick(row: IOverlayTableRow, event: MouseEvent): void {
         if (event) {
@@ -334,6 +389,7 @@ export class StructureEpitopeEntryComponent implements OnInit, OnDestroy {
             }
             this.overlayError = `Failed to load structure ${cluster.clusterId}.`;
             this.updateOverlayLayerList();
+            this.reorderOverlayRows();
             this.changeDetector.markForCheck();
             return;
         }
@@ -351,6 +407,7 @@ export class StructureEpitopeEntryComponent implements OnInit, OnDestroy {
         });
         this.overlayError = undefined;
         this.updateOverlayLayerList();
+        this.reorderOverlayRows();
         this.changeDetector.markForCheck();
     }
 
@@ -395,6 +452,7 @@ export class StructureEpitopeEntryComponent implements OnInit, OnDestroy {
             }
         });
         this.updateOverlayLayerList();
+        this.reorderOverlayRows();
         this.changeDetector.markForCheck();
     }
 
@@ -650,6 +708,7 @@ export class StructureEpitopeEntryComponent implements OnInit, OnDestroy {
     }
 
     public ngOnDestroy(): void {
+        this.hoverState.detach();
         this.disconnectOverlayObserver();
         this.cancelOverlayRecalc();
         this.overlaySelection.forEach((id) => this.structureService.releaseHtmlVisualizationMarkup(id));

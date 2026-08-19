@@ -71,6 +71,13 @@ export interface IStructureSvgIndex {
     contacts: IStructureContact[];
 }
 
+/** What sits under the pointer: exactly one of the two is set. */
+export interface IStructureAnnotation {
+    kind: 'residue' | 'contact';
+    residue?: IStructureResidue;
+    contact?: IStructureContact;
+}
+
 const AMINO_ACIDS: { [ code: string ]: string } = {
     A: 'ALA', R: 'ARG', N: 'ASN', D: 'ASP', C: 'CYS', Q: 'GLN', E: 'GLU', G: 'GLY',
     H: 'HIS', I: 'ILE', L: 'LEU', K: 'LYS', M: 'MET', F: 'PHE', P: 'PRO', S: 'SER',
@@ -219,6 +226,43 @@ export class StructureSvgIndex {
     /** How a residue reads in the tooltip, e.g. `ASN 91`. */
     public static describeResidue(residue: IStructureResidue): string {
         return `${residue.label} ${residue.position}`;
+    }
+
+    /**
+     * The same, qualified by chain: `ASN 91 (CDR3a)`.
+     *
+     * Numbering runs within each chain, so a bare position is only unambiguous inside one. Position
+     * 5 exists in the peptide and in a TCR chain alike, and a contact naming both ends by number
+     * alone reads as though they were in the same sequence.
+     */
+    public static describeResidueWithChain(residue: IStructureResidue): string {
+        return `${StructureSvgIndex.describeResidue(residue)} (${residue.chain})`;
+    }
+
+    public static describeContactWithChains(contact: IStructureContact): string {
+        return `${StructureSvgIndex.describeResidueWithChain(contact.from)}` +
+            ` : ${StructureSvgIndex.describeResidueWithChain(contact.to)}`;
+    }
+
+    /**
+     * What the element under the pointer belongs to, or nothing.
+     *
+     * Events land on the `<path>` or `<use>` inside a group, so this walks up to the group the index
+     * holds. Backbone segments and the axes belong to no annotation and correctly return nothing.
+     */
+    public static locate(index: IStructureSvgIndex, target: EventTarget | null): IStructureAnnotation | null {
+        const element = target instanceof Element ? target.closest('g[id^="line2d_"]') : null;
+        if (!element) {
+            return null;
+        }
+
+        const residue = index.residues.find((candidate) => candidate.element === element);
+        if (residue) {
+            return { kind: 'residue', residue, contact: undefined };
+        }
+
+        const contact = index.contacts.find((candidate) => candidate.element === element);
+        return contact ? { kind: 'contact', residue: undefined, contact } : null;
     }
 
     /**
