@@ -32,7 +32,7 @@
     <ng-container *ngIf="!isHidden">
         <div class="overlay-controls">
             <div class="overlay-layout">
-                <div class="overlay-list" [style.height.px]="overlayHeight">
+                <div class="overlay-list" [style.height.px]="sizeState.height">
                     <div class="overlay-list__top-row">
                         <div class="overlay-list__instructions">
                             <!-- The three spans are joined without a line break between them. Broken onto
@@ -141,8 +141,8 @@
                 </div>
                 <div class="overlay-visualization">
                     <div class="structure-overlay"
-                         [style.width.px]="overlayWidth"
-                         [style.height.px]="overlayHeight"
+                         [style.width.px]="sizeState.width"
+                         [style.height.px]="sizeState.height"
                          #structureOverlay>
                         <div class="structure-counter" aria-hidden="true">
                             <span class="structure-counter__value">{{ overlaySelectionCount }}</span>
