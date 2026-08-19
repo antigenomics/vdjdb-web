@@ -37,7 +37,15 @@ describe('SearchAvailabilityService', () => {
     const CID_KEY = 'homosapiens|trb|gilgfvftl|cassisstgelff|trbv19*01|trbj2-2*01|hla-a*02|b2m|mhci';
     const AVAILABILITY_KEY = 'homosapiens|trb|mhci|hla-a*02|gilgfvftl';
 
-    const payload = {
+    const payload: {
+        structures: string[],
+        motifs: string[],
+        motifsTcremp: string[],
+        visualizations: { [key: string]: any },
+        motifCidIndex: { [key: string]: string },
+        motifCidIndexTcremp: { [key: string]: string },
+        structureMetrics: { [key: string]: any }
+    } = {
         structures: [ 'abc123' ],
         motifs: [],
         motifsTcremp: [ AVAILABILITY_KEY ],
