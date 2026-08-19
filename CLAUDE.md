@@ -163,11 +163,17 @@ ssh vdjdb@100.83.178.73 'cd ~/vdjdb_publish_dev && docker compose pull vdjdb-dev
 
 Check `/buildInfo` for the commit hash afterwards — it is the only thing that says which build is up.
 
-**Cross-page links run one way and always open a new tab.** Browse -> Structure (`tcr_hash`, the
-structure id, which preselects that one structure and is then dropped from the URL), and Structure ->
-Motif (`cid`, the motif cluster id, which highlights and scrolls to that cluster). There is no
-Motif -> Structure link — do not go looking for one. Both crossings are `target="_blank"`, so the
-originating page keeps its state and neither needs a return path.
+**Every cross-page link opens a new tab, so no page needs a return path.** Three exist:
+
+- **Browse -> Structure** — the "S" badge, `tcr_hash` = the structure id. Preselects exactly that one
+  structure, fronts it, and is then dropped from the URL in favour of `cid`.
+- **Structure -> Motif** — the per-card "Alpha/Beta motif" buttons, `cid` = the motif cluster id.
+  Highlights that cluster and scrolls to it. A card with no matching motif renders a `<span>` with a
+  title saying why, not a dead link.
+- **Structure -> Browse** — the "Show table" button, `epitope_seq` plus
+  `struct=native,contacts,quality`, which lands on Browse with the evidence filters already applied.
+
+There is **no Motif -> Structure link** — do not go looking for one.
 
 ## Domain conventions
 
