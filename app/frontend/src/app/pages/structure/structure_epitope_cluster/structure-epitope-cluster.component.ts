@@ -111,10 +111,6 @@ export class StructureEpitopeClusterComponent implements OnInit, OnChanges, OnDe
         this.zoomState.destroy();
     }
 
-    public exportCID(): void {
-        this.structureService.members(this.cluster.clusterId);
-    }
-
     public onDownloadOptionClick(option: StructureDownloadOption, event: MouseEvent): void {
         if (event) {
             event.preventDefault();

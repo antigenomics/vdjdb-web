@@ -178,9 +178,18 @@ describe('StructureOverlayRow', () => {
         });
 
         // A structure with no HTML map cannot go into the overlay, and the card is disabled for it.
+        // The cast is the point: IStructureVisualization.kind is typed as the literal 'html' because
+        // StructureResponse drops every other kind on the way in, so this reaches a guard that the
+        // type system says is unreachable - and it stays, because the type is a claim about the
+        // normaliser rather than about the server, which does send png.
         it('reports a cluster whose visualization is not html as having none', () => {
-            const row = StructureOverlayRow.build(cluster({ visualization: { url: '/x.png', kind: 'png' } }), 'GILGFVFTL');
+            const row = StructureOverlayRow.build(
+                cluster({ visualization: { url: '/x.png', kind: 'png' } as any }), 'GILGFVFTL');
             expect(row.hasHtml).toBe(false);
+        });
+
+        it('reports a cluster with no visualization at all as having none', () => {
+            expect(StructureOverlayRow.build(cluster({ visualization: undefined }), 'GILGFVFTL').hasHtml).toBe(false);
         });
 
         it('leaves the motif links off a cluster with no motif cluster', () => {

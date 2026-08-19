@@ -127,6 +127,3 @@ export interface IStructureCDR3SearchResult {
 
 // -------------------------------------------------------------------------------- //
 
-export interface IStructureClusterMembersExportResponse {
-  link: string;
-}

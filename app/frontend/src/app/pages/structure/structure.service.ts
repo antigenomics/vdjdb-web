@@ -20,23 +20,20 @@ import {
   IStructureCDR3SearchResult,
   IStructureCDR3SearchResultOptions,
   IStructureCluster,
-  IStructureClusterMeta,
-  IStructureClusterMembersExportResponse,
-  IStructureModelMetrics,
-  IStructureVisualization,
   IStructureEpitope,
   IStructureEpitopeViewOptions,
   IStructuresMetadata,
   IStructuresMetadataTreeLevel,
   IStructuresMetadataTreeLevelValue,
   IStructuresSearchTreeFilter,
-  IStructuresSearchTreeFilterEntry,
   IStructuresSearchTreeFilterResult
 } from 'pages/structure/structure';
 import { combineLatest, Observable, ReplaySubject, Subject } from 'rxjs';
 import { map, take } from 'rxjs/operators';
 import { LoggerService } from 'utils/logger/logger.service';
 import { NotificationService } from 'utils/notifications/notification.service';
+import { StructureMarkupCache, StructureMarkupMode } from 'pages/structure/structure-markup.cache';
+import { StructureResponse } from 'pages/structure/structure-response';
 import { Utils } from 'utils/utils';
 import { EpitopeBridgeService, IBridgeEpitope } from '../../epitope-bridge.service';
 
@@ -76,7 +73,7 @@ export class StructureService {
   private loadingState: Subject<boolean> = new ReplaySubject(1);
   private highlightedClusterIdx: ReplaySubject<string | null> = new ReplaySubject(1);
   private selectedClusterIds: ReplaySubject<string[]> = new ReplaySubject(1);
-  private htmlVisualizationCache: Map<string, string | null> = new Map<string, string | null>();
+  private markup: StructureMarkupCache = new StructureMarkupCache();
 
   constructor(private logger: LoggerService, private notifications: NotificationService, private bridge: EpitopeBridgeService) {}
 
@@ -187,8 +184,8 @@ export class StructureService {
       if (!mhcClassNode || !mhcClassNode.next) { return; }
       pathNodes.push(mhcClassNode);
 
-      const normalizedGene = this.normalizeMhcPair(filters.gene);
-      const mhcNode = mhcClassNode.next.values.find((v) => this.normalizeMhcPair(v.value) === normalizedGene);
+      const normalizedGene = StructureResponse.normalizeMhcPair(filters.gene);
+      const mhcNode = mhcClassNode.next.values.find((v) => StructureResponse.normalizeMhcPair(v.value) === normalizedGene);
       if (!mhcNode || !mhcNode.next) { return; }
       pathNodes.push(mhcNode);
 
@@ -305,7 +302,7 @@ export class StructureService {
     if (mode === 'replace') {
       this.metadata.pipe(take(1)).subscribe((metadata) => {
         this.clearSelectedValues(metadata);
-        const leaf = this.resolveLeafFromFilter(metadata, treeFilter.entries);
+        const leaf = StructureResponse.resolveLeaf(metadata, treeFilter.entries);
         if (leaf) {
           this.selectTreeLevelValue(leaf);
         }
@@ -326,7 +323,7 @@ export class StructureService {
         ]).pipe(take(1)).subscribe(([ metadata, current ]: [ IStructuresMetadata, IStructureEpitope[] ]) => {
           let result: IStructuresSearchTreeFilterResult;
           try {
-            result = this.normalizeStructureFilterResult(treeFilter, raw, metadata);
+            result = StructureResponse.normalizeFilterResult(treeFilter, raw, metadata);
           } catch (normalizationError) {
             this.loadingState.next(false);
             this.notifications.error('Structure', 'Could not read the structures for this selection. Please try again or select another epitope.');
@@ -374,16 +371,6 @@ export class StructureService {
       this.notifications.error('Structure', 'Unable to load results');
     });
 
-  }
-
-  public members(cid: string): void {
-    Utils.HTTP.post('/api/structures/members', { cid, format: 'tsv' }).then((response) => {
-      const result = JSON.parse(response.response) as IStructureClusterMembersExportResponse;
-      Utils.File.download(result.link);
-      this.notifications.info('Structure export', 'Download will start automatically');
-    }).catch(() => {
-      this.notifications.error('Structure', 'Unable to export results');
-    });
   }
 
   public discard(_: IStructuresSearchTreeFilter): void {
@@ -504,241 +491,6 @@ export class StructureService {
     }));
   }
 
-  private normalizeStructureFilterResult(treeFilter: IStructuresSearchTreeFilter, raw: any, metadata: IStructuresMetadata): IStructuresSearchTreeFilterResult {
-    if (raw && Array.isArray(raw.epitopes)) {
-      return raw;
-    }
-
-    const entries = Array.isArray(treeFilter && treeFilter.entries) ? treeFilter.entries : [];
-    const items = raw && Array.isArray(raw.items) ? raw.items : [];
-
-    const hash = this.resolveEpitopeHashFromMetadata(metadata, entries) || this.buildFallbackHash(entries);
-    const epitopeLabel = this.resolveEpitopeLabel(entries) || this.extractEpitopeFromItems(items) || 'structures';
-
-    const targetStructureEntry = entries.find((entry) => entry && entry.name === 'structure.id' && typeof entry.value === 'string');
-    const normalizedTarget = targetStructureEntry ? targetStructureEntry.value.trim().toLowerCase() : '';
-
-    const clusters = items
-      .map((item: any) => this.asStructureCluster(item))
-      .filter((cluster: IStructureCluster | undefined) => {
-        if (!cluster) {
-          return false;
-        }
-        if (!normalizedTarget) {
-          return true;
-        }
-        const clusterId = (cluster.clusterId || '').trim().toLowerCase();
-        return clusterId === normalizedTarget;
-      });
-
-    return {
-      epitopes: [
-        {
-          hash,
-          epitope: epitopeLabel,
-          clusters
-        }
-      ]
-    };
-  }
-
-  private resolveEpitopeHashFromMetadata(metadata: IStructuresMetadata, entries: IStructuresSearchTreeFilterEntry[]): string | undefined {
-    if (!metadata || !metadata.root || !Array.isArray(entries) || entries.length === 0) {
-      return undefined;
-    }
-
-    let level: IStructuresMetadataTreeLevel | null = metadata.root;
-    for (let index = 0; index < entries.length; ++index) {
-      const entry = entries[index];
-      if (!level) {
-        return undefined;
-      }
-      const value = level.values.find((candidate) => candidate.value === entry.value);
-      if (!value) {
-        return undefined;
-      }
-      if (index === entries.length - 1) {
-        return value.hash;
-      }
-      level = value.next;
-    }
-    return undefined;
-  }
-
-  private resolveLeafFromFilter(metadata: IStructuresMetadata,
-                                entries: IStructuresSearchTreeFilterEntry[]): IStructuresMetadataTreeLevelValue | undefined {
-    if (!metadata || !metadata.root || !Array.isArray(entries) || entries.length === 0) {
-      return undefined;
-    }
-    const relevant = entries.filter((entry) => entry && [ 'mhc.class', 'mhc.pair', 'antigen.epitope' ].indexOf(entry.name) !== -1);
-    if (relevant.length === 0) {
-      return undefined;
-    }
-    let level: IStructuresMetadataTreeLevel | null = metadata.root;
-    for (let index = 0; index < relevant.length; ++index) {
-      const entry = relevant[index];
-      if (!level) {
-        return undefined;
-      }
-      const value = level.values.find((candidate) => {
-        if (entry.name === 'mhc.pair') {
-          return this.normalizeMhcPair(candidate.value) === this.normalizeMhcPair(entry.value);
-        }
-        return candidate.value.toLowerCase() === entry.value.toLowerCase();
-      });
-      if (!value) {
-        return undefined;
-      }
-      if (index === relevant.length - 1) {
-        return value;
-      }
-      level = value.next;
-    }
-    return undefined;
-  }
-
-  private resolveEpitopeLabel(entries: IStructuresSearchTreeFilterEntry[]): string | undefined {
-    if (!Array.isArray(entries)) {
-      return undefined;
-    }
-    const epitopeEntry = entries.slice().reverse().find((entry) => entry && entry.name === 'antigen.epitope');
-    return epitopeEntry && typeof epitopeEntry.value === 'string' ? epitopeEntry.value : undefined;
-  }
-
-  private extractEpitopeFromItems(items: any[]): string | undefined {
-    if (!Array.isArray(items)) {
-      return undefined;
-    }
-    for (const item of items) {
-      const meta = item && item.meta;
-      const candidate = this.pickMetaValue(meta, [ 'antigen.epitope', 'antigenEpitope', 'antigen_epitope' ]);
-      if (candidate) {
-        return candidate;
-      }
-    }
-    return undefined;
-  }
-
-  private asStructureCluster(item: any): IStructureCluster {
-    const meta = item && typeof item.meta === 'object' ? item.meta : {};
-    const clusterMeta: IStructureClusterMeta = {
-      species: this.pickMetaValue(meta, [ 'species' ]) || '',
-      gene: this.pickMetaValue(meta, [ 'gene' ]) || '',
-      mhcclass: this.pickMetaValue(meta, [ 'mhc.class', 'mhcclass' ]) || '',
-      mhca: this.pickMetaValue(meta, [ 'mhc.a', 'mhca' ]) || '',
-      mhcb: this.pickMetaValue(meta, [ 'mhc.b', 'mhcb' ]) || '',
-      antigenGene: this.pickMetaValue(meta, [ 'antigen.gene', 'antigenGene' ]) || '',
-      antigenSpecies: this.pickMetaValue(meta, [ 'antigen.species', 'antigenSpecies' ]) || '',
-      cellSubset: this.pickMetaValue(meta, [ 'cell.subset', 'cellSubset', 'cell_subset' ]) || ''
-    };
-
-    const clusterId = item && item.id ? String(item.id) : this.pickMetaValue(meta, [ 'structure.id', 'structureId' ]) || this.buildClusterIdFallback(meta);
-
-    const visualization = this.normalizeVisualizationFromRaw(item && item.visualization);
-
-    const displayId = item && typeof item.displayId === 'string' ? item.displayId : undefined;
-    const tcrPairLabel = item && typeof item.tcrPairLabel === 'string' ? item.tcrPairLabel : undefined;
-    const cdr3aVEnd = this.pickIntValue(item, [ 'cdr3aVEnd' ]);
-    const cdr3aJStart = this.pickIntValue(item, [ 'cdr3aJStart' ]);
-    const cdr3bVEnd = this.pickIntValue(item, [ 'cdr3bVEnd' ]);
-    const cdr3bJStart = this.pickIntValue(item, [ 'cdr3bJStart' ]);
-
-    const cluster: IStructureCluster = {
-      clusterId,
-      displayId,
-      tcrPairLabel,
-      size: Number(item && item.size ? item.size : 1),
-      length: Number(item && item.length ? item.length : 0),
-      vsegm: this.pickMetaValue(meta, [ 'v', 'vsegm', 'v.segm' ]) || '',
-      jsegm: this.pickMetaValue(meta, [ 'j', 'jsegm', 'j.segm' ]) || '',
-      cdr3aVEnd,
-      cdr3aJStart,
-      cdr3bVEnd,
-      cdr3bJStart,
-      meta: clusterMeta,
-      visualization,
-      metrics: this.asStructureMetrics(item && item.metrics)
-    } as IStructureCluster;
-
-    (cluster as any).rawMeta = meta;
-    return cluster;
-  }
-
-  private asStructureMetrics(raw: any): IStructureModelMetrics | undefined {
-    if (!raw || typeof raw !== 'object') {
-      return undefined;
-    }
-    const num = (v: any): number | undefined => {
-      const parsed = typeof v === 'number' ? v : (typeof v === 'string' ? Number(v) : NaN);
-      return Number.isFinite(parsed) ? parsed : undefined;
-    };
-    return {
-      isNative: raw.isNative === true,
-      numContacts: num(raw.numContacts),
-      iptm: num(raw.iptm),
-      confidence: num(raw.confidence),
-      iptmPct: num(raw.iptmPct),
-      confidencePct: num(raw.confidencePct),
-      bindingModeOutlier: typeof raw.bindingModeOutlier === 'boolean' ? raw.bindingModeOutlier : undefined
-    };
-  }
-
-  private pickMetaValue(meta: any, keys: string[]): string | undefined {
-    if (!meta) {
-      return undefined;
-    }
-    for (const key of keys) {
-      const candidate = meta[key];
-      if (typeof candidate === 'string' && candidate.trim().length > 0) {
-        return candidate.trim();
-      }
-    }
-    return undefined;
-  }
-
-  private pickIntValue(source: any, keys: string[]): number | undefined {
-    if (!source) {
-      return undefined;
-    }
-    for (const key of keys) {
-      const candidate = source[key];
-      if (typeof candidate === 'number' && Number.isFinite(candidate)) {
-        return Math.trunc(candidate);
-      }
-      if (typeof candidate === 'string') {
-        const parsed = Number(candidate);
-        if (Number.isFinite(parsed)) {
-          return Math.trunc(parsed);
-        }
-      }
-    }
-    return undefined;
-  }
-
-  private buildClusterIdFallback(meta: any): string {
-    const base = JSON.stringify(meta || {});
-    const hash = Utils.String.hashCode(base);
-    return `structure:${hash}`;
-  }
-
-  private normalizeVisualizationFromRaw(raw: any): IStructureVisualization | undefined {
-    if (!raw || typeof raw.url !== 'string') {
-      return undefined;
-    }
-    const url = String(raw.url).trim();
-    if (!url) {
-      return undefined;
-    }
-    const kind = typeof raw.kind === 'string' ? raw.kind.toLowerCase() : 'html';
-    if (kind !== 'html') {
-      return undefined;
-    }
-    const simpleUrlRaw = typeof raw.simpleUrl === 'string' ? String(raw.simpleUrl).trim() : '';
-    return simpleUrlRaw
-      ? { url, kind: 'html', simpleUrl: simpleUrlRaw }
-      : { url, kind: 'html' };
-  }
-
   private clearSelectedValues(metadata: IStructuresMetadata): void {
     if (!metadata || !metadata.root) {
       return;
@@ -748,19 +500,11 @@ export class StructureService {
     });
   }
 
-  private normalizeMhcPair(value: string | undefined | null): string {
-    if (!value) {
-      return '';
-    }
-    const parts = value.split('/').map((part) => part.replace(/:.+/, '').trim()).filter((part) => part.length > 0);
-    return parts.join('/').toLowerCase();
-  }
-
   private ensureVisualization(cluster: IStructureCluster | undefined): void {
     if (!cluster) {
       return;
     }
-    const normalized = this.normalizeVisualizationFromRaw(cluster.visualization);
+    const normalized = StructureResponse.toVisualization(cluster.visualization);
     if (normalized) {
       (cluster as any).visualization = normalized;
     } else {
@@ -768,80 +512,13 @@ export class StructureService {
     }
   }
 
-  public async getHtmlVisualizationMarkup(cluster: IStructureCluster, mode: 'standard' | 'simple' = 'standard'): Promise<string | undefined> {
-    if (!cluster) {
-      return undefined;
-    }
-    const normalized = this.normalizeVisualizationFromRaw(cluster.visualization);
-    if (!normalized) {
-      return undefined;
-    }
-    const keyBase = (cluster.clusterId || '').trim().toLowerCase();
-    if (!keyBase) {
-      return undefined;
-    }
-    const cacheKey = `${keyBase}::${mode}`;
-    if (this.htmlVisualizationCache.has(cacheKey)) {
-      const cached = this.htmlVisualizationCache.get(cacheKey);
-      return cached === null ? undefined : cached;
-    }
-    const targetUrl = mode === 'simple'
-      ? (normalized.simpleUrl || normalized.url)
-      : normalized.url;
-    if (!targetUrl) {
-      if (mode === 'simple') {
-        return this.getHtmlVisualizationMarkup(cluster, 'standard');
-      }
-      this.htmlVisualizationCache.set(cacheKey, null);
-      return undefined;
-    }
-    try {
-      const response = await Utils.HTTP.get(targetUrl);
-      const markup = StructureService.normalizeVisualizationMarkup(response.response);
-      this.htmlVisualizationCache.set(cacheKey, markup);
-      return markup;
-    } catch {
-      this.htmlVisualizationCache.set(cacheKey, null);
-      if (mode === 'simple') {
-        return this.getHtmlVisualizationMarkup(cluster, 'standard');
-      }
-      return undefined;
-    }
+  public getHtmlVisualizationMarkup(cluster: IStructureCluster, mode: StructureMarkupMode = 'standard'): Promise<string | undefined> {
+    return this.markup.get(cluster, mode);
   }
 
   public releaseHtmlVisualizationMarkup(clusterOrId: IStructureCluster | string | undefined): void {
-    const clusterId = typeof clusterOrId === 'string' ? clusterOrId : clusterOrId && clusterOrId.clusterId;
-    const keyBase = typeof clusterId === 'string' ? clusterId.trim().toLowerCase() : '';
-    if (!keyBase) {
-      return;
-    }
-    this.htmlVisualizationCache.delete(`${keyBase}::standard`);
-    this.htmlVisualizationCache.delete(`${keyBase}::simple`);
+    this.markup.release(clusterOrId);
   }
-
-  private buildFallbackHash(entries: IStructuresSearchTreeFilterEntry[]): string {
-    return 'structures:' + JSON.stringify(entries || []);
-  }
-
-  public static normalizeVisualizationMarkup(source: string): string {
-    if (!source) {
-      return '';
-    }
-    try {
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(source, 'text/html');
-      const svg = doc.querySelector('svg');
-      if (svg) {
-        svg.setAttribute('width', '100%');
-        svg.setAttribute('height', '100%');
-        return svg.outerHTML;
-      }
-      return source;
-    } catch {
-      return source;
-    }
-  }
-
 
   private static extractMetadataTreeLeafValues(tree: IStructuresMetadataTreeLevel): Array<[ string, IStructuresMetadataTreeLevelValue ]> {
     return Utils.Array.flattened(tree.values.map((v) => {
