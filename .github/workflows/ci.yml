@@ -2,10 +2,7 @@ name: Build (and Publish on tag)
 
 on:
   push:
-    # june-2026-patch is here because pull requests cannot currently be opened on this repository,
-    # so a long-lived branch would otherwise land on master having never been built. Remove it once
-    # the branch merges.
-    branches: [ main, master, june-2026-patch ]
+    branches: [ main, master ]
     tags:
       - "v*"
   pull_request:
