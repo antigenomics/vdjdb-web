@@ -136,6 +136,51 @@ class MotifsKeySpec extends BaseTestSpec {
       Motifs.normalizeKeyPart("antigen.epitope", "GIL:GFVFTL") shouldEqual "gil:gfvftl"
     }
 
+    /* The two motif builds froze different spellings of the same locus, and VDJdb carries both, so the
+     * join has to repair the spelling or the record and its cluster never meet. Every case below is a
+     * mis-spelling rather than a variant -- `H2-Db` is the MGI symbol and `HLA-DPA1`/`HLA-DPB1` the
+     * IMGT ones.
+     */
+    "repair a mis-spelled MHC gene symbol" taggedAs UtilsTestTag in {
+      Motifs.normalizeKeyPart("mhc.a", "H-2Db") shouldEqual "h2-db"
+      Motifs.normalizeKeyPart("mhc.a", "H2-Db") shouldEqual "h2-db"
+      Motifs.normalizeKeyPart("mhc.a", "HLA-DPA*01:03") shouldEqual "hla-dpa1*01"
+      Motifs.normalizeKeyPart("mhc.a", "HLA-DPA1*01:03") shouldEqual "hla-dpa1*01"
+      Motifs.normalizeKeyPart("mhc.b", "HLA-DPB*04:01") shouldEqual "hla-dpb1*04"
+    }
+
+    // HLA-DRA is correct without a digit, and so is everything that already has one.
+    "leave a well-formed gene symbol alone" taggedAs UtilsTestTag in {
+      Motifs.normalizeKeyPart("mhc.a", "HLA-DRA*01:01") shouldEqual "hla-dra*01"
+      Motifs.normalizeKeyPart("mhc.a", "HLA-DQA1*05:01") shouldEqual "hla-dqa1*05"
+      Motifs.normalizeKeyPart("mhc.a", "Mamu-A*01") shouldEqual "mamu-a*01"
+      Motifs.normalizeKeyPart("mhc.a", "I-Ab") shouldEqual "i-ab"
+    }
+
+    // 789 TCREMP entries are keyed on "HLA-A*02,HLA-A*02:01"; no VDJdb record has ever held a comma.
+    "collapse an allele written twice" taggedAs UtilsTestTag in {
+      Motifs.normalizeKeyPart("mhc.a", "HLA-A*02,HLA-A*02:01") shouldEqual "hla-a*02"
+      Motifs.normalizeKeyPart("mhc.a", "HLA-A*02:01") shouldEqual "hla-a*02"
+    }
+
+    // Two genuinely different alleles are not a repeat and must not be collapsed to the first.
+    "leave a list of different alleles alone" taggedAs UtilsTestTag in {
+      Motifs.normalizeKeyPart("mhc.a", "HLA-A*02,HLA-B*07") shouldEqual "hla-a*02,hla-b*07"
+    }
+
+    "join a record to its cluster across the spelling split" taggedAs UtilsTestTag in {
+      val index = Motifs.buildCidLookupIndex(
+        members(Seq(row("H2-Db", "H.B.RPIIRPATL.7") + ("species" -> "MusMusculus"))))
+      val vdjdbSide = Motifs.motifKeyOf(Map(
+        "species" -> "MusMusculus", "gene" -> "TRB", "antigen.epitope" -> "RPIIRPATL",
+        "cdr3" -> "CASSMIPDMNTEAFF", "v.segm" -> "TRBV19*01", "j.segm" -> "TRBJ1-1*01",
+        // written the other way round in VDJdb, which is where 768 badges were being lost
+        "mhc.a" -> "H-2Db", "mhc.b" -> "B2M", "mhc.class" -> "MHCI"))
+
+      vdjdbSide should not be empty
+      index.get(vdjdbSide.get) shouldEqual Some("H.B.RPIIRPATL.7")
+    }
+
     // An incomplete key would collide with every other incomplete key.
     "drop rows with a blank key component" taggedAs UtilsTestTag in {
       Motifs.buildCidLookupIndex(members(Seq(row("", "H.B.RPIIRPATL.1")))) shouldBe empty

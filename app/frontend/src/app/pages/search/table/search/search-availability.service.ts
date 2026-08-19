@@ -17,6 +17,17 @@ export interface IStructureMetrics {
   bindingModeOutlier?: boolean;
 }
 
+/**
+ * Gene symbols the motif join has to repair, in the order the server applies them.
+ *
+ * Each left-hand side is a mis-spelling, not an alias: `H2-Db` is the MGI symbol, `HLA-DPA1` and
+ * `HLA-DPB1` are the IMGT ones, and no `HLA-DPA`/`HLA-DPB` gene exists. `HLA-DRA` is correct without
+ * a digit, which is why this is a list and not a rule about digits. See `Motifs.MalformedMhcGenes`.
+ */
+const MALFORMED_MHC_GENES: Array<[ string, string ]> = [
+  [ 'h-2', 'h2-' ], [ 'hla-dpa*', 'hla-dpa1*' ], [ 'hla-dpb*', 'hla-dpb1*' ]
+];
+
 interface ISearchAvailabilityResponse {
   structures: string[];
   motifs: string[];
@@ -197,9 +208,20 @@ export class SearchAvailabilityService {
     return method === 'tcremp' ? this.motifCidIndexTcremp.get(parts.join('|')) : this.motifCidIndex.get(parts.join('|'));
   }
 
-  /** An MHC allele at the two-field resolution both sides of the motif join agree on. */
+  /**
+   * An MHC allele at the resolution and the spelling both sides of the motif join agree on.
+   *
+   * Mirrors `Motifs.normalizeMhcAllele` on the server, which is what builds the keys in the index
+   * this looks up. Any rule added there has to be added here in the same order, or the two halves
+   * stop matching and every badge silently goes inactive - which is exactly how this broke before.
+   */
   private normalizeMhcPart(value: string): string {
-    return this.normalizeMotifPart(value).replace(/:.+/, '');
+    const twoField = this.normalizeMotifPart(value).replace(/:.+/, '');
+    const alleles = twoField.split(',').map((a) => a.trim()).filter((a) => a.length > 0);
+    const single = alleles.length > 1 && alleles.every((a) => a === alleles[ 0 ]) ? alleles[ 0 ] : twoField;
+    return MALFORMED_MHC_GENES.reduce(
+      (allele, [ wrong, right ]) => allele.startsWith(wrong) ? right + allele.substring(wrong.length) : allele,
+      single);
   }
 
   /**
