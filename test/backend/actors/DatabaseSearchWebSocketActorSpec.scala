@@ -155,6 +155,38 @@ class DatabaseSearchWebSocketActorSpec extends ActorsTestSpec {
             }).assertAll
         }
 
+        /* Every one of these used to leave the client with no reply at all. `sendMessage` resolves on a
+         * frame carrying the same action and id, so silence is not a failed request -- it is a promise
+         * that never settles and a control that spins for the rest of the session.
+         */
+        "answer an export request in a format it does not have a converter for" taggedAs ActorsTestTag in {
+            ws ! createClientRequest(ExportDataResponse.Action, Some(ExportDataRequest("not-a-format", Seq())))
+            expectErrorMessage(ExportDataResponse.Action) shouldEqual DatabaseSearchWebSocketActor.unknownExportFormatMessage
+        }
+
+        "survive a sort value it cannot split" taggedAs ActorsTestTag in {
+            val filters = List(DatabaseFilterRequest("gene", DatabaseFilterType.Exact, negative = false, "TRA"))
+
+            // ":none" is what the reconnect path sends for a table that has just been re-searched.
+            ws ! createClientRequest(SearchDataResponse.Action, Some(SearchDataRequest(Some(filters), None, None, Some(":none"), None, None)))
+            expectSuccessMessageOfType[SearchDataResponse](SearchDataResponse.Action)
+
+            ws ! createClientRequest(SearchDataResponse.Action, Some(SearchDataRequest(Some(filters), None, None, Some("gene"), None, None)))
+            expectSuccessMessageOfType[SearchDataResponse](SearchDataResponse.Action)
+            Succeeded
+        }
+
+        "survive a filter value the filter itself cannot parse" taggedAs ActorsTestTag in {
+            val filters = List(
+                DatabaseFilterRequest("gene", DatabaseFilterType.Exact, negative = false, "TRA"),
+                DatabaseFilterRequest("cdr3", DatabaseFilterType.Pattern, negative = false, "CAS["))
+
+            ws ! createClientRequest(SearchDataResponse.Action, Some(SearchDataRequest(Some(filters), None, None, None, None, None)))
+            expectWarningMessage(SearchDataResponse.Action) should include ("could not be read")
+            expectSuccessMessageOfType[SearchDataResponse](SearchDataResponse.Action)
+            Succeeded
+        }
+
         "be able to handle invalid type of action" taggedAs ActorsTestTag in {
             ws ! createClientRequest("dummy_action", None)
             val invalidActionResponse = expectErrorMessage("dummy_action")
