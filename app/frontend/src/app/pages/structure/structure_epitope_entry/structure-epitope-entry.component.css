@@ -214,29 +214,11 @@
     min-width: 0;
 }
 
-.overlay-card__download {
-    position: absolute;
-    right: 0;
-    top: 0;
-    padding: 2px 8px;
-    border-radius: 4px;
-    font-size: 0.85rem;
-    line-height: 1.2;
-    border: 1px solid rgba(0, 0, 0, 0.15);
-    background: #ffffff;
-    cursor: pointer;
-}
-
-.overlay-card__download:active {
-    background: #eef2ff;
-}
-
-.overlay-card.is-disabled .overlay-card__line > :not(.overlay-card__download) {
+/* A card at the selection limit dims its data but not its actions - the motif links and the
+   download still work on a structure you cannot add to the overlay. The actions are exempted
+   below, on .overlay-card__actions, which is where they live. */
+.overlay-card.is-disabled .overlay-card__line > * {
     opacity: 0.5;
-}
-
-.overlay-card.is-disabled .overlay-card__download {
-    opacity: 1;
 }
 
 .overlay-card__actions {
@@ -340,34 +322,6 @@
     font-size: 0.7rem;
     text-transform: uppercase;
     letter-spacing: 0.3px;
-}
-
-.overlay-card__links {
-    margin-top: 0.4rem;
-    font-size: 0.82rem;
-}
-
-.overlay-card__links a {
-    color: #1a4fb5;
-    font-weight: 600;
-}
-
-.overlay-card__links a.is-unavailable {
-    color: rgba(0, 0, 0, 0.4);
-    pointer-events: none;
-}
-
-.overlay-card__links a.is-available {
-    color: #1f7a3c;
-}
-
-.overlay-card__link--disabled {
-    color: rgba(0, 0, 0, 0.4);
-}
-
-.overlay-selection__hint {
-    font-size: 0.82rem;
-    color: rgba(0, 0, 0, 0.52);
 }
 
 .overlay-visualization {
