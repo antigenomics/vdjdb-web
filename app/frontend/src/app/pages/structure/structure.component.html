@@ -36,7 +36,17 @@
                      [style.overflow-x]="isStateSearchCDR3() ? 'hidden' : 'auto'"
                      [style.padding-top]="isStateSearchCDR3() ? '0' : null"
                      #EpitopesContainer>
-                    <structure-epitopes *ngIf="isStateSearchTree()" [options]="options | async" [epitopes]="epitopes | async"></structure-epitopes>
+                    <ng-container *ngIf="isStateSearchTree()">
+                        <ng-container *ngFor="let epitope of epitopes | async; trackBy: trackEpitopeBy">
+                            <structure-epitope-entry [epitope]="epitope"
+                                                     [isNormalized]="(options | async)?.isNormalized"
+                                                     (onDiscard)="onEpitopeDiscard($event)"></structure-epitope-entry>
+                        </ng-container>
+                        <h2 class="ui center aligned icon header" style="margin-top: 10px" *ngIf="!(epitopes | async)?.length">
+                            <i class="search icon"></i> Nothing selected
+                            <div class="sub header">Choose an epitope from the header above to load structures</div>
+                        </h2>
+                    </ng-container>
                     <structure-cdr3-clusters *ngIf="isStateSearchCDR3()" [options]="options | async" [clusters]="clusters | async"></structure-cdr3-clusters>
                 </div>
             </div>

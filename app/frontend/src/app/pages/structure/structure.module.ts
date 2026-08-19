@@ -24,7 +24,6 @@ import { StructureCDR3ClustersComponent } from 'pages/structure/structure_cdr3_c
 import { StructureContextHeaderComponent } from 'pages/structure/structure_context_header/structure-context-header.component';
 import { StructureEpitopeClusterComponent } from 'pages/structure/structure_epitope_cluster/structure-epitope-cluster.component';
 import { StructureEpitopeEntryComponent } from 'pages/structure/structure_epitope_entry/structure-epitope-entry.component';
-import { StructureEpitopesComponent } from 'pages/structure/structure_epitopes/structure-epitopes.component';
 import { ModalsModule } from 'shared/modals/modals.module';
 
 /**
@@ -45,7 +44,6 @@ import { ModalsModule } from 'shared/modals/modals.module';
   declarations: [
     StructurePageComponent,
     StructureContextHeaderComponent,
-    StructureEpitopesComponent,
     StructureEpitopeEntryComponent,
     StructureEpitopeClusterComponent,
     StructureCDR3ClustersComponent

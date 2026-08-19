@@ -366,6 +366,21 @@ export class StructureService {
 
   }
 
+  /**
+   * Drops one epitope from the page: deselect its leaf, then re-derive the list.
+   *
+   * `updateSelected` has to settle before `updateEpitopes` reads the selection, which is what the
+   * setImmediate is for - both go through the same ReplaySubject and the second would otherwise
+   * filter against the selection the first is about to replace.
+   */
+  public discardEpitope(hash: string): void {
+    this.findTreeLevelValue(hash).pipe(take(1)).subscribe((values) => {
+      values.forEach((value) => this.discardTreeLevelValue(value));
+      this.updateSelected();
+      setImmediate(() => this.updateEpitopes());
+    });
+  }
+
   public discard(_: IStructuresSearchTreeFilter): void {
     this.updateSelected();
     setImmediate(() => {
