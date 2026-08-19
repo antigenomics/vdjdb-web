@@ -28,7 +28,8 @@
     }
   },
   "files": [
-    "test.ts"
+    "test.ts",
+    "../../../app/frontend/src/polyfills.ts"
   ],
   "include": [
     "**/*.d.ts",
