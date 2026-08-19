@@ -122,6 +122,15 @@ required to route everything through the mirror — but it also **suppresses the
 **sbt output is ANSI-coloured.** `grep '^\[error\]'` matches nothing. Strip first:
 `sed -E 's/\x1b\[[0-9;]*m//g'`.
 
+**The structure card list is long enough that ordinary DOM work is the bottleneck.** Cluster counts
+per epitope are extremely skewed: NLVPMVATV 3706, KLGGALQAK 3033, GILGFVFTL 2000, and every other
+epitope under 610 — three of 132 epitopes hold 79% of all clusters, and they are the three most
+studied, so the worst case is also the most visited. Every selection change reorders that list, and
+moving one card node in a 3706-child container costs 330-365ms of layout; `content-visibility: auto`
+on `.overlay-card` takes it to ~78ms. A change-detection pass over the same list is 66-104ms, which
+is why the hover tooltip is written to the DOM instead of bound. Measure any new per-card binding
+against NLVPMVATV, not against a small epitope.
+
 ## Deploy
 
 `master` is branch-protected; land PRs with `gh pr merge --admin`.
@@ -141,6 +150,24 @@ app container destroys its network namespace. tshark does not exit when that hap
 
 **`docker compose up -d` is a no-op when the image has not changed.** Config-only edits need
 `--force-recreate` or you will verify a change that was never loaded.
+
+**Dev is `~/vdjdb_publish_dev` on the same box, port 9001, served at `vdj3.bvdmitri.me`** — prod
+database mounted read-only, its own `samples`/`h2`. Its compose pins the **`devtest`** tag, not `dev`,
+so publishing with the workflow's default tag builds for ten minutes and then changes nothing:
+
+```zsh
+gh workflow run "Dev Docker Publish (manual)" --ref <branch> -f tag=devtest
+ssh vdjdb@100.83.178.73 'cd ~/vdjdb_publish_dev && docker compose pull vdjdb-dev && \
+  docker compose up -d --force-recreate vdjdb-dev'
+```
+
+Check `/buildInfo` for the commit hash afterwards — it is the only thing that says which build is up.
+
+**Cross-page links run one way and always open a new tab.** Browse -> Structure (`tcr_hash`, the
+structure id, which preselects that one structure and is then dropped from the URL), and Structure ->
+Motif (`cid`, the motif cluster id, which highlights and scrolls to that cluster). There is no
+Motif -> Structure link — do not go looking for one. Both crossings are `target="_blank"`, so the
+originating page keeps its state and neither needs a return path.
 
 ## Domain conventions
 
@@ -166,8 +193,8 @@ uploads (`v_call`, `j_call`, `junction_aa`, `cdr3_aa`). HLA at the data's own re
   - Unpaged Browse search materialises the whole result set on the request thread
     (`DatabaseAPI.scala`). Capping it is a behaviour change that could break existing API clients.
   - No component stylesheet uses a `--ds-*` token — ~200 colour literals across 25 files. A migration.
-  - The structure pages carry a private blue/red/green palette, plus a 2px grid overflow at 375px.
-    Belongs with the token migration.
+  - The structure pages carry a private blue/red/green palette. Belongs with the token migration.
+    (The 2px grid overflow at 375px that used to sit here is fixed.)
   - Motif and structure queries run CPU-bound scans on the default execution context; they want a
     bounded dedicated pool like `AnnotationsScheduler` has.
 
