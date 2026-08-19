@@ -29,46 +29,9 @@ case class Structures @Inject()(database: Database)(implicit ec: ExecutionContex
   private val maxTopValueInCDR3Search: Int = 15
   // Per-model confidence metrics, keyed by lower-cased structure hash (see
   // tools/build_structures_metadata.py). Empty map if the companion file is absent.
-  private val structureMetricsIndex: Map[String, StructureModelMetrics] = loadStructureMetrics()
+  private val structureMetricsIndex: Map[String, StructureModelMetrics] =
+    StructureMetricsIndex.load(Paths.get(database.getLocation))
 
-  private def loadStructureMetrics(): Map[String, StructureModelMetrics] = {
-    val path = Paths.get(database.getLocation).resolve("structures_metadata.tsv")
-    if (!Files.isRegularFile(path)) {
-      Map.empty
-    } else {
-      val source = Source.fromFile(path.toFile, StandardCharsets.UTF_8.name())
-      try {
-        val iter = source.getLines()
-        if (!iter.hasNext) {
-          Map.empty
-        } else {
-          val idx = iter.next().split("\t", -1).map(_.trim).zipWithIndex.toMap
-          def col(cols: Array[String], name: String): Option[String] =
-            idx.get(name).flatMap(i => if (i < cols.length) Option(cols(i)).map(_.trim).filter(_.nonEmpty) else None)
-          val builder = mutable.HashMap.empty[String, StructureModelMetrics]
-          iter.foreach { line =>
-            val cols = line.split("\t", -1)
-            col(cols, "hash").map(_.toLowerCase(Locale.ROOT)).foreach { h =>
-              if (!builder.contains(h)) {
-                builder.update(h, StructureModelMetrics(
-                  isNative = col(cols, "is_native").exists(_.equalsIgnoreCase("true")),
-                  numContacts = col(cols, "num_contacts").flatMap(s => Try(s.toInt).toOption),
-                  iptm = col(cols, "iptm").flatMap(s => Try(s.toDouble).toOption),
-                  confidence = col(cols, "confidence").flatMap(s => Try(s.toDouble).toOption),
-                  iptmPct = col(cols, "iptm_pct").flatMap(s => Try(s.toInt).toOption),
-                  confidencePct = col(cols, "confidence_pct").flatMap(s => Try(s.toInt).toOption),
-                  bindingModeOutlier = col(cols, "binding_mode_outlier").map(_.equalsIgnoreCase("true"))
-                ))
-              }
-            }
-          }
-          builder.toMap
-        }
-      } finally {
-        source.close()
-      }
-    }
-  }
 
 
   private case class ChainInfo(cdr3: String, vsegm: String, jsegm: String, motifClusterId: Option[String])
