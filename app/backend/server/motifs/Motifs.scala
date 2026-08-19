@@ -284,9 +284,42 @@ object Motifs {
   }
 
   private[motifs] def normalizeKeyPart(column: String, value: String): String = {
-    val trimmed = Option(value).map(_.trim).getOrElse("")
-    val resolved = if (MhcKeyColumns.contains(column)) trimmed.replaceAll(":.+", "") else trimmed
-    resolved.toLowerCase(Locale.ROOT)
+    val trimmed = Option(value).map(_.trim).getOrElse("").toLowerCase(Locale.ROOT)
+    if (MhcKeyColumns.contains(column)) normalizeMhcAllele(trimmed) else trimmed
+  }
+
+  /** Gene symbols the join has to repair because the data spells the same locus more than one way.
+    *
+    * These are not aliases and not a resolution choice: each left-hand side is a mis-spelling of the
+    * right-hand one. `H2-Db` is the MGI symbol and `H-2Db` is not; `HLA-DPA1`/`HLA-DPB1` are the IMGT
+    * symbols and there is no `HLA-DPA`/`HLA-DPB` gene at all. `HLA-DRA` is deliberately absent — it is
+    * correct without a digit, which is why this is an explicit list rather than a rule about digits.
+    */
+  private final val MalformedMhcGenes: Seq[(String, String)] =
+    Seq("h-2" -> "h2-", "hla-dpa*" -> "hla-dpa1*", "hla-dpb*" -> "hla-dpb1*")
+
+  /**
+   * One MHC allele, at the resolution and the spelling both sides of the join can agree on. Expects a
+   * value that is already lower-cased.
+   *
+   * Three repairs, all of them spelling. Two fields, because a cluster-members row is always written
+   * at full resolution while a VDJdb record may be curated at either. One copy, because 789 TCREMP
+   * entries are keyed on `HLA-A*02,HLA-A*02:01` while no VDJdb record has ever held a comma in
+   * `mhc.a` or `mhc.b`, so every one of them was unreachable. And the IMGT gene symbol, because the
+   * two motif builds froze different spellings of it: TCRNET's file says `H-2Db` where TCREMP's says
+   * `H2-Db`, and VDJdb itself carries 2731 of the first against 654 of the second. Measured on the
+   * deployed database, the spelling split alone cost 768 records their motif badge.
+   *
+   * The real fix is in `vdjdb-db`, and this does not replace it: it makes the join survive the data
+   * as it stands, and every rule above names a spelling that is simply wrong rather than a variant.
+   */
+  private[motifs] def normalizeMhcAllele(value: String): String = {
+    val twoField = value.replaceAll(":.+", "")
+    val alleles = twoField.split(",").map(_.trim).filter(_.nonEmpty)
+    val single = if (alleles.length > 1 && alleles.distinct.length == 1) alleles.head else twoField
+    MalformedMhcGenes.foldLeft(single) { case (allele, (wrong, right)) =>
+      if (allele.startsWith(wrong)) right + allele.substring(wrong.length) else allele
+    }
   }
 
   def buildCidLookupIndex(members: Table): Map[String, String] = {

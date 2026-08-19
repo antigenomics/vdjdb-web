@@ -37,6 +37,11 @@ describe('SearchAvailabilityService', () => {
     const CID_KEY = 'homosapiens|trb|gilgfvftl|cassisstgelff|trbv19*01|trbj2-2*01|hla-a*02|b2m|mhci';
     const AVAILABILITY_KEY = 'homosapiens|trb|mhci|hla-a*02|gilgfvftl';
 
+    // The server repairs the spelling before it keys the index, so these are what it emits: the MGI
+    // symbol for the mouse gene, and one copy of an allele the members file wrote twice.
+    const MOUSE_KEY = 'musmusculus|trb|rpiirpatl|cassmipdmnteaff|trbv19*01|trbj1-1*01|h2-db|b2m|mhci';
+    const DOUBLED_KEY = 'homosapiens|trb|ylqprtfll|casspeieaff|trbv7-9*01|trbj1-1*01|hla-a*02|b2m|mhci';
+
     const payload: {
         structures: string[],
         motifs: string[],
@@ -51,7 +56,11 @@ describe('SearchAvailabilityService', () => {
         motifsTcremp: [ AVAILABILITY_KEY ],
         visualizations: {},
         motifCidIndex: {},
-        motifCidIndexTcremp: { [ CID_KEY ]: 'H.B.GILGFVFTL.9' },
+        motifCidIndexTcremp: {
+            [ CID_KEY ]: 'H.B.GILGFVFTL.9',
+            [ MOUSE_KEY ]: 'H.B.RPIIRPATL.7',
+            [ DOUBLED_KEY ]: 'H.B.YLQPRTFLL.2'
+        },
         structureMetrics: {}
     };
 
@@ -91,6 +100,35 @@ describe('SearchAvailabilityService', () => {
     it('refuses to look up an incomplete key, which would collide with every other incomplete one', async () => {
         const cid = await service.getMotifCid('HomoSapiens', 'TRB', 'GILGFVFTL', 'CASSISSTGELFF',
             'TRBV19*01', 'TRBJ2-2*01', '', 'B2M', 'MHCI', 'tcremp');
+        expect(cid).toBeUndefined();
+    });
+
+    /* Both halves of this join build the key independently, so a repair the server makes and the
+     * client does not is indistinguishable from "this clonotype has no cluster" - the badge just goes
+     * quietly inactive. These pin the repairs to the ones in Motifs.MalformedMhcGenes.
+     */
+    it('matches a record whose mouse MHC gene is spelled the other way', async () => {
+        const cid = await service.getMotifCid('MusMusculus', 'TRB', 'RPIIRPATL', 'CASSMIPDMNTEAFF',
+            'TRBV19*01', 'TRBJ1-1*01', 'H-2Db', 'B2M', 'MHCI', 'tcremp');
+        expect(cid).toBe('H.B.RPIIRPATL.7');
+    });
+
+    it('matches the same record when it is already spelled correctly', async () => {
+        const cid = await service.getMotifCid('MusMusculus', 'TRB', 'RPIIRPATL', 'CASSMIPDMNTEAFF',
+            'TRBV19*01', 'TRBJ1-1*01', 'H2-Db', 'B2M', 'MHCI', 'tcremp');
+        expect(cid).toBe('H.B.RPIIRPATL.7');
+    });
+
+    it('matches a record against a cluster whose allele was written twice', async () => {
+        const cid = await service.getMotifCid('HomoSapiens', 'TRB', 'YLQPRTFLL', 'CASSPEIEAFF',
+            'TRBV7-9*01', 'TRBJ1-1*01', 'HLA-A*02,HLA-A*02:01', 'B2M', 'MHCI', 'tcremp');
+        expect(cid).toBe('H.B.YLQPRTFLL.2');
+    });
+
+    // HLA-DRA is correct without a digit; repairing it would break a key that already matches.
+    it('leaves a well-formed class II gene alone', async () => {
+        const cid = await service.getMotifCid('HomoSapiens', 'TRA', 'PKYVKQNTLKLAT', 'CAVRDGTANNLFF',
+            'TRAV1*01', 'TRAJ1*01', 'HLA-DRA*01:01', 'HLA-DRB1*01:01', 'MHCII', 'tcremp');
         expect(cid).toBeUndefined();
     });
 

@@ -361,6 +361,12 @@ export class SearchTableEntryInfoComponent extends TableEntry {
         link = pdbLink;
         teal = true;
         popup.push('Not yet in VDJdb — opens PDB entry');
+      } else {
+        // The evidence is real, so the badge stays lit, but there is nothing to open: the structure
+        // browser lists only models with a CDR3–peptide interface, and this one has none. Without
+        // this line the badge just silently does nothing, which reads as a broken link rather than
+        // as the absence of a contact map. 192 records on the deployed database are in this state.
+        popup.push('No contact map for this model');
       }
       const currentFooter = this.badges[3] ? this.badges[3].footer : undefined;
       this.badges[3] = this.buildStructureBadge(true, link, popup, currentFooter, teal);
