@@ -305,7 +305,9 @@ export class StructureSvgIndex {
     }
 
     private static commentOf(group: Element): string | null {
-        for (let node = group.firstChild; node !== null; node = node.nextSibling) {
+        // Typed explicitly: firstChild is a ChildNode while nextSibling is a Node, so an inferred
+        // loop variable takes the narrower of the two and rejects the assignment.
+        for (let node: Node | null = group.firstChild; node !== null; node = node.nextSibling) {
             if (node.nodeType === Node.COMMENT_NODE) {
                 return (node.nodeValue || '').trim();
             }
