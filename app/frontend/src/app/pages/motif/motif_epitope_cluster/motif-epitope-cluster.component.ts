@@ -23,6 +23,24 @@ import { ChartEventType } from 'shared/charts/chart-events';
 import { ISeqLogoChartDataEntry, SeqLogoChartStreamType } from 'shared/charts/seqlogo/seqlogo-chart';
 import { ISeqLogoChartConfiguration } from 'shared/charts/seqlogo/seqlogo-configuration';
 
+/** The nearest ancestor that actually scrolls, or null when the page itself is the scroller.
+ *
+ * Stops before body on purpose: in a document-scrolling layout body reports overflow-y:auto and an
+ * overflowing scrollHeight, but document.scrollingElement is <html>, so body.scrollTo() is a silent
+ * no-op. Returning null there sends the caller to scrollIntoView, which moves the right element.
+ */
+export function findScrollableAncestor(el: HTMLElement): HTMLElement | null {
+  let parent = el.parentElement as HTMLElement | null;
+  while (parent && parent !== document.body) {
+    const overflowY = getComputedStyle(parent).overflowY;
+    if ((overflowY === 'auto' || overflowY === 'scroll') && parent.scrollHeight > parent.clientHeight) {
+      return parent;
+    }
+    parent = parent.parentElement;
+  }
+  return null;
+}
+
 @Component({
   selector:        'motif-epitope-cluster',
   templateUrl:     './motif-epitope-cluster.component.html',
@@ -110,17 +128,13 @@ export class MotifEpitopeClusterComponent implements OnInit, OnChanges, OnDestro
   }
 
   private scrollWithinContainer(el: HTMLElement): void {
-    let parent = el.parentElement as HTMLElement | null;
-    while (parent) {
-      const overflowY = getComputedStyle(parent).overflowY;
-      if ((overflowY === 'auto' || overflowY === 'scroll') && parent.scrollHeight > parent.clientHeight) {
-        const elRect = el.getBoundingClientRect();
-        const pRect = parent.getBoundingClientRect();
-        const target = parent.scrollTop + (elRect.top - pRect.top) - (parent.clientHeight - el.offsetHeight) / 2;
-        parent.scrollTo({ top: Math.max(0, target), behavior: 'smooth' });
-        return;
-      }
-      parent = parent.parentElement;
+    const parent = findScrollableAncestor(el);
+    if (parent) {
+      const elRect = el.getBoundingClientRect();
+      const pRect = parent.getBoundingClientRect();
+      const target = parent.scrollTop + (elRect.top - pRect.top) - (parent.clientHeight - el.offsetHeight) / 2;
+      parent.scrollTo({ top: Math.max(0, target), behavior: 'smooth' });
+      return;
     }
     // Body-scroll layout: no inner scroll container, so center the cluster in the viewport by
     // scrolling the page itself.
