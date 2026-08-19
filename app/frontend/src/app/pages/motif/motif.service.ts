@@ -34,7 +34,7 @@ import { ISeqLogoChartConfiguration } from 'shared/charts/seqlogo/seqlogo-config
 import { LoggerService } from 'utils/logger/logger.service';
 import { NotificationService } from 'utils/notifications/notification.service';
 import { Utils } from 'utils/utils';
-import { EpitopeBridgeService, IBridgeEpitope } from '../../epitope-bridge.service';
+import { EpitopeBridgeService, IBridgeEpitope, repairMhcGene } from '../../epitope-bridge.service';
 
 export namespace MotifsServiceWebSocketActions {
   export const METADATA = 'meta';
@@ -236,8 +236,25 @@ export class MotifService {
     this.searchCDR3(query, substring);
   }
 
+  /** The tree node for an MHC gene, preferring an exact match and falling back to the repaired
+    * spelling. See `repairMhcGene`: the two motif builds and VDJdb disagree on how to write the same
+    * mouse and HLA class II loci. */
+  private static findGeneNode(values: IMotifsMetadataTreeLevelValue[], gene: string): IMotifsMetadataTreeLevelValue | undefined {
+    const exact = values.find((v) => v.value === gene);
+    if (exact) { return exact; }
+    const wanted = repairMhcGene(gene.trim().toLowerCase());
+    return values.find((v) => repairMhcGene(v.value.trim().toLowerCase()) === wanted);
+  }
+
   public async filterByUrl(filters: { species: string, tcrChain: string, mhcClass: string, gene: string, epitopeSeq: string, cid?: string }): Promise<void> {
     await this.load();
+
+    // Resolved from the tree rather than trusted from the URL, because the link is built from a
+    // VDJdb record and the tree is built from the motif file, and the two do not always spell the
+    // gene the same way -- a record reading `H-2Db` links to a TCREMP cluster whose tree node says
+    // `H2-Db`. Both the node lookup below and the server-side filter further down compare exactly,
+    // so without this the badge lights up and then lands on an empty page.
+    let resolvedGene = filters.gene;
 
     this.metadata.pipe(take(1)).subscribe((metadata) => {
       const speciesNode = metadata.root.values.find((v) => v.value === filters.species);
@@ -249,8 +266,9 @@ export class MotifService {
       const mhcClassNode = tcrChainNode.next.values.find((v) => v.value === filters.mhcClass);
       if (!mhcClassNode) { return; }
 
-      const geneNode = mhcClassNode.next.values.find((v) => v.value === filters.gene);
+      const geneNode = MotifService.findGeneNode(mhcClassNode.next.values, filters.gene);
       if (!geneNode) { return; }
+      resolvedGene = geneNode.value;
 
       const epitopeNode = geneNode.next.values.find((v) => v.value === filters.epitopeSeq);
       if (!epitopeNode) { return; }
@@ -270,7 +288,7 @@ export class MotifService {
         { name: 'species', value: filters.species },
         { name: 'gene', value: filters.tcrChain },
         { name: 'mhc.class', value: filters.mhcClass },
-        { name: 'mhc.a', value: filters.gene },
+        { name: 'mhc.a', value: resolvedGene },
         { name: 'antigen.epitope', value: filters.epitopeSeq }
       ]
     };
