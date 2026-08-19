@@ -50,6 +50,20 @@ export class StructureHoverController {
     public x: number = 0;
     public y: number = 0;
 
+    /** Whether the tooltip should sit left of / below the pointer, to stay inside the map. */
+    public flipX: boolean = false;
+    public flipY: boolean = false;
+
+    /**
+     * Nominal tooltip size, used only to choose a side.
+     *
+     * A measured width would be better for exact placement, but this only decides which way to
+     * flip, so being approximate costs nothing: the label is at most something like
+     * `ASN 91 : ARG 5`. Erring large means flipping slightly early, which is invisible.
+     */
+    private static readonly NominalWidth: number = 150;
+    private static readonly NominalHeight: number = 34;
+
     /**
      * How near the pointer must come to a contact line, in the map's own units.
      *
@@ -94,6 +108,10 @@ export class StructureHoverController {
             const bounds = host.getBoundingClientRect();
             this.x = event.clientX - bounds.left;
             this.y = event.clientY - bounds.top;
+            // Flip rather than clamp: a tooltip pinned to the edge covers what the reader is
+            // pointing at, which is the one thing it must not do.
+            this.flipX = this.x + StructureHoverController.NominalWidth > bounds.width;
+            this.flipY = this.y < StructureHoverController.NominalHeight;
         }
 
         // The tooltip follows the pointer, so a move within one residue still has to repaint.

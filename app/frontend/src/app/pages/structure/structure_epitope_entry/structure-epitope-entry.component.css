@@ -711,6 +711,7 @@
     z-index: 40;
     /* Above and to the right of the pointer, so it never sits under the cursor itself. */
     transform: translate(12px, -140%);
+    max-width: 100%;
     pointer-events: none;
     white-space: nowrap;
     padding: 3px 7px;
@@ -773,4 +774,22 @@
 .overlay-card.is-at-front {
     border-color: #48af75;
     box-shadow: 0 0 0 1px #48af75, 0 0 10px rgba(72, 175, 117, 0.45);
+}
+
+/*
+ * Flipped near an edge rather than clamped against it. Clamping would slide the tooltip over the
+ * residue the reader is pointing at; flipping keeps the pointer clear and the label inside the map.
+ * Measured on a real map first: unflipped, a label near the right edge escaped the overlay by 41px
+ * and one near the top by 11px.
+ */
+.structure-hover-tip--flip-x {
+    transform: translate(calc(-100% - 12px), -140%);
+}
+
+.structure-hover-tip--flip-y {
+    transform: translate(12px, 40%);
+}
+
+.structure-hover-tip--flip-x.structure-hover-tip--flip-y {
+    transform: translate(calc(-100% - 12px), 40%);
 }

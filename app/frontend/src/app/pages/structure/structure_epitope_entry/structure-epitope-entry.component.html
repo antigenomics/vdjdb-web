@@ -160,6 +160,8 @@
                                          (mouseleave)="hoverState.clear()">
                                         <div class="structure-html" [innerHTML]="overlayLayerList[0].markup"></div>
                                         <div class="structure-hover-tip" *ngIf="hoverState.isActive"
+                                             [class.structure-hover-tip--flip-x]="hoverState.flipX"
+                                             [class.structure-hover-tip--flip-y]="hoverState.flipY"
                                              [style.left.px]="hoverState.x" [style.top.px]="hoverState.y"
                                              aria-hidden="true">{{ hoverState.label }}</div>
                                     </div>
