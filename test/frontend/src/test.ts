@@ -41,8 +41,10 @@ getTestBed().initTestEnvironment(
   BrowserDynamicTestingModule,
   platformBrowserDynamicTesting()
 );
-// Then we find all the tests.
-const context = require.context('./', true, /\.spec\.ts$/);
+// Then we find all the tests. Specs live beside the code they cover, under the application
+// source - this used to scan './', the directory this file sits in, which holds no specs at all
+// and so reported success without running anything.
+const context = require.context('../../../app/frontend/src/app', true, /\.spec\.ts$/);
 // And load the modules.
 context.keys().map(context);
 // Finally, start Karma to run the tests.

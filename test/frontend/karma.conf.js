@@ -15,36 +15,46 @@
  *
  */
 
-// Karma configuration file, see link for more information
-// https://karma-runner.github.io/1.0/config/configuration-file.html
-
+// Karma configuration. Plugins are required by path because this file sits outside
+// app/frontend/, where node_modules lives, so Karma's own resolution would not find them.
+//
+// The framework is '@angular-devkit/build-angular', not the '@angular/cli' this file used to
+// name: that was the Angular CLI 1.x plugin, and the builder has been
+// @angular-devkit/build-angular:karma since the Angular 6 upgrade. Naming the old one made the
+// runner fail to start, which is part of why nothing here had run in a long time.
 module.exports = function (config) {
   config.set({
     basePath: '',
-    frameworks: ['jasmine', '@angular/cli'],
+    frameworks: ['jasmine', '@angular-devkit/build-angular'],
     plugins: [
       require('../../app/frontend/node_modules/karma-jasmine'),
       require('../../app/frontend/node_modules/karma-chrome-launcher'),
       require('../../app/frontend/node_modules/karma-jasmine-html-reporter'),
       require('../../app/frontend/node_modules/karma-coverage-istanbul-reporter'),
-      require('../../app/frontend/node_modules/@angular/cli/plugins/karma')
+      require('../../app/frontend/node_modules/@angular-devkit/build-angular/plugins/karma')
     ],
-    client:{
-      clearContext: false // leave Jasmine Spec Runner output visible in browser
+    client: {
+      clearContext: false // leave the Jasmine spec runner output visible in a browser
     },
     coverageIstanbulReporter: {
-      reports: [ 'html', 'lcovonly' ],
+      dir: require('path').join(__dirname, '../../target/frontend-coverage'),
+      reports: ['html', 'lcovonly'],
       fixWebpackSourcePaths: true
-    },
-    angularCli: {
-      environment: 'dev'
     },
     reporters: ['progress', 'kjhtml'],
     port: 9876,
     colors: true,
     logLevel: config.LOG_INFO,
-    autoWatch: true,
-    browsers: ['Chrome'],
-    singleRun: false
+    // Defaults suit CI; `ng test --watch` overrides them for local work.
+    autoWatch: false,
+    singleRun: true,
+    browsers: ['ChromeHeadlessNoSandbox'],
+    customLaunchers: {
+      // The sandbox cannot be used in the container CI runs in.
+      ChromeHeadlessNoSandbox: {
+        base: 'ChromeHeadless',
+        flags: ['--no-sandbox', '--disable-gpu', '--disable-dev-shm-usage']
+      }
+    }
   });
 };

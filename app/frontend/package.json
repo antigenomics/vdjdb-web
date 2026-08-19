@@ -6,6 +6,7 @@
   "private": true,
   "scripts": {
     "serve": "ng serve --live-reload=false --port 4200 --host localhost",
+    "test": "ng test --watch=false",
     "build": "npm run build:ng && npm run build:optimize && npm run build:stats",
     "build:ng": "ng build --prod --deploy-url /assets/bundles/",
     "build:optimize": "node ./scripts/optimize.prod.js",

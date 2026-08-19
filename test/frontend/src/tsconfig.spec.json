@@ -14,7 +14,7 @@
     "test.ts"
   ],
   "include": [
-    "**/*.spec.ts",
-    "**/*.d.ts"
+    "**/*.d.ts",
+    "../../../app/frontend/src/app/**/*.spec.ts"
   ]
 }
