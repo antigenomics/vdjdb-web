@@ -202,7 +202,13 @@ uploads (`v_call`, `j_call`, `junction_aa`, `cdr3_aa`). HLA at the data's own re
   - The structure pages carry a private blue/red/green palette. Belongs with the token migration.
     (The 2px grid overflow at 375px that used to sit here is fixed.)
   - Motif and structure queries run CPU-bound scans on the default execution context; they want a
-    bounded dedicated pool like `AnnotationsScheduler` has.
+    bounded dedicated pool like `AnnotationsScheduler` has. Browse got one in `SearchExecutor`; these
+    two did not, because neither had shown a runaway in production the way Browse had.
+
+- **The navbar is 3px wider than a 375px viewport** (`.ui.top.fixed.menu` and its `.ui.container`
+  measure 378). It is `position: fixed`, so it does not scroll the document and no page reports
+  horizontal overflow because of it — which is why it was left alone rather than touched across every
+  page mid-refactor.
 
 - **The annotations websocket has no request timeout, anywhere.** `WebSocketConnection.sendMessage`
   resolves only on a matching inbound frame; `_messages` is never errored or completed on close. A
