@@ -205,17 +205,21 @@ class AnnotationsWebSocketActor(out: ActorRef, limit: IpLimit, user: User, detai
         out.success(DatabaseMetadataResponse(database.getMetadata))
       case AnnotationsExportDataResponse.Action =>
         validateData(out, data, (exportRequest: AnnotationsExportDataRequest) => {
+          // Same rule as the search table's export: answer on every branch. Two of these three used
+          // to send nothing at all, and the third sent a warning, which `sendMessage` filters out --
+          // so the sample's `exporting` flag was never cleared and every later export was refused.
           val converter = IntersectionTableConverter.getConverter(exportRequest.format)
-          if (converter.nonEmpty) {
-            val table = intersectionTableResults.get(exportRequest.sampleName)
-            if (table.nonEmpty) {
-              converter.get.convert(exportRequest.sampleName, table.get, database, exportRequest.options) onComplete {
+          val table = converter.flatMap(_ => intersectionTableResults.get(exportRequest.sampleName))
+          (converter, table) match {
+            case (Some(c), Some(t)) =>
+              c.convert(exportRequest.sampleName, t, database, exportRequest.options) onComplete {
                 case Success(link) =>
                   out.success(AnnotationsExportDataResponse(link.getDownloadLink))
                 case Failure(_) =>
-                  out.warningMessage("Unable to export")
+                  out.errorMessage(AnnotationsWebSocketActor.UnableToExportMessage)
               }
-            }
+            case (None, _) => out.errorMessage(AnnotationsWebSocketActor.UnknownExportFormatMessage)
+            case (_, None) => out.errorMessage(AnnotationsWebSocketActor.NothingToExportMessage)
           }
         })
       case CreateTagResponse.Action =>
@@ -284,6 +288,10 @@ class AnnotationsWebSocketActor(out: ActorRef, limit: IpLimit, user: User, detai
 }
 
 object AnnotationsWebSocketActor {
+  final val UnableToExportMessage: String = "The table could not be exported. Please try again."
+  final val UnknownExportFormatMessage: String = "That export format is not supported."
+  final val NothingToExportMessage: String = "There are no annotation results to export for this sample yet."
+
   def props(out: ActorRef, limit: IpLimit, user: User, details: UserDetails, accountLimits: AccountLimits,
             database: Database, motifs: Motifs,
             usage: UsageProvider, scheduler: AnnotationsScheduler)

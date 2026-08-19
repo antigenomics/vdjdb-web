@@ -30,6 +30,7 @@ import backend.server.search.api.export.{ExportDataRequest, ExportDataResponse}
 import backend.server.search.api.paired.{PairedDataRequest, PairedDataResponse}
 import backend.server.search.api.search.{SearchDataRequest, SearchDataResponse}
 import backend.server.search.export.SearchTableConverter
+import org.slf4j.LoggerFactory
 import play.api.libs.json._
 
 import scala.concurrent.ExecutionContext
@@ -39,6 +40,7 @@ import scala.util.{Failure, Success}
 class DatabaseSearchWebSocketActor(out: ActorRef, limit: IpLimit, database: Database, structures: Structures, motifs: Motifs)
                                   (implicit ec: ExecutionContext, as: ActorSystem, limits: RequestLimits, tfp: TemporaryFileProvider)
   extends WebSocketActor(out, limit) {
+  private final val exportLogger = LoggerFactory.getLogger(this.getClass)
   private final val table: SearchTable = new SearchTable()
 
   def handleMessage(out: WebSocketOutActorRef, data: Option[JsValue]): Unit = {
@@ -101,14 +103,21 @@ class DatabaseSearchWebSocketActor(out: ActorRef, limit: IpLimit, database: Data
         })
       case ExportDataResponse.Action =>
         validateData(out, data, (exportRequest: ExportDataRequest) => {
+          // Every branch has to answer. `sendMessage` resolves on a frame with the same action and id
+          // and *skips warnings*, so a warning-only failure -- and the unknown-format branch, which
+          // used to reply with nothing at all -- left the export button spinning for good, and every
+          // later attempt refused with "wait for the previous export to finish".
           val converter = SearchTableConverter.getConverter(exportRequest.format)
           if (converter.nonEmpty) {
             converter.get.convert(table, database, exportRequest.options) onComplete {
               case Success(link) =>
                 out.success(ExportDataResponse(link.getDownloadLink))
-              case Failure(_) =>
-                out.warningMessage(DatabaseSearchWebSocketActor.unableToExportRequestMessage)
+              case Failure(t) =>
+                exportLogger.error(s"Failed to export the search table as '${exportRequest.format}'", t)
+                out.errorMessage(DatabaseSearchWebSocketActor.unableToExportRequestMessage)
             }
+          } else {
+            out.errorMessage(DatabaseSearchWebSocketActor.unknownExportFormatMessage)
           }
         })
       case _ =>
@@ -119,7 +128,8 @@ class DatabaseSearchWebSocketActor(out: ActorRef, limit: IpLimit, database: Data
 
 object DatabaseSearchWebSocketActor {
   final val invalidSuggestionsRequestMessage: String = "Invalid suggestions request"
-  final val unableToExportRequestMessage: String = "Unable to export"
+  final val unableToExportRequestMessage: String = "The table could not be exported. Please try again."
+  final val unknownExportFormatMessage: String = "That export format is not supported."
   final val invalidActionMessage: String = "Invalid action"
 
   def props(out: ActorRef, limit: IpLimit, database: Database, structures: Structures, motifs: Motifs)
