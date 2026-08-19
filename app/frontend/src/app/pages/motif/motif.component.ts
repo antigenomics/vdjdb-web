@@ -279,6 +279,7 @@ export class MotifPageComponent implements OnInit, OnDestroy {
     const cdr3 = params.get('cdr3') || '';
     const vSegm = params.get('v_segm') || '';
     const jSegm = params.get('j_segm') || '';
+    const mhcB = params.get('mhc_b') || '';
     const filter = this.toEpitopeFilter(resolved);
 
     if (!cdr3 || !vSegm || !jSegm) {
@@ -287,7 +288,9 @@ export class MotifPageComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.availability.getMotifCid(filter.species, filter.tcrChain, filter.epitopeSeq, cdr3, vSegm, jSegm, method)
+    this.availability
+      .getMotifCid(filter.species, filter.tcrChain, filter.epitopeSeq, cdr3, vSegm, jSegm,
+                   filter.gene, mhcB, filter.mhcClass, method)
       .catch(() => undefined)
       .then((cid) => {
         // No cluster for this clonotype under the new method is a real answer - the record is a member

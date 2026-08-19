@@ -63,11 +63,77 @@ class MotifsKeySpec extends BaseTestSpec {
     "key on every column of the shared list, and in its order" taggedAs UtilsTestTag in {
       val index = Motifs.buildCidLookupIndex(members(Seq(row("HLA-B*07:02", "H.B.RPIIRPATL.1"))))
       val expected = Seq("homosapiens", "trb", "rpiirpatl", "cassmipdmnteaff", "trbv19*01", "trbj1-1*01",
-        "hla-b*07:02", "b2m", "mhci").mkString("|")
+        "hla-b*07", "b2m", "mhci").mkString("|")
       index.keySet shouldBe Set(expected)
       // The VDJdb side names the CDR3 column `cdr3`; every other name is shared verbatim.
       Motifs.MotifKeyColumns should contain theSameElementsInOrderAs Seq("species", "gene",
         "antigen.epitope", "cdr3", "v.segm", "j.segm", "mhc.a", "mhc.b", "mhc.class")
+    }
+
+    /* A cluster-members row is always written at full allele resolution; a VDJdb record may be
+     * curated at either. Comparing them verbatim silently dropped the record - measured on the
+     * deployed database, 2,831 records lost their TCRNET badge and 6,603 their TCREMP badge. The
+     * one that surfaced it: CASSISSTGELFF / TRBV19 / TRBJ2-2 under HLA-A*02, a member of the TCREMP
+     * cluster H.B.GILGFVFTL.9, whose members row says HLA-A*02:01. */
+    "meet a two-field record and a four-field cluster in the middle" taggedAs UtilsTestTag in {
+      val index = Motifs.buildCidLookupIndex(members(Seq(row("HLA-B*07:02", "H.B.RPIIRPATL.1"))))
+      val recordAtTwoFields = Seq("homosapiens", "trb", "rpiirpatl", "cassmipdmnteaff", "trbv19*01",
+        "trbj1-1*01", "hla-b*07", "b2m", "mhci").mkString("|")
+
+      index.get(recordAtTwoFields) shouldBe Some("H.B.RPIIRPATL.1")
+    }
+
+    // Trimming must not go so far that it undoes the reason MHC is in the key: B*07 and B*08 differ
+    // in the first field, so they stay apart however the second is written.
+    "still separate restrictions that differ in the first field" taggedAs UtilsTestTag in {
+      val index = Motifs.buildCidLookupIndex(members(Seq(
+        row("HLA-B*07:02", "H.B.RPIIRPATL.1"),
+        row("HLA-B*08:01", "H.B.RPIIRPATL.2"))))
+
+      index should have size 2
+    }
+
+    /*
+     * The contract test this file was missing.
+     *
+     * The two halves of this join are built in different places from differently-named columns, and
+     * on 2026-07-23 (#200) the members half gained mhc.a/mhc.b/mhc.class while the lookup that reads
+     * it did not. Nothing failed: the index simply stopped being reachable, every cid lookup returned
+     * nothing, and the motif badge went inactive on every row in Browse - silently, because "no
+     * cluster for this clonotype" is also a legitimate answer.
+     *
+     * So the assertion is not what the key looks like, but that both sides produce the SAME key for
+     * the same record. Adding a column to MotifKeyColumns without teaching both halves fails here.
+     */
+    "produce the same key from a VDJdb record and from its cluster-members row" taggedAs UtilsTestTag in {
+      val membersRow = row("HLA-A*02:01", "H.B.GILGFVFTL.9") ++ Map(
+        "antigen.epitope" -> "GILGFVFTL", "cdr3aa" -> "CASSISSTGELFF",
+        "v.segm" -> "TRBV19*01", "j.segm" -> "TRBJ2-2*01")
+
+      // The same clonotype as VDJdb curates it: CDR3 column named `cdr3`, MHC at two fields.
+      val vdjdbRecord = Map(
+        "species" -> "HomoSapiens", "gene" -> "TRB", "antigen.epitope" -> "GILGFVFTL",
+        "cdr3" -> "CASSISSTGELFF", "v.segm" -> "TRBV19*01", "j.segm" -> "TRBJ2-2*01",
+        "mhc.a" -> "HLA-A*02", "mhc.b" -> "B2M", "mhc.class" -> "MHCI")
+
+      val fromMembers = Motifs.buildCidLookupIndex(members(Seq(membersRow))).keys.toSeq
+      val fromRecord = Motifs.motifKeyOf(column => vdjdbRecord.getOrElse(column, ""))
+
+      fromRecord shouldBe defined
+      fromMembers shouldEqual Seq(fromRecord.get)
+    }
+
+    "refuse a key with a component missing, on either side" taggedAs UtilsTestTag in {
+      Motifs.motifKeyOf(_ => "") shouldBe empty
+      Motifs.motifKeyOf(column => if (column == "mhc.b") "" else "x") shouldBe empty
+    }
+
+    "normalize the same way on the VDJdb side of the join" taggedAs UtilsTestTag in {
+      Motifs.normalizeKeyPart("mhc.a", "HLA-A*02:01") shouldEqual "hla-a*02"
+      Motifs.normalizeKeyPart("mhc.b", " B2M ") shouldEqual "b2m"
+      // Everything else keeps its colons: only an allele is cut.
+      Motifs.normalizeKeyPart("cdr3", " CASSIRSSYEQYF ") shouldEqual "cassirssyeqyf"
+      Motifs.normalizeKeyPart("antigen.epitope", "GIL:GFVFTL") shouldEqual "gil:gfvftl"
     }
 
     // An incomplete key would collide with every other incomplete key.

@@ -300,6 +300,25 @@ case class Structures @Inject()(database: Database)(implicit ec: ExecutionContex
     }
   }
 
+  /**
+   * Whether any record behind this structure reports a CDR3-peptide contact.
+   *
+   * A structure whose contact data holds only CDR3a-CDR3b pairs renders as a map with the two loops
+   * and no epitope at all, which is not a contact map so much as half of one - so it is dropped
+   * rather than shown. Measured against the deployed database: 795 of 11,046 mapped structures, and
+   * all six of the MHCII ones, which is why that class looked uniformly broken.
+   *
+   * The cause is upstream, in whatever computes the `*_contacts*` files beside each map - those hold
+   * only `CDR3_alpha -> CDR3_beta` rows for the affected structures. This hides the symptom; it does
+   * not fix the data.
+   *
+   * An absent column means a database build predating the Evidence work, and there every structure is
+   * kept: emptying the browser on an old database would be far worse than showing a few half-maps.
+   */
+  private def hasPeptideContacts(table: Table): Boolean =
+    !table.columnNames().contains(Structures.PeptideContactsColumn) ||
+      table.stringColumn(Structures.PeptideContactsColumn).asList().asScala.exists(_.trim.equalsIgnoreCase("true"))
+
   private def buildCluster(table: Table): Option[StructureCluster] = {
     val structureId = firstValue(table, "structure.id").getOrElse("")
     if (structureId.isEmpty) {
@@ -378,3 +397,7 @@ case class Structures @Inject()(database: Database)(implicit ec: ExecutionContex
 
 }
 
+object Structures {
+  /** The column that says a record's structure has a modelled CDR3-peptide interface. */
+  final val PeptideContactsColumn: String = "evidence.structure.contacts"
+}

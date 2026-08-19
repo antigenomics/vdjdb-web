@@ -225,17 +225,20 @@ export class SearchTableEntryInfoComponent extends TableEntry {
   }
 
   private extractMotifLinkData(row: SearchTableRow, columns: TableColumn[]):
-    { species: string; tcrChain: string; mhcClass: string; mhcAllele: string; epitopeSeq: string } | null {
+    { species: string; tcrChain: string; mhcClass: string; mhcAllele: string; mhcB: string; epitopeSeq: string } | null {
     const species = this.getCellValue(row, columns, 'species');
     const tcrChain = this.getCellValue(row, columns, 'gene');
     const mhcClass = this.getCellValue(row, columns, 'mhc.class');
     const mhcValue = this.getCellValue(row, columns, 'mhc.a');
+    // Part of the cluster key, so it has to travel with the rest. Absent on nothing in practice -
+    // MHCI records carry B2M here - but a record without it simply gets no cid, as before.
+    const mhcB = this.getCellValue(row, columns, 'mhc.b');
     const epitopeSeq = this.getCellValue(row, columns, 'antigen.epitope');
 
     if (!species || !tcrChain || !mhcClass || !mhcValue || !epitopeSeq) {
       return null;
     }
-    return { species, tcrChain, mhcClass, mhcAllele: mhcValue, epitopeSeq };
+    return { species, tcrChain, mhcClass, mhcAllele: mhcValue, mhcB: mhcB || '', epitopeSeq };
   }
 
   private resolveValidation(row: SearchTableRow, columns: TableColumn[]): void {
@@ -264,7 +267,7 @@ export class SearchTableEntryInfoComponent extends TableEntry {
       return;
     }
 
-    const { species, tcrChain, mhcClass, mhcAllele, epitopeSeq } = motifData;
+    const { species, tcrChain, mhcClass, mhcAllele, mhcB, epitopeSeq } = motifData;
     // The motif page matches `gene` against the trimmed MHC allele (mhc.a, e.g. HLA-A*02),
     // NOT antigen.gene. Trim the ":..." suffix to match the motif metadata tree.
     const motifGene = mhcAllele.replace(/:.+/, '');
@@ -281,7 +284,9 @@ export class SearchTableEntryInfoComponent extends TableEntry {
       try {
         const available = await this.availability.hasMotif(species, tcrChain, mhcClass, mhcAllele, epitopeSeq, method);
         if (!available) { continue; }
-        const methodCid = await this.availability.getMotifCid(species, tcrChain, epitopeSeq, cdr3, vSegm, jSegm, method).catch(() => undefined);
+        const methodCid = await this.availability
+          .getMotifCid(species, tcrChain, epitopeSeq, cdr3, vSegm, jSegm, mhcAllele, mhcB, mhcClass, method)
+          .catch(() => undefined);
         if (!methodCid) { continue; }
         availableMethods.push(method);
         if (link === null) {
@@ -299,6 +304,8 @@ export class SearchTableEntryInfoComponent extends TableEntry {
           params.set('cdr3', cdr3);
           params.set('v_segm', vSegm);
           params.set('j_segm', jSegm);
+          // mhc.b is part of the cluster key, and the motif page cannot recover it from anywhere else.
+          if (mhcB) { params.set('mhc_b', mhcB); }
           if (method === 'tcremp') { params.set('method', 'tcremp'); }
           link = `/motif?${params.toString()}`;
         }

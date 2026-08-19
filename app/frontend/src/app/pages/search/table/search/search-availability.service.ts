@@ -138,16 +138,9 @@ export class SearchAvailabilityService {
   }
 
   private buildMotifKey(species: string, tcrChain: string, mhcClass: string, mhcAllele: string, epitope: string): string | null {
-    // Normalize MHC allele: remove subtype like :01, :02, etc. (matches Motifs.scala logic)
+    // MHC at two fields, matching Motifs.buildAvailabilityKeys.
     const parts = [ species, tcrChain, mhcClass, mhcAllele, epitope ]
-      .map((part, index) => {
-        const normalized = this.normalizeMotifPart(part);
-        // For MHC allele (index 3), also remove subtype to match backend normalization
-        if (index === 3 && normalized.includes('*')) {
-          return normalized.split(':')[0];
-        }
-        return normalized;
-      });
+      .map((part, index) => index === 3 ? this.normalizeMhcPart(part) : this.normalizeMotifPart(part));
     if (parts.some((part) => part.length === 0)) {
       return null;
     }
@@ -182,12 +175,31 @@ export class SearchAvailabilityService {
     return method === 'tcremp' ? this.motifKeysTcremp.has(key) : this.motifKeys.has(key);
   }
 
-  public async getMotifCid(species: string, tcrChain: string, epitope: string, cdr3: string, vSegm: string, jSegm: string,
+  /**
+   * The motif cluster a clonotype belongs to, or nothing.
+   *
+   * The key has to be all nine parts the server builds it from - species, chain, epitope, CDR3, V, J
+   * and then the MHC triple. It used to send the first six, which cannot match a nine-part key, so
+   * this returned undefined for every record and the motif badge was inactive on every row.
+   *
+   * MHC is cut to two fields to match `Motifs.normalizeKeyPart`: a cluster-members row is always
+   * written at full resolution while a VDJdb record may be curated at either, so `HLA-A*02` and
+   * `HLA-A*02:01` have to meet in the middle.
+   */
+  public async getMotifCid(species: string, tcrChain: string, epitope: string, cdr3: string,
+                           vSegm: string, jSegm: string, mhcA: string, mhcB: string, mhcClass: string,
                            method: 'tcrnet' | 'tcremp' = 'tcrnet'): Promise<string | undefined> {
     await this.ensureLoaded();
-    const parts = [ species, tcrChain, epitope, cdr3, vSegm, jSegm ].map((p) => this.normalizeMotifPart(p));
+    const parts = [ species, tcrChain, epitope, cdr3, vSegm, jSegm ].map((p) => this.normalizeMotifPart(p))
+      .concat([ mhcA, mhcB ].map((p) => this.normalizeMhcPart(p)))
+      .concat([ this.normalizeMotifPart(mhcClass) ]);
     if (parts.some((p) => p.length === 0)) { return undefined; }
     return method === 'tcremp' ? this.motifCidIndexTcremp.get(parts.join('|')) : this.motifCidIndex.get(parts.join('|'));
+  }
+
+  /** An MHC allele at the two-field resolution both sides of the motif join agree on. */
+  private normalizeMhcPart(value: string): string {
+    return this.normalizeMotifPart(value).replace(/:.+/, '');
   }
 
   /**

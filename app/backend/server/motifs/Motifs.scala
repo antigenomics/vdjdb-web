@@ -203,10 +203,13 @@ object Motifs {
       var idx = 0
       val total = table.rowCount()
       while (idx < total) {
-        val values = Seq(speciesCol.get(idx), geneCol.get(idx), mhcClassCol.get(idx), mhcACol.get(idx), epitopeCol.get(idx))
-          .map(v => Option(v).map(_.trim).getOrElse(""))
+        // Same normalisation as the cid index: the availability check and the cid lookup have to agree
+        // on what an MHC allele is, or a record gets a badge with no link behind it.
+        val values = Seq("species" -> speciesCol, "gene" -> geneCol, "mhc.class" -> mhcClassCol,
+          "mhc.a" -> mhcACol, "antigen.epitope" -> epitopeCol)
+          .map { case (name, col) => normalizeKeyPart(name, Option(col.get(idx)).getOrElse("")) }
         if (values.forall(_.nonEmpty)) {
-          builder += values.map(_.toLowerCase(Locale.ROOT)).mkString("|")
+          builder += values.mkString("|")
         }
         idx += 1
       }
@@ -241,17 +244,50 @@ object Motifs {
     * `None` when any component is blank — an incomplete key would collide with every other incomplete
     * key and match records it has no business matching.
     */
-  def motifKey(row: Row): Option[String] = {
-    val parts = Motifs.MotifKeyColumns
-      .map(column => Option(row.getAt(column)).map(_.getValue.trim.toLowerCase(Locale.ROOT)).getOrElse(""))
-    if (parts.forall(_.nonEmpty)) Some(parts.mkString("|")) else None
-  }
+  def motifKey(row: Row): Option[String] =
+    Motifs.motifKeyOf(column => Option(row.getAt(column)).map(_.getValue).getOrElse(""))
 
   /** The VDJdb column names of the join key, in order. The members file spells the CDR3 `cdr3aa`;
     * [[buildCidLookupIndex]] substitutes that one name and otherwise reads these in this order, so the
     * two halves cannot drift apart in either membership or ordering. */
   private[motifs] final val MotifKeyColumns: Seq[String] =
     Seq("species", "gene", "antigen.epitope", "cdr3", "v.segm", "j.segm", "mhc.a", "mhc.b", "mhc.class")
+
+  /** The key columns holding an MHC allele, which have to be compared at the same resolution. */
+  private[motifs] final val MhcKeyColumns: Set[String] = Set("mhc.a", "mhc.b")
+
+  /**
+   * One key component, normalised.
+   *
+   * MHC alleles are cut to two fields — `HLA-A*02:01` to `HLA-A*02` — because the two sides of this
+   * join do not agree on resolution: a cluster-members row is always written at full resolution while
+   * a VDJdb record may be curated at either, and comparing them verbatim silently drops the record.
+   * Measured on the deployed database, that cost 2,831 records their TCRNET badge and 6,603 their
+   * TCREMP badge, including `CASSISSTGELFF` / TRBV19 / TRBJ2-2 under `HLA-A*02`, which is in a TCREMP
+   * cluster written as `HLA-A*02:01`.
+   *
+   * Two fields is the resolution the motif tree itself is keyed at, so this makes the join agree with
+   * what the browser already shows. It does not weaken the reason MHC is in the key at all: that is to
+   * keep `RPIIRPATL` under B*07 apart from B*08, which differ in the first field.
+   */
+  /**
+   * The VDJdb side of the join key, from a column lookup.
+   *
+   * Separated from `motifKey(row)` so both halves of the join can be driven in one test: a
+   * `com.antigenomics.vdjdb.db.Row` cannot be built outside the library, and without this the only
+   * thing a spec could reach was the cluster-members half - which is how the two came to disagree
+   * about how many columns the key has and nothing failed.
+   */
+  private[motifs] def motifKeyOf(valueOf: String => String): Option[String] = {
+    val parts = MotifKeyColumns.map(column => normalizeKeyPart(column, valueOf(column)))
+    if (parts.forall(_.nonEmpty)) Some(parts.mkString("|")) else None
+  }
+
+  private[motifs] def normalizeKeyPart(column: String, value: String): String = {
+    val trimmed = Option(value).map(_.trim).getOrElse("")
+    val resolved = if (MhcKeyColumns.contains(column)) trimmed.replaceAll(":.+", "") else trimmed
+    resolved.toLowerCase(Locale.ROOT)
+  }
 
   def buildCidLookupIndex(members: Table): Map[String, String] = {
     val memberColumns = MotifKeyColumns.map(c => if (c == "cdr3") "cdr3aa" else c)
@@ -261,13 +297,15 @@ object Motifs {
     }
     // Resolved from the shared list rather than named one by one, so a column added to the key cannot
     // be added on only one side of the join.
-    val keyCols = memberColumns.map(members.stringColumn)
+    // Paired with the key column name, so the MHC parts are cut to the same resolution as the VDJdb
+    // side in `motifKey`. Losing that pairing is how the two halves drift.
+    val keyCols = MotifKeyColumns.zip(memberColumns.map(members.stringColumn))
     val cidCol = members.stringColumn("cid")
     val builder = mutable.HashMap.empty[String, String]
     var idx = 0
     val total = members.rowCount()
     while (idx < total) {
-      val parts = keyCols.map(col => Option(col.get(idx)).map(_.trim).getOrElse("").toLowerCase(Locale.ROOT))
+      val parts = keyCols.map { case (name, col) => normalizeKeyPart(name, Option(col.get(idx)).getOrElse("")) }
       val cid = Option(cidCol.get(idx)).map(_.trim).getOrElse("")
       if (parts.forall(_.nonEmpty) && cid.nonEmpty) {
         val key = parts.mkString("|")
