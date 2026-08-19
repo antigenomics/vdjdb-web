@@ -19,9 +19,13 @@ package backend.actors
 import akka.actor.{Actor, ActorRef, ActorSystem, PoisonPill}
 import backend.server.api.ClientRequest
 import backend.server.limit.{IpLimit, RequestLimits}
+import org.slf4j.LoggerFactory
 import play.api.libs.json._
 
+import scala.util.control.NonFatal
+
 abstract class WebSocketActor(out: ActorRef, limit: IpLimit)(implicit as: ActorSystem, limits: RequestLimits) extends Actor {
+  private final val logger = LoggerFactory.getLogger(this.getClass)
 
   protected def handleMessage(out: WebSocketOutActorRef, data: Option[JsValue]): Unit
 
@@ -38,7 +42,19 @@ abstract class WebSocketActor(out: ActorRef, limit: IpLimit)(implicit as: ActorS
                 val webSocketOutActorRef = WebSocketOutActorRef(request.id, action, out)
                 action match {
                   case WebSocketOutActorRef.PingAction => webSocketOutActorRef.handshake()
-                  case _ => handleMessage(webSocketOutActorRef, request.data)
+                  case _ =>
+                    // Nothing above this caught anything, and an actor that dies mid-request never
+                    // answers it: the client's promise resolves on a frame carrying the same action
+                    // and id, so an escaped exception left the page waiting for a reply that could no
+                    // longer come. Answering with an error frame is what lets it recover -- the search
+                    // table already treats a reply without rows as a failure and shows the message.
+                    try {
+                      handleMessage(webSocketOutActorRef, request.data)
+                    } catch {
+                      case NonFatal(t) =>
+                        logger.error(s"Unhandled error while serving websocket action '$action'", t)
+                        webSocketOutActorRef.errorMessage(WebSocketActor.UnhandledErrorMessage)
+                    }
                 }
               case None =>
             }
@@ -68,4 +84,9 @@ abstract class WebSocketActor(out: ActorRef, limit: IpLimit)(implicit as: ActorS
       out.errorMessage(WebSocketOutActorRef.InvalidMissingDataRequestMessage)
     }
   }
+}
+
+object WebSocketActor {
+  final val UnhandledErrorMessage: String =
+    "The request could not be completed. Please check the filters and try again; if it keeps failing, report it on the VDJdb-web issue tracker."
 }

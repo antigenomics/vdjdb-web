@@ -36,6 +36,7 @@ import play.api.libs.json._
 import play.api.libs.streams.ActorFlow
 import play.api.mvc._
 
+import scala.util.control.NonFatal
 import scala.concurrent.{ExecutionContext, Future}
 
 class DatabaseAPI @Inject()(cc: ControllerComponents, database: Database, summaries: DatabaseSummaryProvider,
@@ -132,11 +133,10 @@ class DatabaseAPI @Inject()(cc: ControllerComponents, database: Database, summar
             filters.warnings.foreach((message: String) => logger.warn(s"Search filter warning: $message"))
 
             table.update(filters, database, structures, motifs)
-            if (data.get.sort.nonEmpty) {
-              val sorting = data.get.sort.get.split(":")
-              val columnName = sorting(0)
-              val sortType = sorting(1)
-              table.sort(database.getMetadata.getColumnIndex(columnName), sortType)
+            // "<column>:<asc|desc>"; anything else is ignored rather than thrown. SearchTable.sort
+            // already drops an unknown column or direction, so this only has to survive the split.
+            data.get.sort.map(_.split(":")).filter(_.length == 2).foreach { sorting =>
+              table.sort(database.getMetadata.getColumnIndex(sorting(0)), sorting(1))
             }
 
             var pageSize: Int = -1
@@ -163,6 +163,12 @@ class DatabaseAPI @Inject()(cc: ControllerComponents, database: Database, summar
             Ok(toJson(SearchDataResponse(page, pageSize, pageCount, table.getRecordsFound, rows)))
           } recover {
             case SearchTimeoutException(message) => ServiceUnavailable(message)
+            case NonFatal(t) =>
+              // Anything the filters did not manage to reject. Play's default handler answers these
+              // with an HTML error page, which is unreadable to the API clients that reach this action.
+              logger.error("Unhandled error while running a database search", t)
+              InternalServerError("The search could not be completed. Please check the filters and try again; " +
+                "if it keeps failing, report it on the VDJdb-web issue tracker.")
           }
         } else {
           Future.successful(

@@ -137,6 +137,72 @@ class DatabaseFiltersSpec extends BaseTestSpecWithApplication {
             filters.warnings.count(_.toLowerCase.contains("could not be read")) shouldEqual 2
         }
 
+        /* Every one of these returned a 500 from POST /api/database/search on production, and over the
+         * websocket returned nothing at all: the exception escaped the actor and the client waited on a
+         * reply that was never coming. None is reachable from the UI, all are reachable from the API.
+         */
+        "warn rather than throw on a value the filter itself cannot parse" taggedAs DatabaseTestTag in {
+            val request: List[DatabaseFilterRequest] = List(
+                DatabaseFilterRequest("cdr3", DatabaseFilterType.Range, negative = false, "12"),
+                DatabaseFilterRequest("cdr3", DatabaseFilterType.Range, negative = false, "a:b"),
+                DatabaseFilterRequest("cdr3", DatabaseFilterType.Range, negative = false, ""),
+                DatabaseFilterRequest("vdjdb.score", DatabaseFilterType.Level, negative = false, "zzz"),
+                DatabaseFilterRequest("cdr3", DatabaseFilterType.Pattern, negative = false, "CAS["),
+                DatabaseFilterRequest("cdr3", DatabaseFilterType.Sequence, negative = false, ":1:1:1")
+            )
+
+            val filters = DatabaseFilters.createFromRequest(request, database)
+
+            filters.text should have size 0
+            filters.sequence should have size 0
+            filters.warnings should have size 6
+        }
+
+        "name the column and the filter type in the warning" taggedAs DatabaseTestTag in {
+            val request: List[DatabaseFilterRequest] = List(
+                DatabaseFilterRequest("vdjdb.score", DatabaseFilterType.Level, negative = false, "zzz")
+            )
+
+            val warning = DatabaseFilters.createFromRequest(request, database).warnings.head
+            warning should include ("vdjdb.score")
+            warning should include (DatabaseFilterType.Level)
+        }
+
+        "keep the filters it can read when one of them is unreadable" taggedAs DatabaseTestTag in {
+            val request: List[DatabaseFilterRequest] = List(
+                DatabaseFilterRequest("gene", DatabaseFilterType.Exact, negative = false, "TRA"),
+                DatabaseFilterRequest("cdr3", DatabaseFilterType.Range, negative = false, "nonsense"),
+                DatabaseFilterRequest("species", DatabaseFilterType.Exact, negative = false, "HomoSapiens")
+            )
+
+            val filters = DatabaseFilters.createFromRequest(request, database)
+
+            filters.text should have size 2
+            filters.warnings should have size 1
+        }
+
+        "warn rather than throw on an option that is not a boolean" taggedAs DatabaseTestTag in {
+            val request: List[DatabaseFilterRequest] = List(
+                DatabaseFilterRequest("option:append-paired", DatabaseFilterType.Exact, negative = false, "yes")
+            )
+
+            val filters = DatabaseFilters.createFromRequest(request, database)
+
+            filters.options should have size 0
+            filters.warnings should have size 1
+        }
+
+        "still read an option it can parse" taggedAs DatabaseTestTag in {
+            val request: List[DatabaseFilterRequest] = List(
+                DatabaseFilterRequest("option:append-paired", DatabaseFilterType.Exact, negative = false, "true")
+            )
+
+            val filters = DatabaseFilters.createFromRequest(request, database)
+
+            filters.options shouldEqual Seq(("append-paired", true))
+            filters.warnings should have size 0
+        }
+
         "create warnings for invalid request" taggedAs DatabaseTestTag in {
             val request: List[DatabaseFilterRequest] = List(
                 DatabaseFilterRequest("abracadabra", DatabaseFilterType.Exact, negative = false, "test"),

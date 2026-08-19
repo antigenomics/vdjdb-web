@@ -62,11 +62,10 @@ class DatabaseSearchWebSocketActor(out: ActorRef, limit: IpLimit, database: Data
             table.update(filters, database, structures, motifs)
           }
 
-          if (searchRequest.sort.nonEmpty) {
-            val sorting = searchRequest.sort.get.split(":")
-            val columnName = sorting(0)
-            val sortType = sorting(1)
-            table.sort(database.getMetadata.getColumnIndex(columnName), sortType)
+          // The reconnect path sends the sort rule unconditionally, and a table that has just been
+          // re-searched has none -- so ":none" arrives here routinely and must not throw.
+          searchRequest.sort.map(_.split(":")).filter(_.length == 2).foreach { sorting =>
+            table.sort(database.getMetadata.getColumnIndex(sorting(0)), sorting(1))
           }
 
           if (searchRequest.pageSize.nonEmpty) {
