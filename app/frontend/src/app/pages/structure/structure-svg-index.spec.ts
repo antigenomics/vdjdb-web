@@ -41,11 +41,22 @@ describe('StructureSvgIndex', () => {
         </g>`;
     }
 
+    // Matplotlib defines a marker once per chain and has every later box reference it, so only the
+    // first box of a colour carries a <defs>. A fixture that gave each box its own definition hid a
+    // real defect: reading only the local <defs> found 3 residues out of 34 on a served map.
+    let definedMarkers: { [ colour: string ]: string };
+
     function box(x: number, y: number, colour: string): string {
-        const marker = `m${nextId}`;
-        return `<g id="line2d_${nextId++}">
-            <defs><path id="${marker}" d="M -10 10 L 10 10 L 10 -10 L -10 -10 z"
-                        style="stroke: ${colour}; stroke-width: 1.2"></path></defs>
+        const id = `line2d_${nextId++}`;
+        const known = definedMarkers[ colour ];
+        const marker = known || `marker_${colour.replace('#', '')}`;
+        const defs = known ? '' :
+            `<defs><path id="${marker}" d="M -10 10 L 10 10 L 10 -10 L -10 -10 z"
+                        style="stroke: ${colour}; stroke-width: 1.2"></path></defs>`;
+        definedMarkers[ colour ] = marker;
+
+        return `<g id="${id}">
+            ${defs}
             <g clip-path="url(#clip)"><use xlink:href="#${marker}" x="${x}" y="${y}"></use></g>
         </g>`;
     }
@@ -66,7 +77,7 @@ describe('StructureSvgIndex', () => {
         return holder.querySelector('svg') as any;
     }
 
-    beforeEach(() => nextId = 1);
+    beforeEach(() => { nextId = 1; definedMarkers = {}; });
 
     describe('build', () => {
 
@@ -94,6 +105,19 @@ describe('StructureSvgIndex', () => {
                 residue('Y', 1, 300, 100, BLUE)));
 
             expect(index.residues.map((r) => r.chain)).toEqual([ 'CDR3a', 'CDR3b', 'peptide' ]);
+        });
+
+        it('resolves a marker shared by every box of the same chain', () => {
+            // Only the first box of a colour defines the marker; the rest reference it by
+            // xlink:href. Following that reference is what makes the whole chain readable.
+            const index = StructureSvgIndex.build(parse(
+                residue('C', 88, 100, 100, GREEN) +
+                residue('A', 89, 200, 100, GREEN) +
+                residue('V', 90, 300, 100, GREEN)));
+
+            expect(index.residues.length).toBe(3);
+            expect(index.residues.map((r) => r.chain)).toEqual([ 'CDR3a', 'CDR3a', 'CDR3a' ]);
+            expect(index.residues.map((r) => r.position)).toEqual([ 88, 89, 90 ]);
         });
 
         it('reads a contact with the peptide as inter-chain', () => {

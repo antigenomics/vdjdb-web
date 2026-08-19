@@ -168,8 +168,7 @@ export class StructureSvgIndex {
             if (!use) {
                 return undefined;
             }
-            const marker = group.querySelector('defs path');
-            const chain = CHAIN_BY_COLOUR[ StructureSvgIndex.strokeOf(marker) ];
+            const chain = CHAIN_BY_COLOUR[ StructureSvgIndex.strokeOf(StructureSvgIndex.markerOf(svg, use)) ];
             if (!chain) {
                 return undefined;
             }
@@ -296,6 +295,26 @@ export class StructureSvgIndex {
             }
         }
         return best;
+    }
+
+    /**
+     * The marker a residue box draws, which carries the colour and so the chain.
+     *
+     * Matplotlib defines each marker once and has every later box of the same chain reference it by
+     * `xlink:href`, so only the first box per chain owns a local `<defs>`. Reading the local one
+     * alone found three residues out of thirty-four and silently dropped the rest.
+     */
+    private static markerOf(svg: SVGSVGElement, use: Element): Element | null {
+        const href = use.getAttribute('xlink:href') || use.getAttribute('href') || '';
+        if (href.startsWith('#')) {
+            // Attribute selector rather than `#id`: these ids are generated and start with a digit
+            // often enough that the shorthand would be an invalid selector.
+            const referenced = svg.querySelector(`path[id="${href.slice(1)}"]`);
+            if (referenced) {
+                return referenced;
+            }
+        }
+        return use.ownerSVGElement === null ? null : (use.parentElement ? use.parentElement.querySelector('defs path') : null);
     }
 
     private static strokeOf(element: Element | null): string {
