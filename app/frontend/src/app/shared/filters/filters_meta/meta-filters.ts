@@ -98,7 +98,8 @@ export class MetaReliabilityFilter implements FilterInterface {
   public nonCanonical: boolean;
   public unmapped: boolean;
 
-  // Evidence: Validation
+  // Evidence: Validation. valTcrvdb is offered as a disabled "coming soon" box, so it never becomes
+  // true from the UI and the server has no column for it yet.
   public valSameStudy: boolean;
   public valIndependent: boolean;
   public valTcrvdb: boolean;
@@ -111,6 +112,27 @@ export class MetaReliabilityFilter implements FilterInterface {
   public structNative: boolean;
   public structContacts: boolean;
   public structQuality: boolean;
+
+  /** Each evidence kind, its filter id, and how to read its modes off the filter. */
+  public static readonly evidenceKinds: ReadonlyArray<{
+    filterId: string,
+    modes: ReadonlyArray<{ mode: string, isTicked: (filter: MetaReliabilityFilter) => boolean }>
+  }> = [
+    { filterId: 'evidence:validation', modes: [
+      { mode: 'same.study',  isTicked: (f) => f.valSameStudy },
+      { mode: 'independent', isTicked: (f) => f.valIndependent },
+      { mode: 'tcrvdb',      isTicked: (f) => f.valTcrvdb }
+    ] },
+    { filterId: 'evidence:motif', modes: [
+      { mode: 'tcrnet', isTicked: (f) => f.motifTcrnet },
+      { mode: 'tcremp', isTicked: (f) => f.motifTcremp }
+    ] },
+    { filterId: 'evidence:structure', modes: [
+      { mode: 'native',   isTicked: (f) => f.structNative },
+      { mode: 'contacts', isTicked: (f) => f.structContacts },
+      { mode: 'quality',  isTicked: (f) => f.structQuality }
+    ] }
+  ];
 
   public setDefault(): void {
     this.minimalConfidenceScore = 0;
@@ -152,28 +174,15 @@ export class MetaReliabilityFilter implements FilterInterface {
       filters.push(new Filter('web.cdr3fix.unmp', FilterType.EXACT, true, 'yes'));
     }
 
-    const validationModes: string[] = [];
-    if (this.valSameStudy) { validationModes.push('same.study'); }
-    if (this.valIndependent) { validationModes.push('independent'); }
-    if (this.valTcrvdb) { validationModes.push('tcrvdb'); }
-    if (validationModes.length > 0) {
-      filters.push(new Filter('evidence:validation', FilterType.EXACT, false, validationModes.join(',')));
-    }
-
-    const motifModes: string[] = [];
-    if (this.motifTcrnet) { motifModes.push('tcrnet'); }
-    if (this.motifTcremp) { motifModes.push('tcremp'); }
-    if (motifModes.length > 0) {
-      filters.push(new Filter('evidence:motif', FilterType.EXACT, false, motifModes.join(',')));
-    }
-
-    const structureModes: string[] = [];
-    if (this.structNative) { structureModes.push('native'); }
-    if (this.structContacts) { structureModes.push('contacts'); }
-    if (this.structQuality) { structureModes.push('quality'); }
-    if (structureModes.length > 0) {
-      filters.push(new Filter('evidence:structure', FilterType.EXACT, false, structureModes.join(',')));
-    }
+    // One filter per evidence kind, carrying the ticked modes as a comma-separated list. The server
+    // ORs within a kind and ANDs between them, so an unticked kind must send nothing at all rather
+    // than an empty list - see EvidenceFilters on the backend.
+    MetaReliabilityFilter.evidenceKinds.forEach(({ filterId, modes }) => {
+      const ticked = modes.filter(({ isTicked }) => isTicked(this)).map(({ mode }) => mode);
+      if (ticked.length > 0) {
+        filters.push(new Filter(filterId, FilterType.EXACT, false, ticked.join(',')));
+      }
+    });
   }
 
   public getFilterId(): string {
