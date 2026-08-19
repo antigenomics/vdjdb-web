@@ -227,11 +227,22 @@ uploads (`v_call`, `j_call`, `junction_aa`, `cdr3_aa`). HLA at the data's own re
   out, so a warning is indistinguishable from silence. Anything that still fails to send a frame at
   all still hangs.
 
-- **`mhc.a` carries two spellings of the same locus, and the two motif builds froze different ones.**
+- **`mhc.a`/`mhc.b` carry two spellings of the same locus; the join now repairs them.**
   In VDJdb itself: `H-2Db` 2731 against `H2-Db` 654, `H-2Kb` 1920 against `H2-Kb` 533, `H-2Kd` 63 and
   `H2-Kd` 0; and `HLA-DPA*01:03` 922 against `HLA-DPA1*` 288, where `HLA-DPA` is not an IMGT gene
   symbol at all. TCRNET's motif file is keyed on the older spelling and TCREMP's on the newer, so the
   badge join is spelling-sensitive: of 5,305 mouse records, **768 lose a motif badge purely to this**
   (677 TCREMP, 91 TCRNET) — every `H-2Db` record gets zero TCREMP badges although 409 of them match a
-  TCREMP cluster under `H2-Db`. Fixing it belongs in `vdjdb-db`; normalising in `Motifs.normalizeKeyPart`
-  would hide a real data defect behind a join that silently invents the spelling it wants.
+  TCREMP cluster under `H2-Db`. Also `HLA-DPB*04` against `HLA-DPB1*04` on the beta chain, and 789
+  TCREMP entries keyed on `HLA-A*02,HLA-A*02:01` where no VDJdb record has ever held a comma.
+
+  As of 3.2.3 the join repairs all of it — `Motifs.MalformedMhcGenes` on the server, `repairMhcGene`
+  in `epitope-bridge.service.ts` on the client, and the two lists must stay in step. **+1,441 badges**
+  measured on the deployed database. `HLA-DRA` is deliberately not in the list: it is correct without
+  a digit, which is why these are explicit pairs rather than a rule about digits.
+
+  The repair is not a substitute for fixing `vdjdb-db`, and it has a second edge worth knowing: the
+  motif *tree* is still built from whatever spelling each motif file froze, so a link cannot carry the
+  record's own `mhc_a` and expect a hit. `MotifService.filterByUrl` resolves the gene to a tree node
+  (exact first, repaired second) and sends **that node's value** to the server, whose `mhc.a` filter
+  is an `isEqualTo`. Anything new that navigates the tree by gene has to do the same.
