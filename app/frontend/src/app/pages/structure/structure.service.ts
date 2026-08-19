@@ -512,6 +512,4 @@ export class StructureService {
   public releaseHtmlVisualizationMarkup(clusterOrId: IStructureCluster | string | undefined): void {
     this.markup.release(clusterOrId);
   }
-
-  }
 }

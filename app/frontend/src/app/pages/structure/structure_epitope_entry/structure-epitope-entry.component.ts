@@ -18,6 +18,7 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Even
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { SearchAvailabilityService } from 'pages/search/table/search/search-availability.service';
 import { IStructureCluster, IStructureClusterMeta, IStructureEpitope } from 'pages/structure/structure';
+import { StructureDownload } from 'pages/structure/structure-download';
 import { IOverlayTableRow, StructureOverlayRow } from 'pages/structure/structure_overlay_row/structure-overlay-row';
 import { StructureService, StructuresServiceEvents } from 'pages/structure/structure.service';
 import { StructureHoverController } from 'pages/structure/structure_hover/structure-hover.controller';
@@ -44,7 +45,6 @@ export class StructureEpitopeEntryComponent implements OnInit, OnDestroy {
     public overlayError: string | undefined;
     public readonly overlayLimit: number = 5;
     public readonly downloadTitle: string = 'Download data';
-    public readonly downloadDirectory: string = '/structure-files/structure';
     public overlayLayerList: Array<{ id: string, markup: SafeHtml, mode: 'standard' | 'simple' }> = [];
     public overlayTableRows: IOverlayTableRow[] = [];
     public sizeState: StructureOverlaySizeController;
@@ -278,17 +278,7 @@ export class StructureEpitopeEntryComponent implements OnInit, OnDestroy {
             event.preventDefault();
             event.stopPropagation();
         }
-        if (!row || !row.cluster) {
-            return;
-        }
-        const hash = this.resolveStructureHash(row.cluster);
-        if (!hash) {
-            return;
-        }
-        const epitope = this.epitope && this.epitope.epitope ? this.epitope.epitope.trim() : '';
-        const fileName = `${epitope}_${hash.slice(0, 6)}.zip`;
-        const fileUrl = `${this.downloadDirectory}/${encodeURIComponent(fileName)}`;
-        this.startDownload(fileUrl, fileName);
+        StructureDownload.bundle(row && row.cluster, this.epitope ? this.epitope.epitope : '');
     }
 
     public onShowTableClick(event?: MouseEvent): void {
@@ -444,20 +434,5 @@ export class StructureEpitopeEntryComponent implements OnInit, OnDestroy {
         return selection.toString().trim().length > 0;
     }
 
-    private resolveStructureHash(cluster: IStructureCluster): string {
-        if (!cluster || typeof cluster.clusterId !== 'string') {
-            return '';
-        }
-        return cluster.clusterId.trim();
-    }
-
-    private startDownload(url: string, fileName: string): void {
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = fileName;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    }
 
 }
