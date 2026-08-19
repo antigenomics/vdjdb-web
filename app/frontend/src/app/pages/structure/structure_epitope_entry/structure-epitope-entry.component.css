@@ -719,8 +719,11 @@
  * the plot's way of saying which contacts hold the receptor together and which hold the antigen.
  * Highlighting both at 3px black threw it away, so this one stays thin and grey - still ~7x its
  * resting weight, so it is unmistakably picked out, without reading as a peptide contact.
+ *
+ * Both classes are on the element and both rules are !important, so this one is written as a
+ * compound selector to outrank the rule above on specificity rather than on source order.
  */
-.structure-overlay__base ::ng-deep .structure-hover--contact-internal path {
+.structure-overlay__base ::ng-deep .structure-hover--contact.structure-hover--contact-internal path {
     stroke: #666666 !important;
     stroke-width: 1.4 !important;
     filter: none;
