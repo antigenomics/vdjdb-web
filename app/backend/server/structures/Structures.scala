@@ -30,8 +30,6 @@ case class Structures @Inject()(database: Database)(implicit ec: ExecutionContex
   private val structureMetricsIndex: Map[String, StructureModelMetrics] =
     StructureMetricsIndex.load(Paths.get(database.getLocation))
 
-
-
   private case class ChainInfo(cdr3: String, vsegm: String, jsegm: String, motifClusterId: Option[String])
 
   private def firstValueForGene(table: Table, gene: String, column: String): Option[String] = {
@@ -90,7 +88,6 @@ case class Structures @Inject()(database: Database)(implicit ec: ExecutionContex
     }
   }
 
-
   private def buildStructureKeySet(): Set[String] = {
     val required = Seq("species", "gene", "antigen.epitope", "cdr3", "v.segm", "j.segm")
     if (!required.forall(structures.columnNames().contains)) {
@@ -137,92 +134,12 @@ case class Structures @Inject()(database: Database)(implicit ec: ExecutionContex
   private val raw: Table = StructureTableLoader.load(database.getLocation + "/vdjdb.txt")
 
   // ---------- derive columns from JSON in "meta" ----------
-  private def getMetaCol(t: Table): StringColumn =
-    if (t.columnNames().contains("meta")) t.stringColumn("meta")
-    else StringColumn.create("meta") // empty fallback
-
-  private def getTcrHashCol(t: Table): Option[StringColumn] =
-    if (t.columnNames().contains("TCR_hash")) Some(t.stringColumn("TCR_hash"))
-    else if (t.columnNames().contains("contacts")) Some(t.stringColumn("contacts"))
-    else None
-
-  private val structureIdJsonKeys: Seq[String] = Seq(
-    "structure.id",
-    "structureId",
-    "structure",
-    "structure_id",
-    "structureHash",
-    "structure.hash",
-    "TCR_hash"
-  )
-
-
-
-  private def extractStructureId(metaStr: String, hashStr: Option[String]): Option[String] = {
-    val fromHash = hashStr.flatMap(StructureIdentifiers.sanitize).map(_.trim).filter(_.nonEmpty)
-    val fromMeta = Option(metaStr)
-      .map(meta => pickFromJson(meta, structureIdJsonKeys))
-      .map(_.trim)
-      .filter(_.nonEmpty)
-    fromHash.orElse(fromMeta)
-  }
-
-  private def buildStructureIdColumn(t: Table): StringColumn = {
-    val metaCol = getMetaCol(t)
-    val hashColOpt = getTcrHashCol(t)
-    val values = new java.util.ArrayList[String](t.rowCount())
-    var i = 0
-    while (i < t.rowCount()) {
-      val metaRaw = Try(metaCol.get(i)).getOrElse("")
-      val hashRaw = hashColOpt.flatMap(col => Option(col.get(i)))
-      val resolved = extractStructureId(metaRaw, hashRaw).getOrElse("")
-      values.add(resolved)
-      i += 1
-    }
-    StringColumn.create("structure.id", values)
-  }
-
-  private def pickFromJson(metaStr: String, keys: Seq[String]): String = {
-    if (metaStr == null || metaStr.isEmpty) return ""
-    val js = Json.parse(metaStr)
-
-    // Try flat keys like "structure.id" first, then nested "structure" -> "id"
-    def lookup(jsv: JsValue, key: String): Option[String] = {
-      val flat = (jsv \ key).asOpt[String]
-      if (flat.isDefined) flat
-      else if (key.contains(".")) {
-        val parts = key.split("\\.").toList
-        parts match {
-          case h :: tail => tail.foldLeft(jsv \ h: JsLookupResult)((acc, k) => acc \ k).toOption.flatMap(_.asOpt[String])
-          case _ => None
-        }
-      } else None
-    }
-
-    keys.view.flatMap(k => lookup(js, k)).map(_.trim).find(_.nonEmpty).getOrElse("")
-  }
-
-  private def deriveColFromMeta(t: Table, newName: String, keys: Seq[String]): StringColumn = {
-    val meta = getMetaCol(t)
-    val values = new java.util.ArrayList[String](t.rowCount())
-    var i = 0
-    while (i < t.rowCount()) {
-      val v = pickFromJson(meta.get(i), keys)
-      values.add(v)
-      i += 1
-    }
-    StringColumn.create(newName, values)
-  }
 
   private val withDerived: Table = {
     val t = raw.copy()
     // derive "structure.id" (TCR hash preferred) and "cell.subset" from JSON
-    val structureIdCol = buildStructureIdColumn(t)
-    val cellSubsetCol  = deriveColFromMeta(t, "cell.subset",
-      Seq("cell.subset", "cellSubset", "cell_subset", "cell.subset"))
-
-    t.addColumns(structureIdCol)
-    t.addColumns(cellSubsetCol)
+    t.addColumns(StructureMetaColumns.structureIdColumn(t))
+    t.addColumns(StructureMetaColumns.derivedColumn(t, "cell.subset", StructureMetaColumns.CellSubsetKeys))
     t
   }
 
@@ -459,17 +376,6 @@ case class Structures @Inject()(database: Database)(implicit ec: ExecutionContex
         cdr3aVEnd, cdr3aJStart, cdr3bVEnd, cdr3bJStart, metricsOpt))
     }
   }
-
-
-
-
-
-
-
-
-
-
-
 
 }
 
