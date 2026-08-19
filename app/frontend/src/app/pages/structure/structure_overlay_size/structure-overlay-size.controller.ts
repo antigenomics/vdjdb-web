@@ -168,12 +168,41 @@ export class StructureOverlaySizeController {
 
     private static windowViewport(): IOverlayViewport {
         return {
-            height: () => Math.max(window.innerHeight || 0,
-                document.documentElement ? document.documentElement.clientHeight : 0),
-            headerHeight: () => {
-                const navbar = document.querySelector(NAVBAR_SELECTOR) as HTMLElement | null;
-                return navbar ? Math.max(0, Math.round(navbar.getBoundingClientRect().height)) : 0;
-            }
+            height: () => StructurePageChrome.viewportHeight(),
+            headerHeight: () => StructurePageChrome.heightOf(NAVBAR_SELECTOR)
         };
     }
+}
+
+/**
+ * Measuring the page furniture the plot has to fit under.
+ *
+ * Both things on this page that size themselves to the viewport - the overlay and the CDR3 results
+ * list - have to subtract the same fixed navbar, and the second also subtracts the page title and
+ * the context header. Each was reading them with its own `querySelector` and its own rounding.
+ */
+export class StructurePageChrome {
+
+    /** innerHeight is 0 in some embedded contexts, so the documentElement is the fallback. */
+    public static viewportHeight(): number {
+        return Math.max(window.innerHeight || 0,
+            document.documentElement ? document.documentElement.clientHeight : 0);
+    }
+
+    /** Rendered height of the first match, or 0 when it is not on the page. */
+    public static heightOf(selector: string): number {
+        const element = document.querySelector(selector) as HTMLElement | null;
+        return element ? Math.max(0, Math.round(element.getBoundingClientRect().height)) : 0;
+    }
+
+    public static find(selector: string): Element | null {
+        return document.querySelector(selector);
+    }
+
+    /** The fixed navbar, which overlays the top of every page. */
+    public static readonly Navbar = NAVBAR_SELECTOR;
+    /** The page's own `<h3>` title bar. */
+    public static readonly Title = 'h3.ui.top.attached.header';
+    /** The MHC / epitope selector bar, which grows and shrinks with the selection. */
+    public static readonly ContextHeader = 'structure-context-header';
 }

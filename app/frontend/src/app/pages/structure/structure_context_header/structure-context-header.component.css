@@ -14,6 +14,8 @@
  *     limitations under the License.
  */
 
+/* ---------- the bar itself ---------- */
+
 .structure-context-header {
     padding: 0.5rem 0.5rem 0.25rem;
 }
@@ -29,6 +31,11 @@
 .structure-context-form .ui.dropdown {
     min-width: 100%;
 }
+
+/* ---------- the epitope combobox ----------
+   Semantic's search dropdown assumes the field owns its own value; this one is driven from the
+   component, so the input is a plain text box wearing Semantic's clothes and the menu is opened by
+   the controller rather than by Semantic's own JavaScript. Hence the overrides below. */
 
 .structure-context-form .structure-epitope-dropdown {
     min-height: 38px;
@@ -59,6 +66,8 @@
     background: inherit !important;
 }
 
+/* ---------- the CDR3 search row ---------- */
+
 .structure-context-form__label-row {
     display: flex;
     align-items: center;
@@ -81,6 +90,9 @@
     font-weight: 700;
 }
 
+/* The chain picker reads as underlined text in the label rather than as a control, so nearly all of
+   Semantic's dropdown chrome has to be unset - the !importants are undoing its styles, not winning
+   an argument with ours. */
 .structure-context-form__chain-dropdown {
     display: inline-flex;
     align-items: center;

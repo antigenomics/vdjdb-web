@@ -14,6 +14,10 @@
  *     limitations under the License.
  */
 
+/* The list fills the page and scrolls inside itself, so the pagination bars stay put at both ends
+   while the results move. Every rule below is in service of that: the flex column, the min-height: 0
+   that lets the middle actually shrink, and the auto overflow on the list alone. */
+
 :host {
     display: block;
     height: 100%;
@@ -61,6 +65,8 @@
     overflow: hidden;
 }
 
+/* ::ng-deep because the divider belongs to the cluster component's own markup: the last result must
+   not draw a rule against the bottom pagination bar. */
 .structure-cdr3-results__entry:last-child ::ng-deep .structure-cdr3-layout {
     border-bottom: none;
 }
