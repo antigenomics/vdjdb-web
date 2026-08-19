@@ -142,7 +142,35 @@ case class Structures @Inject()(database: Database)(implicit ec: ExecutionContex
     t
   }
 
-  // ---------- keep only rows that actually have a structure visualization ----------
+  /**
+   * Structures with at least one record reporting a modelled CDR3-peptide interface.
+   *
+   * Empty when the column is absent, which means a database predating the Evidence work; the prune
+   * below treats that as "do not prune", because emptying the browser on an old database would be
+   * far worse than listing a few half-maps.
+   */
+  private val withPeptideContacts: Set[String] = {
+    if (!withDerived.columnNames().contains(Structures.PeptideContactsColumn)) {
+      Set.empty
+    } else {
+      val idCol = withDerived.stringColumn("structure.id")
+      val contactsCol = withDerived.stringColumn(Structures.PeptideContactsColumn)
+      val found = mutable.HashSet.empty[String]
+      var idx = 0
+      while (idx < withDerived.rowCount()) {
+        if (Option(contactsCol.get(idx)).exists(_.trim.equalsIgnoreCase("true"))) {
+          found += Option(idCol.get(idx)).map(_.trim).getOrElse("")
+        }
+        idx += 1
+      }
+      found.toSet
+    }
+  }
+
+  private val prunesByContacts: Boolean =
+    withDerived.columnNames().contains(Structures.PeptideContactsColumn)
+
+  // ---------- keep only rows with a visualization AND a CDR3-peptide interface ----------
   private val structures: Table = {
     val sid = withDerived.stringColumn("structure.id")
     // prune empty / missing / literal "null"
@@ -155,7 +183,10 @@ case class Structures @Inject()(database: Database)(implicit ec: ExecutionContex
     var idx = 0
     while (idx < filteredNonEmpty.rowCount()) {
       val rawId = Option(idCol.get(idx)).map(_.trim).getOrElse("")
-      if (visualizations.exists(rawId)) {
+      // Both prunes here rather than one here and one in buildCluster, so the metadata tree and the
+      // card list are derived from the same rows. Splitting them left MHCII in the epitope dropdown
+      // with nothing behind it.
+      if (visualizations.exists(rawId) && (!prunesByContacts || withPeptideContacts.contains(rawId))) {
         kept += idx
       }
       idx += 1
@@ -300,28 +331,9 @@ case class Structures @Inject()(database: Database)(implicit ec: ExecutionContex
     }
   }
 
-  /**
-   * Whether any record behind this structure reports a CDR3-peptide contact.
-   *
-   * A structure whose contact data holds only CDR3a-CDR3b pairs renders as a map with the two loops
-   * and no epitope at all, which is not a contact map so much as half of one - so it is dropped
-   * rather than shown. Measured against the deployed database: 795 of 11,046 mapped structures, and
-   * all six of the MHCII ones, which is why that class looked uniformly broken.
-   *
-   * The cause is upstream, in whatever computes the `*_contacts*` files beside each map - those hold
-   * only `CDR3_alpha -> CDR3_beta` rows for the affected structures. This hides the symptom; it does
-   * not fix the data.
-   *
-   * An absent column means a database build predating the Evidence work, and there every structure is
-   * kept: emptying the browser on an old database would be far worse than showing a few half-maps.
-   */
-  private def hasPeptideContacts(table: Table): Boolean =
-    !table.columnNames().contains(Structures.PeptideContactsColumn) ||
-      table.stringColumn(Structures.PeptideContactsColumn).asList().asScala.exists(_.trim.equalsIgnoreCase("true"))
-
   private def buildCluster(table: Table): Option[StructureCluster] = {
     val structureId = firstValue(table, "structure.id").getOrElse("")
-    if (structureId.isEmpty || !hasPeptideContacts(table)) {
+    if (structureId.isEmpty) {
       None
     } else {
       val size = table.rowCount()

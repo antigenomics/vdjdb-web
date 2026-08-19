@@ -66,7 +66,10 @@ class StructuresSpec extends BaseTestSpec {
     "drop rows whose visualization does not resolve on disk" taggedAs DatabaseTestTag in {
       // Pruning is by file existence, not by the row carrying an id.
       structures.getAvailableStructureIds should not contain OrphanHash
-      structures.getAvailableStructureIds should have size 9
+      // Five of the fixture's ten: one has no map on disk, and the four ANYKFTLV structures report no
+      // CDR3-peptide contact. Both prunes happen where the table is built, so this one number covers
+      // what the metadata tree and the card list will both see.
+      structures.getAvailableStructureIds should have size 5
     }
 
     "expose only html visualizations, and a simplified url only where the file exists" taggedAs DatabaseTestTag in {
