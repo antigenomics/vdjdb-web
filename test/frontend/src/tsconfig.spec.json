@@ -2,13 +2,30 @@
   "extends": "../../../app/frontend/tsconfig.json",
   "compilerOptions": {
     "outDir": "./out-tsc/spec",
-    "baseUrl": "./",
+    "baseUrl": "../../../app/frontend",
     "module": "commonjs",
     "target": "es5",
     "types": [
       "jasmine",
       "node"
-    ]
+    ],
+    "paths": {
+      "external/*": [
+        "src/external/*"
+      ],
+      "pages/*": [
+        "src/app/pages/*"
+      ],
+      "shared/*": [
+        "src/app/shared/*"
+      ],
+      "utils/*": [
+        "src/app/utils/*"
+      ],
+      "environments/*": [
+        "src/environments/*"
+      ]
+    }
   },
   "files": [
     "test.ts"
