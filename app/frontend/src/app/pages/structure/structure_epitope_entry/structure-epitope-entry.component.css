@@ -675,6 +675,11 @@
  * Only the base layer carries pointer events (see .structure-overlay__layer above), so these can
  * only ever apply to the structure at the front of the stack. Highlighting one behind it would name
  * a residue from a map the reader is not looking at.
+ *
+ * ::ng-deep is required, not stylistic. The contact map arrives through [innerHTML], so its nodes
+ * never receive this component's _ngcontent attribute; without ::ng-deep, emulated encapsulation
+ * rewrites these rules to demand an attribute the SVG cannot have and they silently match nothing.
+ * Both rules stay scoped under .structure-overlay__base so nothing escapes this component.
  */
 
 /*
@@ -682,7 +687,7 @@
  * about its centre. Without it the origin is the SVG user-space origin and the box flies off across
  * the figure instead of growing in place.
  */
-.structure-overlay__base .structure-hover--residue {
+.structure-overlay__base ::ng-deep .structure-hover--residue {
     transform-box: fill-box;
     transform-origin: center;
     transform: scale(1.5);
@@ -694,7 +699,7 @@
  * !important throughout: matplotlib writes stroke and width inline on every path, and an inline
  * style beats a stylesheet rule whatever its specificity.
  */
-.structure-overlay__base .structure-hover--contact path {
+.structure-overlay__base ::ng-deep .structure-hover--contact path {
     stroke: #111111 !important;
     stroke-width: 3 !important;
     stroke-dasharray: none !important;

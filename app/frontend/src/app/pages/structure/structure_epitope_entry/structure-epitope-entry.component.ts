@@ -703,7 +703,6 @@ export class StructureEpitopeEntryComponent implements OnInit, OnDestroy {
     }
 
     public ngOnDestroy(): void {
-        this.hoverState.detach();
         this.disconnectOverlayObserver();
         this.cancelOverlayRecalc();
         this.overlaySelection.forEach((id) => this.structureService.releaseHtmlVisualizationMarkup(id));

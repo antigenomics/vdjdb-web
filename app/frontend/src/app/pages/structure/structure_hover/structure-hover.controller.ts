@@ -35,6 +35,11 @@ export const CONTACT_HOVER_CLASS = 'structure-hover--contact';
  * markup is written into the host with `innerHTML`, so the host element survives a change of
  * structure and there is no reliable hook that fires after the new SVG lands; noticing at the next
  * pointer event costs one comparison and cannot go stale.
+ *
+ * Driven straight from template bindings. An earlier attempt attached raw listeners to an element
+ * resolved by `@ViewChild`, to keep pointer moves out of change detection - the query never
+ * delivered the element and the feature silently did nothing. Correctness first: a binding cannot
+ * fail to fire.
  */
 export class StructureHoverController {
 
@@ -45,57 +50,20 @@ export class StructureHoverController {
     public x: number = 0;
     public y: number = 0;
 
-    private host?: HTMLElement;
     private svg: SVGSVGElement | null = null;
     private index: IStructureSvgIndex = { residues: [], contacts: [] };
     private highlighted?: SVGGElement;
 
-    private readonly onPointerMove = (event: MouseEvent): void => this.track(event);
-    private readonly onPointerLeave = (): void => this.clear();
-
     constructor(private changeDetector: ChangeDetectorRef) {}
-
-    /**
-     * Binds to the element the pointer just entered.
-     *
-     * Driven from the template's `(mouseenter)` rather than a `@ViewChild`: the query did not
-     * resolve for this element, and an event binding cannot fail to hand over the right one. The
-     * listeners themselves stay raw rather than becoming template bindings, so a mousemove does not
-     * put the whole overlay through change detection on every pixel.
-     */
-    public attach(target: EventTarget | null): void {
-        const host = target instanceof HTMLElement ? target : undefined;
-        if (this.host === host) {
-            return;
-        }
-        this.detach();
-        this.host = host;
-
-        if (host) {
-            // Passive: this only reads positions and toggles a class, it never blocks scrolling.
-            host.addEventListener('mousemove', this.onPointerMove, { passive: true });
-            host.addEventListener('mouseleave', this.onPointerLeave, { passive: true });
-        }
-    }
-
-    public detach(): void {
-        if (this.host) {
-            this.host.removeEventListener('mousemove', this.onPointerMove);
-            this.host.removeEventListener('mouseleave', this.onPointerLeave);
-        }
-        this.clear();
-        this.host = undefined;
-        this.svg = null;
-        this.index = { residues: [], contacts: [] };
-    }
 
     /** Exposed for the tooltip's `*ngIf`; the template should not reach into the index. */
     public get isActive(): boolean {
         return this.label !== null;
     }
 
-    private track(event: MouseEvent): void {
-        this.refreshIndex();
+    public track(event: MouseEvent): void {
+        const host = event.currentTarget instanceof HTMLElement ? event.currentTarget : null;
+        this.refreshIndex(host);
 
         const annotation = StructureSvgIndex.locate(this.index, event.target);
         const element = StructureHoverController.elementOf(annotation);
@@ -112,8 +80,8 @@ export class StructureHoverController {
         const changed = label !== this.label;
         this.label = label;
 
-        if (label !== null && this.host) {
-            const bounds = this.host.getBoundingClientRect();
+        if (label !== null && host) {
+            const bounds = host.getBoundingClientRect();
             this.x = event.clientX - bounds.left;
             this.y = event.clientY - bounds.top;
         }
@@ -124,7 +92,7 @@ export class StructureHoverController {
         }
     }
 
-    private clear(): void {
+    public clear(): void {
         this.unhighlight();
         if (this.label !== null) {
             this.label = null;
@@ -140,8 +108,8 @@ export class StructureHoverController {
     }
 
     /** Rebuilds when the host is showing a different SVG than the one the index was built from. */
-    private refreshIndex(): void {
-        const svg = this.host ? this.host.querySelector('svg') : null;
+    private refreshIndex(host: HTMLElement | null): void {
+        const svg = host ? host.querySelector('svg') : null;
         if (svg !== this.svg) {
             this.svg = svg as SVGSVGElement | null;
             this.index = StructureSvgIndex.build(this.svg);
