@@ -24,9 +24,7 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 case class Structures @Inject()(database: Database)(implicit ec: ExecutionContext) {
 
-  private val structureFilesRoot: Path = Structures.resolveImageRoot(database)
-  private val standardHtmlDir: Path = structureFilesRoot.resolve("structure")
-  private val visualizationMappings: Map[String, StructureVisualization] = loadVisualizationMappings()
+  private val visualizations = new StructureVisualizationIndex(StructureVisualizationIndex.resolveRoot(database))
   private lazy val motifClusterIdIndex: Map[String, String] = loadMotifClusterIdIndex(buildStructureKeySet())
   private val maxTopValueInCDR3Search: Int = 15
   // Per-model confidence metrics, keyed by lower-cased structure hash (see
@@ -72,39 +70,6 @@ case class Structures @Inject()(database: Database)(implicit ec: ExecutionContex
     }
   }
 
-  private def loadVisualizationMappings(): Map[String, StructureVisualization] = {
-    val indexPath = structureFilesRoot.resolve("structure_html_mapping.json")
-    if (!Files.isRegularFile(indexPath)) {
-      Map.empty
-    } else {
-      val content = Try(new String(Files.readAllBytes(indexPath), StandardCharsets.UTF_8)).getOrElse("")
-      val parsed = Try(Json.parse(content)).toOption.getOrElse(Json.obj())
-      (parsed \ "visualizations").asOpt[Seq[JsValue]].getOrElse(Seq.empty).flatMap { entry =>
-        val idOpt = (entry \ "structureId").asOpt[String].map(_.trim).filter(_.nonEmpty)
-        val relPathOpt = (entry \ "relativePath").asOpt[String].map(_.trim).filter(path => path.nonEmpty && !path.contains(".."))
-        val kind = (entry \ "type").asOpt[String].map(_.trim).filter(_.nonEmpty).getOrElse("html")
-        val simpleRelOpt = (entry \ "relativePathSimple").asOpt[String].map(_.trim).filter(path => path.nonEmpty && !path.contains(".."))
-
-        def resolveToUrl(rel: String): Option[String] = {
-          val normalizedRel = Paths.get(rel).normalize()
-          val resolved = structureFilesRoot.resolve(normalizedRel).normalize()
-          if (!resolved.startsWith(structureFilesRoot) || !Files.isRegularFile(resolved)) {
-            None
-          } else {
-            Some(normalizedRel.iterator().asScala.mkString("/"))
-          }
-        }
-
-        (idOpt, relPathOpt.flatMap(resolveToUrl)) match {
-          case (Some(id), Some(relUrlPath)) =>
-            val simpleUrl = simpleRelOpt.flatMap(resolveToUrl)
-            Some(id.toLowerCase(Locale.ROOT) -> StructureVisualization(s"/structure-files/$relUrlPath", kind, simpleUrl.map(u => s"/structure-files/$u")))
-          case _ =>
-            None
-        }
-      }.toMap
-    }
-  }
 
   private case class ChainInfo(cdr3: String, vsegm: String, jsegm: String, motifClusterId: Option[String])
   private case class Cdr3MatchStats(matches: Int,
@@ -437,7 +402,7 @@ case class Structures @Inject()(database: Database)(implicit ec: ExecutionContex
     var idx = 0
     while (idx < filteredNonEmpty.rowCount()) {
       val rawId = Option(idCol.get(idx)).map(_.trim).getOrElse("")
-      if (hasStructureVisualization(rawId)) {
+      if (visualizations.exists(rawId)) {
         kept += idx
       }
       idx += 1
@@ -485,7 +450,7 @@ case class Structures @Inject()(database: Database)(implicit ec: ExecutionContex
 
   def getHtmlVisualizations: Map[String, StructureVisualization] = {
     structureIdIndex.flatMap { case (normalized, rawId) =>
-      resolveVisualization(rawId).filter(_.kind.equalsIgnoreCase("html")).map(normalized -> _)
+      visualizations.resolve(rawId).filter(_.kind.equalsIgnoreCase("html")).map(normalized -> _)
     }
   }
 
@@ -675,7 +640,7 @@ case class Structures @Inject()(database: Database)(implicit ec: ExecutionContex
       val tcrPairLabel = Seq(alphaLabel, betaLabel).filter(_.nonEmpty).mkString("; ")
 
       val trimmedId = structureId.trim
-      val visualizationOpt = resolveVisualization(trimmedId)
+      val visualizationOpt = visualizations.resolve(trimmedId)
       if (visualizationOpt.isEmpty) {
         return None
       }
@@ -709,61 +674,11 @@ case class Structures @Inject()(database: Database)(implicit ec: ExecutionContex
     }
   }
 
-  private def hasStructureVisualization(structureId: String): Boolean =
-    resolveVisualization(structureId).isDefined
 
-  private def resolveVisualization(structureId: String): Option[StructureVisualization] = {
-    val trimmedId = Option(structureId).map(_.trim).getOrElse("")
-    if (trimmedId.isEmpty) {
-      None
-    } else {
-      val lowerId = trimmedId.toLowerCase(Locale.ROOT)
-      visualizationMappings.get(lowerId).orElse {
-        locateStandardHtml(trimmedId, lowerId).flatMap { stdPath =>
-          toUrlPath(stdPath).map { standardUrlPath =>
-            val simplePath = locateSimpleHtml(trimmedId, lowerId).flatMap(toUrlPath)
-            StructureVisualization(s"/structure-files/$standardUrlPath", "html", simplePath.map(url => s"/structure-files/$url"))
-          }
-        }
-      }
-    }
-  }
 
-  private def locateStandardHtml(originalId: String, lowerId: String): Option[Path] = {
-    val candidates = Seq(
-      s"$originalId.html",
-      if (lowerId != originalId) s"$lowerId.html" else ""
-    ).filter(_.nonEmpty)
-    locateInStructureDirectory(candidates)
-  }
 
-  private def locateSimpleHtml(originalId: String, lowerId: String): Option[Path] = {
-    val candidates = Seq(
-      s"${originalId}_simplified.html",
-      if (lowerId != originalId) s"${lowerId}_simplified.html" else ""
-    ).filter(_.nonEmpty)
-    locateInStructureDirectory(candidates)
-  }
 
-  private def locateInStructureDirectory(candidateFileNames: Seq[String]): Option[Path] = {
-    if (!Files.isDirectory(standardHtmlDir)) {
-      None
-    } else {
-      candidateFileNames.iterator.flatMap { name =>
-        val normalized = standardHtmlDir.resolve(name).normalize()
-        if (Files.isRegularFile(normalized) && normalized.startsWith(structureFilesRoot)) Some(normalized) else None
-      }.collectFirst { case path => path }
-    }
-  }
 
-  private def toUrlPath(file: Path): Option[String] = {
-    val normalized = file.normalize()
-    if (!normalized.startsWith(structureFilesRoot)) {
-      None
-    } else {
-      Some(structureFilesRoot.relativize(normalized).iterator().asScala.mkString("/"))
-    }
-  }
 
   private def filterByGene(table: Table, gene: String): Table = {
     gene match {
@@ -809,21 +724,3 @@ case class Structures @Inject()(database: Database)(implicit ec: ExecutionContex
   }
 }
 
-object Structures {
-  private def hasStructureDirectories(dir: Path): Boolean =
-    Files.isDirectory(dir) && Files.isDirectory(dir.resolve("structure"))
-
-  def resolveImageRoot(database: Database): Path = {
-    val base = Paths.get(database.getLocation).toAbsolutePath.normalize()
-    val candidates = Seq(
-      base,
-      base.getParent match {
-        case null => base
-        case parent => parent.toAbsolutePath.normalize()
-      },
-      base.resolve("test").resolve("merged")
-    ).map(_.normalize()).distinct
-
-    candidates.find(hasStructureDirectories).getOrElse(base)
-  }
-}
