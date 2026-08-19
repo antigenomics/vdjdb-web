@@ -33,6 +33,7 @@ import { map, take } from 'rxjs/operators';
 import { LoggerService } from 'utils/logger/logger.service';
 import { NotificationService } from 'utils/notifications/notification.service';
 import { StructureMarkupCache, StructureMarkupMode } from 'pages/structure/structure-markup.cache';
+import { StructureMetadataTree } from 'pages/structure/structure-metadata-tree';
 import { StructureResponse } from 'pages/structure/structure-response';
 import { Utils } from 'utils/utils';
 import { EpitopeBridgeService, IBridgeEpitope } from '../../epitope-bridge.service';
@@ -179,27 +180,19 @@ export class StructureService {
     this.setSearchState(StructureSearchState.SEARCH_TREE);
 
     this.metadata.pipe(take(1)).subscribe((metadata) => {
-      const pathNodes: IStructuresMetadataTreeLevelValue[] = [];
-      const mhcClassNode = metadata.root.values.find((v) => v.value.toLowerCase() === filters.mhcClass.toLowerCase());
-      if (!mhcClassNode || !mhcClassNode.next) { return; }
-      pathNodes.push(mhcClassNode);
+      const path = StructureMetadataTree.findPath(metadata, filters.mhcClass, filters.gene, filters.epitopeSeq);
+      if (path.length === 0) {
+        return;
+      }
+      path.forEach((node) => (node.isOpened = true));
 
-      const normalizedGene = StructureResponse.normalizeMhcPair(filters.gene);
-      const mhcNode = mhcClassNode.next.values.find((v) => StructureResponse.normalizeMhcPair(v.value) === normalizedGene);
-      if (!mhcNode || !mhcNode.next) { return; }
-      pathNodes.push(mhcNode);
-
-      const epitopeNode = mhcNode.next.values.find((v) => v.value.toLowerCase() === filters.epitopeSeq.toLowerCase());
-      if (!epitopeNode) { return; }
-      pathNodes.push(epitopeNode);
-
-      pathNodes.forEach((node) => (node.isOpened = true));
-
+      // Built from the tree's own values rather than from the URL, so the filter posted to the
+      // server carries the canonical spelling even when the link named the MHC at full resolution.
       const treeFilter: IStructuresSearchTreeFilter = {
         entries: [
-          { name: 'mhc.class', value: mhcClassNode.value },
-          { name: 'mhc.pair', value: mhcNode.value },
-          { name: 'antigen.epitope', value: epitopeNode.value }
+          { name: 'mhc.class', value: path[ 0 ].value },
+          { name: 'mhc.pair', value: path[ 1 ].value },
+          { name: 'antigen.epitope', value: path[ 2 ].value }
         ]
       };
 
@@ -302,7 +295,7 @@ export class StructureService {
     if (mode === 'replace') {
       this.metadata.pipe(take(1)).subscribe((metadata) => {
         this.clearSelectedValues(metadata);
-        const leaf = StructureResponse.resolveLeaf(metadata, treeFilter.entries);
+        const leaf = StructureMetadataTree.resolveLeaf(metadata, treeFilter.entries);
         if (leaf) {
           this.selectTreeLevelValue(leaf);
         }
@@ -410,7 +403,7 @@ export class StructureService {
 
   public updateSelected(): void {
     this.metadata.pipe(take(1)).subscribe((metadata) => {
-      const selectedValues = StructureService.extractMetadataTreeLeafValues(metadata.root)
+      const selectedValues = StructureMetadataTree.leafValues(metadata.root)
           .filter(([ _, value ]) => value.isSelected)
           .map(([ _, value ]) => value);
       this.selected.next(selectedValues);
@@ -485,7 +478,7 @@ export class StructureService {
 
   public findTreeLevelValue(hash: string): Observable<IStructuresMetadataTreeLevelValue[]> {
     return this.metadata.pipe(take(1), map((metadata) => {
-      return StructureService.extractMetadataTreeLeafValues(metadata.root)
+      return StructureMetadataTree.leafValues(metadata.root)
           .filter(([ h, _ ]) => h === hash)
           .map(([ _, value ]) => value);
     }));
@@ -495,7 +488,7 @@ export class StructureService {
     if (!metadata || !metadata.root) {
       return;
     }
-    StructureService.extractMetadataTreeLeafValues(metadata.root).forEach(([ _, value ]) => {
+    StructureMetadataTree.leafValues(metadata.root).forEach(([ _, value ]) => {
       value.isSelected = false;
     });
   }
@@ -520,13 +513,5 @@ export class StructureService {
     this.markup.release(clusterOrId);
   }
 
-  private static extractMetadataTreeLeafValues(tree: IStructuresMetadataTreeLevel): Array<[ string, IStructuresMetadataTreeLevelValue ]> {
-    return Utils.Array.flattened(tree.values.map((v) => {
-      if (v.next === null) {
-        return [ [ v.hash, v ] ] as Array<[ string, IStructuresMetadataTreeLevelValue ]>;
-      } else {
-        return StructureService.extractMetadataTreeLeafValues(v.next);
-      }
-    }));
   }
 }

@@ -15,10 +15,10 @@
  */
 
 import {
-  IStructureCluster, IStructureClusterMeta, IStructureModelMetrics, IStructuresMetadata,
-  IStructuresMetadataTreeLevel, IStructuresMetadataTreeLevelValue, IStructuresSearchTreeFilter,
+  IStructureCluster, IStructureClusterMeta, IStructureModelMetrics, IStructuresMetadata, IStructuresSearchTreeFilter,
   IStructuresSearchTreeFilterEntry, IStructuresSearchTreeFilterResult, IStructureVisualization
 } from 'pages/structure/structure';
+import { StructureMetadataTree } from 'pages/structure/structure-metadata-tree';
 import { Utils } from 'utils/utils';
 
 /**
@@ -43,7 +43,7 @@ export class StructureResponse {
     const entries = Array.isArray(treeFilter && treeFilter.entries) ? treeFilter.entries : [];
     const items = raw && Array.isArray(raw.items) ? raw.items : [];
 
-    const hash = StructureResponse.resolveEpitopeHash(metadata, entries) || StructureResponse.buildFallbackHash(entries);
+    const hash = StructureMetadataTree.resolveHash(metadata, entries) || StructureResponse.buildFallbackHash(entries);
     const epitopeLabel = StructureResponse.resolveEpitopeLabel(entries) || StructureResponse.extractEpitopeFromItems(items) || 'structures';
 
     const targetStructureEntry = entries.find((entry) => entry && entry.name === 'structure.id' && typeof entry.value === 'string');
@@ -71,61 +71,6 @@ export class StructureResponse {
         }
       ]
     };
-  }
-
-  public static resolveEpitopeHash(metadata: IStructuresMetadata, entries: IStructuresSearchTreeFilterEntry[]): string | undefined {
-    if (!metadata || !metadata.root || !Array.isArray(entries) || entries.length === 0) {
-      return undefined;
-    }
-
-    let level: IStructuresMetadataTreeLevel | null = metadata.root;
-    for (let index = 0; index < entries.length; ++index) {
-      const entry = entries[index];
-      if (!level) {
-        return undefined;
-      }
-      const value = level.values.find((candidate) => candidate.value === entry.value);
-      if (!value) {
-        return undefined;
-      }
-      if (index === entries.length - 1) {
-        return value.hash;
-      }
-      level = value.next;
-    }
-    return undefined;
-  }
-
-  public static resolveLeaf(metadata: IStructuresMetadata,
-                                entries: IStructuresSearchTreeFilterEntry[]): IStructuresMetadataTreeLevelValue | undefined {
-    if (!metadata || !metadata.root || !Array.isArray(entries) || entries.length === 0) {
-      return undefined;
-    }
-    const relevant = entries.filter((entry) => entry && [ 'mhc.class', 'mhc.pair', 'antigen.epitope' ].indexOf(entry.name) !== -1);
-    if (relevant.length === 0) {
-      return undefined;
-    }
-    let level: IStructuresMetadataTreeLevel | null = metadata.root;
-    for (let index = 0; index < relevant.length; ++index) {
-      const entry = relevant[index];
-      if (!level) {
-        return undefined;
-      }
-      const value = level.values.find((candidate) => {
-        if (entry.name === 'mhc.pair') {
-          return StructureResponse.normalizeMhcPair(candidate.value) === StructureResponse.normalizeMhcPair(entry.value);
-        }
-        return candidate.value.toLowerCase() === entry.value.toLowerCase();
-      });
-      if (!value) {
-        return undefined;
-      }
-      if (index === relevant.length - 1) {
-        return value;
-      }
-      level = value.next;
-    }
-    return undefined;
   }
 
   public static resolveEpitopeLabel(entries: IStructuresSearchTreeFilterEntry[]): string | undefined {
@@ -272,13 +217,5 @@ export class StructureResponse {
 
   public static buildFallbackHash(entries: IStructuresSearchTreeFilterEntry[]): string {
     return 'structures:' + JSON.stringify(entries || []);
-  }
-
-  public static normalizeMhcPair(value: string | undefined | null): string {
-    if (!value) {
-      return '';
-    }
-    const parts = value.split('/').map((part) => part.replace(/:.+/, '').trim()).filter((part) => part.length > 0);
-    return parts.join('/').toLowerCase();
   }
 }
