@@ -18,7 +18,7 @@
 package backend.server.motifs
 
 import backend.BaseTestSpec
-import backend.actions.UtilsTestTag
+import backend.utils.UtilsTestTag
 import tech.tablesaw.api.{StringColumn, Table}
 
 /** The join between VDJdb records and cluster membership.

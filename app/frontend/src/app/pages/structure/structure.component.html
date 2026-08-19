@@ -27,13 +27,26 @@
             <div class="ui active inverted dimmer" *ngIf="isEpitopesLoading() | async">
                 <div class="ui text loader">Loading</div>
             </div>
+            <!-- The horizontal margin must match this segment's 7px padding above. Semantic gives
+                 .ui.grid a -1rem gutter and assumes the parent has 1rem to absorb it; against 7px,
+                 7px of the grid hung off each side and the page scrolled 2px sideways at 375px. -->
             <div class="ui grid"
-                 style="margin-top: 0; overflow: visible;">
+                 style="margin-top: 0; margin-left: -7px; margin-right: -7px; overflow: visible;">
                 <div class="ui sixteen wide column"
                      [style.overflow-x]="isStateSearchCDR3() ? 'hidden' : 'auto'"
                      [style.padding-top]="isStateSearchCDR3() ? '0' : null"
                      #EpitopesContainer>
-                    <structure-epitopes *ngIf="isStateSearchTree()" [options]="options | async" [epitopes]="epitopes | async"></structure-epitopes>
+                    <ng-container *ngIf="isStateSearchTree()">
+                        <ng-container *ngFor="let epitope of epitopes | async; trackBy: trackEpitopeBy">
+                            <structure-epitope-entry [epitope]="epitope"
+                                                     [isNormalized]="(options | async)?.isNormalized"
+                                                     (onDiscard)="onEpitopeDiscard($event)"></structure-epitope-entry>
+                        </ng-container>
+                        <h2 class="ui center aligned icon header" style="margin-top: 10px" *ngIf="!(epitopes | async)?.length">
+                            <i class="search icon"></i> Nothing selected
+                            <div class="sub header">Choose an epitope from the header above to load structures</div>
+                        </h2>
+                    </ng-container>
                     <structure-cdr3-clusters *ngIf="isStateSearchCDR3()" [options]="options | async" [clusters]="clusters | async"></structure-cdr3-clusters>
                 </div>
             </div>

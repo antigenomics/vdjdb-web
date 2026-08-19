@@ -164,6 +164,13 @@
     padding: 0.7rem 0.75rem;
     background: #ffffff;
     cursor: pointer;
+    /* The three best-studied epitopes carry 2000-3706 cards, and selecting one reorders the list,
+       which relaid out every card: 330-360ms of blocked main thread per click, measured on
+       NLVPMVATV. Skipping layout for the off-screen ones takes that to ~78ms. The stated size is
+       the measured card height and only covers cards that have never been on screen - once one
+       renders, `auto` remembers its real size. */
+    content-visibility: auto;
+    contain-intrinsic-size: auto 294px;
 }
 
 .overlay-card + .overlay-card {
@@ -207,29 +214,11 @@
     min-width: 0;
 }
 
-.overlay-card__download {
-    position: absolute;
-    right: 0;
-    top: 0;
-    padding: 2px 8px;
-    border-radius: 4px;
-    font-size: 0.85rem;
-    line-height: 1.2;
-    border: 1px solid rgba(0, 0, 0, 0.15);
-    background: #ffffff;
-    cursor: pointer;
-}
-
-.overlay-card__download:active {
-    background: #eef2ff;
-}
-
-.overlay-card.is-disabled .overlay-card__line > :not(.overlay-card__download) {
+/* A card at the selection limit dims its data but not its actions - the motif links and the
+   download still work on a structure you cannot add to the overlay. The actions are exempted
+   below, on .overlay-card__actions, which is where they live. */
+.overlay-card.is-disabled .overlay-card__line > * {
     opacity: 0.5;
-}
-
-.overlay-card.is-disabled .overlay-card__download {
-    opacity: 1;
 }
 
 .overlay-card__actions {
@@ -333,34 +322,6 @@
     font-size: 0.7rem;
     text-transform: uppercase;
     letter-spacing: 0.3px;
-}
-
-.overlay-card__links {
-    margin-top: 0.4rem;
-    font-size: 0.82rem;
-}
-
-.overlay-card__links a {
-    color: #1a4fb5;
-    font-weight: 600;
-}
-
-.overlay-card__links a.is-unavailable {
-    color: rgba(0, 0, 0, 0.4);
-    pointer-events: none;
-}
-
-.overlay-card__links a.is-available {
-    color: #1f7a3c;
-}
-
-.overlay-card__link--disabled {
-    color: rgba(0, 0, 0, 0.4);
-}
-
-.overlay-selection__hint {
-    font-size: 0.82rem;
-    color: rgba(0, 0, 0, 0.52);
 }
 
 .overlay-visualization {
@@ -668,4 +629,151 @@
     .overlay-list__instructions-hint {
         display: none;
     }
+}
+/* ---------- hovering the front structure ---------- */
+
+/*
+ * Only the base layer carries pointer events (see .structure-overlay__layer above), so these can
+ * only ever apply to the structure at the front of the stack. Highlighting one behind it would name
+ * a residue from a map the reader is not looking at.
+ *
+ * ::ng-deep is required, not stylistic. The contact map arrives through [innerHTML], so its nodes
+ * never receive this component's _ngcontent attribute; without ::ng-deep, emulated encapsulation
+ * rewrites these rules to demand an attribute the SVG cannot have and they silently match nothing.
+ * Both rules stay scoped under .structure-overlay__base so nothing escapes this component.
+ */
+
+/*
+ * transform-box: fill-box makes the origin the element's own bounding box, so the residue box grows
+ * about its centre. Without it the origin is the SVG user-space origin and the box flies off across
+ * the figure instead of growing in place.
+ */
+.structure-overlay__base ::ng-deep .structure-hover--residue {
+    transform-box: fill-box;
+    transform-origin: center;
+    transform: scale(1.5);
+    filter: drop-shadow(0 0 3px rgba(0, 0, 0, 0.45));
+    transition: transform 90ms ease-out;
+}
+
+/*
+ * !important throughout: matplotlib writes stroke and width inline on every path, and an inline
+ * style beats a stylesheet rule whatever its specificity.
+ */
+/* TCR-peptide contact: drawn at 1.5, so it can take the full-strength treatment. */
+.structure-overlay__base ::ng-deep .structure-hover--contact path {
+    stroke: #111111 !important;
+    stroke-width: 3 !important;
+    stroke-dasharray: none !important;
+    filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.35));
+}
+
+/*
+ * CDR3a-CDR3b contact: drawn at 0.2, seven times thinner than a peptide one, and that difference is
+ * the plot's way of saying which contacts hold the receptor together and which hold the antigen.
+ * Highlighting both at 3px black threw it away, so this one stays thin and grey - still ~7x its
+ * resting weight, so it is unmistakably picked out, without reading as a peptide contact.
+ *
+ * Both classes are on the element and both rules are !important, so this one is written as a
+ * compound selector to outrank the rule above on specificity rather than on source order.
+ */
+.structure-overlay__base ::ng-deep .structure-hover--contact.structure-hover--contact-internal path {
+    stroke: #666666 !important;
+    stroke-width: 1.4 !important;
+    filter: none;
+}
+
+.structure-hover-tip {
+    position: absolute;
+    z-index: 40;
+    /* Above and to the right of the pointer, so it never sits under the cursor itself. */
+    transform: translate(12px, -140%);
+    max-width: 100%;
+    pointer-events: none;
+    white-space: nowrap;
+    padding: 3px 7px;
+    border-radius: 3px;
+    background: rgba(33, 33, 33, 0.92);
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    /* Always in the DOM so the controller has something to write to; shown only while the pointer
+       is on something. `display` rather than opacity: an empty tip must not take part in layout. */
+    display: none;
+}
+
+.structure-hover-tip--visible {
+    display: block;
+}
+
+/* ---------- bring a structure to the front ---------- */
+
+.overlay-card {
+    /* The promote button is positioned against the card. */
+    position: relative;
+}
+
+.overlay-card__front {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    z-index: 2;
+    width: 26px;
+    height: 26px;
+    padding: 0;
+    border: 1px solid #d4d4d5;
+    border-radius: 50%;
+    background: #ffffff;
+    /* Grey until this structure is the one at the front. */
+    color: #9a9a9a;
+    cursor: pointer;
+    transition: color 120ms ease, border-color 120ms ease, background-color 120ms ease;
+}
+
+.overlay-card__front .icon {
+    margin: 0;
+    line-height: 24px;
+    font-size: 13px;
+}
+
+.overlay-card__front:hover {
+    color: #48af75;
+    border-color: #48af75;
+}
+
+/* Coloured once this structure is at the front. Also the disabled state - there is nowhere further
+   forward to go - so the usual dimming is overridden. */
+.overlay-card__front.is-active,
+.overlay-card__front.is-active:hover {
+    color: #ffffff;
+    background: #48af75;
+    border-color: #48af75;
+    opacity: 1;
+    cursor: default;
+}
+
+/* The card glows while its structure is the one being drawn at the front, so the reader can see at
+   a glance which of the overlaid maps the hover labels refer to. */
+.overlay-card.is-at-front {
+    border-color: #48af75;
+    box-shadow: 0 0 0 1px #48af75, 0 0 10px rgba(72, 175, 117, 0.45);
+}
+
+/*
+ * Flipped near an edge rather than clamped against it. Clamping would slide the tooltip over the
+ * residue the reader is pointing at; flipping keeps the pointer clear and the label inside the map.
+ * Measured on a real map first: unflipped, a label near the right edge escaped the overlay by 41px
+ * and one near the top by 11px.
+ */
+.structure-hover-tip--flip-x {
+    transform: translate(calc(-100% - 12px), -140%);
+}
+
+.structure-hover-tip--flip-y {
+    transform: translate(12px, 40%);
+}
+
+.structure-hover-tip--flip-x.structure-hover-tip--flip-y {
+    transform: translate(calc(-100% - 12px), 40%);
 }

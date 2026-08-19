@@ -21,7 +21,7 @@ import java.util.concurrent.{CountDownLatch, TimeUnit}
 
 import akka.actor.ActorSystem
 import backend.BaseTestSpec
-import backend.actions.UtilsTestTag
+import backend.utils.UtilsTestTag
 import play.api.Configuration
 import play.api.inject.DefaultApplicationLifecycle
 

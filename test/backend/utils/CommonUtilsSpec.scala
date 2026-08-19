@@ -18,7 +18,6 @@
 package backend.utils
 
 import backend.BaseTestSpec
-import backend.actions.UtilsTestTag
 
 class CommonUtilsSpec extends BaseTestSpec {
     "CommonUtils" should {

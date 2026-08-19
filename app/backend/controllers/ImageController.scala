@@ -5,7 +5,7 @@ import play.api.mvc._
 import play.api.Configuration
 import java.nio.file.{Files, Path, Paths}
 import backend.server.database.Database
-import backend.server.structures.Structures
+import backend.server.structures.StructureVisualizationIndex
 import scala.concurrent._
 // Not unused, despite appearances: Ok.sendPath takes an implicit ExecutionContext as well as
 // FileMimeTypes, and unlike every other controller that streams a file this one is not constructed with
@@ -17,7 +17,7 @@ import ExecutionContext.Implicits.global
 class ImageController @Inject()(cc: ControllerComponents, db: Database, configuration: Configuration)
   extends AbstractController(cc) {
 
-  private val baseDir: Path = Structures.resolveImageRoot(db)
+  private val baseDir: Path = StructureVisualizationIndex.resolveRoot(db)
   private val motifChartsDir: Path = ImageController.resolveMotifChartsRoot(configuration)
 
   /** A single Browse view pulls dozens of these renders, and they were served with no freshness

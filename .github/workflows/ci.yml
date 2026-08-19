@@ -63,6 +63,13 @@ jobs:
         run: |
           sbt frontendInstallDependencies build
 
+      # Frontend unit tests. After the build, so node_modules is already installed. Headless
+      # Chrome with the sandbox off, per test/frontend/karma.conf.js. Until now the runner was
+      # misconfigured and scanned an empty directory, so nothing here had ever actually run.
+      - name: Test frontend
+        working-directory: app/frontend
+        run: yarn test
+
       # `build` is packageBin in Universal, which never looks at src/test, so for a long time nothing
       # in CI compiled - let alone ran - the spec files in this repo.
       #

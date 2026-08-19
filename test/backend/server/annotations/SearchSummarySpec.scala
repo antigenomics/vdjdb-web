@@ -19,7 +19,7 @@ package backend.server.annotations
 import java.io.{File, PrintWriter}
 
 import backend.BaseTestSpecWithApplication
-import backend.actions.UtilsTestTag
+import backend.utils.UtilsTestTag
 import backend.server.database.Database
 import com.antigenomics.vdjdb.impl.filter.DummyResultFilter
 import com.antigenomics.vdjdb.impl.weights.DummyWeightFunctionFactory

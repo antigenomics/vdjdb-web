@@ -1,11 +1,11 @@
 package backend.controllers
 
+import backend.server.structures.api._
+
 import akka.actor.ActorSystem
 import akka.stream.Materializer
 import backend.server.limit.RequestLimits
 import backend.server.structures.Structures
-import backend.server.structures.api.cdr3.{StructureCDR3SearchRequest, StructureCDR3SearchResult}
-import backend.server.structures.api.filter.StructuresSearchTreeFilterResult
 import backend.server.motifs.api.filter.MotifsSearchTreeFilter
 import javax.inject._
 import org.slf4j.LoggerFactory
@@ -43,9 +43,9 @@ class StructuresAPI @Inject()(
   }
 
   def cdr3: Action[JsValue] = Action.async(parse.json) { implicit req =>
-    req.body.validate[StructureCDR3SearchRequest].fold(
+    req.body.validate[StructureCdr3SearchRequest].fold(
       e => Future.successful(BadRequest(JsError.toJson(e))),
-      f => structures.cdr3(f.cdr3, f.substring, f.gene, f.top).map { result: StructureCDR3SearchResult =>
+      f => structures.cdr3(f.cdr3, f.substring, f.gene, f.top).map { result: StructureCdr3SearchResult =>
         Ok(Json.toJson(result))
       }.recover { case t =>
         logger.error("Failed to run structure CDR3 search", t)

@@ -40,7 +40,7 @@
             <div class="four wide field">
                 <label>Antigen epitope</label>
                 <div class="ui fluid search selection dropdown structure-epitope-dropdown"
-                     [ngClass]="{ 'active visible': isEpitopeDropdownOpen, 'disabled': !mhcGeneValue }"
+                     [ngClass]="{ 'active visible': epitopeCombo.isOpen, 'disabled': !mhcGeneValue }"
                      (click)="onEpitopeDropdownClick($event)">
                     <input #epitopeInputElement class="search structure-epitope-dropdown__input" type="text" autocomplete="off"
                            [ngModel]="epitopeInputValue" (ngModelChange)="onEpitopeInputChange($event)"
@@ -48,7 +48,7 @@
                            [attr.disabled]="!mhcGeneValue ? true : null"
                            (focus)="onEpitopeInputFocus()" (blur)="onEpitopeInputBlur()">
                     <i class="dropdown icon"></i>
-                    <div class="menu transition visible fade element slow padded" tabindex="-1" style="display: block !important;" *ngIf="isEpitopeDropdownOpen">
+                    <div class="menu transition visible fade element slow padded" tabindex="-1" style="display: block !important;" *ngIf="epitopeCombo.isOpen">
                         <a class="item" *ngFor="let value of filteredEpitopeValues" (mousedown)="onEpitopeOptionMouseDown($event, value)">
                             {{ value.value }}
                         </a>

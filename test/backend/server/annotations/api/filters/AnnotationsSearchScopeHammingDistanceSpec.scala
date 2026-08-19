@@ -17,7 +17,7 @@
 package backend.server.annotations.api.filters
 
 import backend.BaseTestSpec
-import backend.actions.UtilsTestTag
+import backend.utils.UtilsTestTag
 
 class AnnotationsSearchScopeHammingDistanceSpec extends BaseTestSpec {
 

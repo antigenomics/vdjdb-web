@@ -17,7 +17,7 @@
 package backend.server.annotations
 
 import backend.BaseTestSpec
-import backend.actions.UtilsTestTag
+import backend.utils.UtilsTestTag
 import backend.models.authorization.permissions.{UserPermissions, UserPermissionsProvider}
 import backend.models.files.sample.SampleRetentionConfiguration
 import backend.models.usage.UsageConfiguration

@@ -32,7 +32,7 @@
     <ng-container *ngIf="!isHidden">
         <div class="overlay-controls">
             <div class="overlay-layout">
-                <div class="overlay-list" [style.height.px]="overlayHeight">
+                <div class="overlay-list" [style.height.px]="sizeState.height">
                     <div class="overlay-list__top-row">
                         <div class="overlay-list__instructions">
                             <!-- The three spans are joined without a line break between them. Broken onto
@@ -51,7 +51,19 @@
                         <div class="overlay-card" *ngFor="let row of overlayTableRows; trackBy: trackRowBy"
                              [class.is-selected]="isClusterSelected(row.cluster)"
                              [class.is-disabled]="isRowDisabled(row)"
+                             [class.is-at-front]="isClusterAtFront(row.cluster)"
                              (click)="isRowDisabled(row) ? null : onRowToggle(row, $event)">
+                            <!-- Only a selected structure has anything in the overlay to promote. -->
+                            <button class="overlay-card__front" type="button"
+                                    *ngIf="isClusterSelected(row.cluster)"
+                                    [class.is-active]="isClusterAtFront(row.cluster)"
+                                    [disabled]="isClusterAtFront(row.cluster)"
+                                    [attr.title]="isClusterAtFront(row.cluster) ? 'At the front of the overlay' : 'Bring to front'"
+                                    [attr.aria-label]="isClusterAtFront(row.cluster) ? 'At the front of the overlay' : 'Bring this structure to the front'"
+                                    (click)="onBringToFront(row, $event)"
+                                    (mousedown)="$event.stopPropagation()">
+                                <i class="icon level up alternate"></i>
+                            </button>
                             <div class="overlay-card__line overlay-card__line--cdr">
                                 <span class="overlay-card__label">CDR3a:</span>
                                 <span class="overlay-card__value">
@@ -129,8 +141,8 @@
                 </div>
                 <div class="overlay-visualization">
                     <div class="structure-overlay"
-                         [style.width.px]="overlayWidth"
-                         [style.height.px]="overlayHeight"
+                         [style.width.px]="sizeState.width"
+                         [style.height.px]="sizeState.height"
                          #structureOverlay>
                         <div class="structure-counter" aria-hidden="true">
                             <span class="structure-counter__value">{{ overlaySelectionCount }}</span>
@@ -143,11 +155,26 @@
                                      [class.is-dragging]="zoomState.isDragging"
                                      [style.transform]="zoomState.transform"
                                      #zoomCanvas>
-                                    <div class="structure-overlay__base">
+                                    <!-- z-index is bound, not left to document order: the secondary layers
+                                         below are absolutely positioned and take 1..length-1, and a positioned
+                                         element with a z-index paints above one with `auto` however early it
+                                         appears. Without this the front structure rendered at the BACK of the
+                                         stack, so four maps' contact lines were drawn across its boxes and
+                                         labels. Keep this one step above the highest secondary. -->
+                                    <div class="structure-overlay__base"
+                                         [style.z-index]="overlayLayerList.length"
+                                         (mousemove)="hoverState.track($event)"
+                                         (mouseleave)="hoverState.clear()">
                                         <div class="structure-html" [innerHTML]="overlayLayerList[0].markup"></div>
+                                        <!-- Written by StructureHoverController, not bound: a pointer move over a
+                                             card list this long costs 66-104ms in change detection and 14ms
+                                             without it. Always present so there is nothing to resolve. -->
+                                        <div class="structure-hover-tip" aria-hidden="true"></div>
                                     </div>
                                     <ng-container *ngFor="let layer of overlayLayerList; let i = index">
                                         <ng-container *ngIf="i > 0">
+                                            <!-- 1..length-1, descending with depth. Must stay below the base's
+                                                 z-index above; changing either formula alone re-buries the front. -->
                                             <div class="structure-overlay__layer structure-overlay__layer--secondary"
                                                  [style.z-index]="overlayLayerList.length - i">
                                                 <div class="structure-html" [innerHTML]="layer.markup"></div>

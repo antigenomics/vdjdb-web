@@ -44,40 +44,24 @@ class SearchTable extends ResultsTable[SearchTableRow] {
     val allResults = database.getInstance.getDbInstance.search(filters.text, filters.sequence)
     var filtered = allResults.asScala
 
-    def columnIsTrue(row: com.antigenomics.vdjdb.db.Row, col: String): Boolean =
-      Option(row.getAt(col)).exists(_.getValue.trim.equalsIgnoreCase("true"))
+    // Evidence, one kind at a time: OR within a kind, AND between kinds. See EvidenceFilters.
+    def valueOf(row: com.antigenomics.vdjdb.db.Row)(column: String): Option[String] =
+      Option(row.getAt(column)).map(_.getValue)
 
-    // Validation evidence: OR within {same.study, independent}
-    if (filters.validationModes.nonEmpty) {
-      filtered = filtered.filter { result =>
-        val row = result.getRow
-        filters.validationModes.exists {
-          case "same.study"  => columnIsTrue(row, "evidence.validation.same.study")
-          case "independent" => columnIsTrue(row, "evidence.validation.independent")
-          case _ => false
-        }
-      }
-    }
+    filtered = filtered.filter(result =>
+      EvidenceFilters.matches(valueOf(result.getRow), filters.validationModes, EvidenceFilters.ValidationColumns))
+    filtered = filtered.filter(result =>
+      EvidenceFilters.matches(valueOf(result.getRow), filters.structureModes, EvidenceFilters.StructureColumns))
 
-    // Motif evidence: OR within {tcrnet, tcremp}
+    // Motif evidence is not a column: it is whether this record's chain appears in the motif index
+    // built for the requested method, so it needs the index rather than the row.
     if (filters.motifModes.nonEmpty) {
-      val tcrnetIndex = if (filters.motifModes.contains("tcrnet")) motifs.getCidLookupIndex() else Map.empty[String, String]
-      val tcrempIndex = if (filters.motifModes.contains("tcremp")) motifs.getCidLookupIndex(Some("tcremp")) else Map.empty[String, String]
-      filtered = filtered.filter { result =>
-        Motifs.motifKey(result.getRow).exists(key => tcrnetIndex.contains(key) || tcrempIndex.contains(key))
+      val indices = filters.motifModes.collect {
+        case "tcrnet" => motifs.getCidLookupIndex()
+        case "tcremp" => motifs.getCidLookupIndex(Some("tcremp"))
       }
-    }
-
-    // Structure evidence: OR within {native, contacts, quality}
-    if (filters.structureModes.nonEmpty) {
       filtered = filtered.filter { result =>
-        val row = result.getRow
-        filters.structureModes.exists {
-          case "native"   => columnIsTrue(row, "evidence.structure.native")
-          case "contacts" => columnIsTrue(row, "evidence.structure.contacts")
-          case "quality"  => columnIsTrue(row, "evidence.structure.quality")
-          case _ => false
-        }
+        Motifs.motifKey(result.getRow).exists(key => indices.exists(_.contains(key)))
       }
     }
 

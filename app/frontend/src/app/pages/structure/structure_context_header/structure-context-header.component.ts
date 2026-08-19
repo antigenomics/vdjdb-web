@@ -17,6 +17,8 @@
 import { ChangeDetectionStrategy, Component, ElementRef, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, ParamMap, Router } from '@angular/router';
 import { IStructuresMetadata, IStructuresMetadataTreeLevelValue } from 'pages/structure/structure';
+import { StructureMetadataTree } from 'pages/structure/structure-metadata-tree';
+import { StructureEpitopeComboController } from 'pages/structure/structure_context_header/structure-epitope-combo.controller';
 import { Subscription } from 'rxjs';
 
 interface IStructureQueryParams {
@@ -46,7 +48,16 @@ export class StructureContextHeaderComponent implements OnInit, OnDestroy {
   };
 
   @ViewChild('epitopeInputElement')
-  public epitopeInputElement: ElementRef;
+  public set epitopeInputElement(element: ElementRef<HTMLInputElement>) {
+    this.epitopeCombo.bindInput(element);
+    this._epitopeInputElement = element;
+  }
+
+  public get epitopeInputElement(): ElementRef<HTMLInputElement> {
+    return this._epitopeInputElement;
+  }
+
+  private _epitopeInputElement: ElementRef<HTMLInputElement>;
 
   @Input()
   public set metadata(value: IStructuresMetadata | null) {
@@ -61,9 +72,7 @@ export class StructureContextHeaderComponent implements OnInit, OnDestroy {
   public mhcClassValue: string | null = null;
   public mhcGeneValue: string | null = null;
   public epitopeValue: string | null = null;
-  public epitopeInput: string = '';
-  public isEpitopeFocused: boolean = false;
-  public isEpitopeDropdownOpen: boolean = false;
+  public epitopeCombo: StructureEpitopeComboController = new StructureEpitopeComboController();
   public cdr3Query: string = '';
   public cdr3Substring: boolean = false;
   public cdr3Chain: string = 'a';
@@ -92,52 +101,34 @@ export class StructureContextHeaderComponent implements OnInit, OnDestroy {
   }
 
   public get mhcGeneValues(): IStructuresMetadataTreeLevelValue[] {
-    const node = this.findMhcClassNode(this.mhcClassValue);
+    const node = StructureMetadataTree.findMhcClass(this.metadata, this.mhcClassValue);
     return node && node.next ? node.next.values : [];
   }
 
   public get epitopeValues(): IStructuresMetadataTreeLevelValue[] {
-    const node = this.findMhcGeneNode(this.findMhcClassNode(this.mhcClassValue), this.mhcGeneValue);
+    const node = StructureMetadataTree.findMhcGene(
+      StructureMetadataTree.findMhcClass(this.metadata, this.mhcClassValue), this.mhcGeneValue);
     return node && node.next ? node.next.values : [];
   }
 
   public get filteredEpitopeValues(): IStructuresMetadataTreeLevelValue[] {
-    const query = this.epitopeInput.trim().toLowerCase();
-    if (!query) {
-      return this.epitopeValues;
-    }
-    return this.epitopeValues.filter((value) => value.value.toLowerCase().indexOf(query) === 0);
+    return this.epitopeCombo.filter(this.epitopeValues);
   }
 
   public get epitopeInputValue(): string {
-    if (this.isEpitopeFocused) {
-      return this.epitopeInput;
-    }
-    if (this.epitopeInput.length !== 0) {
-      return this.epitopeInput;
-    }
-    return this.epitopeValue || '';
+    return this.epitopeCombo.value(this.epitopeValue);
   }
 
   public get epitopeInputPlaceholder(): string {
-    if (this.isEpitopeFocused) {
-      if (this.epitopeInput.length !== 0) {
-        return '';
-      }
-      return this.epitopeValue || 'Select epitope';
-    }
-    if (!this.epitopeValue && this.epitopeInput.length === 0) {
-      return 'Select epitope';
-    }
-    return '';
+    return this.epitopeCombo.placeholder(this.epitopeValue);
   }
 
   public onMhcClassSelect(value: IStructuresMetadataTreeLevelValue): void {
     this.mhcClassValue = value.value;
     this.mhcGeneValue = null;
     this.epitopeValue = null;
-    this.epitopeInput = '';
-    this.closeEpitopeDropdown();
+    this.epitopeCombo.query = '';
+    this.epitopeCombo.close();
     this.updateQueryParams({
       mhc_class: this.mhcClassValue,
       gene: null,
@@ -150,11 +141,11 @@ export class StructureContextHeaderComponent implements OnInit, OnDestroy {
   public onMhcGeneSelect(value: IStructuresMetadataTreeLevelValue): void {
     this.mhcGeneValue = value.value;
     this.epitopeValue = null;
-    this.epitopeInput = '';
-    this.closeEpitopeDropdown();
+    this.epitopeCombo.query = '';
+    this.epitopeCombo.close();
     this.updateQueryParams({
       mhc_class: this.mhcClassValue,
-      gene: this.normalizeMhcPairParam(this.mhcGeneValue),
+      gene: StructureMetadataTree.normalizeMhcPair(this.mhcGeneValue),
       epitope_seq: null,
       query: null,
       substring: null
@@ -163,12 +154,10 @@ export class StructureContextHeaderComponent implements OnInit, OnDestroy {
 
   public onEpitopeSelect(value: IStructuresMetadataTreeLevelValue): void {
     this.epitopeValue = value.value;
-    this.epitopeInput = '';
-    this.closeEpitopeDropdown();
-    this.blurEpitopeInput();
+    this.epitopeCombo.commit();
     this.updateQueryParams({
       mhc_class: this.mhcClassValue,
-      gene: this.normalizeMhcPairParam(this.mhcGeneValue),
+      gene: StructureMetadataTree.normalizeMhcPair(this.mhcGeneValue),
       epitope_seq: this.epitopeValue,
       structure_id: null,
       query: null,
@@ -185,30 +174,22 @@ export class StructureContextHeaderComponent implements OnInit, OnDestroy {
       return;
     }
     event.stopPropagation();
-    this.isEpitopeDropdownOpen = true;
+    this.epitopeCombo.isOpen = true;
     if (this.epitopeInputElement && this.epitopeInputElement.nativeElement) {
       this.epitopeInputElement.nativeElement.focus();
     }
   }
 
   public onEpitopeInputFocus(): void {
-    if (!this.mhcGeneValue) {
-      return;
-    }
-    this.isEpitopeFocused = true;
-    this.isEpitopeDropdownOpen = true;
+    this.epitopeCombo.onFocus(!!this.mhcGeneValue);
   }
 
   public onEpitopeInputBlur(): void {
-    this.isEpitopeFocused = false;
-    this.isEpitopeDropdownOpen = false;
+    this.epitopeCombo.onBlur();
   }
 
   public onEpitopeInputChange(value: string): void {
-    this.epitopeInput = value;
-    if (!this.isEpitopeDropdownOpen && this.mhcGeneValue) {
-      this.isEpitopeDropdownOpen = true;
-    }
+    this.epitopeCombo.onInput(value, !!this.mhcGeneValue);
   }
 
   public onEpitopeOptionMouseDown(event: MouseEvent, value: IStructuresMetadataTreeLevelValue): void {
@@ -218,7 +199,7 @@ export class StructureContextHeaderComponent implements OnInit, OnDestroy {
   }
 
   public isNoEpitopeMatchesVisible(): boolean {
-    return this.epitopeInput.trim().length !== 0 && this.filteredEpitopeValues.length === 0;
+    return this.epitopeCombo.isEmptyResult(this.epitopeValues);
   }
 
   public get cdr3ChainOptions(): string[] {
@@ -306,42 +287,42 @@ export class StructureContextHeaderComponent implements OnInit, OnDestroy {
     this.cdr3Query = query;
     this.cdr3Substring = this.currentParams.substring === '1' || this.currentParams.substring === 'true';
     this.cdr3Chain = this.normalizeCdr3Chain(this.currentParams.cdr3_chain);
-    this.closeEpitopeDropdown();
+    this.epitopeCombo.close();
 
     if (!this.metadata || !this.metadata.root) {
       this.mhcClassValue = null;
       this.mhcGeneValue = null;
       this.epitopeValue = null;
-      this.epitopeInput = '';
+      this.epitopeCombo.query = '';
       return;
     }
 
-    const mhcClassNode = this.findMhcClassNode(this.currentParams.mhc_class || null);
+    const mhcClassNode = StructureMetadataTree.findMhcClass(this.metadata, this.currentParams.mhc_class || null);
     if (!mhcClassNode) {
       this.mhcClassValue = null;
       this.mhcGeneValue = null;
       this.epitopeValue = null;
-      this.epitopeInput = '';
+      this.epitopeCombo.query = '';
       return;
     }
     this.mhcClassValue = mhcClassNode.value;
 
-    const mhcGeneNode = this.findMhcGeneNode(mhcClassNode, this.currentParams.gene || null);
+    const mhcGeneNode = StructureMetadataTree.findMhcGene(mhcClassNode, this.currentParams.gene || null);
     if (!mhcGeneNode) {
       this.mhcGeneValue = null;
       this.epitopeValue = null;
-      this.epitopeInput = '';
+      this.epitopeCombo.query = '';
       return;
     }
     this.mhcGeneValue = mhcGeneNode.value;
     if (previousMhcClassValue !== this.mhcClassValue || previousMhcGeneValue !== this.mhcGeneValue) {
-      this.epitopeInput = '';
+      this.epitopeCombo.query = '';
     }
 
-    const epitopeNode = this.findEpitopeNode(mhcGeneNode, this.currentParams.epitope_seq || null);
+    const epitopeNode = StructureMetadataTree.findEpitope(mhcGeneNode, this.currentParams.epitope_seq || null);
     this.epitopeValue = epitopeNode ? epitopeNode.value : null;
     if (this.epitopeValue) {
-      this.epitopeInput = '';
+      this.epitopeCombo.query = '';
     }
   }
 
@@ -359,53 +340,9 @@ export class StructureContextHeaderComponent implements OnInit, OnDestroy {
     };
   }
 
-  private findMhcClassNode(value: string | null): IStructuresMetadataTreeLevelValue | undefined {
-    if (!value || !this.metadata || !this.metadata.root) {
-      return undefined;
-    }
-    const normalized = value.toLowerCase();
-    return this.metadata.root.values.find((node) => node.value.toLowerCase() === normalized);
-  }
-
-  private findMhcGeneNode(parent: IStructuresMetadataTreeLevelValue | undefined,
-                          geneParam: string | null): IStructuresMetadataTreeLevelValue | undefined {
-    if (!parent || !parent.next || !geneParam) {
-      return undefined;
-    }
-    const normalized = this.normalizeMhcPairParam(geneParam).toLowerCase();
-    return parent.next.values.find((node) => this.normalizeMhcPairParam(node.value).toLowerCase() === normalized);
-  }
-
-  private findEpitopeNode(parent: IStructuresMetadataTreeLevelValue | undefined,
-                          epitopeParam: string | null): IStructuresMetadataTreeLevelValue | undefined {
-    if (!parent || !parent.next || !epitopeParam) {
-      return undefined;
-    }
-    const normalized = epitopeParam.toLowerCase();
-    return parent.next.values.find((node) => node.value.toLowerCase() === normalized);
-  }
-
-  private normalizeMhcPairParam(value: string | null): string {
-    if (!value) {
-      return '';
-    }
-    const parts = value.split('/').map((part) => part.replace(/:.+/, '').trim()).filter((part) => part.length > 0);
-    return parts.join('/');
-  }
-
   private normalizeCdr3Chain(value: string | null | undefined): string {
     const normalized = (value || '').trim().toLowerCase();
     return StructureContextHeaderComponent.cdr3ChainValues.indexOf(normalized) !== -1 ? normalized : 'a';
   }
 
-  private closeEpitopeDropdown(): void {
-    this.isEpitopeFocused = false;
-    this.isEpitopeDropdownOpen = false;
-  }
-
-  private blurEpitopeInput(): void {
-    if (this.epitopeInputElement && this.epitopeInputElement.nativeElement) {
-      this.epitopeInputElement.nativeElement.blur();
-    }
-  }
 }

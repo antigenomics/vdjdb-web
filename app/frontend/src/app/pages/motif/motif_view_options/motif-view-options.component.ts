@@ -29,14 +29,21 @@ export class MotifViewOptionsComponent {
   @Input('showMultiple')
   public showMultiple: boolean = true;
 
-  @Input('isTcremp')
-  public isTcremp: boolean = false;
+  /**
+   * Whether background subtraction is meaningful for the clustering method in use.
+   *
+   * The panel is told this rather than which method is selected, so it does not have to know that
+   * TCREMP is the one that cannot be normalised - a second method with the same property would
+   * otherwise need editing here as well as at the call site.
+   */
+  @Input('canNormalize')
+  public canNormalize: boolean = true;
 
   @Output('onOptionsChange')
   public onOptionsChange = new EventEmitter<IMotifEpitopeViewOptions>();
 
   public normalize(): void {
-    if (this.isTcremp) {
+    if (!this.canNormalize) {
       return;
     }
     this.onOptionsChange.emit({ ...this.options, isNormalized: !this.options.isNormalized });

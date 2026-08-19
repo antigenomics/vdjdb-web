@@ -73,8 +73,12 @@ export class MotifSearchUtilComponent {
     return this.motifService.getSearchState() === MotifSearchState.SEARCH_CDR3;
   }
 
-  public isTcremp(): boolean {
-    return this.motifService.getMethod() === 'tcremp';
+  /**
+   * TCREMP pools several V/J rearrangements into one cluster, so there is no single rearrangement
+   * background to subtract and normalisation has nothing to mean.
+   */
+  public canNormalize(): boolean {
+    return this.motifService.getMethod() !== 'tcremp';
   }
 
 

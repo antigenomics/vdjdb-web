@@ -17,6 +17,16 @@
 import { RouterModule, Routes } from '@angular/router';
 import { StructurePageComponent } from 'pages/structure/structure.component';
 
+/**
+ * One route, and it is the page itself.
+ *
+ * Everything the page shows - which epitope, which structures are overlaid, a CDR3 query - travels
+ * as query parameters rather than as path segments, because the page reads them as a set: changing
+ * one has to re-run the same resolution as changing any other, and the cross-page links from Browse
+ * and Motif arrive with several at once. `structure.component` owns that reading.
+ *
+ * forChild, not forRoot: the app module lazy-loads this page, so the chunk boundary is here.
+ */
 const routes: Routes = [
   { path: '', component: StructurePageComponent }
 ];

@@ -16,23 +16,39 @@
 
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { StructurePageComponent } from 'pages/structure/structure.component';
 import { StructurePageRouting } from 'pages/structure/structure.routing';
 import { StructureService } from 'pages/structure/structure.service';
-import { StructureCDR3ClustersModule } from 'pages/structure/structure_cdr3_clusters/structure-cdr3-clusters.module';
-import { StructureContextHeaderModule } from 'pages/structure/structure_context_header/structure-context-header.module';
-import { StructureEpitopesModule } from 'pages/structure/structure_epitopes/structure-epitopes.module';
+import { StructureCDR3ClustersComponent } from 'pages/structure/structure_cdr3_clusters/structure-cdr3-clusters.component';
+import { StructureContextHeaderComponent } from 'pages/structure/structure_context_header/structure-context-header.component';
+import { StructureEpitopeClusterComponent } from 'pages/structure/structure_epitope_cluster/structure-epitope-cluster.component';
+import { StructureEpitopeEntryComponent } from 'pages/structure/structure_epitope_entry/structure-epitope-entry.component';
+import { ModalsModule } from 'shared/modals/modals.module';
 
+/**
+ * One module for the page.
+ *
+ * There used to be six, one per component, each declaring and exporting exactly one thing and none
+ * of them lazily loaded - so the split bought nothing at runtime and cost a file, an export list and
+ * an import edge every time a component moved. The page is loaded as a unit either way; the route is
+ * where the laziness lives.
+ */
 @NgModule({
   imports: [
     CommonModule,
-    StructurePageRouting,
-    StructureContextHeaderModule,
-    StructureEpitopesModule,
-    StructureCDR3ClustersModule
+    FormsModule,
+    ModalsModule,
+    StructurePageRouting
   ],
-  declarations: [ StructurePageComponent ],
-  exports: [ StructurePageComponent ],
+  declarations: [
+    StructurePageComponent,
+    StructureContextHeaderComponent,
+    StructureEpitopeEntryComponent,
+    StructureEpitopeClusterComponent,
+    StructureCDR3ClustersComponent
+  ],
+  exports:   [ StructurePageComponent ],
   providers: [ StructureService ]
 })
 export class StructurePageModule {}

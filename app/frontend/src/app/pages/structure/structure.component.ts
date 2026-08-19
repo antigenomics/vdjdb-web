@@ -170,6 +170,14 @@ export class StructurePageComponent implements OnInit, OnDestroy, DoCheck, After
     this.destroy$.complete();
   }
 
+  public trackEpitopeBy(_: number, epitope: IStructureEpitope): string {
+    return epitope.hash;
+  }
+
+  public onEpitopeDiscard(epitope: IStructureEpitope): void {
+    this.structureService.discardEpitope(epitope.hash);
+  }
+
   public isStateSearchTree(): boolean {
     return this.structureService.getSearchState() === StructureSearchState.SEARCH_TREE;
   }

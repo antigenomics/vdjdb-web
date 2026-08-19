@@ -1,5 +1,7 @@
 package backend.controllers
 
+import backend.server.structures.api._
+
 import akka.actor.ActorSystem
 import akka.stream.Materializer
 import akka.util.ByteString
@@ -13,7 +15,6 @@ import play.api.mvc._
 
 import scala.concurrent.ExecutionContext
 
-import backend.server.structures.api.epitope.{StructureModelMetrics, StructureVisualization}
 
 case class SearchAvailabilityResponse(structures: Seq[String], motifs: Seq[String],
                                       motifsTcremp: Seq[String],
