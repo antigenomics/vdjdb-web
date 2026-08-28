@@ -42,6 +42,38 @@ class FileMetadataProviderSpec extends DatabaseProviderTestSpec {
             }
         }
 
+        /* The demo samples all share one directory, so pruning a stale one through the ordinary
+         * `delete` would ask to remove the directory holding the rest. In production that directory
+         * is bind-mounted read-only and the call would fail, which is the mount saving us rather
+         * than the code -- so this pins the distinction instead of relying on it.
+         */
+        "delete the row and leave the file and its directory alone" taggedAs SQLDatabaseTestTag in {
+            async {
+                val folder = java.nio.file.Files.createTempDirectory("shared-demo-dir").toFile
+                val file = new java.io.File(folder, "kept.txt")
+                java.nio.file.Files.write(file.toPath, "cdr3\n".getBytes)
+
+                val id = await(fmp.insert(FileMetadata(0, "kept", "txt", file.getAbsolutePath, folder.getAbsolutePath)))
+                val metadata = await(fmp.get(id))
+                metadata should not be empty
+                metadata.get.checkIfExist() shouldEqual true
+
+                await(fmp.deleteRowsOnly(Seq(metadata.get))) shouldEqual 1
+
+                await(fmp.get(id)) shouldBe empty
+                file should exist
+                folder should exist
+
+                file.delete()
+                folder.delete()
+                Succeeded
+            }
+        }
+
+        "delete nothing, and not fail, when given no rows" taggedAs SQLDatabaseTestTag in {
+            fmp.deleteRowsOnly(Seq()).map(_ shouldEqual 0)
+        }
+
         "be able to insert and delete metadata entry" taggedAs SQLDatabaseTestTag in {
             async {
                 val id = await(fmp.insert(FileMetadata(0, "name", "extension", "/tmp/name.extension", "/tmp")))
