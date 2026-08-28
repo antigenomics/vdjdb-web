@@ -100,6 +100,28 @@ class UserProvider @Inject()(
     )
   }
 
+  /** Drops any demo sample whose file is no longer on disk.
+    *
+    * The other half of "the demo directory is the source of truth". Seeding only ever added, so a
+    * file removed from the directory left its row behind and the account went on offering a sample
+    * that cannot be opened: on production ten of the thirteen demo samples pointed at
+    * `Donor7.*`/`Donor9.*` files that have not existed since at least December 2025, and picking one
+    * failed with "Unable to annotate this sample: ... (No such file or directory)".
+    *
+    * Rows only — see `deleteRowsOnly`. These samples share one directory, and the normal delete path
+    * would ask to remove it.
+    */
+  private def pruneMissingDemoSampleFiles(demoUser: User): Future[Unit] = async {
+    val stale = await(demoUser.getSampleFilesWithMetadata).collect {
+      case (sample, metadata) if !metadata.checkIfExist() => (sample, metadata)
+    }
+    if (stale.nonEmpty) {
+      await(fmp.deleteRowsOnly(stale.map(_._2)))
+      logger.info(s"Removed ${stale.length} demo sample(s) with no file on disk: " +
+        stale.map(_._1.sampleName).mkString(", "))
+    }
+  }
+
   /** Adds any demo sample the account is missing, and only those.
     *
     * Seeding used to happen once, inside the "user does not exist yet" branch. That was enough while
@@ -115,6 +137,7 @@ class UserProvider @Inject()(
   private def seedDemoSampleFiles(demoUser: User): Future[Unit] = async {
     val demoFiles = new File(demoUserConfiguration.filesLocation)
     if (demoFiles.exists && demoFiles.isDirectory) {
+      await(pruneMissingDemoSampleFiles(demoUser))
       val present = await(demoUser.getSampleFiles).map(_.sampleName).toSet
       val missing = demoFiles.listFiles
         .filter(_.isFile)

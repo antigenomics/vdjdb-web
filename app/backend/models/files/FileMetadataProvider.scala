@@ -70,4 +70,20 @@ class FileMetadataProvider @Inject()(@NamedDatabase("default") protected val dbC
       metadata.foreach(_.deleteFile())
     }
   }
+
+  /** Deletes the rows and leaves the disk alone.
+    *
+    * Every `delete` above also removes the file *and tries to remove its parent directory*, which is
+    * right for an upload — each one owns a folder — and wrong for anything sharing a directory. A
+    * demo sample's `folder` is the demo dataset itself, so pruning one through the normal path would
+    * ask to delete the directory holding all the others. It is bind-mounted read-only in production
+    * so the call would fail, but that is the mount saving us, not the code.
+    *
+    * SAMPLE_FILE references FILE_METADATA with ON DELETE CASCADE, so removing these rows removes the
+    * samples that point at them.
+    */
+  def deleteRowsOnly(metadata: Seq[FileMetadata]): Future[Int] = {
+    val ids = metadata.map(_.id)
+    db.run(table.filter(fm => fm.id inSet ids).delete)
+  }
 }
