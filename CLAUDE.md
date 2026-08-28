@@ -185,6 +185,21 @@ uploads (`v_call`, `j_call`, `junction_aa`, `cdr3_aa`). HLA at the data's own re
 
 ## Open loops
 
+- **The demo account is seeded from `conf/prod`'s `demo/` directory, and only files it can load.**
+  Seeding used to add and never remove, so the account accumulated samples that could not be opened:
+  ten pointed at `Donor7.*`/`Donor9.*` files gone since at least December 2025, and one was a raw AIRR
+  file registered as VDJtools — vdjtools has **no AIRR reader**, so it never loaded once and its row
+  read -1 reads / -1 clonotypes for a month. `UserProvider.pruneUnusableDemoSampleFiles` now drops a
+  sample on either count and `SampleConverter.formatOf` gates what is added.
+
+  Two consequences worth knowing. **Anything put in `demo/` must already be VDJtools** — the directory
+  is bind-mounted read-only, so seeding cannot convert in place; run it through `SampleConverter` first
+  and drop the per-chain `*.TRA.txt.gz` / `*.TRB.txt.gz` output in. `mixed.airr.tsv.gz` is still sitting
+  there, skipped with a warning naming the format; converting it would add it back as two samples.
+  And **pruning uses `deleteRowsOnly`**, never the ordinary delete — every other delete path also
+  removes the file *and its parent directory*, which for a demo sample is the directory holding all
+  the others.
+
 - **Retention is `dryRun = true` in production.** It logs what it would delete and removes nothing.
   `ageFrom = "2026-09-01T00:00:00Z"` is set and applies to **registered samples only** — temporary ones
   always age from their own timestamp, so a future floor cannot suspend the 3-hour token window. A dry
