@@ -25,6 +25,7 @@ import backend.models.authorization.permissions.{UserPermissions, UserPermission
 import backend.models.authorization.tokens.session.SessionTokenProvider
 import backend.models.authorization.tokens.verification.{VerificationToken, VerificationTokenConfiguration, VerificationTokenProvider}
 import backend.models.files.FileMetadataProvider
+import backend.utils.files.sample.SampleConverter
 import backend.models.files.sample.SampleFileProvider
 import backend.utils.{CommonUtils, TimeUtils}
 import com.antigenomics.vdjtools.misc.Software
@@ -146,12 +147,23 @@ class UserProvider @Inject()(
       missing.foreach((file) => {
         val name      = FilenameUtils.getBaseName(file.getName)
         val extension = FilenameUtils.getExtension(file.getName)
-        demoUser.addDemoSampleFile(name, extension, Software.VDJtools.toString, "HomoSapiens", "TRB",
-          Software.VDJtools.toString, file).map {
-          case Left(_) =>
-            logger.info(s"Added demo sample file: $name")
-          case Right(error) =>
-            logger.warn(s"$error")
+        // Registered as VDJtools, so it had better be VDJtools. An upload is converted before it is
+        // stored; a demo file is placed by hand and taken at its word, and there is no AIRR or MiXCR
+        // reader behind `Software` to fall back on -- vdjtools has neither. A raw AIRR file sat in
+        // the demo account for over a month on that assumption, loading nothing, its row still
+        // reading -1 reads and -1 clonotypes.
+        val format = SampleConverter.formatOf(file)
+        if (format != "VDJtools") {
+          logger.warn(s"Skipping demo sample file ${file.getName}: it reads as $format, and a demo " +
+            "sample is loaded as VDJtools. Convert it before putting it in the demo directory.")
+        } else {
+          demoUser.addDemoSampleFile(name, extension, Software.VDJtools.toString, "HomoSapiens", "TRB",
+            Software.VDJtools.toString, file).map {
+            case Left(_) =>
+              logger.info(s"Added demo sample file: $name")
+            case Right(error) =>
+              logger.warn(s"$error")
+          }
         }
       })
     } else {

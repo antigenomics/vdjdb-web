@@ -48,6 +48,26 @@ class SampleConverterSpec extends WordSpec with Matchers {
 
   "SampleConverter" should {
 
+    /* The demo samples are the one place a file is registered as VDJtools without being converted
+     * first, and vdjtools has no AIRR or MiXCR reader to fall back on -- so seeding checks the header
+     * rather than trusting the extension. A raw AIRR file sat in the demo account for over a month
+     * on the old assumption, loading nothing.
+     */
+    "read the dialect of a file on disk from its header" in {
+      SampleConverter.formatOf(write(Seq(
+        "count\tfreq\tcdr3nt\tcdr3aa\tv\td\tj",
+        "10\t0.1\tTGT\tCASSF\tTRBV7-9\t.\tTRBJ2-1"))) shouldBe "VDJtools"
+
+      SampleConverter.formatOf(write(Seq(
+        "sequence_id\tlocus\tv_call\td_call\tj_call\tjunction\tjunction_aa\tduplicate_count\tproductive",
+        "s1\tTRB\tTRBV7-9*01\t.\tTRBJ2-1*01\tTGT\tCASSF\t10\tT"))) shouldBe "AIRR"
+    }
+
+    "call a header it cannot place, and an empty file, Unknown" in {
+      SampleConverter.formatOf(write(Seq("alpha\tbeta\tgamma", "1\t2\t3"))) shouldBe "Unknown"
+      SampleConverter.formatOf(write(Seq())) shouldBe "Unknown"
+    }
+
     "strip allele and score suffixes from segment calls" in {
       SampleConverter.cleanSegment("TRBV7-9*01") shouldBe "TRBV7-9"
       SampleConverter.cleanSegment("TRBV7-9*00(1234.5)") shouldBe "TRBV7-9"   // MiXCR
