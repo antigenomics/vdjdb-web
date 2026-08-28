@@ -101,25 +101,40 @@ class UserProvider @Inject()(
     )
   }
 
-  /** Drops any demo sample whose file is no longer on disk.
+  /** The only dialect a demo sample can be, because that is what it is registered and loaded as. */
+  private final val VdjtoolsFormat: String = "VDJtools"
+
+  /** Drops any demo sample the account cannot actually open.
     *
-    * The other half of "the demo directory is the source of truth". Seeding only ever added, so a
-    * file removed from the directory left its row behind and the account went on offering a sample
-    * that cannot be opened: on production ten of the thirteen demo samples pointed at
-    * `Donor7.*`/`Donor9.*` files that have not existed since at least December 2025, and picking one
-    * failed with "Unable to annotate this sample: ... (No such file or directory)".
+    * The other half of "the demo directory is the source of truth". Seeding only ever added, so
+    * anything that stopped being loadable kept its row and the account went on offering it. Two ways
+    * that happened on production, and both were live at once:
+    *
+    *   - the file was removed from the directory. Ten of the thirteen demo samples pointed at
+    *     `Donor7.*`/`Donor9.*` files that have not existed since at least December 2025, and picking
+    *     one failed with "Unable to annotate this sample: ... (No such file or directory)".
+    *   - the file is there but is not the format it is registered as. A raw AIRR file was added in
+    *     July and registered as VDJtools like every other demo sample; vdjtools has no AIRR reader,
+    *     so it never loaded once — its row still read -1 reads and -1 clonotypes a month later.
+    *
+    * The format check has to run here and not only where samples are added, because the row that
+    * needed removing was already in the account by the time the check existed.
     *
     * Rows only — see `deleteRowsOnly`. These samples share one directory, and the normal delete path
     * would ask to remove it.
     */
-  private def pruneMissingDemoSampleFiles(demoUser: User): Future[Unit] = async {
-    val stale = await(demoUser.getSampleFilesWithMetadata).collect {
-      case (sample, metadata) if !metadata.checkIfExist() => (sample, metadata)
+  private def pruneUnusableDemoSampleFiles(demoUser: User): Future[Unit] = async {
+    val unusable = await(demoUser.getSampleFilesWithMetadata).collect {
+      case (sample, metadata) if !metadata.checkIfExist() =>
+        (sample, metadata, "its file is not on disk")
+      case (sample, metadata) if SampleConverter.formatOf(new File(metadata.path)) != VdjtoolsFormat =>
+        (sample, metadata, s"it reads as ${SampleConverter.formatOf(new File(metadata.path))}, not $VdjtoolsFormat")
     }
-    if (stale.nonEmpty) {
-      await(fmp.deleteRowsOnly(stale.map(_._2)))
-      logger.info(s"Removed ${stale.length} demo sample(s) with no file on disk: " +
-        stale.map(_._1.sampleName).mkString(", "))
+    if (unusable.nonEmpty) {
+      await(fmp.deleteRowsOnly(unusable.map(_._2)))
+      unusable.foreach { case (sample, _, reason) =>
+        logger.info(s"Removed demo sample ${sample.sampleName}: $reason")
+      }
     }
   }
 
@@ -138,7 +153,7 @@ class UserProvider @Inject()(
   private def seedDemoSampleFiles(demoUser: User): Future[Unit] = async {
     val demoFiles = new File(demoUserConfiguration.filesLocation)
     if (demoFiles.exists && demoFiles.isDirectory) {
-      await(pruneMissingDemoSampleFiles(demoUser))
+      await(pruneUnusableDemoSampleFiles(demoUser))
       val present = await(demoUser.getSampleFiles).map(_.sampleName).toSet
       val missing = demoFiles.listFiles
         .filter(_.isFile)
@@ -153,9 +168,9 @@ class UserProvider @Inject()(
         // the demo account for over a month on that assumption, loading nothing, its row still
         // reading -1 reads and -1 clonotypes.
         val format = SampleConverter.formatOf(file)
-        if (format != "VDJtools") {
+        if (format != VdjtoolsFormat) {
           logger.warn(s"Skipping demo sample file ${file.getName}: it reads as $format, and a demo " +
-            "sample is loaded as VDJtools. Convert it before putting it in the demo directory.")
+            s"sample is loaded as $VdjtoolsFormat. Convert it before putting it in the demo directory.")
         } else {
           demoUser.addDemoSampleFile(name, extension, Software.VDJtools.toString, "HomoSapiens", "TRB",
             Software.VDJtools.toString, file).map {
