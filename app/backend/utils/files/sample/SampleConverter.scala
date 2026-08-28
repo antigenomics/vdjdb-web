@@ -206,6 +206,23 @@ object SampleConverter {
 
   private def splitLine(line: String): Array[String] = line.split("\t", -1)
 
+  /** The dialect of a file already on disk, read from its header. `Unknown` for a header we cannot
+    * place, and for an empty file.
+    *
+    * Uploads are converted to VDJtools before they are stored, so everything the annotate path loads
+    * is VDJtools by construction — except the demo samples, which are dropped into a directory by
+    * hand and registered as-is. This is what lets the seeding check that assumption instead of
+    * asserting it. */
+  def formatOf(input: File): String = {
+    val source = open(input)
+    try {
+      source.getLines()
+        .find(line => line.trim.nonEmpty && !line.startsWith("#"))
+        .map(line => detectFormat(splitLine(line).toSeq))
+        .getOrElse("Unknown")
+    } finally source.close()
+  }
+
   /**
     * Convert `input` (optionally gzipped) into one normalised gzipped VDJtools table per chain.
     *

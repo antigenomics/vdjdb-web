@@ -16,7 +16,7 @@
 
 package backend.utils.files
 
-import java.io.{File, FileInputStream, FileOutputStream, InputStream, OutputStream}
+import java.io.{EOFException, File, FileInputStream, FileOutputStream, InputStream, OutputStream}
 import java.nio.file.{Files, Paths}
 import java.nio.file.StandardCopyOption.REPLACE_EXISTING
 import java.security.MessageDigest
@@ -75,7 +75,12 @@ object FileUtils {
       gzip.close()
       true
     } catch {
-      case e: ZipException => false
+      case _: ZipException => false
+      // An empty file cannot yield the two magic bytes, so the header read hits EOF rather than
+      // failing the magic-number check. Only ZipException was caught, so it escaped as an
+      // EOFException from whatever asked -- which meant SampleConverter.convert never reached its
+      // own "The file appears to be empty", and reported a stack-trace class name instead.
+      case _: EOFException => false
     }
   }
 
