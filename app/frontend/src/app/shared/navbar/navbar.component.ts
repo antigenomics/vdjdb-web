@@ -42,8 +42,15 @@ export class NavigationBarComponent implements OnInit, OnDestroy {
 
   // The dropdowns open on hover (design-system.css), so after a click the pointer is still inside the
   // menu and it would stay open over the page it just navigated to. Holds the id of the dropdown to
-  // force closed; cleared on mouseleave so it opens again the next time the pointer arrives. One field
-  // is enough because only one dropdown can be under the pointer at a time.
+  // force closed. One field is enough because only one dropdown can be under the pointer at a time.
+  //
+  // Cleared when the pointer ARRIVES, not when it leaves. The menu is a child of its host, so hiding
+  // it is itself what moves the pointer out of the host and fires `mouseleave` - and clearing on that
+  // put the menu straight back under the pointer that had just dismissed it. Clicking an item
+  // navigated and left the menu hanging over the page it had just opened, one frame later. Clearing
+  // on arrival cannot loop: the pointer is already inside when the dismissal is set, so nothing
+  // re-enters until the user genuinely goes away and comes back, which is exactly when the menu
+  // should open again.
   public dismissedDropdown: string = null;
 
   // Scrolling has to close an open dropdown, and nothing else does it. The menus open on CSS :hover,
@@ -243,6 +250,24 @@ export class NavigationBarComponent implements OnInit, OnDestroy {
 
   public dismissDropdown(id: string): void {
     this.dismissedDropdown = id;
+  }
+
+  /** Leaving a dropdown host drops its focus. Nothing else does, and focus alone holds a menu open.
+    *
+    * The host carries `tabindex`, and clicking it - or clicking an item inside it - leaves focus
+    * sitting on it, because navigating moves focus nowhere else. The CSS opens a menu on
+    * `:focus-within` as well as `:hover`, so once the dismissal is cleared the menu comes back with
+    * the pointer nowhere near it. `blurOpenDropdown` already had to solve this for scrolling; the
+    * pointer leaving is the same problem and was not covered.
+    *
+    * Deliberately does not touch `dismissedDropdown`: see the note on that field for why clearing it
+    * here is what caused the menu to survive a click on one of its own items.
+    */
+  public releaseDropdown(event: MouseEvent): void {
+    const host = event.currentTarget as HTMLElement;
+    if (host !== null && document.activeElement === host && typeof host.blur === 'function') {
+      host.blur();
+    }
   }
 
   // Clicks inside a menu must not reach the dropdown host: the host carries its own `route`, and a
