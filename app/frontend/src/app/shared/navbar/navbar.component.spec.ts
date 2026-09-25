@@ -24,11 +24,12 @@ import { NavigationBarComponent } from './navbar.component';
 describe('NavigationBarComponent dropdown state', () => {
 
     function build(): NavigationBarComponent {
-        const noop = { debug: () => undefined } as any;
-        return new NavigationBarComponent(
-            noop, { markForCheck: () => undefined } as any, { runOutsideAngular: (f: any) => f(), run: (f: any) => f() } as any,
-            { url: '/', events: { pipe: () => ({ subscribe: () => undefined }) } } as any,
-            { setDefault: () => undefined, forceUpdate: () => undefined } as any);
+        const logger = { debug: (): void => undefined } as any;
+        const changeDetector = { markForCheck: (): void => undefined } as any;
+        const zone = { runOutsideAngular: (f: () => void): void => f(), run: (f: () => void): void => f() } as any;
+        const router = { url: '/', events: { pipe: (): any => ({ subscribe: (): void => undefined }) } } as any;
+        const filters = { setDefault: (): void => undefined, forceUpdate: (): void => undefined } as any;
+        return new NavigationBarComponent(logger, changeDetector, zone, router, filters);
     }
 
     /* Dismissing on click and clearing only when the pointer next arrives left the menu unreopenable:
@@ -68,7 +69,7 @@ describe('NavigationBarComponent dropdown state', () => {
 
     it('keeps a menu-item dismissal set, so the menu stays shut after navigating', () => {
         const navbar = build();
-        const event = { stopPropagation: () => undefined } as any;
+        const event = { stopPropagation: (): void => undefined } as any;
 
         navbar.dismissDropdownFromMenu(event, 'about');
 
