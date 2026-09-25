@@ -35,7 +35,7 @@
         <!-- The header goes to Browse keeping the filters that are set; only "All data" clears them. -->
         <a route="/search" class="ui dropdown item" tabindex="0" [class.active]="isActive('/search')"
            [class.dropdown-dismissed]="dismissedDropdown === 'browse' || scrollDismissed"
-           (click)="dismissDropdown('browse')" (mouseenter)="dismissDropdown(null)"
+           (click)="toggleDropdown('browse')" (mouseenter)="dismissDropdown(null)"
            (mouseleave)="releaseDropdown($event)">
             Browse
             <i class="dropdown icon"></i>
@@ -69,7 +69,7 @@
         <a route="/about" class="ui dropdown item" tabindex="0"
            [class.active]="isActive('/about') || isActive('/links') || isActive('/credits')"
            [class.dropdown-dismissed]="dismissedDropdown === 'about' || scrollDismissed"
-           (click)="dismissDropdown('about')" (mouseenter)="dismissDropdown(null)"
+           (click)="toggleDropdown('about')" (mouseenter)="dismissDropdown(null)"
            (mouseleave)="releaseDropdown($event)">
             About
             <i class="dropdown icon"></i>
