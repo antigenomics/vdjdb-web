@@ -492,8 +492,11 @@ tr.paired-row > td { color: #525252; }
   display: block;
 }
 /* Clicking an item navigates but leaves the pointer inside the menu, so hover alone would keep it open
-   over the page it just opened. The component marks the host on click and unmarks it on mouseleave.
-   Same specificity as the rule above, so it has to sit after it to win. */
+   over the page it just opened. The component marks the host on click and unmarks it when the pointer
+   next ARRIVES — not when it leaves, because this rule hiding the menu is itself what moves the
+   pointer out of the host and fires `mouseleave`, which used to clear the mark and put the menu back
+   under the pointer that had just dismissed it. Same specificity as the rule above, so it has to sit
+   after it to win. */
 .ui.top.fixed.menu .ui.dropdown.item.dropdown-dismissed > .menu {
   display: none;
 }
