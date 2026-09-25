@@ -252,6 +252,19 @@ export class NavigationBarComponent implements OnInit, OnDestroy {
     this.dismissedDropdown = id;
   }
 
+  /** Clicking the host toggles its menu.
+    *
+    * The host has a route of its own, so a click navigates and must not leave the menu hanging over
+    * the page it just opened - that is what the dismissal is for. But dismissing on every click and
+    * only clearing when the pointer next arrives meant the menu could not be reopened without moving
+    * the pointer off the item and back on: after clicking, the pointer is already inside, so no
+    * `mouseenter` is coming. Toggling gives the click back its second half - one click closes, the
+    * next opens - without giving up either the navigation or the dismissal.
+    */
+  public toggleDropdown(id: string): void {
+    this.dismissedDropdown = this.dismissedDropdown === id ? null : id;
+  }
+
   /** Leaving a dropdown host drops its focus. Nothing else does, and focus alone holds a menu open.
     *
     * The host carries `tabindex`, and clicking it - or clicking an item inside it - leaves focus
