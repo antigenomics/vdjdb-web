@@ -16,7 +16,12 @@
             <h3 class="ui attached header">@messages("account.details.header")</h3>
             <div class="ui attached segment teal padded">
                 <div class="ui grid">
-                    <div class="ten wide column">
+                    @* Ten wide only when something occupies the other six. The change-password panel
+                       below is the only thing that ever does, and it is rendered for accounts that
+                       may change their password - which the demo and token rows both may not. Left
+                       fixed at ten, their details sat in 528px of an 844px grid with 316px of empty
+                       card beside it. *@
+                    <div class="@{if(userDetails.permissions.isChangePasswordAllowed) "ten" else "sixteen"} wide column">
                         <h2 class="ui header">
                             <i class="user icon"></i>
                             <div class="content">
@@ -39,18 +44,33 @@
                             Registered accounts are given more room than token ones on every row below.</p>
                         <table class="ui definition table">
                             <tbody>
+                                @* A ceiling is only worth printing to an account that can reach it.
+                                   The demo permission row holds 0 samples and 0 MiB with uploading
+                                   switched off, so these rendered as "2 of 0" - a cap the account is
+                                   already over - and "0 MiB each", a size that permits nothing. The
+                                   samples it does hold are seeded for it, so the count still means
+                                   something; the ceilings do not. Unlimited is dropped the same way
+                                   the daily quotas below already drop it. *@
                                 <tr>
                                     <td class="ten wide column">Uploaded samples</td>
-                                    <td>@userDetails.files.length of @limits.maxSamples</td>
+                                    @if(userDetails.permissions.isUploadAllowed && limits.maxSamples != AccountLimits.Unlimited) {
+                                        <td>@userDetails.files.length of @limits.maxSamples</td>
+                                    } else {
+                                        <td>@userDetails.files.length</td>
+                                    }
                                 </tr>
-                                <tr>
-                                    <td class="ten wide column">Uploaded file size</td>
-                                    <td><b>@limits.maxFileSizeMb MiB</b> each, measured compressed</td>
-                                </tr>
-                                <tr>
-                                    <td class="ten wide column">Clonotypes per sample</td>
-                                    <td><b>@limits.maxClonotypes</b> unique TCR sequences</td>
-                                </tr>
+                                @if(userDetails.permissions.isUploadAllowed) {
+                                    @if(limits.maxFileSizeMb != AccountLimits.Unlimited) {
+                                        <tr>
+                                            <td class="ten wide column">Uploaded file size</td>
+                                            <td><b>@limits.maxFileSizeMb MiB</b> each, measured compressed</td>
+                                        </tr>
+                                    }
+                                    <tr>
+                                        <td class="ten wide column">Clonotypes per sample</td>
+                                        <td><b>@limits.maxClonotypes</b> unique TCR sequences</td>
+                                    </tr>
+                                }
                                 @if(limits.uploadsPerDay != AccountLimits.Unlimited) {
                                     <tr>
                                         <td class="ten wide column">Uploads per day</td>
@@ -77,7 +97,8 @@
                         </table>
                         @if(limits.accountType == "demo") {
                             <div class="account-notice account-notice--demo">
-                                This is a demo account. Some features may be unavailable
+                                This is a demo account. The samples above are provided for you, and
+                                uploading, deleting and password changes are disabled.
                             </div>
                         }
                         @if(limits.accountType == "token") {
