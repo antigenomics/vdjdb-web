@@ -98,7 +98,7 @@ class StructureMetricsIndexSpec extends BaseTestSpec {
 
         metrics.numContacts.value shouldEqual 17
         metrics.isNative shouldEqual true
-        metrics.iptm shouldBe empty
+        metrics.iptm.value shouldEqual 1.0
       }
 
     "return nothing for an empty file, and for a header with no rows" taggedAs UtilsTestTag in

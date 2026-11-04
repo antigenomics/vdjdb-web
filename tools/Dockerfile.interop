@@ -1,8 +1,11 @@
-# Isolated legacy CI toolchain for Stratos (run with --platform linux/amd64).
-FROM node:11.15.0@sha256:67ca28addce8ae818b144114a9376a6603aba09069b7313618d37b38584abba1 AS node
-FROM amazoncorretto:8@sha256:b5213d01880d4b5bb72cc4685ca89a77eb605d115860ad5d0a50b9f71a47b377
-COPY --from=node /usr/local/ /usr/local/
-COPY --from=node /opt/ /opt/
+# Pinned native legacy CI toolchain; Node's build image supplies git, GCC and Python 2.
+FROM amazoncorretto:8-al2-jdk@sha256:41a99a77562d4052c37dc846715d1499ed21656104f4169ad0c9d822a728c75b AS java
+FROM node:11.15.0@sha256:67ca28addce8ae818b144114a9376a6603aba09069b7313618d37b38584abba1
+COPY --from=java /usr/lib/jvm/java-1.8.0-amazon-corretto/ /opt/java/
+ENV JAVA_HOME=/opt/java
+ENV PATH="${JAVA_HOME}/bin:${PATH}"
+RUN java -version && git --version && python --version
+RUN npm install --global --force yarn@1.22.19
 RUN curl -fsSL https://maven-central.storage-download.googleapis.com/maven2/org/scala-sbt/sbt-launch/1.2.8/sbt-launch-1.2.8.jar -o /opt/sbt-launch.jar
 WORKDIR /workspace
 ENTRYPOINT ["java", "-Xmx6g", "-jar", "/opt/sbt-launch.jar"]

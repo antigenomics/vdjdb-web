@@ -68,11 +68,12 @@ object StructureMetricsIndex {
 
           // First occurrence wins, same rule the generator dedupes by.
           cell("hash").map(_.toLowerCase(Locale.ROOT)).filterNot(metrics.contains).foreach { hash =>
+            val native = cell("is_native").exists(_.equalsIgnoreCase("true"))
             metrics.update(hash, StructureModelMetrics(
               // A Boolean: a blank is not native. Contrast bindingModeOutlier below.
-              isNative = cell("is_native").exists(_.equalsIgnoreCase("true")),
+              isNative = native,
               numContacts = cell("num_contacts").flatMap(value => Try(value.toInt).toOption),
-              iptm = cell("iptm").flatMap(value => Try(value.toDouble).toOption),
+              iptm = if (native) Some(1.0) else cell("iptm").flatMap(value => Try(value.toDouble).toOption),
               confidence = cell("confidence").flatMap(value => Try(value.toDouble).toOption),
               // Percentiles rank the modelled subset only, so a native row legitimately has none.
               iptmPct = cell("iptm_pct").flatMap(value => Try(value.toInt).toOption),

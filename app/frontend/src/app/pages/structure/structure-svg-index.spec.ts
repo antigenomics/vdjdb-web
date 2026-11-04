@@ -80,6 +80,27 @@ describe('StructureSvgIndex', () => {
     beforeEach(() => { nextId = 1; definedMarkers = {}; });
 
     describe('build', () => {
+        it('indexes TCRen residue identities and contacts while ignoring MHC and other loops', () => {
+            const index = StructureSvgIndex.build(parse(`
+                <g class="residue" data-chain="D" data-complex-chain="tra" data-region="cdr3"
+                   data-residue-index="95" data-insertion-code="A" data-aa-index="94" data-aa="Y">
+                    <rect x="10" y="20" width="22" height="22"/></g>
+                <g class="residue" data-chain="P" data-complex-chain="peptide" data-region="peptide"
+                   data-residue-index="2" data-aa-index="1" data-aa="G">
+                    <rect x="40" y="50" width="22" height="22"/></g>
+                <g class="residue" data-chain="M" data-complex-chain="mhca" data-region="mhc_helix_a1"
+                   data-residue-index="59" data-aa-index="58" data-aa="E">
+                    <rect x="70" y="80" width="22" height="22"/></g>
+                <g class="contacts-dashed"><line data-chain-1="D" data-res-1="94"
+                    data-chain-2="P" data-res-2="1"/></g>`));
+            expect(index.residues.length).toBe(2);
+            expect(index.residues[0].position).toBe(95);
+            expect(StructureSvgIndex.locateResidue(index, index.residues[0].element.querySelector('rect'))).toBe(index.residues[0]);
+            expect(StructureSvgIndex.describeResidue(index.residues[0])).toBe('TYR 95A');
+            expect(index.residues[0].x).toBe(21);
+            expect(index.contacts.length).toBe(1);
+            expect(index.contacts[0].kind).toBe('tcr-peptide');
+        });
 
         it('recovers residues from the labels matplotlib leaves in comments', () => {
             const index = StructureSvgIndex.build(parse(

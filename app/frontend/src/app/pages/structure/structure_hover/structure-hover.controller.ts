@@ -82,7 +82,7 @@ export class StructureHoverController {
 
     private svg: SVGSVGElement | null = null;
     private index: IStructureSvgIndex = { residues: [], contacts: [] };
-    private highlighted?: SVGGElement;
+    private highlighted?: SVGElement;
     private tip: HTMLElement | null = null;
 
     public track(event: MouseEvent): void {
@@ -206,7 +206,7 @@ export class StructureHoverController {
         }
     }
 
-    private static elementOf(annotation: IStructureAnnotation | null): SVGGElement | undefined {
+    private static elementOf(annotation: IStructureAnnotation | null): SVGElement | undefined {
         if (!annotation) {
             return undefined;
         }

@@ -67,3 +67,9 @@ such a structure draws as a map with the two CDR3 loops and no epitope at all.
 
 On the deployed database this drops 795 of 11,046 structures, including all six MHCII ones. The
 cause is upstream, in whatever writes the `*_contacts*` files beside each map.
+
+The first ALAGIGILTV row carries native evidence with no predicted-contact flag;
+it must remain available while zero-contact predicted ANYKFTLV rows stay excluded.
+
+A native ANYKFTLV row has zero metadata contacts and remains excluded. Positive-contact
+native rows use ipTM=1 (100% display), without model confidence or model percentiles.
