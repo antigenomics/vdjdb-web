@@ -16,6 +16,8 @@
 
 package backend.server.structures
 
+import backend.utils.TableFiles
+
 import backend.server.structures.api._
 
 import java.nio.charset.StandardCharsets
@@ -41,12 +43,12 @@ object StructureMetricsIndex {
   /** Keyed by lower-cased hash, matching the generator. Absent or empty file yields an empty map:
     * a deployment without the companion file shows structures with no metrics rather than failing. */
   def load(databaseLocation: Path): Map[String, StructureModelMetrics] = {
-    val path = databaseLocation.resolve(FileName)
+    val path = TableFiles.resolve(databaseLocation.resolve(FileName).toFile).toPath
     if (!Files.isRegularFile(path)) Map.empty else parse(path)
   }
 
   private def parse(path: Path): Map[String, StructureModelMetrics] = {
-    val source = Source.fromFile(path.toFile, StandardCharsets.UTF_8.name())
+    val source = TableFiles.source(path.toFile)
     try {
       val lines = source.getLines()
       if (!lines.hasNext) {

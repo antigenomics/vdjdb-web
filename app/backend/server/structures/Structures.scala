@@ -6,7 +6,7 @@ import javax.inject.{Inject, Singleton}
 import backend.server.database.Database
 import backend.server.motifs.MotifsMetadata
 import backend.server.motifs.api.filter.MotifsSearchTreeFilter
-import backend.utils.CommonUtils
+import backend.utils.{CommonUtils, TableFiles}
 import play.api.libs.json._
 import tech.tablesaw.api.{StringColumn, Table}
 import java.nio.charset.StandardCharsets
@@ -46,7 +46,7 @@ case class Structures @Inject()(database: Database)(implicit ec: ExecutionContex
     }
     database.getClusterMembersFile match {
       case Some(file) if file.exists() =>
-        val source = Source.fromFile(file, StandardCharsets.UTF_8.name())
+        val source = TableFiles.source(file)
         try {
           val iter = source.getLines()
           if (!iter.hasNext) {

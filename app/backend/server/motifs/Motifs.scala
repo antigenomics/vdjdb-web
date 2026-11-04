@@ -16,6 +16,9 @@
 
 package backend.server.motifs
 
+import backend.utils.TableFiles
+import java.io.File
+
 import backend.models.files.temporary.{TemporaryFileLink, TemporaryFileProvider}
 import backend.server.database.Database
 import backend.server.motifs.api.cdr3.{MotifCDR3SearchEntry, MotifCDR3SearchResult, MotifCDR3SearchResultOptions}
@@ -383,12 +386,13 @@ object Motifs {
           ColumnType.STRING, // mhc.b
           ColumnType.STRING, // mhc.class
         )
-        val builder = CsvReadOptions.builder(p)
+        val stream = TableFiles.open(new File(p))
+        val builder = new CsvReadOptions.Builder(stream)
           .separator('\t')
           .header(true)
           .columnTypes(columnTypes)
         val options = builder.build()
-        val table = Table.read().csv(options)
+        val table = try Table.read().csv(options) finally stream.close()
 
         table.replaceColumn("mhc.a", table.stringColumn("mhc.a").replaceAll(":.+", "").setName("mhc.a"))
         table.replaceColumn("mhc.b", table.stringColumn("mhc.b").replaceAll(":.+", "").setName("mhc.b"))
@@ -421,12 +425,13 @@ object Motifs {
           ColumnType.STRING, // v.segm.repr
           ColumnType.STRING, // j.segm.repr
         )
-        val builder = CsvReadOptions.builder(p)
+        val stream = TableFiles.open(new File(p))
+        val builder = new CsvReadOptions.Builder(stream)
           .separator('\t')
           .header(true)
           .columnTypes(columnTypes)
         val options = builder.build()
-        Table.read().csv(options)
+        try Table.read().csv(options) finally stream.close()
       case None => Table.create("")
     }
   }

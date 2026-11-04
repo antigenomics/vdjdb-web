@@ -100,8 +100,8 @@ def main() -> int:
         return (r.get("is_native") or "").strip().lower() in ("true", "1", "yes")
 
     mod_idx = [i for i, r in enumerate(rows) if not is_native(r)]
-    conf = np.array([_to_float(rows[i].get("ranking_confidence")) or np.nan for i in mod_idx])
-    iptm = np.array([_to_float(rows[i].get("tcr_pmhc_iptm")) or np.nan for i in mod_idx])
+    conf = np.array([_to_float(rows[i].get("ranking_confidence")) for i in mod_idx], dtype=float)
+    iptm = np.array([_to_float(rows[i].get("tcr_pmhc_iptm")) for i in mod_idx], dtype=float)
 
     conf_pct = np.full(len(mod_idx), np.nan)
     ok = ~np.isnan(conf)
