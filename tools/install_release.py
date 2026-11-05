@@ -206,7 +206,12 @@ def install(artifacts, destination, tag=None, tables_only=False):
         if manifest is None:
             normalize_historical_metadata(root)
         check_core(root, allow_absent_charts=manifest is None and tables_only)
-        if not tables_only or (root / 'prepared-assets.json').exists() or any(root.glob('structures_metadata.tsv*')):
+        if tables_only:
+            # A web ZIP may carry sidecars for its separately packaged structures.
+            # Omit them with the excluded role rather than leave a partial preparation.
+            for sidecar in [root / 'prepared-assets.json', *root.glob('structures_metadata.tsv*')]:
+                sidecar.unlink(missing_ok=True)
+        else:
             validate(root)
         root.rename(final)
     return final

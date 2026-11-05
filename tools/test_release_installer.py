@@ -65,6 +65,11 @@ class ReleaseChecks(unittest.TestCase):
             dest = root / 'releases'
             final = install(artifacts, dest)
             self.assertTrue((final / 'structure/asset-manifest.json').exists())
+            tables = install(artifacts, root / 'tables-only-releases', tables_only=True)
+            self.assertTrue((tables / 'vdjdb.txt').exists())
+            self.assertFalse((tables / 'prepared-assets.json').exists())
+            self.assertFalse(any(tables.glob('structures_metadata.tsv*')))
+            self.assertFalse((tables / 'structure').exists())
             with self.assertRaises(FileExistsError):
                 install(artifacts, dest)
             data['tag'] = 'broken'

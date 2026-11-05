@@ -76,7 +76,8 @@ python3 tools/install_release.py --tag TAG --destination /data/releases
 The installer selects manifest roles `web` and `web-structures`, validates archive
 member sets, physical SHA256/byte counts, optional SHA256SUMS, prepared identities,
 complete per-hash downloads (including ZIP contents) and motif chart availability.
-`--tables-only` explicitly permits a release without structures. Existing release
+`--tables-only` installs tables/charts without structure metrics or prepared sidecars,
+including when the selected web ZIP comes from a complete prepared release. Existing release
 directories are immutable; failures remove fresh staging and preserve all previous
 releases. The command prints the selected root and database/chart configuration.
 Changing Docker mounts/configuration and restarting remain explicit operator steps.
