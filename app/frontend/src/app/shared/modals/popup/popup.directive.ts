@@ -14,7 +14,7 @@
  *     limitations under the License.
  */
 
-import { AfterViewInit, ApplicationRef, ComponentFactoryResolver, ComponentRef, Directive, EmbeddedViewRef, Injector, Input, OnDestroy, Renderer2, ViewContainerRef } from '@angular/core';
+import { AfterViewInit, ApplicationRef, ComponentFactoryResolver, ComponentRef, Directive, EmbeddedViewRef, Injector, Input, OnChanges, OnDestroy, Renderer2, SimpleChanges, ViewContainerRef } from '@angular/core';
 import { SafeHtml } from '@angular/platform-browser';
 import { PopupContentTable } from './popup-content-table';
 import { PopupContentComponent } from './popup-content.component';
@@ -22,7 +22,7 @@ import { PopupContentComponent } from './popup-content.component';
 @Directive({
   selector: '[popup]'
 })
-export class PopupDirective implements AfterViewInit, OnDestroy {
+export class PopupDirective implements AfterViewInit, OnChanges, OnDestroy {
   private _visible: boolean = false;
   private _tooltip: ComponentRef<PopupContentComponent>;
 
@@ -81,13 +81,22 @@ export class PopupDirective implements AfterViewInit, OnDestroy {
     this.bindEnterEvents();
   }
 
+  public ngOnChanges(changes: SimpleChanges): void {
+    if (changes.disabled) {
+      this.updateView();
+    }
+  }
+
   public updateView(visible?: boolean): void {
-    if (this._tooltip && this.disabled) {
-      this.unbindEvents();
-      this._tooltip.destroy();
-    } else if (this._tooltip && this._tooltip.instance) {
-      this._visible = visible !== undefined ? visible : this._visible;
-      this.bindEnterEvents();
+    if (this.disabled || visible === false) {
+      this.hide();
+      if (this.disabled) {
+        this.unbindEvents();
+      }
+      return;
+    }
+    this.bindEnterEvents();
+    if (this._tooltip && this._tooltip.instance) {
       this._tooltip.instance.hostElement = this.viewContainerRef.element.nativeElement;
       this._tooltip.instance.content = this.popupContent;
       this._tooltip.instance.header = this.headerContent;
@@ -123,18 +132,18 @@ export class PopupDirective implements AfterViewInit, OnDestroy {
   }
 
   public hide(): void {
-    if (this._visible) {
-      if (this._tooltip) {
-        const domElem = (this._tooltip.hostView as EmbeddedViewRef<any>).rootNodes[ 0 ] as HTMLElement;
-        if (domElem.parentNode) {
-          domElem.parentNode.removeChild(domElem);
-        }
-        this.appRef.detachView(this._tooltip.hostView);
-        this._tooltip.destroy();
-        this.unbindLeaveEvents();
+    if (this._tooltip) {
+      const tooltip = this._tooltip;
+      this._tooltip = undefined;
+      const domElem = (tooltip.hostView as EmbeddedViewRef<any>).rootNodes[ 0 ] as HTMLElement;
+      if (domElem.parentNode) {
+        domElem.parentNode.removeChild(domElem);
       }
-      this._visible = false;
+      this.appRef.detachView(tooltip.hostView);
+      tooltip.destroy();
     }
+    this.unbindLeaveEvents();
+    this._visible = false;
   }
 
   public ngOnDestroy(): void {
