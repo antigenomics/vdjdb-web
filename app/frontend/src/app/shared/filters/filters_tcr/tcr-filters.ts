@@ -94,11 +94,13 @@ export class TCRGeneralFilter implements FilterInterface {
   public human: boolean;
   public monkey: boolean;
   public mouse: boolean;
+  public bovine: boolean;
 
   public setDefault(): void {
     this.human = true;
     this.monkey = true;
     this.mouse = true;
+    this.bovine = true;
 
     this.tra = true;
     this.trb = true;
@@ -109,7 +111,7 @@ export class TCRGeneralFilter implements FilterInterface {
   public isDefault(): boolean {
     return this._tra === true && this._trb === true &&
       this.pairedOnly === false && this.appendPaired === false &&
-      this.human === true && this.monkey === true && this.mouse === true;
+      this.human === true && this.monkey === true && this.mouse === true && this.bovine === true;
   }
 
   public setOptions(_: IFiltersOptions): void {
@@ -125,6 +127,9 @@ export class TCRGeneralFilter implements FilterInterface {
     }
     if (this.mouse === false) {
       filters.push(new Filter('species', FilterType.EXACT, true, 'MusMusculus'));
+    }
+    if (this.bovine === false) {
+      filters.push(new Filter('species', FilterType.EXACT, true, 'BosTaurus'));
     }
     if (this.tra === false) {
       filters.push(new Filter('gene', FilterType.EXACT, true, 'TRA'));

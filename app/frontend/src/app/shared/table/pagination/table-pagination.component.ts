@@ -20,7 +20,8 @@ import { Utils } from 'utils/utils';
 @Component({
   selector:        'table-pagination',
   templateUrl:     './table-pagination.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  styles: ['button.item { border: 0; font: inherit; } button.item:not(.active) { background: transparent; }']
 })
 export class TablePaginationComponent implements OnInit {
   private _page: number = 0;

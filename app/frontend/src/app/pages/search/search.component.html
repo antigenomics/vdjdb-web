@@ -32,8 +32,8 @@
             <!-- Basic, not blue: blue belongs to no palette this app uses, and two filled buttons side
                  by side read as two primary actions. Refreshing the table is the primary one, so it
                  keeps the brand fill and resetting steps back to an outline. -->
-            <button class="ui basic button right floated" (click)="reset()">Reset filters</button>
-            <button class="ui teal button left floated" [ngClass]="{'loading':isLoading()}" (click)="search()">Refresh table</button>
+            <button class="ui basic button right floated" [disabled]="table.loading" (click)="reset()">Reset filters</button>
+            <button class="ui teal button left floated" [disabled]="table.loading" [ngClass]="{'loading':isLoading()}" (click)="search()">Refresh table</button>
         </div>
     </div>
     <div class="ui raised segments">

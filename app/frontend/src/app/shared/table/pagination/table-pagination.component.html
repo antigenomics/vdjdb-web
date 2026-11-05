@@ -14,20 +14,20 @@
   ~     limitations under the License.
   -->
 
-<div class="ui pagination menu">
-    <a class="item" (click)="first()">
+<div class="ui pagination link menu">
+    <button type="button" class="item" (click)="first()">
         First
-    </a>
-    <a class="item" (click)="previous()">
+    </button>
+    <button type="button" class="item" (click)="previous()">
         Previous
-    </a>
-    <a class="item" *ngFor="let pageNumber of pageNumbers" [ngClass]="{'active':isCurrent(pageNumber - 1)}" (click)="selectPage(pageNumber - 1)">
+    </button>
+    <button type="button" class="item" *ngFor="let pageNumber of pageNumbers" [ngClass]="{'active':isCurrent(pageNumber - 1)}" (click)="selectPage(pageNumber - 1)">
         {{ pageNumber }}
-    </a>
-    <a class="item" (click)="next()">
+    </button>
+    <button type="button" class="item" (click)="next()">
         Next
-    </a>
-    <a class="item" (click)="last()">
+    </button>
+    <button type="button" class="item" (click)="last()">
         Last
-    </a>
+    </button>
 </div>

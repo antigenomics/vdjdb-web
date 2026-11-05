@@ -17,6 +17,7 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { CheckboxDirective } from './checkbox/checkbox.directive';
 import { DropdownDirective } from './dropdown/dropdown.directive';
 import { ModalComponent } from './modal/modal.component';
 import { PopupContentComponent } from './popup/popup-content.component';
@@ -24,8 +25,8 @@ import { PopupDirective } from './popup/popup.directive';
 
 @NgModule({
   imports:         [ CommonModule, FormsModule ],
-  declarations:    [ PopupDirective, PopupContentComponent, ModalComponent, DropdownDirective ],
-  exports:         [ PopupDirective, PopupContentComponent, ModalComponent, DropdownDirective ],
+  declarations:    [ PopupDirective, PopupContentComponent, ModalComponent, DropdownDirective, CheckboxDirective ],
+  exports:         [ PopupDirective, PopupContentComponent, ModalComponent, DropdownDirective, CheckboxDirective ],
   entryComponents: [ PopupContentComponent, ModalComponent ]
 })
 export class ModalsModule {}

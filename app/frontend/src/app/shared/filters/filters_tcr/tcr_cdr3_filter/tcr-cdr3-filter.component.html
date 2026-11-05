@@ -27,7 +27,7 @@ search. No more than 5 edits in total, since the search cost grows combinatorial
             <input placeholder="Amino acid pattern, e.g. CSAR[DE]GTGNGYTF or CSARDXTGNGYTF."
                    type="text" [ngModel]="tcr.cdr3.pattern" (ngModelChange)="tcr.cdr3.checkPattern($event)">
             <div class="ui basic label">
-                <div class="ui checkbox">
+                <div class="ui checkbox" checkbox>
                     <input [(ngModel)]="tcr.cdr3.patternSubstring" type="checkbox">
                     <label>Substring</label>
                 </div>
