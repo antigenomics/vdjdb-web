@@ -59,7 +59,7 @@ def extract(archive, target, expected=None, compress_legacy=False):
                     shutil.copyfileobj(src, dst)
 
 
-def check_core(root):
+def check_core(root, allow_absent_charts=False):
     core = table(root, 'vdjdb.txt')
     metadata = list(rows(table(root, 'vdjdb.meta.txt')))
     required = {'complex.id', 'gene', 'cdr3', 'v.segm', 'j.segm', 'species',
@@ -94,6 +94,8 @@ def check_core(root):
             if not all(present):
                 raise ValueError('motif members/PWM pair incomplete')
             table(root, pwm_name)
+            if allow_absent_charts and not (root / 'motif-charts').exists():
+                continue
             if not (root / 'motif-charts/plotly.min.js').is_file():
                 raise ValueError('missing chart runtime')
             for row in rows(table(root, members_name)):
@@ -172,7 +174,7 @@ def install(artifacts, destination, tag=None, tables_only=False):
         children = list(stage.iterdir())
         if len(children) == 1 and children[0].is_dir():
             root = children[0]
-        check_core(root)
+        check_core(root, allow_absent_charts=manifest is None and tables_only)
         if not tables_only or (root / 'prepared-assets.json').exists() or any(root.glob('structures_metadata.tsv*')):
             validate(root)
         root.rename(final)

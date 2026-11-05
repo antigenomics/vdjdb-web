@@ -122,6 +122,11 @@ class ReleaseChecks(unittest.TestCase):
             web = root / 'web'
             web.mkdir()
             core_fixture(web, 'a' * 64)
+            (web / 'cluster_members.txt').write_text('species\tgene\tantigen.epitope\nHomoSapiens\tTRB\tTEST\n')
+            (web / 'motif_pwms.txt').write_text('cid\tpos\taa\n1\t0\tA\n')
+            with self.assertRaises(ValueError):
+                check_core(web)
+            check_core(web, allow_absent_charts=True)
             table_path = web / 'vdjdb.txt'
             header, row = table_path.read_text().splitlines(keepends=True)
             content = header + row * (1_000_001 // len(row) + 1)

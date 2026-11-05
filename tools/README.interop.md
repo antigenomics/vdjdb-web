@@ -100,3 +100,7 @@ legacy core schema and metadata column order. Standalone metrics/count exports
 still accept arbitrary map directories; automatic prepared linkage is written
 only for an adjacent sealed `structure/` directory. Explicit sealing remains the
 handoff for historical layouts.
+Historical manifest-free `--tables-only` installs may omit the entire optional
+`motif-charts/` directory (logos still use the required motif table pairs). If that
+directory exists, its runtime and every referenced scatter chart must be complete.
+Modern `web` bundles always require their charts when motif tables are present.
