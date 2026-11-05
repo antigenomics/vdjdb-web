@@ -21,7 +21,7 @@ import { TCRFiltersService } from "shared/filters/filters_tcr/tcr-filters.servic
 import { FiltersService } from "shared/filters/filters.service";
 
 export namespace CommonDiseaseType {
-    export const SARSCOV: string = 'SARS-CoV';
+    export const SARSCOV: string = 'SARS-CoV-2';
     export const INFLUENZA: string = 'Influenza';
     export const SELFANTIGEN: string = 'HomoSapiens'
 }
