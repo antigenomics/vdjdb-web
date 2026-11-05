@@ -104,3 +104,8 @@ Historical manifest-free `--tables-only` installs may omit the entire optional
 `motif-charts/` directory (logos still use the required motif table pairs). If that
 directory exists, its runtime and every referenced scatter chart must be complete.
 Modern `web` bundles always require their charts when motif tables are present.
+The published summer single ZIP also has an older metadata projection: it omits
+the hidden `TCR_hash` row, places the score row in a different order, and omits one
+trailing comment. Historical staging fills that hidden row/comment and reorders
+metadata to the unchanged table header before the same strict loader validation.
+The original archive stays untouched; modern manifest bundles receive no repair.

@@ -127,6 +127,12 @@ class ReleaseChecks(unittest.TestCase):
             with self.assertRaises(ValueError):
                 check_core(web)
             check_core(web, allow_absent_charts=True)
+            meta = web / 'vdjdb.meta.txt'
+            lines = meta.read_text().splitlines()
+            records = [line for line in lines[1:] if not line.startswith('TCR_hash\t')]
+            records.reverse()
+            records = [line.rstrip('\t') if line.startswith('web.method\t') else line for line in records]
+            meta.write_text(lines[0] + '\n' + '\n'.join(records) + '\n')
             table_path = web / 'vdjdb.txt'
             header, row = table_path.read_text().splitlines(keepends=True)
             content = header + row * (1_000_001 // len(row) + 1)

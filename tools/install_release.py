@@ -4,6 +4,7 @@ import argparse
 import csv
 import gzip
 import json
+import io
 import re
 import shutil
 import stat
@@ -57,6 +58,34 @@ def extract(archive, target, expected=None, compress_legacy=False):
                         shutil.copyfileobj(src, zipped)
                 else:
                     shutil.copyfileobj(src, dst)
+
+
+def normalize_historical_metadata(root):
+    """Repair the published summer metadata projection only in fresh staging."""
+    core, meta = table(root, 'vdjdb.txt'), table(root, 'vdjdb.meta.txt')
+    with (gzip.open(core, 'rt') if core.suffix == '.gz' else core.open()) as stream:
+        names = next(csv.reader(stream, delimiter='\t'))
+    metadata = list(rows(meta))
+    fields = ['name', 'type', 'visible', 'searchable', 'autocomplete', 'data.type', 'title', 'comment']
+    if not metadata or list(metadata[0]) != fields:
+        raise ValueError('invalid historical metadata schema')
+    by_name = {}
+    for row in metadata:
+        if row['name'] in by_name or any(row[k] is None for k in fields[:-1]):
+            raise ValueError('invalid historical metadata row')
+        row['comment'] = row['comment'] or ''
+        by_name[row['name']] = row
+    if set(names) - set(by_name) == {'TCR_hash'}:
+        by_name['TCR_hash'] = dict(zip(fields, ['TCR_hash', 'txt', '0', '0', '0', 'txt', 'TCR hash', '']))
+    if set(names) != set(by_name):
+        raise ValueError('historical metadata differs from table columns')
+    stream = io.StringIO()
+    writer = csv.DictWriter(stream, fieldnames=fields, delimiter='\t', lineterminator='\n')
+    writer.writeheader()
+    writer.writerows(by_name[name] for name in names)
+    content = stream.getvalue().encode('utf-8')
+    meta.write_bytes(gzip.compress(content, mtime=0) if meta.suffix == '.gz' else content)
+
 
 
 def check_core(root, allow_absent_charts=False):
@@ -174,6 +203,8 @@ def install(artifacts, destination, tag=None, tables_only=False):
         children = list(stage.iterdir())
         if len(children) == 1 and children[0].is_dir():
             root = children[0]
+        if manifest is None:
+            normalize_historical_metadata(root)
         check_core(root, allow_absent_charts=manifest is None and tables_only)
         if not tables_only or (root / 'prepared-assets.json').exists() or any(root.glob('structures_metadata.tsv*')):
             validate(root)
