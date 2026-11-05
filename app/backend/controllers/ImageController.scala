@@ -70,8 +70,9 @@ class ImageController @Inject()(cc: ControllerComponents, db: Database, configur
         NotModified.withHeaders(CACHE_CONTROL -> ImageCacheControl, ETAG -> etag)
       } else {
         val originalFileName = requested.getFileName.toString
-        Ok.sendPath(requested, inline = true, fileName = (_: Path) => originalFileName).as("text/html")
-          .withHeaders(CACHE_CONTROL -> ImageCacheControl, ETAG -> etag)
+        val result = Ok.sendPath(requested, inline = true, fileName = (_: Path) => originalFileName)
+        val typed = if (originalFileName.toLowerCase.endsWith(".html")) result.as("text/html") else result
+        typed.withHeaders(CACHE_CONTROL -> ImageCacheControl, ETAG -> etag)
       }
     }
   }

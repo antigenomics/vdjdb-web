@@ -39,6 +39,10 @@ class UserProviderSpec extends DatabaseProviderTestSpec {
 
   "UserProvider" should {
 
+    "share one provider so startup demo seeding runs once" taggedAs SQLDatabaseTestTag in {
+      app.injector.instanceOf[UserProvider] should be theSameInstanceAs userProvider
+    }
+
     "have proper table name" taggedAs SQLDatabaseTestTag in {
       userProvider.getTable.baseTableRow.tableName shouldEqual UserTable.TABLE_NAME
     }

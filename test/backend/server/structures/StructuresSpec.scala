@@ -63,6 +63,14 @@ class StructuresSpec extends BaseTestSpec {
       structures.getMetadata.root.values should not be empty
     }
 
+    "require positive contacts for native and predicted structures" taggedAs DatabaseTestTag in {
+      val nativeId = "7ad60cea"
+      structures.getAvailableStructureIds.exists(_.startsWith(nativeId)) shouldEqual true
+      structures.getAvailableStructureIds.exists(_.startsWith("73ef9995")) shouldEqual false
+      structures.getAvailableStructureIds.exists(_.startsWith("ab8dcba8")) shouldEqual false
+      all(structures.getStructureMetrics.values.filter(_.isNative).map(_.iptm)) shouldEqual Some(1.0)
+    }
+
     "drop rows whose visualization does not resolve on disk" taggedAs DatabaseTestTag in {
       // Pruning is by file existence, not by the row carrying an id.
       structures.getAvailableStructureIds should not contain OrphanHash
@@ -96,7 +104,7 @@ class StructuresSpec extends BaseTestSpec {
      * passed too.
      */
     "not list a structure with no modelled CDR3-peptide contact" taggedAs DatabaseTestTag in {
-      // The fixture: ALAGIGILTV and ATDALMTGF carry contacts, the five ANYKFTLV rows do not.
+      // ALAGIGILTV has model contacts or native evidence; ANYKFTLV has neither.
       val byEpitope = (epitope: String) =>
         MotifsSearchTreeFilter(Seq(MotifsSearchTreeFilterEntry("antigen.epitope", epitope)))
 

@@ -14,12 +14,12 @@
   ~     limitations under the License.
   -->
 
-<div class="ui checkbox">
+<div class="ui checkbox" checkbox>
     <input type="checkbox" [(ngModel)]="isNotFoundVisible" [disabled]="disableCheckboxes.disableIsNotFoundVisible">
     <label>Show unannotated</label>
 </div>
 <br>
-<div class="ui checkbox">
+<div class="ui checkbox" checkbox>
     <input type="checkbox" [(ngModel)]="isWeightedByReadCount" [disabled]="disableCheckboxes.disableIsWeightedByReadCount">
     <label>Weight by read count</label>
 </div>
@@ -51,7 +51,7 @@
 </div>
 
 <h4 class="summary-options-heading">Normalize by</h4>
-<div class="ui checkbox" *ngFor="let type of options.normalizeTypes">
+<div class="ui checkbox" *ngFor="let type of options.normalizeTypes" checkbox>
     <input type="checkbox" [ngModel]="type.checked" (ngModelChange)="normalizeTypeChangeFn($event, type)">
     <label>{{ type.title }}</label>
 </div>
@@ -69,7 +69,7 @@
         <input type="number" min="0" max="1" step="0.01" [ngModel]="pValueCutoff" (ngModelChange)="pValueCutoff = $event">
         <div class="ui basic label">cutoff</div>
     </div>
-    <div class="ui checkbox">
+    <div class="ui checkbox" checkbox>
         <input type="checkbox" [ngModel]="isPValueCutoffAdjusted" (ngModelChange)="isPValueCutoffAdjusted = $event">
         <label>Apply to P-adj (BH) rather than raw P</label>
     </div>

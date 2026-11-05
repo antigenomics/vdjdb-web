@@ -661,6 +661,7 @@
  * style beats a stylesheet rule whatever its specificity.
  */
 /* TCR-peptide contact: drawn at 1.5, so it can take the full-strength treatment. */
+.structure-overlay__base ::ng-deep line.structure-hover--contact,
 .structure-overlay__base ::ng-deep .structure-hover--contact path {
     stroke: #111111 !important;
     stroke-width: 3 !important;
@@ -677,6 +678,7 @@
  * Both classes are on the element and both rules are !important, so this one is written as a
  * compound selector to outrank the rule above on specificity rather than on source order.
  */
+.structure-overlay__base ::ng-deep line.structure-hover--contact.structure-hover--contact-internal,
 .structure-overlay__base ::ng-deep .structure-hover--contact.structure-hover--contact-internal path {
     stroke: #666666 !important;
     stroke-width: 1.4 !important;

@@ -21,12 +21,12 @@
     <div class="ui row middle aligned">
         <div class="four wide column filters label"><b>Segment match rule</b></div>
         <div class="five wide column">
-            <div class="ui checkbox">
+            <div class="ui checkbox" checkbox>
                 <input [attr.disabled]="isDisabled()" type="checkbox" [(ngModel)]="filters.searchScope.matchV">
                 <label>Match V</label>
             </div>
             <br>
-            <div class="ui checkbox">
+            <div class="ui checkbox" checkbox>
                 <input [attr.disabled]="isDisabled()" type="checkbox" [(ngModel)]="filters.searchScope.matchJ">
                 <label>Match J</label>
             </div>
@@ -42,25 +42,25 @@
             </i>
         </div>
         <div class="five wide column">
-            <div class="ui radio checkbox">
+            <div class="ui radio checkbox" checkbox>
                 <input [attr.disabled]="isDisabled()" type="radio" name="editDistance"
                        [checked]="isMode('exact')" (change)="setMode('exact')">
                 <label>Exact</label>
             </div>
             <br>
-            <div class="ui radio checkbox">
+            <div class="ui radio checkbox" checkbox>
                 <input [attr.disabled]="isDisabled()" type="radio" name="editDistance"
                        [checked]="isMode('hamming1')" (change)="setMode('hamming1')">
                 <label>Hamming &le; 1</label>
             </div>
             <br>
-            <div class="ui radio checkbox">
+            <div class="ui radio checkbox" checkbox>
                 <input [attr.disabled]="isDisabled()" type="radio" name="editDistance"
                        [checked]="isMode('hamming2')" (change)="setMode('hamming2')">
                 <label>Hamming &le; 2</label>
             </div>
             <br>
-            <div class="ui radio checkbox">
+            <div class="ui radio checkbox" checkbox>
                 <input [attr.disabled]="isDisabled()" type="radio" name="editDistance"
                        [checked]="isMode('levenshtein')" (change)="setMode('levenshtein')">
                 <label>Levenshtein &le; 1</label>

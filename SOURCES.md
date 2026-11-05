@@ -20,10 +20,13 @@ VDJdb over the network before any assertion runs.
 **Upstream:** the production database at `vdjdb@100.83.178.73:~/vdjdb_publish/vdjdb-db/`, mounted into
 the application container at `/home/vdjdb/vdjdb-db/`.
 
-That file is itself derived from the VDJdb release, most recently
-`https://github.com/antigenomics/vdjdb-db/releases/download/2026-06-03/vdjdb-2026-06-03.zip`
-(see `latest-version.txt` in the same directory), and a copy of the 2026-06-11 ZENODO build is
-mirrored at
+The public production export audited on 2026-11-05 contains 228,214 chain records:
+all 226,494 receptor–pMHC–reference identity rows from the 2025-12-29 reference,
+plus 1,540 rows from six studies and 180 rows citing 90 RCSB structures. The latest
+summer archive contains 284,546 rows and is a different dataset. A
+`latest-version.txt` pointer alone does not identify the mounted table's provenance;
+the production filesystem was unavailable for direct inspection in that audit.
+A copy of the 2026-06-11 ZENODO build is mirrored at
 `https://huggingface.co/datasets/isalgo/airr_benchmark/tree/main/vdjdb/vdjdb-2026-06-11-ZENODO`
 (locally at `~/hf/airr_benchmark/vdjdb/vdjdb-2026-06-11-ZENODO/`).
 

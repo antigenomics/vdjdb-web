@@ -1,0 +1,10 @@
+hash	role	expected	observed	pdb	reason
+03d48cb23d5bcdf800c43f4b0deb7fc2a96eafedecc82b216468b2c8ebed8521	TRA	CAVDTGGGKTIF	CAVDTGGFKTIF	8v51	Deposited alpha junction has F where metadata has G
+30422b175b29f020d36359709b601837637e25a98b1693dfb08ec80e889be99b	TRA	CAVDTGGGKTIF	CAVDTGGFKTIF	8v4z	Deposited alpha junction has F where metadata has G
+4219b273fa2f7cff1981eddfb2e30f7739d4a18cbce65c8c26daa8824bf99a72	PEPTIDE	LQPFPQPELPYGSGGS	QPFPQPELPYGSGGS	7sg1	Coordinates lack the metadata N-terminal L
+5fd39cb0d62d9af427bbaba99239f704221cac8922351756c17cb137f8da2772	PEPTIDE	GQVELGGGTPIESCQ	GQVELGGGTPIESC	8vd2	Coordinates lack the metadata C-terminal Q
+77d36a022d94ec9a94cde1feebeec0de4de504ca754080e102c6e07840bc8594	TRA	CAGAIGSSNTGKLIF	CAGAIGPSNTGKLIF	5euo	Deposited alpha junction has P where metadata has S
+8e812ce8e0181270b03a98609474430691a15f2a2fb2374fde8069bebb431f18	TRA	CGIALISGSAGSYQLTF	CGIALIGSGAGSYQLTF	9pbg	Deposited alpha junction has GS where metadata has SG
+de75ad25629e901c38cca8d4161cc57907a54f0d19eefe8a34fa4bcfff716172	TRA	CGIALISGSAGSYQLTF	CGIALIGSGAGSYQLTF	9pbh	Deposited alpha junction has GS where metadata has SG
+e4bebe35e5bc60e423a4a5adeee0ed6ff30c561020a562148c3bd056b4d22499	PEPTIDE	LLFGPVYV	LLFGXPVYV	3d3v	Deposited peptide includes modified residue F2F at author position 5 (shown as X)
+eca5bb55827a1f06eaab8255fcf105cf604c7df668941605e55e6bb6b1229a05	TRA	CAVDTGGGKTIF	CAVDTGGFKTIF	8v50	Deposited alpha junction has F where metadata has G

@@ -46,7 +46,6 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.language.postfixOps
 import scala.util.{Failure, Success}
 
-@Singleton
 /** Raised when an address already holds as many live temporary accounts as it is allowed.
   *
   * Carries the limit rather than a formatted sentence: the only thing that catches this renders it to a
@@ -56,6 +55,7 @@ import scala.util.{Failure, Success}
 final case class TooManyTemporaryUsersException(limit: Int)
   extends RuntimeException(s"An address may hold $limit live temporary accounts at once")
 
+@Singleton
 class UserProvider @Inject()(
   @NamedDatabase("default") protected val dbConfigProvider: DatabaseConfigProvider,
   vtp: VerificationTokenProvider,

@@ -16,6 +16,9 @@
 
 package backend.server.structures
 
+import backend.utils.TableFiles
+import java.io.File
+
 import java.nio.charset.StandardCharsets
 
 import tech.tablesaw.api.{ColumnType, StringColumn, Table}
@@ -56,20 +59,21 @@ object StructureTableLoader {
   }
 
   private def read(path: String): Table = {
-    val options = CsvReadOptions.builder(path).separator('\t').header(true).sample(false)
+    val header = readHeader(path)
+    val stream = TableFiles.open(new File(path))
+    val options = new CsvReadOptions.Builder(stream).separator('\t').header(true).sample(false)
 
     // Types are assigned by header name. A file whose first line is missing or blank has nothing to
     // assign them from, so Tablesaw is left to infer - it has no rows to get wrong.
-    val header = readHeader(path)
     val configured =
       if (header.isEmpty) options
       else options.columnTypes(header.map(name => if (SkippedColumns.contains(name)) ColumnType.SKIP else ColumnType.STRING))
 
-    Table.read().csv(configured.build())
+    try Table.read().csv(configured.build()) finally stream.close()
   }
 
   private def readHeader(path: String): Array[String] = {
-    val source = Source.fromFile(path, StandardCharsets.UTF_8.name())
+    val source = TableFiles.source(new File(path))
     try {
       source.getLines()
         .find(line => line != null && line.trim.nonEmpty)

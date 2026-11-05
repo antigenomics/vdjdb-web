@@ -16,6 +16,8 @@
 
 package backend.server.structures
 
+import backend.utils.TableFiles
+
 import backend.server.structures.api._
 
 import java.nio.charset.StandardCharsets
@@ -41,12 +43,12 @@ object StructureMetricsIndex {
   /** Keyed by lower-cased hash, matching the generator. Absent or empty file yields an empty map:
     * a deployment without the companion file shows structures with no metrics rather than failing. */
   def load(databaseLocation: Path): Map[String, StructureModelMetrics] = {
-    val path = databaseLocation.resolve(FileName)
+    val path = TableFiles.resolve(databaseLocation.resolve(FileName).toFile).toPath
     if (!Files.isRegularFile(path)) Map.empty else parse(path)
   }
 
   private def parse(path: Path): Map[String, StructureModelMetrics] = {
-    val source = Source.fromFile(path.toFile, StandardCharsets.UTF_8.name())
+    val source = TableFiles.source(path.toFile)
     try {
       val lines = source.getLines()
       if (!lines.hasNext) {
@@ -66,11 +68,12 @@ object StructureMetricsIndex {
 
           // First occurrence wins, same rule the generator dedupes by.
           cell("hash").map(_.toLowerCase(Locale.ROOT)).filterNot(metrics.contains).foreach { hash =>
+            val native = cell("is_native").exists(_.equalsIgnoreCase("true"))
             metrics.update(hash, StructureModelMetrics(
               // A Boolean: a blank is not native. Contrast bindingModeOutlier below.
-              isNative = cell("is_native").exists(_.equalsIgnoreCase("true")),
+              isNative = native,
               numContacts = cell("num_contacts").flatMap(value => Try(value.toInt).toOption),
-              iptm = cell("iptm").flatMap(value => Try(value.toDouble).toOption),
+              iptm = if (native) Some(1.0) else cell("iptm").flatMap(value => Try(value.toDouble).toOption),
               confidence = cell("confidence").flatMap(value => Try(value.toDouble).toOption),
               // Percentiles rank the modelled subset only, so a native row legitimately has none.
               iptmPct = cell("iptm_pct").flatMap(value => Try(value.toInt).toOption),

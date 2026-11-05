@@ -28,22 +28,22 @@
     </div>
     <div class="three wide column filters label"><b>Assay type</b></div>
     <div class="four wide column">
-        <div class="ui checkbox">
+        <div class="ui checkbox" checkbox>
             <input [(ngModel)]="meta.general.methodSort" type="checkbox">
             <label>Multimer sorting</label>
         </div>
         <br>
-        <div class="ui checkbox">
+        <div class="ui checkbox" checkbox>
             <input [(ngModel)]="meta.general.methodCulture" type="checkbox">
             <label>Culture-based</label>
         </div>
         <br>
-        <div class="ui checkbox">
+        <div class="ui checkbox" checkbox>
             <input [(ngModel)]="meta.general.methodPhage" type="checkbox">
             <label>Phage displays</label>
         </div>
         <br>
-        <div class="ui checkbox">
+        <div class="ui checkbox" checkbox>
             <input [(ngModel)]="meta.general.methodOther" type="checkbox">
             <label>Other</label>
         </div>
@@ -51,17 +51,17 @@
     <div class="one wide column"></div>
     <div class="three wide column filters label"><b>Sequencing</b></div>
     <div class="four wide column">
-        <div class="ui checkbox">
+        <div class="ui checkbox" checkbox>
             <input [(ngModel)]="meta.general.seqSanger" type="checkbox">
             <label>Sanger</label>
         </div>
         <br>
-        <div class="ui checkbox">
+        <div class="ui checkbox" checkbox>
             <input [(ngModel)]="meta.general.seqAmplicon" type="checkbox">
             <label>High-throughput</label>
         </div>
         <br>
-        <div class="ui checkbox">
+        <div class="ui checkbox" checkbox>
             <input [(ngModel)]="meta.general.seqSingleCell" type="checkbox">
             <label>Single-cell</label>
         </div>

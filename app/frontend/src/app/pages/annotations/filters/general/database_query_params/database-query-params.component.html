@@ -98,17 +98,17 @@
             </i>
         </div>
         <div class="ten wide column">
-            <div class="ui checkbox">
+            <div class="ui checkbox" checkbox>
                 <input [attr.disabled]="isDisabled()" type="checkbox" [(ngModel)]="filters.databaseQueryParams.inTcrempMotif">
                 <label>In TCREMP motif</label>
             </div>
             <br>
-            <div class="ui checkbox">
+            <div class="ui checkbox" checkbox>
                 <input [attr.disabled]="isDisabled()" type="checkbox" [(ngModel)]="filters.databaseQueryParams.inTcrnetMotif">
                 <label>In TCRNET motif</label>
             </div>
             <br>
-            <div class="ui checkbox">
+            <div class="ui checkbox" checkbox>
                 <input [attr.disabled]="isDisabled()" type="checkbox" [(ngModel)]="filters.databaseQueryParams.independentValidationOnly">
                 <label>Only independently validated</label>
             </div>

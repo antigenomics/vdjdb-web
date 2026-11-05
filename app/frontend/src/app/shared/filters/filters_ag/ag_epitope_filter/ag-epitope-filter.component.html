@@ -28,7 +28,7 @@
             <input placeholder="Amino acid pattern, e.g. LLFG[FY][AP]VYV or LLFGXXXYV"
                    type="text" [ngModel]="ag.epitope.epitopePattern" (ngModelChange)="ag.epitope.checkPattern($event)">
             <div class="ui basic label">
-                <div class="ui checkbox">
+                <div class="ui checkbox" checkbox>
                     <input [(ngModel)]="ag.epitope.epitopePatternSubstring" type="checkbox">
                     <label>Substring</label>
                 </div>

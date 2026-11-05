@@ -59,18 +59,19 @@ export interface IStructureResidue {
      * numbered from 1. There is no complex-wide index.
      */
     position: number;
+    insertionCode?: string;
     chain: StructureChain;
     x: number;
     y: number;
     /** The `<g>` holding the box, so a caller can style it. */
-    element: SVGGElement;
+    element: SVGElement;
 }
 
 export interface IStructureContact {
     from: IStructureResidue;
     to: IStructureResidue;
     kind: ContactKind;
-    element: SVGGElement;
+    element: SVGElement;
 }
 
 export interface IStructureSvgIndex {
@@ -124,8 +125,45 @@ export class StructureSvgIndex {
             return { residues: [], contacts: [] };
         }
 
+        if (svg.querySelector('g.residue[data-complex-chain]')) {
+            return StructureSvgIndex.readTcren(svg);
+        }
         const residues = StructureSvgIndex.readResidues(svg);
         return { residues, contacts: StructureSvgIndex.readContacts(svg, residues) };
+    }
+
+    /** TCRen names physical chains and zero-based sequence positions explicitly. */
+    private static readTcren(svg: SVGSVGElement): IStructureSvgIndex {
+        const residues: IStructureResidue[] = [];
+        const byKey = new Map<string, IStructureResidue>();
+        const chains: { [name: string]: StructureChain } = { tra: 'CDR3a', trb: 'CDR3b', peptide: 'peptide' };
+        Array.from(svg.querySelectorAll('g.residue[data-complex-chain]')).forEach(group => {
+            const role = group.getAttribute('data-complex-chain') || '';
+            const chain = chains[role];
+            if (!chain || (role !== 'peptide' && group.getAttribute('data-region') !== 'cdr3')) { return; }
+            const rect = group.querySelector('rect');
+            if (!rect || !['data-residue-index', 'data-aa-index', 'data-chain'].every(name => group.hasAttribute(name))
+                || !['x', 'y', 'width', 'height'].every(name => rect.hasAttribute(name))) { return; }
+            const position = Number(group.getAttribute('data-residue-index'));
+            const x = Number(rect.getAttribute('x')) + Number(rect.getAttribute('width')) / 2;
+            const y = Number(rect.getAttribute('y')) + Number(rect.getAttribute('height')) / 2;
+            const code = group.getAttribute('data-aa') || '';
+            if (!code || !isFinite(position) || !isFinite(x) || !isFinite(y)) { return; }
+            const residue: IStructureResidue = { code, label: AMINO_ACIDS[code] || code,
+                position, insertionCode: group.getAttribute('data-insertion-code') || '',
+                chain, x, y, element: group as SVGElement };
+            residues.push(residue);
+            byKey.set(group.getAttribute('data-chain') + ':' + group.getAttribute('data-aa-index'), residue);
+        });
+        const contacts: IStructureContact[] = [];
+        Array.from(svg.querySelectorAll('.contacts-dashed line[data-chain-1]')).forEach(line => {
+            const from = byKey.get(line.getAttribute('data-chain-1') + ':' + line.getAttribute('data-res-1'));
+            const to = byKey.get(line.getAttribute('data-chain-2') + ':' + line.getAttribute('data-res-2'));
+            if (!from || !to || (from.chain === 'peptide' && to.chain === 'peptide')) { return; }
+            contacts.push({ from, to, element: line as SVGElement,
+                kind: from.chain === 'peptide' || to.chain === 'peptide' ? 'tcr-peptide' : 'tcr-internal' });
+        });
+        return { residues, contacts };
     }
 
     /** Pairs each residue label with the box drawn at the same place. */
@@ -231,7 +269,7 @@ export class StructureSvgIndex {
 
     /** How a residue reads in the tooltip, e.g. `ASN 91`. */
     public static describeResidue(residue: IStructureResidue): string {
-        return `${residue.label} ${residue.position}`;
+        return `${residue.label} ${residue.position}${residue.insertionCode || ''}`;
     }
 
     /**
@@ -296,7 +334,7 @@ export class StructureSvgIndex {
      * holds. Backbone segments and the axes belong to no annotation and correctly return nothing.
      */
     public static locateResidue(index: IStructureSvgIndex, target: EventTarget | null): IStructureResidue | undefined {
-        const element = target instanceof Element ? target.closest('g[id^="line2d_"]') : null;
+        const element = target instanceof Element ? target.closest('g.residue[data-complex-chain], g[id^="line2d_"]') : null;
         return element ? index.residues.find((candidate) => candidate.element === element) : undefined;
     }
 

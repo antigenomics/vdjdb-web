@@ -88,8 +88,8 @@ object StructureVisualization {
   *
   * `iptm` is the TCR:pMHC interface ipTM (`tcr_pmhc_iptm`), `confidence` the AlphaFold2 ranking
   * confidence, and the `*Pct` fields their percentile rank among all modelled structures
-  * (`is_native == false`). Every model-specific field is empty for a native, experimentally
-  * determined structure, which is why they are all optional rather than defaulted.
+  * (`is_native == false`). Native structures use ipTM=1 as an experimental-display convention;
+  * model confidence and percentile fields remain optional.
   */
 case class StructureModelMetrics(isNative: Boolean,
                                  numContacts: Option[Int],

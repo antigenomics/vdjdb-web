@@ -16,6 +16,8 @@
 
 package backend.server.database
 
+import backend.utils.TableFiles
+
 import java.io.{BufferedInputStream, ByteArrayOutputStream, File, FileInputStream, InputStream}
 import java.nio.file.{Files, Paths}
 
@@ -61,7 +63,7 @@ case class Database @Inject()(configuration: Configuration) {
   }
 
   def getMotifFile: Option[File] = {
-    val motifsFile = new File(getLocation + "/" + "motif_pwms.txt")
+    val motifsFile = TableFiles.resolve(new File(getLocation + "/" + "motif_pwms.txt"))
     if (motifsFile.exists()) {
       Some(motifsFile)
     } else {
@@ -70,7 +72,7 @@ case class Database @Inject()(configuration: Configuration) {
   }
 
   def getClusterMembersFile: Option[File] = {
-    val clusterMembersFile = new File(getLocation + "/" + "cluster_members.txt")
+    val clusterMembersFile = TableFiles.resolve(new File(getLocation + "/" + "cluster_members.txt"))
     if (clusterMembersFile.exists()) {
       Some(clusterMembersFile)
     } else {
@@ -79,12 +81,12 @@ case class Database @Inject()(configuration: Configuration) {
   }
 
   def getMotifFileTCREMP: Option[File] = {
-    val f = new File(getLocation + "/" + "motif_pwms_tcremp.txt")
+    val f = TableFiles.resolve(new File(getLocation + "/" + "motif_pwms_tcremp.txt"))
     if (f.exists()) Some(f) else None
   }
 
   def getClusterMembersFileTCREMP: Option[File] = {
-    val f = new File(getLocation + "/" + "cluster_members_tcremp.txt")
+    val f = TableFiles.resolve(new File(getLocation + "/" + "cluster_members_tcremp.txt"))
     if (f.exists()) Some(f) else None
   }
 
@@ -281,8 +283,8 @@ object Database {
       val metaFilePath = databaseConfiguration.path + "vdjdb.meta.txt"
       val dataFilePath = databaseConfiguration.path + "vdjdb.txt"
 
-      if (Files.exists(Paths.get(metaFilePath)) && Files.exists(Paths.get(dataFilePath))) {
-        new VdjdbInstance(new FileInputStream(metaFilePath), sanitizeDataStream(new FileInputStream(dataFilePath)))
+      if (TableFiles.resolve(new File(metaFilePath)).isFile && TableFiles.resolve(new File(dataFilePath)).isFile) {
+        new VdjdbInstance(TableFiles.open(new File(metaFilePath)), sanitizeDataStream(TableFiles.open(new File(dataFilePath))))
       } else {
         val logger = Logger(LoggerFactory.getLogger(this.getClass))
         logger.warn("Local database is missing in '" + databaseConfiguration.path + "'")
@@ -300,13 +302,13 @@ object Database {
       val metaFilePath = databaseConfiguration.path + "vdjdb.meta.txt"
       val dataFilePath = databaseConfiguration.path + "vdjdb.txt"
 
-      if (Files.exists(Paths.get(metaFilePath)) && Files.exists(Paths.get(dataFilePath))) {
+      if (TableFiles.resolve(new File(metaFilePath)).isFile && TableFiles.resolve(new File(dataFilePath)).isFile) {
         databaseConfiguration.path
       } else {
-        Util.getHOME_DIR
+        Util.databaseDirectory().getAbsolutePath
       }
     } else {
-      Util.getHOME_DIR
+      Util.databaseDirectory().getAbsolutePath
     }
   }
 

@@ -102,7 +102,7 @@
                                 </span>
                                 <span class="overlay-card__metric" *ngIf="m.iptm != null">
                                     <span class="overlay-card__label">ipTM:</span>
-                                    <span class="overlay-card__value">{{ m.iptm | number:'1.2-2' }}</span>
+                                    <span class="overlay-card__value">{{ m.isNative ? '100%' : (m.iptm | number:'1.2-2') }}</span>
                                     <span class="overlay-card__pct" *ngIf="m.iptmPct != null" title="rank across all modelled VDJdb structures">({{ m.iptmPct }}%)</span>
                                 </span>
                                 <span class="overlay-card__metric" *ngIf="m.confidence != null">

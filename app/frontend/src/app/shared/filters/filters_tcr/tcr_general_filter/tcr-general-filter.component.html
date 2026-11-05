@@ -22,40 +22,45 @@
 <div class="ui grid middle aligned">
     <div class="three wide column filters label"><b>Species</b></div>
     <div class="three wide column">
-        <div class="ui checkbox">
+        <div class="ui checkbox" checkbox>
             <input [(ngModel)]="tcr.general.human" type="checkbox">
             <label>Human</label>
         </div>
         <br>
-        <div class="ui checkbox">
+        <div class="ui checkbox" checkbox>
             <input [(ngModel)]="tcr.general.monkey" type="checkbox">
             <label>Monkey</label>
         </div>
         <br>
-        <div class="ui checkbox">
+        <div class="ui checkbox" checkbox>
             <input [(ngModel)]="tcr.general.mouse" type="checkbox">
             <label>Mouse</label>
+        </div>
+        <br>
+        <div class="ui checkbox" checkbox>
+            <input [(ngModel)]="tcr.general.bovine" type="checkbox">
+            <label>Cattle</label>
         </div>
     </div>
     <div class="one wide column"></div>
     <div class="three wide column filters label"><b>Gene (chain)</b></div>
     <div class="four wide column">
-        <div class="ui checkbox">
+        <div class="ui checkbox" checkbox>
             <input [(ngModel)]="tcr.general.tra" type="checkbox">
             <label>TRA</label>
         </div>
         <br>
-        <div class="ui checkbox">
+        <div class="ui checkbox" checkbox>
             <input [(ngModel)]="tcr.general.trb" type="checkbox">
             <label>TRB</label>
         </div>
         <br>
-        <div class="ui checkbox">
+        <div class="ui checkbox" checkbox>
             <input [(ngModel)]="tcr.general.pairedOnly" type="checkbox">
             <label>Paired only</label>
         </div>
         <br>
-        <div class="ui checkbox">
+        <div class="ui checkbox" checkbox>
             <input [(ngModel)]="tcr.general.appendPaired" type="checkbox">
             <label>Append pairs</label>
         </div>

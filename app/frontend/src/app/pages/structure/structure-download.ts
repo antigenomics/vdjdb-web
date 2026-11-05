@@ -22,7 +22,7 @@ export type StructureDownloadOption = 'structure' | 'contacts' | 'ca_atoms' | 'a
 /**
  * The static files that ship beside each contact map.
  *
- * Nothing generates these on request: `tools/sync_structure_files.py` writes them next to the map,
+ * Nothing generates these on request: structure preparation writes them next to the map,
  * named after the structure hash, and both download controls just build the URL. That is why there
  * is no export endpoint for structures the way there is for motifs.
  */
@@ -61,13 +61,13 @@ export class StructureDownload {
         if (!hash) {
             return;
         }
-        StructureDownload.start(`${(epitope || '').trim()}_${hash.slice(0, 6)}.zip`);
+        StructureDownload.start(`${hash}_all.zip`, `${(epitope || '').trim()}_${hash.slice(0, 6)}.zip`);
     }
 
-    private static start(fileName: string): void {
+    private static start(fileName: string, downloadName: string = fileName): void {
         const link = document.createElement('a');
         link.href = `${StructureDownload.directory}/${encodeURIComponent(fileName)}`;
-        link.download = fileName;
+        link.download = downloadName;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);

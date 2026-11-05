@@ -6,7 +6,7 @@ import javax.inject.{Inject, Singleton}
 import backend.server.database.Database
 import backend.server.motifs.MotifsMetadata
 import backend.server.motifs.api.filter.MotifsSearchTreeFilter
-import backend.utils.CommonUtils
+import backend.utils.{CommonUtils, TableFiles}
 import play.api.libs.json._
 import tech.tablesaw.api.{StringColumn, Table}
 import java.nio.charset.StandardCharsets
@@ -46,7 +46,7 @@ case class Structures @Inject()(database: Database)(implicit ec: ExecutionContex
     }
     database.getClusterMembersFile match {
       case Some(file) if file.exists() =>
-        val source = Source.fromFile(file, StandardCharsets.UTF_8.name())
+        val source = TableFiles.source(file)
         try {
           val iter = source.getLines()
           if (!iter.hasNext) {
@@ -143,7 +143,7 @@ case class Structures @Inject()(database: Database)(implicit ec: ExecutionContex
   }
 
   /**
-   * Structures with at least one record reporting a modelled CDR3-peptide interface.
+   * Structures with a modelled CDR3-peptide interface or native experimental evidence.
    *
    * Empty when the column is absent, which means a database predating the Evidence work; the prune
    * below treats that as "do not prune", because emptying the browser on an old database would be
@@ -155,10 +155,17 @@ case class Structures @Inject()(database: Database)(implicit ec: ExecutionContex
     } else {
       val idCol = withDerived.stringColumn("structure.id")
       val contactsCol = withDerived.stringColumn(Structures.PeptideContactsColumn)
+      val nativeCol = if (withDerived.columnNames().contains("evidence.structure.native"))
+        Some(withDerived.stringColumn("evidence.structure.native")) else None
       val found = mutable.HashSet.empty[String]
       var idx = 0
       while (idx < withDerived.rowCount()) {
-        if (Option(contactsCol.get(idx)).exists(_.trim.equalsIgnoreCase("true"))) {
+        val metrics = structureMetricsIndex.get(Option(idCol.get(idx)).getOrElse("").trim.toLowerCase(Locale.ROOT))
+        val native = nativeCol.exists(col => Option(col.get(idx)).exists(_.trim.equalsIgnoreCase("true"))) ||
+          metrics.exists(_.isNative)
+        val hasContacts = if (native) metrics.flatMap(_.numContacts).exists(_ > 0)
+          else Option(contactsCol.get(idx)).exists(_.trim.equalsIgnoreCase("true"))
+        if (hasContacts) {
           found += Option(idCol.get(idx)).map(_.trim).getOrElse("")
         }
         idx += 1
@@ -186,7 +193,9 @@ case class Structures @Inject()(database: Database)(implicit ec: ExecutionContex
       // Both prunes here rather than one here and one in buildCluster, so the metadata tree and the
       // card list are derived from the same rows. Splitting them left MHCII in the epitope dropdown
       // with nothing behind it.
-      if (visualizations.exists(rawId) && (!prunesByContacts || withPeptideContacts.contains(rawId))) {
+      val hasNoContacts = structureMetricsIndex.get(rawId.toLowerCase(Locale.ROOT))
+        .exists(m => m.numContacts.exists(_ <= 0) || (m.isNative && m.numContacts.isEmpty))
+      if (!hasNoContacts && visualizations.exists(rawId) && (!prunesByContacts || withPeptideContacts.contains(rawId))) {
         kept += idx
       }
       idx += 1
