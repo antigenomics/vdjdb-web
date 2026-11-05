@@ -2,7 +2,7 @@
 """Verify and install an explicit release into a fresh immutable directory (stdlib only)."""
 import argparse
 import csv
-import hashlib
+import gzip
 import json
 import re
 import shutil
@@ -25,7 +25,7 @@ def safe_name(name):
     return path
 
 
-def extract(archive, target, expected=None):
+def extract(archive, target, expected=None, compress_legacy=False):
     with zipfile.ZipFile(archive) as bundle:
         infos = bundle.infolist()
         names = [i.filename for i in infos]
@@ -46,17 +46,41 @@ def extract(archive, target, expected=None):
                 path.mkdir(parents=True, exist_ok=True)
                 continue
             path.parent.mkdir(parents=True, exist_ok=True)
+            compress = compress_legacy and path.suffix in ('.txt', '.tsv') and info.file_size > 1_000_000
+            if compress:
+                if path.exists():
+                    raise ValueError('ambiguous historical plain/gzip members')
+                path = Path(str(path) + '.gz')
             with bundle.open(info) as src, path.open('xb') as dst:
-                shutil.copyfileobj(src, dst)
+                if compress:
+                    with gzip.GzipFile(filename='', fileobj=dst, mode='wb', mtime=0) as zipped:
+                        shutil.copyfileobj(src, zipped)
+                else:
+                    shutil.copyfileobj(src, dst)
 
 
 def check_core(root):
     core = table(root, 'vdjdb.txt')
-    if not (root / 'vdjdb.meta.txt').is_file():
-        raise ValueError('missing vdjdb.meta.txt')
-    first = next(rows(core), None)
-    if first is None or not {'TCR_hash', 'cdr3', 'gene'} <= first.keys():
-        raise ValueError('invalid web table')
+    metadata = list(rows(table(root, 'vdjdb.meta.txt')))
+    required = {'complex.id', 'gene', 'cdr3', 'v.segm', 'j.segm', 'species',
+                'mhc.a', 'mhc.b', 'mhc.class', 'antigen.epitope', 'antigen.gene',
+                'antigen.species', 'reference.id', 'vdjdb.score', 'TCR_hash',
+                'method', 'meta', 'cdr3fix', 'web.method', 'web.method.seq',
+                'web.cdr3fix.nc', 'web.cdr3fix.unmp'}
+    meta_fields = ['name', 'type', 'visible', 'searchable', 'autocomplete', 'data.type', 'title', 'comment']
+    if not metadata or list(metadata[0])[:len(meta_fields)] != meta_fields or any(
+            None in row or any(value is None for value in row.values()) for row in metadata):
+        raise ValueError('invalid web metadata schema or row width')
+    names = [r.get('name') for r in metadata]
+    if not required <= set(names) or len(names) != len(set(names)):
+        raise ValueError('invalid web metadata columns')
+    count = 0
+    for row in rows(core):
+        if list(row) != names or any(value is None for value in row.values()):
+            raise ValueError('table columns/row width differ from metadata order')
+        count += 1
+    if not count:
+        raise ValueError('empty web table')
     for path in root.rglob('*'):
         if path.is_file() and path.suffix == '.gz' and path.with_suffix('').exists():
             raise ValueError('ambiguous plain/gzip files')
@@ -83,8 +107,8 @@ def check_core(root):
 def install(artifacts, destination, tag=None, tables_only=False):
     manifest_path = artifacts / 'manifest.json'
     manifest = json.loads(manifest_path.read_text()) if manifest_path.exists() else None
-    if manifest:
-        if manifest.get('schema_version') != 1:
+    if manifest_path.exists():
+        if not isinstance(manifest, dict) or manifest.get('schema_version') != 1:
             raise ValueError('unsupported release schema')
         version = manifest['tag']
         if tag and version != tag:
@@ -109,6 +133,10 @@ def install(artifacts, destination, tag=None, tables_only=False):
     destination.mkdir(parents=True, exist_ok=True)
     if final.exists():
         raise FileExistsError(f'immutable release already exists: {final}')
+    for bundle in bundles:
+        name = bundle['file']
+        if safe_name(name).name != name:
+            raise ValueError('bundle filename must be flat')
     checksums = {}
     sums = artifacts / 'SHA256SUMS'
     if sums.exists():
@@ -132,7 +160,7 @@ def install(artifacts, destination, tag=None, tables_only=False):
                 raise ValueError('bundle checksum mismatch')
             unpacked = Path(temp) / f'bundle-{index}'
             unpacked.mkdir()
-            extract(archive, unpacked, bundle.get('members'))
+            extract(archive, unpacked, bundle.get('members'), compress_legacy=manifest is None)
             children = list(unpacked.iterdir())
             payload = children[0] if len(children) == 1 and children[0].is_dir() and children[0].name != 'structure' else unpacked
             for child in payload.iterdir():

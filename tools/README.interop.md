@@ -91,3 +91,12 @@ paths or dataset provenance are included. The normal preparer writes
 both input bindings before recording the prepared identity.
 
 Offline installer regression check: `python3 tools/test_release_installer.py`.
+
+The stdlib installer uses streaming SHA256 (no Python 3.11-only hashing API).
+For a manifest-free historical single ZIP, oversized plain TSV/TXT members are
+streamed directly into deterministic gzip during staging; modern manifest/sealed
+assets retain their original physical bytes. All table rows must match the full
+legacy core schema and metadata column order. Standalone metrics/count exports
+still accept arbitrary map directories; automatic prepared linkage is written
+only for an adjacent sealed `structure/` directory. Explicit sealing remains the
+handoff for historical layouts.

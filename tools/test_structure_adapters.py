@@ -20,6 +20,8 @@ class Adapters(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             source, target = root / 'source.tsv', root / 'result.tsv'
+            # Standalone map counting also supports an output parent containing a web table.
+            (root / 'vdjdb.txt').write_text('TCR_hash\n' + 'a' * 64 + '\n')
             with source.open('w') as stream:
                 writer = csv.writer(stream, delimiter='\t')
                 writer.writerow(['tcr_pmhc_hash', 'is_native', 'num_contacts', 'tcr_pmhc_iptm',

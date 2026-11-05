@@ -6,8 +6,22 @@ import unittest
 import warnings
 import zipfile
 from pathlib import Path
-from install_release import extract, install
+from install_release import check_core, extract, install
 from structure_asset_identity import bindings, digest, prepare_record, seal, validate
+
+
+CORE = ['complex.id', 'gene', 'cdr3', 'v.segm', 'j.segm', 'species', 'mhc.a', 'mhc.b',
+        'mhc.class', 'antigen.epitope', 'antigen.gene', 'antigen.species', 'reference.id',
+        'vdjdb.score', 'TCR_hash', 'method', 'meta', 'cdr3fix', 'web.method',
+        'web.method.seq', 'web.cdr3fix.nc', 'web.cdr3fix.unmp']
+
+
+def core_fixture(web, key):
+    values = dict.fromkeys(CORE, '')
+    values.update(gene='TRB', cdr3='CASSF', species='HomoSapiens', TCR_hash=key)
+    (web / 'vdjdb.txt').write_text('\t'.join(CORE) + '\n' + '\t'.join(values[k] for k in CORE) + '\n')
+    (web / 'vdjdb.meta.txt').write_text('name\ttype\tvisible\tsearchable\tautocomplete\tdata.type\ttitle\tcomment\n' +
+        ''.join(name + '\ttxt\t0\t0\t0\ttxt\t' + name + '\t\n' for name in CORE))
 
 
 class ReleaseChecks(unittest.TestCase):
@@ -19,8 +33,7 @@ class ReleaseChecks(unittest.TestCase):
             source = root / 'source.tsv'
             source.write_text('original metadata\n')
             key = 'a' * 64
-            (web / 'vdjdb.txt').write_text('TCR_hash\tcdr3\tgene\n' + key + '\tCASSF\tTRB\n')
-            (web / 'vdjdb.meta.txt').write_text('meta\n')
+            core_fixture(web, key)
             (web / 'structures_metadata.tsv').write_text('hash\n' + key + '\n')
             structure = web / 'structure'
             structure.mkdir()
@@ -67,6 +80,63 @@ class ReleaseChecks(unittest.TestCase):
             source.write_text('different metadata')
             with self.assertRaises(ValueError):
                 prepare_record(web, source)
+
+    def test_manifest_and_filename_boundaries(self):
+        from unittest.mock import patch
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            manifest = root / 'manifest.json'
+            for malformed in ({}, [], None):
+                manifest.write_text(json.dumps(malformed))
+                with self.assertRaises(ValueError):
+                    install(root, root / 'releases', 'test', tables_only=True)
+            manifest.write_text(json.dumps(dict(schema_version=1, tag='test', bundles=[
+                dict(role='web', file='../outside.zip') ])))
+            (root / 'SHA256SUMS').write_text('0' * 64 + '  ../outside.zip\n')
+            with patch('install_release.digest', side_effect=AssertionError('must not read unsafe path')):
+                with self.assertRaises(ValueError):
+                    install(root, root / 'releases', tables_only=True)
+
+    def test_core_column_order_and_shape(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            core_fixture(root, 'a' * 64)
+            check_core(root)
+            path = root / 'vdjdb.txt'
+            valid = path.read_text()
+            path.write_text(valid.replace('complex.id\tgene', 'gene\tcomplex.id'))
+            with self.assertRaises(ValueError):
+                check_core(root)
+            path.write_text(valid + 'too\tfew\n')
+            with self.assertRaises(ValueError):
+                check_core(root)
+            path.write_text('TCR_hash\tcdr3\tgene\na\tCASSF\tTRB\n')
+            (root / 'vdjdb.meta.txt').write_text('meta\n')
+            with self.assertRaises(ValueError):
+                check_core(root)
+
+    def test_historical_large_plain_streams_to_deterministic_gzip(self):
+        import gzip
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            web = root / 'web'
+            web.mkdir()
+            core_fixture(web, 'a' * 64)
+            table_path = web / 'vdjdb.txt'
+            header, row = table_path.read_text().splitlines(keepends=True)
+            content = header + row * (1_000_001 // len(row) + 1)
+            table_path.write_text(content)
+            artifacts = root / 'artifacts'
+            artifacts.mkdir()
+            with zipfile.ZipFile(artifacts / 'summer.zip', 'w') as bundle:
+                for path in web.iterdir():
+                    bundle.write(path, 'summer/' + path.name)
+            first = install(artifacts, root / 'releases', 'summer', tables_only=True)
+            second = install(artifacts, root / 'releases', 'summer-copy', tables_only=True)
+            self.assertFalse((first / 'vdjdb.txt').exists())
+            zipped = first / 'vdjdb.txt.gz'
+            self.assertEqual(gzip.decompress(zipped.read_bytes()).decode(), content)
+            self.assertEqual(zipped.read_bytes(), (second / zipped.name).read_bytes())
 
     def test_archive_rejections(self):
         with tempfile.TemporaryDirectory() as temp:

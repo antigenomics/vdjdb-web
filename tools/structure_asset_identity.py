@@ -10,9 +10,16 @@ import zipfile
 from pathlib import Path
 
 
+def stream_digest(stream):
+    result = hashlib.sha256()
+    for block in iter(lambda: stream.read(1024 * 1024), b''):
+        result.update(block)
+    return result.hexdigest()
+
+
 def digest(path):
     with path.open('rb') as stream:
-        return hashlib.file_digest(stream, 'sha256').hexdigest()
+        return stream_digest(stream)
 
 
 def table(root, name):
@@ -51,7 +58,7 @@ def required_files(directory, key):
             if Path(name).name != name or not (directory / name).is_file():
                 raise ValueError(f'unsafe/unbound structure ZIP member {name}')
             with bundle.open(name) as stream:
-                if hashlib.file_digest(stream, 'sha256').hexdigest() != digest(directory / name):
+                if stream_digest(stream) != digest(directory / name):
                     raise ValueError(f'stale structure ZIP member {name}')
     return paths
 
