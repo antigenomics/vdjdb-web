@@ -62,3 +62,32 @@ build recipe, not production deployment configuration.
 Checks: `tools/test_structure_adapters.py` in the TCRen environment; the normal
 Scala tests and frontend browser tests in the legacy toolchain. The database
 repository's `docs/legacy-web-interop-plan.md` owns the acceptance audit status.
+
+Immutable prepared releases (stdlib only):
+
+```sh
+# Seal already audited final assets; performs hashes/validation, no annotation.
+python3 tools/structure_asset_identity.py --web /prepared/web --source-metadata /inputs/metadata.tsv.gz
+# Install downloaded artifacts or fetch one explicit GitHub tag.
+python3 tools/install_release.py --artifacts /downloaded/release --destination /data/releases
+python3 tools/install_release.py --tag TAG --destination /data/releases
+```
+
+The installer selects manifest roles `web` and `web-structures`, validates archive
+member sets, physical SHA256/byte counts, optional SHA256SUMS, prepared identities,
+complete per-hash downloads (including ZIP contents) and motif chart availability.
+`--tables-only` explicitly permits a release without structures. Existing release
+directories are immutable; failures remove fresh staging and preserve all previous
+releases. The command prints the selected root and database/chart configuration.
+Changing Docker mounts/configuration and restarting remain explicit operator steps.
+
+Descriptors use `schema_version: 1`. `structure/asset-manifest.json` records
+`web_table_sha256`, `source_metadata_sha256`, sorted `hashes`, and `files` entries
+with relative `path`, integer `bytes`, and physical `sha256` (including gzip bytes).
+`prepared-assets.json` repeats both input hashes and adds
+`structures_metadata_sha256` and `structure_manifest_sha256`. No absolute input
+paths or dataset provenance are included. The normal preparer writes
+`input-digests.json`, map export seals its output, and metrics export validates
+both input bindings before recording the prepared identity.
+
+Offline installer regression check: `python3 tools/test_release_installer.py`.

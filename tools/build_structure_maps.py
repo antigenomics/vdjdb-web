@@ -275,6 +275,16 @@ def main():
             for structure, projection, row in zip(structures, projections, rows)]
     print(f'exporting {len(work)} structures with the existing bounded TCRen worker API', flush=True)
     parallel_map(export_one, work, args.threads)
+    from structure_asset_identity import seal
+    snapshot = args.manifest.parent / 'input-digests.json'
+    if snapshot.exists():
+        import json
+        from structure_asset_identity import digest
+        identity = json.loads(snapshot.read_text())
+        identity.pop('schema_version')
+        if not args.metadata or digest(args.metadata) != identity['source_metadata_sha256']:
+            raise ValueError('map metadata differs from prepared input')
+        seal(args.out, identity)
     print(f'wrote {len(structures)} full and simplified TCRen maps')
 
 

@@ -235,6 +235,11 @@ def main() -> int:
         args.output = Path(str(args.output) + ".gz")
     print(f"wrote {n_out} rows -> {args.output}", file=sys.stderr)
     _self_check(args.output)
+    if args.structure_dir:
+        from structure_asset_identity import prepare_record
+        if args.structure_dir.resolve() != (args.output.parent / 'structure').resolve():
+            raise ValueError('prepared structures must be beside the web table under structure/')
+        prepare_record(args.output.parent, args.input)
     return 0
 
 

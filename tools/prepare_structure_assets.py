@@ -117,6 +117,9 @@ def prepare(web, dataset, out):
         for model in models:
             key = re.search(r'[0-9a-f]{64}', model.name).group()
             writer.writerow([model.name, key])
+    from structure_asset_identity import bindings, write_json
+    write_json(out / 'input-digests.json', dict(schema_version=1, **bindings(
+        web, dataset / 'metadata/current/vdjdb_structures_metadata_current.tsv.gz')))
     print({'archives': counts, 'referenced_hashes': len(wanted), 'available_structures': len(models), 'native_representatives': len(native), 'identical_duplicate_assets': identical_duplicates})
 
 
