@@ -305,10 +305,10 @@ object Database {
       if (TableFiles.resolve(new File(metaFilePath)).isFile && TableFiles.resolve(new File(dataFilePath)).isFile) {
         databaseConfiguration.path
       } else {
-        Util.getHOME_DIR
+        Util.databaseDirectory().getAbsolutePath
       }
     } else {
-      Util.getHOME_DIR
+      Util.databaseDirectory().getAbsolutePath
     }
   }
 
