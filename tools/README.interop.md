@@ -110,4 +110,4 @@ trailing comment. Historical staging fills that hidden row/comment and reorders
 metadata to the unchanged table header before the same strict loader validation.
 The original archive stays untouched; modern manifest bundles receive no repair.
 
-JVM VDJmatch 1.3.2 is required for automatic acquisition of date-tagged gzip legacy releases. Installed web releases use the separate 27-column web role; the ordinary legacy role retains 22 columns. Restart with the selected immutable release directory after installation.
+JVM VDJmatch 1.3.3 is required for automatic acquisition of date-tagged gzip legacy releases. Installed web releases use the separate 27-column web role; the ordinary legacy role retains 22 columns. Restart with the selected immutable release directory after installation.
