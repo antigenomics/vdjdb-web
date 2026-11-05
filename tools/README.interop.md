@@ -10,7 +10,7 @@ Build the projection/charts in the database checkout using its pinned environmen
 ```sh
 vdjdb make web --tables out/tables --out out/web
 # release --with-web also generates charts from the already-built motif tables.
-vdjdb release TAG --with-web --dry-run
+vdjdb release --tag TAG --with-web --dry-run
 ```
 
 Prepare structure assets from the local dataset mirror into a fresh directory.

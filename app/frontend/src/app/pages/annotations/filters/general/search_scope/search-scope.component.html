@@ -42,25 +42,25 @@
             </i>
         </div>
         <div class="five wide column">
-            <div class="ui radio checkbox">
+            <div class="ui radio checkbox" checkbox>
                 <input [attr.disabled]="isDisabled()" type="radio" name="editDistance"
                        [checked]="isMode('exact')" (change)="setMode('exact')">
                 <label>Exact</label>
             </div>
             <br>
-            <div class="ui radio checkbox">
+            <div class="ui radio checkbox" checkbox>
                 <input [attr.disabled]="isDisabled()" type="radio" name="editDistance"
                        [checked]="isMode('hamming1')" (change)="setMode('hamming1')">
                 <label>Hamming &le; 1</label>
             </div>
             <br>
-            <div class="ui radio checkbox">
+            <div class="ui radio checkbox" checkbox>
                 <input [attr.disabled]="isDisabled()" type="radio" name="editDistance"
                        [checked]="isMode('hamming2')" (change)="setMode('hamming2')">
                 <label>Hamming &le; 2</label>
             </div>
             <br>
-            <div class="ui radio checkbox">
+            <div class="ui radio checkbox" checkbox>
                 <input [attr.disabled]="isDisabled()" type="radio" name="editDistance"
                        [checked]="isMode('levenshtein')" (change)="setMode('levenshtein')">
                 <label>Levenshtein &le; 1</label>
